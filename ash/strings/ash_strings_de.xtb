@@ -36,7 +36,7 @@
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>Drittanbieter<ph name="END_LINK"/>) geändert.
-Drücken Sie zum Wechseln Umschalt+Alt.</translation>
+Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
 <translation id="3026237328237090306">Mobilfunk einrichten</translation>
@@ -76,7 +76,7 @@ Drücken Sie zum Wechseln Umschalt+Alt.</translation>
 <translation id="8654520615680304441">WLAN aktivieren...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID"/> geändert.
-Drücken Sie zum Wechseln Umschalt+Alt.</translation>
+Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2562916301614567480">Privates Netzwerk</translation>
 <translation id="6549021752953852991">Kein Mobilfunknetz verfügbar</translation>
 <translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
@@ -172,7 +172,7 @@ Servernachricht: <ph name="SERVER_MSG"/></translation>
 <translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
-<translation id="4872237917498892622">Alt+Such- oder Umschalttaste</translation>
+<translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE"/> % geladen.</translation>
 <translation id="2983818520079887040">Einstellungen...</translation>
 <translation id="3871838685472846647">Mobiler Datendienst aktiviert</translation>
@@ -191,11 +191,11 @@ Servernachricht: <ph name="SERVER_MSG"/></translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Wird aktiviert...</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
-<translation id="7593891976182323525">Such- oder Umschalttaste</translation>
+<translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="747833637904845037">Wenn das Chromebook an einen externen Monitor angeschlossen ist, bleibt es auch bei geschlossenem Laptopdeckel aktiv.</translation>
 <translation id="3050422059534974565">Die Feststelltaste ist aktiviert.
-Drücken Sie die Such- oder die Umschalttaste, um die Aktivierung aufzuheben.</translation>
+Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="158849752021629804">Heimnetzwerk erforderlich</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> aktivieren</translation>
@@ -211,7 +211,7 @@ Drücken Sie die Such- oder die Umschalttaste, um die Aktivierung aufzuheben.</t
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="7209101170223508707">Die Feststelltaste ist aktiviert.
-Drücken Sie Alt+Such- oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
+Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> verbleiben</translation>

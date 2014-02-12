@@ -132,7 +132,7 @@
 <translation id="7017587484910029005">Saisissez les caractères visibles dans l'image ci-dessous.</translation>
 <translation id="9013589315497579992">Certificat d'authentification de client SSL incorrect</translation>
 <translation id="5410992958511618392">Sélection en faisant glisser le doigt</translation>
-<translation id="2085245445866855859">L'application dont le fichier manifeste comporte un attribut 'kiosk_only' doit être installée en mode Borne pour Chrome OS.</translation>
+<translation id="2085245445866855859">L'application dont le fichier manifeste comporte un attribut 'kiosk_only' doit être installée en mode Kiosque pour Chrome OS.</translation>
 <translation id="1467999917853307373">Une demande de stockage permanent de données sur votre appareil a été envoyée à partir de <ph name="URL"/>.</translation>
 <translation id="8524066305376229396">Stockage persistant :</translation>
 <translation id="7567293639574541773">I&amp;nspecter l'élément</translation>
@@ -615,7 +615,7 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="3645617779454068495">L'activation de cette option permet aux applications Web d'accéder à l'API WebGL.</translation>
 <translation id="1864146862702347178">Activer la prédiction du défilement</translation>
 <translation id="1363055550067308502">Basculer en mode pleine chasse ou demi-chasse</translation>
-<translation id="132165743998896940">Activer le mode Borne</translation>
+<translation id="132165743998896940">Activer le mode Kiosque</translation>
 <translation id="5933265534405972182">Cette fonctionnalité active le client DNS asynchrone intégré et expérimental.</translation>
 <translation id="1898996510357854776">Enregistrer les mots de passe saisis sur le Web</translation>
 <translation id="3108967419958202225">Sélectionner...</translation>
@@ -641,7 +641,7 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="8399458884810220920">Activer/Désactiver le verrouillage des majuscules</translation>
 <translation id="8565650234829130278">Tentative de passage à une version antérieure de l'application.</translation>
 <translation id="6380224340023442078">Paramètres de contenu...</translation>
-<translation id="1612129875274679969">Conserver cet appareil en mode kiosque de manière permanente</translation>
+<translation id="1612129875274679969">Conserver cet appareil en mode Kiosque de manière permanente</translation>
 <translation id="7214227951029819508">Luminosité :</translation>
 <translation id="5486326529110362464">La valeur d'entrée de la clé privée est obligatoire.</translation>
 <translation id="6824725898506587159">Gérer les langues</translation>
@@ -1012,7 +1012,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="4992576607980257687">Me demander lorsqu'un site souhaite utiliser des messages spécifiques au système pour accéder aux appareils MIDI (recommandé)</translation>
 <translation id="1407050882688520094">Certains de vos certificats enregistrés identifient ces autorités de certification :</translation>
 <translation id="6063810760121779748">Désactiver WebAudio</translation>
-<translation id="7070112048468833248">Activer la compatibilité Chromecast</translation>
 <translation id="1051694321716046412">Personnaliser le profil utilisateur...</translation>
 <translation id="4287689875748136217">Impossible d'afficher la page Web, car le serveur n'a envoyé aucune donnée.</translation>
 <translation id="1634788685286903402">Considérer ce certificat comme fiable pour identifier les utilisateurs de messageries.</translation>
@@ -1523,6 +1522,7 @@ Calcul de la durée restante</translation>
 <translation id="4803909571878637176">Désinstallation</translation>
 <translation id="5209518306177824490">Empreinte SHA-1</translation>
 <translation id="2546283357679194313">Cookies et données de site</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">État du réseau :</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
 <translation id="4683290000467574211">Activer une expérience informatique hébergée expérimentale plus simple</translation>
@@ -2004,7 +2004,6 @@ Exposant public (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits) :
 <translation id="1546703252838446285">Sur votre compte <ph name="ACCOUNT_EMAIL"/>, elle peut :</translation>
 <translation id="6556866813142980365">Rétablir</translation>
 <translation id="8824701697284169214">Ajouter une pa&amp;ge...</translation>
-<translation id="6079113045416226952">Google Now sur votre bureau !</translation>
 <translation id="981210574958082923">Réorganiser les résultats pour l'intégration dans HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Ouvrir tous les favoris</translation>
 <translation id="9193357432624119544">Code d'erreur : <ph name="ERROR_NAME"/>.</translation>
@@ -2060,6 +2059,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7014051144917845222">La tentative de connexion de <ph name="PRODUCT_NAME"/> à <ph name="HOST_NAME"/> a été rejetée. Il est possible que le site Web soit bloqué ou que votre réseau ne soit pas correctement configuré.</translation>
 <translation id="2097372108957554726">Vous devez vous connecter à Chrome pour enregistrer de nouveaux périphériques.</translation>
 <translation id="4332213577120623185">Vous devez nous fournir d'autres informations pour finaliser cet achat.</translation>
+<translation id="9201305942933582053">Google Now pour Chrome</translation>
 <translation id="1708338024780164500">(Inactive)</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="8986362086234534611">Retirer</translation>
@@ -2311,7 +2311,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7341982465543599097">extrêmement court</translation>
 <translation id="7314244761674113881">Hôte SOCKS</translation>
 <translation id="4630590996962964935">Caractère non valide : 1$.</translation>
-<translation id="4089968049353467425">Remplacer les optimisations de l'appareil bas de gamme</translation>
 <translation id="7460131386973988868">Permet de configurer l'IP fixe. Peut ne pas fonctionner.</translation>
 <translation id="7709980197120276510">En cliquant sur &quot;Continuer&quot;, vous acceptez d'être lié par les documents <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> et <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Activer la fonctionnalité SPDY/4 alpha 2</translation>
@@ -2583,6 +2582,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2058632120927660550">Une erreur s'est produite. Veuillez vérifier l'imprimante, puis réessayer.</translation>
 <translation id="539295039523818097">Un problème lié à votre microphone s'est produit.</translation>
 <translation id="7595321929944401166">Ce plug-in n'est pas accepté.</translation>
+<translation id="2580093683987647761">Pour demander un chargeur de remplacement gratuit, veuillez appeler le (866) 628 1371 (depuis les États-Unis), le (866) 628-1372 (depuis le Canada) ou le 0800 026 0613 (depuis le Royaume-Uni).</translation>
 <translation id="4935613694514038624">Préparation à la première connexion d'entreprise…</translation>
 <translation id="3996912167543967198">Réinitialisation en cours…</translation>
 <translation id="4479639480957787382">Ethernet </translation>
@@ -2677,7 +2677,6 @@ Vous devez être connecté pour pouvoir utiliser cette fonctionnalité.</transla
 <translation id="5434065355175441495">Chiffrement RSA PKCS #1</translation>
 <translation id="7073704676847768330">Ce n'est probablement pas le site que vous recherchez !</translation>
 <translation id="8477384620836102176">&amp;Général</translation>
-<translation id="900093400474539372">Écrasement des calques</translation>
 <translation id="8059417245945632445">&amp;Inspecter les appareils</translation>
 <translation id="3391392691301057522">Ancien code PIN :</translation>
 <translation id="96421021576709873">Réseau Wi-Fi</translation>
@@ -3071,7 +3070,6 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="8793043992023823866">Importation...</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="9159562891634783594">Activer l'enregistrement des imprimantes à partir de l'aperçu avant impression</translation>
-<translation id="6244494354618367048">Mode Appareil bas de gamme</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Créer un utilisateur supervisé<ph name="LINK_END"/> pour cet appareil</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="8986267729801483565">Enregistrer les fichiers dans le dossier :</translation>
@@ -3349,8 +3347,6 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="5328205483471986666">Vérifier votre connexion Internet</translation>
 <translation id="2610780100389066815">Signature de liste d'approbation Microsoft</translation>
 <translation id="4535353504827549990">Modifier la période</translation>
-<translation id="1403594069892831402">Les calques qui se superposent à un autre contenu composite doivent également être composites pour que le rendu soit effectué dans le bon ordre. Cette fonctionnalité permet au compositeur Blink de rendre plusieurs sous-arbres RenderLayer
-         en un seul calque composite afin d'éviter un nombre inutilement élevé de calques composites.</translation>
 <translation id="2788575669734834343">Sélectionnez le fichier de certificat.</translation>
 <translation id="8267453826113867474">Bloquer le contenu inapproprié</translation>
 <translation id="7959074893852789871">Le fichier contenait plusieurs certificats, dont certains n'ont pas été importés :</translation>
@@ -3611,7 +3607,7 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="715118844758971915">Imprimantes standards</translation>
 <translation id="7877451762676714207">Erreur serveur inconnue. Veuillez réessayer ou contacter l'administrateur du serveur.</translation>
 <translation id="5085162214018721575">Recherche de mises à jour en cours…</translation>
-<translation id="5264252276333215551">Veuillez vous connecter à Internet pour lancer l'application en mode Borne.</translation>
+<translation id="5264252276333215551">Veuillez vous connecter à Internet pour lancer l'application en mode Kiosque.</translation>
 <translation id="144932861331386147">Connectez-vous à Internet pour mettre à jour votre Chromebook.</translation>
 <translation id="5737306429639033676">Prédire les actions du réseau pour améliorer les performances de chargement des pages</translation>
 <translation id="8123426182923614874">Données restantes :</translation>
@@ -3820,7 +3816,6 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="8026964361287906498">(Géré par une stratégie d'entreprise)</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="7800518121066352902">Rotation d&amp;ans le sens contraire des aiguilles d'une montre</translation>
-<translation id="4531327707205555741">Activer la lecture de vidéos à distance sur le Chromecast</translation>
 <translation id="345693547134384690">Ouvrir l'&amp;image dans un nouvel onglet</translation>
 <translation id="7422192691352527311">Préférences...</translation>
 <translation id="9004952710076978168">Réception d'une notification pour une imprimante inconnue.</translation>
@@ -3973,7 +3968,7 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="7255935316994522020">Appliquer</translation>
 <translation id="142758023928848008">Activer les touches persistantes (pour exécuter les raccourcis clavier en appuyant sur les touches les unes à la suite des autres)</translation>
 <translation id="5233930340889611108">WebKit</translation>
-<translation id="2224777866125174350">Une erreur s'est produite. Le mode Borne n'est pas disponible sur cet appareil.</translation>
+<translation id="2224777866125174350">Une erreur s'est produite. Le mode Kiosque n'est pas disponible sur cet appareil.</translation>
 <translation id="8260864402787962391">Souris</translation>
 <translation id="1775135663370355363">Affichage de l'historique de cet appareil : <ph name="BEGIN_LINK"/>en savoir plus<ph name="END_LINK"/></translation>
 <translation id="8276560076771292512">Vider le cache et effectuer une actualisation forcée</translation>
@@ -4557,7 +4552,7 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="2192664328428693215">Me demander lorsqu'un site souhaite afficher des notifications sur le Bureau (recommandé)</translation>
 <translation id="8138347620904123366">Signaler ce fichier à Google</translation>
 <translation id="6708242697268981054">Source :</translation>
-<translation id="1909880997794698664">Voulez-vous vraiment conserver cet appareil en mode kiosque de manière permanente ?</translation>
+<translation id="1909880997794698664">Voulez-vous vraiment conserver cet appareil en mode Kiosque de manière permanente ?</translation>
 <translation id="1986281090560408715">Active l'affichage tête haute dans l'angle supérieur gauche de l'écran qui répertorie des informations sur les points de contact à l'écran.</translation>
 <translation id="2986010903908656993">Le contrôle total des appareils MIDI a été bloqué pour cette page.</translation>
 <translation id="4264549073314009907">Restreindre le débogage GDB Native Client par schéma</translation>

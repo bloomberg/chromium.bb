@@ -1014,7 +1014,6 @@
 <translation id="4992576607980257687">MIDI పరికరాలను ప్రాప్యత చేయడానికి సిస్టమ్ విశిష్ట సందేశాలను సైట్ ఉపయోగించాలనుకున్నప్పుడు నన్ను అడగాలి (సిఫార్సు చేయబడింది)</translation>
 <translation id="1407050882688520094">ఈ సర్టిఫికెట్ అధికారాలను గుర్తించే ఫైల్‌లో మీకు సర్టిఫికెట్‌లు ఉన్నాయి:</translation>
 <translation id="6063810760121779748">WebAudioని నిలిపివేయి</translation>
-<translation id="7070112048468833248">Chromecast మద్దతు ప్రారంభించండి</translation>
 <translation id="1051694321716046412">వినియోగదారుని అనుకూలీకరించు..</translation>
 <translation id="4287689875748136217">సర్వర్ డేటాని పంపనందువల్ల వెబ్‌పేజీని లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="1634788685286903402">ఇమెయిల్ వినియోగదారులను గుర్తించడానికి ఈ ప్రమాణపత్రాన్ని నమ్మండి.</translation>
@@ -1523,6 +1522,7 @@
 <translation id="4803909571878637176">అన్ఇన్‌స్టాల్ చేస్తోంది</translation>
 <translation id="5209518306177824490">SHA-1 వేలిముద్ర</translation>
 <translation id="2546283357679194313">కుక్కీలు మరియు సైట్ డేటా</translation>
+<translation id="4926150172344704583">కెనడా</translation>
 <translation id="7447657194129453603">నెట్‌వర్క్  స్థితి:</translation>
 <translation id="4958444002117714549">జాబితాను విస్తరించు</translation>
 <translation id="4683290000467574211">ప్రయోగాత్మకమైన, మరింత క్రమబద్ధమైన రూపంతో హోస్ట్ చేయబడిన అనువర్తన అనుభవాన్ని ప్రారంభిస్తుంది.</translation>
@@ -1991,7 +1991,6 @@
 <translation id="1546703252838446285">మీ <ph name="ACCOUNT_EMAIL"/> ఖాతాలో, దీన్ని చేయవచ్చు:</translation>
 <translation id="6556866813142980365">చర్య పునరావృతం</translation>
 <translation id="8824701697284169214">పే&amp;జీని జోడించండి...</translation>
-<translation id="6079113045416226952">మీ డెస్క్‌టాప్‌లో Google Now!</translation>
 <translation id="981210574958082923">HistoryQuickProviderలో వరుసక్రమం కోసం ఫలితాలను మళ్లీ క్రమం చేయండి</translation>
 <translation id="6466988389784393586">&amp;అన్ని బుక్‌మార్క్‌లను తెరువు</translation>
 <translation id="9193357432624119544">లోపం కోడ్: <ph name="ERROR_NAME"/></translation>
@@ -2050,6 +2049,7 @@
         సరిగా కాన్ఫిగర్ అయి ఉండకపోవచ్చు.</translation>
 <translation id="2097372108957554726">మీరు కొత్త పరికరాలను నమోదు చేయడానికి Chromeకి సైన్ ఇన్ చేయాలి</translation>
 <translation id="4332213577120623185">ఈ కొనుగోలుని పూర్తి చేయడానికి మరింత సమాచారం అవసరం.</translation>
+<translation id="9201305942933582053">Chrome కోసం Google Now!</translation>
 <translation id="1708338024780164500">(క్రియారహితం)</translation>
 <translation id="6896758677409633944">కాపీ చెయ్యి</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
@@ -2302,7 +2302,6 @@
 <translation id="7341982465543599097">అత్యంత తక్కువ</translation>
 <translation id="7314244761674113881">సాక్స్ హోస్ట్</translation>
 <translation id="4630590996962964935">చెల్లని అక్షరం: $1</translation>
-<translation id="4089968049353467425">తక్కువ సామర్థ్యం గల పరికరం అనుకూలీకరణలను భర్తీ చేస్తుంది.</translation>
 <translation id="7460131386973988868">స్థిర ip కాన్ఫిగరేషన్‌ను ప్రారంభిస్తుంది. పని చేయకపోవచ్చు.</translation>
 <translation id="7709980197120276510">కొనసాగించు క్లిక్ చేయడం ద్వారా మీరు <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> మరియు <ph name="LEGAL_DOC_LINK_TEXT_5"/>కి అంగీకరిస్తారు.</translation>
 <translation id="1840000081943778840">SPDY/4 ఆల్ఫా 2ను ప్రారంభించండి</translation>
@@ -2568,6 +2567,7 @@
 <translation id="2058632120927660550">లోపం సంభవించింది. దయచేసి మీ ప్రింటర్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="539295039523818097">మీ మైక్రోఫోన్‌తో ఒక సమస్య ఉండేది.</translation>
 <translation id="7595321929944401166">ఈ ప్లగిన్‌కు మద్దతు లేదు.</translation>
+<translation id="2580093683987647761">దయచేసి మీ ఉచిత ప్రత్యామ్నాయ ఛార్జర్‌ను అభ్యర్థించడానికి (866) 628-1371 (US), (866) 628-1372 (కెనడా) లేదా 0800 026 0613 (UK)కి కాల్ చేయండి.</translation>
 <translation id="4935613694514038624">మొదటి ఎంటర్‌ప్రైజ్ లాగిన్ కోసం సిద్ధం అవుతోంది...</translation>
 <translation id="3996912167543967198">రీసెట్ చేస్తోంది...</translation>
 <translation id="4479639480957787382">ఈథర్నెట్</translation>
@@ -2660,7 +2660,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA గుప్తీకరణ</translation>
 <translation id="7073704676847768330">మీరు శోధిస్తున్న సైట్‍‌ఇది కాదేమో !</translation>
 <translation id="8477384620836102176">&amp;సాధారణ</translation>
-<translation id="900093400474539372">లేయర్‌ను గుంపులో చేర్చడం</translation>
 <translation id="8059417245945632445">&amp;పరికరాలను పర్యవేక్షించు</translation>
 <translation id="3391392691301057522">పాత పిన్:</translation>
 <translation id="96421021576709873">Wi-Fi నెట్‌వర్క్</translation>
@@ -3056,7 +3055,6 @@
 <translation id="8793043992023823866">దిగుమతి అవుతోంది...</translation>
 <translation id="8106211421800660735">క్రెడిట్ కార్డ్ నంబర్</translation>
 <translation id="9159562891634783594">ముద్రణ పరిదృశ్యం నుండి నమోదు కాని cloud ప్రింటర్‌లను నమోదు చేయడాన్ని ప్రారంభించండి.</translation>
-<translation id="6244494354618367048">తక్కువ సామర్థ్యం గల పరికరం మోడ్.</translation>
 <translation id="8843709518995654957">ఈ పరికరం కోసం <ph name="LINK_START"/>పర్యవేక్షించబడే వినియోగదారును సృష్టించండి<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
 <translation id="8986267729801483565">డౌన్‌లోడ్ స్థానం:</translation>
@@ -3334,8 +3332,6 @@
 <translation id="5328205483471986666">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేయండి.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">సమయ మార్పు విండో</translation>
-<translation id="1403594069892831402">సరైన పెయింట్ క్రమాన్ని నిర్ధారించడానికి, ఇతర వర్ణరంజిత కంటెంట్‌ను అతివ్యాప్తి చేసిన లేయర్‌లు కూడా వర్ణరంజితం చేయబడాలి. ఈ లక్షణం బహుళ RenderLayer
-        ఉపభాగాలను ఒక వర్ణరంజిత లేయర్‌కి పెయింట్ చేయడానికి బ్లింక్‌ను ప్రారంభిస్తుంది తద్వారా మేము అనవసరంగా పెద్ద సంఖ్యల్లో ఉన్న వర్ణరంజిత లేయర్‌లను నివారించగల సామర్థ్యం పొందవచ్చు.</translation>
 <translation id="2788575669734834343">సర్టిఫికెట్ ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="8267453826113867474">అసహ్య పదాలను బ్లాక్ చెయ్యి</translation>
 <translation id="7959074893852789871">ఫైల్ దిగుమతి చెయ్యని కొన్ని బహుళ ప్రమాణపత్రాలను కలిగి ఉంది:</translation>
@@ -3805,7 +3801,6 @@
 <translation id="8026964361287906498">(ఎంటర్‌ప్రైజ్ విధానం ద్వారా నిర్వహించబడింది)</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="7800518121066352902">అ&amp;పసవ్యదిశలో తిప్పు</translation>
-<translation id="4531327707205555741">Chromecastలో రిమోట్ విధానంలో వీడియోలను ప్లే చేయడాన్ని ప్రారంభించండి.</translation>
 <translation id="345693547134384690">క్రొత్త టాబ్‌లో &amp;చిత్రాన్ని తెరువు</translation>
 <translation id="7422192691352527311">ప్రాధాన్యతలు...</translation>
 <translation id="9004952710076978168">తెలియని ప్రింటర్ కోసం నోటిఫికేషన్ స్వీకరించబడింది.</translation>

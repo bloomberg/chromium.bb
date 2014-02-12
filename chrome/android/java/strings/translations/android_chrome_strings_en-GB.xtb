@@ -16,6 +16,7 @@
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="624558823898732418">Translation Language: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">Choose certificate for authentication</translation>
 <translation id="3896036286668839683">Certificate Viewer</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
@@ -27,6 +28,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="9137013805542155359">Show original</translation>
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
 <translation id="4619298195800598081">Open original image in new tab</translation>
+<translation id="907015151729920253">Smart card</translation>
 <translation id="3136378934686431938">Please update your sign in details.</translation>
 <translation id="3063601790762993062">Save video</translation>
 <translation id="6042308850641462728">More</translation>

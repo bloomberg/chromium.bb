@@ -16,6 +16,7 @@
 आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
 <translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त संवाद बनाने से रोकें</translation>
 <translation id="624558823898732418">अनुवाद की भाषा: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">प्रमाणीकरण के लिए प्रमाणपत्र चुनें</translation>
 <translation id="3896036286668839683">प्रमाणपत्र व्यूअर</translation>
 <translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
@@ -27,6 +28,7 @@
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
 <translation id="4619298195800598081">मूल चित्र नए टैब में खोलें</translation>
+<translation id="907015151729920253">स्मार्ट कार्ड</translation>
 <translation id="3136378934686431938">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
 <translation id="6042308850641462728">अधिक</translation>

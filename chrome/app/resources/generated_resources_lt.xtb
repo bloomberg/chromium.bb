@@ -1015,7 +1015,6 @@
 <translation id="4992576607980257687">Paklausti, kai svetainė nori naudoti sistemos išskirtinius pranešimus MIDI įrenginiams pasiekti (rekomenduojama)</translation>
 <translation id="1407050882688520094">Turite pateiktų sertifikatų, identifikuojančių šias sertifikatą išdavusias institucijas:</translation>
 <translation id="6063810760121779748">Išjungti „WebAudio“</translation>
-<translation id="7070112048468833248">Įgalinti „Chromecast“ palaikymą</translation>
 <translation id="1051694321716046412">Tinkinti naudotoją...</translation>
 <translation id="4287689875748136217">Neįmanoma įkelti tinklalapio, nes serveris neatsiuntė duomenų.</translation>
 <translation id="1634788685286903402">Pasitikėti šiuo sertifikatu nustatant el. pašto naudotojus.</translation>
@@ -1528,6 +1527,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="4803909571878637176">Pašalinimas</translation>
 <translation id="5209518306177824490">SHA-1 piršto atspaudas</translation>
 <translation id="2546283357679194313">Slapukai ir svetainės duomenys</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Tinklo būsena:</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
 <translation id="4683290000467574211">Įgalinamos eksperimentinės, supaprastintos priglobtų programų funkcijos.</translation>
@@ -1688,7 +1688,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="6135547590517339018">Modifikuojamas garsumo elementas būsenos juostoje, kad būtų pridėtas meniu, kurį naudojant galima pasirinkti konkretų garso įvesties ir išvesties įrenginį. Reikalingas bandymas „Įgalinti naują garso doroklę“.</translation>
 <translation id="1613703494520735460">Numato būsimą piršto padėtį slenkant ir palaukia, kol bus pateiktas rėmelis, kol pirštas yra toje padėtyje.</translation>
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
-<translation id="8453482423012550001">Kopijuojama elementų: 1 dol...</translation>
+<translation id="8453482423012550001">Kopijuojama elementų: $1...</translation>
 <translation id="6991665348624301627">Pasirinkti paskirties vietą</translation>
 <translation id="3449839693241009168">Paspauskite <ph name="SEARCH_KEY"/>, kad galėtumėte siųsti komandas į „<ph name="EXTENSION_NAME"/>“</translation>
 <translation id="968174221497644223">Programos talpykla</translation>
@@ -2011,7 +2011,6 @@ Viešoji skaičiaus eilė (bitų: <ph name="PUBLIC_EXPONENT_NUM_BITS"/>):
 <translation id="1546703252838446285">„<ph name="ACCOUNT_EMAIL"/>“ paskyroje ji gali:</translation>
 <translation id="6556866813142980365">Grąžinti</translation>
 <translation id="8824701697284169214">Pridėti pu&amp;slapį...</translation>
-<translation id="6079113045416226952">„Google“ dabar jūsų darbalaukyje.</translation>
 <translation id="981210574958082923">Pertvarkyti eilutinius rezultatus „HistoryQuickProvider“ (sparčiojoje istorijos teikimo programoje)</translation>
 <translation id="6466988389784393586">&amp;Atidaryti visas žymes</translation>
 <translation id="9193357432624119544">Klaidos kodas: <ph name="ERROR_NAME"/></translation>
@@ -2067,6 +2066,7 @@ Viešoji skaičiaus eilė (bitų: <ph name="PUBLIC_EXPONENT_NUM_BITS"/>):
 <translation id="7014051144917845222">„<ph name="PRODUCT_NAME"/>“ bandymas prisijungti prie <ph name="HOST_NAME"/> buvo atmestas. Gali neveikti svetainė arba jūsų tinklas yra netinkamai sukonfigūruotas.</translation>
 <translation id="2097372108957554726">Reikia prisijungti prie „Chrome“, kad būtų galima užregistruoti naujus įrenginius</translation>
 <translation id="4332213577120623185">Norint užbaigti šį pirkimą, reikia pateikti daugiau informacijos.</translation>
+<translation id="9201305942933582053">„Chrome“ skirta „Google“ dabar!</translation>
 <translation id="1708338024780164500">(Neaktyvus)</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="8986362086234534611">Pamiršti</translation>
@@ -2319,7 +2319,6 @@ Viešoji skaičiaus eilė (bitų: <ph name="PUBLIC_EXPONENT_NUM_BITS"/>):
 <translation id="7341982465543599097">nepaprastai trumpa</translation>
 <translation id="7314244761674113881">SOCKS priegloba</translation>
 <translation id="4630590996962964935">Netinkamas simbolis: $1</translation>
-<translation id="4089968049353467425">Perrašomas žemos klasės įrenginių optimizavimas.</translation>
 <translation id="7460131386973988868">Įgalina statinio IP konfigūraciją. Gali neveikti.</translation>
 <translation id="7709980197120276510">Spustelėdami „Tęsti“ sutinkate su <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> ir <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Įgalinti SPDY/4 alfa 2</translation>
@@ -2591,6 +2590,7 @@ Viešoji skaičiaus eilė (bitų: <ph name="PUBLIC_EXPONENT_NUM_BITS"/>):
 <translation id="2058632120927660550">Įvyko klaida. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
 <translation id="539295039523818097">Yra problemų dėl mikrofono.</translation>
 <translation id="7595321929944401166">Šis papildinys nepalaikomas.</translation>
+<translation id="2580093683987647761">Skambinkite numeriu (866) 628-1371 (JAV), (866) 628-1372 (Kanada) arba 0800 026 0613 (JK) ir pateikite užklausą dėl nemokamo pakaitinio kroviklio.</translation>
 <translation id="4935613694514038624">Ruošiamas pirmasis įmonės prisijungimas...</translation>
 <translation id="3996912167543967198">Nustatoma iš naujo...</translation>
 <translation id="4479639480957787382">Eternetas</translation>
@@ -2683,7 +2683,6 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="5434065355175441495">PKCS Nr. 1 RSA šifruotė</translation>
 <translation id="7073704676847768330">Tikriausiai čia ne jūsų pageidaujama svetainė</translation>
 <translation id="8477384620836102176">Bendra</translation>
-<translation id="900093400474539372">Sluoksnių sujungimas</translation>
 <translation id="8059417245945632445">&amp;Tikrinti įrenginius</translation>
 <translation id="3391392691301057522">Senas PIN kodas:</translation>
 <translation id="96421021576709873">„Wi-Fi“ ryšio tinklas</translation>
@@ -2937,7 +2936,7 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="1031460590482534116">Bandant išsaugoti kliento sertifikatą įvyko klaida. <ph name="ERROR_NUMBER"/> klaida (<ph name="ERROR_NAME"/>).</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN"/> sąlygos</translation>
 <translation id="25597840138324075">Vykdomas inkognito atsisiuntimas</translation>
-<translation id="7136984461011502314">Sveiki atvykę į <ph name="PRODUCT_NAME"/></translation>
+<translation id="7136984461011502314">Sveiki! Tai - <ph name="PRODUCT_NAME"/></translation>
 <translation id="204497730941176055">„Microsoft“ sertifikato šablono pavadinimas</translation>
 <translation id="992032470292211616">Plėtiniai, programos ir temos gali pakenkti įrenginiui. Tikrai norite tęsti?</translation>
 <translation id="2665919335226618153">Oi! Formatuojant įvyko klaida.</translation>
@@ -2978,7 +2977,7 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="4708849949179781599">Baigti darbą su „<ph name="PRODUCT_NAME"/>“</translation>
 <translation id="4103419683916926126">Milisekundės</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> iš <ph name="TOTAL_SIZE"/></translation>
-<translation id="9127762771585363996">Pasukti kameros vaizdą horizontaliai</translation>
+<translation id="9127762771585363996">Apversti kameros vaizdą horizontaliai</translation>
 <translation id="4724450788351008910">Ryšys pakeistas</translation>
 <translation id="2249605167705922988">pvz., 1–5, 8, 11–13</translation>
 <translation id="8572510699242209592">Gigabaitai</translation>
@@ -3035,7 +3034,7 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="1272978324304772054">Ši naudotojo paskyra nepriklauso domenui, prie kurio priregistruotas įrenginys. Jei norite naudoti su kitu domenu, pirma turite atlikti įrenginio atkūrimo procedūrą.</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="857779305329188634">Įgalinti eksperimentinio QUIC protokolo palaikymą.</translation>
-<translation id="7208899522964477531">Ieškoti <ph name="SITE_NAME"/> (ko) <ph name="SEARCH_TERMS"/></translation>
+<translation id="7208899522964477531">Ieškoti <ph name="SITE_NAME"/> pagal <ph name="SEARCH_TERMS"/></translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="8960795431111723921">Šiuo metu nagrinėjame šią problemą.</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
@@ -3077,7 +3076,6 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="8793043992023823866">Importuojama...</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
 <translation id="9159562891634783594">Įgalinti neregistruotų iš debesies spausdinančių spausdintuvų iš spaudinio peržiūros registravimą.</translation>
-<translation id="6244494354618367048">Žemos klasės įrenginio režimas.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Kurti prižiūrimą naudotoją<ph name="LINK_END"/> šiame įrenginyje.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="8986267729801483565">Atsisiuntimo vieta:</translation>
@@ -3356,8 +3354,6 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="5328205483471986666">Patikrinkite interneto ryšį.</translation>
 <translation id="2610780100389066815">„Microsoft“ patikimo sąrašo pasirašymas</translation>
 <translation id="4535353504827549990">Laikotarpio keitimas</translation>
-<translation id="1403594069892831402">Su kitu sudėtiniu turiniu persidengiantys sluoksniai taip pat turi būti sudėtiniai, kad būtų užtikrinta tinkama piešimo tvarka. Naudojant šią funkciją įgalinamas „Blink“ kelių „RenderLayer“
-        vidinių medžio rodinių piešimas viename sudėtiniame rodinyje, kad būtų galima išvengti daugybės nereikalingų sudėtinių sluoksnių.</translation>
 <translation id="2788575669734834343">Pasirinkti sertifikato failą</translation>
 <translation id="8267453826113867474">Blokuoti įžeidžiančius žodžius</translation>
 <translation id="7959074893852789871">Faile buvo keli sertifikatai; kai kurie iš jų nebuvo importuoti:</translation>
@@ -3828,7 +3824,6 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="8026964361287906498">(Tvarkoma pagal įmonės politiką)</translation>
 <translation id="8261506727792406068">Pašalinti</translation>
 <translation id="7800518121066352902">Sukti prieš l&amp;aikrodžio rodyklę</translation>
-<translation id="4531327707205555741">Įgalinti vaizdo įrašų paleidimą nuotoliniu būdu „Chromecast“ įrenginyje.</translation>
 <translation id="345693547134384690">Atidaryti &amp;paveikslėlį naujame skirtuke</translation>
 <translation id="7422192691352527311">Nuostatos...</translation>
 <translation id="9004952710076978168">Gautas pranešimas, skirtas nežinomam spausdintuvui.</translation>

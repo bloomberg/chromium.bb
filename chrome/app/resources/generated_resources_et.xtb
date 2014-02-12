@@ -1014,7 +1014,6 @@
 <translation id="4992576607980257687">Küsi minult, kui sait tahab kasutada süsteemi eksklusiivseid sõnumeid MIDI-seadmetele juurdepääsu saamiseks (soovitatav)</translation>
 <translation id="1407050882688520094">Teil on neid sertimisorganeid tuvastavad sertifikaadid:</translation>
 <translation id="6063810760121779748">Keela WebAudio</translation>
-<translation id="7070112048468833248">Chromecasti toe lubamine</translation>
 <translation id="1051694321716046412">Kohanda kasutaja ...</translation>
 <translation id="4287689875748136217">Veebilehte ei saa laadida, kuna server ei saatnud andmeid.</translation>
 <translation id="1634788685286903402">Usalda seda sertifikaati meilikasutajate tuvastamiseks.</translation>
@@ -1525,6 +1524,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="4803909571878637176">Desinstallimine</translation>
 <translation id="5209518306177824490">SHA-1 sõrmejälg</translation>
 <translation id="2546283357679194313">Küpsised ja saidiandmed</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Võrgu olek:</translation>
 <translation id="4958444002117714549">Laienda loendit</translation>
 <translation id="4683290000467574211">Lubab katselist, ladusamat hostitud rakenduse kasutamist.</translation>
@@ -1999,7 +1999,6 @@ Avalik eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitti):
 <translation id="1546703252838446285">Teie meilikontol <ph name="ACCOUNT_EMAIL"/> saab see teha järgmist.</translation>
 <translation id="6556866813142980365">Tee uuesti</translation>
 <translation id="8824701697284169214">Lisa &amp;leht ...</translation>
-<translation id="6079113045416226952">Google Now teie töölaual.</translation>
 <translation id="981210574958082923">Tulemuste reasisene ümberkorraldamine HistoryQuickProvideris</translation>
 <translation id="6466988389784393586">&amp;Ava kõik järjehoidjad</translation>
 <translation id="9193357432624119544">Veakood: <ph name="ERROR_NAME"/></translation>
@@ -2053,6 +2052,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/>'i ühenduspüüe hostiga <ph name="HOST_NAME"/> lükati tagasi. Veebisait võib olla maas või teie võrk ei pruugi olla õigesti seadistatud.</translation>
 <translation id="2097372108957554726">Uute seadmete registreerimiseks peate Chrome'i sisse logima</translation>
 <translation id="4332213577120623185">Ostu lõpetamiseks on vaja lisateavet.</translation>
+<translation id="9201305942933582053">Google Now Chrome'ile.</translation>
 <translation id="1708338024780164500">(Passiivne)</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="8986362086234534611">Unusta</translation>
@@ -2304,7 +2304,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7341982465543599097">väga lühike</translation>
 <translation id="7314244761674113881">SOCKS-host</translation>
 <translation id="4630590996962964935">Kehtetu märk: $1</translation>
-<translation id="4089968049353467425">Alistab madalama tasemega seadme optimeerimised.</translation>
 <translation id="7460131386973988868">Lubab staatilise IP konfigureerimist. Ei pruugi töötada.</translation>
 <translation id="7709980197120276510">Klõpsates nupul Jätka, nõustute dokumentidega <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> ja <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Luba SPDY/4 alfa 2</translation>
@@ -2570,6 +2569,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2058632120927660550">Ilmnes viga. Kontrollige printerit ja proovige uuesti.</translation>
 <translation id="539295039523818097">Mikrofoniga ilmnes probleem.</translation>
 <translation id="7595321929944401166">Seda pistikprogrammi ei toetata.</translation>
+<translation id="2580093683987647761">Tasuta asenduslaadija tellimiseks helistage numbril (866) 628 1371 (USA), (866) 628 1372 (Kanada) või 0800 026 0613 (Ühendkuningriik).</translation>
 <translation id="4935613694514038624">Ettevõtte esimese sisselogimise ettevalmistamine ...</translation>
 <translation id="3996912167543967198">Lähtestamine ...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2661,7 +2661,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="5434065355175441495">PKCS 1 RSA krüpteerimine</translation>
 <translation id="7073704676847768330">See pole tõenäoliselt sait, mida otsite!</translation>
 <translation id="8477384620836102176">&amp;Üldine</translation>
-<translation id="900093400474539372">Kihi koondamine</translation>
 <translation id="8059417245945632445">&amp;Seadmete kontrollimine</translation>
 <translation id="3391392691301057522">Vana PIN-kood:</translation>
 <translation id="96421021576709873">WiFi-võrk</translation>
@@ -3053,7 +3052,6 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="8793043992023823866">Importimine...</translation>
 <translation id="8106211421800660735">Krediitkaardi number</translation>
 <translation id="9159562891634783594">Registreerimata pilvprinterite printimise eelvaates registreerimise lubamine.</translation>
-<translation id="6244494354618367048">Madalama taseme seadme režiim.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Looge seadmes valvatav kasutaja<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="8986267729801483565">Allalaadimise asukoht:</translation>
@@ -3332,8 +3330,6 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="5328205483471986666">Kontrollige Interneti-ühendust.</translation>
 <translation id="2610780100389066815">Microsoft Trusti loendi signeerimine</translation>
 <translation id="4535353504827549990">Ajaakna nihutamine</translation>
-<translation id="1403594069892831402">Õige värvimisjärjestuse tagamiseks peavad muud koondsisu katvad kihid olema samuti koondüksused. See funktsioon lubab Blinkil värvida mitu RenderLayer-
-        alampuud ühele koondkihile, nii et saame vältida ebavajalikult suurt koondkihtide hulka.</translation>
 <translation id="2788575669734834343">Valige sertifikaadi fail</translation>
 <translation id="8267453826113867474">Blokeeri solvavad sõnad</translation>
 <translation id="7959074893852789871">Fail sisaldas mitut sertifikaati, mõnda neist ei imporditud:</translation>
@@ -3804,7 +3800,6 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="8026964361287906498">(Seda haldab ettevõtte reegel.)</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="7800518121066352902">Pööra &amp;vastupäeva</translation>
-<translation id="4531327707205555741">Lubab videote kaugesituse Chromecastis.</translation>
 <translation id="345693547134384690">Ava pilt uuel &amp;vahelehel</translation>
 <translation id="7422192691352527311">Eelistused...</translation>
 <translation id="9004952710076978168">Tundmatult printerilt saabus teatis.</translation>

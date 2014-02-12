@@ -868,7 +868,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika negalioja, nepaisoma vaizdo įrašo veiklos ir naudotojas laikomas neveikiu.</translation>
 <translation id="3965339130942650562">Skirtasis laikas, kol vykdomas neveikos būsenos naudotojo atjungimas</translation>
-<translation id="5814301096961727113">Nustatyti numatytąją atsiliepimų žodžiu prisijungimo ekrane būklę</translation>
+<translation id="5814301096961727113">Nustatyti numatytąją žodinių atsiliepimų prisijungimo ekrane būklę</translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
 <translation id="7091198954851103976">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė</translation>
 <translation id="1708496595873025510">Nustatykite variantų pirminės reikšmės pateikimo apribojimą</translation>
@@ -1324,15 +1324,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Nuotolinės prieigos programoms šis politikos nustatymas įtakos neturi. Joms visada naudojama „chromoting-client.talkgadget.google.com“ „TalkGadget“ (Pokalbių programėlei) pasiekti.</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
-<translation id="6915442654606973733">Įgalinti atsiliepimų žodžiu pasiekiamumo funkciją.
+<translation id="6915442654606973733">Įgalinti žodinių atsiliepimų pasiekiamumo funkciją.
 
-          Jei ši politika nustatyta, atsiliepimai žodžiu bus visada įgalinti.
+          Jei ši politika nustatyta, žodiniai atsiliepimai bus visada įgalinti.
 
-          Jei ši politika nenustatyta, atsiliepimai žodžiu bus visada išjungti.
+          Jei ši politika nenustatyta, žodiniai atsiliepimai bus visada išjungti.
 
           Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
 
-          Jei ši politika nenustatyta, atsiliepimai žodžiu bus išjungti, bet naudotojas galės bet kada ją įgalinti.</translation>
+          Jei ši politika nenustatyta, žodiniai atsiliepimai bus išjungti, bet naudotojas galės bet kada ją įgalinti.</translation>
 <translation id="7796141075993499320">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti papildinius, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis papildinių nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
@@ -1356,7 +1356,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="54795286564479339">Naudotojo pseudoportreto vaizdo konfigūravimas.
 
-      Pagal šią politiką leidžiama konfigūruoti pseudoportreto vaizdą, atstovaujantį naudotoją prisijungimo ekrane. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti pseudoportreto vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumą patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti pasiekiamas be autentifikavimo.
+      Pagal šią politiką leidžiama konfigūruoti pseudoportreto vaizdą, atstovaujantį naudotoją prisijungimo ekrane. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti pseudoportreto vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti pasiekiamas be autentifikavimo.
 
       Pseudoportreto vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
 
@@ -1860,15 +1860,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei šis nustatymas neleidžiamas, naudotojai negali spausdinti „<ph name="CLOUD_PRINT_NAME"/>“ iš „<ph name="PRODUCT_NAME"/>“ spausdinimo dialogo lango</translation>
 <translation id="4088589230932595924">Įjungtas inkognito režimas</translation>
-<translation id="5862253018042179045">Nustatyti numatytąją atsiliepimų žodžiu būklę prisijungimo ekrane.
+<translation id="5862253018042179045">Nustatyti numatytąją žodinių atsiliepimų būklę prisijungimo ekrane.
 
-          Jei ši politika nustatyta, atsiliepimai žodžiu bus įgalinti, kai bus rodomas prisijungimo ekranas.
+          Jei ši politika nustatyta, žodiniai atsiliepimai bus įgalinti, kai bus rodomas prisijungimo ekranas.
 
-          Jei ši politika nenustatyta, atsiliepimai žodžiu bus išjungti, kai bus rodomas prisijungimo ekranas.
+          Jei ši politika nenustatyta, žodiniai atsiliepimai bus išjungti, kai bus rodomas prisijungimo ekranas.
 
-          Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalinę arba išjungę atsiliepimus žodžiu. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
+          Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalinę arba išjungę žodinius atsiliepimus. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
-          Jei ši politika nenustatyta, atsiliepimai žodžiu bus išjungti, kai pirmą kartą bus rodomas prisijungimo ekranas. Naudotojai galės bet kada įgalinti arba išjungti atsiliepimus žodžiu, o jų būsena prisijungimo ekrane bus vienoda skirtingiems naudotojams.</translation>
+          Jei ši politika nenustatyta, žodiniai atsiliepimai bus išjungti, kai pirmą kartą bus rodomas prisijungimo ekranas. Naudotojai galės bet kada įgalinti arba išjungti žodinius atsiliepimus, o jų būsena prisijungimo ekrane bus vienoda skirtingiems naudotojams.</translation>
 <translation id="8197918588508433925">Šioje politikoje nustatomi plėtiniai, kuriems leidžiama naudoti įmonės platformos raktų API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad galėtų naudoti API.
 
 Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įvyks klaida ir bus pateiktas jos kodas.</translation>

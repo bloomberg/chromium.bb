@@ -104,7 +104,6 @@
 <translation id="5358375970380395591">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME"/>. תוכל למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">‏הפעל את Chromium</translation>
 <translation id="9036189287518468038">Chromium App Launcher</translation>
-<translation id="4886158514168859177">‏במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium Frame ונסה שוב.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="95514773681268843">‏<ph name="DOMAIN"/> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים של מערכת ההפעלה של Chromium.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -168,7 +167,6 @@
 <translation id="1902135785017821799">‏<ph name="FILE_NAME"/> מבצע שינויי הגדרות בדומה לתוכנות זדוניות מסוימות, ולכן Chromium חסם אותו.</translation>
 <translation id="3155163173539279776">‏הפעל מחדש את Chromium</translation>
 <translation id="2966088006374919794">‏Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME"/>. הקישור הנדרש הוא <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">‏לא ניתן להתקין את אותה גרסת Chromium Frame שפועלת כרגע. סגור את Chromium Frame ונסה שוב.</translation>
 <translation id="2558235863893655150">‏האם אתה רוצה ש-Chromium ישמור את הסיסמה שלך?</translation>
 <translation id="1231416733874080281">‏הצג את תפריט Chromium</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON"/>אתחול<ph name="END_BUTTON"/> של Chromium)</translation>
@@ -206,7 +204,6 @@
 <translation id="374481098568514319">‏במחשב זה כבר קיימת גרסה מתקדמת יותר של רכיבי Chromium. השתמש במתקין עדכני יותר.</translation>
 <translation id="6240281849816458190">‏ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Chromium אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את שעון המערכת ולרענן את דף.</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
-<translation id="1622565934590470080">‏במחשב זה קיימות כבר גרסאות מתקדמות יותר של Chromium ו-‏Chromium Frame. אם התוכנות אינן פועלות, הסר את ההתקנה של Chromium‏ ושל Chromium Frame ונסה שוב.</translation>
 <translation id="7318036098707714271">‏קובץ ההעדפות שלך פגום או לא חוקי. 
 
 Chromium לא יכול לשחזר את ההגדרות שלך.</translation>

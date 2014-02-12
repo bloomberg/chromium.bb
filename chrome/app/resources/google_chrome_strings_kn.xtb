@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="2370289711218562573">Google Chrome ಇದೀಗ ಮೆಚ್ಚಿನವುಗಳನ್ನು/ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="2721687379934343312">On Mac ನಲ್ಲಿ, ಪಾಸ್‌ವರ್ಡ್‌‌ಗಳನ್ನು ನಿಮ್ಮ ಕೀಚೈನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ ಹಾಗೂ ಈ OS X ಖಾತೆಯನ್ನು ಹಂಚಿಕೊಂಡಿರುವ ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರು ಇದನ್ನು ಪ್ರವೇಶಿಸಬಹುದು ಅಥವಾ ಅದನ್ನು ಸಿಂಕ್‌ ಕೂಡ ಮಾಡಬಹುದು.</translation>
-<translation id="1761870329818521071">ಪ್ರಸ್ತುತವಾಗಿ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome Frame ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು  Google Chrome Frame ಅನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6014844626092547096">ಇದೀಗ ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3140883423282498090">ನೀವು ಮುಂದಿನ ಬಾರಿ Google Chrome ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="1773601347087397504">Chrome OS ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">ಅಮಾನ್ಯವಾದ ವಾದಗಳು. Google Chrome ಸ್ಥಾಪನೆ ಮಾಡದೆ ಸಿದ್ಧತೆಯ ಮೋಡ್‌ನಲ್ಲಿ Google Chrome Frame ಅನ್ನು ಸ್ಥಾಪನೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="8684521613357479262">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ಸರ್ವರ್ ಇನ್ನೂ ಮಾನ್ಯವಾಗಿರದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸಲ್ಲಿಸಿದೆ. ಪ್ರಮಾಣಪತ್ರವು ವಿಶ್ವಾಸಾರ್ಹವಾಗಿರಬಹುದೆ ಎಂಬುದನ್ನು ಸೂಚಿಸಲು ಯಾವುದೇ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. Google Chrome ನೀವು ಆಕ್ರಮಣಕಾರನಲ್ಲದ, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ನೊಂದಿಗೆ ಸಂವಹಿಸುತ್ತಿದ್ದೀರೆಂದು ವಿಶ್ವಸನೀಯವಾಗಿ ಭರವಸೆ ನೀಡುವುದಿಲ್ಲ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಗಡಿಯಾರವನ್ನು ಪ್ರಸ್ತುತ <ph name="CURRENT_TIME"/> ಗೆ ಹೊಂದಿಸಿದೆ. ಇದು ಸರಿ ಎಂದು ತೋರುತ್ತಿದೆಯೇ? ಸರಿಯಲ್ಲದಿದ್ದರೆ, ನಿಮ್ಮ ಸಿಸ್ಟಂನ ಗಡಿಯಾರವನ್ನು ನೀವು ಮೊದಲು ಸರಿಪಡಿಸಬೇಕು ನಂತರ ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್‌ಮಾಡಿ.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">ಈ ಕಂಪ್ಯೂಟರ್ Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್‌ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಈಗಾಗಲೇ ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್ ಎರಡನ್ನೂ ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> ದೋಷಪೂರಿತವಾಗಿದೆ, ಮತ್ತು Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS"/>ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS"/> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
@@ -151,7 +149,6 @@
         ಈ ಆಯ್ಕೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡುವಂತೆ ನಾವು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ.</translation>
 <translation id="61852838583753520">&amp;Chrome OS ನವೀಕರಿಸಿ</translation>
 <translation id="8547799825197623713">Chrome ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್ ಕ್ಯಾನರಿ</translation>
-<translation id="5577648424992741236">ಈ ಕಂಪ್ಯೂಟರ್ Google Chrome ಫ್ರೇಮ್‌ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಈಗಾಗಲೇ ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಫ್ರೇಮ್ ಅನ್ನು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6326175484149238433">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು</translation>
 <translation id="2871893339301912279">ನೀವೀಗ Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ!</translation>
 <translation id="7161904924553537242">Google Chrome ಗೆ ಸ್ವಾಗತ</translation>

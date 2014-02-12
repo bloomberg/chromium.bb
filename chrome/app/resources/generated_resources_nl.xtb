@@ -1020,7 +1020,6 @@
 <translation id="4992576607980257687">Vragen als een site berichten exclusief voor het systeem wil gebruiken om toegang te krijgen tot MIDI-apparaten (aanbevolen)</translation>
 <translation id="1407050882688520094">Je hebt certificaten waarmee deze certificeringsinstanties worden geïdentificeerd:</translation>
 <translation id="6063810760121779748">WebAudio uitschakelen</translation>
-<translation id="7070112048468833248">Chromecast-ondersteuning inschakelen</translation>
 <translation id="1051694321716046412">Gebruiker aanpassen...</translation>
 <translation id="4287689875748136217">Kan de webpagina niet laden omdat de server geen gegevens heeft verzonden.</translation>
 <translation id="1634788685286903402">Dit certificaat vertrouwen voor het identificeren van e-mailgebruikers.</translation>
@@ -1362,7 +1361,7 @@ Resterende tijd berekenen</translation>
 <translation id="8412498037462710569">Ik bevestig dat ik geen gratis vervangende oplader wil.</translation>
 <translation id="3368922792935385530">Verbonden</translation>
 <translation id="5431473096922271583">We willen graag controleren of je een oorspronkelijke oplader gebruikt.</translation>
-<translation id="3478477114335130296">Enkele van je instellingen kunnen zonder je medeweten zijn aangepast.</translation>
+<translation id="3478477114335130296">Enkele van je instellingen kunnen zonder je medeweten zijn aangepast</translation>
 <translation id="3866443872548686097">Je opslagmedium is gereed. Je kunt dit ontkoppelen van je systeem.</translation>
 <translation id="6824564591481349393">&amp;E-mailadres kopiëren</translation>
 <translation id="907148966137935206">Sites niet toestaan pop-ups weer te geven (aanbevolen)</translation>
@@ -1533,6 +1532,7 @@ Resterende tijd berekenen</translation>
 <translation id="4803909571878637176">Verwijderen</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
 <translation id="2546283357679194313">Cookies en sitegegevens</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Netwerkstatus:</translation>
 <translation id="4958444002117714549">Lijst uitvouwen</translation>
 <translation id="4683290000467574211">Hiermee wordt een experimentele, meer gestroomlijnde gehoste app-ervaring ingeschakeld.</translation>
@@ -2007,7 +2007,6 @@ Openbaar exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="1546703252838446285">Kan in je <ph name="ACCOUNT_EMAIL"/>-account het volgende doen:</translation>
 <translation id="6556866813142980365">Opnieuw</translation>
 <translation id="8824701697284169214">Pa&amp;gina toevoegen...</translation>
-<translation id="6079113045416226952">Google Now op je bureaublad</translation>
 <translation id="981210574958082923">Resultaten voor inlining in HistoryQuickProvider opnieuw ordenen</translation>
 <translation id="6466988389784393586">Alle bladwijzers &amp;openen</translation>
 <translation id="9193357432624119544">Foutcode: <ph name="ERROR_NAME"/></translation>
@@ -2064,6 +2063,7 @@ Openbaar exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
         is je netwerk niet correct geconfigureerd.</translation>
 <translation id="2097372108957554726">Je moet inloggen bij Chrome om nieuwe apparaten te registreren</translation>
 <translation id="4332213577120623185">Er is meer informatie nodig om deze aankoop te kunnen voltooien.</translation>
+<translation id="9201305942933582053">Google Now voor Chrome</translation>
 <translation id="1708338024780164500">(Inactief)</translation>
 <translation id="6896758677409633944">Kopieer</translation>
 <translation id="8986362086234534611">Vergeten</translation>
@@ -2315,7 +2315,6 @@ Openbaar exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="7341982465543599097">extreem kort</translation>
 <translation id="7314244761674113881">SOCKS-host</translation>
 <translation id="4630590996962964935">Ongeldig teken: $1</translation>
-<translation id="4089968049353467425">Hiermee worden optimalisaties van budgetapparaten overschreven.</translation>
 <translation id="7460131386973988868">Hiermee wordt statische IP-configuratie ingeschakeld. Dit werkt mogelijk niet correct.</translation>
 <translation id="7709980197120276510">Door op 'Doorgaan' te klikken, ga je akkoord met <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> en <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">SPDY/4 alfa 2 inschakelen</translation>
@@ -2587,6 +2586,7 @@ Openbaar exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="2058632120927660550">Er is een fout opgetreden. Controleer je printer en probeer het opnieuw.</translation>
 <translation id="539295039523818097">Er is een probleem met de microfoon opgetreden.</translation>
 <translation id="7595321929944401166">Deze plug-in wordt niet ondersteund.</translation>
+<translation id="2580093683987647761">Bel (866) 628-1371 (VS), (866) 628-1372 (Canada) of 0800 026 0613 (VK) om je gratis vervangende oplader aan te vragen.</translation>
 <translation id="4935613694514038624">Voorbereiden op eerste zakelijke aanmelding...</translation>
 <translation id="3996912167543967198">Opnieuw instellen…</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2679,7 +2679,6 @@ Je moet zijn ingelogd om deze functie te kunnen gebruiken.</translation>
 <translation id="5434065355175441495">PKCS nr. 1 met RSA-encryptie</translation>
 <translation id="7073704676847768330">Dit is waarschijnlijk niet de site die je zoekt!</translation>
 <translation id="8477384620836102176">&amp;Algemeen</translation>
-<translation id="900093400474539372">Lagen samenvoegen</translation>
 <translation id="8059417245945632445">Apparaten &amp;inspecteren</translation>
 <translation id="3391392691301057522">Oude pincode:</translation>
 <translation id="96421021576709873">Wifi-netwerk</translation>
@@ -3078,7 +3077,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="8793043992023823866">Importeren...</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
 <translation id="9159562891634783594">Schakel het registreren van niet-geregistreerde cloudprinters via het afdrukvoorbeeld in.</translation>
-<translation id="6244494354618367048">Modus voor budgetapparaat.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Een bewaakte gebruiker<ph name="LINK_END"/> maken voor dit apparaat.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="8986267729801483565">Downloadlocatie:</translation>
@@ -3356,8 +3354,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="5328205483471986666">Controleer je internetverbinding.</translation>
 <translation id="2610780100389066815">Microsoft-vertrouwenslijsthandtekening</translation>
 <translation id="4535353504827549990">Tijdvenster verplaatsen</translation>
-<translation id="1403594069892831402">Lagen die andere samengestelde inhoud bevatten, moeten ook worden samengesteld om de correcte weergavevolgorde te bepalen. Deze functie staat toe dat Blink meerdere subreeksen van RenderLayer
-        weergeeft in één samengestelde laag zodat we grote aantallen samengestelde lagen kunnen voorkomen.</translation>
 <translation id="2788575669734834343">Certificaatbestand selecteren</translation>
 <translation id="8267453826113867474">Aanstootgevende woorden blokkeren</translation>
 <translation id="7959074893852789871">Het bestand bevat meerdere certificaten. Sommige van deze certificaten zijn niet geïmporteerd:</translation>
@@ -3823,7 +3819,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="8026964361287906498">(Beheerd door bedrijfsbeleid)</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="7800518121066352902">Links&amp;om draaien</translation>
-<translation id="4531327707205555741">Het op afstand afspelen van video's op Chromecast inschakelen.</translation>
 <translation id="345693547134384690">&amp;Afbeelding openen in nieuw tabblad</translation>
 <translation id="7422192691352527311">Voorkeuren...</translation>
 <translation id="9004952710076978168">Melding van een onbekende printer ontvangen.</translation>

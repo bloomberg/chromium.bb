@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome ऐप्स  लॉन्च करें</translation>
 <translation id="2370289711218562573">Google Chrome अब पसंदीदा/बुकमार्क आयात कर रहा है.</translation>
 <translation id="2721687379934343312">Mac पर, पासवर्ड को आपके कीचेन पर सहेज लिया जाता है और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा अभिगमित या समन्‍वयित किया जा सकता है.</translation>
-<translation id="1761870329818521071">वर्तमान में चल रहे Google Chrome Frame का समान संस्करण इंस्‍टॉल नहीं कर सकता. कृपया Google Chrome Frame बंद करें और पुनः प्रयास करें.</translation>
 <translation id="6014844626092547096">अब आप Chrome में प्रवेश हैं! समन्वयन को आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="3140883423282498090">आपके द्वारा अगली बार Google Chrome को पुन: लॉन्‍च करने पर आपके परिवर्तन प्रभावी हो जाएंगे.</translation>
 <translation id="1773601347087397504">Chrome OS का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">अमान्य तर्क. Google Chrome इंस्टॉल किए बिना Google Chrome Frame को तैयार मोड में इंस्टॉल नहीं किया जा सकता है.</translation>
 <translation id="8684521613357479262">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; पर पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जो अभी तक मान्‍य नहीं है. प्रमाणपत्र पर विश्वास किया जा सकता है या नहीं इस बारे में कोई जानकारी उपलब्ध नहीं है. Google Chrome विश्वसनीय रूप से इस बात की गारंटी नहीं दे सकता कि आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; से संचार कर रहे हैं, न कि किसी हमलावर से. आपके कंप्‍यूटर की घड़ी वर्तमान में <ph name="CURRENT_TIME"/> पर सेट है. क्‍या यह सही लगती है? यदि नहीं, तो आपको त्रुटि सही करनी चाहिए और इस पृष्ठ को रीफ्रेश करना चाहिए.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">इस कंप्‍यूटर में पहले से ही Google Chrome और Google Chrome Frame का कोई अधिक नवीन संस्‍करण है. यदि सॉफ़्टवेयर कार्य नहीं कर रहा है, तो कृपया Google Chrome और Google Chrome Frame दोनों को अनइंस्‍टॉल करें और पुन: प्रयास करें.</translation>
 <translation id="3149510190863420837">Chrome ऐप्स </translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> दुर्भावनापूर्ण है, और Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS"/> द्वारा संभव बनाया गया है.</translation>
@@ -151,7 +149,6 @@
         विकल्प को पुन: चुनने की अनुशंसा करते हैं.</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="8547799825197623713">Chrome ऐप्स  लॉन्चर Canary</translation>
-<translation id="5577648424992741236">इस कंप्यूटर में Google Chrome Frame का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ़्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome Frame को अनइंस्टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="6326175484149238433">Chrome से नि‍कालें</translation>
 <translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>

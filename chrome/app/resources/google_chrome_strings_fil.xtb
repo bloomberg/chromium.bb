@@ -29,7 +29,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2896252579017640304">Ilunsad ang apps ng Chrome</translation>
 <translation id="2370289711218562573">Ini-import ngayon ng Google Chrome ang Mga Paborito/Bookmark.</translation>
 <translation id="2721687379934343312">Sa Mac, ang mga password ay sine-save sa iyong Keychain at maaaring ma-access o ma-sync ng ibang mga user ng Chrome na nakikihati sa OS X account na ito.</translation>
-<translation id="1761870329818521071">Hindi ma-install ang parehong bersyon ng Google Chrome Frame na kasalukuyang tumatakbo. Pakisara ang Google Chrome Frame at subukang muli.</translation>
 <translation id="6014844626092547096">Naka-sign in ka na ngayon sa Chrome! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="3140883423282498090">Magkakaroon ng bisa ang iyong mga pagbabago sa susunod na pagkakataong muli mong ilunsad ang Google Chrome.</translation>
 <translation id="1773601347087397504">Kumuha ng tulong sa paggamit ng Chrome OS</translation>
@@ -81,7 +80,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7451721381978275812">Di-wastong mga argumento. Hindi mai-install ang Google Chrome Frame sa ready mode nang hindi ini-install din ang Google Chrome.</translation>
 <translation id="8684521613357479262">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng wala pang bisang certificate. Walang available na impormasyon na magsasaad kung mapagkakatiwalaan ang certificate. Hindi maaasahang magagarantiya ng Google Chrome na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang nang-aatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Tama ba ito? Kung hindi, dapat mong iwasto ang system ng orasan at pagkatapos ay i-refresh ang pahinang ito.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Mayroong nang mas bagong bersyon ng Google Chrome at Google Chrome Frame ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang parehong Google Chrome at Google Chrome Frame at subukang muli.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="7084448929020576097">Nakakahamak ang <ph name="FILE_NAME"/>, at na-block ito ng Chrome.</translation>
 <translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS"/>open source na software<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -157,7 +155,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
         para sa mas mahusay na pagganap.</translation>
 <translation id="61852838583753520">I-update ang &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Canary ng App Launcher ng Chrome</translation>
-<translation id="5577648424992741236">Mayroong nang mas bagong bersyon ng Google Chrome at Google Chrome Frame ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang parehong Google Chrome at Google Chrome Frame at subukang muli.</translation>
 <translation id="6326175484149238433">Alisin sa Chrome</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Стартиране на приложения за Chrome</translation>
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="2721687379934343312">На Mac паролите се запазват във вашата Keychain и могат да бъдат използвани или синхронизирани от други потребители на Chrome, споделящи този профил в OS X.</translation>
-<translation id="1761870329818521071">Не може да се инсталира същата версия на Google Chrome Frame, която се използва понастоящем. Моля, затворете приставката и опитайте отново.</translation>
 <translation id="6014844626092547096">Вече влязохте в Chrome! Синхронизирането е деактивирано от администратора ви.</translation>
 <translation id="3140883423282498090">Промените ви ще влязат в сила следващия път, когато стартирате отново Google Chrome.</translation>
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">Невалидни аргументи. Google Chrome Frame не може да се инсталира в режим на готовност, без да се инсталира и Google Chrome.</translation>
 <translation id="8684521613357479262">Направихте опит да се свържете с/ъс &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сървърът предостави сертификат, който още не е валиден. Няма налична информация дали този сертификат е надежден. Google Chrome не може да гарантира със сигурност, че комуникирате с/ъс &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с извършител на атака. Понастоящем за часовника на компютъра ви е зададено <ph name="CURRENT_TIME"/>. Правилно ли изглежда това? В противен случай трябва да поправите часовника на системата си и да опресните страницата.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">На този компютър вече има по-нова версия на Google Chrome и Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте и двете и опитайте отново.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
 <translation id="7084448929020576097">Файлът „<ph name="FILE_NAME"/>“ е злонамерен и е блокиран от Chrome.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS"/>софтуер с отворен код<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -150,7 +148,6 @@
 Ако това не реши проблема, препоръчваме ви да изберете отново тази опция, за да подобрите ефективността.</translation>
 <translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Стартов панел за приложения в ранната версия на Chrome</translation>
-<translation id="5577648424992741236">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и опитайте отново.</translation>
 <translation id="6326175484149238433">Премахване от Chrome</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>

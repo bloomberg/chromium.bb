@@ -992,7 +992,6 @@
 <translation id="4992576607980257687">Chiedi conferma quando un sito vuole utilizzare messaggi esclusivi di sistema per accedere a dispositivi MIDI (consigliata)</translation>
 <translation id="1407050882688520094">Hai dei certificati su file che identificano queste autorità di certificazione:</translation>
 <translation id="6063810760121779748">Disattiva WebAudio</translation>
-<translation id="7070112048468833248">Attiva supporto Chromecast</translation>
 <translation id="1051694321716046412">Personalizza utente...</translation>
 <translation id="4287689875748136217">Impossibile caricare la pagina web perché il server non ha inviato dati.</translation>
 <translation id="1634788685286903402">Considera attendibile questo certificato per l'identificazione degli utenti email.</translation>
@@ -1499,6 +1498,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="4803909571878637176">Disinstallazione</translation>
 <translation id="5209518306177824490">Impronta digitale SHA-1</translation>
 <translation id="2546283357679194313">Cookie e dati dei siti</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Stato rete:</translation>
 <translation id="4958444002117714549">Espandi elenco</translation>
 <translation id="4683290000467574211">Consente l'utilizzo di app in hosting sperimentali semplificate.</translation>
@@ -1964,7 +1964,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="1546703252838446285">Nel tuo account <ph name="ACCOUNT_EMAIL"/> può:</translation>
 <translation id="6556866813142980365">Ripeti</translation>
 <translation id="8824701697284169214">Aggiungi pa&amp;gina...</translation>
-<translation id="6079113045416226952">Google Now sul desktop.</translation>
 <translation id="981210574958082923">Riordina risultati per incorporamento in HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Apri tutti i Preferiti</translation>
 <translation id="9193357432624119544">Codice di errore: <ph name="ERROR_NAME"/></translation>
@@ -2020,6 +2019,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="7014051144917845222">Il tentativo di connessione di <ph name="PRODUCT_NAME"/> a <ph name="HOST_NAME"/> è stato rifiutato. Il sito web potrebbe non essere disponibile o la rete potrebbe non essere configurata correttamente.</translation>
 <translation id="2097372108957554726">Devi accedere a Chrome per registrare nuovi dispositivi</translation>
 <translation id="4332213577120623185">Sono necessarie più informazioni per completare l'acquisto.</translation>
+<translation id="9201305942933582053">Google Now per Chrome</translation>
 <translation id="1708338024780164500">(Non attiva)</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="8986362086234534611">Elimina</translation>
@@ -2272,7 +2272,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="7341982465543599097">molto breve</translation>
 <translation id="7314244761674113881">Host SOCKS</translation>
 <translation id="4630590996962964935">Carattere non valido: $1</translation>
-<translation id="4089968049353467425">Sostituisce l'ottimizzazione dei dispositivi economici</translation>
 <translation id="7460131386973988868">Consente la configurazione dell'IP statico. Potrebbe non funzionare.</translation>
 <translation id="7709980197120276510">Se fai clic su Continua, accetti i <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> e le <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Attiva SPDY/4 alpha 2</translation>
@@ -2539,6 +2538,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="2058632120927660550">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
 <translation id="539295039523818097">Si è verificato un problema con il microfono.</translation>
 <translation id="7595321929944401166">Questo plug-in non è supportato.</translation>
+<translation id="2580093683987647761">Chiama il numero (866) 628-1371 (Stati Uniti), (866) 628-1372 (Canada) o 0800 026 0613 (Regno Unito) per richiedere il caricabatterie sostitutivo gratuito.</translation>
 <translation id="4935613694514038624">Preparazione primo accesso aziendale in corso...</translation>
 <translation id="3996912167543967198">Ripristino...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2631,7 +2631,6 @@ Per poter utilizzare questa funzione devi eseguire l'accesso.</translation>
 <translation id="5434065355175441495">PKCS #1 con crittografia RSA</translation>
 <translation id="7073704676847768330">È possibile che questo sito non sia quello che stavi cercando!</translation>
 <translation id="8477384620836102176">&amp;Generali</translation>
-<translation id="900093400474539372">Compressione livello</translation>
 <translation id="8059417245945632445">&amp;Ispeziona dispositivi</translation>
 <translation id="3391392691301057522">Vecchio PIN:</translation>
 <translation id="96421021576709873">Rete Wi-Fi</translation>
@@ -3023,7 +3022,6 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="8793043992023823866">Importazione in corso...</translation>
 <translation id="8106211421800660735">Numero carta di credito</translation>
 <translation id="9159562891634783594">Consente di attivare la registrazione di stampanti cloud non registrate dall'anteprima di stampa.</translation>
-<translation id="6244494354618367048">Modalità dispositivi economici.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Crea un utente supervisionato<ph name="LINK_END"/> per questo dispositivo.</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="8986267729801483565">Percorso di download:</translation>
@@ -3295,8 +3293,6 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="5328205483471986666">Controlla la connessione a Internet.</translation>
 <translation id="2610780100389066815">Elenco firme attendibili Microsoft</translation>
 <translation id="4535353504827549990">Periodo di scostamento temporale</translation>
-<translation id="1403594069892831402">I livelli che si sovrappongono ad altri contenuti compositi devono essere a loro volta compositi per garantire l'ordine di colori corretto. Questa funzionalità consente a Blink di colorare più sottostrutture RenderLayer
-        in un livello composito, per consentirci di evitare un numero eccessivamente elevato di livelli compositi.</translation>
 <translation id="2788575669734834343">Seleziona file certificato</translation>
 <translation id="8267453826113867474">Blocca parole offensive</translation>
 <translation id="7959074893852789871">Il file conteneva più certificati, alcuni dei quali non sono stati importati:</translation>
@@ -3758,7 +3754,6 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="8026964361287906498">(Gestito da norma aziendale)</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="7800518121066352902">Ruota in senso anti&amp;orario</translation>
-<translation id="4531327707205555741">Consente di attivare la riproduzione di video da remoto su Chromecast.</translation>
 <translation id="345693547134384690">Apri &amp;immagine in un'altra scheda</translation>
 <translation id="7422192691352527311">Preferenze...</translation>
 <translation id="9004952710076978168">È stata ricevuta una notifica per una stampante sconosciuta.</translation>

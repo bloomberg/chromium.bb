@@ -92,7 +92,6 @@
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Chromium starten</translation>
 <translation id="9036189287518468038">Chromium App Launcher</translation>
-<translation id="4886158514168859177">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium Frame. Falls die Software nicht funktioniert, deinstallieren Sie Chromium Frame bitte und versuchen Sie es erneut.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="95514773681268843">Vor der Verwendung dieses Geräts ist es erforderlich, dass Sie die folgenden Nutzungsbedingungen von <ph name="DOMAIN"/> akzeptieren. Durch diese Nutzungsbedingungen werden die Chromium OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -145,7 +144,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> nimmt Einstellungsänderungen vor, die denen von Malware ähneln, und wurde daher von Chromium blockiert.</translation>
 <translation id="3155163173539279776">Chromium neu starten</translation>
 <translation id="2966088006374919794">Chromium muss eine externe App zur Verarbeitung von <ph name="SCHEME"/>-Links starten. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Die Chromium Frame-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Chromium Frame bitte und versuchen Sie es erneut.</translation>
 <translation id="2558235863893655150">Möchten Sie, dass Chromium Ihr Passwort speichert?</translation>
 <translation id="1231416733874080281">Chromium-Menü anzeigen</translation>
 <translation id="5772805321386874569">Ein <ph name="BEGIN_BUTTON"/>Neustart<ph name="END_BUTTON"/> von Chromium ist erforderlich.</translation>
@@ -183,7 +181,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chromium-Daten wie Lesezeichen, V
 <translation id="374481098568514319">Dieser Computer verfügt bereits über eine neuere Version der Chromium-Komponenten. Bitte verwenden Sie einen neueren Installer.</translation>
 <translation id="6240281849816458190">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es liegen keine Informationen hinsichtlich der Vertrauenswürdigkeit des Zertifikats vor. Daher kann Chromium nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
-<translation id="1622565934590470080">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium und Chromium Frame. Falls die Software nicht funktioniert, deinstallieren Sie bitte sowohl Chromium als auch Chromium Frame und versuchen Sie es erneut.</translation>
 <translation id="7318036098707714271">Ihre Einstellungsdatei ist beschädigt oder ungültig.
 
 Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>

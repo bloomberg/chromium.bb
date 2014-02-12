@@ -2,14 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1503959756075098984">ID rozšírení a adresy URL aktualizácií, ktoré sa majú nainštalovať na pozadí</translation>
-<translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie šírky pásma. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
+<translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie rýchlosti pripojenia. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
 <translation id="2463365186486772703">Miestne nastavenie aplikácie</translation>
 <translation id="1397855852561539316">Adresa URL návrhu predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3347897589415241400">Predvolené správanie stránok, ktoré sa nenachádzajú v žiadnom obsahovom balíku.
 
           Toto pravidlo sa vzťahuje len na interné používanie prehliadača Chrome.</translation>
 <translation id="7040229947030068419">Vzorová hodnota:</translation>
-<translation id="1213523811751486361">Určuje adresu URL vyhľadávacieho nástroja, ktorý poskytuje návrhy pre vyhľadávanie. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
+<translation id="1213523811751486361">Určuje adresu URL vyhľadávača, ktorý poskytuje návrhy pre vyhľadávanie. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
 
           Toto pravidlo je voliteľné. Ak nebude nastavené, nepoužije sa žiadna adresa URL návrhu.
 
@@ -221,11 +221,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať povolením alebo zakázaním lupy obrazovky. Voľba používateľa však nie je trvalá a predvolené nastavenie sa obnoví zakaždým, keď sa znova zobrazí prihlasovacia obrazovka alebo používateľ bude na prihlasovacej obrazovke nečinný po dobu jednej minúty.
 
           Ak toto pravidlo ponecháte nenastavené, bude lupa obrazovky pri prvom zobrazení prihlasovacej obrazovky zakázaná. Používatelia budú môcť lupu obrazovky kedykoľvek povoliť alebo zakázať a jej stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
-<translation id="5423001109873148185">Ak je toto pravidlo povolené, vyhľadávacie nástroje budú importované z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
+<translation id="5423001109873148185">Ak je toto pravidlo povolené, vyhľadávače budú importované z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
-      Ak je zakázané, predvolený vyhľadávací nástroj nebude importovaný.
+      Ak je zakázané, predvolený vyhľadávač nebude importovaný.
 
-      Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce vyhľadávací nástroj importovať, alebo môže import prebehnúť automaticky.</translation>
+      Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce vyhľadávač importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="3288595667065905535">Kanál verzie</translation>
 <translation id="2785954641789149745">Povolí funkciu Bezpečné prehliadanie prehliadača <ph name="PRODUCT_NAME"/> a zabráni používateľom zmeniť toto nastavenie.
 
@@ -499,7 +499,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie návrhu sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="4962195944157514011">Určuje adresu URL vyhľadávacieho nástroja používaného pri predvolenom vyhľadávaní. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený používateľom hľadanými výrazmi.
+<translation id="4962195944157514011">Určuje adresu URL vyhľadávača používaného pri predvolenom vyhľadávaní. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený používateľom hľadanými výrazmi.
 
           Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo „DefaultSearchProviderEnabled“ a bude dodržané len v takom prípade.</translation>
 <translation id="6009903244351574348">Umožňuje doplnku <ph name="PRODUCT_FRAME_NAME"/> spracovávať uvedené typy obsahu.
@@ -507,7 +507,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak toto pravidlo nie je nastavené, použije sa pre všetky webové stránky predvolený vykresľovací modul (ako je určené pravidlom „ChromeFrameRendererSettings“).</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
-<translation id="6520802717075138474">Importovať vyhľadávacie nástroje z predvoleného prehliadača pri prvom spustení</translation>
+<translation id="6520802717075138474">Importovať vyhľadávače z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="4039085364173654945">Kontroluje, či má vnorený obsah tretej strany na stránke povolenie zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.
 
           Táto funkcia je zvyčajne zakázaná kvôli ochrane pred phishingom (neoprávneným získavaním údajov). Ak toto pravidlo nie je nastavené, je zakázané a vnorenému obsahu tretej strany sa nepovolí zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.</translation>
@@ -867,7 +867,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="7091198954851103976">Vždy spustí doplnky, ktoré vyžadujú autorizáciu</translation>
 <translation id="1708496595873025510">Nastaviť obmedzenie pre načítanie počiatočnej hodnoty variácie</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
-<translation id="1240643596769627465">Určuje adresu URL vyhľadávacieho nástroja, ktorý poskytuje výsledky dynamického vyhľadávania. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
+<translation id="1240643596769627465">Určuje adresu URL vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
 
           Toto pravidlo je voliteľné. Ak ho nenastavíte, nebudú sa vám zobrazovať žiadne výsledky dynamického vyhľadávania.
 
@@ -1120,7 +1120,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
 <translation id="3984028218719007910">Určuje, či má systém <ph name="PRODUCT_OS_NAME"/> po odhlásení zachovať miestne údaje o účte. Ak je toto pravidlo nastavené na hodnotu true, systém <ph name="PRODUCT_OS_NAME"/> nebude uchovávať žiadne trvalé účty a všetky údaje z relácií používateľov budú po odhlásení odstránené. Ak je toto pravidlo nastavené na hodnotu false, alebo nie je nakonfigurované, zariadenie môže uchovávať (zašifrované) miestne údaje používateľa.</translation>
 <translation id="3793095274466276777">Slúži na konfiguráciu kontroly predvoleného prehliadača v prehliadači <ph name="PRODUCT_NAME"/> a bráni používateľom toto nastavenie zmeniť. Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME"/> pri spustení vždy skontroluje, či je predvoleným prehliadačom, a ak to bude možné, automaticky sa registruje. Ak je toto nastavenie zakázané, prehliadač <ph name="PRODUCT_NAME"/> nebude kontrolovať, či je predvoleným prehliadačom, a zakáže používateľské ovládacie prvky na nastavenie tejto možnosti. Ak toto nastavenie nebolo nakonfigurované, prehliadač <ph name="PRODUCT_NAME"/> umožní používateľovi určiť, či ho chce nastaviť ako predvolený prehliadač a či sa v prípade, ak ním nie je, majú používateľovi zobraziť upozornenia.</translation>
-<translation id="3504791027627803580">Určuje adresu URL vyhľadávacieho nástroja použitého na poskytovanie vyhľadávania obrázkov. Žiadosti o vyhľadávanie sa budú odosielať pomocou metódy GET. Ak je nastavené pravidlo DefaultSearchProviderImageURLPostParams, budú žiadosti o vyhľadávanie obrázkov používať namiesto toho metódu POST.
+<translation id="3504791027627803580">Určuje adresu URL vyhľadávača použitého na poskytovanie vyhľadávania obrázkov. Žiadosti o vyhľadávanie sa budú odosielať pomocou metódy GET. Ak je nastavené pravidlo DefaultSearchProviderImageURLPostParams, budú žiadosti o vyhľadávanie obrázkov používať namiesto toho metódu POST.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, nepoužije sa žiadne vyhľadávanie obrázkov.
 
@@ -1253,7 +1253,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak toto nastavenie ponecháte nenastavené, umožní to používateľovi zvoliť, či chce tlačidlo Domovská stránka zobraziť.</translation>
 <translation id="2518231489509538392">Povoliť prehrávanie zvuku</translation>
 <translation id="8146727383888924340">Povoliť používateľom uplatniť ponuky pri registrácii systému OS Chrome</translation>
-<translation id="7301543427086558500">Určuje zoznam alternatívnych adries URL, ktoré sa môžu použiť na extrahovanie hľadaných výrazov z vyhľadávacích nástrojov. Adresy URL by mali obsahovať značku <ph name="SEARCH_TERM_MARKER"/>, ktorá sa použije na extrahovanie hľadaných výrazov.
+<translation id="7301543427086558500">Určuje zoznam alternatívnych adries URL, ktoré sa môžu použiť na extrahovanie hľadaných výrazov z vyhľadávačov. Adresy URL by mali obsahovať značku <ph name="SEARCH_TERM_MARKER"/>, ktorá sa použije na extrahovanie hľadaných výrazov.
 
           Toto pravidlo je nepovinné. Ak ho nenastavíte, nepoužijú sa na extrahovanie hľadaných výrazov žiadne alternatívne adresy URL.
 
@@ -1523,7 +1523,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto nastavenie povolíte, používatelia budú môcť otvárať dialógové okná na výber súboru obvyklým spôsobom.
 
-      Ak toto nastavenie zakážete a používateľ vykoná akciu, po ktorej by sa mu v obvyklom prípade zobrazilo dialógové okno na výber súboru (napríklad import záložiek, odovzdávanie súborov, ukladanie odkazov a pod.), zobrazí sa mu namiesto tohto dialógového okna správa a prehliadač sa zachová, ako keby používateľ v dialógovom okne na výber súboru klikol na možnosť Zrušiť.
+      Ak toto nastavenie zakážete a používateľ vykoná akciu, po ktorej by sa mu v obvyklom prípade zobrazilo dialógové okno na výber súboru (napríklad import záložiek, nahrávanie súborov, ukladanie odkazov a pod.), zobrazí sa mu namiesto tohto dialógového okna správa a prehliadač sa zachová, ako keby používateľ v dialógovom okne na výber súboru klikol na možnosť Zrušiť.
 
       Ak toto nastavenie nenastavíte, používatelia budú môcť otvárať dialógové okná na výber súboru obvyklým spôsobom.</translation>
 <translation id="4507081891926866240">Umožňuje prispôsobiť zoznam vzorov adries URL, ktoré by mal doplnok <ph name="PRODUCT_FRAME_NAME"/> vždy vykresliť.
@@ -1551,7 +1551,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak toto pravidlo ponecháte nenastavené, bude lupa obrazovky spočiatku zakázaná. Používatelia budú môcť lupu obrazovky kedykoľvek povoliť.</translation>
 <translation id="3428247105888806363">Povolenie predpovede siete</translation>
-<translation id="3460784402832014830">Určuje adresu URL, ktorú použije vyhľadávací nástroj na poskytnutie stránky Nová karta.
+<translation id="3460784402832014830">Určuje adresu URL, ktorú použije vyhľadávač na poskytnutie stránky Nová karta.
 
           Toto pravidlo je voliteľné. Ak sa nenastaví, neposkytne sa žiadna stránka Nová karta.
 

@@ -29,7 +29,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2896252579017640304">Zindua programu za Chrome</translation>
 <translation id="2370289711218562573">Google Chrome sasa inaingiza Vipendwa/Alamisho.</translation>
 <translation id="2721687379934343312">Kwenye Mac, manenosiri yanahifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kulandanishwa na watumiaji wengine wa Chrome wanaoshiriki akaunti hii ya OS X.</translation>
-<translation id="1761870329818521071">Haiwezi kusakinisha toleo sawia la Google Chrome Frame ambalo linaendeshwa kwa sasa. Tafadhali funga Fremu ya Google Chrome na ujaribu tena.</translation>
 <translation id="6014844626092547096">Sasa umeingia kwenye Chrome! Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="3140883423282498090">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua Google Chrome.</translation>
 <translation id="1773601347087397504">Pata msaada wa kutumia Chrome OS</translation>
@@ -81,7 +80,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="7451721381978275812">Hoja batili. Fremu ya Google Chrome haiwezi kusakinishwa katika modi tayari bila kusakinisha Google Chrome pia.</translation>
 <translation id="8684521613357479262">Ulijaribu kufikia &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, lakini seva iliwasilisha cheti ambacho bado siyo halali. Hakuna maelezo yanayopatikana kuonyesha iwapo cheti hicho kinaweza kuaminika. Google Chrome haiwezi kuhakikisha kwa Ndivyo unawasiliana na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; na siyo mshambulizi. Saa ya kompyuta yako sasa imewekwa kwa <ph name="CURRENT_TIME"/>. Je, hiyo inaonekana sawa? Kama siyo, unapaswa kurekebisha hitilafu na uonyeshe upya ukurasa huu.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Kompyuta hii tayari ina toleo jipya zaidi la Google Chrome na Fremu ya Google Chrome. Ikiwa programu haifanyi kazi, tafadhali sanidua Google Chrome na Fremu ya Google Chrome na ujaribu tena.</translation>
 <translation id="3149510190863420837">Programu za Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> ni hasidi, na Chrome imeizuia.</translation>
 <translation id="6368958679917195344">Chrome OS imewezeshwa na programu ya ziada ya <ph name="BEGIN_LINK_CROS_OSS"/>programu huria<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -156,7 +154,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
         Iwapo hii haitatatua tatizo, tunapendekeza uchague tena hiari hili kwa utendaji ulioboreshwa.</translation>
 <translation id="61852838583753520">Sasisha Chrome OS</translation>
 <translation id="8547799825197623713">Canary ya Kizinduzi cha Programu ya Chrome</translation>
-<translation id="5577648424992741236">Kompyuta hii tayari ina toleo la hivi karibuni la Google Chrome Frame. Ikiwa programu haifanyi kazi, tafadhali sanidua Fremu ya Google Chrome na ujaribu tena.</translation>
 <translation id="6326175484149238433">Ondoa kwenye Chrome</translation>
 <translation id="2871893339301912279">Umeingia kwenye Chrome!</translation>
 <translation id="7161904924553537242">Karibu Google Chrome</translation>
@@ -175,7 +172,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="8614913330719544658">Google Chrome imelemazwa. Izindue upya sasa?</translation>
 <translation id="1175529839152551794">Kwa kuwa sasa umeingia katika akaunti, unaweza kupata vichupo vyako, alamisho na vitu vingine vya Chrome vilivyo katika kompyuta yako ndogo, simu na kompyuta kibao. Pia utapokea mapendekezo na vipengele vinavyofaa zaidi kuhusu huduma za Google.</translation>
 <translation id="6126631249883707068">Je, ungependa Google Chrome ihifadhi nenosiri lako?</translation>
-<translation id="7773845170078702898">Je, unataka Google Chrome ihifadhi nenosiri lako kwa tovuti hii?</translation>
+<translation id="7773845170078702898">Je, unataka Google Chrome ihifadhi nenosiri lako la tovuti hii?</translation>
 <translation id="5046764976540625289">Ondoka Chrome</translation>
 <translation id="4251615635259297716">Ungependa kuunganisha data yako ya Chrome kwenye akaunti hii?</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>

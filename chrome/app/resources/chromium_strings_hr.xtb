@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Pokreni Chromium</translation>
 <translation id="9036189287518468038">Pokretač aplikacija sustava Chromium</translation>
-<translation id="4886158514168859177">Ovo računalo već ima noviju verziju aplikacije Chromium Frame. Ako softver ne funkcionira, deinstalirajte Chromium Frame i pokušajte ponovo.</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> zahtijeva da pročitate i prihvatite sljedeće Uvjete pružanja usluge prije upotrebe ovog uređaja. Ti uvjeti ne predstavljaju proširenje, izmjenu ili ograničenje Uvjeta OS-a Chromium.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="1902135785017821799">Datoteka <ph name="FILE_NAME"/> mijenja postavke slično kao neki zlonamjerni softveri i Chromium ju je blokirao.</translation>
 <translation id="3155163173539279776">Ponovo pokreni Chromium</translation>
 <translation id="2966088006374919794">Chromium mora pokrenuti vanjsku aplikaciju za obradu veza <ph name="SCHEME"/>. Zatražena je veza <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Ne možete instalirati istu verziju aplikacije Chromium Frame koja se trenutačno izvršava. Zatvorite Chromium Frame i pokušajte ponovo.</translation>
 <translation id="2558235863893655150">Želite li da Chromium spremi zaporku?</translation>
 <translation id="1231416733874080281">Prikaz izbornika Chromium</translation>
 <translation id="5772805321386874569">(potrebno je <ph name="BEGIN_BUTTON"/>ponovo pokrenuti<ph name="END_BUTTON"/> Chromium)</translation>
@@ -208,7 +206,6 @@ Ako se ipak prijavite, podaci sustava Chromium kao što su oznake, povijest i os
 <translation id="374481098568514319">Ovo računalo već ima noviju verziju komponenti Chromiuma. Upotrijebite noviji instalacijski program.</translation>
 <translation id="6240281849816458190">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Chromium ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, podesite sat sustava i osvježite ovu stranicu.</translation>
 <translation id="5862307444128926510">Dobro došli u Chromium</translation>
-<translation id="1622565934590470080">Ovo računalo već ima noviju verziju preglednika Chromium i aplikacije Chromium Frame. Ako softver ne funkcionira, deinstalirajte Chromium i Chromium Frame i pokušajte ponovo.</translation>
 <translation id="7318036098707714271">Datoteka vaših postavki oštećena je ili nevažeća.
 
 Chromium ne može oporaviti vaše postavke.</translation>

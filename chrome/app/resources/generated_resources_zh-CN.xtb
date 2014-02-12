@@ -509,7 +509,7 @@
 <translation id="413121957363593859">组件</translation>
 <translation id="715487527529576698">初始中文输入模式是简体中文</translation>
 <translation id="6522350652862471760">启用 Google 个人资料名称和图标</translation>
-<translation id="3999508690854143454">有网站要求访问我的摄像头和麦克风时询问我（推荐）</translation>
+<translation id="3999508690854143454">有网站要求使用我的摄像头和麦克风时询问我（推荐）</translation>
 <translation id="919325981389444398">https://chrome.google.com/webstore/signin-helper/<ph name="EXTENSION_ID"/></translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN"/> 的连接未加密。</translation>
 <translation id="6135622770221372891">版本 ID</translation>
@@ -563,7 +563,7 @@
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME"/>帮助</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2012766523151663935">固件版本：</translation>
-<translation id="6060685159320643512">请小心，这些实验可能有风险</translation>
+<translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
 <translation id="4755351698505571593">只有所有者才能修改此设置。</translation>
 <translation id="4607068441094952239">删除此用户</translation>
 <translation id="8757640015637159332">进入公开会话</translation>
@@ -989,7 +989,6 @@
 <translation id="4992576607980257687">在网站想要使用系统专有消息访问 MIDI 设备时询问我（推荐）</translation>
 <translation id="1407050882688520094">您有证书可标识以下证书授权中心：</translation>
 <translation id="6063810760121779748">停用 WebAudio</translation>
-<translation id="7070112048468833248">启用 Chromecast 支持</translation>
 <translation id="1051694321716046412">自定义用户...</translation>
 <translation id="4287689875748136217">服务器未发送任何数据，因此无法加载该网页。</translation>
 <translation id="1634788685286903402">信任该证书，以便标识电子邮件用户的身份。</translation>
@@ -1495,6 +1494,7 @@
 <translation id="4803909571878637176">卸载</translation>
 <translation id="5209518306177824490">SHA-1 指纹</translation>
 <translation id="2546283357679194313">Cookie 和网站数据</translation>
+<translation id="4926150172344704583">加拿大</translation>
 <translation id="7447657194129453603">网络状态：</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4683290000467574211">启用更精简的实验性托管应用。</translation>
@@ -1965,7 +1965,6 @@
 <translation id="1546703252838446285">通过您的 <ph name="ACCOUNT_EMAIL"/> 帐户，它可以：</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="8824701697284169214">添加网页(&amp;G)...</translation>
-<translation id="6079113045416226952">欢迎在桌面上使用 Google 即时！</translation>
 <translation id="981210574958082923">调整结果顺序，以便在 HistoryQuickProvider 中进行内联</translation>
 <translation id="6466988389784393586">打开所有书签(&amp;O)</translation>
 <translation id="9193357432624119544">错误代码：<ph name="ERROR_NAME"/></translation>
@@ -2021,6 +2020,7 @@
 <translation id="7014051144917845222">“<ph name="PRODUCT_NAME"/>”到 <ph name="HOST_NAME"/> 的连接尝试遭到拒绝。原因可能是该网站已崩溃，也可能是您的网络配置不正确。</translation>
 <translation id="2097372108957554726">您需要登录 Chrome 才能注册新设备</translation>
 <translation id="4332213577120623185">您需要提供更多信息才能完成此次购买。</translation>
+<translation id="9201305942933582053">适用于Chrome的Google即时！</translation>
 <translation id="1708338024780164500">（无效）</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="8986362086234534611">不保存</translation>
@@ -2272,7 +2272,6 @@
 <translation id="7341982465543599097">极短</translation>
 <translation id="7314244761674113881">SOCKS 主机</translation>
 <translation id="4630590996962964935">字符无效：$1</translation>
-<translation id="4089968049353467425">覆盖低端设备优化。</translation>
 <translation id="7460131386973988868">启用静态 IP 配置。可能无法正常工作。</translation>
 <translation id="7709980197120276510">点击“继续”，即表示您同意遵守<ph name="LEGAL_DOC_LINK_TEXT_1"/>、<ph name="LEGAL_DOC_LINK_TEXT_2"/>、<ph name="LEGAL_DOC_LINK_TEXT_3"/>、<ph name="LEGAL_DOC_LINK_TEXT_4"/>和<ph name="LEGAL_DOC_LINK_TEXT_5"/>。</translation>
 <translation id="1840000081943778840">启用 SPDY/4 Alpha 2</translation>
@@ -2543,6 +2542,7 @@
 <translation id="2058632120927660550">出错了。请检查您的打印机，然后重试。</translation>
 <translation id="539295039523818097">您的麦克风存在问题。</translation>
 <translation id="7595321929944401166">不支持此插件。</translation>
+<translation id="2580093683987647761">要申请免费更换充电器，请致电(866) 628-1371（美国）、(866) 628-1372（加拿大）或0800 026 0613（英国）。</translation>
 <translation id="4935613694514038624">准备首次以企业用户的身份登录…</translation>
 <translation id="3996912167543967198">正在重置…</translation>
 <translation id="4479639480957787382">以太网</translation>
@@ -2616,7 +2616,7 @@
 <translation id="8420728540268437431">正在翻译该网页…</translation>
 <translation id="6256412060882652702">对您的 <ph name="IDS_SHORT_PRODUCT_NAME"/> 设备执行 Powerwash</translation>
 <translation id="736515969993332243">正在扫描以查找网络。</translation>
-<translation id="4417828425057753121">不允许网站访问我的摄像头和麦克风</translation>
+<translation id="4417828425057753121">不允许网站使用我的摄像头和麦克风</translation>
 <translation id="7806513705704909664">启用自动填充功能后，只需点击一次即可填写多个网络表单。</translation>
 <translation id="8282504278393594142">未安装任何扩展程序。</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
@@ -2634,7 +2634,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
 <translation id="7073704676847768330">这可能不是您要查找的网站！</translation>
 <translation id="8477384620836102176">基本信息(&amp;G)</translation>
-<translation id="900093400474539372">层合并</translation>
 <translation id="8059417245945632445">检查设备(&amp;I)</translation>
 <translation id="3391392691301057522">原来的 PIN：</translation>
 <translation id="96421021576709873">Wi-Fi 网络</translation>
@@ -3026,7 +3025,6 @@
 <translation id="8793043992023823866">正在导入...</translation>
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="9159562891634783594">启用从打印预览页注册尚未注册的云端打印机。</translation>
-<translation id="6244494354618367048">低端设备模式。</translation>
 <translation id="8843709518995654957">为此设备<ph name="LINK_START"/>创建受监管用户<ph name="LINK_END"/>。</translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="8986267729801483565">下载内容保存位置：</translation>
@@ -3185,7 +3183,7 @@
           &lt;a href=&quot;#enablesync&quot;&gt;
           启用同步
           &lt;/p&gt;</translation>
-<translation id="889901481107108152">抱歉，此实验无法在您的平台上进行。</translation>
+<translation id="889901481107108152">抱歉，此项实验性功能不能用于您的平台。</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE"/>网页，因此无法翻译。</translation>
 <translation id="8238191901674777266">美国</translation>
 <translation id="1873879463550486830">SUID 沙盒</translation>
@@ -3301,7 +3299,6 @@
 <translation id="5328205483471986666">检查您的互联网连接状况。</translation>
 <translation id="2610780100389066815">Microsoft 信任列表签名</translation>
 <translation id="4535353504827549990">切换时间窗口</translation>
-<translation id="1403594069892831402">与其他合成内容重叠的层也需要合成，以确保渲染顺序正确无误。通过此功能，Blink 可将多个 RenderLayer 子树渲染到一个合成层中，从而避免不必要地出现大量合成层。</translation>
 <translation id="2788575669734834343">选择证书文件</translation>
 <translation id="8267453826113867474">屏蔽低俗字词</translation>
 <translation id="7959074893852789871">该文件包含多个证书，其中部分证书未导入：</translation>
@@ -3768,7 +3765,6 @@
 <translation id="8026964361287906498">（受企业政策管理）</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="7800518121066352902">逆时针旋转(&amp;O)</translation>
-<translation id="4531327707205555741">启用在 Chromecast 上远程播放视频。</translation>
 <translation id="345693547134384690">在新标签页中打开图片(&amp;I)</translation>
 <translation id="7422192691352527311">偏好设置...</translation>
 <translation id="9004952710076978168">收到了与未知打印机相关的通知。</translation>
@@ -3900,7 +3896,7 @@
 <translation id="8146177459103116374">如果您已在此设备上注册，就能<ph name="LINK2_START"/>以现有用户的身份登录<ph name="LINK2_END"/>。</translation>
 <translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="3305389145870741612">格式化过程可能需要几秒钟的时间，请稍候。</translation>
-<translation id="3648607100222897006">我们随时可能会更改、中止或取消这些实验性功能。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除所有的数据，您的安全性和隐私权也有可能遭到意外损害。您启用的所有实验性功能会面向此浏览器的所有用户。请谨慎操作。</translation>
+<translation id="3648607100222897006">这些实验性功能随时可能会更改、中止或取消。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除您的所有数据，您的安全和隐私也有可能受到意外伤害。您启用的所有实验性功能将用于此浏览器的所有用户。启用前，请务必三思。</translation>
 <translation id="3937640725563832867">证书颁发者的备用名称</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/><ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">查看框架的源代码(&amp;V)</translation>
@@ -3921,7 +3917,7 @@
 <translation id="5233930340889611108">WebKit</translation>
 <translation id="2224777866125174350">出现错误，此设备不支持信息亭模式。</translation>
 <translation id="8260864402787962391">鼠标</translation>
-<translation id="1775135663370355363">显示此设备中的历史记录。<ph name="BEGIN_LINK"/>了解详情<ph name="END_LINK"/></translation>
+<translation id="1775135663370355363">目前显示的是通过此设备浏览的内容记录。<ph name="BEGIN_LINK"/>了解详情<ph name="END_LINK"/></translation>
 <translation id="8276560076771292512">清空缓存并硬性重新加载</translation>
 <translation id="9076523132036239772">抱歉，您的电子邮件地址或密码无法进行验证。请先尝试连接到网络。</translation>
 <translation id="6965978654500191972">设备</translation>
@@ -5020,7 +5016,7 @@
 <translation id="3406605057700382950">显示书签栏(&amp;S)</translation>
 <translation id="6807889908376551050">全部显示...</translation>
 <translation id="2049137146490122801">您的管理员已禁止您访问自己机器上的本地文件。</translation>
-<translation id="225240747099314620">允许受保护内容的标识符（可能需要重新启动计算机）</translation>
+<translation id="225240747099314620">允许将标识符用于受保护内容（可能需要重新启动计算机）</translation>
 <translation id="1146498888431277930">SSL 连接出错</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT"/>)</translation>
 <translation id="6394627529324717982">逗号</translation>

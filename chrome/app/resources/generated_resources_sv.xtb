@@ -945,7 +945,7 @@
 <translation id="1464724975715666883">1 fel.</translation>
 <translation id="7864539943188674973">Inaktivera Bluetooth</translation>
 <translation id="1486096554574027028">Sök efter lösenord</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> upptäckte att webbläsarinställningarna kan ha ändrats utan din vetskap. Vill du återställa dem till de ursprungliga standardinställningarna?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> upptäckte att webbläsarinställningarna kan ha ändrats utan din vetskap. Vill du återställa de ursprungliga standardinställningarna?</translation>
 <translation id="1836938920852968258">Inaktivera menyn Andra enheter i NTP.</translation>
 <translation id="3825863595139017598">Mongoliskt tangentbord</translation>
 <translation id="8184538546369750125">Använd global standardinställning (Tillåt)</translation>
@@ -1018,7 +1018,6 @@
 <translation id="4992576607980257687">Fråga mig när en webbplats vill använda systemexklusiva meddelanden för att komma åt MIDI-enheter (rekommenderas)</translation>
 <translation id="1407050882688520094">Du har sparade certifikat som identifierar dessa certifikatutfärdare:</translation>
 <translation id="6063810760121779748">Inaktivera WebAudio</translation>
-<translation id="7070112048468833248">Aktivera stöd för Chromecast</translation>
 <translation id="1051694321716046412">Anpassa användare ...</translation>
 <translation id="4287689875748136217">Det gick inte att läsa in webbsidan eftersom servern inte skickade några data.</translation>
 <translation id="1634788685286903402">Lita på detta certifikat för identifiering av e-postanvändare.</translation>
@@ -1528,6 +1527,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="4803909571878637176">Avinstallera</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtryck</translation>
 <translation id="2546283357679194313">Cookies och webbplatsdata</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Nätverksstatus:</translation>
 <translation id="4958444002117714549">Expandera lista</translation>
 <translation id="4683290000467574211">Aktiverar en experimentell, mer strömlinjeformad hanterad appupplevelse.</translation>
@@ -2003,7 +2003,6 @@ Publik exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitar):
 <translation id="1546703252838446285">På kontot <ph name="ACCOUNT_EMAIL"/> kan det:</translation>
 <translation id="6556866813142980365">Upprepa</translation>
 <translation id="8824701697284169214">Lägg till si&amp;da ...</translation>
-<translation id="6079113045416226952">Google Nu på ditt skrivbord!</translation>
 <translation id="981210574958082923">Ändra ordning på resultat som ska infogas i HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Öppna alla bokmärken</translation>
 <translation id="9193357432624119544">Felkod: <ph name="ERROR_NAME"/></translation>
@@ -2062,6 +2061,7 @@ Publik exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitar):
         avvisades.  Webbplatsen kanske är nere, eller så är ditt nätverk inte konfigurerat korrekt.</translation>
 <translation id="2097372108957554726">Du måste logga in i Chrome för att kunna registrera nya enheter</translation>
 <translation id="4332213577120623185">Det behövs mer information för att slutföra köpet.</translation>
+<translation id="9201305942933582053">Google Nu för Chrome!</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
 <translation id="6896758677409633944">Kopiera</translation>
 <translation id="8986362086234534611">Glöm</translation>
@@ -2313,7 +2313,6 @@ Publik exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitar):
 <translation id="7341982465543599097">extremt kort</translation>
 <translation id="7314244761674113881">SOCKS-värd</translation>
 <translation id="4630590996962964935">Ogiltigt tecken: $1</translation>
-<translation id="4089968049353467425">Åsidosätter optimering för mindre avancerade enheter.</translation>
 <translation id="7460131386973988868">Aktiverar statisk IP-konfiguration. Det kanske inte fungerar.</translation>
 <translation id="7709980197120276510">Genom att klicka på Fortsätt godkänner du <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> och <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Aktivera SPDY/4 alpha 2</translation>
@@ -2580,6 +2579,7 @@ Publik exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitar):
 <translation id="2058632120927660550">Ett fel har inträffat. Kontrollera skrivaren och försök igen.</translation>
 <translation id="539295039523818097">Det uppstod ett problem med mikrofonen.</translation>
 <translation id="7595321929944401166">Det här pluginprogrammet stöds inte.</translation>
+<translation id="2580093683987647761">Beställ din kostnadsfria ersättningsladdare genom att ringa (866) 628-1371 (USA), (866) 628-1372 (Kanada) eller 0800 026 0613 (Storbritannien).</translation>
 <translation id="4935613694514038624">Första företagsinloggning förbereds ...</translation>
 <translation id="3996912167543967198">Återställer ...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2672,7 +2672,6 @@ Du måste vara inloggad om du vill använda den här funktionen.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="7073704676847768330">Det här är troligen inte den webbplats som du ville besöka!</translation>
 <translation id="8477384620836102176">&amp;Allmänt</translation>
-<translation id="900093400474539372">Lagerkomprimering</translation>
 <translation id="8059417245945632445">&amp;Inspektera enheter</translation>
 <translation id="3391392691301057522">Gammal PIN:</translation>
 <translation id="96421021576709873">Wi-Fi-nätverk</translation>
@@ -3064,7 +3063,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="8793043992023823866">Importerar...</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="9159562891634783594">Aktivera registrering av oregistrerade molnskrivare från förhandsgranskning av utskrift.</translation>
-<translation id="6244494354618367048">Optimering för mindre avancerade enheter.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Skapa en övervakad användare<ph name="LINK_END"/> för denna enhet.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="8986267729801483565">Nedladdningsplats:</translation>
@@ -3343,8 +3341,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="5328205483471986666">Kontrollera internetanslutningen</translation>
 <translation id="2610780100389066815">Microsofts Signering av lista över betrodda certifikat</translation>
 <translation id="4535353504827549990">Flytta tidsintervall</translation>
-<translation id="1403594069892831402">Lager som överlappar annat sammansatt innehåll måste också sammansättas så att den får rätt färg-order. Med den här funktionen kan Blink färga flera lager av underträden i RenderLayer
-        så att de utgör ett sammansatt lager och undviker på så sätt ett onödigt stort antal sammansatta lager.</translation>
 <translation id="2788575669734834343">Välj certifikatfil</translation>
 <translation id="8267453826113867474">Blockera stötande ord</translation>
 <translation id="7959074893852789871">Filen innehöll flera certifikat och några av dem importerades inte:</translation>
@@ -3818,7 +3814,6 @@ hanteraren
 <translation id="8026964361287906498">(Hanteras av företagspolicy)</translation>
 <translation id="8261506727792406068">Ta bort</translation>
 <translation id="7800518121066352902">Rotera m&amp;oturs</translation>
-<translation id="4531327707205555741">Gör att du kan fjärrstyra uppspelningen av videor på Chromecast.</translation>
 <translation id="345693547134384690">Öppna &amp;bild i ny flik</translation>
 <translation id="7422192691352527311">Inställningar...</translation>
 <translation id="9004952710076978168">Ett meddelande om en okänd skrivare mottogs.</translation>
@@ -3967,7 +3962,7 @@ hanteraren
 <translation id="4331990704689932958"><ph name="PRODUCT_NAME"/> uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7253521419891527137">&amp;Läs mer</translation>
 <translation id="496226124210045887">Mappen som du valde innehåller känsliga filer. Är du säker på att du vill bevilja $1 permanent läsåtkomst till mappen?</translation>
-<translation id="8698464937041809063">Ritning i Google Dokument</translation>
+<translation id="8698464937041809063">Google-teckning</translation>
 <translation id="7053053706723613360">Inaktivera återställning till bättre session</translation>
 <translation id="7255935316994522020">Verkställ</translation>
 <translation id="142758023928848008">Aktivera Tröga tangenter (för att utföra kortkommandon genom att skriva in dem i följd)</translation>

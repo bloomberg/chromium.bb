@@ -1009,7 +1009,6 @@
 <translation id="4992576607980257687">サイトがシステム専用のメッセージを使用して MIDI デバイスにアクセスする際に確認する（推奨）</translation>
 <translation id="1407050882688520094">これらの認証局を識別するための証明書がファイルに格納されています:</translation>
 <translation id="6063810760121779748">WebAudio を無効にする</translation>
-<translation id="7070112048468833248">Chromecast サポートを有効にする</translation>
 <translation id="1051694321716046412">ユーザーをカスタマイズ...</translation>
 <translation id="4287689875748136217">サーバーからデータが送信されないためウェブページを読み込むことができません。</translation>
 <translation id="1634788685286903402">メール ユーザーの身元を特定するこの証明書を信頼します。</translation>
@@ -1520,6 +1519,7 @@
 <translation id="4803909571878637176">アンインストール中:</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="2546283357679194313">Cookie とサイト データ</translation>
+<translation id="4926150172344704583">カナダ</translation>
 <translation id="7447657194129453603">ネットワークの状態:</translation>
 <translation id="4958444002117714549">リストを展開する</translation>
 <translation id="4683290000467574211">試験運用版の、より効率的なホスト アプリ環境を有効にします。</translation>
@@ -1995,7 +1995,6 @@
 <translation id="1546703252838446285">お使いの <ph name="ACCOUNT_EMAIL"/> アカウントで実行できる操作は次のとおりです:</translation>
 <translation id="6556866813142980365">やり直す</translation>
 <translation id="8824701697284169214">ページを追加(&amp;G)...</translation>
-<translation id="6079113045416226952">Google Now をデスクトップに！</translation>
 <translation id="981210574958082923">HistoryQuickProvider でのインライン表示の結果の並べ替え</translation>
 <translation id="6466988389784393586">すべてのブックマークを開く(&amp;O)</translation>
 <translation id="9193357432624119544">エラー コード: <ph name="ERROR_NAME"/></translation>
@@ -2048,6 +2047,7 @@
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> が <ph name="HOST_NAME"/> に接続しようとしましたが、拒否されました。ウェブサイトがダウンしているか、ネットワークが正しく設定されていない可能性があります。</translation>
 <translation id="2097372108957554726">新しいデバイスを登録するには、Chrome にログインする必要があります</translation>
 <translation id="4332213577120623185">この購入を完了するには情報を追加する必要があります。</translation>
+<translation id="9201305942933582053">Chrome 版 Google Now</translation>
 <translation id="1708338024780164500">（無効）</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="8986362086234534611">切断</translation>
@@ -2299,7 +2299,6 @@
 <translation id="7341982465543599097">極めて短い</translation>
 <translation id="7314244761674113881">SOCKS ホスト</translation>
 <translation id="4630590996962964935">「$1」は無効な文字です。</translation>
-<translation id="4089968049353467425">ローエンド デバイスの最適化を上書きします。</translation>
 <translation id="7460131386973988868">静的 IP 設定を有効にします。動作しない場合があります。</translation>
 <translation id="7709980197120276510">[続行] をクリックすると、<ph name="LEGAL_DOC_LINK_TEXT_1"/>、<ph name="LEGAL_DOC_LINK_TEXT_2"/>、<ph name="LEGAL_DOC_LINK_TEXT_3"/>、<ph name="LEGAL_DOC_LINK_TEXT_4"/>、<ph name="LEGAL_DOC_LINK_TEXT_5"/>に同意したことになります。</translation>
 <translation id="1840000081943778840">SPDY/4 alpha 2 を有効にする</translation>
@@ -2571,6 +2570,7 @@
 <translation id="2058632120927660550">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
 <translation id="539295039523818097">マイクに問題があります。</translation>
 <translation id="7595321929944401166">このプラグインはサポートされていません。</translation>
+<translation id="2580093683987647761">交換用の充電器（無償）を申し込むには、（866）628-1371（アメリカ）、（866）628-1372（カナダ）、0800 026 0613（イギリス）までお電話ください。</translation>
 <translation id="4935613694514038624">企業ユーザーとしての初回のログインの準備をしています...</translation>
 <translation id="3996912167543967198">リセットしています...</translation>
 <translation id="4479639480957787382">イーサネット</translation>
@@ -2663,7 +2663,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 暗号化</translation>
 <translation id="7073704676847768330">このサイトは目的のサイトでない可能性があります。</translation>
 <translation id="8477384620836102176">全般(&amp;G)</translation>
-<translation id="900093400474539372">レイヤの合成</translation>
 <translation id="8059417245945632445">デバイスを検証(&amp;I)</translation>
 <translation id="3391392691301057522">以前の PIN:</translation>
 <translation id="96421021576709873">Wi-Fi ネットワーク</translation>
@@ -3057,7 +3056,6 @@
 <translation id="8793043992023823866">インポート中...</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="9159562891634783594">印刷プレビューからの、未登録のクラウド プリンタの登録を有効にします。</translation>
-<translation id="6244494354618367048">ローエンド デバイス モード。</translation>
 <translation id="8843709518995654957">このデバイスの<ph name="LINK_START"/>監視対象ユーザーを作成する<ph name="LINK_END"/>。</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="8986267729801483565">ダウンロード保存先:</translation>
@@ -3336,8 +3334,6 @@
 <translation id="5328205483471986666">インターネット接続を確認してください。</translation>
 <translation id="2610780100389066815">Microsoft 信頼リストの署名</translation>
 <translation id="4535353504827549990">期間の調整ウィンドウ</translation>
-<translation id="1403594069892831402">他の合成コンテンツに重なるレイヤは、同様に合成して、描画順が正しく維持されるようにする必要があります。この機能を使用すると、Blink で複数の RenderLayer
-        サブツリーを 1 つの合成レイヤに描画でき、必要以上に多くの合成レイヤが発生するのを防ぐことができます。</translation>
 <translation id="2788575669734834343">証明書ファイルを選択</translation>
 <translation id="8267453826113867474">不快/不適切な言葉をブロック</translation>
 <translation id="7959074893852789871">ファイルに含まれる複数の証明書のうち、一部をインポートできませんでした:</translation>
@@ -3807,7 +3803,6 @@
 <translation id="8026964361287906498">（会社のポリシーによって管理）</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="7800518121066352902">反時計回りに回転(&amp;O)</translation>
-<translation id="4531327707205555741">Chromecast での動画のリモート再生を有効にします。</translation>
 <translation id="345693547134384690">新しいタブで画像を開く(&amp;I)</translation>
 <translation id="7422192691352527311">環境設定...</translation>
 <translation id="9004952710076978168">不明なプリンタのメッセージを受け取りました。</translation>

@@ -940,7 +940,7 @@
 <translation id="1464724975715666883">1 त्रुटी.</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
 <translation id="1486096554574027028">संकेतशब्द शोधा</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> ला आढळले आहे की आपल्या ब्राउझर सेटिंग्ज आपल्या माहितीशिवाय बदलण्यात आल्या असू शकतात. आपण त्यांना त्यांच्या मूळ डीफॉल्टवर रीसेट करू इच्छिता?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> ला आढळले आहे की कदाचित आपल्या ब्राउझर सेटिंग्ज आपल्या माहितीशिवाय बदलण्यात आल्या आहेत. आपण त्या डीफॉल्टवर रीसेट करू इच्छिता?</translation>
 <translation id="1836938920852968258">NTP 'इतर डिव्हाइसेस' मेनू अक्षम करा.</translation>
 <translation id="3825863595139017598">मंगोलियन कीबोर्ड</translation>
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>
@@ -1013,7 +1013,6 @@
 <translation id="4992576607980257687">MIDI डिव्हाइसवर प्रवेश करण्यासाठी जेव्हा एखादी साइट सिस्टीम विशेष संदेश वापरू इच्छिते तेव्हा मला विचारा (शिफारस केलेले)</translation>
 <translation id="1407050882688520094">आपल्याकडे फाइलवर प्रमाणपत्रे आहेत जी या प्रमाणपत्र अधिकार्‍यांना ओळखतात:</translation>
 <translation id="6063810760121779748">WebAudio अक्षम करा</translation>
-<translation id="7070112048468833248">Chromecast समर्थन सक्षम करा</translation>
 <translation id="1051694321716046412">सानुकूलित वापरकर्ता...</translation>
 <translation id="4287689875748136217">वेबपृष्ठ लोड करण्यात अक्षम कारण सर्व्हरने कोणताही डेटा पाठविल नाही.</translation>
 <translation id="1634788685286903402">ईमेल वापरकर्त्यांना ओळखण्यासाठी या प्रमाणपत्रावर विश्वास ठेवा.</translation>
@@ -1354,7 +1353,7 @@
 <translation id="8412498037462710569">मी पुष्‍टी करतो की मी मोफत मिळणारे दुसरे चार्जर प्राप्त करू इच्‍छित नाही.</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="5431473096922271583">आम्‍ही जाणून घेऊ इच्छितो की आपण मूळ चार्जर वापरत आहात किंवा नाही.</translation>
-<translation id="3478477114335130296">आपल्‍याला न कळवता आपल्‍या काही सेटिंग्‍ज कदाचित बदलली गेली असू शकतात.</translation>
+<translation id="3478477114335130296">आपल्‍याला न कळवता आपल्‍या काही सेटिंग्‍ज कदाचित बदलल्या गेल्या असू शकतात.</translation>
 <translation id="3866443872548686097">आपला पुनर्प्राप्ती मीडिया सज्ज आहे. आपण तो आपल्या सिस्टमवरून काढू शकता.</translation>
 <translation id="6824564591481349393">&amp;ईमेल पत्ता कॉपी करा</translation>
 <translation id="907148966137935206">कोणत्याही साइटला पॉप-अप दर्शविण्याची परवानगी देऊ नका (शिफारस केलेले)</translation>
@@ -1524,6 +1523,7 @@
 <translation id="4803909571878637176">विस्थापित करणे</translation>
 <translation id="5209518306177824490">SHA-1 बोटाचा ठसा</translation>
 <translation id="2546283357679194313">कुकीज आणि साइट डेटा</translation>
+<translation id="4926150172344704583">कॅनडा</translation>
 <translation id="7447657194129453603">नेटवर्क स्थिती:</translation>
 <translation id="4958444002117714549">सूची विस्तृत करा</translation>
 <translation id="4683290000467574211">प्रायोगिक, अधिक उचित होस्ट केलेला अॅप अनुभव सक्षम करते.</translation>
@@ -1996,7 +1996,6 @@
 <translation id="1546703252838446285">आपल्या <ph name="ACCOUNT_EMAIL"/> खात्यावर, हे होऊ शकते:</translation>
 <translation id="6556866813142980365">पुन्हा करा</translation>
 <translation id="8824701697284169214">पृ&amp;ष्ठ जोडा...</translation>
-<translation id="6079113045416226952">Google Now आपल्या डेस्कटॉपवर!</translation>
 <translation id="981210574958082923">HistoryQuickProvider मध्ये इनलाइन करण्यासाठी रेकॉर्डर परिणाम</translation>
 <translation id="6466988389784393586">सर्व बुकमार्क &amp;उघडा</translation>
 <translation id="9193357432624119544">त्रुटी कोड: <ph name="ERROR_NAME"/></translation>
@@ -2056,6 +2055,7 @@
         कॉन्फिगर केलेले नाही.</translation>
 <translation id="2097372108957554726">नवीन डिव्हाइसेसची नोंदणी करण्यासाठी आपल्याला Chrome वर साइन इन करणे आवश्यक आहे</translation>
 <translation id="4332213577120623185">ही खरेदी पूर्ण करण्यासाठी अधिक माहिती आवश्यक आहे.</translation>
+<translation id="9201305942933582053">Chrome साठी Google Now!</translation>
 <translation id="1708338024780164500">(निष्क्रिय)</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
 <translation id="8986362086234534611">विसरा</translation>
@@ -2307,7 +2307,6 @@
 <translation id="7341982465543599097">अत्यंत लहान</translation>
 <translation id="7314244761674113881">सॉक्स होस्ट</translation>
 <translation id="4630590996962964935">अवैध वर्ण: $1</translation>
-<translation id="4089968049353467425">निम्न स्तराचे डिव्हाइस ऑप्टिमायझेशन अधिलिखित करते.</translation>
 <translation id="7460131386973988868">स्थिर ip कॉन्फिगरेशन सक्षम करेल. कदाचित कार्य करीत नाही.</translation>
 <translation id="7709980197120276510">सुरु ठेवा क्लिक करून आपण <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> आणि <ph name="LEGAL_DOC_LINK_TEXT_5"/> ला सहमती देता.</translation>
 <translation id="1840000081943778840">SPDY/4 अल्फा 2 सक्षम करा</translation>
@@ -2578,6 +2577,7 @@
 <translation id="2058632120927660550">एक त्रुटी आली आहे. कृपया आपला प्रिंटर तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="539295039523818097">आपल्या मायक्रोफोनसह एक समस्या आली.</translation>
 <translation id="7595321929944401166">हे प्लग-इन समर्थित नाही.</translation>
+<translation id="2580093683987647761">कृपया आपल्‍या विनामूल्‍य बदली चार्जरची विनंती करण्‍यासाठी (866) 628-1371 (यूएस), (866) 628-1372 (कॅनडा) किंवा 0800 026 0613 (यूके) वर कॉल करा.</translation>
 <translation id="4935613694514038624">प्रथम एंटरप्राइझ लॉगिनसाठी तयार होत आहे...</translation>
 <translation id="3996912167543967198">रीसेट करत आहे...</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
@@ -2670,7 +2670,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA कूटबद्धीकरण</translation>
 <translation id="7073704676847768330">आपण जी साइट शोधत आहात कदाचित ही ती साइट नाही!</translation>
 <translation id="8477384620836102176">&amp;सामान्य</translation>
-<translation id="900093400474539372">स्तर स्क्वॉशिंग</translation>
 <translation id="8059417245945632445">&amp;निरीक्षण डिव्हाइसेस</translation>
 <translation id="3391392691301057522">जुना पिन:</translation>
 <translation id="96421021576709873">Wi-Fi नेटवर्क</translation>
@@ -3067,7 +3066,6 @@
 <translation id="8793043992023823866">आयात करीत आहे...</translation>
 <translation id="8106211421800660735">क्रेडिट कार्ड क्रमांक</translation>
 <translation id="9159562891634783594">मुद्रण पूर्वावलोकनावरून नोंदणी न केलेल्‍या मेघ प्रिंटरची नोंदणी करणे सक्षम करा.</translation>
-<translation id="6244494354618367048">निम्न स्तराचा डिव्हाइस मोड.</translation>
 <translation id="8843709518995654957">या डिव्हाइससाठी <ph name="LINK_START"/>एक पर्यवेक्षी वापरकर्ता तयार करा<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="8986267729801483565">डाउनलोड स्थान:</translation>
@@ -3346,8 +3344,6 @@
 <translation id="5328205483471986666">आपले इंटरनेट कनेक्शन तपासा.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">वेळ विंडो बदला</translation>
-<translation id="1403594069892831402">योग्‍य रंग क्रम सुनिश्‍चित करण्‍यासाठी इतर संमिश्र केलेल्‍या सामग्रीस व्‍याप्त करणार्‍या स्‍तरांना देखील संमिश्र केले जाणे आवश्‍यक आहे. हे वैशिष्‍ट्य Blink ला एकाधिक RenderLayer 
-        सब-ट्री ना एका संमिश्र स्‍तरामध्‍ये रंगविण्‍यास सक्षम करते जेणे करून आम्‍ही अनावश्‍यक संमिश्र स्‍तराची मोठी संख्‍या टाळण्‍यास सक्षम होऊ शकतो.</translation>
 <translation id="2788575669734834343">प्रमाणपत्र फाइल निवडा</translation>
 <translation id="8267453826113867474">आक्षेपार्ह शब्द अवरोधित करा</translation>
 <translation id="7959074893852789871">फाइलमध्ये एकाधिक प्रमाणपत्रे आहेत, यापैकी काही आयात झाली नाहीत: </translation>
@@ -3820,7 +3816,6 @@
 <translation id="8026964361287906498">(एन्टरप्राईज धोरणाद्वारे व्यवस्थापित केले)</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="7800518121066352902">घड्याळाच्या वि&amp;रुद्ध दिशेने फिरवा</translation>
-<translation id="4531327707205555741">Chromecast वर दूरस्थपणे व्हिडिओ प्ले करणे सक्षम करा.</translation>
 <translation id="345693547134384690">नवीन विंडोमध्ये &amp;प्रतिमा उघडा</translation>
 <translation id="7422192691352527311">प्राधान्ये...</translation>
 <translation id="9004952710076978168">अज्ञात मुद्रकासाठी एक सूचना प्राप्त झाली.</translation>

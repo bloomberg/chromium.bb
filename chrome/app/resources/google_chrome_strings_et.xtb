@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Käivitage Chrome'i rakendusi</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="2721687379934343312">Macis salvestatakse paroolid rakendusse Keychain. Teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ja neid sünkroonida.</translation>
-<translation id="1761870329818521071">Töötava Google Chrome Frame'iga sama versiooni ei saa installida. Sulgege Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
 <translation id="3140883423282498090">Teie muudatused jõustuvad järgmine kord, kui avate Google Chrome'i.</translation>
 <translation id="1773601347087397504">Hankige abi Chrome OS-i kasutamise kohta</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">Kehtetud argumendid. Google Chrome Frame'i ei saa valmisrežiimil installida ilma ka Google Chrome'i installimata.</translation>
 <translation id="8684521613357479262">Proovisite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mis veel ei kehti. Saadaval ei ole teavet, mis näitaks, kas sertifikaat on usaldusväärne. Seetõttu ei saa Google Chrome tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Muul juhul muutke süsteemi kellaaega ja värskendage lehte.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Selles arvutis on Google Chrome'i ja Google Chrome Frame'i uuem versioon. Kui tarkvara ei tööta, siis desinstallige nii Google Chrome kui ka Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="6368958679917195344">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS"/>avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -153,7 +151,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
         selle valiku uuesti teha.</translation>
 <translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
 <translation id="8547799825197623713">Chrome'i rakenduste käiviti Canary</translation>
-<translation id="5577648424992741236">Selles arvutis on juba Google Chrome Frame'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="6326175484149238433">Eemalda Chrome'ist</translation>
 <translation id="2871893339301912279">Olete Chrome'i sisse logitud.</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>

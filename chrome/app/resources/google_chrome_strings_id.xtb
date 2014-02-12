@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Luncurkan aplikasi Chrome</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="2721687379934343312">Di Mac, sandi disimpan pada Keychain Anda dan dapat diakses atau disinkronkan oleh pengguna Chrome lain yang berbagi akun OS X ini.</translation>
-<translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame yang sama dengan yang sedang dijalankan. Tutup Google Chrome Frame dan coba lagi.</translation>
 <translation id="6014844626092547096">Sekarang Anda telah masuk ke Chrome! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="3140883423282498090">Perubahan Anda akan berlaku pada peluncuran ulang Google Chrome selanjutnya.</translation>
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam mode siap bila Google Chrome belum dipasang.</translation>
 <translation id="8684521613357479262">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang belum valid. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut dapat dipercaya. Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi jam sistem Anda dan menyegarkan laman ini.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Komputer ini telah memiliki Google Chrome dan Google Chrome Frame versi teranyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome dan Google Chrome Frame, kemudian coba lagi.</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> berbahaya dan Chrome telah memblokirnya.</translation>
 <translation id="6368958679917195344">OS Chrome terwujud karena <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
@@ -149,7 +147,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
         untuk meningkatkan kinerja.</translation>
 <translation id="61852838583753520">Pembaruan OS &amp;Chrome</translation>
 <translation id="8547799825197623713">Peluncur Aplikasi Chrome Canary</translation>
-<translation id="5577648424992741236">Komputer ini telah memiliki Google Chrome Frame versi teranyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome Frame dan coba lagi.</translation>
 <translation id="6326175484149238433">Hapus dari Chrome</translation>
 <translation id="2871893339301912279">Anda sudah masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>

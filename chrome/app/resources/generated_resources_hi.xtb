@@ -157,7 +157,7 @@
 <translation id="5177479852722101802">कैमरा और माइक्रोफ़ोन की पहुंच अवरुद्ध करना जारी रखें</translation>
 <translation id="4422428420715047158">डोमेन:</translation>
 <translation id="7788444488075094252">भाषाएं और इनपुट</translation>
-<translation id="6723354935081862304">Google डॉक्स और अन्य क्लाउड गंतव्यों पर प्रिंट करें. Google क्लाउड प्रिंट पर प्रिंट करने के लिए <ph name="BEGIN_LINK"/>प्रवेश<ph name="END_LINK"/> करें.</translation>
+<translation id="6723354935081862304">Google  दस्तावेज़ और अन्य क्लाउड गंतव्यों पर प्रिंट करें. Google क्लाउड प्रिंट पर प्रिंट करने के लिए <ph name="BEGIN_LINK"/>प्रवेश<ph name="END_LINK"/> करें.</translation>
 <translation id="8561096986926824116">नेटवर्क कनेक्शन में बदलाव के कारण
         <ph name="HOST_NAME"/>
         का कनेक्शन बाधित हुआ.</translation>
@@ -1018,7 +1018,6 @@
 <translation id="4992576607980257687">जब साइट MIDI उपकरणों को एक्सेस करने के लिए सिस्टम अनन्य संदेशों का उपयोग करना चाहे, तो मुझसे पूछें (अनुशंसित)</translation>
 <translation id="1407050882688520094">आपके पास इन प्रमाणपत्र अधिकारियों की पहचान करने वाली फ़ाइल पर प्रमाणपत्र हैं:</translation>
 <translation id="6063810760121779748">WebAudio अक्षम करें</translation>
-<translation id="7070112048468833248">Chromecast समर्थन सक्षम करें</translation>
 <translation id="1051694321716046412">उपयोगकर्ता को कस्‍टमाइज़ करें...</translation>
 <translation id="4287689875748136217">वेबपृष्‍ठ लोड करने में अक्षम है क्‍योंकि सर्वर ने कोई डेटा नहीं भेजा.</translation>
 <translation id="1634788685286903402">ईमेल उपयोगकर्ता को पहचानने के लिए इस प्रमाणपत्र पर विश्वास करें.</translation>
@@ -1528,6 +1527,7 @@
 <translation id="4803909571878637176">विस्थापित कर रहा है</translation>
 <translation id="5209518306177824490">SHA-1 फ़िंगरप्रिंट</translation>
 <translation id="2546283357679194313">कुकी और साइट डेटा</translation>
+<translation id="4926150172344704583">कनाडा</translation>
 <translation id="7447657194129453603">नेटवर्क स्‍थिति:</translation>
 <translation id="4958444002117714549">सूची विस्तृत करें</translation>
 <translation id="4683290000467574211">एक प्रयोगात्‍मक, अधिक स्‍ट्रीमलाइन किए गए होस्‍टेड ऐप्स अनुभव को सक्षम करता है.</translation>
@@ -1610,7 +1610,7 @@
 <translation id="2053686653008575655">आप <ph name="BEGIN_LINK"/>सामान्य प्रश्न<ph name="END_LINK"/> देख सकते हैं और किसी अन्य प्रमाणित माइक्रो-USB चार्जर, उदाहरण के लिए जो टेबलेट या स्मार्टफ़ोन के साथ प्रदान किया गया है, के साथ अपने HP Chrome बुक 11 का उपयोग करना जारी रख सकते हैं. हम असुविधा के लिए फिर से क्षमा चाहते हैं. आपकी सुरक्षा शीर्ष प्राथमिकता है.</translation>
 <translation id="6423064450797205562">उस गति से संबंधित मीट्रिक जिनसे <ph name="SHORT_PRODUCT_NAME"/> अनुरोधित कार्यवाही निष्पादित करता है</translation>
 <translation id="5251569607164379446">इनलाइन साइन प्रवाह सक्षम करें, Google प्रवेश के लिए अभी भी मौजूदा पूर्ण-पृष्ठ टेम्पलेट का उपयोग कर रहे हैं.</translation>
-<translation id="4091434297613116013">कागज़ की शीट</translation>
+<translation id="4091434297613116013">कागज़ की पत्रक</translation>
 <translation id="7475671414023905704">Netscape खोए पासवर्ड का URL</translation>
 <translation id="3335947283844343239">बंद किए गए टैब पुनः खोलें</translation>
 <translation id="5848934677402291689">PDF में सहेजना प्रगति पर है</translation>
@@ -2008,7 +2008,6 @@
 <translation id="1546703252838446285">आपके <ph name="ACCOUNT_EMAIL"/> खाते पर, निम्न कार्य किए जा सकते हैं:</translation>
 <translation id="6556866813142980365">पुन: करें</translation>
 <translation id="8824701697284169214">पृ&amp;ष्ठ जोड़ें...</translation>
-<translation id="6079113045416226952">आपके डेस्‍कटॉप पर Google अभी सेवा!</translation>
 <translation id="981210574958082923">HistoryQuickProvider में इनलाइन किए जाने वाले परिणाम पुन: व्यवस्थित करें</translation>
 <translation id="6466988389784393586">सभी बुकमार्क &amp;खोलें</translation>
 <translation id="9193357432624119544">त्रुटि कोड: <ph name="ERROR_NAME"/></translation>
@@ -2067,6 +2066,7 @@
         अस्वीकृत कर दिया गया था.  हो सकता है कि वेबसाइट कार्य नहीं कर रही हो, या आपका नेटवर्क ठीक तरह से कॉन्फ़िगर न किया गया हो.</translation>
 <translation id="2097372108957554726">नए उपकरण पंजीकृत करने के लिए आपको Chrome में प्रवेश करने की आवश्यकता है.</translation>
 <translation id="4332213577120623185">इस खरीदारी को पूरा करने के लिए और जानकारी की आवश्यकता है.</translation>
+<translation id="9201305942933582053">Chrome के लिए Google नाओ!</translation>
 <translation id="1708338024780164500">(प्रयोग में नहीं)</translation>
 <translation id="6896758677409633944">प्रतिलिपि बनाएं</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
@@ -2157,7 +2157,7 @@
 <translation id="5612734644261457353">क्षमा करें, आपका पासवर्ड अभी भी सत्यापित नहीं किया जा सकता. ध्यान दें: यदि आपने हाल ही में अपना पासवर्ड बदला है, तो आपके प्रस्थान करते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का उपयोग करें.</translation>
 <translation id="2908162660801918428">निर्देशिका द्वारा मीडिया गैलरी जोड़ें</translation>
 <translation id="2282872951544483773">अनुपलब्ध प्रयोग</translation>
-<translation id="2562685439590298522">डॉक्स</translation>
+<translation id="2562685439590298522"> दस्तावेज़</translation>
 <translation id="5707163012117843346"><ph name="WEBRTC_LOG_TIME"/> बजे अपलोड किया गया</translation>
 <translation id="8673383193459449849">सर्वर संबंधी समस्या</translation>
 <translation id="4060383410180771901">वेबसाइट <ph name="URL"/> के अनुरोध का प्रबंध करने में असमर्थ है.</translation>
@@ -2318,7 +2318,6 @@
 <translation id="7341982465543599097">बहुत कम</translation>
 <translation id="7314244761674113881">सॉक्‍स होस्ट</translation>
 <translation id="4630590996962964935">अमान्य वर्ण: $1</translation>
-<translation id="4089968049353467425">लो-एंड ऑप्टिमाइज़ेशन ओवरराइड करता है.</translation>
 <translation id="7460131386973988868">स्‍थैति‍क आईपी कॉन्‍फ़ि‍गरेशन सक्षम करता है. हो सकता है कि कार्य न करे.</translation>
 <translation id="7709980197120276510">जारी रखें क्लिक करके आप <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, और <ph name="LEGAL_DOC_LINK_TEXT_5"/> से सहमति देते हैं.</translation>
 <translation id="1840000081943778840">SPDY/4 alpha 2 सक्षम करें</translation>
@@ -2588,6 +2587,7 @@
 <translation id="2058632120927660550">कोई त्रुटि हुई. कृपया अपना प्रिंटर जांचें और पुन: प्रयास करें.</translation>
 <translation id="539295039523818097">आपके माइक्रोफ़ोन के साथ एक समस्‍या थी.</translation>
 <translation id="7595321929944401166">यह प्लग-इन समर्थित नहीं है.</translation>
+<translation id="2580093683987647761">कृपया अपने चार्जर को नि:शुल्क बदलने का अनुरोध करने के लिए (866) 628-1371 (यूएस), (866) 628-1372 (कनाडा), या 0800 026 0613 (यूके) पर कॉल करें.</translation>
 <translation id="4935613694514038624">प्रथम एंटरप्राइज़ प्रवेश की तैयारी कर रहा है...</translation>
 <translation id="3996912167543967198">रीसेट हो रही हैं...</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
@@ -2680,7 +2680,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA सुरक्षित तरीका</translation>
 <translation id="7073704676847768330">यह शायद वह साइट नहीं है जिसे आप खोज रहे हैं!</translation>
 <translation id="8477384620836102176">&amp;सामान्य</translation>
-<translation id="900093400474539372">लेयर स्क्वॉशिंग</translation>
 <translation id="8059417245945632445">&amp;उपकरणों का परीक्षण करें</translation>
 <translation id="3391392691301057522">पुराना पिन:</translation>
 <translation id="96421021576709873">Wi-Fi नेटवर्क</translation>
@@ -3081,7 +3080,6 @@
 <translation id="8793043992023823866">आयात कर रहा है...</translation>
 <translation id="8106211421800660735">क्रेडिट कार्ड संख्या</translation>
 <translation id="9159562891634783594">प्रिंट पूर्वावलोकन से अपंजीकृत क्लाउड प्रिंटर को पंजीकृत करना सक्षम करें.</translation>
-<translation id="6244494354618367048">लो एंड उपकरण मोड.</translation>
 <translation id="8843709518995654957">इस उपकरण के लिए <ph name="LINK_START"/>पर्यवेक्षित उपयोगकर्ता बनाएं<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="8986267729801483565">डाउनलोड स्थान:</translation>
@@ -3360,8 +3358,6 @@
 <translation id="5328205483471986666">अपना इंटरनेट कनेक्शन जांचें.</translation>
 <translation id="2610780100389066815">Microsoft विश्वास सूची हस्ताक्षर</translation>
 <translation id="4535353504827549990">समय विंडो शिफ्ट करें</translation>
-<translation id="1403594069892831402">पेंट का सही क्रम सुनिश्चित करने के लिए, अन्य सम्मिश्रित सामग्री को ओवरलैप करने वाली परतों को भी सम्मिश्रित करना होगा. यह सुविधा Blink को एकाधिक RenderLayer
-        सब-ट्री को एक ही सम्मिश्रित परत में पेंट करने देती है जिससे हम अनावश्यक बहुसंख्य सम्मिश्रित परतों से बच सकें.</translation>
 <translation id="2788575669734834343">प्रमाणपत्र फ़ाइल को चुनें</translation>
 <translation id="8267453826113867474">आपत्तिजनक शब्‍दों को अवरुद्ध करें</translation>
 <translation id="7959074893852789871">फ़ाइल में एकाधिक प्रमाणपत्र थे, जिनमें से कुछ को आयात नहीं किया गया था:</translation>
@@ -3832,7 +3828,6 @@
 <translation id="8026964361287906498">(एंटरप्राइज़ नीति द्वारा प्रबंधित)</translation>
 <translation id="8261506727792406068">हटाएं</translation>
 <translation id="7800518121066352902">घड़ी की &amp;विपरीत दिशा में घुमाएं</translation>
-<translation id="4531327707205555741">Chromecast पर दूरस्थ रूप से वीडियो चलाना सक्षम करें.</translation>
 <translation id="345693547134384690">नए टैब में &amp;छवि खोलें</translation>
 <translation id="7422192691352527311">प्राथमिकताएं...</translation>
 <translation id="9004952710076978168">एक अज्ञात प्रिंटर के लिए सूचना प्राप्त हुई.</translation>
@@ -3981,7 +3976,7 @@
 <translation id="4331990704689932958"><ph name="PRODUCT_NAME"/> अपने आप अपडेट हो जाता है ताकि आपके पास हमेशा नवीनतम संस्करण रहे.</translation>
 <translation id="7253521419891527137">&amp;अधिक जानें</translation>
 <translation id="496226124210045887">आपके द्वारा चुने गए फ़ोल्डर में संवेदनशील फ़ाइलें हैं. क्या आप वाकई इस फ़ोल्डर को &quot;$1&quot; स्थायी पढ़ने की एक्सेस देना चाहते हैं?</translation>
-<translation id="8698464937041809063">Google आरेखण</translation>
+<translation id="8698464937041809063">Google ड्रॉइंग</translation>
 <translation id="7053053706723613360">बेहतर सत्र पुन:स्‍थापन अक्षम करें</translation>
 <translation id="7255935316994522020">लागू करें</translation>
 <translation id="142758023928848008">स्टिकी कुंजियां सक्षम करें (उन्हें क्रमिक रूप से टाइप करके कीबोर्ड शॉर्टकट निष्पादित करने के लिए)</translation>
@@ -5171,7 +5166,7 @@
 <translation id="445923051607553918">Wi-Fi नेटवर्क से जुड़ें</translation>
 <translation id="4215898373199266584">श्श्श! गुप्त मोड (<ph name="INCOGNITO_MODE_SHORTCUT"/>) अगली बार उपयोगी हो सकता है.</translation>
 <translation id="420676372321767680">गैर-कंपोज़िटिंग डीकोडिंग सक्षम करें.</translation>
-<translation id="2925966894897775835">शीट</translation>
+<translation id="2925966894897775835">पत्रक</translation>
 <translation id="756631359159530168">कंपोज़िटिंग सक्षम होने पर पृष्ठ सामग्री की प्रति-टाइल पेंटिंग सक्षम करें.</translation>
 <translation id="3349155901412833452">उम्मीदवार सूची पृष्ठांकित करने के लिए , और . कुंजियों का उपयोग करें</translation>
 <translation id="7336748286991450492">अपने बुकमार्क कहीं भी प्राप्त करने के लिए <ph name="SIGN_IN_LINK"/> करें.</translation>

@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Käivita Chromium</translation>
 <translation id="9036189287518468038">Chromiumi rakenduste käiviti</translation>
-<translation id="4886158514168859177">Arvutis on juba Chromium Frame'i uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium Frame ja proovige uuesti.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="95514773681268843">Domeen <ph name="DOMAIN"/> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Chromium OS-i tingimusi.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> teeb mõne pahavaraga sarnaseid seadete muudatusi, seega on Chromium selle blokeerinud.</translation>
 <translation id="3155163173539279776">Chromiumi taaskäivitamine</translation>
 <translation id="2966088006374919794">Chromium peab rakenduse <ph name="SCHEME"/> linkide käsitlemiseks käivitama välisrakenduse. Taotletud link on <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Ei saa installida sama Chromium Frame'i versiooni, mis praegu töötab. Sulgege Chromium Frame ja proovige uuesti.</translation>
 <translation id="2558235863893655150">Kas soovite, et Chromium salvestaks teie parooli?</translation>
 <translation id="1231416733874080281">Chromiumi menüü kuvamine</translation>
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON"/>taaskäivitamist<ph name="END_BUTTON"/>)</translation>
@@ -209,7 +207,6 @@ Kui logite siiski sisse, liidetakse Chromiumi teave, nagu järjehoidjad, ajalugu
 <translation id="374481098568514319">Selles arvutis on juba Chromiumi komponentide uuem versioon. Kasutage uuemat installerit.</translation>
 <translation id="6240281849816458190">Proovisite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mis veel ei kehti. Saadaval ei ole teavet, mis näitaks, kas sertifikaat on usaldusväärne. Chromium ei saa tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Muul juhul muutke süsteemi kellaaega ja värskendage lehte.</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
-<translation id="1622565934590470080">Arvutis on juba Chromiumi ja Chromium Frame'i uuem versioon. Kui tarkvara ei tööta, siis desinstallige nii Chromium kui ka Chromium Frame ja proovige uuesti.</translation>
 <translation id="7318036098707714271">Teie eelistuste fail on rikutud või kehtetu.
 
 Chromium ei saa teie seadeid taastada.</translation>

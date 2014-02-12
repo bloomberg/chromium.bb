@@ -16,6 +16,7 @@
 管理対象アカウントでログインし、アカウントの管理者に自分の Chrome プロフィールの管理を委ねようとしています。あなたの Chrome データはこのアカウントに永続的に関連付けられます。このアカウントを切り離すと、ローカルの Chrome データが削除されます。</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
 <translation id="624558823898732418">翻訳言語: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">認証用の証明書の選択</translation>
 <translation id="3896036286668839683">証明書ビューア</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
@@ -27,6 +28,7 @@
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="4619298195800598081">元の画像を新しいタブで開く</translation>
+<translation id="907015151729920253">スマート カード</translation>
 <translation id="3136378934686431938">ログイン情報を更新してください。</translation>
 <translation id="3063601790762993062">動画を保存</translation>
 <translation id="6042308850641462728">詳細表示</translation>

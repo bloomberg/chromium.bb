@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importă acum Preferințele/Marcajele.</translation>
 <translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
-<translation id="1761870329818521071">Nu se poate instala aceeași versiune Google Chrome Frame care rulează în prezent. Închideți Google Chrome Frame și încercați din nou.</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="3140883423282498090">Modificările se vor aplica următoarea dată când relansați Google Chrome.</translation>
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Argumentele nu sunt valide. Google Chrome Frame nu poate fi instalat în modul Pregătit fără a instala și Google Chrome.</translation>
 <translation id="8684521613357479262">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat care încă nu este valabil. Nu sunt disponibile informații care să indice dacă certificatul respectiv este de încredere. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Acest computer are deja o versiune mai recentă de Google Chrome și Google Chrome Frame. Dacă software-ul nu funcționează, dezinstalați atât Google Chrome, cât și Google Chrome Frame și încercați din nou.</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
 <translation id="7084448929020576097">Fișierul <ph name="FILE_NAME"/> este rău-intenționat și a fost blocat de Chrome.</translation>
 <translation id="6368958679917195344"><ph name="BEGIN_LINK_CROS_OSS"/>Software-ul open source<ph name="END_LINK_CROS_OSS"/> suplimentar a contribuit la Sistemul de operare Chrome.</translation>
@@ -149,7 +147,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
         din nou această opțiune pentru performanță îmbunătățită.</translation>
 <translation id="61852838583753520">Actualizați sistemul de operare &amp;Chrome</translation>
 <translation id="8547799825197623713">Lansatorul de aplicații Chrome Canary</translation>
-<translation id="5577648424992741236">Acest computer are deja o versiune mai recentă de Google Chrome Frame. Dacă software-ul nu funcționează, dezinstalați Google Chrome Frame și încercați din nou.</translation>
 <translation id="6326175484149238433">Eliminați din Chrome</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>

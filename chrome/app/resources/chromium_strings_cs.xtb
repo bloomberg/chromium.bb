@@ -108,7 +108,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5358375970380395591">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Spustit Chromium</translation>
 <translation id="9036189287518468038">Spouštěč aplikací Chromium</translation>
-<translation id="4886158514168859177">V tomto počítači je již nainstalována novější verze pluginu Chromium Frame. Jestliže tento software nefunguje, odinstalujte Chromium Frame a zkuste to znovu.</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="95514773681268843">Doména <ph name="DOMAIN"/> vyžaduje, abyste si před použitím tohoto zařízení přečetli následující smluvní podmínky a odsouhlasili je. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -172,7 +171,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="1902135785017821799">Soubor <ph name="FILE_NAME"/> provádí změny podobně jako malware, proto jej prohlížeč Chromium zablokoval.</translation>
 <translation id="3155163173539279776">Restartovat Chromium</translation>
 <translation id="2966088006374919794">Chromium potřebuje spustit externí aplikaci pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Nelze nainstalovat verzi pluginu Chromium Frame, která je právě spuštěná. Ukončete Chromium Frame a zkuste to znovu.</translation>
 <translation id="2558235863893655150">Chcete, aby prohlížeč Chromium heslo uložil?</translation>
 <translation id="1231416733874080281">Zobrazit nabídku Chromium</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON"/>restartování<ph name="END_BUTTON"/> prohlížeče Chromium)</translation>
@@ -211,7 +209,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chromium (například z
 <translation id="374481098568514319">V tomto počítači je již používána novější verze komponent aplikace Chromium. Použijte prosím novější instalátor.</translation>
 <translation id="6240281849816458190">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát, který ještě není platný. Nejsou k dispozici žádné informace, které by naznačovaly, zda je možné certifikátu důvěřovat. Aplikace Chromium nemůže spolehlivě zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="5862307444128926510">Vítejte v prohlížeči Chromium</translation>
-<translation id="1622565934590470080">V tomto počítači již jsou nainstalovány novější verze prohlížeče Chromium a pluginu Chromium Frame. Jestliže tento software nefunguje, odinstalujte Chromium i Chromium Frame a zkuste to znovu.</translation>
 <translation id="7318036098707714271">Soubor nastavení je poškozený nebo neplatný.
 
 Chromium nemůže vaše nastavení obnovit.</translation>

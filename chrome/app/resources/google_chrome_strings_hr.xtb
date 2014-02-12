@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Pokreni aplikacije sustava Chrome</translation>
 <translation id="2370289711218562573">Google Chrome trenutno uvozi favorite/oznake.</translation>
 <translation id="2721687379934343312">Na Mac računalima, zaporke se spremaju u vaš Keychain, a drugi korisnici preglednika Chrome koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
-<translation id="1761870329818521071">Nije moguće instalirati istu verziju programa Google Chrome Frame koja je trenutačno pokrenuta. Zatvorite Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="3140883423282498090">Vaše izmjene stupit će na snagu sljedeći put kada se ponovo pokrene Google Chrome.</translation>
 <translation id="1773601347087397504">Pomoć za upotrebu OS-a Chrome</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Nevažeći argumenti. Google Chrome Frame ne može se instalirati u načinu spremno, a da se ne instalira i Google Chrome.</translation>
 <translation id="8684521613357479262">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Google Chrome ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, podesite sat sustava i osvježite ovu stranicu.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Na ovom računalu već postoji novija verzija programa Google Chrome i Google Chrome Frame. Ako softveri ne rade, deinstalirajte Google Chrome i Google Chrome Frame pa pokušajte ponovo.</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
 <translation id="7084448929020576097">Datoteka <ph name="FILE_NAME"/> zlonamjerna je i Chrome ju je blokirao.</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS"/>softverom otvorenog koda<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -148,7 +146,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
         Ako se time ne riješi problem, preporučujemo da ponovo odaberete tu opciju radi bolje izvedbe.</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
 <translation id="8547799825197623713">Pokretač aplikacija za Chromeov kanal Canary</translation>
-<translation id="5577648424992741236">Na ovom računalu već postoji novija verzija programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="6326175484149238433">Ukloni iz programa Chrome</translation>
 <translation id="2871893339301912279">Prijavljeni ste na Chrome!</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Iniciar aplicativos do Google Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está importando os Favoritos.</translation>
 <translation id="2721687379934343312">No Mac, as senhas são salvas em seu Keychain e podem ser acessadas ou sincronizadas por outros usuários do Google Chrome ao compartilhar esta conta SO X.</translation>
-<translation id="1761870329818521071">Não é possível instalar a mesma versão do Frame do Google Chrome que está em execução. Feche o Frame do Google Chrome e tente novamente.</translation>
 <translation id="6014844626092547096">Agora, você está conectado ao Google Chrome. A sincronização está desativada por seu administrador.</translation>
 <translation id="3140883423282498090">Suas alterações terão efeito na próxima vez que você reiniciar o Google Chrome.</translation>
 <translation id="1773601347087397504">Obter ajuda para usar o Chrome OS</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Argumentos inválidos. O Frame do Google Chrome não pode ser instalado em modo pronto sem a instalação do Google Chrome.</translation>
 <translation id="8684521613357479262">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Google Chrome não pode garantir que você esteja se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/> no momento. Isso está correto? Se não estiver, corrija o erro e atualize esta página..</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Este computador já possui versões mais recentes do Google Chrome e do Frame do Google Chrome. Caso o software não esteja funcionando, desinstale estes aplicativos e tente novamente.</translation>
 <translation id="3149510190863420837">Aplicativos do Google Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> é um arquivo malicioso e foi bloqueado pelo Google Chrome.</translation>
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
@@ -150,7 +148,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
         novamente para melhorar o desempenho.</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
 <translation id="8547799825197623713">Iniciador de aplicativos do Google Chrome no Canary</translation>
-<translation id="5577648424992741236">Este computador já tem uma versão mais recente do Frame do Google Chrome. Caso e o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="6326175484149238433">Remover do Google Chrome</translation>
 <translation id="2871893339301912279">Você fez login no Google Chrome.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>

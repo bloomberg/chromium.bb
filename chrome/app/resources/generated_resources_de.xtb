@@ -508,7 +508,7 @@
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="6347003977836730270">Dadurch wird das neue Übersetzer-Infofeld anstelle der Infoleiste angeboten.</translation>
 <translation id="2580170710466019930">Bitte warten Sie, bis die aktuellen Systemupdates von <ph name="PRODUCT_NAME"/> installiert wurden.</translation>
-<translation id="7428061718435085649">Zweite und dritte Kandidaten mit linker und rechter Umschalttaste auswählen</translation>
+<translation id="7428061718435085649">Zweite und dritte Kandidaten mit Shift (links und rechts) auswählen</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2630681426381349926">Verbindung zu WLAN herstellen</translation>
 <translation id="1764226536771329714">Beta</translation>
@@ -903,7 +903,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1725149567830788547">&amp;Steuerelemente anzeigen</translation>
 <translation id="8216351761227087153">Ansehen</translation>
 <translation id="3528033729920178817">Diese Seite verfolgt Ihren Standort.</translation>
-<translation id="1774367687019337077">Ermöglicht es Nutzern, die Tablet-Website anzufordern. Webinhalte werden oft für Tablet-Geräte optimiert. Wenn diese Option aktiviert ist, wird die Zeichenfolge für den User-Agent geändert, um ein Tablet-Gerät anzugeben. Anschließend werden auf dem aktuellen Tab für Tablets optimierte Webinhalte dargestellt.</translation>
+<translation id="1774367687019337077">Ermöglicht es Nutzern, die Tablet-Website anzufordern. Webinhalte werden oft für Tablet-Geräte optimiert. Wenn diese Option aktiviert ist, wird der String für den User-Agent geändert, um ein Tablet-Gerät anzugeben. Anschließend werden auf dem aktuellen Tab für Tablets optimierte Webinhalte dargestellt.</translation>
 <translation id="5518584115117143805">Zertifikat für E-Mail-Verschlüsselung</translation>
 <translation id="9203398526606335860">&amp;Profilerstellung aktiviert</translation>
 <translation id="2140377131548783177">WebRTC-Protokoll-ID <ph name="WEBRTC_LOG_ID"/></translation>
@@ -1008,7 +1008,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4992576607980257687">Mich fragen, wenn eine Website mittels systemexklusiver Meldungen auf MIDI-Geräte zuzugreifen versucht (empfohlen)</translation>
 <translation id="1407050882688520094">In Ihren gespeicherten Zertifikaten sind folgende Zertifizierungsstellen angegeben:</translation>
 <translation id="6063810760121779748">WebAudio deaktivieren</translation>
-<translation id="7070112048468833248">Unterstützung für Chromecast aktivieren</translation>
 <translation id="1051694321716046412">Nutzer anpassen...</translation>
 <translation id="4287689875748136217">Die Webseite kann nicht geladen werden, da der Server keine Daten gesendet hat.</translation>
 <translation id="1634788685286903402">Diesem Zertifikat zur Identifizierung von E-Mail-Nutzern vertrauen</translation>
@@ -1364,7 +1363,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="3118046075435288765">Server hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME"/> wird verschoben...</translation>
 <translation id="4697214168136963651"><ph name="URL"/> wurde blockiert.</translation>
-<translation id="5380103295189760361">Halten Sie die Strg-, Alt-, Umschalt- oder Suchen-Taste gedrückt, um die Tastaturkürzel für diese Modifikatoren anzuzeigen.</translation>
+<translation id="5380103295189760361">Halten Sie Strg, Alt, Shift oder Suchen gedrückt, um die Tastaturkürzel für diese Modifikatoren anzuzeigen.</translation>
 <translation id="2330659604907744348">Soll diese Erweiterung wirklich gelöscht werden?</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
@@ -1514,6 +1513,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="4803909571878637176">Deinstallieren</translation>
 <translation id="5209518306177824490">SHA-1-Fingerabdruck</translation>
 <translation id="2546283357679194313">Cookies und Websitedaten</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Netzwerkstatus:</translation>
 <translation id="4958444002117714549">Liste einblenden</translation>
 <translation id="4683290000467574211">Aktiviert experimentelle und übersichtlichere gehostete Apps</translation>
@@ -1932,7 +1932,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="6856526171412069413">Pinch-Skalierung aktivieren</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="5545687460454274870">Deaktiviert das Erkennen von Geräten im lokalen Netzwerk</translation>
-<translation id="4480995875255084924">Aktiviert die Oak-Baumansicht in Ash. Ermöglicht die Überprüfung der Fensterebenen- und Ansichtshierarchien und ihrer Eigenschaften. Drücken Sie Strg+Umschalt+F1, um darauf zuzugreifen.</translation>
+<translation id="4480995875255084924">Aktiviert die Oak-Baumansicht in Ash. Ermöglicht die Überprüfung der Fensterebenen- und Ansichtshierarchien und ihrer Eigenschaften. Drücken Sie Strg+Shift+F1, um darauf zuzugreifen.</translation>
 <translation id="6975147921678461939">Akku wird geladen: <ph name="PRECENTAGE"/> %</translation>
 <translation id="5453632173748266363">Kyrillisch</translation>
 <translation id="2482202334236329090">Auf dieser Webseite wurden Inhalte von <ph name="ELEMENTS_HOST_NAME"/> eingefügt, einem bekannten Verbreiter von Malware. Beim Besuch dieser Seite besteht jetzt die Gefahr, dass Sie Ihren Computer mit Malware infizieren.</translation>
@@ -1980,7 +1980,6 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="1546703252838446285">Für Ihr <ph name="ACCOUNT_EMAIL"/>-Konto verfügt die Erweiterung über folgende Berechtigungen:</translation>
 <translation id="6556866813142980365">Wiederholen</translation>
 <translation id="8824701697284169214">&amp;Seite hinzufügen...</translation>
-<translation id="6079113045416226952">Google Now auf Ihrem Desktop!</translation>
 <translation id="981210574958082923">Ergebnisse für Inlining in HistoryQuickProvider neu anordnen</translation>
 <translation id="6466988389784393586">&amp;Alle Lesezeichen öffnen</translation>
 <translation id="9193357432624119544">Fehlercode: <ph name="ERROR_NAME"/></translation>
@@ -2033,6 +2032,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="7014051144917845222">Der Versuch, eine Verbindung zwischen <ph name="PRODUCT_NAME"/> und <ph name="HOST_NAME"/> herzustellen, wurde abgelehnt. Möglicherweise ist die Website inaktiv oder Ihr Netzwerk ist nicht richtig konfiguriert.</translation>
 <translation id="2097372108957554726">Melden Sie sich in Chrome an, um neue Geräte zu registrieren.</translation>
 <translation id="4332213577120623185">Zum Abschluss des Kaufs sind weitere Informationen erforderlich.</translation>
+<translation id="9201305942933582053">Google Now für Chrome</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
 <translation id="6896758677409633944">Kopieren</translation>
 <translation id="8986362086234534611">Entfernen</translation>
@@ -2284,7 +2284,6 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="7341982465543599097">äußerst kurz</translation>
 <translation id="7314244761674113881">SOCKS-Host</translation>
 <translation id="4630590996962964935">Ungültiges Zeichen: $1</translation>
-<translation id="4089968049353467425">Überschreibt Low-End-Geräteoptimierungen</translation>
 <translation id="7460131386973988868">Aktiviert statische IP-Konfiguration. Möglicherweise funktioniert dies nicht.</translation>
 <translation id="7709980197120276510">Durch Klicken auf &quot;Weiter&quot; stimmen Sie den <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> und der <ph name="LEGAL_DOC_LINK_TEXT_5"/> zu.</translation>
 <translation id="1840000081943778840">SPDY/4 alpha 2 aktivieren</translation>
@@ -2457,7 +2456,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="222949136907494149"><ph name="URL"/> möchte den Standort Ihres Computers nutzen.</translation>
 <translation id="7654941827281939388">Dieses Konto wird bereits auf dem Computer verwendet.</translation>
 <translation id="204914487372604757">Verknüpfung erstellen</translation>
-<translation id="696036063053180184">3 Set (Keine Umschalttaste)</translation>
+<translation id="696036063053180184">3 Set (Kein Shift)</translation>
 <translation id="452785312504541111">Englisch in voller Breite</translation>
 <translation id="3966388904776714213">Audio-Player</translation>
 <translation id="4722735886719213187">Ausrichtung von TV-Gerät:</translation>
@@ -2551,6 +2550,7 @@ Ihre Details für die Kontoanmeldung sind veraltet.</translation>
 <translation id="2058632120927660550">Ein Fehler ist aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="539295039523818097">Es ist ein Problem mit Ihrem Mikrofon aufgetreten.</translation>
 <translation id="7595321929944401166">Das Plug-in wird nicht unterstützt.</translation>
+<translation id="2580093683987647761">Sie können Ihr kostenloses Ersatzladegerät telefonisch unter +44 0800 026 0613 in Großbritannien bzw. +1 866 628 1371 in den USA oder +1 866 628 1372 in Kanada anfordern.</translation>
 <translation id="4935613694514038624">Erste Anmeldung über Unternehmen wird vorbereitet...</translation>
 <translation id="3996912167543967198">Einstellungen werden zurückgesetzt...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2634,7 +2634,6 @@ Zur Nutzung dieser Funktion müssen Sie jedoch angemeldet sein.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-Verschlüsselung</translation>
 <translation id="7073704676847768330">Dies ist wahrscheinlich nicht die Website, nach der Sie suchen!</translation>
 <translation id="8477384620836102176">&amp;Allgemein</translation>
-<translation id="900093400474539372">Zusammenfügung von Ebenen</translation>
 <translation id="8059417245945632445">&amp;Geräte untersuchen</translation>
 <translation id="3391392691301057522">Alte PIN:</translation>
 <translation id="96421021576709873">WLAN-Netzwerk</translation>
@@ -3024,7 +3023,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="8793043992023823866">Importieren...</translation>
 <translation id="8106211421800660735">Kreditkartennummer</translation>
 <translation id="9159562891634783594">Registrierung nicht registrierter Cloud-Drucker über die Druckvorschau aktivieren</translation>
-<translation id="6244494354618367048">Low-End-Gerätemodus</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Betreuten Nutzer für dieses Gerät erstellen<ph name="LINK_END"/></translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="8986267729801483565">Downloadpfad:</translation>
@@ -3151,7 +3149,7 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="3433830597744061105">Konten verwalten</translation>
 <translation id="1156185823432343624">Lautstärke: Stumm</translation>
-<translation id="6251924700383757765">Datenschutzbestimmungen</translation>
+<translation id="6251924700383757765">Datenschutzerklärung</translation>
 <translation id="6264365405983206840">&amp;Alles auswählen</translation>
 <translation id="1179803038870941185"><ph name="URL"/> fordert die vollständige Kontrolle über Ihre MIDI-Geräte.</translation>
 <translation id="6615455863669487791">Zeigen</translation>
@@ -3299,8 +3297,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="5328205483471986666">Überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="2610780100389066815">Microsoft-Vertrauenslistensignatur</translation>
 <translation id="4535353504827549990">Zeitfenster ändern</translation>
-<translation id="1403594069892831402">Ebenen, die sonstige zusammengesetzte Inhalte überlagern, müssen ebenfalls zusammengefügt werden, um die korrekte Farbreihenfolge sicherzustellen. Diese Funktion aktiviert Blink, das mehrere RenderLayer-
-        Teilstrukturen zu einer zusammengesetzten Ebene verbindet, sodass eine unnötig große Anzahl an zusammengesetzten Ebenen vermieden werden kann.</translation>
 <translation id="2788575669734834343">Zertifikatdatei auswählen</translation>
 <translation id="8267453826113867474">Anstößige Wörter sperren</translation>
 <translation id="7959074893852789871">Die Datei enthielt mehrere Zertifikate, von denen einige nicht importiert wurden:</translation>
@@ -3769,7 +3765,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="8026964361287906498">(durch Unternehmensrichtlinie verwaltet)</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="7800518121066352902">&amp;Gegen den Uhrzeigersinn drehen</translation>
-<translation id="4531327707205555741">Aktiviert die Remote-Wiedergabe von Videos über Chromecast</translation>
 <translation id="345693547134384690">Bil&amp;d in neuem Tab öffnen</translation>
 <translation id="7422192691352527311">Einstellungen...</translation>
 <translation id="9004952710076978168">Benachrichtigung für unbekannten Drucker erhalten</translation>
@@ -3952,7 +3947,7 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="7361824946268431273">Der sichere, schnelle und einfache Computer</translation>
 <translation id="2099686503067610784">Serverzertifikat &quot;<ph name="CERTIFICATE_NAME"/>&quot; löschen?</translation>
 <translation id="9027603907212475920">Synchronisierung einrichten...</translation>
-<translation id="6873213799448839504">Zeichenfolge per Autocommit übergeben</translation>
+<translation id="6873213799448839504">String per Autocommit übergeben</translation>
 <translation id="7238585580608191973">SHA-256-Fingerabdruck</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="3588662957555259973">* Google Profile-Foto</translation>
@@ -4478,7 +4473,7 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="8498716162437226120">Bluetooth-Gerät hinzufügen</translation>
 <translation id="5614190747811328134">Nutzerhinweis</translation>
 <translation id="8677914765885474883">Achtung: Die Daten werden nicht aggregiert. Möglicherweise wird die Seite deshalb nur langsam geladen!</translation>
-<translation id="169515659049020177">Umschalttaste</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="3551117997325569860">Aktivieren Sie die Einstellung &quot;<ph name="USE_SHARED_PROXIES"/>&quot;, um den Proxy zu ändern.</translation>
 <translation id="8906421963862390172">&amp;Optionen für Rechtschreibprüfung</translation>
 <translation id="4061733942661196912">Wenn diese Option aktiviert ist, wird durch den Besuch einer Anmeldeseite für ein Google-Konto die Anzeige einer Infoleiste ausgelöst, über die Sie sich einfach mit dem Google-Konto anmelden können, das mit dem Profil verbunden ist. Die automatische Anmeldung ist, unabhängig von dieser Markierung, immer deaktiviert, wenn keine Verbindung zu einem Konto besteht.</translation>
@@ -4699,7 +4694,7 @@ Durch die Erstellung eines betreuten Nutzers wird kein Google-Konto erstellt und
 Nach Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellungen jederzeit und auf jedem Gerät unter www.chrome.com/manage verwalten. <ph name="BEGIN_LINK"/>Weitere Informationen zu betreuten Nutzern<ph name="END_LINK"/></translation>
 <translation id="9154418932169119429">Dieses Bild ist offline nicht verfügbar.</translation>
 <translation id="8940081510938872932">Ihr Computer erledigt momentan zu viele Aufgaben gleichzeitig. Bitte versuchen Sie es später erneut.</translation>
-<translation id="8848709220963126773">Moduswechsel mit Umschalttaste</translation>
+<translation id="8848709220963126773">Moduswechsel mit Shift</translation>
 <translation id="8336579025507394412">Isländische Tastatur</translation>
 <translation id="3703445029708071516">Synchronisierung eingegebener URLs aktivieren</translation>
 <translation id="8828933418460119530">DNS-Name</translation>
@@ -5067,7 +5062,7 @@ Sind Sie einverstanden?</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="9013587737291179248">Der betreute Nutzer konnte nicht importiert werden. Bitte überprüfen Sie Ihren Festplattenspeicherplatz und Ihre Berechtigungen und versuchen Sie es dann erneut.</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
-<translation id="4575703660920788003">Drücken Sie Umschalt+Alt, um das Tastaturlayout zu ändern.</translation>
+<translation id="4575703660920788003">Drücken Sie Shift+Alt, um das Tastaturlayout zu ändern.</translation>
 <translation id="7240120331469437312">Alternativer Name für den Antragsteller des Zertifikats</translation>
 <translation id="2669198762040460457">Sie haben einen falschen Nutzernamen oder ein falsches Passwort eingegeben.</translation>
 <translation id="5849626805825065073">Bei deaktivierter Option wird der Text bei beschleunigtem Aufbau mit Graustufen-Antialiasing anstelle von LCD-Subpixeln gerendert.</translation>

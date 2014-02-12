@@ -105,7 +105,6 @@
 <translation id="5358375970380395591">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Mulakan Chromium</translation>
 <translation id="9036189287518468038">Pelancar Apl Chromium</translation>
-<translation id="4886158514168859177">Komputer ini telah mempunyai versi Chromium Frame yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium Frame dan cuba lagi.</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak meluaskan, mengubah suai atau mengehadkan Syarat OS Chromium.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -169,7 +168,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> membuat perubahan tetapan yang sama dengan perisian hasad, jadi Chromium telah menyekatnya.</translation>
 <translation id="3155163173539279776">Lancarkan Semula Chromium</translation>
 <translation id="2966088006374919794">Chromium perlu melancarkan aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Tidak boleh memasang versi Chromium Frame yang sama dengan yang sedang dijalankan. Sila tutup Chromium Frame dan cuba lagi.</translation>
 <translation id="2558235863893655150">Adakah anda mahu Chromium menyimpan kata laluan anda?</translation>
 <translation id="1231416733874080281">Paparkan menu Chromium</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON"/>dimulakan semula<ph name="END_BUTTON"/>)</translation>
@@ -208,7 +206,6 @@ Meneruskan juga log masuk akan menggabungkan maklumat Chromium seperti penanda h
 <translation id="374481098568514319">Komputer ini sudah mempunyai versi komponen Chromium yang lebih baharu. Sila gunakan pemasang yang lebih baharu.</translation>
 <translation id="6240281849816458190">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang belum lagi sah. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut boleh dipercayai. Chromium tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan kepada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan jam sistem anda dan kemudian, muatkan semula halaman ini.</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
-<translation id="1622565934590470080">Komputer ini telah mempunyai versi Chromium dan Chromium Frame yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan Chromium Frame dan cuba lagi.</translation>
 <translation id="7318036098707714271">Fail pilihan anda rosak atau tidak sah.
 
 Chromium tidak dapat mengembalikan tetapan anda.</translation>

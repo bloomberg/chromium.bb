@@ -1009,7 +1009,6 @@
 <translation id="4992576607980257687">Vprašaj me, ko želi spletno mesto uporabiti sporočila sysex za dostop do naprav MIDI (priporočeno)</translation>
 <translation id="1407050882688520094">V datoteki so potrdila, ki identificirajo te overitelje potrdil:</translation>
 <translation id="6063810760121779748">Onemogoči WebAudio</translation>
-<translation id="7070112048468833248">Omogoči podporo za Chromecast</translation>
 <translation id="1051694321716046412">Prilagodi uporabnika ...</translation>
 <translation id="4287689875748136217">Spletne strani ni mogoče naložiti, ker strežnik ni poslal podatkov.</translation>
 <translation id="1634788685286903402">Zaupaj temu potrdilu za prepoznavanje uporabnikov e-pošte.</translation>
@@ -1512,6 +1511,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="4803909571878637176">Odstranitev</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Piškotki in podatki o spletnih mestih</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Stanje omrežja:</translation>
 <translation id="4958444002117714549">Razširi seznam</translation>
 <translation id="4683290000467574211">Omogoči poskusno, učinkovitejšo izkušnjo gostujoče aplikacije.</translation>
@@ -1996,7 +1996,6 @@ Javni eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="1546703252838446285">V računu <ph name="ACCOUNT_EMAIL"/> lahko zahteva:</translation>
 <translation id="6556866813142980365">Uveljavi</translation>
 <translation id="8824701697284169214">Dodaj str&amp;an ...</translation>
-<translation id="6079113045416226952">Asistent Google na vašem namizju.</translation>
 <translation id="981210574958082923">Razporedi rezultate za vstavljanje v »HistoryQuickProvider«</translation>
 <translation id="6466988389784393586">&amp;Odpri vse zaznamke</translation>
 <translation id="9193357432624119544">Koda napake: <ph name="ERROR_NAME"/></translation>
@@ -2050,6 +2049,7 @@ Javni eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7014051144917845222">Poskus povezave brskalnika <ph name="PRODUCT_NAME"/> z gostiteljem <ph name="HOST_NAME"/> je bil zavrnjen. Spletno mesto morda ne deluje ali vaše omrežje ni pravilno nastavljeno.</translation>
 <translation id="2097372108957554726">Za registracijo novih naprav se morate prijaviti v Chrome</translation>
 <translation id="4332213577120623185">Za dokončanje tega nakupa potrebujemo več informacij.</translation>
+<translation id="9201305942933582053">Asistent Google za Chrome.</translation>
 <translation id="1708338024780164500">(Neaktivno)</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="8986362086234534611">Pozabi</translation>
@@ -2301,7 +2301,6 @@ Javni eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7341982465543599097">izjemno kratka</translation>
 <translation id="7314244761674113881">Gostitelj SOCKS</translation>
 <translation id="4630590996962964935">Neveljaven znak: $1</translation>
-<translation id="4089968049353467425">Preglasi optimizacije za manj zmogljive naprave.</translation>
 <translation id="7460131386973988868">Omogoča konfiguracijo statičnega IP-ja. Morda ne bo delovalo.</translation>
 <translation id="7709980197120276510">Če kliknete »Nadaljuj«, se strinjate s pogoji, ki jih določajo <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> in <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Omogočanje SPDY/4 alpha 2</translation>
@@ -2573,6 +2572,7 @@ Javni eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2058632120927660550">Prišlo je do napake. Preverite tiskalnik in poskusite znova.</translation>
 <translation id="539295039523818097">Težava z mikrofonom.</translation>
 <translation id="7595321929944401166">Ta vtičnik ni podprt.</translation>
+<translation id="2580093683987647761">Pokličite (866) 628-1371 (Združene države), (866) 628-1372 (Kanada) ali 0800 026 0613 (Združeno kraljestvo) in zahtevajte brezplačni nadomestni polnilnik.</translation>
 <translation id="4935613694514038624">Priprava na prvo prijavo podjetja ...</translation>
 <translation id="3996912167543967198">Ponastavljanje ...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2663,7 +2663,6 @@ Za uporabo te funkcije se morate prijaviti.</translation>
 <translation id="5434065355175441495">PKCS #1 s šifriranjem RSA</translation>
 <translation id="7073704676847768330">To verjetno ni spletno mesto, ki ga iščete!</translation>
 <translation id="8477384620836102176">&amp;Splošno</translation>
-<translation id="900093400474539372">Stiskanje slojev</translation>
 <translation id="8059417245945632445">&amp;Pregled naprav</translation>
 <translation id="3391392691301057522">Stari PIN:</translation>
 <translation id="96421021576709873">Omrežje Wi-Fi</translation>
@@ -3057,7 +3056,6 @@ Ta in druga navodila lahko preberete v e-poštnem sporočilu, poslanem na <ph na
 <translation id="8793043992023823866">Uvažanje ...</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
 <translation id="9159562891634783594">Omogoči registriranje neregistriranih tiskalnikov v oblaku v predogledu tiskanja.</translation>
-<translation id="6244494354618367048">Način za manj zmogljive naprave.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Ustvarite nadzorovanega uporabnika<ph name="LINK_END"/> za to napravo.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="8986267729801483565">Mesto za prenos:</translation>
@@ -3335,8 +3333,6 @@ Ta in druga navodila lahko preberete v e-poštnem sporočilu, poslanem na <ph na
 <translation id="5328205483471986666">Preverite internetno povezavo.</translation>
 <translation id="2610780100389066815">Podpisovanje Microsoftovega seznama zaupanja</translation>
 <translation id="4535353504827549990">Premakni časovno okno</translation>
-<translation id="1403594069892831402">Sloji, ki prekrivajo drugo sestavljeno vsebino, morajo biti prav tako sestavljeni, da se zagotovi pravilen vrstni red barv. Ta funkcija omogoča mehanizmu za upodabljanje Blink, da uporabi funkcijo barvanja več poddreves slojev upodabljanja RenderLayer
-        v en sestavljeni sloj, da se tako izognemo nepotrebno velikemu številu sestavljenih slojev.</translation>
 <translation id="2788575669734834343">Izberite datoteko s potrdilom</translation>
 <translation id="8267453826113867474">Blokiraj žaljive besede</translation>
 <translation id="7959074893852789871">Datoteka je vsebovala več potrdil in nekatera niso bila uvožena:</translation>
@@ -3806,7 +3802,6 @@ Ta in druga navodila lahko preberete v e-poštnem sporočilu, poslanem na <ph na
 <translation id="8026964361287906498">(Skupino vtičnikov upravlja pravilnik podjetja)</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="7800518121066352902">Zasukaj v o&amp;bratni smeri urinega kazalca</translation>
-<translation id="4531327707205555741">Omogoči oddaljeno predvajanje videoposnetkov s Chromecastom.</translation>
 <translation id="345693547134384690">Odpri &amp;sliko v novem zavihku</translation>
 <translation id="7422192691352527311">Nastavitve ...</translation>
 <translation id="9004952710076978168">Prejeto obvestilo o neznanem tiskalniku.</translation>
@@ -4619,7 +4614,7 @@ izračun časa do napolnjenosti</translation>
 <translation id="3695919544155087829">Vnesite geslo, uporabljeno za šifriranje te datoteke s potrdilom.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Namestitev vtičnika <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Google Diapozitivi</translation>
+<translation id="2943400156390503548">Predstavitve</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> deluje samo na namizju.</translation>
 <translation id="5117930984404104619">Spremljanje obnašanja drugih razširitev, vključno z obiskanimi URL-ji</translation>
 <translation id="33022249435934718">Kode za dostop GDI</translation>
@@ -5144,7 +5139,7 @@ Ali sprejmete?</translation>
 <translation id="445923051607553918">Pridružite se omrežju Wi-Fi</translation>
 <translation id="4215898373199266584">Pst! Naslednjič vam lahko pride prav način brez beleženja zgodovine (<ph name="INCOGNITO_MODE_SHORTCUT"/>).</translation>
 <translation id="420676372321767680">Omogoči dekodiranje brez sestavljanja.</translation>
-<translation id="2925966894897775835">Google Preglednice</translation>
+<translation id="2925966894897775835">Preglednice</translation>
 <translation id="756631359159530168">Omogoči upodabljanje vsebine strani po posamezni sličici, ko je sestavljanje omogočeno.</translation>
 <translation id="3349155901412833452">Strani seznama kandidatov oštevilčite s tipkama »,« in ».«.</translation>
 <translation id="7336748286991450492">Prijavite se na <ph name="SIGN_IN_LINK"/>, da vam bodo zaznamki povsod na voljo.</translation>

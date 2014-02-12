@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">啟用 Chromium</translation>
 <translation id="9036189287518468038">Chromium 應用程式啟動器</translation>
-<translation id="4886158514168859177">這台電腦已安裝較新的 Chromium 頁框版本。如果軟體無法順利運作，請解除安裝 Chromium 頁框，然後再試一次。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN"/> 要求您詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> 會擅自變更某些設定 (類似部分惡意軟體的行為模式)，因此已遭到 Chromium 封鎖。</translation>
 <translation id="3155163173539279776">重新啟動 Chromium</translation>
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
-<translation id="6287463253129672858">無法安裝這個版本的 Chromium 頁框，因為目前正在執行相同版本。請關閉 Chromium 頁框，然後再試一次。</translation>
 <translation id="2558235863893655150">您希望 Chromium 儲存密碼嗎？</translation>
 <translation id="1231416733874080281">顯示 Chromium 選單</translation>
 <translation id="5772805321386874569">(必須<ph name="BEGIN_BUTTON"/>重新啟動<ph name="END_BUTTON"/> Chromium)</translation>
@@ -209,7 +207,6 @@
 <translation id="374481098568514319">這台電腦已經有更新版本的 Chromium 元件，請使用較新的安裝程式。</translation>
 <translation id="6240281849816458190">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了無效的憑證。我們沒有足夠資訊判斷憑證是否可信，因此 Chromium 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
-<translation id="1622565934590470080">這台電腦已安裝較新的 Chromium 和 Chromium 頁框版本。如果軟體無法順利運作，請解除安裝 Chromium 和 Chromium 頁框，然後再試一次。</translation>
 <translation id="7318036098707714271">您的偏好設定檔案已毀損或無效。
 
 Chromium 無法復原您的設定。</translation>

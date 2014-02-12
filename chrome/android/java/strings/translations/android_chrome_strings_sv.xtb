@@ -16,6 +16,7 @@
 Du loggar in med ett hanterat konto, vilket innebär att administratören kontrollerar din Chrome-profil. Din Chrome-data kommer att knytas permanent till det här kontot. Om du kopplar ifrån det här kontot raderas din lokala Chrome-data.</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="624558823898732418">Översättningsspråk: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">Välj certifikat för autentisering</translation>
 <translation id="3896036286668839683">Certifikatvisare</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
@@ -27,6 +28,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
+<translation id="907015151729920253">Smartkort</translation>
 <translation id="3136378934686431938">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="3063601790762993062">Spara video</translation>
 <translation id="6042308850641462728">Mer</translation>

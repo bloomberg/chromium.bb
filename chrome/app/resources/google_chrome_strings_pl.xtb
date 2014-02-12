@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Uruchom aplikacje Chrome</translation>
 <translation id="2370289711218562573">Google Chrome rozpoczął importowanie Ulubionych/Zakładek.</translation>
 <translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
-<translation id="1761870329818521071">Nie można zainstalować tej samej wersji wtyczki Google Chrome Frame, która jest obecnie uruchomiona. Zamknij wtyczkę Google Chrome Frame i spróbuj ponownie.</translation>
 <translation id="6014844626092547096">Jesteś zalogowany w Chrome. Administrator wyłączył synchronizację.</translation>
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
 <translation id="1773601347087397504">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chrome</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Nieprawidłowe argumenty. Wtyczki Google Chrome Frame nie można zainstalować w trybie gotowości bez instalowania przeglądarki Google Chrome.</translation>
 <translation id="8684521613357479262">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, ustaw aktualną godzinę w systemie i odśwież stronę.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Na tym komputerze są już zainstalowane nowsze wersje Google Chrome i Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i Google Chrome Frame, a następnie spróbuj ponownie.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
 <translation id="7084448929020576097">Plik <ph name="FILE_NAME"/> jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -150,7 +148,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
         by poprawić wydajność.</translation>
 <translation id="61852838583753520">Aktualizuj system operacyjny &amp;Chrome</translation>
 <translation id="8547799825197623713">Program uruchamiający aplikacje Chrome w wersji poglądowej</translation>
-<translation id="5577648424992741236">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome Frame, a następnie spróbuj ponownie.</translation>
 <translation id="6326175484149238433">Usuń z Chrome</translation>
 <translation id="2871893339301912279">Jesteś zalogowany w Chrome.</translation>
 <translation id="7161904924553537242">Google Chrome – witamy</translation>

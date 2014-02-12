@@ -97,7 +97,7 @@
 <translation id="2670531586141364277">네트워크를 연결하려면 '<ph name="NAME"/>' 활성화가 필수입니다.</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
 <translation id="2825619548187458965">서가</translation>
-<translation id="2614835198358683673">크롬북이 켜져 있으면 충전되지 않을 수 있습니다. 공식 충전기를 사용해보세요.</translation>
+<translation id="2614835198358683673">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다. 공식 충전기를 사용해보세요.</translation>
 <translation id="1895658205118569222">종료</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="8681498213689260554">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
@@ -152,7 +152,7 @@
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="7005812687360380971">실패</translation>
 <translation id="882279321799040148">클릭하여 보기</translation>
-<translation id="1753067873202720523">크롬북이 켜져 있으면 충전되지 않을 수 있습니다.</translation>
+<translation id="1753067873202720523">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다.</translation>
 <translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="6981982820502123353">접근성</translation>
@@ -193,7 +193,7 @@
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>
-<translation id="747833637904845037">크롬북이 외부 디스플레이에 연결되어 있는 동안은 덮개를 닫아도 전원이 켜진 채로 유지됩니다.</translation>
+<translation id="747833637904845037">Chromebook이 외부 디스플레이에 연결되어 있는 동안은 덮개를 닫아도 전원이 켜진 채로 유지됩니다.</translation>
 <translation id="3050422059534974565">CAPS LOCK이 켜져 있습니다.
 취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>

@@ -994,7 +994,6 @@
 <translation id="4992576607980257687">ถามฉันเมื่อไซต์ต้องการที่จะใช้ข้อความเฉพาะของระบบในการเข้าถึงอุปกรณ์ MIDI (แนะนำ)</translation>
 <translation id="1407050882688520094">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของผู้ออกใบรับรองต่อไปนี้:</translation>
 <translation id="6063810760121779748">ปิดใช้งาน WebAudio</translation>
-<translation id="7070112048468833248">เปิดใช้การสนับสนุน Chromecast</translation>
 <translation id="1051694321716046412">กำหนดค่าผู้ใช้...</translation>
 <translation id="4287689875748136217">โหลดหน้าเว็บไม่ได้ เนื่องจากเซิร์ฟเวอร์ไม่ส่งข้อมูล</translation>
 <translation id="1634788685286903402">เชื่อถือใบรับรองนี้ในการระบุตัวตนของผู้ใช้อีเมล</translation>
@@ -1501,6 +1500,7 @@
 <translation id="4803909571878637176">การถอนการติดตั้ง</translation>
 <translation id="5209518306177824490">ลายนิ้วมือ SHA-1</translation>
 <translation id="2546283357679194313">คุกกี้และข้อมูลไซต์</translation>
+<translation id="4926150172344704583">แคนาดา</translation>
 <translation id="7447657194129453603">สถานะเครือข่าย:</translation>
 <translation id="4958444002117714549">ขยายรายการ</translation>
 <translation id="4683290000467574211">เปิดใช้งานประสบการณ์แอปที่โฮสต์แบบทดลองที่มีประสิทธิภาพยิ่งขึ้น</translation>
@@ -1969,7 +1969,6 @@
 <translation id="1546703252838446285">ในบัญชี <ph name="ACCOUNT_EMAIL"/> ของคุณ ส่วนขยายสามารถ:</translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="8824701697284169214">เพิ่มหน้&amp;า...</translation>
-<translation id="6079113045416226952">Google Now บนเดสก์ท็อป!</translation>
 <translation id="981210574958082923">จัดลำดับผลการค้นหาใหม่สำหรับการใส่ในบรรทัดใน HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;เปิดบุ๊กมาร์กทั้งหมด</translation>
 <translation id="9193357432624119544">รหัสข้อผิดพลาด: <ph name="ERROR_NAME"/></translation>
@@ -2022,6 +2021,7 @@
 <translation id="7014051144917845222">ความพยายามในการเชื่อมต่อของ <ph name="PRODUCT_NAME"/> ไปยัง <ph name="HOST_NAME"/> ถูกปฏิเสธ เว็บไซต์อาจล่ม หรือเครือข่ายของคุณอาจได้รับการกำหนดค่าไว้ไม่ถูกต้อง</translation>
 <translation id="2097372108957554726">คุณต้องลงชื่อเข้าใช้ Chrome เพื่อลงทะเบียนอุปกรณ์ใหม่</translation>
 <translation id="4332213577120623185">ต้องใช้ข้อมูลเพิ่มเติมเพื่อทำการซื้อนี้ให้เสร็จสมบูรณ์</translation>
+<translation id="9201305942933582053">Google Now สำหรับ Chrome!</translation>
 <translation id="1708338024780164500">(ไม่ใช้งาน)</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
 <translation id="8986362086234534611">ไม่จำ</translation>
@@ -2271,7 +2271,6 @@
 <translation id="7341982465543599097">สั้นมาก</translation>
 <translation id="7314244761674113881">โฮสต์ SOCKS</translation>
 <translation id="4630590996962964935">อักขระไม่ถูกต้อง: $1</translation>
-<translation id="4089968049353467425">แทนที่การเพิ่มประสิทธิภาพอุปกรณ์โลว์เอนด์</translation>
 <translation id="7460131386973988868">เปิดใช้งานการกำหนดค่า IP สแตติก (อาจใช้งานไม่ได้)</translation>
 <translation id="7709980197120276510">การคลิก &quot;ดำเนินการต่อ&quot; หมายถึงคุณตกลงตาม <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> และ <ph name="LEGAL_DOC_LINK_TEXT_5"/></translation>
 <translation id="1840000081943778840">เปิดใช้งาน SPDY/4 alpha 2</translation>
@@ -2537,6 +2536,7 @@
 <translation id="2058632120927660550">เกิดข้อผิดพลาด โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
 <translation id="539295039523818097">เกิดปัญหากับไมโครโฟนของคุณ</translation>
 <translation id="7595321929944401166">ไม่สนับสนุนปลั๊กอินนี้</translation>
+<translation id="2580093683987647761">โปรดโทรไปที่ (866) 628-1371 (สหรัฐฯ), (866) 628-1372 (แคนาดา) หรือ 0800 026 0613 (สหราชอาณาจักร) เพื่อขอที่ชาร์จสำหรับเปลี่ยนทดแทนฟรี</translation>
 <translation id="4935613694514038624">กำลังเตรียมการเข้าสู่ระบบขององค์กรเป็นครั้งแรก...</translation>
 <translation id="3996912167543967198">กำลังรีเซ็ต...</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
@@ -2620,7 +2620,6 @@
 <translation id="5434065355175441495">PKCS #1 การเข้ารหัส RSA</translation>
 <translation id="7073704676847768330">นี่่อาจจะไม่ใช่เว็บไซต์ที่คุณกำลังมองหา!</translation>
 <translation id="8477384620836102176">&amp;ทั่วไป</translation>
-<translation id="900093400474539372">การบีบเลเยอร์</translation>
 <translation id="8059417245945632445">&amp;ตรวจสอบอุปกรณ์</translation>
 <translation id="3391392691301057522">PIN เก่า:</translation>
 <translation id="96421021576709873">เครือข่าย WiFi</translation>
@@ -3012,7 +3011,6 @@
 <translation id="8793043992023823866">กำลังนำเข้า...</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="9159562891634783594">เปิดใช้การลงทะเบียนเครื่องพิมพ์แบบคลาวด์ที่ไม่ได้ลงทะเบียนจากหน้าตัวอย่างก่อนพิมพ์</translation>
-<translation id="6244494354618367048">โหมดอุปกรณ์โลว์เอนด์</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>สร้างผู้ใช้ภายใต้การดูแล<ph name="LINK_END"/> สำหรับอุปกรณ์นี้</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="8986267729801483565">ตำแหน่งไฟล์ที่ดาวน์โหลด:</translation>
@@ -3291,8 +3289,6 @@
 <translation id="5328205483471986666">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2610780100389066815">การรับรองรายการที่เชื่อถือของ Microsoft</translation>
 <translation id="4535353504827549990">เปลี่ยนหน้าต่างเวลา</translation>
-<translation id="1403594069892831402">จำเป็นต้องผสมเลเยอร์ที่ทับซ้อนเนื้อหาแบบผสมอื่นๆ ด้วย เพื่อให้แน่ใจว่ามีลำดับสีที่ถูกต้อง คุณลักษณะนี้ช่วยให้ Blink สามารถลงสีหลายทรีย่อยของ RenderLayer 
-        ลงในเลเยอร์แบบผสมเลเยอร์เดียวได้ เราจึงสามารถหลีกเลี่ยงเลเยอร์แบบผสมที่มีจำนวนมากโดยที่ไม่จำเป็นได้</translation>
 <translation id="2788575669734834343">เลือกไฟล์ใบรับรอง </translation>
 <translation id="8267453826113867474">ปิดกั้นคำที่ไม่เหมาะสม</translation>
 <translation id="7959074893852789871">ไฟล์มีใบรับรองหลายใบ แต่มีบางรายการที่ไม่ได้นำเข้า:</translation>
@@ -3761,7 +3757,6 @@
 <translation id="8026964361287906498">(จัดการโดยนโยบายองค์กร)</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="7800518121066352902">หมุน&amp;ทวนเข็มนาฬิกา</translation>
-<translation id="4531327707205555741">เปิดใช้การเล่นวิดีโอจากระยะไกลบน Chromecast</translation>
 <translation id="345693547134384690">เปิด&amp;รูปภาพในแท็บใหม่</translation>
 <translation id="7422192691352527311">ค่ากำหนด...</translation>
 <translation id="9004952710076978168">ได้รับการแจ้งเตือนสำหรับเครื่องพิมพ์ที่ไม่รู้จัก</translation>

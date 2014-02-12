@@ -29,7 +29,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2896252579017640304">Starta Chrome-appar</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="2721687379934343312">På Mac sparas lösenord på nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
-<translation id="1761870329818521071">Det går inte att installera samma version av Google Chrome Frame som redan körs. Stäng Google Chrome Frame och försök igen.</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
 <translation id="3140883423282498090">Ändringarna börjar gälla nästa gång du startar Google Chrome.</translation>
 <translation id="1773601347087397504">Få hjälp med att använda Chrome OS</translation>
@@ -81,7 +80,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="7451721381978275812">Ogiltiga argument. Google Chrome Frame kan inte installeras i klarläge utan att Google Chrome också installeras.</translation>
 <translation id="8684521613357479262">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte är giltigt ännu. Det finns ingen information som anger om certifikatet är tillförlitligt. Chromium kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du korrigera klockan och uppdatera sidan.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Datorn har redan en mer aktuell version av Google Chrome och Google Chrome Frame. Om programmet inte fungerar avinstallerar du både Google Chrome och Google Chrome Frame och försöker igen.</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> är skadlig och har blockerats av Chrome.</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS"/>öppen källkod<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -157,7 +155,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
         här alternativet igen så att funktionaliteten förbättras.</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Startprogrammet för appar i Chrome Canary</translation>
-<translation id="5577648424992741236">Det finns redan en senare version av Google Chrome Frame på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome Frame och försöker igen.</translation>
 <translation id="6326175484149238433">Ta bort från Chrome</translation>
 <translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>

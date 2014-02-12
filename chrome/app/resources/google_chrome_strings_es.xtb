@@ -29,7 +29,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2896252579017640304">Iniciar aplicaciones de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome está importando Favoritos/Marcadores.</translation>
 <translation id="2721687379934343312">En los equipos Mac, las contraseñas se guardan en tu llavero y otros usuarios de Chrome que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
-<translation id="1761870329818521071">No se puede instalar la misma versión de Google Chrome Frame que se está ejecutando en este momento. Cierra Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="6014844626092547096">Has iniciado sesión en Chrome. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="3140883423282498090">Los cambios se aplicarán la próxima vez que reinicies Google Chrome.</translation>
 <translation id="1773601347087397504">Obtener ayuda para utilizar Chrome OS</translation>
@@ -81,7 +80,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="7451721381978275812">Los argumentos no son válidos. Google Chrome Frame no se puede instalar en el modo listo sin instalar también Google Chrome.</translation>
 <translation id="8684521613357479262">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado que aún no es válido, ya que no disponemos de información que indique si el certificado es fiable. Google Chrome no puede garantizar de manera fiable que estés estableciendo comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca la(s) <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? En caso contrario, debes corregir el reloj de tu sistema y, a continuación, actualizar la página.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Este ordenador tiene instalada una versión más reciente de Google Chrome y Google Chrome Frame. Si el software no funciona, desinstala Google Chrome y Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> es un archivo malicioso y Chrome lo ha bloqueado.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS"/>software libre<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
@@ -157,7 +155,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
         opción para conseguir un mejor rendimiento.</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
-<translation id="5577648424992741236">Este ordenador tiene instalada una versión más reciente de Google Chrome Frame. Si no funciona el software, desinstala Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="6326175484149238433">Eliminar de Chrome</translation>
 <translation id="2871893339301912279">Has iniciado sesión en Chrome</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>

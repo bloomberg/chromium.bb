@@ -27,7 +27,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2896252579017640304">Chrome-apps starten</translation>
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="2721687379934343312">Wachtwoorden worden op de Mac opgeslagen in je sleutelhanger en kunnen worden geopend of gesynchroniseerd door andere Chrome-gebruikers die dit OS X-account delen.</translation>
-<translation id="1761870329818521071">Kan dezelfde Google Chrome Frame-versie die momenteel actief is, niet installeren. Sluit Google Chrome Frame en probeer het opnieuw.</translation>
 <translation id="6014844626092547096">Je bent nu ingelogd bij Chrome! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="3140883423282498090">Je wijzigingen worden toegepast als je Google Chrome opnieuw start.</translation>
 <translation id="1773601347087397504">Hulp bij het gebruik van Chrome OS</translation>
@@ -79,7 +78,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7451721381978275812">Ongeldige argumenten. Google Chrome Frame kan niet in de ready-modus worden geïnstalleerd zonder dat Google Chrome wordt geïnstalleerd.</translation>
 <translation id="8684521613357479262">Je probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat kan worden vertrouwd. Google Chrome kan niet volledig garanderen dat je communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet je de klok van het systeem aanpassen en deze pagina vernieuwen.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijder je Google Chrome en Google Chrome Frame en probeer je het opnieuw.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> is schadelijk en is door Chrome geblokkeerd.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -155,7 +153,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
         aan te vinken voor verbeterde prestaties.</translation>
 <translation id="61852838583753520">&amp;Chrome OS bijwerken</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
-<translation id="5577648424992741236">Deze computer beschikt al over een nieuwere versie van Google Chrome Frame. Als de software niet werkt, verwijder je Google Chrome Frame en probeer je het opnieuw.</translation>
 <translation id="6326175484149238433">Verwijderen uit Chrome</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>

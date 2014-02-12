@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Iniciar o Chromium</translation>
 <translation id="9036189287518468038">Iniciador de Aplicações do Chromium</translation>
-<translation id="4886158514168859177">Este computador já tem uma versão mais recente do Chromium Frame. Se o software não estiver a funcionar, desinstale o Chromium Frame e tente novamente.</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> obriga-o a ler e aceitar os seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, modificam nem limitam os Termos do SO Chromium.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -168,7 +167,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="1902135785017821799">O ficheiro <ph name="FILE_NAME"/> efetua alterações às definições de forma semelhante a alguns programas maliciosos, como tal, o Chromium bloqueou-o.</translation>
 <translation id="3155163173539279776">Reiniciar o Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Não é possível instalar a mesma versão do Chromium Frame que está atualmente em execução. Feche o Chromium Frame e tente novamente.</translation>
 <translation id="2558235863893655150">Pretende que o Chromium guarde a sua palavra-passe?</translation>
 <translation id="1231416733874080281">Mostrar o menu Chromium</translation>
 <translation id="5772805321386874569">(é necessário <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> o Chromium)</translation>
@@ -206,7 +204,6 @@ Se continuar com este início de sessão, as informações do Chromium, como mar
 <translation id="374481098568514319">Este computador já tem uma versão mais recente dos componentes de Chromium. Utilize um instalador mais recente.</translation>
 <translation id="6240281849816458190">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Chromium não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o relógio do sistema e atualizar esta página.</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
-<translation id="1622565934590470080">Este computador já tem uma versão mais recente do Chromium e Chromium Frame. Se o software não estiver a funcionar, desinstale o Chromium e o Chromium Frame e tente novamente.</translation>
 <translation id="7318036098707714271">O ficheiro de preferências está danificado ou não é válido.
 
 O Chromium não consegue recuperar as suas definições.</translation>

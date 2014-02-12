@@ -29,7 +29,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2896252579017640304">Zagon aplikacij za Chrome</translation>
 <translation id="2370289711218562573">Google Chrome zdaj uvaža Priljubljene/Zaznamke.</translation>
 <translation id="2721687379934343312">V računalnikih Mac so gesla shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chroma, s katerimi si delite ta račun v sistemu OS X.</translation>
-<translation id="1761870329818521071">Ni mogoče namestiti različice programa Google Chrome Frame, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome Frame in poskusite znova.</translation>
 <translation id="6014844626092547096">Zdaj ste prijavljeni v Chrome. Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="3140883423282498090">Spremembe bodo začele veljati ob naslednjem zagonu Google Chroma.</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
@@ -81,7 +80,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="7451721381978275812">Neveljavni argumenti. Vtičnika Google Chrome Frame ni mogoče namestiti v načinu pripravljenosti brez namestitve Google Chroma.</translation>
 <translation id="8684521613357479262">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki še ni veljavno. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je potrdilu mogoče zaupati. Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in z ne napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, pravilno nastavite sistemsko uro in osvežite stran.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">V tem računalniku je že novejša različica Google Chroma in vtičnika Google Chrome Frame. Če programska oprema ne deluje, odstranite Google Chrome in vtičnik Google Chrome Frame ter poskusite znova.</translation>
 <translation id="3149510190863420837">Aplikacije za Chrome</translation>
 <translation id="7084448929020576097">Datoteka <ph name="FILE_NAME"/> je zlonamerna, zato jo je Chrome blokiral.</translation>
 <translation id="6368958679917195344">Sistem Chrome OS uporablja dodatno <ph name="BEGIN_LINK_CROS_OSS"/>odprtokodno programsko opremo<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -157,7 +155,6 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
         znova izberete.</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
 <translation id="8547799825197623713">Delovna različica Chromovega zaganjalnika aplikacij</translation>
-<translation id="5577648424992741236">V tem računalniku je že nameščena novejša različica vtičnika Google Chrome Frame. Če programska oprema ne deluje, odstranite Google Chrome Frame in poskusite znova.</translation>
 <translation id="6326175484149238433">Odstrani iz Chroma</translation>
 <translation id="2871893339301912279">Zdaj ste prijavljeni v Chrome.</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>

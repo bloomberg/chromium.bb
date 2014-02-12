@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME"/>. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Avvia Chromium</translation>
 <translation id="9036189287518468038">Avvio applicazioni di Chromium</translation>
-<translation id="4886158514168859177">Questo computer ha già una versione più recente di Chromium Frame. Se il software non funziona, disinstalla Chromium Frame e riprova.</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> richiede di leggere e accettare i seguenti Termini di servizio prima di utilizzare il dispositivo. Questi termini non ampliano, modificano o limitano i Termini di Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="1902135785017821799">Il file <ph name="FILE_NAME"/> causa la modifica di impostazioni in modo simile ad alcuni malware, pertanto Chromium lo ha bloccato.</translation>
 <translation id="3155163173539279776">Riavvia Chromium</translation>
 <translation id="2966088006374919794">Chromium deve avviare un'applicazione esterna per poter gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Impossibile installare una versione di Chromium Frame uguale a quella in esecuzione. Chiudi Chromium Frame e riprova.</translation>
 <translation id="2558235863893655150">Desideri che Chromium salvi la tua password?</translation>
 <translation id="1231416733874080281">Consente di visualizzare il menu Chromium</translation>
 <translation id="5772805321386874569">(è necessario <ph name="BEGIN_BUTTON"/>riavviare<ph name="END_BUTTON"/> Chromium)</translation>
@@ -209,7 +207,6 @@ Se esegui comunque l'accesso, le informazioni di Chromium come Preferiti, cronol
 <translation id="374481098568514319">Questo computer ha già una versione più recente dei componenti di Chromium. Utilizza un programma di installazione più recente.</translation>
 <translation id="6240281849816458190">Hai tentato di visitare &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato non ancora valido. Non sono disponibili informazioni che consentano di stabilire se il certificato può essere considerato attendibile. Chromium non può garantire con certezza che tu stia comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un malintenzionato. Al momento l'orologio del tuo computer è impostato su <ph name="CURRENT_TIME"/>. È giusto? In caso contrario, dovresti correggere l'orologio di sistema e aggiornare la pagina.</translation>
 <translation id="5862307444128926510">Benvenuto in Chromium</translation>
-<translation id="1622565934590470080">Questo computer ha già una versione più recente di Chromium e Chromium Frame. Se il software non funziona, disinstalla Chromium e Chromium Frame e riprova.</translation>
 <translation id="7318036098707714271">Il file delle preferenze è danneggiato o non valido.
 
 Chromium non è in grado di recuperare le impostazioni.</translation>

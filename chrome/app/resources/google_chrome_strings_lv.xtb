@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Palaist Chrome lietotnes</translation>
 <translation id="2370289711218562573">Google Chrome pašlaik importē Izlasi/Grāmatzīmes.</translation>
 <translation id="2721687379934343312">Operētājsistēmā Mac paroles tiek saglabātas sistēmā Keychain un citi Chrome lietotāji, kuri kopīgo šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
-<translation id="1761870329818521071">Nevar instalēt to pašu Google Chrome Frame versiju, kas jau darbojas. Aizveriet Google Chrome Frame un mēģiniet vēlreiz.</translation>
 <translation id="6014844626092547096">Jūs esat pierakstījies pārlūkā Chrome. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
 <translation id="3140883423282498090">Jūsu izmaiņas stāsies spēkā nākamajā reizē, kad atkārtoti palaidīsiet pārlūku Google Chrome.</translation>
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">Nederīgi argumenti. Google Chrome Frame nevar instalēt gatavības režīmā, vienlaikus neinstalējot arī Google Chrome.</translation>
 <translation id="8684521613357479262">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, taču serveris uzrādīja sertifikātu, kas pagaidām nav derīgs. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir uzticams. Google Chrome nevar uzticami garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, noregulējiet savas sistēmas pulksteni un atsvaidziniet šo lapu.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Šim datoram jau ir instalēta jaunākā Google Chrome un Google Chrome Frame versija. Ja programmatūra nedarbojas, atinstalējiet gan Google Chrome, gan Google Chrome Frame un mēģiniet vēlreiz.</translation>
 <translation id="3149510190863420837">Chrome lietotnes</translation>
 <translation id="7084448929020576097">Fails <ph name="FILE_NAME"/> ir ļaunprātīgs, un Chrome to bloķēja.</translation>
 <translation id="6368958679917195344">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -153,7 +151,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
         lai uzlabotu veiktspēju.</translation>
 <translation id="61852838583753520">Atjaunināt &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome lietotņu palaišanas programma kanālam Canary</translation>
-<translation id="5577648424992741236">Šim datoram jau ir instalēta jaunākā Google Chrome Frame versija. Ja programmatūra nedarbojas, atinstalējiet Google Chrome Frame un mēģiniet vēlreiz.</translation>
 <translation id="6326175484149238433">Noņemt no pārlūka Chrome</translation>
 <translation id="2871893339301912279">Esat pierakstījies pārlūkā Chrome!</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>

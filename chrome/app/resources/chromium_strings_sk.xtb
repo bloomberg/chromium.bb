@@ -108,7 +108,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME"/>. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Spustiť prehliadač Chromium</translation>
 <translation id="9036189287518468038">Spúšťač aplikácií Chromium</translation>
-<translation id="4886158514168859177">Tento počítač už obsahuje novšiu verziu aplikácie Chromium Frame. Ak softvér nefunguje, odinštalujte aplikáciu Chromium Frame a skúste to znova.</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="95514773681268843">Stránky <ph name="DOMAIN"/> vyžadujú, aby ste si pred používaním tohto zariadenia prečítali nasledujúce Zmluvné podmienky a vyjadrili s nimi súhlas. Tieto zmluvné podmienky nerozširujú, neupravujú ani neobmedzujú Zmluvné podmienky systému Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -172,7 +171,6 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="1902135785017821799">Súbor <ph name="FILE_NAME"/> mení nastavenia podobne ako určitý škodlivý softvér, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="3155163173539279776">Znova spustiť prehliadač Chromium</translation>
 <translation id="2966088006374919794">Systém Chromium potrebuje na spracovanie odkazov typu <ph name="SCHEME"/> spustiť externú aplikáciu. Typ požadovaného odkazu: <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Nemôžete nainštalovať rovnakú verziu aplikácie Chromium Frame ako je tá, ktorá je momentálne spustená. Zatvorte aplikáciu Chromium Frame a skúste to znova.</translation>
 <translation id="2558235863893655150">Chcete, aby prehliadač Chromium uložil vaše heslo?</translation>
 <translation id="1231416733874080281">Zobraziť ponuku Chromium</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON"/>reštartovanie<ph name="END_BUTTON"/> prehliadača Chromium)</translation>
@@ -210,7 +208,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chromium, ako
 <translation id="374481098568514319">V tomto počítači sa už používa novšia verzia komponentov aplikácie Chromium. Použite novší inštalátor.</translation>
 <translation id="6240281849816458190">Pokúšali ste sa dostať na doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý ešte nie je platný. K dispozícii nie sú žiadne informácie o tom, či je tento certifikát dôveryhodný alebo nie. Aplikácia Chromium nemôže zaručiť, že komunikujete s doménou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie s útočníkom. Hodiny vo vašom počítači sú momentálne nastavené na čas <ph name="CURRENT_TIME"/>. Je to v poriadku? Ak nie, mali by ste hodiny systému opraviť a túto stránku obnoviť.</translation>
 <translation id="5862307444128926510">Vitajte v prehliadači Chromium</translation>
-<translation id="1622565934590470080">Tento počítač už obsahuje novšiu verziu prehliadača Chromium s aplikáciou Chromium Frame. Ak softvér nefunguje, odinštalujte prehliadač Chromium aj aplikáciu Chromium Frame a skúste to znova.</translation>
 <translation id="7318036098707714271">Súbor predvolieb je poškodený alebo neplatný. 
 
 Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>

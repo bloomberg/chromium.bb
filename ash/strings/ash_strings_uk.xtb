@@ -137,7 +137,7 @@
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
 <translation id="3784455785234192852">Заблокувати</translation>
-<translation id="2805756323405976993">Програми</translation>
+<translation id="2805756323405976993">Додатки</translation>
 <translation id="1512064327686280138">Помилка активації</translation>
 <translation id="5097002363526479830">Не вдалося під’єднатися до мережі &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
@@ -209,7 +209,7 @@
 <translation id="6636709850131805001">Нерозпізнаний стан</translation>
 <translation id="3573179567135747900">Повернутися до мови &quot;<ph name="FROM_LOCALE"/>&quot; (потрібно перезавантажитися)</translation>
 <translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT"/></translation>
-<translation id="5045002648206642691">Налаштування Диска Google...</translation>
+<translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
 Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE"/>%)</translation>

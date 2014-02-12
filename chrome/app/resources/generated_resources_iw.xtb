@@ -1005,7 +1005,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="4992576607980257687">‏שאל אותי כאשר אתר רוצה להשתמש בהודעות בלעדיות של המערכת כדי לגשת למכשירי MIDI (מומלץ)</translation>
 <translation id="1407050882688520094">יש לך אישורים בקובץ המזהים רשויות אישורים אלה:</translation>
 <translation id="6063810760121779748">‏השבת WebAudio</translation>
-<translation id="7070112048468833248">‏הפעל תמיכה ב-Chromecast</translation>
 <translation id="1051694321716046412">התאמה אישית של משתמש...</translation>
 <translation id="4287689875748136217">לא ניתן להעלות את דף האינטרנט מכיוון שהשרת לא שלח נתונים.</translation>
 <translation id="1634788685286903402">בטח באישור זה לזיהוי משתמשי דוא&quot;ל:</translation>
@@ -1344,7 +1343,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8412498037462710569">אני מאשר שאיני רוצה לקבל מטען חלופי בחינם.</translation>
 <translation id="3368922792935385530">מחובר</translation>
 <translation id="5431473096922271583">אנחנו רוצים לבדוק אם אתה משתמש באחד מהמטענים המקוריים.</translation>
-<translation id="3478477114335130296">חלק מההגדרות שלך שונו ללא ידיעתך.</translation>
+<translation id="3478477114335130296">יתכן שחלק מההגדרות שלך שונו ללא ידיעתך.</translation>
 <translation id="3866443872548686097">מדיית השחזור שלך מוכנה. ניתן להסיר אותה מהמערכת.</translation>
 <translation id="6824564591481349393">העתק כתובת &amp;דוא&quot;ל</translation>
 <translation id="907148966137935206">אל תרשה לאף אתר להציג חלונות קופצים (מומלץ)</translation>
@@ -1511,6 +1510,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="4803909571878637176">מסיר התקנה</translation>
 <translation id="5209518306177824490">‏טביעת אצבע SHA-1</translation>
 <translation id="2546283357679194313">‏נתוני אתר וקובצי Cookie</translation>
+<translation id="4926150172344704583">קנדה</translation>
 <translation id="7447657194129453603">סטטוס הרשת:</translation>
 <translation id="4958444002117714549">הרחב רשימה</translation>
 <translation id="4683290000467574211">מפעיל חוויה ניסיונית וחלקה יותר של יישום מתארח.</translation>
@@ -1979,7 +1979,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1546703252838446285">בחשבון <ph name="ACCOUNT_EMAIL"/> שלך, הוא יכול:</translation>
 <translation id="6556866813142980365">בצע מחדש</translation>
 <translation id="8824701697284169214">הוסף &amp;דף...</translation>
-<translation id="6079113045416226952">‏Google Now בשולחן העבודה שלך!</translation>
 <translation id="981210574958082923">‏סדר מחדש את התוצאות עבור הטבעה ב-‏HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;פתח את כל הסימניות</translation>
 <translation id="9193357432624119544">קוד שגיאה: <ph name="ERROR_NAME"/></translation>
@@ -2034,6 +2033,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="7014051144917845222">הניסיון של <ph name="PRODUCT_NAME"/> להתחבר אל <ph name="HOST_NAME"/> נדחה. ייתכן שהאתר מושבת או שתצורת הרשת שלך אינה מוגדרת כהלכה.</translation>
 <translation id="2097372108957554726">‏עליך להיכנס מחדש ל-Chrome כדי לרשום מכשירים חדשים</translation>
 <translation id="4332213577120623185">נדרש מידע נוסף להשלמת הרכישה.</translation>
+<translation id="9201305942933582053">‏Google Now עבור Chrome!</translation>
 <translation id="1708338024780164500">(לא פעיל)</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="8986362086234534611">שכח</translation>
@@ -2285,7 +2285,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="7341982465543599097">קצרה מאוד</translation>
 <translation id="7314244761674113881">‏מארח SOCKS</translation>
 <translation id="4630590996962964935">תו לא חוקי: $ 1</translation>
-<translation id="4089968049353467425">עוקף אופטימיזציה של מכשירים בסיסיים.</translation>
 <translation id="7460131386973988868">‏הופך תצורת IP סטטי לפעיל. ייתכן שלא יעבוד.</translation>
 <translation id="7709980197120276510">בלחיצה על 'המשך', אתה מביע הסכמה ל<ph name="LEGAL_DOC_LINK_TEXT_1"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_2"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_3"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, ו<ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">‏הפעל את SPDY/4 alpha 2</translation>
@@ -2552,6 +2551,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="2058632120927660550">אירעה שגיאה. בדוק את המדפסת ונסה שוב.</translation>
 <translation id="539295039523818097">אירעה בעיה במיקרופון.</translation>
 <translation id="7595321929944401166">פלאגין זה אינו נתמך.</translation>
+<translation id="2580093683987647761">‏התקשר למספר ‎(866) 628-1371 (ארה&quot;ב), ‎(866) 628-1372 (קנדה) או ‎0800 026 0613 (בריטניה) כדי לבקש מטען חלופי בחינם.</translation>
 <translation id="4935613694514038624">‏מתכונן לכניסה הראשונה ל-Enterprise...</translation>
 <translation id="3996912167543967198">מאפס...</translation>
 <translation id="4479639480957787382">אתרנט</translation>
@@ -2644,7 +2644,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="5434065355175441495">‏הצפנת RSA של PKCS #1</translation>
 <translation id="7073704676847768330">כנראה שזה לא האתר שאתה מחפש!</translation>
 <translation id="8477384620836102176">&amp;כללי</translation>
-<translation id="900093400474539372">דחיסת שכבות</translation>
 <translation id="8059417245945632445">&amp;בדוק מכשירים</translation>
 <translation id="3391392691301057522">‏PIN ישן:</translation>
 <translation id="96421021576709873">‏רשת Wi-Fi</translation>
@@ -3034,7 +3033,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8793043992023823866">מייבא...</translation>
 <translation id="8106211421800660735">מספר כרטיס אשראי</translation>
 <translation id="9159562891634783594">הפעל רישום של מדפסות בענן שאינן רשומות דרך התצוגה המקדימה לפני הדפסה.</translation>
-<translation id="6244494354618367048">מצב למכשיר בסיסי.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>צור משתמש בפיקוח<ph name="LINK_END"/> עבור מכשיר זה.</translation>
 <translation id="2872961005593481000">כיבוי</translation>
 <translation id="8986267729801483565">מקום ההורדה:</translation>
@@ -3309,8 +3307,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="5328205483471986666">בדוק את חיבור האינטרנט.</translation>
 <translation id="2610780100389066815">‏חתימת רשימת יחסי אמון של Microsoft</translation>
 <translation id="4535353504827549990">החלף חלון זמן</translation>
-<translation id="1403594069892831402">‏שכבות החופפות לתוכן מורכב אחר צריכות גם הן להיות מורכבות, על מנת להבטיח סדר צביעה נכון. התכונה הזו מאפשרת ל-Blink לצבוע תתי-עצים מרובים של
-        RenderLayer בשכבה מורכבת אחת כדי לחסוך מספר גדול של שכבות מורכבות ומיותרות.</translation>
 <translation id="2788575669734834343">בחר קובץ אישור </translation>
 <translation id="8267453826113867474">חסום מילים פוגעניות</translation>
 <translation id="7959074893852789871">הקובץ הכיל אישורים מרובים, חלקם לא יובאו:</translation>
@@ -3779,7 +3775,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8026964361287906498">(מנוהל על ידי מדיניות הארגון)</translation>
 <translation id="8261506727792406068">מחק</translation>
 <translation id="7800518121066352902">סובב נ&amp;גד כיוון השעון</translation>
-<translation id="4531327707205555741">‏אפשר הפעלה של סרטונים מרחוק ב-Chromecast.</translation>
 <translation id="345693547134384690">פתח &amp;תמונה בכרטיסייה חדשה</translation>
 <translation id="7422192691352527311">העדפות...</translation>
 <translation id="9004952710076978168">התקבלה התראה עבור מדפסת בלתי ידועה.</translation>

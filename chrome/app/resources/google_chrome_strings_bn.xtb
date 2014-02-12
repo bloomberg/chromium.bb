@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome অ্যাপ্লিকেশনগুলি লঞ্চ করুন</translation>
 <translation id="2370289711218562573">Google Chrome এখন প্রিয়/বুকমার্কগুলি আমদানি করছে৷</translation>
 <translation id="2721687379934343312">Mac  এ, পাসওয়ার্ডগুলি আপনার Keychain এ সঞ্চিত হয় এবং অন্য Chrome ব্যবহারকারীরা এটি অ্যাকসেস বা সিঙ্ক করতে পারবে এই  OS X অ্যাকাউন্টটি ভাগ করে।</translation>
-<translation id="1761870329818521071">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ সাইন ইন করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="3140883423282498090">আপনি পরবর্তী সময়ে যখন Google Chrome পুনরায় লঞ্চ করবেন আপনার পরিবর্তনগুলি কার্যকর হবে৷</translation>
 <translation id="1773601347087397504">Chrome OS ব্যবহার করে সাহায্য নিন</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">অকার্যকর আর্গুমেন্ট৷ Google Chrome ইনস্টল না করে Google Chrome Frame প্রস্তুত মোডে ইনস্টল করতে পারা যায়না৷</translation>
 <translation id="8684521613357479262">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt; এ পৌঁছানোর চেষ্টা করেছেন, কিন্তু সার্ভারটি একটি শংসাপত্র উপস্থাপন করেছে যা এখন পর্যন্ত বৈধ নয়৷ সেইরকম কোনো তথ্য পাওয়া যায়নি যা নির্দেশ করবে যে এই শংসাপত্রটিকে বিশ্বাস করা যাবে কি না৷ Google Chrome নির্ভরযোগ্যভাবে নিশ্চয়তা দিতে পারে না যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; এর সঙ্গেই যোগাযোগ করছেন এবং কোনো আক্রমণকারীর সাথে নয়৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/> এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার সিস্টেমের ঘড়িটিকে ঠিক করা উচিত ও তারপরে এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome এবং Google Chrome ফ্রেমের অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে তবে দয়া করে Google Chrome এবং Google Chrome ফ্রেম দু'টিই আনইনস্টল করে আবার চেষ্টা করুন৷</translation>
 <translation id="3149510190863420837">Chrome অ্যাপ্লিকেশানগুলি</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> ক্ষতিকারক, এবং Chrome এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS"/>মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_CROS_OSS"/> দিয়ে তৈরি৷</translation>
@@ -152,7 +150,6 @@
         যদি এটি সমস্যাটির সমাধান করে, তাহলে উন্নত কার্য সম্পাদনার জন্য পুনরায় এই বিকল্পটি নির্বাচন করা আমরা সুপারিশ করি৷</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="8547799825197623713">Chrome অ্যাপ্লিকেশান লঞ্চার Canary</translation>
-<translation id="5577648424992741236">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
 <translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>

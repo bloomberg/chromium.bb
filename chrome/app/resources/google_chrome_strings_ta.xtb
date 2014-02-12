@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome பயன்பாடுகளைத் துவக்கு</translation>
 <translation id="2370289711218562573">விருப்பங்கள்/புக்மார்க்ஸ் ஐ Google Chrome இப்போது இறக்குமதி செய்கிறது.</translation>
 <translation id="2721687379934343312">Mac இல்,உங்கள் Keychain இல் கடவுச்சொல்கள் சேம்க்கப்படும் மேலும் இந்த OS X கணக்குகளை பகிரும் Chrome பயனர்களால் அணுகவோ ஒத்திசைக்கவோ முடுயும்.</translation>
-<translation id="1761870329818521071">நடப்பில் இயங்கிக்கொண்டிருக்கும் அதே Google Chrome Frame பதிப்பை நிறுவ முடியாது. Google Chrome Frame ஐ மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="6014844626092547096">தற்போது Chrome இல் உள்நுழைந்துள்ளீர்கள்! உங்கள் நிர்வாகியால் ஒத்திசைவு முடக்கப்பட்டுள்ளது.</translation>
 <translation id="3140883423282498090">அடுத்த முறை Google Chrome ஐ மீண்டும் தொடங்கியவுடன் உங்கள் மாற்றங்கள் செயல்படும்.</translation>
 <translation id="1773601347087397504">Chrome OS ஐப் பயன்படுத்தி உதவி பெறுக</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">செல்லாத பண்புக்கூறுகள். Google Chrome ஐ நிறுவாமல், Google Chrome சட்டகத்தைத் தயார் பயன்முறையில் நிறுவ முடியாது.</translation>
 <translation id="8684521613357479262">நீங்கள் &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ஐ அடைய முயற்சித்தீர்கள், ஆனால் சேவையகம் இதுவரை செல்லுபடியாகாத சான்றிதழை வழங்கியுள்ளது. இந்தச் சான்றிதழை நம்பகமானதா என்பதைக் குறிக்கும் வகையில் எந்த தகவலும் இல்லை. நீங்கள் நம்பத்தக்க &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; உடன் தான் தொடர்புகொள்கிறீர்கள், மேலும் தீங்கிழைப்பவருடன் அல்ல என்பதை Google Chrome உறுதிப்படுத்தாது. உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_TIME"/> நேரத்தில் அமைக்கப்பட்டுள்ளது. இது சரியா? இல்லையெனில் பிழையைச் சரிசெய்து பக்கத்தைப் புதுப்பிக்கவும்.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Google Chrome மற்றும் Google Chrome சட்டகத்தின் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome மற்றும் Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்து, மீண்டும் முயற்சி செய்க.</translation>
 <translation id="3149510190863420837">Chrome பயன்பாடுகள்</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> தீங்கிழைக்கக்கூடியது, இதை Chrome தடுத்துள்ளது.</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS"/>ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS"/> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
@@ -146,7 +144,6 @@
         இது சிக்கலைத் தீர்க்கவில்லை எனில், மேம்பட்ட செயல்பாட்டிற்கு மீண்டும் இந்த விருப்பத்தைத் தேர்ந்தெடுக்கப் பரிந்துரைக்கிறோம்.</translation>
 <translation id="61852838583753520">&amp;Chrome OS ஐப் புதுப்பி</translation>
 <translation id="8547799825197623713">Chrome பயன்பாட்டுத் துவக்கி Canary</translation>
-<translation id="5577648424992741236">Google Chrome சட்டகத்தின் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்து மீண்டும் பதிவிறக்குக.</translation>
 <translation id="6326175484149238433">Chrome இலிருந்து அகற்று</translation>
 <translation id="2871893339301912279">Chrome இல் உள்நுழைந்துள்ளீர்கள்!</translation>
 <translation id="7161904924553537242">Google Chrome க்கு வருக</translation>

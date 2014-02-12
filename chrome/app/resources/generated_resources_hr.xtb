@@ -997,7 +997,6 @@
 <translation id="4992576607980257687">Pitaj me kada web-lokacija želi upotrijebiti posebne sistemske poruke za pristup MIDI uređajima (preporučeno)</translation>
 <translation id="1407050882688520094">Imate certifikate u arhivi koji identificiraju ova tijela za izdavanje certifikata:</translation>
 <translation id="6063810760121779748">Onemogući WebAudio</translation>
-<translation id="7070112048468833248">Omogući podršku za Chromecast</translation>
 <translation id="1051694321716046412">Prilagodi korisnika...</translation>
 <translation id="4287689875748136217">Nije moguće učitati web-stranicu jer poslužitelj nije poslao podatke.</translation>
 <translation id="1634788685286903402">Vjeruj ovom certifikatu za identificiranje korisnika e-pošte.</translation>
@@ -1336,7 +1335,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8412498037462710569">Potvrđujem da ne želim primiti besplatni zamjenski punjač.</translation>
 <translation id="3368922792935385530">Spojeno</translation>
 <translation id="5431473096922271583">Provjerite upotrebljavate li jedan od originalnih punjača.</translation>
-<translation id="3478477114335130296">Neke postavke možda su se promijenile bez vašeg znanja.</translation>
+<translation id="3478477114335130296">Neke su se postavke možda promijenile bez vašeg znanja.</translation>
 <translation id="3866443872548686097">Medij za oporavak je spreman. Možete ga ukloniti iz sustava.</translation>
 <translation id="6824564591481349393">Kopiraj &amp;adresu e-pošte</translation>
 <translation id="907148966137935206">Nemoj dopustiti nijednoj web-lokaciji da prikazuje skočne prozore (preporučuje se)</translation>
@@ -1506,6 +1505,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="4803909571878637176">Deinstaliranje</translation>
 <translation id="5209518306177824490">SHA-1 otisak prsta</translation>
 <translation id="2546283357679194313">Kolačići i podaci o web-lokacijama</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Status mreže:</translation>
 <translation id="4958444002117714549">Proširi popis</translation>
 <translation id="4683290000467574211">Omogućuje eksperimentalne pojednostavljene hostirane aplikacije.</translation>
@@ -1974,7 +1974,6 @@ Vaši su podaci za prijavu na račun zastarjeli.</translation>
 <translation id="1546703252838446285">Na vašem računu <ph name="ACCOUNT_EMAIL"/> proširenje može:</translation>
 <translation id="6556866813142980365">Ponovi</translation>
 <translation id="8824701697284169214">Dodavanje stra&amp;nice...</translation>
-<translation id="6079113045416226952">Google Now na vašoj radnoj površini!</translation>
 <translation id="981210574958082923">Promijeni redoslijed rezultata za umetanje u značajci HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Otvaranje svih oznaka</translation>
 <translation id="9193357432624119544">Kôd pogreške: <ph name="ERROR_NAME"/></translation>
@@ -2027,6 +2026,7 @@ Vaši su podaci za prijavu na račun zastarjeli.</translation>
 <translation id="7014051144917845222">Pokušaj povezivanja proizvoda <ph name="PRODUCT_NAME"/> s hostom <ph name="HOST_NAME"/> odbijen je. Web-lokacija možda je neaktivna ili vaša mreža nije ispravno konfigurirana.</translation>
 <translation id="2097372108957554726">Morate se prijaviti na Chrome da biste registrirali nove uređaje</translation>
 <translation id="4332213577120623185">Za dovršavanje ove kupnje potrebno je više podataka.</translation>
+<translation id="9201305942933582053">Google Now za Chrome!</translation>
 <translation id="1708338024780164500">(Neaktivno)</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="8986362086234534611">Zaboravi</translation>
@@ -2278,7 +2278,6 @@ Vaši su podaci za prijavu na račun zastarjeli.</translation>
 <translation id="7341982465543599097">iznimno kratko</translation>
 <translation id="7314244761674113881">SOCKS host</translation>
 <translation id="4630590996962964935">Neispravan znak: $1</translation>
-<translation id="4089968049353467425">Nadjačava optimizacije za slabije uređaje.</translation>
 <translation id="7460131386973988868">Omogućuje statičku IP konfiguraciju. Možda neće raditi.</translation>
 <translation id="7709980197120276510">Klikom na Nastavi prihvaćate sljedeće: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> i <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Omogućavanje protokola SPDY/4 alpha 2</translation>
@@ -2545,6 +2544,7 @@ Vaši su podaci za prijavu na račun zastarjeli.</translation>
 <translation id="2058632120927660550">Dogodila se pogreška. Provjerite pisač i pokušajte ponovo.</translation>
 <translation id="539295039523818097">Pojavio se problem s vašim mikrofonom.</translation>
 <translation id="7595321929944401166">Ovaj dodatak nije podržan.</translation>
+<translation id="2580093683987647761">Nazovite broj (866) 628-1371 (SAD), (866) 628-1372 (Kanada) ili 0800 026 0613 (UK) da biste zatražili besplatni zamjenski punjač.</translation>
 <translation id="4935613694514038624">Priprema za prvu prijavu tvrtke...</translation>
 <translation id="3996912167543967198">Vraćanje na zadano...</translation>
 <translation id="4479639480957787382">Eternet</translation>
@@ -2637,7 +2637,6 @@ Morate biti prijavljeni da biste upotrebljavali tu značajku.</translation>
 <translation id="5434065355175441495">PKCS br. 1 RSA enkripcija</translation>
 <translation id="7073704676847768330">Ovo vjerojatno nije web lokacija koju tražite!</translation>
 <translation id="8477384620836102176">&amp;Općenito</translation>
-<translation id="900093400474539372">Sažimanje slojeva</translation>
 <translation id="8059417245945632445">&amp;Provjeri uređaje</translation>
 <translation id="3391392691301057522">Stari PIN:</translation>
 <translation id="96421021576709873">Wi-Fi mreža</translation>
@@ -3029,7 +3028,6 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="8793043992023823866">Uvoz...</translation>
 <translation id="8106211421800660735">Broj kreditne kartice</translation>
 <translation id="9159562891634783594">Omogući registriranje neregistriranih pisača u oblaku iz pregleda ispisa.</translation>
-<translation id="6244494354618367048">Način rada slabijeg uređaja.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Izradite nadziranog korisnika<ph name="LINK_END"/> za ovaj uređaj.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="8986267729801483565">Lokacija za preuzimanje:</translation>
@@ -3306,8 +3304,6 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="5328205483471986666">Provjerite internetsku vezu.</translation>
 <translation id="2610780100389066815">Microsoftovo potpisivanje pouzdanog popisa</translation>
 <translation id="4535353504827549990">Prozor za pomicanje vremena</translation>
-<translation id="1403594069892831402">Slojevi koji preklapaju drugi sastavljeni sadržaj također se trebaju sastaviti radi ispravne narudžbe boje. Ta značajka omogućuje značajci Blink bojanje više podstabala značajke RenderLayer
-        u jedan sastavljeni sloj tako da možemo izbjeći nepotrebno velik broj sastavljenih slojeva.</translation>
 <translation id="2788575669734834343">Odabir datoteke certifikata</translation>
 <translation id="8267453826113867474">Blokiraj uvredljive riječi</translation>
 <translation id="7959074893852789871">Datoteka je sadržavala više certifikata, a neki od njih nisu uvezeni:</translation>
@@ -3776,7 +3772,6 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="8026964361287906498">(Upravlja politika tvrtke)</translation>
 <translation id="8261506727792406068">Obriši</translation>
 <translation id="7800518121066352902">Zakreni u smjeru suprotnom od &amp;kretanja kazaljke na satu</translation>
-<translation id="4531327707205555741">Omogućuje se daljinska reprodukcija videozapisa na Chromecastu.</translation>
 <translation id="345693547134384690">Otvori &amp;sliku u novoj &amp;kartici</translation>
 <translation id="7422192691352527311">Postavke...</translation>
 <translation id="9004952710076978168">Primljena je obavijest za nepoznati pisač.</translation>

@@ -104,7 +104,6 @@
 <translation id="5358375970380395591">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Uruchom Chromium</translation>
 <translation id="9036189287518468038">Program uruchamiający aplikacje Chromium</translation>
-<translation id="4886158514168859177">Na tym komputerze jest już zainstalowana nowsza wersja Chromium Frame. Jeśli program nie działa, odinstaluj Chromium Frame i spróbuj ponownie.</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
 <translation id="95514773681268843">Domena <ph name="DOMAIN"/> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z systemu Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -168,7 +167,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="1902135785017821799">Plik <ph name="FILE_NAME"/> zmienia ustawienia podobnie jak niektóre złośliwe oprogramowanie, więc został zablokowany przez Chromium.</translation>
 <translation id="3155163173539279776">Ponownie uruchom Chromium</translation>
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Nie można zainstalować tej samej wersji Chromium Frame, która jest obecnie uruchomiona. Zamknij Chromium Frame i spróbuj ponownie.</translation>
 <translation id="2558235863893655150">Czy chcesz, by Chromium zapisał hasło?</translation>
 <translation id="1231416733874080281">Pokaż menu Chromium</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON"/>ponownego uruchomienia<ph name="END_BUTTON"/> Chromium)</translation>
@@ -207,7 +205,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chromium, takie jak zakładki, h
 <translation id="374481098568514319">Na tym komputerze są już składniki Chromium w nowszej wersji. Użyj nowszego instalatora.</translation>
 <translation id="6240281849816458190">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Chromium nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, ustaw aktualną godzinę w systemie i odśwież stronę.</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
-<translation id="1622565934590470080">Na tym komputerze są już zainstalowane nowsze wersje Chromium i Chromium Frame. Jeśli oprogramowanie nie działa, odinstaluj Chromium i Chromium Frame, a następnie spróbuj ponownie.</translation>
 <translation id="7318036098707714271">Plik ustawień jest uszkodzony lub nieprawidłowy.
 
 Chromium nie może odzyskać ustawień.</translation>

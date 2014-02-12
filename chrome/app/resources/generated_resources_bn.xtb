@@ -939,7 +939,7 @@
 <translation id="1464724975715666883">১টি ত্রুটি৷</translation>
 <translation id="7864539943188674973">ব্লুটুথ অক্ষম করুন</translation>
 <translation id="1486096554574027028">পাসওয়ার্ড অনুসন্ধান করুন</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> শনাক্ত করেছে যে আপনাকে না জানিয়ে আপনার ব্রাউজারের সেটিংস পরিবর্তন করা হয়েছে৷ আপনি কি সেগুলিকে তাদের আসল ডিফল্টে রিসেট করতে চান?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> শনাক্ত করেছে যে হয়ত আপনার ব্রাউজারের সেটিংস আপনাকে না জানিয়ে পরিবর্তন করা হয়েছে৷ আপনি কি সেগুলিকে আগের মতন ডিফল্ট সেটিংস এ রিসেট করতে চান?</translation>
 <translation id="1836938920852968258">NTP 'অন্যান্য ডিভাইসেস' মেনু  অক্ষম করুন৷</translation>
 <translation id="3825863595139017598">মঙ্গোলিয়ান কীবোর্ড</translation>
 <translation id="8184538546369750125">বিশ্বব্যাপী ডিফল্ট ব্যবহার করুন (মঞ্জুরি দিন)</translation>
@@ -1012,7 +1012,6 @@
 <translation id="4992576607980257687">যখন কোনো সাইট MIDI ডিভাইসগুলি অ্যাক্সেস করার জন্য সিস্টেমের বিশিষ্ট বার্তাগুলি ব্যবহার করতে চায় তখন আমাকে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="1407050882688520094">আপনার কাছে এই শংসাপত্র কর্তৃপক্ষদের শনাক্ত করে এমন ফাইলগুলির শংসাপত্রগুলি রয়েছে৷</translation>
 <translation id="6063810760121779748">WebAudio অক্ষম করুন</translation>
-<translation id="7070112048468833248">Chromecast এর সহায়তা সক্ষম করুন</translation>
 <translation id="1051694321716046412">ব্যবহারকারীকে কাস্টমাইজ করুন...</translation>
 <translation id="4287689875748136217">ওয়েবপৃষ্ঠা লোড করতে অসমর্থ হয়েছে কারণ সার্ভার কোন ডেটা পাঠায়নি৷</translation>
 <translation id="1634788685286903402">এই শংসাপত্রটি ইমেল ব্যবহারকারীদের সনাক্ত করতে বিশ্বাস করুন৷</translation>
@@ -1351,7 +1350,7 @@
 <translation id="8412498037462710569">আমি নিশ্চিত করছি যে আমি বিনামূল্যের রিপ্লেসমেন্ট চার্জার চাই না।</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="5431473096922271583">আমরা চাই আপনি আসল চার্জার ব্যবহার করছেন কিনা তা চেক করুন।</translation>
-<translation id="3478477114335130296">আপনার সেটিংস কিছু আপনাকে  না জানিয়েই পরিবর্তন করা হয়ে থাকতে পারে।</translation>
+<translation id="3478477114335130296">আপনার কিছু সেটিংস আপনাকে না জানিয়েই হয়ত পরিবর্তন করা হয়েছে।</translation>
 <translation id="3866443872548686097">আপনার পুনরুদ্ধার মিডিয়াটি প্রস্তুত৷ আপনি এটি আপনার সিস্টেম থেকে সরাতে পারেন৷</translation>
 <translation id="6824564591481349393">&amp;ইমেল ঠিকানা অনুলিপি করুন</translation>
 <translation id="907148966137935206">পপ-আপগুলি দেখানোর জন্য কোনও সাইটকে মঞ্জুরি দেবেন না (প্রস্তাবিত)</translation>
@@ -1521,6 +1520,7 @@
 <translation id="4803909571878637176">আনইনস্টল হচ্ছে</translation>
 <translation id="5209518306177824490">SHA-1 আঙুলের ছাপ</translation>
 <translation id="2546283357679194313">কুকিজ ও সাইট ডেটা</translation>
+<translation id="4926150172344704583">কানাডা</translation>
 <translation id="7447657194129453603">নেটওয়ার্ক স্থিতি:</translation>
 <translation id="4958444002117714549">তালিকা প্রসারিত করুন</translation>
 <translation id="4683290000467574211">একটি পরীক্ষামূলক, পদ্ধতিগত দিক থেকে আরও সংগঠিত হোস্ট করা অ্যাপ্লিকেশানের অভিজ্ঞতা৷</translation>
@@ -1994,7 +1994,6 @@
 <translation id="1546703252838446285">আপনার <ph name="ACCOUNT_EMAIL"/> অ্যাকাউন্টে এটি করতে পারে:</translation>
 <translation id="6556866813142980365">পুনরায় করুন</translation>
 <translation id="8824701697284169214">&amp;পৃষ্ঠা যোগ করুন...</translation>
-<translation id="6079113045416226952">আপনার ডেস্কটপে Google Now!</translation>
 <translation id="981210574958082923">HistoryQuickProvider এ ইনলাইনিং এর জন্য ফলাফল পুনঃক্রম করুন</translation>
 <translation id="6466988389784393586">&amp;সকল বুকমার্ক খুলুন</translation>
 <translation id="9193357432624119544">ত্রুটি কোড: <ph name="ERROR_NAME"/></translation>
@@ -2052,6 +2051,7 @@
         নাও থাকতে পারে৷</translation>
 <translation id="2097372108957554726">নতুন ডিভাইস নিবন্ধিত করার জন্য আপনাকে Chrome-এ সাইন ইন করতে হবে</translation>
 <translation id="4332213577120623185">এই ক্রয় সম্পন্ন করার জন্য আরো তথ্যের প্রয়োজন৷</translation>
+<translation id="9201305942933582053">Chrome এর জন্য Google Now!</translation>
 <translation id="1708338024780164500">(নিষ্ক্রিয়)</translation>
 <translation id="6896758677409633944">অনুলিপি</translation>
 <translation id="8986362086234534611">ভুলে যান</translation>
@@ -2304,7 +2304,6 @@
 <translation id="7341982465543599097">খুবই স্বল্প সময়</translation>
 <translation id="7314244761674113881">সক্স হোস্ট</translation>
 <translation id="4630590996962964935">অবৈধ অক্ষর: $1</translation>
-<translation id="4089968049353467425">নিম্ন মাত্রার ডিভাইস অপটিমাইজেশানগুলি অগ্রাহ্য করুন৷</translation>
 <translation id="7460131386973988868">স্থিত আইপি কনফিগারেশন সক্ষম করে৷ কাজ নাও করতে পারে৷</translation>
 <translation id="7709980197120276510">চালিয়ে যান এ ক্লিক করার মাধ্যমে আপনি <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, এবং <ph name="LEGAL_DOC_LINK_TEXT_5"/> এ সম্মত হচ্ছেন৷</translation>
 <translation id="1840000081943778840">SPDY/৪ alpha ২ সক্ষম করুন</translation>
@@ -2573,6 +2572,7 @@
 <translation id="2058632120927660550">একটি ত্রুটি ঘটেছে৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="539295039523818097">আপনার মাইক্রোফোনে কোন সমস্যা হয়েছে৷</translation>
 <translation id="7595321929944401166">এই প্লাগ-ইন সমর্থিত নয়৷</translation>
+<translation id="2580093683987647761">আপনার বিনামূল্যের রিপ্লেসমেন্ট চার্জার পাওয়ার অনুরোধ জানাতে দয়া করে (৮৬৬) ৬২৮-১৩৭১ (মার্কিন যুক্তরাষ্ট্র), (৮৬৬) ৬২৮-১৩৭২ (কানাডা) অথবা ০৮০০ ০২৬ ০৬১৩ (যুক্তরাজ্য) নম্বরে কল করুন।</translation>
 <translation id="4935613694514038624">প্রথম এন্টারপ্রাইজ লগইনের জন্য প্রস্তুত হচ্ছে...</translation>
 <translation id="3996912167543967198">রিসেট করা হচ্ছে...</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
@@ -2660,7 +2660,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA এনক্রিপশান</translation>
 <translation id="7073704676847768330">এটি সম্ভবত সেই সাইট নয় যা আপনি খুঁজছেন!</translation>
 <translation id="8477384620836102176">&amp;সাধারণ</translation>
-<translation id="900093400474539372">স্তর স্কোয়াশ করা</translation>
 <translation id="8059417245945632445">এবং ডিভাইসগুলি পরিদর্শন</translation>
 <translation id="3391392691301057522">পুরানো PIN:</translation>
 <translation id="96421021576709873">Wi-Fi নেটওয়ার্ক</translation>
@@ -3062,7 +3061,6 @@
 <translation id="8793043992023823866">আমদানি হচ্ছে...</translation>
 <translation id="8106211421800660735">ক্রেডিট কার্ড নম্বর</translation>
 <translation id="9159562891634783594">মুদ্রণ পূর্বরূপ থেকে অনিবন্ধিত মেঘ মুদ্রণগুলির নিবন্ধন সক্রিয় করুন।</translation>
-<translation id="6244494354618367048">নিম্ন মাত্রার ডিভাইস মোড৷</translation>
 <translation id="8843709518995654957">এই ডিভাইসের জন্য একটি<ph name="LINK_START"/>তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করুন<ph name="LINK_END"/>৷</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
 <translation id="8986267729801483565">ডাউনলোড অবস্থান:</translation>
@@ -3339,7 +3337,6 @@
 <translation id="5328205483471986666">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন৷</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">সময় উইন্ডো শিফ্ট করুন</translation>
-<translation id="1403594069892831402">যে স্তরগুলি অন্য কম্পোজিট করা সামগ্রীতে আবৃত হয়, সেগুলিকেও সঠিক রঙের ক্রম নিশ্চিত করতে কম্পোজিট করতে হবে৷ যাতে হয়তো আমারা অনর্থক খুব বেশি সংখ্যার কম্পোজিট স্তরগুলিকে এড়াতে পারি সেই জন্য একাধিক RenderLayer সাবট্রিসকে একটি কম্পোজিট স্তরে রঙ করতে এই বৈশিষ্ট্যটি Blink সক্ষম করে৷</translation>
 <translation id="2788575669734834343">শংসাপত্র ফাইল নির্বাচন করুন</translation>
 <translation id="8267453826113867474">আপত্তিজনক শব্দ অবরুদ্ধ করুন</translation>
 <translation id="7959074893852789871">ফাইলটিতে একাধিক শংসাপত্র রয়েছে, এর মধ্যে কয়েকটি আমদানি করা হয়নি:</translation>
@@ -3808,7 +3805,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8026964361287906498">(এন্টারপ্রাইজ নীতি দ্বারা পরিচালিত)</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="7800518121066352902">ঘড়ির কাঁটার &amp;বিপরীত দিকে ঘোরান</translation>
-<translation id="4531327707205555741">Chromecast এ দূরবর্তীভাবে ভিডিও প্লে করা সক্ষম করুন৷</translation>
 <translation id="345693547134384690">&amp;ছবি নতুন ট্যাবে খুলুন</translation>
 <translation id="7422192691352527311">অভিরুচিসমূহ...</translation>
 <translation id="9004952710076978168">একটি অজানা মুদ্রকের জন্য একটি বিজ্ঞপ্তি প্রাপ্ত হয়েছে৷</translation>

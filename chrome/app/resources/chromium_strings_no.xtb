@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Åpne Chromium</translation>
 <translation id="9036189287518468038">Chromium-appvelger</translation>
-<translation id="4886158514168859177">Denne datamaskinen har allerede en nyere versjon av Chromium Frame. Hvis programvaren ikke fungerer, må du avinstallere Chromium Frame og prøve på nytt.</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> krever at du leser og godtar følgende vilkår før du bruker denne enheten. Disse vilkårene utvider, endrer eller begrenser ikke Chromium OS-vilkårene.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -168,7 +167,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1902135785017821799">Filen <ph name="FILE_NAME"/> foretar endringer med innstillingene dine, mye på samme måte som skadelig programvare gjør, og Chromium har derfor blokkert den.</translation>
 <translation id="3155163173539279776">Start Chromium på nytt</translation>
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME"/>-linker. Den påkrevde linken er <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Kan ikke installere den samme Chromium Frame-versjonen som kjører. Lukk Chromium Frame og prøv på nytt.</translation>
 <translation id="2558235863893655150">Vil du at Chrome skal lagre passordet ditt?</translation>
 <translation id="1231416733874080281">Vis Chromium-menyen</translation>
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON"/>startes på nytt<ph name="END_BUTTON"/>)</translation>
@@ -206,7 +204,6 @@ Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, logge
 <translation id="374481098568514319">Denne datamaskinen har allerede en nyere versjon av Chromium-komponentene. Bruk et nyere installeringsprogram.</translation>
 <translation id="6240281849816458190">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat som ikke er gyldig enda. Vi finner ikke tilgjengelig informasjon som kan bekrefte at sertifikatet er pålitelig. Chromium kan ikke med sikkerhet garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Klokken på datamaskinen din er satt til <ph name="CURRENT_TIME"/>. Er det korrekt? Hvis ikke, må du rette opp feilen og laste inn denne siden på nytt.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
-<translation id="1622565934590470080">Denne datamaskinen har allerede en nyere versjon av Chromium og Chromium Frame. Hvis programvarene ikke fungerer, må du avinstallere både Chromium og Chromium Frame og prøve på nytt.</translation>
 <translation id="7318036098707714271">Innstillingerfilen din er ødelagt eller ugyldig.
 
 Chromium kan ikke gjenopprette innstillingen dine.</translation>

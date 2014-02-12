@@ -906,7 +906,7 @@
 <translation id="3125649188848276916">Evet (yeni verileri kaydetme)</translation>
 <translation id="648927581764831596">Hiçbiri mevcut değil</translation>
 <translation id="6348657800373377022">Birleşik giriş kutusu</translation>
-<translation id="7453382714306901283">Bilgisayarınızda, Chrome OS'deki pek çok kritik güvenlik özelliğini uygulamak için kullanılan bir Güvenilen Platform Modülü (TPM) güvenlik cihazı bulunmaktadır. Daha fazla bilgi için Chromebook Yardım Merkezi'ni ziyaret edin: http://support.google.com/chromebook/?p=tpm</translation>
+<translation id="7453382714306901283">Bilgisayarınızda, Chrome OS'deki pek çok kritik güvenlik özelliğini uygulamak için kullanılan bir Güvenilir Platform Modülü (TPM) güvenlik cihazı bulunmaktadır. Daha fazla bilgi için Chromebook Yardım Merkezi'ni ziyaret edin: http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8064671687106936412">Anahtar:</translation>
 <translation id="2218515861914035131">Düz metin olarak yapıştır</translation>
 <translation id="1725149567830788547">&amp;Denetimleri Göster</translation>
@@ -944,7 +944,7 @@
 <translation id="1464724975715666883">1 hata.</translation>
 <translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
 <translation id="1486096554574027028">Şifrelerde ara</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/>, tarayıcı ayarlarınızın bilginiz haricinde değiştirilmiş olabileceğini algıladı. Bunları orijinal varsayılan değerlerine sıfırlamak ister misiniz?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/>, tarayıcı ayarlarınızın bilginiz haricinde değiştirilmiş olabileceğini algıladı. Bunları orijinal varsayılan ayarlarına sıfırlamak ister misiniz?</translation>
 <translation id="1836938920852968258">NTP 'Diğer cihazlar' menüsünü devre dışı bırakın.</translation>
 <translation id="3825863595139017598">Moğolca klavye</translation>
 <translation id="8184538546369750125">Genel varsayılanı kullan (İzin ver)</translation>
@@ -1017,7 +1017,6 @@
 <translation id="4992576607980257687">Bir site MIDI cihazlarına erişmek için sisteme özgü mesajları kullanmak istediğinde bana sor (önerilen)</translation>
 <translation id="1407050882688520094">Dosyada şu sertifika yetkililerini tanımlayan sertifikalarınız var:</translation>
 <translation id="6063810760121779748">WebAudio'yu devre dışı bırakma</translation>
-<translation id="7070112048468833248">Chromecast desteğini etkinleştir</translation>
 <translation id="1051694321716046412">Kullanıcıyı özelleştir...</translation>
 <translation id="4287689875748136217">Sunucu hiçbir veri göndermediğinden web sayfası yüklenemiyor.</translation>
 <translation id="1634788685286903402">E-posta kullanıcılarını tanımlamak için bu sertifikaya güvenin.</translation>
@@ -1357,7 +1356,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8412498037462710569">Değişim için ücretsiz şarj cihazını almak istemediğimi onaylıyorum.</translation>
 <translation id="3368922792935385530">Bağlı</translation>
 <translation id="5431473096922271583">Kullandığınız şarj cihazının orijinal olup olmadığını kontrol etmek istiyoruz.</translation>
-<translation id="3478477114335130296">Ayarlarınızdan bazıları bilginiz haricinde değiştirilmiş olabilir.</translation>
+<translation id="3478477114335130296">Ayarlarınızdan bazıları bilginiz dışında değiştirilmiş olabilir.</translation>
 <translation id="3866443872548686097">Kurtarma medyanız hazır. Sisteminizden kaldırabilirsiniz.</translation>
 <translation id="6824564591481349393">&amp;E-posta Adresini Kopyala</translation>
 <translation id="907148966137935206">Hiçbir sitede pop-up'lara izin verme (önerilen)</translation>
@@ -1527,6 +1526,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="4803909571878637176">Yüklemesi kaldırılıyor</translation>
 <translation id="5209518306177824490">SHA-1 Parmak İzi</translation>
 <translation id="2546283357679194313">Çerezler ve site verileri</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Ağ durumu:</translation>
 <translation id="4958444002117714549">Listeyi genişlet</translation>
 <translation id="4683290000467574211">Deneysel ve daha modern bir barındırılan uygulama deneyimini etkinleştirir.</translation>
@@ -2000,7 +2000,6 @@ Hesap oturum açma ayrıntılarınız güncel değil.</translation>
 <translation id="1546703252838446285"><ph name="ACCOUNT_EMAIL"/> hesabınızda şunları yapabilir:</translation>
 <translation id="6556866813142980365">Yeniden Yap</translation>
 <translation id="8824701697284169214">Say&amp;fa Ekle...</translation>
-<translation id="6079113045416226952">Google Asistan masaüstünüzde!</translation>
 <translation id="981210574958082923">HistoryQuickProvider'da satır içi yapmak için sonuçları yeniden sırala</translation>
 <translation id="6466988389784393586">Tüm Yer İşaretlerini &amp;Aç</translation>
 <translation id="9193357432624119544">Hata kodu: <ph name="ERROR_NAME"/></translation>
@@ -2055,6 +2054,7 @@ Hesap oturum açma ayrıntılarınız güncel değil.</translation>
         ana makinesine bağlanma denemesi reddedildi. Web sitesi kapalı olabilir veya ağınız doğru bir şekilde yapılandırılmamış olabilir.</translation>
 <translation id="2097372108957554726">Yeni cihazlar kaydettirebilmeniz için Chrome'da oturum açmanız gerekir</translation>
 <translation id="4332213577120623185">Bu satın alma işlemini tamamlamak için daha fazla bilgi gerekli.</translation>
+<translation id="9201305942933582053">Chrome için Google Asistan!</translation>
 <translation id="1708338024780164500">(Etkin değil)</translation>
 <translation id="6896758677409633944">Kopyala</translation>
 <translation id="8986362086234534611">Unut</translation>
@@ -2306,7 +2306,6 @@ Hesap oturum açma ayrıntılarınız güncel değil.</translation>
 <translation id="7341982465543599097">aşırı kısa</translation>
 <translation id="7314244761674113881">SOCKS Ana makine</translation>
 <translation id="4630590996962964935">Geçersiz karakter: $1</translation>
-<translation id="4089968049353467425">Düşük seviye cihaz optimizasyonlarını geçersiz kılar.</translation>
 <translation id="7460131386973988868">Statik IP yapılandırmayı etkinleştirir. Çalışmayabilir.</translation>
 <translation id="7709980197120276510">Devam Et'i tıklayarak şunları kabul etmiş olursunuz: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> ve <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">SPDY/4 alfa 2'yi etkinleştir</translation>
@@ -2577,6 +2576,7 @@ Hesap oturum açma ayrıntılarınız güncel değil.</translation>
 <translation id="2058632120927660550">Bir hata oluştu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="539295039523818097">Mikrofonunuzla ilgili bir sorun oluştu.</translation>
 <translation id="7595321929944401166">Bu eklenti desteklenmiyor.</translation>
+<translation id="2580093683987647761">Değişim amaçlı ücretsiz şarj cihazınızı istemek için lütfen (866) 628-1371 (ABD), (866) 628-1372 (Kanada) veya 0800 026 0613 (İngiltere) numaralı telefonu arayın.</translation>
 <translation id="4935613694514038624">İlk kurumsal giriş için hazırlanıyor...</translation>
 <translation id="3996912167543967198">Sıfırlanıyor...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2669,7 +2669,6 @@ Bu özelliği kullanmak için oturum açmanız gerekir.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA Şifrelemesi</translation>
 <translation id="7073704676847768330">Bu, büyük olasılıkla sizin aradığınız site değil!</translation>
 <translation id="8477384620836102176">&amp;Genel</translation>
-<translation id="900093400474539372">Katman sıkıştırma</translation>
 <translation id="8059417245945632445">&amp;Cihazları denetle</translation>
 <translation id="3391392691301057522">Eski PIN:</translation>
 <translation id="96421021576709873">Kablosuz ağ</translation>
@@ -2726,7 +2725,7 @@ Bu özelliği kullanmak için oturum açmanız gerekir.</translation>
 <translation id="8652139471850419555">Tercih Edilen Ağlar</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Varsayılan)</translation>
 <translation id="5392544185395226057">Native Client desteğini etkinleştir.</translation>
-<translation id="5400640815024374115">Güvenilen Platform Modülü (TPM) yongası devre dışı bırakıldı veya yok.</translation>
+<translation id="5400640815024374115">Güvenilir Platform Modülü (TPM) yongası devre dışı bırakıldı veya yok.</translation>
 <translation id="2025623846716345241">Yeniden Yüklemeyi Onayla</translation>
 <translation id="2151576029659734873">Geçersiz sekme dizini girildi.</translation>
 <translation id="496546018524231664">İrlanda</translation>
@@ -3063,7 +3062,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL"/> e-postanız
 <translation id="8793043992023823866">Alınıyor...</translation>
 <translation id="8106211421800660735">Kredi kartı numarası</translation>
 <translation id="9159562891634783594">Kaydedilmemiş bulut yazıcıları yazdırma önizlemeden kaydettirmeyi etkinleştir.</translation>
-<translation id="6244494354618367048">Düşük seviye cihaz modu.</translation>
 <translation id="8843709518995654957">Bu cihaz için, <ph name="LINK_START"/>denetlenen bir kullanıcı oluşturun<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="8986267729801483565">İndirme konumu:</translation>
@@ -3342,8 +3340,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL"/> e-postanız
 <translation id="5328205483471986666">İnternet bağlantınızı kontrol edin.</translation>
 <translation id="2610780100389066815">Microsoft Güven Listesi İmzalama</translation>
 <translation id="4535353504827549990">Zaman Aralığını Kaydır</translation>
-<translation id="1403594069892831402">Boyama sırasının doğru olması için, diğer birleştirilmiş içeriklerle örtüşen katmanların da birleştirilmesi gerekir. Bu özellik, Blink'in birden fazla RenderLayer alt ağacını
-        birleştirilmiş tek bir katman olarak boyamasını sağlar; böylece gereksiz yere çok sayıda birleşik katman oluşması önlenir.</translation>
 <translation id="2788575669734834343">Sertifika dosyası seç</translation>
 <translation id="8267453826113867474">Saldırgan Sözcükleri Engelle</translation>
 <translation id="7959074893852789871">Dosya birden çok sertifika içeriyordu, bunların bazıları içe aktarılmadı:</translation>
@@ -3814,7 +3810,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="8026964361287906498">(Kurumsal politika tarafından yönetiliyor)</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="7800518121066352902">Saat Yönünün &amp;Tersine Döndür</translation>
-<translation id="4531327707205555741">Chromecast'te uzaktan video oynatmayı etkinleştir.</translation>
 <translation id="345693547134384690">Resm&amp;i yeni sekmede aç</translation>
 <translation id="7422192691352527311">Tercihler...</translation>
 <translation id="9004952710076978168">Bilinmeyen bir yazıcı ile ilgili bildirim alındı.</translation>
@@ -5209,7 +5204,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="1533920822694388968">TV ayarlama</translation>
 <translation id="6109534693970294947"><ph name="ORIGIN"/> web sitesinin &quot;<ph name="EXTENSION_NAME"/>&quot; uzantısıyla iletişim kurmasına izin verilsin mi?</translation>
 <translation id="2650446666397867134">Dosyaya erişim reddedildi</translation>
-<translation id="5832830184511718549">Web sayfası birleştirme işlemi için ikincil bir mesaj dizisi kullanır. Bu, ana mesaj dizisi yanıt vermese dahi düzgün kaydırma yapılmasını sağlar.</translation>
+<translation id="5832830184511718549">Web sayfası birleştirme işlemi için ikincil bir ileti dizisi kullanır. Bu, ana ileti dizisi yanıt vermese dahi düzgün kaydırma yapılmasını sağlar.</translation>
 <translation id="8203365863660628138">Yüklemeyi Onayla</translation>
 <translation id="4223688009463420599">Windows 8 modunda yeniden başlatıldığında Chrome uygulamalarınız kapanır.</translation>
 <translation id="2533972581508214006">Hatalı uyarı bildir</translation>

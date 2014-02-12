@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Lancarkan apl Chrome</translation>
 <translation id="2370289711218562573">Google Chrome kini mengimport Kegemaran/Penanda Halaman.</translation>
 <translation id="2721687379934343312">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chrome lain yang berkongsi akaun OS X ini.</translation>
-<translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame sama yang sedang dijalankan. Sila tutup Google Chrome Frame dan cuba semula.</translation>
 <translation id="6014844626092547096">Anda sedang dilog masuk ke Chrome! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="3140883423282498090">Perubahan anda akan berkuat kuasa apabila anda melancarkan semula Google Chrome pada masa hadapan.</translation>
 <translation id="1773601347087397504">Dapatkan bantuan untuk menggunakan Chrome OS</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Argumen tidak sah. Google Chrome Frame tidak dapat dipasang dalam mod sedia tanpa memasang Google Chrome juga.</translation>
 <translation id="8684521613357479262">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang belum lagi sah. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut boleh dipercayai. Google Chrome tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan pada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan jam sistem anda dan kemudian, muatkan semula halaman ini.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Komputer ini mempunyai versi Google Chrome dan Google Chrome Frame lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang kedua-dua Google Chrome dan Google Chrome Frame dan cuba semula.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS"/>perisian sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
@@ -148,7 +146,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
         Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar memilih pilihan ini sekali lagi untuk prestasi yang dipertingkatkan.</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Pelancar Apl Chrome Canary</translation>
-<translation id="5577648424992741236">Komputer ini telah mempunyai versi terbaru Google Chrome Frame. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome Frame dan cuba semula.</translation>
 <translation id="6326175484149238433">Alih keluar dari Chrome</translation>
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>

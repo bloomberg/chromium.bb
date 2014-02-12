@@ -105,7 +105,7 @@
 <translation id="579702532610384533">다시 연결</translation>
 <translation id="4211066471404647515">Chromoting에 필요한 일부 구성 요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="5773590752998175013">페어링 날짜</translation>
-<translation id="5265129178187621741">(아직 크롬북에서 사용할 수 없는 기능입니다. 조금만 기다려 주시기 바랍니다.)</translation>
+<translation id="5265129178187621741">(아직 Chromebook에서 사용할 수 없는 기능입니다. 조금만 기다려 주시기 바랍니다.)</translation>
 <translation id="5156271271724754543">두 입력란에 같은 PIN을 입력하세요.</translation>
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
 <translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
 <translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
-<translation id="1761870329818521071">无法安装与当前运行版本相同的 Google Chrome 浏览器内嵌框架。请关闭 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
 <translation id="3140883423282498090">您所做的更改会在下次重新启动 Google Chrome 时生效。</translation>
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">参数无效。在准备模式下，Google Chrome 浏览器内嵌框架必须与 Google Chrome 浏览器同时安装。</translation>
 <translation id="8684521613357479262">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可以信任。Google Chrome 浏览器无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前时间为 <ph name="CURRENT_TIME"/>。该时间是否准确？如果不准确，您可以更正系统上的时钟并刷新此页面。</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">该计算机已安装了更高版本的 Google Chrome 浏览器和 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器和 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> 是恶意文件，Chrome 已将其拦截。</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS"/>开放源代码软件<ph name="END_LINK_CROS_OSS"/>的一份功劳。</translation>
@@ -136,7 +134,6 @@
 <translation id="5875635642195358109">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”，然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。如果这样仍无法解决问题，建议您重新选中此选项以提高性能。</translation>
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
-<translation id="5577648424992741236">该计算机已安装了更高版本的 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="6326175484149238433">从 Chrome 中删除</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>

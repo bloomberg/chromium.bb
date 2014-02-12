@@ -28,7 +28,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2896252579017640304">Lancer des applications Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importe actuellement vos signets/favoris.</translation>
 <translation id="2721687379934343312">Sur Mac, les mots de passe sont sauvegardés dans votre trousseau. D'autres utilisateurs de Google Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
-<translation id="1761870329818521071">Impossible d'installer la version de Google Chrome Frame qui est en cours d'exécution. Fermez Google Chrome Frame et réessayez.</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="3140883423282498090">Vos modifications seront prises en compte au prochain redémarrage de Google Chrome.</translation>
 <translation id="1773601347087397504">Obtenir de l'aide sur l'utilisation de Chrome OS</translation>
@@ -80,7 +79,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="7451721381978275812">Arguments incorrects. Pour installer Google Chrome Frame en mode Prêt, vous devez également installer Google Chrome.</translation>
 <translation id="8684521613357479262">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat qui n'est pas encore valide. Aucune information n'indique que ce certificat est fiable. Google Chrome ne peut donc pas garantir que vous communiquez bien avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non avec un pirate informatique. L'horloge de votre ordinateur indique qu'il est actuellement <ph name="CURRENT_TIME"/>. Est-ce correct ? Si tel n'est pas le cas, veuillez corriger toute erreur, puis actualiser cette page.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Des versions plus récentes de Google Chrome et de Google Chrome Frame sont déjà installées sur cet ordinateur. Si celles-ci ne fonctionnent pas, veuillez désinstaller Google Chrome et Google Chrome Frame, puis réessayer.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
 <translation id="7084448929020576097">Le fichier &quot;<ph name="FILE_NAME"/>&quot; a été bloqué dans Chrome, car son contenu est malveillant.</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS"/>logiciels Open Source<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -157,7 +155,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
         à nouveau cette option pour améliorer les performances.</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
-<translation id="5577648424992741236">Une version plus récente de Google Chrome Frame est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, veuillez désinstaller Google Chrome Frame, puis réessayer.</translation>
 <translation id="6326175484149238433">Supprimer de Google Chrome</translation>
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>

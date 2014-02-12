@@ -16,6 +16,7 @@
 관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
 <translation id="624558823898732418">번역 언어: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">인증에 사용할 인증서 선택</translation>
 <translation id="3896036286668839683">인증서 뷰어</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
@@ -27,6 +28,7 @@
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="4619298195800598081">새 탭에서 원본 이미지 열기</translation>
+<translation id="907015151729920253">스마트 카드</translation>
 <translation id="3136378934686431938">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
 <translation id="6042308850641462728">더보기</translation>

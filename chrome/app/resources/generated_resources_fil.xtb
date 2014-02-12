@@ -1015,7 +1015,6 @@
 <translation id="4992576607980257687">Tanungin ako kapag gusto ng isang site na gamitin ang mga eksklusibong mensahe ng system upang i-access ang mga MIDI device (inirerekomenda)</translation>
 <translation id="1407050882688520094">Mayroon kang ibinigay na mga certificate na tumutukoy sa mga awtoridad ng certificate na ito:</translation>
 <translation id="6063810760121779748">I-disable ang WebAudio</translation>
-<translation id="7070112048468833248">I-enable ang suporta sa Chromecast</translation>
 <translation id="1051694321716046412">I-customize ang user...</translation>
 <translation id="4287689875748136217">Hindi nagawang ma-load ang webpage dahil hindi nagpadala ng data ang server.</translation>
 <translation id="1634788685286903402">Pagkatiwalaan ang certificate para sa pagtukoy ng mga user ng email.</translation>
@@ -1527,6 +1526,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="4803909571878637176">Pag-uninstall</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Cookies at data ng site</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Katayuan ng network:</translation>
 <translation id="4958444002117714549">Palawakin ang listahan</translation>
 <translation id="4683290000467574211">Nagbibigay-daan sa isang karanasan sa naka-host na app na pang-eksperimento at mas naka-streamline.</translation>
@@ -2009,7 +2009,6 @@ Pampublikong Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> (na) bit):
 <translation id="1546703252838446285">Sa iyong <ph name="ACCOUNT_EMAIL"/> account, maaari nitong:</translation>
 <translation id="6556866813142980365">Redo</translation>
 <translation id="8824701697284169214">Magdagdag ng Pahina...</translation>
-<translation id="6079113045416226952">Google Now sa iyong desktop!</translation>
 <translation id="981210574958082923">Baguhin ang ayos ng mga resulta para sa pag-inline sa HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Buksan Ang Lahat ng Bookmark</translation>
 <translation id="9193357432624119544">Code ng error: <ph name="ERROR_NAME"/></translation>
@@ -2062,6 +2061,7 @@ Pampublikong Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> (na) bit):
 <translation id="7014051144917845222">Tinanggihan ang pagtatangka sa pagkonekta ng <ph name="PRODUCT_NAME"/> sa <ph name="HOST_NAME"/>. Maaaring hindi gumagana ang website, o maaaring hindi maayos na na-configure ang iyong network.</translation>
 <translation id="2097372108957554726">Kailangan mong mag-sign in sa Chrome upang makapagrehistro ng mga bagong device</translation>
 <translation id="4332213577120623185">Kailangan ng higit pang impormasyon upang makumpleto ang pagbiling ito.</translation>
+<translation id="9201305942933582053">Google Now para sa Chrome!</translation>
 <translation id="1708338024780164500">(Hindi aktibo)</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="8986362086234534611">Kalimutan</translation>
@@ -2314,7 +2314,6 @@ Pampublikong Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> (na) bit):
 <translation id="7341982465543599097">sobrang maikli</translation>
 <translation id="7314244761674113881">SOCKS host</translation>
 <translation id="4630590996962964935">Di-wastong character: $1</translation>
-<translation id="4089968049353467425">Ino-override ang mga pag-o-optimize ng device na mababa ang kalidad.</translation>
 <translation id="7460131386973988868">Pinapagana ang static ip na configuration. Maaaring hindi gumana.</translation>
 <translation id="7709980197120276510">Sa pamamagitan ng pag-click sa Magpatuloy sumasang-ayon ka sa <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, at <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">I-enable ang SPDY/4 alpha 2</translation>
@@ -2586,6 +2585,7 @@ Pampublikong Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> (na) bit):
 <translation id="2058632120927660550">May naganap na error. Mangyaring suriin ang iyong printer at subukang muli.</translation>
 <translation id="539295039523818097">Nagkaproblema sa iyong microphone.</translation>
 <translation id="7595321929944401166">Hindi sinusuportahan ang plug-in na ito.</translation>
+<translation id="2580093683987647761">Mangyaring tumawag sa (866) 628-1371 (US), (866) 628-1372 (Canada), o 0800 026 0613 (UK) upang hilingin ang iyong libreng kapalit na charger.</translation>
 <translation id="4935613694514038624">Naghahanda para sa unang pag-login sa enterprise...</translation>
 <translation id="3996912167543967198">Inire-reset...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2677,7 +2677,6 @@ Kailangang naka-sign in ka upang magamit ang tampok na ito.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA Encryption</translation>
 <translation id="7073704676847768330">Marahil hindi ito ang hinahanap mong site!</translation>
 <translation id="8477384620836102176">&amp;Pangkalahatan</translation>
-<translation id="900093400474539372">Pag-squash ng layer</translation>
 <translation id="8059417245945632445">&amp;Inspeksyunin ang mga device</translation>
 <translation id="3391392691301057522">Lumang PIN:</translation>
 <translation id="96421021576709873">Wi-Fi network</translation>
@@ -3070,7 +3069,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="8793043992023823866">Nag-i-import...</translation>
 <translation id="8106211421800660735">Numero ng credit card</translation>
 <translation id="9159562891634783594">I-enable ang pagpaparehistro ng mga hindi naka-rehistrong cloud printer mula sa preview ng pag-print.</translation>
-<translation id="6244494354618367048">Device mode na mababa ang kalidad.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Gumawa ng isang pinangangasiwaang user<ph name="LINK_END"/> para sa device na ito.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="8986267729801483565">Lokasyon sa pag-download:</translation>
@@ -3349,8 +3347,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="5328205483471986666">Suriin ang iyong koneksyon sa Internet.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">I-shift ang Palugit ng Oras</translation>
-<translation id="1403594069892831402">Kailangan ding i-composite ang mga layer na pumapatong sa iba pang na-composite na nilalaman, upang makatiyak ng tamang kaayusan ng paint. Ini-enable ng feature na ito ang Blink upang mag-paint ng maraming RenderLayer
-        subtree patungo sa isang na-composite na layer upang maaari naming maiwasan ang hindi kinakailangang malaking bilang ng mga na-composite na layer.</translation>
 <translation id="2788575669734834343">Piliin ang file ng certificate</translation>
 <translation id="8267453826113867474">I-block ang mga Nakakasakit na Salita</translation>
 <translation id="7959074893852789871">Naglaman ang file ng maramihang certificate, ilan sa mga ito ang na-import:</translation>
@@ -3821,7 +3817,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="8026964361287906498">(Pinamamahalaan ng patakaran ng enterprise)</translation>
 <translation id="8261506727792406068">Tanggalin</translation>
 <translation id="7800518121066352902">I-rotate P&amp;akaliwa</translation>
-<translation id="4531327707205555741">I-enable ang malayuang pag-play ng mga video sa Chromecast.</translation>
 <translation id="345693547134384690">Buksan ang &amp;imahe sa bagong tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
 <translation id="9004952710076978168">Nakatanggap ng isang notification para sa isang hindi kilalang printer.</translation>
@@ -4635,7 +4630,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="3695919544155087829">Pakipasok ang password na ginamit upang i-encrypt ang certificate file na ito.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">I-install ang <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Mga Slide</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="3790146417033334899">Gumagana lang ang <ph name="PLUGIN_NAME"/> sa desktop.</translation>
 <translation id="5117930984404104619">Subaybayan ang pagkilos ng iba pang mga extension, kasama ang mga binisitang URL</translation>
 <translation id="33022249435934718">Mga GDI Handle</translation>
@@ -5160,7 +5155,7 @@ Tinatanggap mo ba?</translation>
 <translation id="445923051607553918">Sumali sa network ng Wi-Fi</translation>
 <translation id="4215898373199266584">Psst! Maaaring maging kapaki-pakinabang ang mode na incognito (<ph name="INCOGNITO_MODE_SHORTCUT"/>) sa susunod.</translation>
 <translation id="420676372321767680">I-enable ang hindi composite na pagde-decode.</translation>
-<translation id="2925966894897775835">Mga Sheet</translation>
+<translation id="2925966894897775835">Sheets</translation>
 <translation id="756631359159530168">Paganahin ang per-tile na painting ng mga nilalaman ng pahina kapag pinagana ang pag-composite.</translation>
 <translation id="3349155901412833452">Gamitin ang , at . na mga key upang ilagay sa pahina ang isang listahan ng kandidato</translation>
 <translation id="7336748286991450492"><ph name="SIGN_IN_LINK"/> upang kunin ang iyong mga bookmark sa lahat ng lugar.</translation>

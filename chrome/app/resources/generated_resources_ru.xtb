@@ -207,7 +207,7 @@
 <translation id="7069168971636881066">Перед созданием контролируемого профиля на устройстве необходимо настроить хотя бы один аккаунт.</translation>
 <translation id="7809034755304591547">Расширение <ph name="EXTENSION_NAME"/> (идентификатор: <ph name="EXTENSION_ID"/>) заблокировано администратором.</translation>
 <translation id="6373256700241079718">Сети:</translation>
-<translation id="7766807826975222231">Знакомство</translation>
+<translation id="7766807826975222231">Узнать больше</translation>
 <translation id="1374844444528092021">Сертификат, запрашиваемый сетью <ph name="NETWORK_NAME"/>, не установлен или уже не действителен. Получите новый и попробуйте подключиться еще раз.</translation>
 <translation id="3496213124478423963">Уменьшить</translation>
 <translation id="2296019197782308739">Метод EAP:</translation>
@@ -352,7 +352,7 @@
 <translation id="6460423884798879930">Обеспечивает отправку дополнительных данных аутентификации в исходном SYN-пакете подключенного клиента, благодаря чему ускоряется обмен данными.</translation>
 <translation id="6563261555270336410">Подробные сведения о ресурсе <ph name="ELEMENTS_HOST_NAME"/></translation>
 <translation id="3200025317479269283">Мы всегда готовы прийти на помощь</translation>
-<translation id="714120105722820597">Достаточно нажать на эту кнопку.</translation>
+<translation id="714120105722820597">Нет ничего проще.</translation>
 <translation id="6549347468966040675">Включает экспериментальный визуальный стиль кнопок в заголовке окна (свернуть, восстановить, закрыть).</translation>
 <translation id="4465830120256509958">Бразильская раскладка</translation>
 <translation id="3470502288861289375">Копирование…</translation>
@@ -931,7 +931,7 @@
 <translation id="1464724975715666883">1 ошибка.</translation>
 <translation id="7864539943188674973">Отключить Bluetooth</translation>
 <translation id="1486096554574027028">Поиск паролей</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> обнаружил, что ваши настройки браузера были изменены без вашего ведома. Восстановить настройки по умолчанию?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> обнаружил, что ваши настройки браузера могли быть изменены без вашего ведома. Восстановить настройки по умолчанию?</translation>
 <translation id="1836938920852968258">Отключить меню &quot;Другие устройства&quot; на странице быстрого доступа.</translation>
 <translation id="3825863595139017598">Монгольская раскладка клавиатуры</translation>
 <translation id="8184538546369750125">Использовать глобальный параметр по умолчанию (разрешать)</translation>
@@ -1004,7 +1004,6 @@
 <translation id="4992576607980257687">Уведомлять меня о веб-сайтах, пытающихся использовать системные сообщения для доступа к устройствам MIDI (рекомендуется)</translation>
 <translation id="1407050882688520094">У вас есть сертификаты, которые идентифицируют следующие центры сертификации:</translation>
 <translation id="6063810760121779748">Отключение WebAudio</translation>
-<translation id="7070112048468833248">Включить поддержку Chromecast</translation>
 <translation id="1051694321716046412">Настроить профиль</translation>
 <translation id="4287689875748136217">Невозможно загрузить веб-страницу, так как не поступили данные от сервера.</translation>
 <translation id="1634788685286903402">Доверять этому сертификату для идентификации пользователей электронной почты.</translation>
@@ -1488,7 +1487,7 @@
 <translation id="4761230392694939409">Если не выполнять никаких действий, через несколько минут выход из системы будет выполнен автоматически.</translation>
 <translation id="5532223876348815659">Глобальные</translation>
 <translation id="644038709730536388">Подробнее о том, как защититься от вредоносного ПО, распространяемого в Интернете.</translation>
-<translation id="6677380263041696420">Изменить изображение</translation>
+<translation id="6677380263041696420">Сменить</translation>
 <translation id="583897534957305144">Если флажок установлен, время реакции браузера может сократиться, если все стадии обработки происходят ранее запланированного срока. При этом должно быть включено потоковое наложение элементов.</translation>
 <translation id="2155931291251286316">Всегда показывать всплывающие окна с сайта <ph name="HOST"/></translation>
 <translation id="3445830502289589282">Двухэтапная аутентификация:</translation>
@@ -1513,6 +1512,7 @@
 <translation id="4803909571878637176">Удаление</translation>
 <translation id="5209518306177824490">Отпечаток SHA-1</translation>
 <translation id="2546283357679194313">Файлы сookie и данные сайта</translation>
+<translation id="4926150172344704583">Канада</translation>
 <translation id="7447657194129453603">Состояние сети:</translation>
 <translation id="4958444002117714549">Развернуть список</translation>
 <translation id="4683290000467574211">Включить экспериментальные размещаемые приложения с более удобным интерфейсом.</translation>
@@ -1981,7 +1981,6 @@
 <translation id="1546703252838446285">В вашем аккаунте <ph name="ACCOUNT_EMAIL"/> оно может выполнять указанные ниже действия.</translation>
 <translation id="6556866813142980365">Повторить</translation>
 <translation id="8824701697284169214">Добавить &amp;страницу</translation>
-<translation id="6079113045416226952">Google Now – теперь и на компьютере!</translation>
 <translation id="981210574958082923">Изменить порядок результатов для встраивания в HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Открыть все закладки</translation>
 <translation id="9193357432624119544">Код ошибки: <ph name="ERROR_NAME"/></translation>
@@ -2035,6 +2034,7 @@
 <translation id="7014051144917845222">Попытка <ph name="PRODUCT_NAME"/> подключиться к <ph name="HOST_NAME"/> была отклонена. Сайт недоступен или ваша сеть настроена неправильно.</translation>
 <translation id="2097372108957554726">Войдите в Chrome, чтобы зарегистрировать новое устройство</translation>
 <translation id="4332213577120623185">Для оформления этой покупки требуется более подробная информация.</translation>
+<translation id="9201305942933582053">Google Now для Chrome</translation>
 <translation id="1708338024780164500">(Неактивно)</translation>
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="8986362086234534611">Удалить</translation>
@@ -2286,7 +2286,6 @@
 <translation id="7341982465543599097">очень короткая</translation>
 <translation id="7314244761674113881">SOCKS</translation>
 <translation id="4630590996962964935">Недопустимый символ: $1</translation>
-<translation id="4089968049353467425">Переопределение оптимизации для бюджетных устройств.</translation>
 <translation id="7460131386973988868">Включает конфигурацию статического IP-адреса. Может не работать.</translation>
 <translation id="7709980197120276510">Нажимая &quot;Продолжить&quot;, вы принимаете следующие правила и условия: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> и <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Включить SPDY/4 alpha 2</translation>
@@ -2553,6 +2552,7 @@
 <translation id="2058632120927660550">Произошла ошибка. Проверьте принтер и повторите попытку.</translation>
 <translation id="539295039523818097">Микрофон не работает.</translation>
 <translation id="7595321929944401166">Плагин не поддерживается</translation>
+<translation id="2580093683987647761">Чтобы запросить бесплатную замену зарядного устройства, позвоните по телефону (866) 628-1371 (США), (866) 628-1372 (Канада) или 0800 026 0613 (Великобритания).</translation>
 <translation id="4935613694514038624">Подготовка к входу...</translation>
 <translation id="3996912167543967198">Сброс...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2645,7 +2645,6 @@
 <translation id="5434065355175441495">PKCS #1 шифрование RSA</translation>
 <translation id="7073704676847768330">Вероятно, это не тот сайт, который вы ищете!</translation>
 <translation id="8477384620836102176">&amp;Общие</translation>
-<translation id="900093400474539372">Сжатие слоев</translation>
 <translation id="8059417245945632445">&amp;Проверка устройств</translation>
 <translation id="3391392691301057522">Старый PIN-код:</translation>
 <translation id="96421021576709873">Сеть Wi-Fi</translation>
@@ -3037,7 +3036,6 @@
 <translation id="8793043992023823866">Импорт...</translation>
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="9159562891634783594">Разрешает регистрацию незарегистрированных виртуальных принтеров в ходе предварительного просмотра.</translation>
-<translation id="6244494354618367048">Режим низкопроизводительного устройства</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Создать контролируемый профиль<ph name="LINK_END"/> на этом устройстве.</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
 <translation id="8986267729801483565">Расположение загружаемых файлов:</translation>
@@ -3315,8 +3313,6 @@
 <translation id="5328205483471986666">Проверьте подключение к Интернету.</translation>
 <translation id="2610780100389066815">Подписывание списка доверия (Microsoft)</translation>
 <translation id="4535353504827549990">Смещение временного окна</translation>
-<translation id="1403594069892831402">Слои, перекрывающие составной контент, также должны быть составными, чтобы отрисовка производилась в правильном порядке. Эта функция позволяет движку Blink объединять несколько поддеревьев RenderLayer
-        в один составной слой, чтобы избежать ненужного нагромождения множества составных слоев.</translation>
 <translation id="2788575669734834343">Выбрать файл сертификата</translation>
 <translation id="8267453826113867474">Блокировать оскорбления</translation>
 <translation id="7959074893852789871">Файл содержал несколько сертификатов, некоторые из которых не были импортированы:</translation>
@@ -3784,7 +3780,6 @@
 <translation id="8026964361287906498">(Определяется корпоративной политикой)</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="7800518121066352902">Повернуть п&amp;ротив часовой стрелки</translation>
-<translation id="4531327707205555741">Включает удаленное воспроизведение видео на Chromecast.</translation>
 <translation id="345693547134384690">Открыть &amp;картинку в новой вкладке</translation>
 <translation id="7422192691352527311">Настройки...</translation>
 <translation id="9004952710076978168">Получено оповещение о неопознанном принтере.</translation>
@@ -3851,7 +3846,7 @@
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="9031126959232087887">Операции декодирования изображений в WebKit откладываются до стадии отрисовки.</translation>
 <translation id="2731392572903530958">Открыть закрытое окно</translation>
-<translation id="6509136331261459454">Настроить аккаунты пользователей</translation>
+<translation id="6509136331261459454">Управление аккаунтами</translation>
 <translation id="1254593899333212300">Прямое подключение к Интернету</translation>
 <translation id="6107012941649240045">Выдан:</translation>
 <translation id="6483805311199035658">Открывается <ph name="FILE"/>...</translation>

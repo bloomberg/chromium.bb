@@ -29,7 +29,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2896252579017640304">Chrome 앱 실행</translation>
 <translation id="2370289711218562573">Chrome에서 즐겨찾기/북마크를 가져오고 있습니다.</translation>
 <translation id="2721687379934343312">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
-<translation id="1761870329818521071">현재 실행 중인 Chrome 프레임과 동일한 버전은 설치할 수 없습니다. Chrome 프레임을 닫고 다시 시도하세요.</translation>
 <translation id="6014844626092547096">Chrome에 로그인했습니다. 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="3140883423282498090">Chrome을 다시 시작하면 변경사항이 적용됩니다.</translation>
 <translation id="1773601347087397504">Chrome OS 사용에 대한 도움말</translation>
@@ -81,7 +80,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7451721381978275812">인수가 잘못되었습니다. Chrome을 함께 설치하지 않으면 Chrome 프레임을 준비 모드에서 설치할 수 없습니다.</translation>
 <translation id="8684521613357479262">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 서버가 유효하지 않은 인증서를 제공했습니다. 인증서가 신뢰할 수 있는지 여부를 알 수 있는 정보가 없습니다. Chrome은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">이 컴퓨터에 이미 최신 버전의 Chrome 및 Chrome 프레임이 있습니다. 실행되지 않는 경우 모두 제거한 후 다시 시도하세요.</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/>은(는) 악성 파일이므로 Chrome에서 차단했습니다.</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS"/>를 사용했습니다.</translation>
@@ -155,7 +153,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
         성능을 개선해 보시기 바랍니다.</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome 앱 실행기 카나리아</translation>
-<translation id="5577648424992741236">컴퓨터에 Chrome 프레임 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 시도하세요.</translation>
 <translation id="6326175484149238433">Chrome에서 삭제</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>

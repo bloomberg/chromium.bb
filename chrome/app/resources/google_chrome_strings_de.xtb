@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome-Apps starten</translation>
 <translation id="2370289711218562573">Google Chrome importiert gerade Favoriten/Lesezeichen.</translation>
 <translation id="2721687379934343312">Auf einem Mac werden die Passwörter in Ihrem Schlüsselbund gespeichert. Sie können von anderen Chrome-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
-<translation id="1761870329818521071">Die Google Chrome Frame-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="6014844626092547096">Sie sind nun in Chrome angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="3140883423282498090">Ihre Änderungen werden beim nächsten Neustart von Google Chrome wirksam.</translation>
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Ungültige Argumente. Google Chrome Frame kann nicht im Betriebsmodus installiert werden, ohne dass Google Chrome ebenfalls installiert wird.</translation>
 <translation id="8684521613357479262">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es liegen keine Informationen hinsichtlich der Vertrauenswürdigkeit des Zertifikats vor. Daher kann Google Chrome nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Auf diesem Computer ist bereits eine neuere Version von Google Chrome und Google Chrome Frame vorhanden. Sollte die Software nicht funktionieren, deinstallieren Sie Google Chrome und Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS"/>Open-Source-Software<ph name="END_LINK_CROS_OSS"/> möglich gemacht.</translation>
@@ -135,7 +133,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5875635642195358109">Gehen Sie zum Chrome-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; und deaktivieren Sie die Option &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;. Wenn das Problem danach weiterhin besteht, aktivieren Sie diese Option wieder, um die Leistung zu verbessern.</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="8547799825197623713">Chrome-App-Übersicht für Canary</translation>
-<translation id="5577648424992741236">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome Frame. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="7161904924553537242">Willkommen bei Chrome</translation>

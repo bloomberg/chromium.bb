@@ -16,6 +16,7 @@
 Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le contrôle de votre profil Google Chrome. Vos données Chrome vont être associées à ce compte de manière définitive. Si vous vous en déconnectez, les données Chrome locales sont supprimées.</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="624558823898732418">Langue cible : <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8872441722924401214">Sélectionnez un certificat pour l'authentification</translation>
 <translation id="3896036286668839683">Lecteur de certificats</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
@@ -27,6 +28,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
 <translation id="4619298195800598081">Ouvrir original autre onglet</translation>
+<translation id="907015151729920253">Carte à puce</translation>
 <translation id="3136378934686431938">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
 <translation id="6042308850641462728">Plus</translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Запуск приложений Chrome</translation>
 <translation id="2370289711218562573">Google Chrome выполняет импорт элементов &quot;Избранное/Закладки&quot;.</translation>
 <translation id="2721687379934343312">В Mac OS X все пароли сохраняются с помощью технологии Keychain. Использовать или синхронизировать их могут другие пользователи Chrome, имеющие доступ к этому аккаунту.</translation>
-<translation id="1761870329818521071">Невозможно установить ту же самую версию Google Chrome Frame, которая сейчас выполняется. Закройте Google Chrome Frame и повторите попытку.</translation>
 <translation id="6014844626092547096">Добро пожаловать в Chrome! Синхронизация отключена администратором.</translation>
 <translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
 <translation id="8684521613357479262">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер предоставил сертификат, который ещё не действителен. Получить информацию о безопасности этого сертификата невозможно. Chromium не может гарантировать, что вы будете обмениваться данными именно с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. На вашем компьютере установлены следующие дата и время: <ph name="CURRENT_TIME"/>. Если эти данные неверны, укажите правильные и обновите страницу.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">На компьютере уже установлены последние версии Google Chrome и Google Chrome Frame. Если они не работают, удалите их и установите снова.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="7084448929020576097">Chrome заблокировал файл <ph name="FILE_NAME"/> как вредоносный.</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -149,7 +147,6 @@
         для быстрой загрузки страниц.</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
-<translation id="5577648424992741236">На компьютере уже установлена последняя версия Google Chrome Frame. Если она не работает, удалите ее и установите снова.</translation>
 <translation id="6326175484149238433">Удалить</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>

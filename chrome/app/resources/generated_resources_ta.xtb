@@ -934,7 +934,7 @@
 <translation id="1464724975715666883">1 பிழை.</translation>
 <translation id="7864539943188674973">Bluetooth ஐ முடக்கு</translation>
 <translation id="1486096554574027028">கடவுச்சொற்களைத் தேடு</translation>
-<translation id="6815353853907306610">உங்களுக்குத் தெரியாமலே உங்கள் உலாவியின் அமைப்புகள் மாற்றப்பட்டிருக்கலாம் என்பதை <ph name="IDS_SHORT_PRODUCT_NAME"/> கண்டறிந்துள்ளது. அதன் அசல் இயல்புநிலைகளுக்கு மீட்டமைக்க விரும்புகிறீர்களா?</translation>
+<translation id="6815353853907306610">உங்களுக்குத் தெரியாமலே உங்கள் உலாவியின் அமைப்புகள் ஒருவேளை மாற்றப்பட்டிருக்கலாம் என்பதை <ph name="IDS_SHORT_PRODUCT_NAME"/> கண்டறிந்துள்ளது. அதன் அசல் இயல்புநிலைகளுக்கு மீட்டமைக்க விரும்புகிறீர்களா?</translation>
 <translation id="1836938920852968258">NTP இல் உள்ள 'பிற சாதனங்கள்' மெனுவை முடக்கு.</translation>
 <translation id="3825863595139017598">மங்கோலியன் விசைப்பலகை</translation>
 <translation id="8184538546369750125">முழுமையான இயல்புநிலையைப் பயன்படுத்து (அனுமதி)</translation>
@@ -1007,7 +1007,6 @@
 <translation id="4992576607980257687">தளம், முறையான தனிப்பட்ட அரட்டைகளுக்கு MIDI சாதனங்களை அணுகும் நேரத்தில் என்னைக் கேள் (பரிந்துரைக்கப்பட்டது)</translation>
 <translation id="1407050882688520094">இந்த சான்றிதழ் அங்கீகரிப்பாளர்களை அடையாளங் காணக்கூடிய சான்றிதழ்களை கோப்பில் கொண்டுள்ளீர்கள்:</translation>
 <translation id="6063810760121779748">WebAudio ஐ முடக்கு</translation>
-<translation id="7070112048468833248">Chromecast ஆதரவை இயக்கு</translation>
 <translation id="1051694321716046412">பயனரைத் தனிப்படுத்து...</translation>
 <translation id="4287689875748136217">வலைப்பக்கத்தை ஏற்ற முடியவில்லை, ஏனெனில் சேவையகம் தரவு எதையும் வழங்கவில்லை.</translation>
 <translation id="1634788685286903402">மின்னஞ்சல் பயனர்களை அடையாளம் காண இந்த சான்றிதழை நம்புக.</translation>
@@ -1513,6 +1512,7 @@
 <translation id="4803909571878637176">நிறுவல்நீக்கம்</translation>
 <translation id="5209518306177824490">SHA-1 விரல்அச்சு</translation>
 <translation id="2546283357679194313">குக்கீகளும் தள தரவும்</translation>
+<translation id="4926150172344704583">கனடா</translation>
 <translation id="7447657194129453603">பிணைய நிலை:</translation>
 <translation id="4958444002117714549">பட்டியலை விரி</translation>
 <translation id="4683290000467574211">சோதனை முறையிலான, மிகவும் நெறிப்படுத்தப்பட்டு ஹோஸ்ட் செய்யப்பட்ட பயன்பாட்டு அனுபவத்தை இயக்குகிறது.</translation>
@@ -1981,7 +1981,6 @@
 <translation id="1546703252838446285">உங்கள் <ph name="ACCOUNT_EMAIL"/> கணக்கில், இதைச் செய்யலாம்:</translation>
 <translation id="6556866813142980365">மீண்டும் செய்</translation>
 <translation id="8824701697284169214">பக்&amp;கத்தைச் சேர்...</translation>
-<translation id="6079113045416226952">உங்கள் டெஸ்க்டாப்பில் Google Now!</translation>
 <translation id="981210574958082923">HistoryQuickProvider இல் வரிசைப்படுத்த முடிவுகளை மறுவரிசைப்படுத்து</translation>
 <translation id="6466988389784393586">புக்மார்க்ஸ் அனைத்தையும் &amp;திற</translation>
 <translation id="9193357432624119544">பிழைக் குறியீடு: <ph name="ERROR_NAME"/></translation>
@@ -2041,6 +2040,7 @@
         உள்ளமைக்கப்படாமல் இருக்கலாம்.</translation>
 <translation id="2097372108957554726">புதிய சாதனங்களைப் பதிவுசெய்ய நீங்கள் Chrome இல் உள்நுழைய வேண்டும்</translation>
 <translation id="4332213577120623185">இந்த வாங்குதலை நிறைவுசெய்ய கூடுதல் தகவல் தேவைப்படுகிறது.</translation>
+<translation id="9201305942933582053">Chrome க்கான Google Now!</translation>
 <translation id="1708338024780164500">(செயல்படா நிலையில்)</translation>
 <translation id="6896758677409633944">நகலெடு</translation>
 <translation id="8986362086234534611">மற</translation>
@@ -2291,7 +2291,6 @@
 <translation id="7341982465543599097">மிகவும் குறுகிய</translation>
 <translation id="7314244761674113881">சாக்ஸ் ஹோஸ்ட்</translation>
 <translation id="4630590996962964935">தவறான எழுத்து: $1</translation>
-<translation id="4089968049353467425">குறைந்த தொழில்நுட்பச் சாதனத்தின் மேம்படுத்துதல்களை மேலெழுதுகிறது.</translation>
 <translation id="7460131386973988868">நிலையான ip உள்ளமைவைச் செயலாக்குகிறது. பணிபுரியாமல் போகலாம்.</translation>
 <translation id="7709980197120276510">தொடரவும் என்பதைக் கிளிக் செய்வதன் மூலம் <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, மேலும் <ph name="LEGAL_DOC_LINK_TEXT_5"/> ஆகியவற்றை ஒப்புக்கொள்கிறீர்கள்.</translation>
 <translation id="1840000081943778840">SPDY/4 ஆல்பா 2 ஐ இயக்கு</translation>
@@ -2556,6 +2555,7 @@
 <translation id="2058632120927660550">பிழை ஏற்பட்டது. உங்கள் அச்சுப்பொறியைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="539295039523818097">உங்கள் மைக்ரோஃபோனில் சிக்கல் உள்ளது.</translation>
 <translation id="7595321929944401166">செருகு-நிரல் ஆதரிக்கவில்லை.</translation>
+<translation id="2580093683987647761">உங்கள் இலவச மாற்று சார்ஜருக்கான வேண்டுகோளுக்கு (866) 628-1371 (US), (866) 628-1372 (கனடா), அல்லது 0800 026 0613 (UK) ஆகிய எண்களில் அழைக்கவும்.</translation>
 <translation id="4935613694514038624">முதல் நிறுவன உள்நுழைவை உருவாக்குகிறது...</translation>
 <translation id="3996912167543967198">மீட்டமைக்கிறது...</translation>
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
@@ -2648,7 +2648,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA குறியாக்கம்</translation>
 <translation id="7073704676847768330">இது நீங்கள் தேடும் தளமாக இருக்க வாய்ப்பில்லை!</translation>
 <translation id="8477384620836102176">&amp;பொது</translation>
-<translation id="900093400474539372">லேயரை ஒடுக்குதல்</translation>
 <translation id="8059417245945632445">&amp;சாதனங்களை ஆய்வுசெய்</translation>
 <translation id="3391392691301057522">பழைய PIN:</translation>
 <translation id="96421021576709873">Wi-Fi நெட்வொர்க்</translation>
@@ -3043,7 +3042,6 @@
 <translation id="8793043992023823866">இறக்குமதி செய்கிறது...</translation>
 <translation id="8106211421800660735">கிரெடிட் கார்டு எண்</translation>
 <translation id="9159562891634783594">அச்சு மாதிரிக்காட்சியிலிருந்து பதிவுசெய்யப்படாத மேகக்கணி அச்சுப்பொறிகளைப் பதிவுசெய்வதை இயக்கு.</translation>
-<translation id="6244494354618367048">குறைந்த தொழில்நுட்பச் சாதனப் பயன்முறை.</translation>
 <translation id="8843709518995654957">இந்தச் சாதனத்திற்கான <ph name="LINK_START"/>கண்காணிக்கப்படும் பயனரை உருவாக்கவும்<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="8986267729801483565">பதிவிறக்க இருப்பிடம்:</translation>
@@ -3319,7 +3317,6 @@
 <translation id="5328205483471986666">உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">நேரச் சாளரத்தை மாற்று</translation>
-<translation id="1403594069892831402">பிற தொகுக்கப்பட்ட உள்ளடக்கத்தை மேலெழுதும் லேயர்கள் சரியான பெயிண்ட் முறையை உறுதிபடுத்த தொகுக்கப்பட வேண்டும். இந்த அம்சமானது பல RenderLayer சப்ட்ரீகளை ஒரே தொகுக்கப்பட்ட லேயராக பெயிண்ட் செய்ய Blink ஐ இயக்குகிறது, இதன்மூலம் தேவையற்ற அதிகப்படியான தொகுக்கப்பட்ட லேயர்களைத் தவிர்க்கலாம்.</translation>
 <translation id="2788575669734834343">சான்றிதழ் கோப்பைத் தேர்ந்தெடு</translation>
 <translation id="8267453826113867474">வெறுக்கத்தக்க சொற்களைத் தடு</translation>
 <translation id="7959074893852789871">இந்தக் கோப்பில் பல சான்றிதழ்கள் உள்ளன, அவற்றில் சில இறக்குமதி செய்யப்படவில்லை:</translation>
@@ -3786,7 +3783,6 @@
 <translation id="8026964361287906498">(நிறுவனக் கொள்கையால் நிர்வகிக்கப்படுகிறது)</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="7800518121066352902">இ&amp;டஞ்சுழியாகச் சுற்று</translation>
-<translation id="4531327707205555741">வீடியோக்களைத் தொலைநிலையிலிருந்து இயக்குவதை Chromecast இல் இயக்கு.</translation>
 <translation id="345693547134384690">&amp;படத்தை புதிய தாவலில் திற</translation>
 <translation id="7422192691352527311">விருப்பத்தேர்வுகள்...</translation>
 <translation id="9004952710076978168">அறியப்படாத அச்சுப்பொறிக்காக அறிவிப்பு பெறப்பட்டது.</translation>

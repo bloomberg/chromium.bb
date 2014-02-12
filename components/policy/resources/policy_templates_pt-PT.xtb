@@ -167,7 +167,7 @@
       Se deixar esta política por definir, o <ph name="PRODUCT_OS_NAME"/> utilizará o valor predefinido de 3 horas.</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
 <translation id="7302043767260300182">Atraso do bloqueio do ecrã quando o dispositivo está ligado à eletricidade</translation>
-<translation id="7331962793961469250">Quando a opção está definida como Verdadeiro, as promoções de aplicações da Web Store do Chrome não serão apresentadas na página de novo separador. Definir esta opção como Falso ou deixá-la por definir fará com que as promoções de aplicações da Web Store do Chrome sejam apresentadas na página de novo separador.</translation>
+<translation id="7331962793961469250">Quando a opção está definida como Verdadeiro, as promoções de aplicações da Chrome Web Store não serão apresentadas na página de novo separador. Definir esta opção como Falso ou deixá-la por definir fará com que as promoções de aplicações da Chrome Web Store sejam apresentadas na página de novo separador.</translation>
 <translation id="7271085005502526897">Importar página inicial a partir do navegador predefinido na primeira execução</translation>
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
 <translation id="1096105751829466145">Motor de pesquisa predefinido</translation>
@@ -479,7 +479,7 @@
 
           Relativamente a cada item, o <ph name="PRODUCT_NAME"/> vai recuperar a extensão especificada pelo ID de extensão a partir do serviço de atualização no URL de atualização especificado e instala-a silenciosamente.
 
-          Por exemplo, o <ph name="EXTENSION_POLICY_EXAMPLE"/> instala a extensão <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> a partir do URL de atualização padrão da Web Store do Chrome. Para obter mais informações sobre alojar extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Por exemplo, o <ph name="EXTENSION_POLICY_EXAMPLE"/> instala a extensão <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> a partir do URL de atualização padrão da Chrome Web Store. Para obter mais informações sobre alojar extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Os utilizadores não serão capazes de desinstalar extensões especificadas por esta política. Se remover uma extensão desta lista, a mesma será desinstalada automaticamente do <ph name="PRODUCT_NAME"/>. As extensões especificadas nesta lista também são incluídas automaticamente na lista de autorizações para instalação. A ExtensionsInstallBlacklist não as afeta.
 
@@ -849,7 +849,7 @@
 <translation id="8344454543174932833">Importar marcadores a partir do navegador predefinido na primeira execução</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="5826047473100157858">Especifica se o utilizador pode abrir páginas em modo de Navegação Anónima no <ph name="PRODUCT_NAME"/>. Se selecionar &quot;Ativada&quot; ou deixar a política por definir, as páginas podem ser abertas no modo de Navegação Anónima. Se selecionar &quot;Desativada&quot;, as páginas não podem ser abertas no modo de Navegação Anónima. Se selecionar &quot;Forçada&quot;, as páginas APENAS podem ser abertas no modo de Navegação Anónima.</translation>
-<translation id="2988031052053447965">Oculta a aplicação da Web Store do Chrome e o link do rodapé da Página Novo Separador e do iniciador de aplicações do SO Chrome.
+<translation id="2988031052053447965">Oculta a aplicação da Chrome Web Store e o link do rodapé da Página Novo Separador e do iniciador de aplicações do SO Chrome.
 
       Quando esta política está definida como verdadeira, os ícones estão ocultos.
 
@@ -1369,7 +1369,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7736666549200541892">Ativar extensão dos certificados associados ao domínio TLS</translation>
 <translation id="1796466452925192872">Permite-lhe especificar que URLs podem instalar extensões, aplicações e temas.
 
-          Desde o Chrome 21, é mais difícil instalar extensões, aplicações e scripts de utilizadores que não sejam da Web Store do Chrome. Anteriormente, os utilizadores podiam clicar num link para um ficheiro *.crx e o Chrome oferecia-se para instalar o ficheiro depois de apresentar alguns avisos. Depois do Chrome 21, este tipo de ficheiro tem de ser transferido e arrastado para a página de definições do Chrome. Esta definição permite que URLs específicos tenham o fluxo de instalação antigo e mais fácil.
+          Desde o Chrome 21, é mais difícil instalar extensões, aplicações e scripts de utilizadores que não sejam da Chrome Web Store. Anteriormente, os utilizadores podiam clicar num link para um ficheiro *.crx e o Chrome oferecia-se para instalar o ficheiro depois de apresentar alguns avisos. Depois do Chrome 21, este tipo de ficheiro tem de ser transferido e arrastado para a página de definições do Chrome. Esta definição permite que URLs específicos tenham o fluxo de instalação antigo e mais fácil.
 
           Cada item desta lista é um padrão de correspondência do estilo de extensão (ver http://code.google.com/chrome/extensions/match_patterns.html). Os utilizadores poderão instalar itens facilmente a partir de qualquer URL que corresponda a um item desta lista. Tanto a localização do ficheiro *.crx como a página a partir da qual foi iniciada a transferência (ou seja, o referenciador) têm se estar autorizadas por estes padrões.
 

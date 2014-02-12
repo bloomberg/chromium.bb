@@ -108,7 +108,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5358375970380395591">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chromium. Permanenteng mauugnay ang iyong data sa Chromium, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang mga setting sa <ph name="USER_NAME"/>. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Simulan ang Chromium</translation>
 <translation id="9036189287518468038">App Launcher ng Chromium</translation>
-<translation id="4886158514168859177">May mas bagong bersyon ng Chromium Frame na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium Frame at subukang muli.</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="95514773681268843">Kinakailangan ng <ph name="DOMAIN"/> na basahin mo at tanggapin ang sumusunod na Mga Tuntunin ng Serbisyo bago gamitin ang device na ito. Hindi pinapalawak, binabago o nililimitahan ng mga tuntuning ito ang Mga Tuntunin ng Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -172,7 +171,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="1902135785017821799">Gumagawa ng mga pagbabago sa mga setting ang <ph name="FILE_NAME"/> katulad ng ilang malware, kaya na-block ito ng Chromium.</translation>
 <translation id="3155163173539279776">Muling ilunsad ang Chromium</translation>
 <translation id="2966088006374919794">Kinakailangang maglunsad ng Chromium ng panlabas na application upang mangasiwa ng mga <ph name="SCHEME"/> na link. Ang hiniling na link ay <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Hindi ma-install ang parehong bersyon ng Chromium Frame na kasalukuyang tumatakbo. Pakisara ang Chromium Frame at subukang muli.</translation>
 <translation id="2558235863893655150">Nais mo bang i-save ng Chromium ang iyong password?</translation>
 <translation id="1231416733874080281">Ipakita ang Chromium menu</translation>
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON"/>i-restart<ph name="END_BUTTON"/> ang Chromium)</translation>
@@ -211,7 +209,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="374481098568514319">Mayroon nang mas bagong bersyon ng mga component ng Chromium ang computer na ito. Mangyaring gumamit ng mas bagong installer.</translation>
 <translation id="6240281849816458190">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng wala pang bisang certificate. Walang available na impormasyon upang isaad kung mapagkakatiwalaan ang certificate. Hindi magagarantiya ng Chromium na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang nang-aatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Tama ba ito? Kung hindi, dapat mong iwasto ang system ng orasan at i-refresh ang pahinang ito.</translation>
 <translation id="5862307444128926510">Maligayang Pagdating sa Chromium</translation>
-<translation id="1622565934590470080">May mas bagong bersyon ng Chromium at Chromium Frame na ang computer na ito. Kung hindi gumagana ang software, mangyaring parehong i-uninstall ang Chromium at Chromium Frame at subukang muli.</translation>
 <translation id="7318036098707714271">Sira o di-wasto ang file ng iyong mga kagustuhan.
 
 Hindi mabawi ng Chromium ang iyong mga setting.</translation>

@@ -40,7 +40,7 @@
 <translation id="3353284378027041011">Pred <ph name="NUMBER_FEW"/> dňami</translation>
 <translation id="5076340679995252485">&amp;Vložiť</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
-<translation id="364720409959344976">Výber priečinka na odovzdanie</translation>
+<translation id="364720409959344976">Výber priečinka na nahranie</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="3234408098842461169">Šípka nadol</translation>
@@ -129,7 +129,7 @@
 <translation id="6808150112686056157">Médiá – zastaviť</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
-<translation id="1243314992276662751">Odovzdať</translation>
+<translation id="1243314992276662751">Nahrať</translation>
 <translation id="50030952220075532">Zostáva <ph name="NUMBER_ONE"/> deň</translation>
 <translation id="8179976553408161302">Začať</translation>
 <translation id="945522503751344254">Poslať pripomienky</translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Käynnistä Chrome-sovelluksia</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
-<translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="3140883423282498090">Muutokset tulevat voimaan, kun käynnistät Google Chromen seuraavan kerran.</translation>
 <translation id="1773601347087397504">Apua Chrome-käyttöjärjestelmän käytössä</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Virheelliset argumentit. Google Chrome -kehystä ei voi asentaa ilman Google Chromen asennusta.</translation>
 <translation id="8684521613357479262">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti varmenteen, joka ei ole vielä voimassa. Emme voi selvittää, onko varmenne luotettava. Google Chrome ei voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Tässä tietokoneessa on jo Google Chromen uudempi versio ja Google Chrome -kehys. Jos sovellus ei toimi, poista sekä Google Chrome että Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="3149510190863420837">Chrome-sovellukset</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -150,7 +148,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
         uudelleen suorituskyvyn parantamiseksi.</translation>
 <translation id="61852838583753520">Päivitä &amp;Chrome-käyttöjärjestelmä</translation>
 <translation id="8547799825197623713">Chrome Canary -sovellusten käynnistysohjelma</translation>
-<translation id="5577648424992741236">Tietokoneessa on jo Google Chrome -kehyksen uudempi versio. Jos sovellus ei toimi, poista Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6326175484149238433">Poista Chromesta</translation>
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>

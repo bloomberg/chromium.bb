@@ -754,7 +754,7 @@ Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; 
       de l'URL à l'origine de la demande. En cas de correspondance, l'accès aux
       appareils de capture audio est autorisé sans avis préalable.
 
-      REMARQUE : Cette règle est n'acceptée qu'en mode Borne pour le moment.</translation>
+      REMARQUE : Cette règle est n'acceptée qu'en mode Kiosque pour le moment.</translation>
 <translation id="489803897780524242">Paramètre contrôlant le positionnement des termes de recherche pour le moteur de recherche par défaut</translation>
 <translation id="316778957754360075">Ce paramètre a été supprimé à partir de la version 29 de <ph name="PRODUCT_NAME"/>. Pour configurer des collections d'extensions et d'applications hébergées par l'organisation, il est recommandé d'inclure le site hébergeant les packages CRX dans ExtensionInstallSources et d'insérer des liens directs de téléchargement dans les packages sur une page Web. Il est possible de créer un lanceur d'applications pour cette page à l'aide de la règle ExtensionInstallForcelist.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
@@ -1495,7 +1495,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle est définie sur &quot;False&quot;, ni l'utilisateur, ni les applications, ni les extensions ne peuvent utiliser le mode plein écran.
 
-      Sur toutes les plates-formes, à l'exception de <ph name="PRODUCT_OS_NAME"/>, le mode Borne n'est pas disponible lorsque le mode plein écran est activé.</translation>
+      Sur toutes les plates-formes, à l'exception de <ph name="PRODUCT_OS_NAME"/>, le mode Kiosque n'est pas disponible lorsque le mode plein écran est activé.</translation>
 <translation id="4325690621216251241">Ajouter un bouton de déconnexion dans la barre d'état système</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="1465619815762735808">Cliquer pour lire</translation>

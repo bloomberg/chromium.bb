@@ -1001,7 +1001,6 @@
 <translation id="4992576607980257687">‏هنگامی‌که یک سایت می‌خواهد از پیام‌های منحصر به فرد سیستم جهت دسترسی به دستگاه‌های MIDI استفاده کند، از من سؤال شود (توصیه می‌شود)</translation>
 <translation id="1407050882688520094">شما گواهی هایی برای فایل دارید که اعتبارهای این گواهی را شناسایی می‌کنند:</translation>
 <translation id="6063810760121779748">‏از کار انداختن WebAudio</translation>
-<translation id="7070112048468833248">‏فعال کردن پشتیبانی Chromecast</translation>
 <translation id="1051694321716046412">سفارشی کردن کاربر...</translation>
 <translation id="4287689875748136217">بارگیری صفحهٔ وب ممکن نیست زیرا سرور داده‌ای ارسال نکرده است.</translation>
 <translation id="1634788685286903402">برای شناسایی کاربران ایمیل، به این مجوز اطمینان شود.</translation>
@@ -1510,6 +1509,7 @@
 <translation id="4803909571878637176">در حال حذف نصب</translation>
 <translation id="5209518306177824490">‏اثر انگشت SHA-1</translation>
 <translation id="2546283357679194313">کوکی‌ها و داده‌های سایت</translation>
+<translation id="4926150172344704583">کانادا</translation>
 <translation id="7447657194129453603">وضعیت شبکه:</translation>
 <translation id="4958444002117714549">بزرگ کردن لیست</translation>
 <translation id="4683290000467574211">قابلیت آزمایشی میزبانی برنامه به طور ساده‌تر را فعال می‌کند.</translation>
@@ -1981,7 +1981,6 @@
 <translation id="1546703252838446285">در حساب <ph name="ACCOUNT_EMAIL"/> شما، این می‌تواند:</translation>
 <translation id="6556866813142980365">انجام مجدد</translation>
 <translation id="8824701697284169214">افزودن &amp;صفحه...</translation>
-<translation id="6079113045416226952">‏Google Now بر روی دسک‌تاپ شما!</translation>
 <translation id="981210574958082923">‏تغییر ترتیب نتایج در HistoryQuickProvider برای قرار دادن آنها درون خط</translation>
 <translation id="6466988389784393586">&amp;باز کردن همه نشانک‌ها</translation>
 <translation id="9193357432624119544">کد خطا: <ph name="ERROR_NAME"/></translation>
@@ -2037,6 +2036,7 @@
 <translation id="7014051144917845222">سعی در اتصال <ph name="PRODUCT_NAME"/> به <ph name="HOST_NAME"/> رد شده است. وب سایت‌ها ممکن است خراب باشند یا شبکه شما بدرستی پیکربندی نشده باشد.</translation>
 <translation id="2097372108957554726">‏برای ثبت دستگاه‌های جدید باید به سیستم Chrome وارد شوید</translation>
 <translation id="4332213577120623185">برای تکمیل این خرید اطلاعات بیشتری لازم است.</translation>
+<translation id="9201305942933582053">‏Google Now برای Chrome!</translation>
 <translation id="1708338024780164500">(غیرفعال)</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="8986362086234534611">فراموش شود</translation>
@@ -2288,7 +2288,6 @@
 <translation id="7341982465543599097">بسیار کوتاه</translation>
 <translation id="7314244761674113881">‏میزبان SOCKS</translation>
 <translation id="4630590996962964935">نویسه نامعتبر: 1$</translation>
-<translation id="4089968049353467425">بهینه‌سازی دستگاه‌های ارزان‌قیمت را لغو می‌کند.</translation>
 <translation id="7460131386973988868">‏پیکربندی ip استاتیک را فعال کنید. ممکن است کار نکند.</translation>
 <translation id="7709980197120276510">با کلیک کردن روی ادامه با <ph name="LEGAL_DOC_LINK_TEXT_1"/>،‏ <ph name="LEGAL_DOC_LINK_TEXT_2"/>،‏ <ph name="LEGAL_DOC_LINK_TEXT_3"/>،‏ <ph name="LEGAL_DOC_LINK_TEXT_4"/> و <ph name="LEGAL_DOC_LINK_TEXT_5"/> موافقت می‌کنید.</translation>
 <translation id="1840000081943778840">‏فعال کردن SPDY/4 alpha 2</translation>
@@ -2554,6 +2553,7 @@
 <translation id="2058632120927660550">خطایی روی داد. لطفاً چاپگرتان را بررسی کرده، دوباره امتحان کنید.</translation>
 <translation id="539295039523818097">مشکلی در ارتباط با میکروفن شما وجود داشت.</translation>
 <translation id="7595321929944401166">این افزونه پشتیبانی نمی‌شود.</translation>
+<translation id="2580093683987647761">جهت درخواست شارژر جایگزین رایگان، لطفاً با شماره ۱۳۷۱ -۶۲۸ (۸۶۶) (ایالات متحده)، ۱۳۷۲ -۶۲۸ (۸۶۶) (کانادا)، یا ۰۶۱۳ ۰۲۶ ۰۸۰۰ (انگلیس) تماس بگیرید.</translation>
 <translation id="4935613694514038624">آماده سازی برای اولین ورود سازمانی...</translation>
 <translation id="3996912167543967198">در حال بازنشانی...</translation>
 <translation id="4479639480957787382">اترنت</translation>
@@ -2646,7 +2646,6 @@
 <translation id="5434065355175441495">‏PKCS #1 RSA رمزگذاری</translation>
 <translation id="7073704676847768330">احتمالاً این سایتی نیست که شما می‌خواستید!</translation>
 <translation id="8477384620836102176">&amp;عمومی</translation>
-<translation id="900093400474539372">خرد کردن لایه</translation>
 <translation id="8059417245945632445">&amp;بازرسی دستگاه‌ها</translation>
 <translation id="3391392691301057522">پین قدیمی:</translation>
 <translation id="96421021576709873">‏شبکه‌ Wi-Fi</translation>
@@ -3038,7 +3037,6 @@
 <translation id="8793043992023823866">در حال وارد کردن...</translation>
 <translation id="8106211421800660735">شمارهٔ کارت اعتباری</translation>
 <translation id="9159562891634783594">‏گزینه ثبت چاپگرهای cloud ثبت نشده را در بخش پیش‌نمایش چاپ فعال می‌کند.</translation>
-<translation id="6244494354618367048">حالت دستگاه ارزان‌قیمت.</translation>
 <translation id="8843709518995654957">برای این دستگاه <ph name="LINK_START"/>کاربر نظارت‌شده ایجاد کنید<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="8986267729801483565">مکان دانلود:</translation>
@@ -3314,8 +3312,6 @@
 <translation id="5328205483471986666">اتصال اینترنت‌تان را بررسی کنید.</translation>
 <translation id="2610780100389066815">‏امضای لیست اطمینان Microsoft</translation>
 <translation id="4535353504827549990">پنجره تعویض زمان</translation>
-<translation id="1403594069892831402">‏لایه‌هایی که با دیگر محتوای مرکب همپوشانی دارند نیز باید برای حصول اطمینان از ترتیب رنگ درست، مرکب شوند. این قابلیت به Blink این امکان را می‌دهد تا چند RenderLayer را رنگ کند
-        به یک لایه مرکب زیرشاخه می‌زند تا بتوانیم از تعداد زیادی لایه‌های مرکب غیرضروری اجتناب کنیم.</translation>
 <translation id="2788575669734834343">انتخاب فایل گواهی</translation>
 <translation id="8267453826113867474">مسدود کردن لغات توهین آمیز</translation>
 <translation id="7959074893852789871">این فایل دارای چندین مجوز است، برخی از آن‌ها وارد نشده‌اند:</translation>
@@ -3783,7 +3779,6 @@
 <translation id="8026964361287906498">(تحت مدیریت براساس خط مشی شرکت)</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="7800518121066352902">چرخاندن خلاف جهت ع&amp;قربه‌های ساعت</translation>
-<translation id="4531327707205555741">‏فعال کردن پخش ویدیوها از راه دور در Chromecast.</translation>
 <translation id="345693547134384690">باز کردن &amp;تصویر در برگهٔ جدید</translation>
 <translation id="7422192691352527311">موارد برگزیده...</translation>
 <translation id="9004952710076978168">یک اعلان برای یک چاپگر ناشناس دریافت شد.</translation>

@@ -105,7 +105,6 @@
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">A Chromium indítása</translation>
 <translation id="9036189287518468038">Chromium Alkalmazásindító</translation>
-<translation id="4886158514168859177">A számítógépen már megtalálható a Chromium Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromium Frame-et, majd próbálkozzon újra.</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN"/> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -165,7 +164,6 @@
 <translation id="1902135785017821799">A(z) <ph name="FILE_NAME"/> egyes rosszindulatú programokhoz hasonló módon módosítja a beállításokat, ezért a Chromium letiltotta.</translation>
 <translation id="3155163173539279776">A Chromium újraindítása</translation>
 <translation id="2966088006374919794">A Chromiumnak külső alkalmazást kell indítania a(z) <ph name="SCHEME"/> linkek kezeléséhez. A kért link: <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Nem lehet ugyanazt a Chromium Frame-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromium Frame-et, és próbálja újra.</translation>
 <translation id="2558235863893655150">Szeretné, hogy a Chromium mentse a jelszavát?</translation>
 <translation id="1231416733874080281">Chromium menü megjelenítése</translation>
 <translation id="5772805321386874569">(a Chromium <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
@@ -204,7 +202,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="374481098568514319">Ez a számítógép már rendelkezik a Chromium komponensek egy újabb változatával. Kérjük, használjon újabb telepítőt.</translation>
 <translation id="6240281849816458190">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Chromium nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, állítsa át a rendszer óráját, és töltse be újra az oldalt.</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>
-<translation id="1622565934590470080">A számítógépen már megtalálható a Chromium és a Chromium Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromiumot és a Chromium Frame-et, majd próbálkozzon újra.</translation>
 <translation id="7318036098707714271">A beállításait tartalmazó fájl hibás vagy érvénytelen.
 
 A Chromium nem tudja visszaállítani a beállításait.</translation>

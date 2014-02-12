@@ -1000,7 +1000,6 @@ suojaamattomia yhteyksiä.<ph name="PRODUCT_NAME"/></translation>
 <translation id="4992576607980257687">Kysy minulta sivuston halutessa käyttää MIDI-laitteita järjestelmän omien viestien avulla (suositus)</translation>
 <translation id="1407050882688520094">Olet tallentanut seuraavat varmenteen myöntäjät tunnistavat varmenteet:</translation>
 <translation id="6063810760121779748">Poista WebAudio käytöstä</translation>
-<translation id="7070112048468833248">Ota Chromecast-tuki käyttöön</translation>
 <translation id="1051694321716046412">Muokkaa käyttäjää...</translation>
 <translation id="4287689875748136217">Verkkosivua ei voi ladata, koska palvelin ei lähetä tietoja.</translation>
 <translation id="1634788685286903402">Luota tähän varmenteeseen sähköpostin käyttäjien tunnistamisessa.</translation>
@@ -1339,7 +1338,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8412498037462710569">Vahvistan, etten halua vastaanottaa ilmaista korvaavaa laturia.</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
 <translation id="5431473096922271583">Haluamme tarkistaa, käytätkö alkuperäistä laturia.</translation>
-<translation id="3478477114335130296">Joitakin asetuksiasi on voitu muuttaa tietämättäsi.</translation>
+<translation id="3478477114335130296">Joitakin asetuksiasi on saatettu muuttaa tietämättäsi.</translation>
 <translation id="3866443872548686097">Palautustietoväline on valmis. Voit irrottaa sen tietokoneestasi.</translation>
 <translation id="6824564591481349393">Kopioi sähköpostiosoit&amp;e</translation>
 <translation id="907148966137935206">Älä salli sivustojen näyttää ponnahdusikkunoita (suositus)</translation>
@@ -1508,6 +1507,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="4803909571878637176">Asennuksen poistaminen</translation>
 <translation id="5209518306177824490">SHA-1-tunnistetiedosto</translation>
 <translation id="2546283357679194313">Evästeet ja sivustotiedot</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Verkon tila: </translation>
 <translation id="4958444002117714549">Laajenna luettelo</translation>
 <translation id="4683290000467574211">Ottaa käyttöön kokeellisen, virtaviivaisemman ylläpidetyn sovelluskokemuksen.</translation>
@@ -1976,7 +1976,6 @@ Tilisi kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="1546703252838446285">Tililläsi (<ph name="ACCOUNT_EMAIL"/>) laajennus voi</translation>
 <translation id="6556866813142980365">Tee uudelleen</translation>
 <translation id="8824701697284169214">Lisää sivu...</translation>
-<translation id="6079113045416226952">Googlen Nyt-palvelu työpöydällesi!</translation>
 <translation id="981210574958082923">Järjestä tulokset upottamisen perusteella HistoryQuickProviderissa</translation>
 <translation id="6466988389784393586">Avaa kaikki kirjanmerkit</translation>
 <translation id="9193357432624119544">Virhekoodi: <ph name="ERROR_NAME"/></translation>
@@ -2029,6 +2028,7 @@ Tilisi kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> ei voinut muodostaa yhteyttä osoitteeseen <ph name="HOST_NAME"/>. Sivusto voi olla pois käytöstä tai verkon asetuksissa voi olla virhe.</translation>
 <translation id="2097372108957554726">Sinun on kirjauduttava sisään Chromeen, jos haluat rekisteröidä uusia laitteita</translation>
 <translation id="4332213577120623185">Tämän ostoksen suorittamiseen tarvitaan lisätietoja.</translation>
+<translation id="9201305942933582053">Googlen Nyt-palvelu Chromelle.</translation>
 <translation id="1708338024780164500">(Ei-aktiivinen)</translation>
 <translation id="6896758677409633944">Kopioi</translation>
 <translation id="8986362086234534611">Unohda</translation>
@@ -2278,7 +2278,6 @@ Tilisi kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="7341982465543599097">erittäin pieni</translation>
 <translation id="7314244761674113881">SOCKS-isäntä</translation>
 <translation id="4630590996962964935">Virheellinen merkki: $1</translation>
-<translation id="4089968049353467425">Ohittaa edullisempia laitteita varten suoritetun optimoinnin.</translation>
 <translation id="7460131386973988868">Mahdollistaa staattisen IP-osoitteiden määrityksen. Ei välttämättä toimi.</translation>
 <translation id="7709980197120276510">Klikkaamalla Jatka hyväksyt seuraavat ehdot ja käytännöt: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> ja <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Ota käyttöön SPDY/4:n alfaversio 2</translation>
@@ -2544,6 +2543,7 @@ Tilisi kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2058632120927660550">Tapahtui virhe. Tarkista tulostimesi ja yritä uudelleen.</translation>
 <translation id="539295039523818097">Ongelma mikrofonissa.</translation>
 <translation id="7595321929944401166">Tätä laajennusta ei tueta.</translation>
+<translation id="2580093683987647761">Soita numeroon (866) 628 1371 (Yhdysvallat), (866) 628 1372 (Kanada) tai 0800 026 0613 (Iso-Britannia) ja pyydä maksutonta vaihtolaturia.</translation>
 <translation id="4935613694514038624">Valmistaudutaan ensimmäiseen enterprise-sisäänkirjautumiseen...</translation>
 <translation id="3996912167543967198">Nollataan…</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2627,7 +2627,6 @@ Sinun on oltava kirjautuneena sisään, jotta voit käyttää tätä ominaisuutt
 <translation id="5434065355175441495">PKCS #1 RSA-salaus</translation>
 <translation id="7073704676847768330">Tämä ei todennäköisesti ole etsimäsi sivu!</translation>
 <translation id="8477384620836102176">&amp;Yleistä</translation>
-<translation id="900093400474539372">Tasojen litistäminen</translation>
 <translation id="8059417245945632445">Tark&amp;ista laitteet</translation>
 <translation id="3391392691301057522">Vanha PIN-koodi</translation>
 <translation id="96421021576709873">Wifi-verkko</translation>
@@ -3021,7 +3020,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi <ph name="ACCOUNT_EMAIL
 <translation id="8793043992023823866">Tuodaan...</translation>
 <translation id="8106211421800660735">Luottokortin numero</translation>
 <translation id="9159562891634783594">Ota käyttöön rekisteröimättömien pilvitulostimien rekisteröinti tulostuksen esikatselusta.</translation>
-<translation id="6244494354618367048">Edullisemmille laitteille tarkoitettu tila.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Luo valvottu käyttäjä<ph name="LINK_END"/> tälle laitteelle.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="8986267729801483565">Latausten tallennuspaikka:</translation>
@@ -3297,7 +3295,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="5328205483471986666">Tarkista internetyhteytesi.</translation>
 <translation id="2610780100389066815">Microsoft-luottamusluettelon allekirjoitus</translation>
 <translation id="4535353504827549990">Vaihda aikaväliä</translation>
-<translation id="1403594069892831402">Muun yhdistelmäsisällön kanssa päällekkäisten tasojen täytyy myös olla yhdistelmiä, jotta piirtojärjestys pysyy oikeana. Tämä ominaisuus antaa Blinkin piirtää useita RenderLayer-alapuita yhteen yhdistelmätasoon. Näin vältytään suurelta yhdistelmätasojen lukumäärältä.</translation>
 <translation id="2788575669734834343">Valitse varmennetiedosto</translation>
 <translation id="8267453826113867474">Estä loukkaavat sanat</translation>
 <translation id="7959074893852789871">Tiedostossa oli useita varmenteita, joista kaikkia ei tuotu:</translation>
@@ -3764,7 +3761,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="8026964361287906498">(Yrityskäytännön hallinnoima)</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="7800518121066352902">Käännä &amp;vastapäivään</translation>
-<translation id="4531327707205555741">Ota käyttöön videoiden etätoisto Chromecastissa.</translation>
 <translation id="345693547134384690">Avaa &amp;kuva uudessa välilehdessä</translation>
 <translation id="7422192691352527311">Asetukset...</translation>
 <translation id="9004952710076978168">Vastaanotti ilmoituksen tuntemattomasta tulostimesta.</translation>
@@ -4570,7 +4566,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="3695919544155087829">Anna salasana, jota käytettiin tämän varmennetiedoston salaamiseen.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Asenna <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Presentaatiot</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> toimii vain työpöytätilassa.</translation>
 <translation id="5117930984404104619">Seuraa muiden laajennusten toimia, mukaan lukien käydyt URL-osoitteet</translation>
 <translation id="33022249435934718">GDI-kahvat</translation>

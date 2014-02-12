@@ -999,7 +999,6 @@
 <translation id="4992576607980257687">每當有網站要使用系統專用訊息存取 MIDI 裝置時詢問我 (建議使用)</translation>
 <translation id="1407050882688520094">您的檔案具備可以識別這些憑證授權的憑證：</translation>
 <translation id="6063810760121779748">停用 WebAudio</translation>
-<translation id="7070112048468833248">啟用 Chromecast 支援</translation>
 <translation id="1051694321716046412">自訂使用者...</translation>
 <translation id="4287689875748136217">伺服器未傳送資料，因此無法載入網頁。</translation>
 <translation id="1634788685286903402">信任這個用於識別電子郵件使用者的憑證。</translation>
@@ -1509,6 +1508,7 @@
 <translation id="4803909571878637176">解除安裝</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="2546283357679194313">Cookie 和網站資料</translation>
+<translation id="4926150172344704583">加拿大</translation>
 <translation id="7447657194129453603">網路狀態：</translation>
 <translation id="4958444002117714549">展開清單</translation>
 <translation id="4683290000467574211">啟用實驗性的簡易版代管應用程式。</translation>
@@ -1985,7 +1985,6 @@
 <translation id="1546703252838446285">擴充功能可透過您的「<ph name="ACCOUNT_EMAIL"/>」帳戶執行下列工作：</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="8824701697284169214">新增網頁(&amp;G)...</translation>
-<translation id="6079113045416226952">歡迎在桌面上使用 Google 即時資訊！</translation>
 <translation id="981210574958082923">重新排序 HistoryQuickProvider 中的內嵌結果</translation>
 <translation id="6466988389784393586">開啟所有書籤(&amp;O)</translation>
 <translation id="9193357432624119544">錯誤代碼：<ph name="ERROR_NAME"/></translation>
@@ -2038,6 +2037,7 @@
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> 試圖連線至 <ph name="HOST_NAME"/> 的要求遭到拒絕。網站可能無法使用，或是您的網路設定可能有誤。</translation>
 <translation id="2097372108957554726">您必須登入 Chrome 註冊新裝置</translation>
 <translation id="4332213577120623185">您必須提供更多資訊，才能完成本次購物程序。</translation>
+<translation id="9201305942933582053">歡迎使用 Google 即時資訊 Chrome 版！</translation>
 <translation id="1708338024780164500">(無法使用)</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="8986362086234534611">清除</translation>
@@ -2289,7 +2289,6 @@
 <translation id="7341982465543599097">極短</translation>
 <translation id="7314244761674113881">SOCKS 主機</translation>
 <translation id="4630590996962964935">無效的字元：「$1」</translation>
-<translation id="4089968049353467425">覆寫低端裝置的最佳化設定。</translation>
 <translation id="7460131386973988868">啟用靜態 IP 設定。可能無法運作。</translation>
 <translation id="7709980197120276510">按一下 [繼續] 即表示您同意接受《<ph name="LEGAL_DOC_LINK_TEXT_1"/>》、《<ph name="LEGAL_DOC_LINK_TEXT_2"/>》、《<ph name="LEGAL_DOC_LINK_TEXT_3"/>》、《<ph name="LEGAL_DOC_LINK_TEXT_4"/>》和《<ph name="LEGAL_DOC_LINK_TEXT_5"/>》中的各項規定。</translation>
 <translation id="1840000081943778840">啟用 SPDY/4 alpha 2</translation>
@@ -2561,6 +2560,7 @@
 <translation id="2058632120927660550">發生錯誤。請檢查您的印表機，然後再試一次。</translation>
 <translation id="539295039523818097">您的麥克風發生問題了。</translation>
 <translation id="7595321929944401166">系統不支援這個外掛程式。</translation>
+<translation id="2580093683987647761">請撥打 (866) 628-1371 (美國)、(866) 628-1372 (加拿大) 或 0800 026 0613 (英國)，免費索取新的充電器。</translation>
 <translation id="4935613694514038624">正在準備初次登入企業環境...</translation>
 <translation id="3996912167543967198">重設中...</translation>
 <translation id="4479639480957787382">乙太網路</translation>
@@ -2645,7 +2645,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
 <translation id="7073704676847768330">這可能不是您在找的網站!</translation>
 <translation id="8477384620836102176">一般(&amp;G)</translation>
-<translation id="900093400474539372">壓縮圖層</translation>
 <translation id="8059417245945632445">檢查裝置 (&amp;I)</translation>
 <translation id="3391392691301057522">舊 PIN：</translation>
 <translation id="96421021576709873">Wi-Fi 網路</translation>
@@ -3039,7 +3038,6 @@
 <translation id="8793043992023823866">匯入中...</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="9159562891634783594">允許透過預覽列印為尚未註冊的雲端印表機註冊。</translation>
-<translation id="6244494354618367048">低端裝置模式。</translation>
 <translation id="8843709518995654957">為這個裝置<ph name="LINK_START"/>建立受監管的使用者<ph name="LINK_END"/>。</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="8986267729801483565">檔案下載儲存位置：</translation>
@@ -3317,7 +3315,6 @@
 <translation id="5328205483471986666">檢查網際網路連線</translation>
 <translation id="2610780100389066815">Microsoft 信任清單簽署</translation>
 <translation id="4535353504827549990">切換時間視窗</translation>
-<translation id="1403594069892831402">與其他合成內容重疊的圖層也要一起合併，確保繪圖順序正確無誤。這項功能可確保 Blink 將多個 RenderLayer 樹狀子目錄繪製到單一合成圖層中，以免產生大量多餘的合成圖層。</translation>
 <translation id="2788575669734834343">選取憑證檔案</translation>
 <translation id="8267453826113867474">封鎖粗俗字眼</translation>
 <translation id="7959074893852789871">檔案含有多個憑證，但某些無法匯入：</translation>
@@ -3786,7 +3783,6 @@
 <translation id="8026964361287906498">(由公司政策管理)</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="7800518121066352902">逆時針旋轉(&amp;O)</translation>
-<translation id="4531327707205555741">啟用在 Chromecast 上從遠端播放影片。</translation>
 <translation id="345693547134384690">在新分頁中開啟影像(&amp;I)</translation>
 <translation id="7422192691352527311">偏好設定...</translation>
 <translation id="9004952710076978168">收到不明印表機的通知。</translation>

@@ -1014,7 +1014,6 @@
 <translation id="4992576607980257687">Питај ме када сајт жели да користи ексклузивне поруке система за приступ MIDI уређајима (препоручено)</translation>
 <translation id="1407050882688520094">На датотеци постоје сертификати који идентификују следеће ауторитете за издавање сертификата:</translation>
 <translation id="6063810760121779748">Онемогући WebAudio</translation>
-<translation id="7070112048468833248">Омогући подршку за Chromecast</translation>
 <translation id="1051694321716046412">Прилагоди корисника...</translation>
 <translation id="4287689875748136217">Није могуће учитати веб-страницу јер сервер није послао никакве податке.</translation>
 <translation id="1634788685286903402">Овај сертификат је поуздан за идентификацију корисника е-поште.</translation>
@@ -1525,6 +1524,7 @@
 <translation id="4803909571878637176">Деинсталирање</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Колачићи и подаци о сајтовима</translation>
+<translation id="4926150172344704583">Канада</translation>
 <translation id="7447657194129453603">Статус мреже:</translation>
 <translation id="4958444002117714549">Прошири листу</translation>
 <translation id="4683290000467574211">Омогућава експерименталан, поједностављен доживљај хостованих апликација.</translation>
@@ -2004,7 +2004,6 @@
 <translation id="1546703252838446285">На налогу <ph name="ACCOUNT_EMAIL"/> додатак може:</translation>
 <translation id="6556866813142980365">Понови</translation>
 <translation id="8824701697284169214">Додај стра&amp;ницу...</translation>
-<translation id="6079113045416226952">Google тренутно на рачунару!</translation>
 <translation id="981210574958082923">Промена распореда резултата за уграђивање у HistoryQuickProvider-у</translation>
 <translation id="6466988389784393586">&amp;Отвори све обележиваче</translation>
 <translation id="9193357432624119544">Кôд грешке: <ph name="ERROR_NAME"/></translation>
@@ -2060,6 +2059,7 @@
 <translation id="7014051144917845222">Покушај производа <ph name="PRODUCT_NAME"/> да се повеже са хостом <ph name="HOST_NAME"/> је одбијен. Можда је веб сајт неисправан или мрежа није правилно конфигурисана.</translation>
 <translation id="2097372108957554726">Потребно је да се пријавите у Chrome да бисте регистровали нове уређаје</translation>
 <translation id="4332213577120623185">Да бисте завршили ову куповину, потребно је више информација.</translation>
+<translation id="9201305942933582053">Google тренутно за Chrome!</translation>
 <translation id="1708338024780164500">(Неактивно)</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="8986362086234534611">Заборави</translation>
@@ -2309,7 +2309,6 @@
 <translation id="7341982465543599097">изузетно кратко</translation>
 <translation id="7314244761674113881">SOCKS хост</translation>
 <translation id="4630590996962964935">Неважећи знак: $1</translation>
-<translation id="4089968049353467425">Замењује оптимизације уређаја слабијег квалитета.</translation>
 <translation id="7460131386973988868">Омогућава конфигурацију статичне IP адресе. Можда неће функционисати.</translation>
 <translation id="7709980197120276510">Кликом на Настави прихватате документе <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> и <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Омогући SPDY/4 алфа 2</translation>
@@ -2581,6 +2580,7 @@
 <translation id="2058632120927660550">Дошло је до грешке. Проверите штампач и покушајте поново.</translation>
 <translation id="539295039523818097">Дошло је до проблема са микрофоном.</translation>
 <translation id="7595321929944401166">Ова додатна компонента није подржана.</translation>
+<translation id="2580093683987647761">Позовите (866) 628 1371 (САД), (866) 628 1372 (Канада) или 0800 026 0613 (УК) да бисте захтевали бесплатни нови пуњач.</translation>
 <translation id="4935613694514038624">Припрема за прво пријављивање на издање за предузећа...</translation>
 <translation id="3996912167543967198">Враћање на почетне вредности...</translation>
 <translation id="4479639480957787382">Етернет</translation>
@@ -2673,7 +2673,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA шифровање</translation>
 <translation id="7073704676847768330">Ово вероватно није сајт који тражите!</translation>
 <translation id="8477384620836102176">&amp;Опште</translation>
-<translation id="900093400474539372">Стапање слојева</translation>
 <translation id="8059417245945632445">&amp;Испитај уређаје</translation>
 <translation id="3391392691301057522">Стари PIN:</translation>
 <translation id="96421021576709873">Wi-Fi мрежа</translation>
@@ -3067,7 +3066,6 @@
 <translation id="8793043992023823866">Увоз...</translation>
 <translation id="8106211421800660735">Број кредитне картице</translation>
 <translation id="9159562891634783594">Омогућите регистрацију нерегистрованих клауд штампача из прегледа пре штампања.</translation>
-<translation id="6244494354618367048">Режим уређаја слабијег квалитета.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Направи корисника под надзором<ph name="LINK_END"/> за овај уређај.</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="8986267729801483565">Локација преузимања:</translation>
@@ -3343,8 +3341,6 @@
 <translation id="5328205483471986666">Проверите интернет везу.</translation>
 <translation id="2610780100389066815">Потписивање Microsoft листе поузданих</translation>
 <translation id="4535353504827549990">Прозор за промену времена</translation>
-<translation id="1403594069892831402">Од слојева који се преклапају са другим композитним садржајем такође треба правити композитне целине да би се обезбедио тачан редослед бојења. Ова функција омогућава Blink-у да обоји више RenderLayer
-        подстабала као један композитни слој да бисмо могли да избегнемо непотребно велики број композитних слојева.</translation>
 <translation id="2788575669734834343">Изабери датотеку сертификата</translation>
 <translation id="8267453826113867474">Блокирај увредљиве речи</translation>
 <translation id="7959074893852789871">Датотека садржи више сертификата, од којих неки нису увезени:</translation>
@@ -3813,7 +3809,6 @@
 <translation id="8026964361287906498">(Управља се према смерницама за предузећа)</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="7800518121066352902">Окрећи у с&amp;меру супротном од кретања казаљке на сату</translation>
-<translation id="4531327707205555741">Омогућите даљинско пуштање видео снимака на Chromecast-у.</translation>
 <translation id="345693547134384690">Отвори &amp;слику у новој картици</translation>
 <translation id="7422192691352527311">Подешавања...</translation>
 <translation id="9004952710076978168">Примљено је обавештење за непознати штампач.</translation>

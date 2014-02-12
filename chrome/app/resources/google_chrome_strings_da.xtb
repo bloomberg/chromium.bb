@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Åbn Chrome-apps</translation>
 <translation id="2370289711218562573">Google Chrome importerer nu Foretrukne/Bogmærker.</translation>
 <translation id="2721687379934343312">På Mac gemmes adgangskoder i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
-<translation id="1761870329818521071">Det er ikke muligt at installere samme version af Google Chrome Frame som den, der allerede kører. Luk Google Chrome Frame, og prøv igen.</translation>
 <translation id="6014844626092547096">Du er nu logget ind på Chrome. Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="3140883423282498090">Dine ændringer træder i kraft, næste gang du åbner Google Chrome.</translation>
 <translation id="1773601347087397504">Få hjælp til at bruge Chrome OS</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Ugyldige argumenter. Google Chrome Frame kan ikke installeres i klar tilstand uden installation af Google Chrome.</translation>
 <translation id="8684521613357479262">Du forsøgte at besøge &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, der endnu ikke er gyldigt. Der er ingen tilgængelige oplysninger, der indikerer, om certifikatet stammer fra en kilde, der er tillid til. Google Chrome kan ikke med sikkerhed garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en angriber. Uret på din computer viser i øjeblikket <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, bør du rette systemuret og derefter opdatere siden.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Denne computer har allerede en nyere version af Google Chrome og Google Chrome Frame. Hvis softwaren ikke fungerer, skal du afinstallere både Google Chrome og Google Chrome Frame og prøve igen.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> er skadelig, og Chrome har blokeret den.</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -149,7 +147,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
         igen for at forbedre effektiviteten.</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome-applikationslisten for Canary</translation>
-<translation id="5577648424992741236">Denne computer har allerede en nyere version af Google Chrome Frame. Hvis programmet ikke virker, skal du afinstallere Google Chrome Frame og downloade det igen.</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="2871893339301912279">Du er logget ind på Chrome.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>

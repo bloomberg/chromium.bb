@@ -344,7 +344,7 @@
 <translation id="660380282187945520">F9</translation>
 <translation id="8876215549894133151">Formát:</translation>
 <translation id="8860454412039442620">Tabulka aplikace Excel</translation>
-<translation id="5234764350956374838">Odmítnout</translation>
+<translation id="5234764350956374838">Zavřít</translation>
 <translation id="5245965967288377800">Síť WiMAX</translation>
 <translation id="40027638859996362">Přesunutí slova</translation>
 <translation id="6303187936217840894">Nastavení prohlížeče bude obnoveno na původní výchozí hodnoty. Resetuje se vaše domovská stránka, stránka Nová karta a vyhledávač, deaktivují se rozšíření a uvolní se všechny karty. Budou také vymazána další dočasná data a data uložená v mezipaměti, například soubory cookies a data obsahu a webů.</translation>
@@ -1004,7 +1004,6 @@
 <translation id="4992576607980257687">Zeptat se, když chce web využít exkluzivní zprávy systému pro přístup k zařízením MIDI (doporučeno)</translation>
 <translation id="1407050882688520094">Máte založené certifikáty, které identifikují tyto certifikační autority:</translation>
 <translation id="6063810760121779748">Deaktivovat rozhraní WebAudio</translation>
-<translation id="7070112048468833248">Aktivovat podporu zařízení Chromecast</translation>
 <translation id="1051694321716046412">Přizpůsobit uživatele...</translation>
 <translation id="4287689875748136217">Stránku nelze načíst, protože server neodeslal žádná data.</translation>
 <translation id="1634788685286903402">Důvěřovat tomuto certifikátu k ověřování uživatelů e-mailu.</translation>
@@ -1513,6 +1512,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="4803909571878637176">Odinstalace</translation>
 <translation id="5209518306177824490">Digitální otisk SHA-1</translation>
 <translation id="2546283357679194313">Soubory cookie a data webu</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Stav sítě:</translation>
 <translation id="4958444002117714549">Rozbalit seznam</translation>
 <translation id="4683290000467574211">Aktivuje experimentální jednodušší prostředí hostované aplikace.</translation>
@@ -1994,7 +1994,6 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="1546703252838446285">Ve vašem účtu <ph name="ACCOUNT_EMAIL"/> může:</translation>
 <translation id="6556866813142980365">Opakovat</translation>
 <translation id="8824701697284169214">Přidat strá&amp;nku...</translation>
-<translation id="6079113045416226952">Chytré karty Google v počítači!</translation>
 <translation id="981210574958082923">Změnit pořadí výsledků pro vkládání do služby HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Otevřít všechny záložky</translation>
 <translation id="9193357432624119544">Kód chyby: <ph name="ERROR_NAME"/></translation>
@@ -2047,6 +2046,7 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="7014051144917845222">Pokus o připojení prohlížeče <ph name="PRODUCT_NAME"/> k serveru <ph name="HOST_NAME"/> byl zamítnut. Webové stránky možná nejsou v provozu nebo není správně nakonfigurována síť.</translation>
 <translation id="2097372108957554726">Chcete-li zaregistrovat nová zařízení, musíte se přihlásit do Chromu.</translation>
 <translation id="4332213577120623185">Aby bylo možné dokončit nákup, je třeba zadat další údaje.</translation>
+<translation id="9201305942933582053">Chytré karty Google pro Chrome!</translation>
 <translation id="1708338024780164500">(Neaktivní)</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
 <translation id="8986362086234534611">Odstranit</translation>
@@ -2297,7 +2297,6 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="7341982465543599097">extrémně krátké</translation>
 <translation id="7314244761674113881">Hostitel protokolu SOCKS</translation>
 <translation id="4630590996962964935">Neplatný znak: $1</translation>
-<translation id="4089968049353467425">Přepíše optimalizace pro zařízení nízké kategorie.</translation>
 <translation id="7460131386973988868">Aktivuje konfiguraci statické adresy IP. Funkčnost není zaručena.</translation>
 <translation id="7709980197120276510">Kliknutím na tlačítko Pokračovat potvrzujete, že souhlasíte s následujícími dokumenty: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> a <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Aktivovat protokol SPDY/4 alpha 2</translation>
@@ -2569,6 +2568,7 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="2058632120927660550">Došlo k chybě. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
 <translation id="539295039523818097">Vyskytl se problém s mikrofonem.</translation>
 <translation id="7595321929944401166">Tento plugin není podporován.</translation>
+<translation id="2580093683987647761">O bezplatnou výměnu nabíječky můžete požádat na telefonním čísle (866) 628-1371 (USA), (866) 628-1372 (Kanada) nebo 0800 026 0613 (Spojené království).</translation>
 <translation id="4935613694514038624">Příprava na první přihlášení podniku...</translation>
 <translation id="3996912167543967198">Resetování...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2660,7 +2660,6 @@ Veřejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitů):
 <translation id="5434065355175441495">Šifrování PKCS #1 RSA</translation>
 <translation id="7073704676847768330">Toto pravděpodobně nejsou stránky, které jste hledali!</translation>
 <translation id="8477384620836102176">&amp;Obecné</translation>
-<translation id="900093400474539372">Komprese vrstev</translation>
 <translation id="8059417245945632445">&amp;Zkontrolovat zařízení</translation>
 <translation id="3391392691301057522">Starý kód PIN:</translation>
 <translation id="96421021576709873">Síť Wi-Fi</translation>
@@ -3054,7 +3053,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="8793043992023823866">Import...</translation>
 <translation id="8106211421800660735">Číslo platební karty</translation>
 <translation id="9159562891634783594">Povolit registraci neregistrovaných cloudových tiskáren z náhledu tisku.</translation>
-<translation id="6244494354618367048">Režim zařízení nízké kategorie</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Vytvořte dozorovaného uživatele<ph name="LINK_END"/> pro toto zařízení.</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="8986267729801483565">Stáhnout do:</translation>
@@ -3333,8 +3331,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="5328205483471986666">Zkontrolujte připojení k internetu</translation>
 <translation id="2610780100389066815">Podpis seznamu důvěryhodných certifikátů Microsoft</translation>
 <translation id="4535353504827549990">Posunout časové okno</translation>
-<translation id="1403594069892831402">Aby bylo zajištěno správné pořadí vykreslení, musejí být vrstvy, které překrývají jiný složený obsah, složeny také. Tato funkce vykreslovacímu jádru Blink umožní vykreslit několik dílčích stromů RenderLayer
-        do jedné složené vrstvy, což někdy umožňuje vyhnout se zbytečně velkému počtu složených vrstev.</translation>
 <translation id="2788575669734834343">Vybrat soubor certifikátu</translation>
 <translation id="8267453826113867474">Blokovat nevhodná slova</translation>
 <translation id="7959074893852789871">Soubor obsahoval více certifikátů, z nichž některé nebyly importovány:</translation>
@@ -3802,7 +3798,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="8026964361287906498">(Spravováno podnikovými zásadami)</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="7800518121066352902">Otočit &amp;proti směru hodinových ručiček</translation>
-<translation id="4531327707205555741">Aktivovat vzdálené přehrávání videí v Chromecastu.</translation>
 <translation id="345693547134384690">Otevřít o&amp;brázek na nové kartě</translation>
 <translation id="7422192691352527311">Nastavení...</translation>
 <translation id="9004952710076978168">Přijato upozornění na neznámou tiskárnu.</translation>
@@ -4472,7 +4467,7 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="805835298819029980">Aktivovat sledování paměti</translation>
 <translation id="1520635877184409083">Upravit...</translation>
-<translation id="7988324688042446538">Záložky plochy</translation>
+<translation id="7988324688042446538">Záložky v PC</translation>
 <translation id="2107611981930713732">Aktivace služby ověřeného přístupu</translation>
 <translation id="8678648549315280022">Spravovat nastavení stahování...</translation>
 <translation id="5550431144454300634">Automaticky opravovat vstup</translation>
@@ -4594,7 +4589,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8615618338313291042">Anonymní aplikace: <ph name="APP_NAME"/></translation>
 <translation id="7716284821709466371">Výchozí výška dlaždic</translation>
 <translation id="978146274692397928">Výchozí šířka interpunkce je Plná</translation>
-<translation id="106701514854093668">Záložky plochy</translation>
+<translation id="106701514854093668">Záložky v PC</translation>
 <translation id="4775266380558160821">Vždy povolit pluginy mimo izolovaný prostor na webu <ph name="HOST"/></translation>
 <translation id="6921812972154549137">Soubory cookie a jiná data webů a pluginů</translation>
 <translation id="8137559199583651773">Správa rozšíření</translation>
@@ -4613,7 +4608,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="3695919544155087829">Zadejte heslo, které bylo použito k zašifrování tohoto souboru certifikátu.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Instalovat plugin <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Snímky</translation>
+<translation id="2943400156390503548">Prezentace</translation>
 <translation id="3790146417033334899">Plugin <ph name="PLUGIN_NAME"/> pracuje pouze v režimu tradiční plochy.</translation>
 <translation id="5117930984404104619">Sledovat chování ostatních rozšíření (včetně navštívených adres URL)</translation>
 <translation id="33022249435934718">Popisovače – GDI</translation>

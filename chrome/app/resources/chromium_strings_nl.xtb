@@ -108,7 +108,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5358375970380395591">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME"/>. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account.<ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Chromium starten</translation>
 <translation id="9036189287518468038">App-opstartprogramma van Chromium</translation>
-<translation id="4886158514168859177">Deze computer beschikt al over een recentere versie van Chromium Frame. Als de software niet werkt, moet je Chromium Frame verwijderen en het opnieuw proberen.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> brengt wijzigingen in instellingen aan die vergelijkbaar zijn met de wijzigingen die door bepaalde malware worden aangebracht en is daarom door Chromium geblokkeerd.</translation>
 <translation id="3155163173539279776">Chromium opnieuw starten</translation>
 <translation id="2966088006374919794">Chromium moet een externe applicatie starten om <ph name="SCHEME"/>-links te kunnen verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Kan niet dezelfde Chromium Frame-versie installeren, omdat deze versie nu actief is. Sluit Chromium Frame en probeer het opnieuw.</translation>
 <translation id="2558235863893655150">Wil je dat Chromium je wachtwoord opslaat?</translation>
 <translation id="1231416733874080281">Het menu 'Chromium' weergeven</translation>
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON"/>opnieuw starten<ph name="END_BUTTON"/>)</translation>
@@ -208,7 +206,6 @@ Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en 
 <translation id="374481098568514319">Deze computer beschikt al over een recentere versie van de Chromium-componenten. Gebruik een recenter installatieprogramma.</translation>
 <translation id="6240281849816458190">Je probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat betrouwbaar is. Chromium kan niet volledig garanderen dat je communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet je de klok van het systeem aanpassen en deze pagina vernieuwen.</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
-<translation id="1622565934590470080">Deze computer beschikt al over een recentere versie van Chromium en Chromium Frame. Als de software niet werkt, moet je Chromium en Chromium Frame verwijderen en het opnieuw proberen.</translation>
 <translation id="7318036098707714271">Je bestand met voorkeuren is beschadigd of ongeldig.
 
 Chromium kan je instellingen niet herstellen.</translation>

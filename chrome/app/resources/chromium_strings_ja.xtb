@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Chromium を起動</translation>
 <translation id="9036189287518468038">Chromium アプリ ランチャー</translation>
-<translation id="4886158514168859177">新しいバージョンの Chromium Frame が既にインストールされています。ソフトウェアが動作しない場合は、Chromium Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Chromium OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> で不正なソフトウェアに類似した設定の変更が加えられているため、Chromium はこのファイルをブロックしました。</translation>
 <translation id="3155163173539279776">Chromium を再起動します</translation>
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME"/> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
-<translation id="6287463253129672858">実行中の Chromium Frame と同じバージョンをインストールすることはできません。Chromium Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2558235863893655150">Chromium でパスワードを保存しますか？</translation>
 <translation id="1231416733874080281">Chromium メニューを表示する</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
@@ -209,7 +207,6 @@
 <translation id="374481098568514319">新しいバージョンの Chromium コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるかどうかについて確認できる情報はありません。Chromium では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在、<ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、システムの時刻を修正してからこのページを更新してください。</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
-<translation id="1622565934590470080">新しいバージョンの Chromium と Chromium Frame が既にインストールされています。ソフトウェアが動作しない場合は、Chromium と Chromium Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="7318036098707714271">ユーザー設定ファイルが壊れているか無効です。
 
 設定を復元できません。</translation>

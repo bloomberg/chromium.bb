@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Εκκίνηση εφαρμογών Chrome</translation>
 <translation id="2370289711218562573">Το Google Chrome πραγματοποιεί εισαγωγή Αγαπημένων/Σελιδοδεικτών.</translation>
 <translation id="2721687379934343312">Στο Mac, οι κωδικοί πρόσβασης αποθηκεύονται στο Keychain και ενδέχεται άλλοι χρήστες του Chrome, που μοιράζονται αυτόν τον λογαριασμό OS X, να αποκτήσουν πρόσβαση σε αυτούς ή να τους συγχρονίσουν.</translation>
-<translation id="1761870329818521071">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome Frame που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome Frame και δοκιμάστε ξανά.</translation>
 <translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="3140883423282498090">Οι αλλαγές που πραγματοποιήσατε θα ισχύσουν την επόμενη φορά που θα επανεκκινήσετε το Google Chrome.</translation>
 <translation id="1773601347087397504">Λήψη βοήθειας σχετικά με τη χρήση του Chrome OS</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">Μη έγκυρα ορίσματα. Το Google Chrome Frame δεν μπορεί να εγκατασταθεί σε κατάσταση ετοιμότητας χωρίς να γίνει εγκατάσταση και του Google Chrome.</translation>
 <translation id="8684521613357479262">Επιχειρήσατε να συνδεθείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, αλλά ο διακομιστής παρουσίασε κάποιο πιστοποιητικό το οποίο δεν είναι ακόμα έγκυρο. Δεν υπάρχουν διαθέσιμες πληροφορίες που να υποδεικνύουν οτι το πιστοποιητικό είναι αξιόπιστο. Το Google Chrome δεν μπορεί να εγγυηθεί αξιόπιστα ότι επικοινωνείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; και όχι με κάποιον εισβολέα. Αυτήν τη στιγμή, το ρολόι του υπολογιστή σας έχει οριστεί σε <ph name="CURRENT_TIME"/>. Σας φαίνεται σωστό; Εάν όχι, διορθώστε το ρολόι του συστήματός σας και, στη συνέχεια, ανανεώστε τη σελίδα.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome και του Google Chrome Frame. Εάν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και του Google Chrome Frame και προσπαθήστε ξανά.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
 <translation id="7084448929020576097">Το αρχείο <ph name="FILE_NAME"/> είναι κακόβουλο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS"/>λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -154,7 +152,6 @@
         να ενεργοποιήσετε ξανά αυτήν την επιλογή για βελτιωμένη απόδοση.</translation>
 <translation id="61852838583753520">&amp;Ενημέρωση του Chrome OS</translation>
 <translation id="8547799825197623713">Λειτουργία εκκίνησης εφαρμογών Chrome Canary</translation>
-<translation id="5577648424992741236">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome Frame. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome Frame και δοκιμάστε ξανά.</translation>
 <translation id="6326175484149238433">Κατάργηση από το Chrome</translation>
 <translation id="2871893339301912279">Έχετε συνδεθεί στο Chrome!</translation>
 <translation id="7161904924553537242">Καλώς ήρθατε στο Google Chrome</translation>

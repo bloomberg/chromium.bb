@@ -1018,7 +1018,6 @@
 <translation id="4992576607980257687">Hỏi tôi khi có trang web muốn sử dụng thông báo dành riêng cho hệ thống để truy cập thiết bị MIDI (khuyến nghị)</translation>
 <translation id="1407050882688520094">Bạn có các chứng chỉ trên tệp có thể nhận dạng các tổ chức cấp chứng chỉ này:</translation>
 <translation id="6063810760121779748">Tắt WebAudio</translation>
-<translation id="7070112048468833248">Bật hỗ trợ Chromecast</translation>
 <translation id="1051694321716046412">Tùy chỉnh người dùng...</translation>
 <translation id="4287689875748136217">Không thể tải trang web vì máy chủ không gửi dữ liệu nào.</translation>
 <translation id="1634788685286903402">Tin tưởng vào chứng chỉ này khi xác nhận người dùng email.</translation>
@@ -1530,6 +1529,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="4803909571878637176">Gỡ cài đặt</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Cookie và dữ liệu trang web</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Trạng thái mạng:</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
 <translation id="4683290000467574211">Cho phép trải nghiệm ứng dụng được lưu trữ hợp lý hơn cho mục đích thử nghiệm.</translation>
@@ -2004,7 +2004,6 @@ Số mũ công khai (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bit):
 <translation id="1546703252838446285">Trên tài khoản <ph name="ACCOUNT_EMAIL"/> của bạn, ứng dụng có thể:</translation>
 <translation id="6556866813142980365">Làm lại</translation>
 <translation id="8824701697284169214">Thêm tran&amp;g...</translation>
-<translation id="6079113045416226952">Google Hiện hành trên máy tính để bàn của bạn!</translation>
 <translation id="981210574958082923">Sắp xếp lại các kết quả theo dòng trong HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Mở tất cả dấu trang</translation>
 <translation id="9193357432624119544">Mã lỗi: <ph name="ERROR_NAME"/></translation>
@@ -2064,6 +2063,7 @@ Số mũ công khai (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bit):
         được định cấu hình đúng cách.</translation>
 <translation id="2097372108957554726">Bạn cần đăng nhập Chrome để đăng ký thiết bị mới</translation>
 <translation id="4332213577120623185">Cần thêm thông tin để hoàn thành giao dịch mua này.</translation>
+<translation id="9201305942933582053">Google Hiện hành dành cho Chrome!</translation>
 <translation id="1708338024780164500">(Không hoạt động)</translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="8986362086234534611">Quên</translation>
@@ -2316,7 +2316,6 @@ Số mũ công khai (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bit):
 <translation id="7341982465543599097">rất ngắn</translation>
 <translation id="7314244761674113881">Máy chủ SOCKS</translation>
 <translation id="4630590996962964935">Ký tự không hợp lệ: $1</translation>
-<translation id="4089968049353467425">Ghi đè các tối ưu hóa của thiết bị cấp thấp.</translation>
 <translation id="7460131386973988868">Bật cấu hình ip tĩnh. Có thể không hoạt động.</translation>
 <translation id="7709980197120276510">Bằng cách nhấp vào Tiếp tục, bạn đồng ý với <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> và <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Bật SPDY/4 alpha 2</translation>
@@ -2588,6 +2587,7 @@ Số mũ công khai (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bit):
 <translation id="2058632120927660550">Đã xảy ra lỗi. Vui lòng kiểm tra máy in của bạn và thử lại.</translation>
 <translation id="539295039523818097">Đã xảy ra sự cố với micrô của bạn.</translation>
 <translation id="7595321929944401166">Không hỗ trợ plug-in này.</translation>
+<translation id="2580093683987647761">Vui lòng gọi số (866) 628-1371 (Hoa Kỳ), (866) 628-1372 (Canada) hoặc 0800 026 0613 (Vương quốc Anh) để yêu cầu bộ sạc thay thế miễn phí.</translation>
 <translation id="4935613694514038624">Đang chuẩn bị đăng nhập dành cho doanh nghiệp đầu tiên...</translation>
 <translation id="3996912167543967198">Đang đặt lại...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2680,7 +2680,6 @@ Bạn cần đăng nhập để sử dụng tính năng này.</translation>
 <translation id="5434065355175441495">PKCS #1 Mã hóa RSA</translation>
 <translation id="7073704676847768330">Đây có thể không phải là trang web bạn đang tìm!</translation>
 <translation id="8477384620836102176">&amp;Chung</translation>
-<translation id="900093400474539372">Ép lớp</translation>
 <translation id="8059417245945632445">&amp;Kiểm tra thiết bị</translation>
 <translation id="3391392691301057522">Mã PIN cũ:</translation>
 <translation id="96421021576709873">Mạng Wi-Fi</translation>
@@ -3074,7 +3073,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL"/> để bi
 <translation id="8793043992023823866">Đang nhập...</translation>
 <translation id="8106211421800660735">Số thẻ tín dụng</translation>
 <translation id="9159562891634783594">Cho phép đăng ký máy in trên đám mây chưa được đăng ký từ tính năng xem trước bản in.</translation>
-<translation id="6244494354618367048">Chế độ thiết bị cấp thấp.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Tạo người dùng được giám sát<ph name="LINK_END"/> cho thiết bị này.</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="8986267729801483565">Vị trí tải xuống:</translation>
@@ -3352,8 +3350,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL"/> để bi
 <translation id="5328205483471986666">Kiểm tra kết nối Internet của bạn.</translation>
 <translation id="2610780100389066815">Ký Danh sách Tin cậy của Microsoft</translation>
 <translation id="4535353504827549990">Cửa sổ dịch thời gian</translation>
-<translation id="1403594069892831402">Các lớp chồng lên nội dung tổng hợp khác cũng cần được tổng hợp để đảm bảo thứ tự vẽ đúng. Tính năng này bật Blink để vẽ nhiều cây phụ
-        Lớp kết xuất vào một lớp tổng hợp để chúng tôi có thể tránh một số lượng lớn các lớp tổng hợp không cần thiết.</translation>
 <translation id="2788575669734834343">Chọn tệp chứng chỉ</translation>
 <translation id="8267453826113867474">Chặn các từ xúc phạm</translation>
 <translation id="7959074893852789871">Tệp có chứa nhiều chứng chỉ, một vài chứng chỉ trong đó chưa được nhập:</translation>
@@ -3824,7 +3820,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL"/> để bi
 <translation id="8026964361287906498">(Được quản lý bởi chính sách doanh nghiệp)</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="7800518121066352902">Xoay &amp;ngược chiều kim đồng hồ</translation>
-<translation id="4531327707205555741">Bật phát video từ xa trên Chromecast.</translation>
 <translation id="345693547134384690">Mở &amp;hình ảnh trong tab mới</translation>
 <translation id="7422192691352527311">Tùy chọn...</translation>
 <translation id="9004952710076978168">Đã nhận được thông báo cho máy in không xác định.</translation>

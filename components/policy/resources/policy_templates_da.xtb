@@ -270,7 +270,7 @@
 <translation id="4668325077104657568">Standardindstilling for billeder</translation>
 <translation id="4492287494009043413">Deaktiver skærmbilleder</translation>
 <translation id="6368403635025849609">Tillad JavaScript på disse websites</translation>
-<translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsmeddelelser</translation>
+<translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
 <translation id="4834526953114077364">Brugere, der ikke har logget ind i løbet af de seneste tre måneder, fjernes, indtil der er frigjort tilstrækkeligt med plads.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-præfikset for værter med fjernadgang</translation>
@@ -512,7 +512,7 @@
           Hvis indstillingen er deaktiveret eller ikke angivet, kan værter deles med hvilken som helst konto.</translation>
 <translation id="6417861582779909667">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke har tilladelse til at anvende cookies. Hvis denne politik ikke angives, vil den globale standardværdi blive anvendt for alle websites, enten fra politikken &quot;DefaultCookiesSetting&quot;, hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="5457296720557564923">Tillader, at sider får adgang til statistik for hukommelsesbrug for JavaScript. Denne indstilling stiller hukommelsesstatistik fra panelet for udviklerværktøjsprofiler til rådighed for selve websiden.</translation>
-<translation id="5776485039795852974">Spørg hver gang et website vil vise skrivebordsmeddelelser</translation>
+<translation id="5776485039795852974">Spørg hver gang et website vil vise skrivebordsunderretninger</translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
@@ -912,7 +912,7 @@
 <translation id="4518251772179446575">Spørg, hver gang et website ønsker at spore brugerens fysiske placering</translation>
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME"/> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME"/> til at gengive HTML-sider som standard.</translation>
-<translation id="706669471845501145">Tillad, at websites viser skrivebordsmeddelelser</translation>
+<translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME"/> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
 <translation id="5475361623548884387">Aktiver udskrivning</translation>

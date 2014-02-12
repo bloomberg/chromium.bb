@@ -156,7 +156,7 @@
 <translation id="5177479852722101802">متابعة حظر الدخول إلى الكاميرا والميكروفون</translation>
 <translation id="4422428420715047158">المجال:</translation>
 <translation id="7788444488075094252">اللغات والإدخال</translation>
-<translation id="6723354935081862304">‏الطباعة إلى محرّر مستندات Google ووجهات السحاب الأخرى. يمكنك <ph name="BEGIN_LINK"/>تسجيل الدخول<ph name="END_LINK"/> للطباعة إلى طباعة في السحاب من Google.</translation>
+<translation id="6723354935081862304">‏الطباعة إلى  مستندات Google ووجهات السحاب الأخرى. يمكنك <ph name="BEGIN_LINK"/>تسجيل الدخول<ph name="END_LINK"/> للطباعة إلى طباعة في السحاب من Google.</translation>
 <translation id="8561096986926824116">تمت مقاطعة الاتصال بـ
         <ph name="HOST_NAME"/>
         من خلال تغيير في اتصال الشبكة.</translation>
@@ -997,7 +997,6 @@
 <translation id="4992576607980257687">‏إخباري عند محاولة أحد المواقع استخدام رسائل حصرية للنظام للدخول إلى أجهزة MIDI (يُوصى به)</translation>
 <translation id="1407050882688520094">لديك شهادات في الملف تحدد صلاحيات الشهادة هذه:</translation>
 <translation id="6063810760121779748">‏تعطيل WebAudio</translation>
-<translation id="7070112048468833248">‏تمكين دعم Chromecast</translation>
 <translation id="1051694321716046412">تخصيص مستخدم...</translation>
 <translation id="4287689875748136217">تعذر تحميل صفحة الويب لأن الخادم لم يرسل أية بيانات.</translation>
 <translation id="1634788685286903402">الوثوق بهذه الشهادة لتحديد هوية مستخدمي البريد الإلكتروني.</translation>
@@ -1507,6 +1506,7 @@
 <translation id="4803909571878637176">إزالة</translation>
 <translation id="5209518306177824490">‏بصمة أصبع SHA-1</translation>
 <translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات الموقع</translation>
+<translation id="4926150172344704583">كندا</translation>
 <translation id="7447657194129453603">حالة الشبكة:</translation>
 <translation id="4958444002117714549">توسيع القائمة</translation>
 <translation id="4683290000467574211">لتمكين التطبيقات التجريبية، لتجربة التطبيقات المستضافة بشكلٍ أكثر سلاسة.</translation>
@@ -1762,7 +1762,7 @@
 <translation id="5805190494033159960">لتتبع مقدار الوقت المنقضي في كل صفحة لتحسين النتائج الأكثر زيارة.</translation>
 <translation id="8911393093747857497">تخطيط الرف البديل</translation>
 <translation id="894360074127026135">‏الترقية الدولية لـ Netscape</translation>
-<translation id="8420060421540670057">‏عرض ملفات محرّر مستندات Google</translation>
+<translation id="8420060421540670057">‏عرض ملفات مستندات Google</translation>
 <translation id="6075731018162044558">عفوًا! أخفق النظام في الحصول على رمز مميز للدخول لفترة زمنية طويلة إلى واجهة برمجة التطبيقات على هذا الجهاز.</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1335588927966684346">الأداة:</translation>
@@ -1978,7 +1978,6 @@
 <translation id="1546703252838446285">في حسابك <ph name="ACCOUNT_EMAIL"/>، يمكنك إجراء ما يلي:</translation>
 <translation id="6556866813142980365">إعادة</translation>
 <translation id="8824701697284169214">إضافة &amp;صفحة...</translation>
-<translation id="6079113045416226952">‏Google Now على جهاز سطح المكتب!</translation>
 <translation id="981210574958082923">‏إعادة ترتيب النتائج لتضمينها في HistoryQuickProvider</translation>
 <translation id="6466988389784393586">ف&amp;تح كل الإشارات المرجعية</translation>
 <translation id="9193357432624119544">رمز الخطأ: <ph name="ERROR_NAME"/></translation>
@@ -2031,6 +2030,7 @@
 <translation id="7014051144917845222">تم رفض محاولة <ph name="PRODUCT_NAME"/> للاتصال بـ <ph name="HOST_NAME"/>. قد يكون موقع الويب معطلاً أو لم تتم تهيئة الشبكة بشكل صحيح.</translation>
 <translation id="2097372108957554726">‏يلزمك تسجيل الدخول إلى Chrome لتسجيل الأجهزة الجديدة</translation>
 <translation id="4332213577120623185">يلزم إدخال المزيد من المعلومات لإتمام عملية الشراء هذه.</translation>
+<translation id="9201305942933582053">‏Google Now لـ Chrome!</translation>
 <translation id="1708338024780164500">(غير نشطة)</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="8986362086234534611">حذف</translation>
@@ -2121,7 +2121,7 @@
 <translation id="5612734644261457353">عذرًا، لا يزال التحقق من كلمة المرور متعذرًا. ملاحظة: في حالة تغيير كلمة المرور مؤخرًا، فإنه سيتم تطبيق كلمة المرور بعد الخروج، الرجاء استخدام كلمة المرور القديمة هنا.</translation>
 <translation id="2908162660801918428">إضافة معرض الوسائط باستخدام الدليل</translation>
 <translation id="2282872951544483773">التجارب غير المتاحة</translation>
-<translation id="2562685439590298522">محرّر المستندات</translation>
+<translation id="2562685439590298522">المستندات</translation>
 <translation id="5707163012117843346">تم تحميل <ph name="WEBRTC_LOG_TIME"/></translation>
 <translation id="8673383193459449849">مشكلة في الخادم</translation>
 <translation id="4060383410180771901">يتعذر على موقع الويب معالجة طلب <ph name="URL"/>.</translation>
@@ -2282,7 +2282,6 @@
 <translation id="7341982465543599097">قصيرة للغاية</translation>
 <translation id="7314244761674113881">‏مضيف SOCKS</translation>
 <translation id="4630590996962964935">حرف غير صالح: $1</translation>
-<translation id="4089968049353467425">لتجاوز تحسينات الجهاز النهائي المنخفضة.</translation>
 <translation id="7460131386973988868">‏تمكين تهيئة عنوان ip الثابت. قد لا يعمل ذلك.</translation>
 <translation id="7709980197120276510">يُعد النقر على &quot;متابعة&quot; بمثابة موافقة منك على <ph name="LEGAL_DOC_LINK_TEXT_1"/>، و<ph name="LEGAL_DOC_LINK_TEXT_2"/>، و<ph name="LEGAL_DOC_LINK_TEXT_3"/>، و<ph name="LEGAL_DOC_LINK_TEXT_4"/>، و<ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">‏تمكين SPDY/4 alpha 2</translation>
@@ -2554,6 +2553,7 @@
 <translation id="2058632120927660550">لقد حدث خطأ ما. الرجاء التحقق من الطابعة وإعادة المحاولة.</translation>
 <translation id="539295039523818097">حدثت مشكلة في الميكروفون.</translation>
 <translation id="7595321929944401166">هذا المكون الإضافي غير معتمد.</translation>
+<translation id="2580093683987647761">‏الرجاء الاتصال بالرقم ‎(866) 628-1371 (الولايات المتحدة)، أو بالرقم ‎(866) 628-1372 (كندا)، أو بالرقم ‎0800 026 0613 (المملكة المتحدة) لطلب استبدال الشاحن مجانًا.</translation>
 <translation id="4935613694514038624">جارٍ التحضير لتسجيل دخول المؤسسة لأول مرة...</translation>
 <translation id="3996912167543967198">جارٍ إعادة التعيين...</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
@@ -2638,7 +2638,6 @@
 <translation id="5434065355175441495">‏تشفير PKCS #1 RSA</translation>
 <translation id="7073704676847768330">محتمل أنّ هذا ليس الموقع الذي تبحث عنه!</translation>
 <translation id="8477384620836102176">&amp;عام</translation>
-<translation id="900093400474539372">ضغط الطبقة</translation>
 <translation id="8059417245945632445">&amp;فحص الأجهزة</translation>
 <translation id="3391392691301057522">رقم التعريف الشخصي القديم:</translation>
 <translation id="96421021576709873">‏شبكة Wi-Fi</translation>
@@ -3033,7 +3032,6 @@
 <translation id="8793043992023823866">جارٍ الاستيراد...</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="9159562891634783594">تمكين تسجيل طابعات السحاب غير المسجلة من معاينة الطباعة.</translation>
-<translation id="6244494354618367048">الوضع المنخفض للجهاز النهائي.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>إنشاء مستخدم يخضع للإشراف<ph name="LINK_END"/> لهذا الجهاز.</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="8986267729801483565">حفظ التزيلات في المجلد:</translation>
@@ -3310,8 +3308,6 @@
 <translation id="5328205483471986666">تحقق من اتصالك بالإنترنت.</translation>
 <translation id="2610780100389066815">‏توقيع قائمة الثقة لـ Microsoft</translation>
 <translation id="4535353504827549990">نافذة تحويل الوقت</translation>
-<translation id="1403594069892831402">‏يجب أن تكون الطبقات المتراكبة فوق محتوى مُركب هي أيضًا مُركبة، وذلك لضمان ترتيب الطلاء. تتيح هذه الميزة لـ Blink طلاء
-        أشجار فرعية متعددة بطبقات العرض إلى طبقة مُركبة واحدة حتى يمكن تجنب ظهور عدد كبير غير ضروري من الطبقات المُركبة.</translation>
 <translation id="2788575669734834343">تحديد ملف الشهادة</translation>
 <translation id="8267453826113867474">حظر الكلمات المسيئة</translation>
 <translation id="7959074893852789871">احتوى الملف على شهادات متعددة، لم يتم استيراد بعضها:</translation>
@@ -3778,7 +3774,6 @@
 <translation id="8026964361287906498">(تمت الإدارة بموجب سياسة المؤسسة)</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="7800518121066352902">تدوير ع&amp;كس اتجاه عقارب الساعة</translation>
-<translation id="4531327707205555741">‏تمكين  تشغيل مقاطع الفيديو عن بُعد على Chromecast.</translation>
 <translation id="345693547134384690">فتح &amp;الصورة في علامة تبويب جديدة</translation>
 <translation id="7422192691352527311">التفضيلات...</translation>
 <translation id="9004952710076978168">تلقيت إشعارًا خاصًا بطابعة غير معروفة.</translation>

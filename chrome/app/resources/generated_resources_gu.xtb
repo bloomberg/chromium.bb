@@ -157,7 +157,7 @@
 <translation id="5177479852722101802">કૅમેરા અને માઇક્રોફોન ઍક્સેસને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="4422428420715047158">DOMAIN:</translation>
 <translation id="7788444488075094252">ભાષાઓ અને ઇનપુટ</translation>
-<translation id="6723354935081862304">Google ડૉક્સ અને અન્ય મેઘ ગંતવ્યો પર છાપો. Google મેઘ મુદ્રણમાં છાપવા માટે <ph name="BEGIN_LINK"/>સાઇન ઇન<ph name="END_LINK"/> કરો.</translation>
+<translation id="6723354935081862304">Google દસ્તાવેજ અને અન્ય મેઘ ગંતવ્યો પર છાપો. Google મેઘ મુદ્રણમાં છાપવા માટે <ph name="BEGIN_LINK"/>સાઇન ઇન<ph name="END_LINK"/> કરો.</translation>
 <translation id="8561096986926824116">નેટવર્ક જોડાણમાં ફેરફાર દ્વારા
         <ph name="HOST_NAME"/>
          પરના જોડાણમાં વિક્ષેપ થયો હતો.</translation>
@@ -760,7 +760,7 @@
 <translation id="3241680850019875542">પૅક કરવા માટે એક્સ્ટેંશનની રૂટ ડાયરેક્ટરી પસંદ કરો. એક્સ્ટેંશનને અપડેટ કરવા માટે, ફરી ઉપયોગ કરવા ખાનગી કી ફાઇલ પણ પસંદ કરો.</translation>
 <translation id="4690613311768283645">એપ્લિકેશન સૂચિ મેનૂથી શેલ્ફ પર ખેંચો અને છોડોને નામંજૂર કરો.</translation>
 <translation id="3216788083151126852">Wi-Fi નેટવર્ક્સ:</translation>
-<translation id="2149850907588596975">પાસવર્ડ્સ અને ફૉર્મ્સ</translation>
+<translation id="2149850907588596975">પાસવર્ડ્સ અને ફોર્મ્સ</translation>
 <translation id="6972069480564005577">વેબદુકાન</translation>
 <translation id="3672928695873425336">શેલ્ફને ક્લિક-પર-ન્યૂનતમ કરવા નામંજૂર કરો.</translation>
 <translation id="1445572445564823378">આ એક્સ્ટેંશન <ph name="PRODUCT_NAME"/> ને ધીમુ કરી રહ્યું છે. <ph name="PRODUCT_NAME"/> ના પ્રદર્શનને પુનર્સ્થાપિત કરવા માટે તમારે તેને અક્ષમ કરવું જોઈએ. </translation>
@@ -940,7 +940,7 @@
 <translation id="1464724975715666883">1 ભૂલ.</translation>
 <translation id="7864539943188674973">Bluetooth અક્ષમ કરો</translation>
 <translation id="1486096554574027028">પાસવર્ડ્સ શોધો</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> એ શોધ્યું છે કે તમારી બ્રાઉઝર સેટિંગ્સ તમારી જાણ વિના બદલવામાં આવી છે. તમે તેમને તેમના મૂળ ડિફોલ્ટ્સ પર ફરીથી સેટ કરવા માંગો છો?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> એ શોધ્યું છે કે તમારી બ્રાઉઝર સેટિંગ્સ કદાચ તમારી જાણ વિના બદલવામાં આવી છે. તમે તેમને તેમના મૂળ ડિફોલ્ટ્સ પર ફરીથી સેટ કરવા માંગો છો?</translation>
 <translation id="1836938920852968258">NTP 'અન્ય ઉપકરણો' મેનૂને અક્ષમ કરો.</translation>
 <translation id="3825863595139017598">મંગોલિયન કીબોર્ડ</translation>
 <translation id="8184538546369750125">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (મંજૂરી આપો)</translation>
@@ -1013,7 +1013,6 @@
 <translation id="4992576607980257687">MIDI ઉપકરણોની ઍક્સેસ કરવા માટે જ્યારે સાઇટ સિસ્ટમ વિશિષ્ટ સંદેશાઓનો ઉપયોગ કરવા માંગે ત્યારે મને કહો (ભલામણ કરેલ)</translation>
 <translation id="1407050882688520094">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે આ પ્રમાણપત્ર અધિકારીઓને ઓળખે છે:</translation>
 <translation id="6063810760121779748">WebAudio ને અક્ષમ કરો</translation>
-<translation id="7070112048468833248">Chromecast સમર્થન સક્ષમ કરો</translation>
 <translation id="1051694321716046412">વપરાશકર્તાને કસ્ટમાઇઝ કરો...</translation>
 <translation id="4287689875748136217">વેબપૃષ્ઠ લોડ કરવામાં અક્ષમ છે કારણ કે સર્વરે કોઈ ડેટા મોકલ્યો નથી.</translation>
 <translation id="1634788685286903402">ઇમેઇલ વપરાશકર્તાઓને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો.</translation>
@@ -1354,7 +1353,7 @@
 <translation id="8412498037462710569">હું પુષ્ટિ કરું છું કે મારી મફત અવેજી ચાર્જર પ્રાપ્ત કરવાની ઇચ્છા નથી.</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="5431473096922271583">અમે ઇચ્છીએ છીએ કે તમે અસલી ચાર્જર્સ પૈકી એકનો ઉપયોગ કરી રહ્યાં છો કે કેમ તેની તપાસ કરો.</translation>
-<translation id="3478477114335130296">તમારી કેટલીક સેટિંગ્સને તમારી જાણ વિના બદલવામાં આવી હોઈ શકે છે.</translation>
+<translation id="3478477114335130296">તમારી કેટલીક સેટિંગ્સને કદાચ તમારી જાણ વિના બદલવામાં આવી હોઈ શકે છે.</translation>
 <translation id="3866443872548686097">તમારો પુનર્પ્રાપ્તિ મીડિયા તૈયાર છે. તમે તેને તમારા સિસ્ટમમાંથી દૂર કરી શકો છો.</translation>
 <translation id="6824564591481349393">&amp;ઇમેઇલ સરનામું કૉપિ કરો</translation>
 <translation id="907148966137935206">કોઈ પણ સાઇટને પૉપ-અપ્સ બતાવવાની મંજૂરી આપવી નહીં (ભલામણ કરેલ) </translation>
@@ -1525,6 +1524,7 @@
 <translation id="4803909571878637176">અનઇન્સ્ટોલ કરવું</translation>
 <translation id="5209518306177824490">SHA-1 ફિંગરપ્રિંટ</translation>
 <translation id="2546283357679194313">કૂકીઝ અને સાઇટ ડેટા</translation>
+<translation id="4926150172344704583">કેનેડા</translation>
 <translation id="7447657194129453603">નેટવર્ક સ્થિતિ:</translation>
 <translation id="4958444002117714549">સૂચિ વિસ્તૃત કરો</translation>
 <translation id="4683290000467574211">પ્રાયોગિક, વધુ સ્ટ્રીમલાઇન્ડ હોસ્ટ કરેલ એપ્લિકેશન અનુભવને સક્ષમ કરે છે.</translation>
@@ -1782,7 +1782,7 @@
 <translation id="5805190494033159960">બહેતર સૌથી વધુ મુલાકાત લીધેલી સ્કોરિંગ માટે દરેક પૃષ્ઠ પર વીતાવેલ સમયગાળાનો ટ્રેક રાખે છે.</translation>
 <translation id="8911393093747857497">વૈકલ્પિક શેલ્ફ લેઆઉટ</translation>
 <translation id="894360074127026135">નેટસ્કેપ ઇન્ટરનેશનલ સ્ટેપ-અપ</translation>
-<translation id="8420060421540670057">Google ડૉક્સ ફાઇલો બતાવો</translation>
+<translation id="8420060421540670057">Google દસ્તાવેજ ફાઇલો બતાવો</translation>
 <translation id="6075731018162044558">અરેરે!  સિસ્ટમ આ ઉપકરણ માટે એક લાંબા ગાળાનું API ઍક્સેસ ટોકન મેળવવામાં નિષ્ફળ.</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1335588927966684346">ઉપયોગિતા:</translation>
@@ -1999,7 +1999,6 @@
 <translation id="1546703252838446285">તમારા <ph name="ACCOUNT_EMAIL"/> એકાઉન્ટ પર, તે આ કરી શકે છે:</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
 <translation id="8824701697284169214">પૃ&amp;ષ્ઠ ઉમેરો...</translation>
-<translation id="6079113045416226952">તમારા ડેસ્કટૉપ પર Google Now!</translation>
 <translation id="981210574958082923">HistoryQuickProvider માં ઇનલાઇનિંગ માટેનાં પરિણામોને પુનઃ ક્રમાંકિત કરો</translation>
 <translation id="6466988389784393586">બધાં બુકમાર્ક્સ &amp;ખોલો</translation>
 <translation id="9193357432624119544">ભૂલ કોડ: <ph name="ERROR_NAME"/></translation>
@@ -2058,6 +2057,7 @@
         ગોઠવાયેલું નહીં હોય.</translation>
 <translation id="2097372108957554726">નવા ઉપકરણોને નોંધવા માટે તમારે Chrome માં સાઇન ઇન કરવાની જરૂર છે</translation>
 <translation id="4332213577120623185">આ ખરીદી પૂર્ણ કરવા માટે વધુ માહિતી જરૂરી છે.</translation>
+<translation id="9201305942933582053">Chrome માટે Google Now!</translation>
 <translation id="1708338024780164500">(નિષ્ક્રિય)</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="8986362086234534611">ભૂલી ગયા</translation>
@@ -2148,7 +2148,7 @@
 <translation id="5612734644261457353">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="2908162660801918428">ડાયરેક્ટરી દ્વારા મીડિયા ગૅલેરી ઉમેરો</translation>
 <translation id="2282872951544483773">અનુપલબ્ધ પ્રયોગો</translation>
-<translation id="2562685439590298522">ડૉક્સ</translation>
+<translation id="2562685439590298522">દસ્તાવેજ</translation>
 <translation id="5707163012117843346">અપલોડ કર્યું <ph name="WEBRTC_LOG_TIME"/></translation>
 <translation id="8673383193459449849">સર્વર સમસ્યા</translation>
 <translation id="4060383410180771901">વેબસાઇટ <ph name="URL"/> માટેની વિનંતીને હેન્ડલ કરવામાં અક્ષમ છે.</translation>
@@ -2309,7 +2309,6 @@
 <translation id="7341982465543599097">અત્યંત ટૂંકી</translation>
 <translation id="7314244761674113881">સૉક્સ હોસ્ટ</translation>
 <translation id="4630590996962964935">અમાન્ય અક્ષર: $1</translation>
-<translation id="4089968049353467425">લો એન્ડ ઉપકરણ ઓપ્ટિમાઇઝેશન્સને ઓવરરાઇડ કરે છે.</translation>
 <translation id="7460131386973988868">આંકડાકીય ip ગોઠવણીને સક્ષમ કરે છે. બની શકે કે કાર્ય ન કરે.</translation>
 <translation id="7709980197120276510">ચાલુ રાખો પર ક્લિક કરીને તમે <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> અને <ph name="LEGAL_DOC_LINK_TEXT_5"/>થી સંમત થાઓ છો.</translation>
 <translation id="1840000081943778840">SPDY/4 alpha 2 સક્ષમ કરો</translation>
@@ -2575,6 +2574,7 @@
 <translation id="2058632120927660550">એક ભૂલ આવી. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="539295039523818097">તમારા માઇક્રોફોન સાથે કોઈ સમસ્યા હતી.</translation>
 <translation id="7595321929944401166">આ પ્લગ-ઇન સમર્થિત નથી.</translation>
+<translation id="2580093683987647761">તમારા મફત અવેજી ચાર્જરની વિનંતી કરવા માટે કૃપા કરીને (866) 628-1371 (યુએસ), (866) 628-1372 (કેનેડા) અથવા 0800 026 0613 (યુકે) પર કૉલ કરો.</translation>
 <translation id="4935613694514038624">પ્રથમ એન્ટરપ્રાઇઝ લૉગિન માટે તૈયારી કરી રહ્યું છે...</translation>
 <translation id="3996912167543967198">ફરીથી સેટ કરી રહ્યું છે...</translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>
@@ -2650,7 +2650,7 @@
 <translation id="6256412060882652702">તમારા <ph name="IDS_SHORT_PRODUCT_NAME"/> ઉપકરણને Powerwash કરો</translation>
 <translation id="736515969993332243">નેટવર્ક્સ માટે સ્કેનિંગ.</translation>
 <translation id="4417828425057753121">કોઈપણ સાઇટ્સને મારા કૅમેરા અથવા માઇક્રોફોનને ઍક્સેસ કરવાની મંજૂરી આપશો નહીં</translation>
-<translation id="7806513705704909664">એક જ ક્લિકમાં વેબ ફૉર્મ્સ ભરવા માટે સ્વતઃભરો સક્ષમ કરો.</translation>
+<translation id="7806513705704909664">એક જ ક્લિકમાં વેબ ફોર્મ્સ ભરવા માટે સ્વતઃભરો સક્ષમ કરો.</translation>
 <translation id="8282504278393594142">કોઇ એક્સટેન્શન ઇન્સ્ટોલ કરેલ નથી.</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="605011065011551813">પ્લગ-ઇન (<ph name="PLUGIN_NAME"/>) પ્રતિસાદ આપી રહ્યું નથી.</translation>
@@ -2667,7 +2667,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA એન્ક્રિપ્શન</translation>
 <translation id="7073704676847768330">આ સંભવિત રૂપે તે સાઇટ નથી કે જે તમે શોધી રહ્યાં છો!</translation>
 <translation id="8477384620836102176">&amp;સામાન્ય</translation>
-<translation id="900093400474539372">સ્તર સ્ક્વેશિંગ</translation>
 <translation id="8059417245945632445">&amp;ઉપકરણોની તપાસ કરો</translation>
 <translation id="3391392691301057522">જૂનો PIN:</translation>
 <translation id="96421021576709873">Wi-Fi નેટવર્ક</translation>
@@ -3064,7 +3063,6 @@
 <translation id="8793043992023823866">આયાત કરી રહ્યું છે...</translation>
 <translation id="8106211421800660735">ક્રેડિટ કાર્ડ નંબર</translation>
 <translation id="9159562891634783594">છાપ પૂર્વાવલોકનથી બિનનોંધાયેલા મેઘ પ્રિન્ટર્સને નોંધવાનું સક્ષમ કરો.</translation>
-<translation id="6244494354618367048">લો એન્ડ ઉપકરણ મોડ.</translation>
 <translation id="8843709518995654957">આ ઉપકરણ માટે <ph name="LINK_START"/>એક નિરીક્ષણ કરેલ વપરાશકર્તા બનાવો<ph name="LINK_END"/>.</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
 <translation id="8986267729801483565">ડાઉનલોડ સ્થાન:</translation>
@@ -3340,8 +3338,6 @@
 <translation id="5328205483471986666">તમારું ઇન્ટરનેટ કનેક્શન તપાસો.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">સમય વિંડોને શિફ્ટ કરો</translation>
-<translation id="1403594069892831402">સ્તરો કે જે અન્ય મિશ્રિત સામગ્રીને અતિવ્યાપ્ત કરે છે તેમને યોગ્ય પેઇન્ટ ક્રમની ખાતરી કરવા માટે બરાબર મિશ્રિત કરવાની જરૂર છે. આ સુવિધા બહુવિધ RenderLayer
-        સબટ્રીઝને એક મિશ્રિત સ્તરમાં પેઇન્ટ કરવા માટે Blink ને સક્ષમ કરે છે જેથી આપણે મિશ્રિત સ્તરોની બિનજરૂરી મોટી સંખ્યાને ટાળવામાં સમર્થ બની શકીએ.</translation>
 <translation id="2788575669734834343">પ્રમાણપત્ર ફાઇલ પસંદ કરો </translation>
 <translation id="8267453826113867474">અપમાનજનક શબ્દોને અવરોધિત કરો</translation>
 <translation id="7959074893852789871">ફાઇલમાં બહુવિધ પ્રમાણપત્રો રહેલા છે, તેમાંનાં કેટલાક આયાત કરેલા નથી:</translation>
@@ -3813,7 +3809,6 @@
 <translation id="8026964361287906498">(સંગઠન નીતિ દ્વારા સંચાલિત)</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="7800518121066352902">ઘ&amp;ડિયાળની વિપરિત દિશામાં ફેરવો</translation>
-<translation id="4531327707205555741">Chromecast પર દૂરસ્થ રૂપે વિડિઓઝ ચલાવવાનું સક્ષમ કરો.</translation>
 <translation id="345693547134384690">નવા ટૅબમાં &amp;છબી ખોલો</translation>
 <translation id="7422192691352527311">પસંદગીઓ...</translation>
 <translation id="9004952710076978168">અજ્ઞાત પ્રિંટર માટે સૂચના પ્રાપ્ત થઈ.</translation>

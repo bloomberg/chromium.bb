@@ -1016,7 +1016,6 @@
 <translation id="4992576607980257687">Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)</translation>
 <translation id="1407050882688520094">You have certificates on file that identify these certificate authorities:</translation>
 <translation id="6063810760121779748">Disable WebAudio</translation>
-<translation id="7070112048468833248">Enable Chromecast support</translation>
 <translation id="1051694321716046412">Customise user...</translation>
 <translation id="4287689875748136217">Unable to load the web page because the server sent no data.</translation>
 <translation id="1634788685286903402">Trust this certificate for identifying email users.</translation>
@@ -1528,6 +1527,7 @@ Calculating remaining time</translation>
 <translation id="4803909571878637176">Uninstalling</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Network status:</translation>
 <translation id="4958444002117714549">Expand list</translation>
 <translation id="4683290000467574211">Enables an experimental, more streamlined hosted app experience.</translation>
@@ -2004,7 +2004,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="1546703252838446285">On your <ph name="ACCOUNT_EMAIL"/> account, it can:</translation>
 <translation id="6556866813142980365">Redo</translation>
 <translation id="8824701697284169214">Add Pa&amp;ge...</translation>
-<translation id="6079113045416226952">Google Now on your desktop!</translation>
 <translation id="981210574958082923">Reorder results for inlining in HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Open All Bookmarks</translation>
 <translation id="9193357432624119544">Error code: <ph name="ERROR_NAME"/></translation>
@@ -2060,6 +2059,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/>'s connection attempt to <ph name="HOST_NAME"/> was rejected. The website may be down or your network may not be properly configured.</translation>
 <translation id="2097372108957554726">You need to sign in to Chrome to register new devices</translation>
 <translation id="4332213577120623185">More information is needed to complete this purchase.</translation>
+<translation id="9201305942933582053">Google Now for Chrome!</translation>
 <translation id="1708338024780164500">(Inactive)</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="8986362086234534611">Forget</translation>
@@ -2311,7 +2311,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="7341982465543599097">extremely short</translation>
 <translation id="7314244761674113881">SOCKS host</translation>
 <translation id="4630590996962964935">Invalid character: $1</translation>
-<translation id="4089968049353467425">Overrides low end device optimisations.</translation>
 <translation id="7460131386973988868">Enables static ip configuration. May not work.</translation>
 <translation id="7709980197120276510">By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> and <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Enable SPDY/4 alpha 2</translation>
@@ -2578,6 +2577,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bits):
 <translation id="2058632120927660550">An error has occurred. Please check your printer and try again.</translation>
 <translation id="539295039523818097">There was a problem with your microphone.</translation>
 <translation id="7595321929944401166">This plug-in is not supported.</translation>
+<translation id="2580093683987647761">Please call (866) 628-1371 (US), (866) 628-1372 (Canada) or 0800 026 0613 (UK) to request your free replacement charger.</translation>
 <translation id="4935613694514038624">Preparing for first enterprise log in...</translation>
 <translation id="3996912167543967198">Resetting...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2670,7 +2670,6 @@ You need to be signed in to use this feature.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA Encryption</translation>
 <translation id="7073704676847768330">This is probably not the site that you are looking for!</translation>
 <translation id="8477384620836102176">&amp;General</translation>
-<translation id="900093400474539372">Layer squashing</translation>
 <translation id="8059417245945632445">&amp;Inspect devices</translation>
 <translation id="3391392691301057522">Old PIN:</translation>
 <translation id="96421021576709873">Wi-Fi network</translation>
@@ -3064,7 +3063,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL"/> for these and further inst
 <translation id="8793043992023823866">Importing...</translation>
 <translation id="8106211421800660735">Credit card number</translation>
 <translation id="9159562891634783594">Enable registering of unregistered cloud printers from print preview.</translation>
-<translation id="6244494354618367048">Low end device mode.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Create a supervised user<ph name="LINK_END"/> for this device.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="8986267729801483565">Download location:</translation>
@@ -3343,8 +3341,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL"/> for these and further inst
 <translation id="5328205483471986666">Check your Internet connection.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">Shift Time Window</translation>
-<translation id="1403594069892831402">Layers that overlap other composited content need to be composited as well, to ensure correct paint order. This feature enables Blink to paint multiple RenderLayer
-        subtrees into one composited layer so that we may be able to avoid unnecessarily large number of composited layers.</translation>
 <translation id="2788575669734834343">Select certificate file</translation>
 <translation id="8267453826113867474">Block Offensive Words</translation>
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
@@ -3816,7 +3812,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL"/> for these and further inst
 <translation id="8026964361287906498">(Managed by enterprise policy)</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="7800518121066352902">Rotate A&amp;nti-clockwise</translation>
-<translation id="4531327707205555741">Enable playing videos remotely on Chromecast.</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
 <translation id="9004952710076978168">Received a notification for an unknown printer.</translation>

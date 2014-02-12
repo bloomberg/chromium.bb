@@ -156,7 +156,7 @@
 <translation id="5177479852722101802">Blocați în continuare accesul la cameră și microfon</translation>
 <translation id="4422428420715047158">Domeniul:</translation>
 <translation id="7788444488075094252">Limbi și metodă de introducere</translation>
-<translation id="6723354935081862304">Printați cu Google Docs și cu alte destinații din cloud. <ph name="BEGIN_LINK"/>Conectați-vă<ph name="END_LINK"/> pentru a printa cu Google Cloud Print.</translation>
+<translation id="6723354935081862304">Printați cu Documente Google și cu alte destinații din cloud. <ph name="BEGIN_LINK"/>Conectați-vă<ph name="END_LINK"/> pentru a printa cu Google Cloud Print.</translation>
 <translation id="8561096986926824116">Conexiunea la
         <ph name="HOST_NAME"/>
         a fost întreruptă de o schimbare a conexiunii la internet.</translation>
@@ -943,7 +943,7 @@ a vă proteja confidențialitatea.</translation>
 <translation id="1464724975715666883">1 eroare.</translation>
 <translation id="7864539943188674973">Dezactivați Bluetooth</translation>
 <translation id="1486096554574027028">Căutați parole</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> a detectat faptul că setările browserului au fost modificate fără acordul dvs. Doriți să le resetați la valorile inițiale?</translation>
+<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> a detectat faptul că e posibil ca setările browserului să fi fost modificate fără acordul dvs. Doriți să le resetați la valorile inițiale?</translation>
 <translation id="1836938920852968258">Dezactivați meniul „Alte dispozitive” din pagina Filă nouă.</translation>
 <translation id="3825863595139017598">Tastatură mongolă</translation>
 <translation id="8184538546369750125">Utilizați setarea prestabilită la nivel global (Permiteți)</translation>
@@ -1016,13 +1016,12 @@ a vă proteja confidențialitatea.</translation>
 <translation id="4992576607980257687">Notifică-mă dacă un site dorește să utilizeze mesajele rezervate sistemului ca să acceseze dispozitivele MIDI (recomandat)</translation>
 <translation id="1407050882688520094">Aveți stocate certificate care identifică aceste autorități de certificare:</translation>
 <translation id="6063810760121779748">Dezactivați WebAudio</translation>
-<translation id="7070112048468833248">Activați compatibilitatea Chromecast</translation>
 <translation id="1051694321716046412">Personalizați utilizatorul...</translation>
 <translation id="4287689875748136217">Pagina web nu se poate încărca, deoarece serverul nu a trimis date.</translation>
 <translation id="1634788685286903402">Acordați încredere acestui certificat pentru identificarea utilizatorilor de e-mail.</translation>
 <translation id="1856715684130786728">Adăugați o locație...</translation>
 <translation id="8642489171979176277">Importate din Bara de instrumente Google</translation>
-<translation id="4684427112815847243">De acord, se sincronizează integral</translation>
+<translation id="4684427112815847243">Se sincronizează integral</translation>
 <translation id="4699357559218762027">(lansată automat)</translation>
 <translation id="4037463823853863991">Activează comutatorul filelor de accesibilitate pentru Android.</translation>
 <translation id="7394102162464064926">Sigur doriți să ștergeți aceste pagini din istoric?
@@ -1525,6 +1524,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="4803909571878637176">Se dezinstalează</translation>
 <translation id="5209518306177824490">Amprentă SHA-1</translation>
 <translation id="2546283357679194313">Cookie-uri și date privind site-ul</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Stare rețea:</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
 <translation id="4683290000467574211">Permite o experiență experimentală, mai eficientă, în utilizarea aplicațiilor găzduite.</translation>
@@ -1779,7 +1779,7 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="5805190494033159960">Urmărește timpul petrecut în fiecare pagină, pentru a oferi o poziționare îmbunătățită a celor mai accesate pagini.</translation>
 <translation id="8911393093747857497">Aspect alternativ al rafturilor</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
-<translation id="8420060421540670057">Afișați fișierele Google Docs</translation>
+<translation id="8420060421540670057">Afișați fișierele Documente Google</translation>
 <translation id="6075731018162044558">Hopa! Sistemul nu a putut obține un indicativ de acces pe termen lung la API pentru acest dispozitiv.</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1335588927966684346">Utilitar:</translation>
@@ -2000,7 +2000,6 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="1546703252838446285">În contul dvs. <ph name="ACCOUNT_EMAIL"/>, poate:</translation>
 <translation id="6556866813142980365">Refaceți</translation>
 <translation id="8824701697284169214">Adăugați pa&amp;gina...</translation>
-<translation id="6079113045416226952">Google Now pe desktopul dvs.!</translation>
 <translation id="981210574958082923">Reordonați rezultatele pentru încorporarea în HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Deschideți toate marcajele</translation>
 <translation id="9193357432624119544">Cod de eroare: <ph name="ERROR_NAME"/></translation>
@@ -2056,6 +2055,7 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="7014051144917845222">Încercarea <ph name="PRODUCT_NAME"/> de conectare la <ph name="HOST_NAME"/> a fost respinsă. Este posibil ca site-ul să nu funcționeze sau rețeaua dvs. să nu fie configurată corect.</translation>
 <translation id="2097372108957554726">Pentru a înregistra dispozitive noi, este necesar să vă conectați la Chrome</translation>
 <translation id="4332213577120623185">Pentru finalizarea acestei achiziții sunt necesare mai multe informații.</translation>
+<translation id="9201305942933582053">Google Now pentru Chrome!</translation>
 <translation id="1708338024780164500">(Inactivă)</translation>
 <translation id="6896758677409633944">Copiați</translation>
 <translation id="8986362086234534611">Ștergeți</translation>
@@ -2308,7 +2308,6 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="7341982465543599097">extrem de scurtă</translation>
 <translation id="7314244761674113881">Gazdă SOCKS</translation>
 <translation id="4630590996962964935">Caracter nevalid: $1</translation>
-<translation id="4089968049353467425">Suprascrie optimizările pe dispozitive mai puțin performante.</translation>
 <translation id="7460131386973988868">Activează configurarea adresei IP statice. Este posibil să nu funcționeze.</translation>
 <translation id="7709980197120276510">Dacă dați clic pe Continuați, sunteți de acord cu <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> și <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Activați SPDY/4 alpha 2</translation>
@@ -2574,13 +2573,14 @@ Detaliile dvs. de conectare la cont sunt învechite.</translation>
 <translation id="4165738236481494247">Rulați acest plugin</translation>
 <translation id="1386387014181100145">Bună ziua.</translation>
 <translation id="7983301409776629893">Doresc să se traducă întotdeauna din <ph name="ORIGINAL_LANGUAGE"/> în <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="4890284164788142455">Thai</translation>
+<translation id="4890284164788142455">Thailandeză</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
 <translation id="4312207540304900419">Activați următoarea filă</translation>
 <translation id="7648048654005891115">Stil hartă taste</translation>
 <translation id="2058632120927660550">A apărut o eroare. Verificați imprimanta și încercați din nou.</translation>
 <translation id="539295039523818097">A apărut o eroare legată de microfonul dvs.</translation>
 <translation id="7595321929944401166">Acest plugin nu este acceptat.</translation>
+<translation id="2580093683987647761">Pentru a solicita încărcătorul gratuit de schimb, sunați la (866) 628-1371 (S.U.A.), la (866) 628-1372 (Canada) sau la 0800 026 0613 (Regatul Unit).</translation>
 <translation id="4935613694514038624">Se pregătește pentru prima conectare ca întreprindere...</translation>
 <translation id="3996912167543967198">Se resetează...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2673,7 +2673,6 @@ Pentru a utiliza această funcție, trebuie să vă conectați.</translation>
 <translation id="5434065355175441495">Criptare RSA PKCS #1</translation>
 <translation id="7073704676847768330">Acesta probabil nu este site-ul pe care îl căutați!</translation>
 <translation id="8477384620836102176">&amp;General</translation>
-<translation id="900093400474539372">Comprimare strat</translation>
 <translation id="8059417245945632445">&amp;Inspectați dispozitivele</translation>
 <translation id="3391392691301057522">Vechiul cod PIN:</translation>
 <translation id="96421021576709873">Rețea Wi-Fi</translation>
@@ -3067,7 +3066,6 @@ Pentru instrucțiuni suplimentare, verificați adresa dvs. de e-mail de la <ph n
 <translation id="8793043992023823866">Se importă...</translation>
 <translation id="8106211421800660735">Număr carte de credit</translation>
 <translation id="9159562891634783594">Activează înregistrarea imprimantelor din cloud neînregistrate din previzualizarea printării.</translation>
-<translation id="6244494354618367048">Modul pentru dispozitive mai puțin performante</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Creați un utilizator monitorizat<ph name="LINK_END"/> pentru acest dispozitiv.</translation>
 <translation id="2872961005593481000">Închideți</translation>
 <translation id="8986267729801483565">Locația de descărcare:</translation>
@@ -3345,8 +3343,6 @@ Pentru instrucțiuni suplimentare, verificați adresa dvs. de e-mail de la <ph n
 <translation id="5328205483471986666">Verificați conexiunea la internet.</translation>
 <translation id="2610780100389066815">Semnarea listei de încredere Microsoft</translation>
 <translation id="4535353504827549990">Schimbați intervalul de timp</translation>
-<translation id="1403594069892831402">Straturile care se suprapun altor tipuri de conținut compus trebuie să fie, de asemenea, compuse pentru a se asigura ordinea corectă de desenare. Cu această funcție, Blink poate desena mai mulți subarbori RenderLayer
-        într-un strat compus, pentru a se evita un număr inutil de mare de straturi compuse.</translation>
 <translation id="2788575669734834343">Selectați fișierul certificat</translation>
 <translation id="8267453826113867474">Blocați cuvintele ofensatoare</translation>
 <translation id="7959074893852789871">Fișierul a conținut mai multe certificate, unele dintre acestea nefiind importate:</translation>
@@ -3816,7 +3812,6 @@ Pentru instrucțiuni suplimentare, verificați adresa dvs. de e-mail de la <ph n
 <translation id="8026964361287906498">(Gestionat de politica întreprinderii)</translation>
 <translation id="8261506727792406068">Ștergeţi</translation>
 <translation id="7800518121066352902">Rotiți în sens &amp;invers acelor de ceasornic</translation>
-<translation id="4531327707205555741">Activați redarea de la distanță a videoclipurilor pe Chromecast.</translation>
 <translation id="345693547134384690">Deschideți &amp;imaginea într-o filă nouă</translation>
 <translation id="7422192691352527311">Preferințe...</translation>
 <translation id="9004952710076978168">A fost primită o notificare pentru o imprimantă necunoscută.</translation>
@@ -4626,7 +4621,7 @@ Pentru instrucțiuni suplimentare, verificați adresa dvs. de e-mail de la <ph n
 <translation id="3695919544155087829">Introduceți parola care a fost utilizată pentru a cripta acest fișier certificat.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Instalați <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Slide-uri</translation>
+<translation id="2943400156390503548">Prezentări</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> funcționează doar pe desktop.</translation>
 <translation id="5117930984404104619">Monitorizarea comportamentului altor extensii, inclusiv al adreselor URL accesate</translation>
 <translation id="33022249435934718">Ghidaje GDI</translation>

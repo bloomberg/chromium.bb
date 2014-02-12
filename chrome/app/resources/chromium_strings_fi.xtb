@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Käynnistä Chromium</translation>
 <translation id="9036189287518468038">Chromium-sovellusten käynnistysohjelma</translation>
-<translation id="4886158514168859177">Tälle tietokoneelle on jo asennettu Chromium-kehyksen uudempi versio. Jos Chromium-kehys ei toimi, poista sen asennus ja yritä uudelleen.</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chromium-käyttöliittymän ehtoja.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> tekee joidenkin haittaohjelmien tavoin muutoksia asetuksiin, joten Chromium on estänyt sen.</translation>
 <translation id="3155163173539279776">Käynnistä Chromium uudelleen</translation>
 <translation id="2966088006374919794">Chromiumin täytyy käynnistää ulkopuolinen sovellus <ph name="SCHEME"/>-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Chromium-kehyksestä ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium-kehys ja yritä uudelleen.</translation>
 <translation id="2558235863893655150">Haluatko, että Chromium tallentaa salasanasi?</translation>
 <translation id="1231416733874080281">Näytä Chromium-valikko</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON"/>uudelleenkäynnistyksen<ph name="END_BUTTON"/>)</translation>
@@ -208,7 +206,6 @@ Jos kirjaudut silti sisään, Chromium-tiedot, kuten kirjanmerkit, historia ja a
 <translation id="374481098568514319">Tietokoneessa on jo uudempi Chromium-komponenttien versio. Käytä uudempaa asennusohjelmaa.</translation>
 <translation id="6240281849816458190">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti varmenteen, joka ei ole vielä voimassa. Emme voi selvittää, onko varmenne luotettava. Chromium ei voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
-<translation id="1622565934590470080">Tälle tietokoneelle on jo asennettu Chromiumin ja Chromium-kehyksen uudempi versio. Jos Chromium ja Chromium-kehys eivät toimi, poista niiden asennus ja yritä uudelleen.</translation>
 <translation id="7318036098707714271">Asetustiedostosi on virheellinen.
 
 Chromium ei voi palauttaa asetuksiasi.</translation>

@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Du er ved at logge ind med en administreret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Start Chromium</translation>
 <translation id="9036189287518468038">Chromium-applisten</translation>
-<translation id="4886158514168859177">Computeren har allerede en nyere version af Chromium Frame. Hvis softwaren ikke fungerer, skal du afinstallere Chromium Frame og prøve igen.</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kræver, at du læser og accepterer følgende servicevilkår, inden du bruger denne enhed. Disse vilkår udvider, ændrer eller begrænser på ingen måde vilkårene for Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> foretager malwarelignende ændringer af indstillingerne, så Chromium har blokeret den.</translation>
 <translation id="3155163173539279776">Genstart Chromium</translation>
 <translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME"/>-links. Det link, der er anmodet om, er <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Kan ikke installere den samme version af Chromium Frame som den, der kører i øjeblikket. Luk Chromium Frame, og prøv igen.</translation>
 <translation id="2558235863893655150">Skal Chromium gemme din adgangskode?</translation>
 <translation id="1231416733874080281">Vis Chormium-menuen</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON"/>genstart<ph name="END_BUTTON"/> af Chromium)</translation>
@@ -209,7 +207,6 @@ Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærke
 <translation id="374481098568514319">Denne computer har allerede en nyere version af Chromium-komponenterne. Brug et nyere installationsprogram.</translation>
 <translation id="6240281849816458190">Du forsøgte at gå til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, der endnu ikke er gyldigt. Der er ingen tilgængelige oplysninger, der indikerer, om certifikatet stammer fra en kilde, der er tillid til. Chromium kan ikke med sikkerhed garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en angriber. Uret på din computer viser i øjeblikket <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du rette systemuret og derefter opdatere siden.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
-<translation id="1622565934590470080">Computeren har allerede en nyere version af Chromium og Chromium Frame. Hvis softwaren ikke fungerer, skal du afinstallere både Chromium og Chromium Frame og prøve igen.</translation>
 <translation id="7318036098707714271">Din præferencefil er beskadiget eller ugyldig.
 
 Chromium kan ikke gendanne dine indstillinger.</translation>

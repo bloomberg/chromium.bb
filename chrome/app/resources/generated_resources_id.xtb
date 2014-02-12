@@ -157,7 +157,7 @@
 <translation id="5177479852722101802">Terus blokir akses mikrofon dan kamera</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="7788444488075094252">Bahasa dan masukan</translation>
-<translation id="6723354935081862304">Cetak ke Google Documents dan tujuan awan lainnya. <ph name="BEGIN_LINK"/>Masuk<ph name="END_LINK"/> untuk mencetak ke Google Cloud Print.</translation>
+<translation id="6723354935081862304">Cetak ke Google Dokumen dan tujuan awan lainnya. <ph name="BEGIN_LINK"/>Masuk<ph name="END_LINK"/> untuk mencetak ke Google Cloud Print.</translation>
 <translation id="8561096986926824116">Sambungan ke
         <ph name="HOST_NAME"/>
         terputus karena terjadi perubahan dalam sambungan jaringan.</translation>
@@ -1003,7 +1003,6 @@
 <translation id="4992576607980257687">Tanyakan kepada saya saat situs ingin menggunakan pesan eksklusif sistem untuk mengakses perangkat MIDI (disarankan)</translation>
 <translation id="1407050882688520094">Anda memiliki sertifikat pada file yang mengidentifikasi otoritas sertifikat ini:</translation>
 <translation id="6063810760121779748">Nonaktifkan WebAudio</translation>
-<translation id="7070112048468833248">Aktifkan dukungan Chromecast</translation>
 <translation id="1051694321716046412">Sesuaikan pengguna...</translation>
 <translation id="4287689875748136217">Tidak dapat memuat laman web karena server tidak mengirim data apa pun.</translation>
 <translation id="1634788685286903402">Percayai sertifikat ini untuk mengidentifikasi pengguna email.</translation>
@@ -1301,7 +1300,7 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="2570648609346224037">Ada masalah saat mengunduh citra pemulihan.</translation>
 <translation id="4781787911582943401">Memperbesar layar</translation>
-<translation id="9053965862400494292">Galat terjadi saat mencoba menyiapkan sinkronisasi.</translation>
+<translation id="9053965862400494292">Kesalahan terjadi saat mencoba menyiapkan sinkronisasi.</translation>
 <translation id="8596540852772265699">File Khusus</translation>
 <translation id="7017354871202642555">Tidak dapat menyetel mode setelah jendela ditetapkan.</translation>
 <translation id="222931766245975952">File terpotong</translation>
@@ -1513,6 +1512,7 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="4803909571878637176">Copot pemasangan</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="2546283357679194313">Cookie dan data situs</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Status jaringan:</translation>
 <translation id="4958444002117714549">Luaskan daftar</translation>
 <translation id="4683290000467574211">Mengaktifkan pengalaman aplikasi terhosting eksperimental yang lebih sederhana.</translation>
@@ -1767,7 +1767,7 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="5805190494033159960">Lacak jumlah waktu yang dihabiskan di setiap laman untuk penghitungan skor &quot;sering dibuka&quot; yang lebih baik.</translation>
 <translation id="8911393093747857497">Tata letak rak alternatif</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
-<translation id="8420060421540670057">Tampilkan file Google Documents</translation>
+<translation id="8420060421540670057">Tampilkan file Google Dokumen</translation>
 <translation id="6075731018162044558">Ups!  Sistem gagal mencapai token akses API jangka panjang untuk perangkat ini.</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1335588927966684346">Utilitas:</translation>
@@ -1981,7 +1981,6 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="1546703252838446285">Pada akun <ph name="ACCOUNT_EMAIL"/> Anda, ini dapat:</translation>
 <translation id="6556866813142980365">Urungkan</translation>
 <translation id="8824701697284169214">Tambahkan La&amp;man...</translation>
-<translation id="6079113045416226952">Google Now di desktop Anda!</translation>
 <translation id="981210574958082923">Mengatur ulang hasil untuk penyejajaran dalam HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Buka Semua Bookmark</translation>
 <translation id="9193357432624119544">Kode kesalahan: <ph name="ERROR_NAME"/></translation>
@@ -2037,6 +2036,7 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="7014051144917845222">Upaya koneksi <ph name="PRODUCT_NAME"/> ke <ph name="HOST_NAME"/> ditolak. Situs web mungkin sedang tidak aktif atau jaringan Anda tidak dikonfigurasi dengan benar.</translation>
 <translation id="2097372108957554726">Anda perlu masuk ke Chrome untuk mendaftarkan perangkat baru</translation>
 <translation id="4332213577120623185">Informasi lebih lanjut diperlukan untuk menyelesaikan pembelian ini.</translation>
+<translation id="9201305942933582053">Google Now untuk Chrome!</translation>
 <translation id="1708338024780164500">(Tidak aktif)</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="8986362086234534611">Lupakan</translation>
@@ -2127,7 +2127,7 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="5612734644261457353">Maaf, sandi Anda masih belum dapat diverifikasi. Catatan: jika Anda baru saja mengubah sandi Anda, sandi yang baru akan diterapkan saat Anda keluar, gunakan sandi lama di sini.</translation>
 <translation id="2908162660801918428">Tambahkan Galeri Media menurut Direktori</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
-<translation id="2562685439590298522">Documents</translation>
+<translation id="2562685439590298522">Dokumen</translation>
 <translation id="5707163012117843346">Diunggah pada <ph name="WEBRTC_LOG_TIME"/></translation>
 <translation id="8673383193459449849">Server bermasalah</translation>
 <translation id="4060383410180771901">Situs web tidak dapat menangani permintaan untuk <ph name="URL"/>.</translation>
@@ -2272,7 +2272,7 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
           <ph name="END_BOLD"/>
           untuk menguji sambungan Anda.</translation>
 <translation id="8664389313780386848">&amp;Lihat sumber laman</translation>
-<translation id="6074825444536523002">Formulir Google</translation>
+<translation id="6074825444536523002">Google Formulir</translation>
 <translation id="2003289804311060506">Tidak, buat profil baru</translation>
 <translation id="13649080186077898">Kelola setelan IsiOtomatis</translation>
 <translation id="57646104491463491">Tanggal Dimodifikasi</translation>
@@ -2288,7 +2288,6 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="7341982465543599097">sangat pendek</translation>
 <translation id="7314244761674113881">Host SOCKS</translation>
 <translation id="4630590996962964935">Karakter tidak valid: $1</translation>
-<translation id="4089968049353467425">Menimpa pengoptimalan perangkat berkualitas rendah.</translation>
 <translation id="7460131386973988868">Memungkinkan konfigurasi ip statik. Mungkin tidak bekerja.</translation>
 <translation id="7709980197120276510">Dengan mengklik Lanjutkan, Anda menyetujui <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, dan <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Aktifkan SPDY/4 alfa 2</translation>
@@ -2555,6 +2554,7 @@ Detail proses masuk akun Anda tidak lagi berlaku.</translation>
 <translation id="2058632120927660550">Terjadi kesalahan. Periksa printer Anda dan coba lagi.</translation>
 <translation id="539295039523818097">Mikrofon Anda bermasalah.</translation>
 <translation id="7595321929944401166">Plugin ini tidak didukung.</translation>
+<translation id="2580093683987647761">Hubungi (866) 628-1371 (AS), (866) 628-1372 (Kanada), atau 0800 026 0613 (Inggris) untuk meminta penggantian pengisi daya (charger) gratis.</translation>
 <translation id="4935613694514038624">Mempersiapkan untuk masuk ke perusahaan untuk pertama kalinya...</translation>
 <translation id="3996912167543967198">Menyetel ulang...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2647,7 +2647,6 @@ Anda harus masuk untuk menggunakan fitur ini.</translation>
 <translation id="5434065355175441495">PKCS #1 MD Dengan Enkripsi RSA</translation>
 <translation id="7073704676847768330">Situs ini mungkin bukan yang Anda cari!</translation>
 <translation id="8477384620836102176">&amp;Umum</translation>
-<translation id="900093400474539372">Pemampatan lapisan</translation>
 <translation id="8059417245945632445">&amp;Periksa perangkat</translation>
 <translation id="3391392691301057522">PIN lama:</translation>
 <translation id="96421021576709873">Jaringan Wi-Fi</translation>
@@ -3039,7 +3038,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="8793043992023823866">Mengimpor...</translation>
 <translation id="8106211421800660735">Nomor kartu kredit</translation>
 <translation id="9159562891634783594">Mengaktifkan pendaftaran printer awan yang belum didaftarkan dari pratinjau cetak.</translation>
-<translation id="6244494354618367048">Mode perangkat berkualitas rendah.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Buat pengguna yang dilindungi<ph name="LINK_END"/> untuk perangkat ini.</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="8986267729801483565">Lokasi unduhan:</translation>
@@ -3318,8 +3316,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="5328205483471986666">Periksa sambungan internet Anda.</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="4535353504827549990">Beralih Jendela Waktu</translation>
-<translation id="1403594069892831402">Lapisan yang tumpang tindih dengan konten gabungan lainnya harus digabungkan pula untuk memastikan urutan pewarnaan yang benar. Fitur ini memungkinkan Blink mewarnai beberapa cabang RenderLayer
-        dalam satu lapisan gabungan dan menghindari banyaknya jumlah lapisan gabungan yang tidak diperlukan.</translation>
 <translation id="2788575669734834343">Pilih file sertifikat</translation>
 <translation id="8267453826113867474">Cekal Kata Tak Pantas</translation>
 <translation id="7959074893852789871">File berisi beberapa sertifikat, beberapa di antaranya tidak diimpor.</translation>
@@ -3789,7 +3785,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="8026964361287906498">(Dikelola oleh kebijakan perusahaan)</translation>
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="7800518121066352902">Putar &amp;Berlawanan Arah Jarum Jam</translation>
-<translation id="4531327707205555741">Aktifkan pemutaran video dari jarak jauh di Chromecast.</translation>
 <translation id="345693547134384690">Buka gambar d&amp;i tab baru</translation>
 <translation id="7422192691352527311">Preferensi...</translation>
 <translation id="9004952710076978168">Menerima pemberitahuan untuk printer yang tidak dikenal.</translation>
@@ -4598,7 +4593,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="3695919544155087829">Harap masukkan sandi yang digunakan untuk mengenkripsi file sertifikat ini.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Pasang <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Slides</translation>
+<translation id="2943400156390503548">Slide</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> hanya bekerja di desktop.</translation>
 <translation id="5117930984404104619">Memantau perilaku ekstensi lain, termasuk URL yang dikunjungi</translation>
 <translation id="33022249435934718">Penangan GDI</translation>

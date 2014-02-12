@@ -108,7 +108,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Starta Chromium</translation>
 <translation id="9036189287518468038">Startprogrammet för appar i Chromium</translation>
-<translation id="4886158514168859177">Det finns redan en nyare version av Chromium Frame på den här datorn. Avinstallera Chromium Frame och försök igen om programvaran inte fungerar.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -172,7 +171,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> ändrar inställningar på samma sätt som vissa skadliga program och har därför blockerats av Chromium.</translation>
 <translation id="3155163173539279776">Starta om Chromium</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME"/>-länkar. Den länk som efterfrågas är <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Det går inte att installera samma version av Chromium Frame som den som redan körs. Stäng Chromium Frame och försök igen.</translation>
 <translation id="2558235863893655150">Vill du att Chromium ska spara ditt lösenord?</translation>
 <translation id="1231416733874080281">Visa Chromium-menyn</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON"/>startas om<ph name="END_BUTTON"/>)</translation>
@@ -211,7 +209,6 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 <translation id="374481098568514319">Datorn har redan en nyare version av Chromium-komponenterna. Använd ett nyare installationsprogram.</translation>
 <translation id="6240281849816458190">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte är giltigt ännu. Det finns ingen information som anger om certifikatet är tillförlitligt. Chromium kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du korrigera klockan och uppdatera sidan.</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
-<translation id="1622565934590470080">Det finns redan en senare version av Chromium och Chromium Frame på den här datorn. Avinstallera både Chromium och Chromium Frame och försök igen om programvaran inte fungerar.</translation>
 <translation id="7318036098707714271">Inställningsfilen är skadad eller ogiltig.
 
 Chromium kan inte återställa dina inställningar.</translation>

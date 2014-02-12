@@ -1006,7 +1006,6 @@
 <translation id="4992576607980257687">Pytaj mnie, gdy witryna chce użyć wiadomości zarezerwowanych dla systemu, by uzyskać dostęp do urządzeń MIDI (zalecane)</translation>
 <translation id="1407050882688520094">Masz zapisane certyfikaty, które umożliwiają identyfikację następujących urzędów certyfikacji:</translation>
 <translation id="6063810760121779748">Wyłącz WebAudio</translation>
-<translation id="7070112048468833248">Włącz obsługę Chromecasta</translation>
 <translation id="1051694321716046412">Dostosuj użytkownika</translation>
 <translation id="4287689875748136217">Nie można wczytać strony internetowej, ponieważ serwer nie wysłał danych.</translation>
 <translation id="1634788685286903402">Ufaj temu certyfikatowi przy identyfikowaniu użytkowników poczty e-mail.</translation>
@@ -1515,6 +1514,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="4803909571878637176">Odinstalowywanie</translation>
 <translation id="5209518306177824490">Odcisk cyfrowy SHA-1</translation>
 <translation id="2546283357679194313">Pliki cookie i dane stron</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Stan sieci:</translation>
 <translation id="4958444002117714549">Rozwiń listę</translation>
 <translation id="4683290000467574211">Włącza eksperymentalny, ulepszony interfejs aplikacji hostowanych.</translation>
@@ -1983,7 +1983,6 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="1546703252838446285">Na Twoim koncie <ph name="ACCOUNT_EMAIL"/> może:</translation>
 <translation id="6556866813142980365">Ponów</translation>
 <translation id="8824701697284169214">Dodaj &amp;stronę</translation>
-<translation id="6079113045416226952">Google Now na Twoim pulpicie.</translation>
 <translation id="981210574958082923">Porządkuj wyniki w dostawcy HistoryQuickProvider pod kątem wstawiania</translation>
 <translation id="6466988389784393586">&amp;Otwórz wszystkie zakładki</translation>
 <translation id="9193357432624119544">Kod błędu: <ph name="ERROR_NAME"/></translation>
@@ -2039,6 +2038,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="7014051144917845222">Próba nawiązania połączenia między przeglądarką <ph name="PRODUCT_NAME"/> a serwerem <ph name="HOST_NAME"/> nie powiodła się. Witryna może być wyłączona lub sieć może być niepoprawnie skonfigurowana.</translation>
 <translation id="2097372108957554726">Aby móc rejestrować nowe urządzenia, musisz się zalogować w Chrome</translation>
 <translation id="4332213577120623185">Potrzebujemy więcej informacji, by zrealizować ten zakup.</translation>
+<translation id="9201305942933582053">Google Now dla Chrome</translation>
 <translation id="1708338024780164500">(Nieaktywne)</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
@@ -2290,7 +2290,6 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="7341982465543599097">bardzo krótkie</translation>
 <translation id="7314244761674113881">Host SOCKS</translation>
 <translation id="4630590996962964935">Nieprawidłowy znak: $1</translation>
-<translation id="4089968049353467425">Zastępuje ustawienia optymalizacji słabszych urządzeń.</translation>
 <translation id="7460131386973988868">Umożliwia statyczną konfigurację adresu IP. Może nie działać.</translation>
 <translation id="7709980197120276510">Klikając Kontynuuj, akceptujesz <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> i <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Włącz SPDY/4 alfa 2</translation>
@@ -2557,6 +2556,7 @@ Twoje dane logowania na konto są nieaktualne.</translation>
 <translation id="2058632120927660550">Wystąpił błąd. Sprawdź drukarkę i spróbuj ponownie.</translation>
 <translation id="539295039523818097">Wystąpił problem z mikrofonem.</translation>
 <translation id="7595321929944401166">Ta wtyczka jest nieobsługiwana.</translation>
+<translation id="2580093683987647761">Aby zamówić bezpłatną wymianę ładowarki, zadzwoń pod numer (866) 628-1371 (USA), (866) 628-1372 (Kanada) lub 0800 026 0613 (Wielka Brytania).</translation>
 <translation id="4935613694514038624">Przygotowuję do pierwszego logowania w przedsiębiorstwie...</translation>
 <translation id="3996912167543967198">Resetuję...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2649,7 +2649,6 @@ Aby korzystać z tej funkcji, musisz się zalogować.</translation>
 <translation id="5434065355175441495">PKCS #1, szyfrowanie RSA</translation>
 <translation id="7073704676847768330">Prawdopodobnie to nie jest strona, której szukasz!</translation>
 <translation id="8477384620836102176">&amp;Ogólne</translation>
-<translation id="900093400474539372">Ściskanie warstw</translation>
 <translation id="8059417245945632445">&amp;Sprawdź urządzenia</translation>
 <translation id="3391392691301057522">Stary kod PIN:</translation>
 <translation id="96421021576709873">Sieć Wi-Fi</translation>
@@ -3041,7 +3040,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="8793043992023823866">Importowanie...</translation>
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="9159562891634783594">Włącza rejestrację niezarejestrowanych drukarek w chmurze na podglądzie wydruku.</translation>
-<translation id="6244494354618367048">Tryb słabszego urządzenia.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Utwórz użytkownika nadzorowanego<ph name="LINK_END"/> na tym urządzeniu.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="8986267729801483565">Zapisz pobrane pliki w:</translation>
@@ -3320,8 +3318,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="5328205483471986666">Sprawdź połączenie internetowe.</translation>
 <translation id="2610780100389066815">Podpisywanie listy zaufania firmy Microsoft</translation>
 <translation id="4535353504827549990">Okno przestawiania czasu</translation>
-<translation id="1403594069892831402">Warstwy, które nakładają się na skomponowane treści, też muszą być skomponowane, by kolejność rysowania była poprawna. Dzięki tej funkcji Blink rysuje wiele podrzędnych drzew
-        warstw renderowania w jednej warstwie skomponowanej, co pozwala uniknąć nadmiernej liczby warstw skomponowanych.</translation>
 <translation id="2788575669734834343">Wybierz plik certyfikatu</translation>
 <translation id="8267453826113867474">Blokuj obraźliwe słowa</translation>
 <translation id="7959074893852789871">Plik zawierał wiele certyfikatów, z których niektóre nie zostały zaimportowane:</translation>
@@ -3790,7 +3786,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="8026964361287906498">(Podlega zasadom przedsiębiorstwa)</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="7800518121066352902">&amp;Obróć w lewo</translation>
-<translation id="4531327707205555741">Włącz zdalne odtwarzanie filmów na Chromecaście.</translation>
 <translation id="345693547134384690">Otwórz &amp;grafikę w nowej karcie</translation>
 <translation id="7422192691352527311">Ustawienia...</translation>
 <translation id="9004952710076978168">Odebrano powiadomienie dla nieznanej drukarki.</translation>

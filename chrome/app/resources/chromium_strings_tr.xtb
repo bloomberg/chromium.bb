@@ -102,7 +102,6 @@
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Chromium'u Başlat</translation>
 <translation id="9036189287518468038">Chromium Uygulama Başlatıcı</translation>
-<translation id="4886158514168859177">Bu bilgisayarda Chromium Frame'in daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium Frame'i kaldırın ve tekrar deneyin.</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -164,7 +163,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> bazı kötü amaçlı yazılımların yaptığına benzer ayar değişiklikleri yapıyor, bu nedenle Chromium tarafından engellendi.</translation>
 <translation id="3155163173539279776">Chromium'u Yeniden Başlat</translation>
 <translation id="2966088006374919794">Chromium'un, <ph name="SCHEME"/> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Şu anda çalışan aynı Chromium Frame sürümünü yükleyemezsiniz. Lütfen Chromium Frame'i kapatın ve yeniden deneyin.</translation>
 <translation id="2558235863893655150">Chromium'un şifrenizi kaydetmesini istiyor musunuz?</translation>
 <translation id="1231416733874080281">Chromium menüsünü göster</translation>
 <translation id="5772805321386874569">(Chromium'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
@@ -203,7 +201,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="374481098568514319">Bu bilgisayar zaten Chromium bileşenlerinin daha yeni bir sürümüne sahip. Lütfen daha yeni bir yükleme programı kullanın.</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu henüz geçerli olmayan bir sertifika sundu. Sertifikanın güvenilir olup olmadığı konusunda hiçbir bilgi yok. Chromium, bir saldırganla değil &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlı. Bu doğru mu? Değilse, sistem saatinizi düzeltip bu sayfayı yenileyin.</translation>
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
-<translation id="1622565934590470080">Bu bilgisayarda, Chromium ve Chromium Frame'in daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium ve Chromium Frame'i kaldırın ve tekrar deneyin.</translation>
 <translation id="7318036098707714271">Tercihler dosyanız bozuk veya geçersiz.
 
 Chromium ayarlarınızı kurtaramıyor.</translation>

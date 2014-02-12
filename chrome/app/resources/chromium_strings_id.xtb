@@ -106,7 +106,6 @@
 <translation id="5358375970380395591">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Mulai Chromium</translation>
 <translation id="9036189287518468038">Peluncur Aplikasi Chromium</translation>
-<translation id="4886158514168859177">Komputer ini sudah memiliki Chromium Frame versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium Frame dan coba lagi.</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -170,7 +169,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="1902135785017821799"><ph name="FILE_NAME"/> membuat perubahan setelan yang mirip dengan beberapa perangkat lunak perusak sehingga Chromium memblokirnya.</translation>
 <translation id="3155163173539279776">Luncurkan ulang Chromium</translation>
 <translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Tidak dapat memasang Chromium Frame versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium Frame dan coba lagi.</translation>
 <translation id="2558235863893655150">Apakah Anda ingin Chromium menyimpan sandi Anda?</translation>
 <translation id="1231416733874080281">Tampilkan menu Chromium</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
@@ -209,7 +207,6 @@ Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, riwayat, dan
 <translation id="374481098568514319">Komputer ini telah memiliki versi yang lebih anyar dari komponen Chromium. Gunakan pemasang yang lebih anyar.</translation>
 <translation id="6240281849816458190">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang belum valid. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut dapat dipercaya. Chromium tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu membenarkan jam sistem dan menyegarkan laman ini.</translation>
 <translation id="5862307444128926510">Selamat Datang di Chromium</translation>
-<translation id="1622565934590470080">Komputer ini sudah memiliki Chromium dan Chromium Frame versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium dan Chromium Frame dan coba lagi.</translation>
 <translation id="7318036098707714271">File preferensi Anda rusak atau tidak valid.
 
 Chromium tidak dapat memulihkan setelan Anda.</translation>

@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome alkalmazások indítása</translation>
 <translation id="2370289711218562573">A kedvencek és könyvjelzők importálása folyamatban van.</translation>
 <translation id="2721687379934343312">Mac számítógépen a rendszer a Keychain alkalmazásba menti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chrome-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
-<translation id="1761870329818521071">Nem lehet ugyanazt a Google Chrome Frame verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome Frame-et, és próbálja újra.</translation>
 <translation id="6014844626092547096">Bejelentkezett a Chrome-ba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="3140883423282498090">A módosítások a következő alkalommal lépnek életbe, amikor újraindítja a Google Chrome-ot.</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Érvénytelen argumentumok. A Google Chrome Frame nem telepíthető készenléti üzemmódban anélkül, hogy a Google Chrome is telepítve lenne.</translation>
 <translation id="8684521613357479262">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, állítsa át a rendszer óráját, és töltse be újra az oldalt.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">A számítógépen már megtalálható a Google Chrome és a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome-ot és a Google Chrome Frame-et, majd próbálkozzon ismét.</translation>
 <translation id="3149510190863420837">Chrome-alkalmazások</translation>
 <translation id="7084448929020576097">A(z) <ph name="FILE_NAME"/> fájl rosszindulatú, ezért a Chrome letiltotta.</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS"/>nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS"/> is hozzájárult.</translation>
@@ -149,7 +147,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
         ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
 <translation id="61852838583753520">A &amp;Chrome OS frissítése</translation>
 <translation id="8547799825197623713">Chrome Alkalmazásindító Canary</translation>
-<translation id="5577648424992741236">A számítógépen már megtalálható a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome Frame alkalmazást, majd próbálkozzon ismét.</translation>
 <translation id="6326175484149238433">Eltávolítás a Chrome-ból</translation>
 <translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>

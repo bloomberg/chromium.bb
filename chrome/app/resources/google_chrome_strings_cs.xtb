@@ -29,7 +29,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2896252579017640304">Spustit aplikace Chrome</translation>
 <translation id="2370289711218562573">Google Chrome právě importuje Oblíbené položky nebo záložky:</translation>
 <translation id="2721687379934343312">V počítačích Mac se hesla ukládají do vašeho úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chrome, kteří sdílejí tento účet systému OS X.</translation>
-<translation id="1761870329818521071">Nelze nainstalovat stejnou verzi pluginu Google Chrome Frame, jaká je právě spuštěná. Ukončete plugin Google Chrome Frame a zkuste to prosím znovu.</translation>
 <translation id="6014844626092547096">Nyní jste v Chromu přihlášeni. Synchronizace je ale deaktivována správcem.</translation>
 <translation id="3140883423282498090">Změny se projeví po příštím restartu prohlížeče Google Chrome.</translation>
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
@@ -81,7 +80,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7451721381978275812">Neplatné argumenty. Plugin Google Chrome Frame nemůže být v pohotovostním režimu nainstalován bez toho, aby byl zároveň nainstalován prohlížeč Google Chrome.</translation>
 <translation id="8684521613357479262">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát, který není ještě platný. Nejsou k dispozici žádné informace, které by naznačovaly, zda je možné certifikátu důvěřovat. Google Chrome nemůže spolehlivě zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Tento počítač již používá novější verzi prohlížeče Google Chrome a pluginu Google Chrome Frame. Jestliže software nefunguje, odinstalujte prosím prohlížeč Google Chrome i plugin Google Chrome Frame a zkuste to znovu.</translation>
 <translation id="3149510190863420837">Aplikace Chrome</translation>
 <translation id="7084448929020576097">Soubor <ph name="FILE_NAME"/> je škodlivý a prohlížeč Chrome jej zablokoval.</translation>
 <translation id="6368958679917195344">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS"/>softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -157,7 +155,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
         tuto možnost znovu vybrat (pro zlepšení výkonu).</translation>
 <translation id="61852838583753520">Aktualizace operačního systému &amp;Chrome</translation>
 <translation id="8547799825197623713">Spouštěč aplikací Chrome Canary</translation>
-<translation id="5577648424992741236">V tomto počítači je již nainstalována novější verze pluginu Google Chrome Frame. Jestliže software nefunguje, odinstalujte prosím plugin Google Chrome Frame a zkuste to znovu.</translation>
 <translation id="6326175484149238433">Odstranit z Chromu</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>

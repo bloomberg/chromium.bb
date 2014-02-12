@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Iniciar aplicações do Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está neste momento a importar Favoritos/Marcadores.</translation>
 <translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
-<translation id="1761870329818521071">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome Frame e tente novamente.</translation>
 <translation id="6014844626092547096">Tem agora sessão iniciada no Chrome! A sincronização foi desativada pelo seu administrador.</translation>
 <translation id="3140883423282498090">As alterações terão efeito da próxima vez que voltar a iniciar o Google Chrome.</translation>
 <translation id="1773601347087397504">Obter ajuda para utilizar o SO Chrome</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">Argumentos inválidos. Não é possível instalar o Google Chrome Frame no modo de prontidão sem instalar o Google Chrome.</translation>
 <translation id="8684521613357479262">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o relógio do sistema e atualizar esta página.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">Este computador já tem uma versão mais recente do Google Chrome e do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome e o Google Chrome Frame e tente novamente.</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>
 <translation id="7084448929020576097">O ficheiro <ph name="FILE_NAME"/> é malicioso e o Chrome bloqueou-o.</translation>
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
@@ -149,7 +147,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
         novamente para obter um desempenho melhorado.</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="8547799825197623713">Iniciador de Aplicações do Chrome para o Canary</translation>
-<translation id="5577648424992741236">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e tente novamente.</translation>
 <translation id="6326175484149238433">Remover do Chrome</translation>
 <translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>

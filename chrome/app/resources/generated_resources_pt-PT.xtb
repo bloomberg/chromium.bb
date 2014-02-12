@@ -940,7 +940,7 @@ para proteger a sua privacidade.</translation>
 <translation id="1464724975715666883">1 erro.</translation>
 <translation id="7864539943188674973">Desativar Bluetooth</translation>
 <translation id="1486096554574027028">Pesquisar palavras-passe</translation>
-<translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> detetou que as definições do navegador podem ter sido alteradas sem o seu conhecimento. Pretende repô-las para as predefinições originais?</translation>
+<translation id="6815353853907306610">O <ph name="IDS_SHORT_PRODUCT_NAME"/> detetou que as definições do seu navegador podem ter sido alteradas sem o seu conhecimento. Gostaria de repor as definições originais?</translation>
 <translation id="1836938920852968258">Desativar o menu &quot;Outros aparelhos&quot; do NTP.</translation>
 <translation id="3825863595139017598">Teclado em mongol</translation>
 <translation id="8184538546369750125">Utilizar predefinição global (Permitir)</translation>
@@ -997,7 +997,7 @@ para proteger a sua privacidade.</translation>
 <translation id="2738771556149464852">Não posterior a</translation>
 <translation id="1958820272620550857">Bloquear Itens</translation>
 <translation id="3429599832623003132">$1 itens</translation>
-<translation id="2325650632570794183">Este tipo de ficheiro não é suportado. Visite a Web Store do Chrome para encontrar uma aplicação que abra este tipo de ficheiro.</translation>
+<translation id="2325650632570794183">Este tipo de ficheiro não é suportado. Visite a Chrome Web Store para encontrar uma aplicação que abra este tipo de ficheiro.</translation>
 <translation id="5774515636230743468">Manifesto:</translation>
 <translation id="3534176359640723312">Interação de extensões com esta página:</translation>
 <translation id="7474889694310679759">Teclado canadiano (inglês)</translation>
@@ -1005,7 +1005,7 @@ para proteger a sua privacidade.</translation>
 <translation id="2423578206845792524">Guard&amp;ar imagem como...</translation>
 <translation id="6806236207372176468">Desativar o suporte para codificação de vídeo de hardware WebRTC.</translation>
 <translation id="7549584377607005141">Esta página Web requer os dados introduzidos anteriormente para ser corretamente apresentada. Pode enviar novamente esses dados, mas ao fazê-lo, irá repetir as ações que esta página executou anteriormente.</translation>
-<translation id="6954850746343724854">Ativa Native Client para todas as aplicações Web, mesmo para as que não foram instaladas a partir da Web Store do Chrome.</translation>
+<translation id="6954850746343724854">Ativa Native Client para todas as aplicações Web, mesmo para as que não foram instaladas a partir da Chrome Web Store.</translation>
 <translation id="1255280268830828398">Exceções de plug-in</translation>
 <translation id="9068931793451030927">Caminho:</translation>
 <translation id="283278805979278081">Tirar fotografia.</translation>
@@ -1013,7 +1013,6 @@ para proteger a sua privacidade.</translation>
 <translation id="4992576607980257687">Perguntar-me sempre que um site pretender utilizar mensagens exclusivas do sistema para aceder a dispositivos MIDI (recomendado)</translation>
 <translation id="1407050882688520094">Tem certificados em arquivo que identificam estas autoridades de certificação:</translation>
 <translation id="6063810760121779748">Desativar o WebAudio</translation>
-<translation id="7070112048468833248">Ativar suporte para Chromecast</translation>
 <translation id="1051694321716046412">Personalizar utilizador...</translation>
 <translation id="4287689875748136217">Não é possível carregar a página Web, porque o servidor não enviou dados.</translation>
 <translation id="1634788685286903402">Confiar neste certificado para identificar utilizadores de e-mail.</translation>
@@ -1480,7 +1479,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="2266011376676382776">Página(s) sem resposta</translation>
 <translation id="2907619724991574506">URLs de arranque</translation>
 <translation id="6780476430578694241">Iniciador de Aplicações</translation>
-<translation id="5328285148748012771">Aceda a todas as suas aplicações a partir deste prático iniciador. Divirta-se com jogos, participe em chat de vídeo, ouça música, edite documentos ou obtenha mais aplicações a partir da Web Store do Chrome.</translation>
+<translation id="5328285148748012771">Aceda a todas as suas aplicações a partir deste prático iniciador. Divirta-se com jogos, participe em chat de vídeo, ouça música, edite documentos ou obtenha mais aplicações a partir da Chrome Web Store.</translation>
 <translation id="2739191690716947896">Depurar</translation>
 <translation id="3100609564180505575">Módulos (<ph name="TOTAL_COUNT"/>) – Conflitos conhecidos: <ph name="BAD_COUNT"/>, suspeitos: <ph name="SUSPICIOUS_COUNT"/></translation>
 <translation id="3627671146180677314">Período de renovação do certificado Netscape</translation>
@@ -1522,6 +1521,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="4803909571878637176">A desinstalar</translation>
 <translation id="5209518306177824490">Impressão digital SHA-1</translation>
 <translation id="2546283357679194313">Cookies e dados de Web sites</translation>
+<translation id="4926150172344704583">Canadá</translation>
 <translation id="7447657194129453603">Estado da rede:</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4683290000467574211">Ativa uma experiência de aplicações alojadas mais otimizada e experimental.</translation>
@@ -1991,7 +1991,6 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="1546703252838446285">Na sua conta <ph name="ACCOUNT_EMAIL"/>, é possível:</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="8824701697284169214">Adicionar Pá&amp;gina...</translation>
-<translation id="6079113045416226952">O Google Now no seu ambiente de trabalho!</translation>
 <translation id="981210574958082923">Reordenar resultados para ficarem inline no HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Abrir Todos os Marcadores</translation>
 <translation id="9193357432624119544">Código de erro: <ph name="ERROR_NAME"/></translation>
@@ -2046,6 +2045,7 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="7014051144917845222">A tentativa de ligação do <ph name="PRODUCT_NAME"/> a <ph name="HOST_NAME"/> foi rejeitada. O Web site pode não estar a funcionar ou a sua rede pode não estar corretamente configurada.</translation>
 <translation id="2097372108957554726">É necessário iniciar sessão no Chrome para registar novos dispositivos</translation>
 <translation id="4332213577120623185">São necessárias mais informações para concluir esta compra.</translation>
+<translation id="9201305942933582053">Google Now para Chrome!</translation>
 <translation id="1708338024780164500">(Inativa)</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="8986362086234534611">Esquecer</translation>
@@ -2298,7 +2298,6 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="7341982465543599097">extremamente curto</translation>
 <translation id="7314244761674113881">Anfitrião SOCKS</translation>
 <translation id="4630590996962964935">Caráter inválido: $1</translation>
-<translation id="4089968049353467425">Substitui otimizações de dispositivos de gama baixa.</translation>
 <translation id="7460131386973988868">Permite a configuração de IP estático. Pode não funcionar.</translation>
 <translation id="7709980197120276510">Ao clicar em Continuar, aceita os <ph name="LEGAL_DOC_LINK_TEXT_1"/>, os <ph name="LEGAL_DOC_LINK_TEXT_2"/>, os <ph name="LEGAL_DOC_LINK_TEXT_3"/>, os <ph name="LEGAL_DOC_LINK_TEXT_4"/> e os <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Ativar SPDY/4 alpha 2</translation>
@@ -2565,6 +2564,7 @@ Os detalhes de início de sessão da sua conta estão desatualizados.</translati
 <translation id="2058632120927660550">Ocorreu um erro. Verifique a impressora e tente novamente.</translation>
 <translation id="539295039523818097">Ocorreu um problema com o microfone.</translation>
 <translation id="7595321929944401166">Este plug-in não é suportado.</translation>
+<translation id="2580093683987647761">Ligue para o número (866) 628-1371 (EUA), (866) 628-1372 (Canadá) ou 0800 026 0613 (Reino Unido) para pedir o carregador de substituição gratuito.</translation>
 <translation id="4935613694514038624">A preparar primeiro início de sessão empresarial...</translation>
 <translation id="3996912167543967198">A repor…</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2657,7 +2657,6 @@ Tem de ter sessão iniciada para utilizar esta funcionalidade.</translation>
 <translation id="5434065355175441495">PKCS #1 Encriptação RSA</translation>
 <translation id="7073704676847768330">Este não é o site que procura, provavelmente!</translation>
 <translation id="8477384620836102176">&amp;Geral</translation>
-<translation id="900093400474539372">Compressão de camadas</translation>
 <translation id="8059417245945632445">&amp;Inspecionar dispositivos</translation>
 <translation id="3391392691301057522">PIN antigo:</translation>
 <translation id="96421021576709873">Rede Wi-Fi</translation>
@@ -3049,7 +3048,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="8793043992023823866">A importar...</translation>
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
 <translation id="9159562891634783594">Ative o registo de impressoras na nuvem na pré-visualização da impressão.</translation>
-<translation id="6244494354618367048">Modo de dispositivos de gama baixa.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Criar utilizador supervisionado<ph name="LINK_END"/> para este dispositivo.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="8986267729801483565">Localização da transferência:</translation>
@@ -3328,8 +3326,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="5328205483471986666">Verifique a ligação à Internet.</translation>
 <translation id="2610780100389066815">Assinatura de lista fidedigna da Microsoft</translation>
 <translation id="4535353504827549990">Alternar Período de Tempo</translation>
-<translation id="1403594069892831402">As camadas que se sobrepõem a outros conteúdos compostos também têm de ser compostas para garantir a ordem correta da pintura. Esta funcionalidade permite que o Blink pinte várias subárvores RenderLayer
-        numa camada composta de modo a que seja possível evitar um número desnecessariamente grande de camadas compostas.</translation>
 <translation id="2788575669734834343">Seleccionar ficheiro de certificado</translation>
 <translation id="8267453826113867474">Bloquear palavras ofensivas</translation>
 <translation id="7959074893852789871">O ficheiro continha vários certificados, sendo que alguns deles não foram importados:</translation>
@@ -3370,7 +3366,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="331915893283195714">Permitir que todos os Web sites desativem o cursor do rato</translation>
 <translation id="8978526688207379569">Este site transferiu vários ficheiros automaticamente.</translation>
 <translation id="5959471481388474538">Rede não disponível</translation>
-<translation id="4871308555310586478">Não é da Web Store do Chrome</translation>
+<translation id="4871308555310586478">Não é da Chrome Web Store</translation>
 <translation id="3578594933904494462">O conteúdo deste separador está a ser partilhado.</translation>
 <translation id="295942452804818007">Mostrar o menu de estado</translation>
 <translation id="3831099738707437457">&amp;Ocultar Painel de Ortografia</translation>
@@ -3467,7 +3463,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="5285267187067365830">Instalar plug-in...</translation>
 <translation id="8662978096466608964">O Chrome não consegue definir a imagem de fundo.</translation>
 <translation id="5334844597069022743">Ver fonte</translation>
-<translation id="6818588961165804484">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK"/>Web Store do Chrome<ph name="END_LINK"/> para encontrar uma aplicação semelhante.
+<translation id="6818588961165804484">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK"/>Chrome Web Store<ph name="END_LINK"/> para encontrar uma aplicação semelhante.
         <ph name="BEGIN_LINK_HELP"/>Saiba Mais<ph name="END_LINK_HELP"/></translation>
 <translation id="5534520101572674276">A calcular tamanho</translation>
 <translation id="9024127637873500333">&amp;Abrir num Novo Separador</translation>
@@ -3738,7 +3734,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
           <ph name="LINE_BREAK"/>
           <ph name="BEGIN_LINK"/>Saiba mais<ph name="END_LINK"/> sobre a Navegação como convidado.</translation>
 <translation id="5979421442488174909">&amp;Traduzir para <ph name="LANGUAGE"/></translation>
-<translation id="2662876636500006917">Web Store do Chrome</translation>
+<translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="676881925959847033">Desativa o pop-up da barra informativa por predefinição quando aceder ao identificador de multimédia protegido.</translation>
 <translation id="952992212772159698">Não activado</translation>
 <translation id="8299269255470343364">Japonês</translation>
@@ -3798,7 +3794,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="8026964361287906498">(Gerido pela política da empresa)</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="7800518121066352902">Rodar para a &amp;Esquerda</translation>
-<translation id="4531327707205555741">Ativa a reprodução remota de vídeos no Chromecast.</translation>
 <translation id="345693547134384690">Abrir imagem num novo separador</translation>
 <translation id="7422192691352527311">Preferências...</translation>
 <translation id="9004952710076978168">Recebeu uma notificação para uma impressora desconhecida.</translation>
@@ -4171,7 +4166,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="7763146744708046348">Não agregar os dados - esta ação pode ser lenta!</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5854409662653665676">Se estiverem a ocorrer problemas frequentes, pode tentar o seguinte procedimento para resolver o problema com este módulo:</translation>
-<translation id="3776796446459804932">Esta extensão viola a política da Web Store do Chrome.</translation>
+<translation id="3776796446459804932">Esta extensão viola a política da Chrome Web Store.</translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
 <translation id="3046084099139788433">Activar separador 7</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>Saiba mais<ph name="END_LINK"/> sobre este problema.</translation>
@@ -4919,7 +4914,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="1088086359088493902">Segundos</translation>
 <translation id="3348205115529235073">Ativar o Modo de Cache Offline</translation>
 <translation id="73289266812733869">Selecção anulada</translation>
-<translation id="4335765547454232136">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK"/>Web Store do Chrome<ph name="END_LINK"/> para encontrar uma aplicação que abra este tipo de ficheiro.
+<translation id="4335765547454232136">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK"/>Chrome Web Store<ph name="END_LINK"/> para encontrar uma aplicação que abra este tipo de ficheiro.
 	      <ph name="BEGIN_LINK_HELP"/>Saiba Mais<ph name="END_LINK_HELP"/></translation>
 <translation id="8639963783467694461">Definições de Preenchimento automático</translation>
 <translation id="2951247061394563839">Centrar janela</translation>

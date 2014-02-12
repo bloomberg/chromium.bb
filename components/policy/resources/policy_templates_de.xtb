@@ -9,7 +9,7 @@
 
 Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</translation>
 <translation id="7040229947030068419">Beispielwert</translation>
-<translation id="1213523811751486361">Gibt die URL der Suchmaschine an, die zur Ausgabe der Suchvorschläge verwendet wird. Die URL sollte die Zeichenfolge &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; enthalten. Diese wird bei der Suchanfrage mit dem Text ersetzt, den der Nutzer bis dahin eingegeben hat. Diese Richtlinie ist optional. Wenn keine Festlegung erfolgt, so kommt keine Vorschlags-URL zum Einsatz. Diese Richtlinie wird nur dann umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
+<translation id="1213523811751486361">Gibt die URL der Suchmaschine an, die zur Ausgabe der Suchvorschläge verwendet wird. Die URL sollte den String &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; enthalten. Dieser wird bei der Suchanfrage mit dem Text ersetzt, den der Nutzer bis dahin eingegeben hat. Diese Richtlinie ist optional. Wenn keine Festlegung erfolgt, so kommt keine Vorschlags-URL zum Einsatz. Diese Richtlinie wird nur dann umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="6106630674659980926">Passwortmanager aktivieren</translation>
 <translation id="7109916642577279530">Hiermit können Audioaufnahmen zugelassen oder abgelehnt werden.
 
@@ -417,7 +417,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Vorschlagsuchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
-<translation id="4962195944157514011">Gibt die URL einer Suchmaschine an, die für Standardsuchanfragen zum Einsatz kommt. Die URL sollte die Zeichenfolge &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; enthalten. Diese wird bei der Suchanfrage mit dem Text ersetzt, nach dem der Nutzer sucht. Diese Option muss konfiguriert werden, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist, und wird nur dann beachtet, wenn das der Fall ist.</translation>
+<translation id="4962195944157514011">Gibt die URL einer Suchmaschine an, die für Standardsuchanfragen zum Einsatz kommt. Die URL sollte den String &quot;<ph name="SEARCH_TERM_MARKER"/>&quot; enthalten. Dieser wird bei der Suchanfrage mit dem Text ersetzt, nach dem der Nutzer sucht. Diese Option muss konfiguriert werden, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist, und wird nur dann beachtet, wenn das der Fall ist.</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME"/> erlauben, die gelisteten Inhaltstypen zu verarbeiten. Wenn diese Richtlinie nicht konfiguriert ist, so kommt der Standard-Renderer für alle Websites gemäß der Richtlinie &quot;ChromeFrameRendererSettings&quot; zum Einsatz.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
@@ -474,7 +474,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="6376842084200599664">Ermöglicht Ihnen, eine Liste mit Erweiterungen festzulegen, die im Hintergrund, d. h. ohne Nutzerinteraktion, installiert werden.
 
-          Jedes Element der Liste ist eine Zeichenfolge, die eine Erweiterungs-ID und eine Update-URL enthält, die durch ein Semikolon (<ph name="SEMICOLON"/>) getrennt sind. Die Erweiterungs-ID ist die 32-stellige Zeichenfolge, die z. B. im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK"/> vorkommt. Die Update-URL sollte auf ein XML-Dokument mit einem Update-Manifest verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1"/> beschrieben. Beachten Sie, dass die in dieser Richtlinie festgelegte Update-URL nur für die anfängliche Installation verwendet wird. Bei anschließenden Aktualisierungen der Erweiterung wird die im Manifest der Erweiterung angegebene Update-URL verwendet.
+          Jedes Element der Liste ist ein String, der eine Erweiterungs-ID und eine Update-URL enthält, die durch ein Semikolon (<ph name="SEMICOLON"/>) getrennt sind. Die Erweiterungs-ID ist der 32-stellige String, der z. B. im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK"/> vorkommt. Die Update-URL sollte auf ein XML-Dokument mit einem Update-Manifest verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1"/> beschrieben. Beachten Sie, dass die in dieser Richtlinie festgelegte Update-URL nur für die anfängliche Installation verwendet wird. Bei anschließenden Aktualisierungen der Erweiterung wird die im Manifest der Erweiterung angegebene Update-URL verwendet.
 
           <ph name="PRODUCT_NAME"/> ruft für jedes Element die in der Erweiterungs-ID angegebene Erweiterung beim Update-Dienst unter der angegebenen Update-URL ab und installiert diese im Hintergrund.
 
@@ -567,7 +567,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer bestimmen, ob eine Passwortabfrage zum Reaktivieren des Geräts notwendig sein soll.</translation>
 <translation id="6022948604095165524">Aktion beim Start</translation>
-<translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME"/>-Gerät. Die Netzwerkkonfiguration ist eine JSON-formatierte Zeichenfolge, die den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL"/> entspricht.</translation>
+<translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME"/>-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL"/> entspricht.</translation>
 <translation id="7128918109610518786">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME"/> in der Übersichtsleiste als in der Übersicht angezeigte Apps erscheinen.
 
       Wenn diese Richtlinie konfiguriert wird, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
@@ -723,7 +723,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="7091198954851103976">Führt Plug-ins, die eine Autorisierung erfordern, immer aus</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
 <translation id="8870318296973696995">Startseite</translation>
-<translation id="1240643596769627465">Gibt die URL der Suchmaschine an, die zur Ausgabe von Instant-Ergebnissen verwendet wird. Die URL sollte die Zeichenfolge <ph name="SEARCH_TERM_MARKER"/> enthalten. Diese wird bei der Suchanfrage mit dem Text ersetzt, den der Nutzer bis dahin eingegeben hat. Diese Richtlinie ist optional. Wenn keine Festlegung erfolgt, so werden keine Instant-Ergebnisse ausgegeben. Diese Richtlinie wird nur dann umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
+<translation id="1240643596769627465">Gibt die URL der Suchmaschine an, die zur Ausgabe von Instant-Ergebnissen verwendet wird. Die URL sollte den String <ph name="SEARCH_TERM_MARKER"/> enthalten. Dieser wird bei der Suchanfrage mit dem Text ersetzt, den der Nutzer bis dahin eingegeben hat. Diese Richtlinie ist optional. Wenn keine Festlegung erfolgt, so werden keine Instant-Ergebnisse ausgegeben. Diese Richtlinie wird nur dann umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="6693751878507293182">Wenn Sie diese Einstellung aktivieren, wird die automatische Suche und Installation fehlender Plug-ins in <ph name="PRODUCT_NAME"/> deaktiviert. Ist sie deaktiviert oder nicht konfiguriert, so ist die Plug-in-Suche aktiv.</translation>
 <translation id="2650049181907741121">Auszuführende Aktion beim Zuklappen des Geräts</translation>
 <translation id="7880891067740158163">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die <ph name="PRODUCT_NAME"/> automatisch ein Client-Zertifikat auswählen soll, wenn die Website ein Zertifikat anfordert. Wenn diese Richtlinie nicht konfiguriert ist, erfolgt keine automatische Auswahl für Websites.</translation>
@@ -853,7 +853,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
       Ist diese Richtlinie auf &quot;false&quot; gesetzt oder nicht konfiguriert, sind die Symbole sichtbar.</translation>
 <translation id="5085647276663819155">Druckvorschau deaktivieren</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
-<translation id="1689963000958717134">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration für alle Nutzer eines <ph name="PRODUCT_OS_NAME"/>-Geräts. Die Netzwerkkonfiguration ist eine JSON-formatierte Zeichenfolge, die den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL"/> entspricht.</translation>
+<translation id="1689963000958717134">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration für alle Nutzer eines <ph name="PRODUCT_OS_NAME"/>-Geräts. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL"/> entspricht.</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remote-Zugriff-Hosts aktivieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
@@ -1017,7 +1017,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="4482640907922304445">Zeigt die Schaltfläche &quot;Startseite&quot; in der Symbolleiste von <ph name="PRODUCT_NAME"/> an. Wenn Sie diese Einstellung aktivieren, so wird die Schaltfläche &quot;Startseite&quot; immer angezeigt. Sollten Sie sie deaktivieren, erscheint die Schaltfläche nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Ist die Richtlinie nicht konfiguriert, so kann der Nutzer selbst bestimmen, ob die Schaltfläche &quot;Startseite&quot; zur Verfügung stehen soll.</translation>
 <translation id="2518231489509538392">Wiedergabe von Audioinhalten zulassen</translation>
 <translation id="8146727383888924340">Nutzern das Einlösen von Angeboten über die Chrome OS-Registrierung gestatten</translation>
-<translation id="7301543427086558500">Definiert eine Liste alternativer URLs, mit denen Suchbegriffe aus der Suchmaschine extrahiert werden können. Die URLs sollten die Zeichenfolge <ph name="SEARCH_TERM_MARKER"/> enthalten, die zum Extrahieren der Suchbegriffe verwendet wird.
+<translation id="7301543427086558500">Definiert eine Liste alternativer URLs, mit denen Suchbegriffe aus der Suchmaschine extrahiert werden können. Die URLs sollten den String <ph name="SEARCH_TERM_MARKER"/> enthalten, der zum Extrahieren der Suchbegriffe verwendet wird.
 
           Diese Richtlinie ist optional. Wird sie nicht festgelegt, werden keine alternativen URLs zum Extrahieren von Suchbegriffen verwendet.
 

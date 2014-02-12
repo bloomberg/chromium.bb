@@ -108,7 +108,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5358375970380395591">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME"/>. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Zagon Chromiuma</translation>
 <translation id="9036189287518468038">Zaganjalnik aplikacij v Chromiumu</translation>
-<translation id="4886158514168859177">Ta računalnik že ima novejšo različico vtičnika Chromium Frame. Če programska oprema ne deluje, odstranite vtičnik Chromium Frame in poskusite znova.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Chromium OS.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -172,7 +171,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="1902135785017821799">Datoteka <ph name="FILE_NAME"/> spreminja nastavitve podobno kot nekatera zlonamerna programska oprema, zato jo je Chromium blokiral.</translation>
 <translation id="3155163173539279776">Znova zaženite Chromium</translation>
 <translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
-<translation id="6287463253129672858">Ni mogoče namestiti iste različice vtičnika Chromium Frame, ki se trenutno izvaja. Zaprite Chromium Frame in poskusite znova.</translation>
 <translation id="2558235863893655150">Ali želite, da Chromium shrani vaše geslo?</translation>
 <translation id="1231416733874080281">Prikaz menija Chroma</translation>
 <translation id="5772805321386874569">(zahteva <ph name="BEGIN_BUTTON"/>vnovični zagon<ph name="END_BUTTON"/> Chromiuma)</translation>
@@ -211,7 +209,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="374481098568514319">Ta računalnik že ima novejšo različico Chromiumovih komponent. Uporabite novejši namestitveni program.</translation>
 <translation id="6240281849816458190">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki še ni veljavno. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je potrdilu mogoče zaupati. Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, pravilno nastavite sistemsko uro in osvežite stran.</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
-<translation id="1622565934590470080">Ta računalnik že ima novejši različici Chromiuma in vtičnika Chromium Frame. Če programska oprema ne deluje, odstranite Chromium in vtičnik Chromium Frame ter poskusite znova.</translation>
 <translation id="7318036098707714271">Datoteka z nastavitvami je poškodovana ali neveljavna.
 
 Chromium ne more obnoviti vaših nastavitev.</translation>

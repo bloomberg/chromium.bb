@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="2721687379934343312">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーがアクセスしたり同期したりできます。</translation>
-<translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="3140883423282498090">変更内容は次に Google Chrome を再起動したときに有効になります。</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
@@ -75,7 +74,6 @@
 <translation id="7451721381978275812">引数が無効です。Google Chrome Frame を準備完了モードでインストールするには、一緒に Google Chrome をインストールする必要があります。</translation>
 <translation id="8684521613357479262">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるかどうかについて確認できる情報はありません。Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在、<ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、システムの時刻を修正してからこのページを更新してください。</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">新しいバージョンの Google Chrome と Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome と Google Chrome Frame の両方をアンインストールしてからもう一度お試しください。</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> は不正なファイルです。Chrome はこのファイルをブロックしました。</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS"/>が追加されて実現しました。</translation>
@@ -149,7 +147,6 @@
         向上させるために再度有効にすることをおすすめします。</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
-<translation id="5577648424992741236">新しいバージョンの Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6326175484149238433">Chrome から削除</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>

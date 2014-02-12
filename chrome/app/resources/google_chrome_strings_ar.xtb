@@ -25,7 +25,6 @@
 <translation id="2896252579017640304">‏تشغيل تطبيقات Chrome</translation>
 <translation id="2370289711218562573">‏يقوم Google Chrome الآن باستيراد المفضلة/الإشارات.</translation>
 <translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
-<translation id="1761870329818521071">‏لا يمكن تثبيت إصدار إطار Google Chrome نفسه الذي يتم تشغيله حاليًا. الرجاء إغلاق إطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
 <translation id="3140883423282498090">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Google Chrome.</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
@@ -77,7 +76,6 @@
 <translation id="7451721381978275812">‏وسيطات غير صالحة. لا يمكن تثبيت إطار Google Chrome في وضع الاستعداد بدون تثبيت Google Chrome أيضًا.</translation>
 <translation id="8684521613357479262">‏لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الخادم قدم شهادة لا تُعد صالحة حتى الآن. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة يمكن الوثوق بها أم لا. لا يمكن أن يضمن Google Chrome على نحو موثوق أنك تتصل بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">‏يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من Google Chrome وإطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة كل من Google Chrome وإطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
 <translation id="7084448929020576097">‏<ph name="FILE_NAME"/> برنامج ضار، وقد أجرى Chrome حظره.</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
@@ -153,7 +151,6 @@
         مرة أخرى لتحسين الأداء.</translation>
 <translation id="61852838583753520">‏تحديث ن&amp;ظام التشغيل Google Chrome</translation>
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
-<translation id="5577648424992741236">‏يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من إطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة إطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="6326175484149238433">‏إزالة من Chrome</translation>
 <translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
 <translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>

@@ -1009,7 +1009,6 @@
 <translation id="4992576607980257687">Spør meg når et nettsted vil bruke systemeksklusive meldinger for tilgang til MIDI-enheter (anbefalt)</translation>
 <translation id="1407050882688520094">Du har en fil med sertifikater som identifiserer disse sertifiseringsinstansene:</translation>
 <translation id="6063810760121779748">Deaktiver WebAudio</translation>
-<translation id="7070112048468833248">Aktiver Chromecast-støtte</translation>
 <translation id="1051694321716046412">Tilpass bruker</translation>
 <translation id="4287689875748136217">Kunne ikke laste inn nettsiden fordi tjeneren ikke sendte data.</translation>
 <translation id="1634788685286903402">Stol på dette sertifikatet for å identifisere e-postbrukere</translation>
@@ -1054,7 +1053,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="5241364149922736632">Selgere har ofte behov dette i fall det oppstår problemer under frakt av bestillingen.</translation>
 <translation id="1864756863218646478">Kunne ikke finne filen.</translation>
 <translation id="7810202088502699111">Forgrunnsvinduer er blokkert på siden.</translation>
-<translation id="3808873045540128170">Å nei!</translation>
+<translation id="3808873045540128170">Oisann, rusk i maskineriet …</translation>
 <translation id="646727171725540434">HTTP-mellomtjener</translation>
 <translation id="7576690715254076113">Sammenligne</translation>
 <translation id="4594569381978438382">Vil du installere disse programmene?</translation>
@@ -1514,6 +1513,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="4803909571878637176">Avinstallering</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtrykk</translation>
 <translation id="2546283357679194313">Informasjonskapsler og nettsteddata</translation>
+<translation id="4926150172344704583">Canada</translation>
 <translation id="7447657194129453603">Nettverksstatus:</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
 <translation id="4683290000467574211">Slår på en eksperimentell, mer strømlinjeformet opplevelse for vertsbaserte apper.</translation>
@@ -1993,7 +1993,6 @@ Offentlig eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> biter):
 <translation id="1546703252838446285">På kontoen <ph name="ACCOUNT_EMAIL"/> kan den:</translation>
 <translation id="6556866813142980365">Gjør om</translation>
 <translation id="8824701697284169214">Legg til si&amp;de</translation>
-<translation id="6079113045416226952">Google Nå på skrivebordet!</translation>
 <translation id="981210574958082923">Omorganiser resultater for innebygging i HistoryQuickProvider</translation>
 <translation id="6466988389784393586">&amp;Åpne alle bokmerker</translation>
 <translation id="9193357432624119544">Feilkode: <ph name="ERROR_NAME"/></translation>
@@ -2049,6 +2048,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> sitt forsøk på tilkobling til <ph name="HOST_NAME"/> ble avvist. Nettstedet kan være nede, eller det kan hende at nettverket ditt ikke er riktig konfigurert.</translation>
 <translation id="2097372108957554726">Du må logge på Chrome for å registrere nye enheter</translation>
 <translation id="4332213577120623185">Mer informasjon er nødvendig for å fullføre dette kjøpet.</translation>
+<translation id="9201305942933582053">Google Nå for Chrome!</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
 <translation id="6896758677409633944">Kopier</translation>
 <translation id="8986362086234534611">Glem</translation>
@@ -2300,7 +2300,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7341982465543599097">ekstremt kort</translation>
 <translation id="7314244761674113881">SOCKS-vert</translation>
 <translation id="4630590996962964935">Ugyldig tegn: $1</translation>
-<translation id="4089968049353467425">Overstyrer enhetsoptimaliseringer i bunnsjiktet</translation>
 <translation id="7460131386973988868">Aktiverer statisk ip-konfigurasjon. Ikke sikkert det funker.</translation>
 <translation id="7709980197120276510">Ved å klikke på «Fortsett» godtar du <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> og <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">Aktiver SPDY/4 alpha 2</translation>
@@ -2572,6 +2571,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2058632120927660550">Det har oppstått en feil. Sjekk skriveren og prøv på nytt.</translation>
 <translation id="539295039523818097">Det oppstod et problem med mikrofonen.</translation>
 <translation id="7595321929944401166">Dette programtillegget støttes ikke.</translation>
+<translation id="2580093683987647761">Ring (866) 628-1371 (USA), (866) 628-1372 (Canada) eller 0800 026 0613 (Storbritannia) for å be om en gratis erstatningslader.</translation>
 <translation id="4935613694514038624">Forbereder første bedriftspålogging …</translation>
 <translation id="3996912167543967198">Tilbakestiller …</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2664,7 +2664,6 @@ Du må være pålogget for å bruke denne funksjonen.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="7073704676847768330">Dette er sannsynligvis ikke nettstedet du ser etter.</translation>
 <translation id="8477384620836102176">&amp;Generelt</translation>
-<translation id="900093400474539372">Sammenlegging av lag</translation>
 <translation id="8059417245945632445">&amp;Inspiser enheter</translation>
 <translation id="3391392691301057522">Gammel personlig kode:</translation>
 <translation id="96421021576709873">Wi-Fi-nettverk</translation>
@@ -3057,7 +3056,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="8793043992023823866">Importerer ...</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="9159562891634783594">Aktiver registrering av uregistrerte nettskyskrivere fra utskriftsforhåndsvisningen.</translation>
-<translation id="6244494354618367048">Modus for enhet i bunnsjiktet.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Opprett en overvåket bruker <ph name="LINK_END"/> for denne enheten.</translation>
 <translation id="2872961005593481000">Avslutt</translation>
 <translation id="8986267729801483565">Plassering for nedlasting:</translation>
@@ -3333,8 +3331,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="5328205483471986666">Sjekk Internett-tilkoblingen din</translation>
 <translation id="2610780100389066815">Signering med Microsoft-klareringsliste</translation>
 <translation id="4535353504827549990">Endre tidsperioden</translation>
-<translation id="1403594069892831402">Lag som overlapper annet sammensatt innhold må også være sammensatte, dette er for å sikre korrekt malingsrekkefølge. Denne funksjonen gjør at Blink kan male flere RenderLayer
-        -undergrener i ett sammensatt lag, slik at du kan unngå for mange sammensatte lag.</translation>
 <translation id="2788575669734834343">Velg sertifikatfil</translation>
 <translation id="8267453826113867474">Blokkér støtende ord</translation>
 <translation id="7959074893852789871">Filen inneholdt flere sertifikater, og enkelte av dem ble ikke importert:</translation>
@@ -3802,7 +3798,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="8026964361287906498">(Administrert av virksomhetens retningslinjer)</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="7800518121066352902">Rotér m&amp;ot klokken</translation>
-<translation id="4531327707205555741">Aktiver avspilling av videoer eksternt på Chromecast.</translation>
 <translation id="345693547134384690">Åpne b&amp;ilde i ny fane</translation>
 <translation id="7422192691352527311">Innstillinger</translation>
 <translation id="9004952710076978168">Mottok et varsel for en ukjent skriver.</translation>
@@ -5007,7 +5002,7 @@ Vil du godta dette?</translation>
 <translation id="3555315965614687097">Konfigurer</translation>
 <translation id="2085470240340828803">Det finnes allerede en fil med navnet «<ph name="FILENAME"/>». Hva ønsker du å gjøre?</translation>
 <translation id="7088674813905715446">Administratoren har gitt denne enheten status som «ikke klargjort». For å aktivere den for registrering, må du be administratoren gi enheten status som «ventende».</translation>
-<translation id="3037605927509011580">Å nei!</translation>
+<translation id="3037605927509011580">Æsj!</translation>
 <translation id="5803531701633845775">Velg fraser fra baksiden, uten å bevege markøren</translation>
 <translation id="1434886155212424586">Startsiden er Ny fane-siden</translation>
 <translation id="7566723889363720618">F12</translation>

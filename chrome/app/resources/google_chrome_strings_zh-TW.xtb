@@ -27,7 +27,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2896252579017640304">啟動 Chrome 應用程式</translation>
 <translation id="2370289711218562573">Google Chrome 現正匯入 [我的收藏/書籤]。</translation>
 <translation id="2721687379934343312">在 Mac 上，密碼會儲存到您的「鑰匙圈」資料庫中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
-<translation id="1761870329818521071">無法安裝這個版本的「Google Chrome 內嵌框架」，因為相同的版本目前正在執行中。請關閉「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="6014844626092547096">您現在已登入 Chrome！但管理員已關閉同步功能。</translation>
 <translation id="3140883423282498090">您的變更將於下次重新啟動 Google Chrome 時生效。</translation>
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
@@ -77,7 +76,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
 <translation id="8684521613357479262">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;&gt;，但伺服器提供了無效的憑證。我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4585888816441913908">這台電腦已安裝較新的 Google Chrome 和「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝 Google Chrome 和「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> 是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
@@ -151,7 +149,6 @@ Google Chrome 無法復原您的設定。</translation>
         以增進效能。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome 應用程式啟動器 Canary 頻道</translation>
-<translation id="5577648424992741236">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
 <translation id="2871893339301912279">您已登入 Chrome！</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>

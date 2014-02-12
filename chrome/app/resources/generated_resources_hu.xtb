@@ -929,7 +929,7 @@
 <translation id="1464724975715666883">1 hiba.</translation>
 <translation id="7864539943188674973">Bluetooth letiltása</translation>
 <translation id="1486096554574027028">Jelszavak keresése</translation>
-<translation id="6815353853907306610">A(z) <ph name="IDS_SHORT_PRODUCT_NAME"/> azt érzékelte, hogy a böngésző beállításai az Ön tudta nélkül módosultak. Szeretné visszaállítani őket az alapértelmezett értékekre?</translation>
+<translation id="6815353853907306610">A(z) <ph name="IDS_SHORT_PRODUCT_NAME"/> azt érzékelte, hogy a böngésző beállításai esetleg az Ön tudta nélkül módosulhattak. Szeretné visszaállítani őket az alapértelmezett értékekre?</translation>
 <translation id="1836938920852968258">Az NTP &quot;Egyéb eszközök&quot; menüjének letiltása.</translation>
 <translation id="3825863595139017598">Mongol billentyűzet</translation>
 <translation id="8184538546369750125">Globális alapértelmezés használata (Engedélyezés)</translation>
@@ -1002,7 +1002,6 @@
 <translation id="4992576607980257687">Kérdezzen meg, amikor egy webhely exkluzív rendszerüzenetekkel szeretné elérni a MIDI-eszközöket (ajánlott)</translation>
 <translation id="1407050882688520094">Vannak olyan tanúsítványok, amelyek a következő tanúsítványkibocsátókat azonosítják:</translation>
 <translation id="6063810760121779748">WebAudio letiltása</translation>
-<translation id="7070112048468833248">Chromecast-támogatás engedélyezése</translation>
 <translation id="1051694321716046412">Felhasználó testreszabása...</translation>
 <translation id="4287689875748136217">Nem sikerült betölteni a weblapot, mert a szerver nem küldött adatokat.</translation>
 <translation id="1634788685286903402">Bízzon meg ebben a tanúsítványban e-mail felhasználók azonosításakor.</translation>
@@ -1341,7 +1340,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8412498037462710569">Kijelentem, hogy nem szeretnék ingyenes cseretöltőt kapni.</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="5431473096922271583">Ellenőrizni szeretnénk, hogy Ön a tartozékként kapott töltőt használja-e.</translation>
-<translation id="3478477114335130296">Előfordulhat, hogy némely beállítása az Ön tudta nélkül módosult.</translation>
+<translation id="3478477114335130296">Előfordulhat, hogy egyes beállításai az Ön tudta nélkül módosultak.</translation>
 <translation id="3866443872548686097">A helyreállító adathordozó elkészült. Eltávolíthatja a rendszerből.</translation>
 <translation id="6824564591481349393">&amp;E-mail cím másolása</translation>
 <translation id="907148966137935206">Tiltsa le az előugró ablakokat minden webhelyen (javasolt)</translation>
@@ -1509,6 +1508,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="4803909571878637176">Eltávolítás</translation>
 <translation id="5209518306177824490">SHA-1 ujjlenyomat</translation>
 <translation id="2546283357679194313">Cookie-k és webhelyadatok</translation>
+<translation id="4926150172344704583">Kanada</translation>
 <translation id="7447657194129453603">Hálózat állapota:</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
 <translation id="4683290000467574211">Kísérleti, egyszerűsített élményt engedélyez a tárolt alkalmazásnál.</translation>
@@ -1976,7 +1976,6 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="1546703252838446285"><ph name="ACCOUNT_EMAIL"/> fiókjában a következőket teheti:</translation>
 <translation id="6556866813142980365">Újra</translation>
 <translation id="8824701697284169214">Ol&amp;dal hozzáadása...</translation>
-<translation id="6079113045416226952">Google Asszisztens az asztalon!</translation>
 <translation id="981210574958082923">Eredmények újrarendezése beírhatóság szerint a HistoryQuickProviderben</translation>
 <translation id="6466988389784393586">&amp;Az összes könyvjelző megnyitása</translation>
 <translation id="9193357432624119544">Hibakód: <ph name="ERROR_NAME"/></translation>
@@ -2032,6 +2031,7 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="7014051144917845222"><ph name="HOST_NAME"/> elutasította a <ph name="PRODUCT_NAME"/> kapcsolódási kísérletét. Lehet, hogy a honlap leállt, vagy a hálózat nincs megfelelően konfigurálva.</translation>
 <translation id="2097372108957554726">Új eszközök regisztrálásához be kell jelentkeznie a Chrome-ba</translation>
 <translation id="4332213577120623185">A vásárlás végrehajtásához további információkra van szükség.</translation>
+<translation id="9201305942933582053">Google Asszisztens Chrome-hoz!</translation>
 <translation id="1708338024780164500">(Inaktív)</translation>
 <translation id="6896758677409633944">Másolás</translation>
 <translation id="8986362086234534611">Elfelejt</translation>
@@ -2283,7 +2283,6 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="7341982465543599097">rendkívül rövid</translation>
 <translation id="7314244761674113881">SOCKS-szerver</translation>
 <translation id="4630590996962964935">Érvénytelen karakter: $1</translation>
-<translation id="4089968049353467425">Felülbírálja az alacsony szintű végeszköz-optimalizálásokat.</translation>
 <translation id="7460131386973988868">Aktiválja a statikus IP-beállítást. Lehet, hogy nem fog működni.</translation>
 <translation id="7709980197120276510">A Folytatás lehetőségre kattintva elfogadja a következőket: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> és <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
 <translation id="1840000081943778840">SPDY/4 alpha 2 engedélyezése</translation>
@@ -2550,6 +2549,7 @@ Az Ön fiókjának bejelentkezési adatai elavultak.</translation>
 <translation id="2058632120927660550">Hiba történt. Ellenőrizze a nyomtatót, majd próbálja újra.</translation>
 <translation id="539295039523818097">Valami gond van a mikrofonnal.</translation>
 <translation id="7595321929944401166">Ez a bővítmény nem támogatott.</translation>
+<translation id="2580093683987647761">Ingyenes cseretöltőért hívja a következő számok egyikét: (866) 628-1371 (Egyesült Államok), (866) 628-1372 (Kanada) vagy 0800 026 0613 (Egyesült Királyság).</translation>
 <translation id="4935613694514038624">Felkészülés az első vállalati bejelentkezésre...</translation>
 <translation id="3996912167543967198">Visszaállítás...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -2642,7 +2642,6 @@ E funkció használatához be kell jelentkeznie.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA titkosítás</translation>
 <translation id="7073704676847768330">Ez valószínűleg nem az a webhely, amit keres!</translation>
 <translation id="8477384620836102176">&amp;Általános</translation>
-<translation id="900093400474539372">Rétegek összenyomása</translation>
 <translation id="8059417245945632445">&amp;Eszközök vizsgálata</translation>
 <translation id="3391392691301057522">Régi PIN kód:</translation>
 <translation id="96421021576709873">Wi-Fi hálózat</translation>
@@ -3032,7 +3031,6 @@ További utasításokért, kérjük, nézze meg az e-mailjeit a következő fió
 <translation id="8793043992023823866">Importálás...</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
 <translation id="9159562891634783594">A regisztrálatlan felhőnyomtatók nyomtatási előnézetből való regisztrálásának engedélyezése.</translation>
-<translation id="6244494354618367048">Alacsony szintű végeszköz mód.</translation>
 <translation id="8843709518995654957"><ph name="LINK_START"/>Felügyelt felhasználó létrehozása<ph name="LINK_END"/> ehhez az eszközhöz.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="8986267729801483565">Letöltés helye:</translation>
@@ -3310,8 +3308,6 @@ További utasításokért, kérjük, nézze meg az e-mailjeit a következő fió
 <translation id="5328205483471986666">Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="2610780100389066815">Microsoft - megbízhatósági lista aláírása</translation>
 <translation id="4535353504827549990">Időtartomány váltása</translation>
-<translation id="1403594069892831402">A más összetett tartalmakat fedő rétegeket is kombinálni kell a megfelelő színezési sorrend biztosítására. Ez a funkció lehetővé teszi a Blink számára, hogy több RenderLayer
-        alhierarchiát egy összetett rétegben színezzen, és így elkerülhessük a szükségtelenül nagyszámú összetett réteget.</translation>
 <translation id="2788575669734834343">Tanúsítványfájl kiválasztása</translation>
 <translation id="8267453826113867474">Trágár szavak kizárása</translation>
 <translation id="7959074893852789871">A fájl több tanúsítványt tartalmazott, amelyek közül néhány nincs importálva:</translation>
@@ -3780,7 +3776,6 @@ További utasításokért, kérjük, nézze meg az e-mailjeit a következő fió
 <translation id="8026964361287906498">(Vállalati házirend kezeli)</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="7800518121066352902">Forgatás &amp;balra</translation>
-<translation id="4531327707205555741">Videók távoli lejátszásának engedélyezése a Chromecaston.</translation>
 <translation id="345693547134384690">Kép &amp;megnyitása új lapon</translation>
 <translation id="7422192691352527311">Beállítások...</translation>
 <translation id="9004952710076978168">Értesítés érkezett ismeretlen nyomtatóhoz.</translation>
