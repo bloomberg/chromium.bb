@@ -14543,106 +14543,108 @@ Do you accept?
     </message>
 
     <!-- App List. -->
-    <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">
-      Chat
-    </message>
-    <message name="IDS_APP_LIST_CONTACT_EMAIL_TOOLTIP" desc="Tooltip text for the 'email' icon displayed next to a contact search result.">
-      Send email
-    </message>
-    <message name="IDS_APP_LIST_CONTACT_PHONE_TOOLTIP" desc="Tooltip text for the 'phone' icon displayed next to a contact search result.">
-      Call phone
-    </message>
-    <message name="IDS_APP_LIST_CONTACT_VIDEO_TOOLTIP" desc="Tooltip text for the 'video' icon displayed next to a contact search result.">
-      Start Hangout
-    </message>
-    <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
-      Click to start voice search
-    </message>
-    <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
-      Click or say "Ok, Google" to start voice search
-    </message>
-    <if expr="not pp_ifdef('use_titlecase')">
-      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
-        New tab
+    <if expr="enable_app_list">
+      <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">
+        Chat
       </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
-        New window
+      <message name="IDS_APP_LIST_CONTACT_EMAIL_TOOLTIP" desc="Tooltip text for the 'email' icon displayed next to a contact search result.">
+        Send email
       </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
-        Pin to shelf
+      <message name="IDS_APP_LIST_CONTACT_PHONE_TOOLTIP" desc="Tooltip text for the 'phone' icon displayed next to a contact search result.">
+        Call phone
       </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
-        Unpin from shelf
+      <message name="IDS_APP_LIST_CONTACT_VIDEO_TOOLTIP" desc="Tooltip text for the 'video' icon displayed next to a contact search result.">
+        Start Hangout
       </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
-        Remove from folder
+      <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
+        Click to start voice search
       </message>
-      <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
-        Uninstall
+      <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
+        Click or say "Ok, Google" to start voice search
       </message>
-      <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-        Search
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
+          New tab
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
+          New window
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
+          Pin to shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
+          Unpin from shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
+          Remove from folder
+        </message>
+        <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
+          Uninstall
+        </message>
+        <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+          Search
+        </message>
+        <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
+          Search or say "Ok, Google"
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
+          Sign in
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
+          Learn more
+        </message>
+        <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
+          New window
+        </message>
+        <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+          New incognito window
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
+          New Tab
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
+          New Window
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
+          Pin to Shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
+          Unpin from Shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
+          Remove from Folder
+        </message>
+        <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
+          Uninstall
+        </message>
+        <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+          Search
+        </message>
+        <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
+          Search or say "Ok, Google"
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
+          Sign in
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
+          Learn More
+        </message>
+        <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
+          New Window
+        </message>
+        <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+          New Incognito Window
+        </message>
+      </if>
+      <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_LINK" desc="App launcher sign-in learn more URL.">
+        https://support.google.com/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139&amp;p=settings_sign_in
       </message>
-      <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
-        Search or say "Ok, Google"
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
-        Sign in
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
-        Learn more
-      </message>
-      <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
-        New window
-      </message>
-      <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-        New incognito window
+      <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher sign-in settings link text.">
+        App Launcher Settings
       </message>
     </if>
-    <if expr="pp_ifdef('use_titlecase')">
-      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
-        New Tab
-      </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
-        New Window
-      </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
-        Pin to Shelf
-      </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
-        Unpin from Shelf
-      </message>
-      <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
-        Remove from Folder
-      </message>
-      <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
-        Uninstall
-      </message>
-      <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-        Search
-      </message>
-      <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
-        Search or say "Ok, Google"
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
-        Sign in
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
-        Learn More
-      </message>
-      <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
-        New Window
-      </message>
-      <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-        New Incognito Window
-      </message>
-    </if>
-    <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_LINK" desc="App launcher sign-in learn more URL.">
-      https://support.google.com/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139&amp;p=settings_sign_in
-    </message>
-    <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher sign-in settings link text.">
-      App Launcher Settings
-    </message>
 
     <!-- iOS Chrome to Device strings-->
     <if expr="is_ios">
@@ -14654,15 +14656,15 @@ Do you accept?
       </message>
     </if>
 
-      <!-- iOS Net-Export strings -->
-      <if expr="is_ios">
-        <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
-          To send net-export data, please configure your email account in the Settings app.
-        </message>
-        <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 20em]">
-          No Email Accounts
-        </message>
-      </if>
+    <!-- iOS Net-Export strings -->
+    <if expr="is_ios">
+      <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
+        To send net-export data, please configure your email account in the Settings app.
+      </message>
+      <message name="IDS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 20em]">
+        No Email Accounts
+      </message>
+    </if>
 
     <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
     <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently. NOTE that 'rats' here is being used like 'darn'.">
