@@ -85,6 +85,7 @@ const char kSyntheticDelayCategoryFilterPrefix[] = "DELAY(";
 // convert internally to determine the category name from the char enabled
 // pointer.
 const char* g_category_groups[MAX_CATEGORY_GROUPS] = {
+  "toplevel",
   "tracing already shutdown",
   "tracing categories exhausted; must increase MAX_CATEGORY_GROUPS",
   "__metadata",
@@ -93,11 +94,12 @@ const char* g_category_groups[MAX_CATEGORY_GROUPS] = {
 
 // The enabled flag is char instead of bool so that the API can be used from C.
 unsigned char g_category_group_enabled[MAX_CATEGORY_GROUPS] = { 0 };
-const int g_category_already_shutdown = 0;
-const int g_category_categories_exhausted = 1;
-const int g_category_metadata = 2;
-const int g_category_trace_event_overhead = 3;
-const int g_num_builtin_categories = 4;
+// Indexes here have to match the g_category_groups array indexes above.
+const int g_category_already_shutdown = 1;
+const int g_category_categories_exhausted = 2;
+const int g_category_metadata = 3;
+const int g_category_trace_event_overhead = 4;
+const int g_num_builtin_categories = 5;
 int g_category_index = g_num_builtin_categories; // Skip default categories.
 
 // The name of the current thread. This is used to decide if the current
