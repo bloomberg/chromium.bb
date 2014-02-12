@@ -593,7 +593,7 @@ class Builder(object):
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
     if self.tls_edit is not None:
-      tls_edit_cmd = [self.tls_edit, link_out, out]
+      tls_edit_cmd = [FixPath(self.tls_edit), link_out, out]
       tls_edit_err = self.Run(tls_edit_cmd, out)
       if tls_edit_err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
