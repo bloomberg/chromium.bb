@@ -885,7 +885,7 @@ PREFIX(scanPercent)(const ENCODING *enc, const char *ptr, const char *end,
                     const char **nextTokPtr)
 {
   if (ptr == end)
-    return -XML_TOK_PERCENT;
+    return XML_TOK_PARTIAL;
   switch (BYTE_TYPE(enc, ptr)) {
   CHECK_NMSTRT_CASES(enc, ptr, end, nextTokPtr)
   case BT_S: case BT_LF: case BT_CR: case BT_PERCNT:
@@ -1744,13 +1744,10 @@ PREFIX(updatePosition)(const ENCODING *enc,
                        const char *end,
                        POSITION *pos)
 {
-  while (ptr != end) {
+  while (ptr < end) {
     switch (BYTE_TYPE(enc, ptr)) {
 #define LEAD_CASE(n) \
     case BT_LEAD ## n: \
-      if (end - ptr < n) { \
-        return; \
-      } \
       ptr += n; \
       break;
     LEAD_CASE(2) LEAD_CASE(3) LEAD_CASE(4)
