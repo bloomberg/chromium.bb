@@ -424,7 +424,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
         InspectorInstrumentation::didReceiveWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
     }
     if (m_receivingMessageTypeIsText) {
-        String message = String::fromUTF8(m_receivingMessageData.data(), m_receivingMessageData.size());
+        String message = m_receivingMessageData.isEmpty() ? emptyString() : String::fromUTF8(m_receivingMessageData.data(), m_receivingMessageData.size());
         m_receivingMessageData.clear();
         if (message.isNull()) {
             failAsError("Could not decode a text frame as UTF-8.");
