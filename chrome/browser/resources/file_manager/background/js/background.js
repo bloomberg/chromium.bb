@@ -283,6 +283,14 @@ AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
 AppWindowWrapper.SHIFT_DISTANCE = 40;
 
 /**
+ * Sets the icon of the window.
+ * @param {string} iconPath Path of the icon.
+ */
+AppWindowWrapper.prototype.setIcon = function(iconPath) {
+  this.window_.setIcon(iconPath);
+};
+
+/**
  * Opens the window.
  *
  * @param {Object} appState App state.
@@ -488,20 +496,24 @@ SingletonAppWindowWrapper.prototype.launch = function(appState, opt_callback) {
 
 /**
  * Reopen a window if its state is saved in the local storage.
+ * @param {function()=} opt_callback Completion callback.
  */
-SingletonAppWindowWrapper.prototype.reopen = function() {
+SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
   chrome.storage.local.get(this.id_, function(items) {
     var value = items[this.id_];
-    if (!value)
+    if (!value) {
+      opt_callback && opt_callback();
       return;  // No app state persisted.
+    }
 
     try {
       var appState = JSON.parse(value);
     } catch (e) {
       console.error('Corrupt launch data for ' + this.id_, value);
+      opt_callback && opt_callback();
       return;
     }
-    this.launch(appState);
+    this.launch(appState, opt_callback);
   }.bind(this));
 };
 
@@ -720,6 +732,16 @@ Background.prototype.onExecute_ = function(action, details) {
   }
 };
 
+/**
+ * Icon of the audio player.
+ * TODO(yoshiki): Consider providing an exact size icon, instead of relying
+ * on downsampling by ash.
+ *
+ * @type {string}
+ * @const
+ */
+var AUDIO_PLAYER_ICON = 'audio_player/icons/audio-player-64.png';
+
 // The instance of audio player. Until it's ready, this is null.
 var audioPlayer = null;
 
@@ -762,6 +784,7 @@ audioPlayerInitializationQueue.run(function(callback) {
 function launchAudioPlayer(playlist, opt_displayedId) {
   audioPlayerInitializationQueue.run(function(callback) {
     audioPlayer.launch(playlist, function(appWindow) {
+      audioPlayer.setIcon(AUDIO_PLAYRE_ICON);
       AppWindowWrapper.focusOnDesktop(audioPlayer.rawAppWindow,
                                       opt_displayedId);
     });
@@ -829,7 +852,9 @@ Background.prototype.onRestarted_ = function() {
 
   // Reopen audio player.
   audioPlayerInitializationQueue.run(function(callback) {
-    audioPlayer.reopen();
+    audioPlayer.reopen(function() {
+      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
+    });
     callback();
   });
 

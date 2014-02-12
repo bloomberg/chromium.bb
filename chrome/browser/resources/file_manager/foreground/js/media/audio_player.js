@@ -66,11 +66,6 @@ function AudioPlayer(container) {
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
 
-  // TODO(mtomasz): Consider providing an exact size icon, instead of relying
-  // on downsampling by ash.
-  chrome.app.window.current().setIcon(
-      'foreground/images/media/2x/audio_player.png');
-
   AudioPlayer.instance =
       new AudioPlayer(document.querySelector('.audio-player'));
   AudioPlayer.instance.load(window.appState);
