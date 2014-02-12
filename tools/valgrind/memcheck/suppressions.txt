@@ -6342,3 +6342,20 @@
    fun:_ZN7content12_GLOBAL__N_123CreateWebFrameTestProxyEPNS_14RenderViewImplEi
    fun:_ZN7content15RenderFrameImpl6CreateEPNS_14RenderViewImplEi
 }
+{
+   bug_340952
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore15DOMWrapperWorldC2Eii
+   fun:_ZN7WebCore15DOMWrapperWorldC1Eii
+   fun:_ZN7WebCore15DOMWrapperWorld6createEii
+   fun:_ZN7WebCore15DOMWrapperWorld9mainWorldEv
+   fun:_ZN7WebCore16ScriptControllerC2EPNS_5FrameE
+   fun:_ZN7WebCore16ScriptControllerC1EPNS_5FrameE
+   fun:_ZN7WebCore5FrameC2EN3WTF10PassRefPtrINS_9FrameInitEEE
+   fun:_ZN7WebCore5FrameC1EN3WTF10PassRefPtrINS_9FrameInitEEE
+   fun:_ZN7WebCore5Frame6createEN3WTF10PassRefPtrINS_9FrameInitEEE
+   fun:_ZN5blink12WebFrameImpl21initializeAsMainFrameEPN7WebCore4PageE
+   fun:_ZN5blink11WebViewImpl12setMainFrameEPNS_8WebFrameE
+   fun:_ZN7content22BufferedDataSourceTestC2Ev
+}
