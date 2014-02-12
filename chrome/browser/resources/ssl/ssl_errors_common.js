@@ -19,9 +19,9 @@ function sendCommand(cmd) {
   window.domAutomationController.send(cmd);
 }
 
-// This allows errors to be skippped by typing "proceed" into the page.
+// This allows errors to be skippped by typing "danger" into the page.
 function keyPressHandler(e) {
-  var sequence = 'proceed';
+  var sequence = 'danger';
   if (sequence.charCodeAt(keyPressState) == e.keyCode) {
     keyPressState++;
     if (keyPressState == sequence.length) {
