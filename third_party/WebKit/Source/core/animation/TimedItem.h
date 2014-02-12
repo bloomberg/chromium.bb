@@ -82,7 +82,7 @@ public:
     double activeDuration() const;
     double timeFraction() const { return ensureCalculated().timeFraction; }
     double startTime() const { return m_startTime; }
-    double endTime() const { return startTime() + specified().startDelay + activeDuration(); }
+    double endTime() const { return startTime() + specified().startDelay + activeDuration() + specified().endDelay; }
 
     const Player* player() const { return m_player; }
     Player* player() { return m_player; }

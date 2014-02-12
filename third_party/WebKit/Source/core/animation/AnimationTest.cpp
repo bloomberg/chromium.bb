@@ -233,6 +233,20 @@ TEST_F(AnimationAnimationTest, TimingInputStartDelay)
     timing.startDelay = 0;
 }
 
+TEST_F(AnimationAnimationTest, TimingInputEndDelay)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Timing timing;
+    applyTimingInputNumber(timing, isolate, "endDelay", 10);
+    EXPECT_EQ(10, timing.endDelay);
+    applyTimingInputNumber(timing, isolate, "endDelay", -2.5);
+    EXPECT_EQ(-2.5, timing.endDelay);
+}
+
 TEST_F(AnimationAnimationTest, TimingInputFillMode)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();

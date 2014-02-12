@@ -104,8 +104,13 @@ void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
     // See: http://www.w3.org/TR/WebIDL/#es-double
     double startDelay = 0;
     timingInputDictionary.get("delay", startDelay);
-    if (!std::isnan(startDelay) && !std::isinf(startDelay))
+    if (std::isfinite(startDelay))
         timing.startDelay = startDelay;
+
+    double endDelay = 0;
+    timingInputDictionary.get("endDelay", endDelay);
+    if (std::isfinite(endDelay))
+        timing.endDelay = endDelay;
 
     String fillMode;
     timingInputDictionary.get("fill", fillMode);

@@ -55,6 +55,7 @@ struct Timing {
 
     Timing()
         : startDelay(0)
+        , endDelay(0)
         , fillMode(FillModeAuto)
         , iterationStart(0)
         , iterationCount(1)
@@ -68,6 +69,7 @@ struct Timing {
     void assertValid() const
     {
         ASSERT(std::isfinite(startDelay));
+        ASSERT(std::isfinite(endDelay));
         ASSERT(std::isfinite(iterationStart));
         ASSERT(iterationStart >= 0);
         ASSERT(iterationCount >= 0);
@@ -77,6 +79,7 @@ struct Timing {
     }
 
     double startDelay;
+    double endDelay;
     FillMode fillMode;
     double iterationStart;
     double iterationCount;

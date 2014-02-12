@@ -704,6 +704,17 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroPlaybackRate)
     EXPECT_EQ(0, timedItem->timeFraction());
 }
 
+TEST(AnimationTimedItemTest, EndTime)
+{
+    Timing timing;
+    timing.startDelay = 1;
+    timing.endDelay = 2;
+    timing.iterationDuration = 4;
+    timing.iterationCount = 2;
+    RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
+    EXPECT_EQ(11, timedItem->endTime());
+}
+
 TEST(AnimationTimedItemTest, Events)
 {
     Timing timing;
