@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMOCK_H_
 
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/default/WebThemeEngine.h"
+#include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 using blink::WebRect;
 using blink::WebThemeEngine;

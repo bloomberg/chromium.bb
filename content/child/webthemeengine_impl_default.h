@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_WEBTHEMEENGINE_IMPL_DEFAULT_H_
 #define CONTENT_CHILD_WEBTHEMEENGINE_IMPL_DEFAULT_H_
 
-#include "third_party/WebKit/public/platform/default/WebThemeEngine.h"
+#include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace content {
 

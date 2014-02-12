@@ -10,7 +10,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMAC_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/public/platform/mac/WebThemeEngine.h"
+#include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace WebTestRunner {
 

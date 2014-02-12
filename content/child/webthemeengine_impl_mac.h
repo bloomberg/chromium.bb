@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 #define CONTENT_CHILD_WEBTHEMEENGINE_IMPL_MAC_H_
 
-#include "third_party/WebKit/public/platform/mac/WebThemeEngine.h"
+#include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace content {
 
