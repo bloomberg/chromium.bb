@@ -32,20 +32,20 @@ import logging
 import os
 import time
 
-from webkitpy.layout_tests.servers import http_server_base
+from webkitpy.layout_tests.servers import server_base
 
 
 _log = logging.getLogger(__name__)
 
 
-class CrashService(http_server_base.HttpServerBase):
+class CrashService(server_base.ServerBase):
 
     def __init__(self, port_obj, crash_dumps_dir):
         """Args:
           crash_dumps_dir: the absolute path to the directory where to store crash dumps
         """
         # Webkit tests
-        http_server_base.HttpServerBase.__init__(self, port_obj)
+        super(CrashService, self).__init__(port_obj)
         self._name = 'CrashService'
         self._crash_dumps_dir = crash_dumps_dir
 

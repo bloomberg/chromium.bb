@@ -43,7 +43,7 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port, TestConfiguration
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
-from webkitpy.layout_tests.servers import http_server_base
+from webkitpy.layout_tests.servers import server_base
 from webkitpy.tool.mocktool import MockOptions
 
 

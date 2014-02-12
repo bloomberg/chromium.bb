@@ -32,8 +32,8 @@ import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
-from webkitpy.layout_tests.servers.http_server import Lighttpd
-from webkitpy.layout_tests.servers.http_server_base import ServerError
+from webkitpy.layout_tests.servers.lighttpd import Lighttpd
+from webkitpy.layout_tests.servers.server_base import ServerError
 
 
 class TestHttpServer(unittest.TestCase):

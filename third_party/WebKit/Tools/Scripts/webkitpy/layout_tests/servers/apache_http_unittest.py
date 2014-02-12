@@ -26,33 +26,44 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import re
+import sys
 import webkitpy.thirdparty.unittest2 as unittest
 
+from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
-from webkitpy.layout_tests.servers.http_server_base import HttpServerBase
+from webkitpy.layout_tests.servers.apache_http import ApacheHTTP
+from webkitpy.layout_tests.servers.server_base import ServerError
 
 
-class TestHttpServerBase(unittest.TestCase):
-    def test_corrupt_pid_file(self):
-        # This tests that if the pid file is corrupt or invalid,
-        # both start() and stop() deal with it correctly and delete the file.
+class TestApacheHTTP(unittest.TestCase):
+    def test_start_cmd(self):
+        # Fails on win - see https://bugs.webkit.org/show_bug.cgi?id=84726
+        if sys.platform in ('cygwin', 'win32'):
+            return
+
+        def fake_pid(_):
+            host.filesystem.write_text_file('/tmp/WebKit/httpd.pid', '42')
+            return True
+
         host = MockHost()
+        host.executive = MockExecutive(should_log=True)
         test_port = test.TestPort(host)
+        host.filesystem.write_text_file(test_port.path_to_apache_config_file(), '')
 
-        server = HttpServerBase(test_port)
-        server._pid_file = '/tmp/pidfile'
-        server._spawn_process = lambda: 4
+        server = ApacheHTTP(test_port, "/mock/output_dir", number_of_servers=4)
+        server._check_that_all_ports_are_available = lambda: True
         server._is_server_running_on_all_ports = lambda: True
-
-        host.filesystem.write_text_file(server._pid_file, 'foo')
-        server.stop()
-        self.assertEqual(host.filesystem.files[server._pid_file], None)
-
-        host.filesystem.write_text_file(server._pid_file, 'foo')
-        server.start()
-        self.assertEqual(server._pid, 4)
-
-        # Note that the pid file would not be None if _spawn_process()
-        # was actually a real implementation.
-        self.assertEqual(host.filesystem.files[server._pid_file], None)
+        server._wait_for_action = fake_pid
+        oc = OutputCapture()
+        try:
+            oc.capture_output()
+            server.start()
+            server.stop()
+        finally:
+            _, _, logs = oc.restore_output()
+        self.assertIn("StartServers 4", logs)
+        self.assertIn("MinSpareServers 4", logs)
+        self.assertIn("MaxSpareServers 4", logs)

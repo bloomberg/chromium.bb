@@ -33,8 +33,8 @@ import os
 import sys
 import time
 
-from webkitpy.layout_tests.servers import http_server
-from webkitpy.layout_tests.servers import http_server_base
+from webkitpy.layout_tests.servers import lighttpd
+from webkitpy.layout_tests.servers import server_base
 
 _log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ _DEFAULT_WS_PORT = 8880
 _DEFAULT_WSS_PORT = 9323
 
 
-class PyWebSocket(http_server.Lighttpd):
+class PyWebSocket(lighttpd.Lighttpd):
     def __init__(self, port_obj, output_dir, port=_DEFAULT_WS_PORT,
                  root=None, use_tls=False,
                  private_key=None, certificate=None, ca_certificate=None,
@@ -55,9 +55,9 @@ class PyWebSocket(http_server.Lighttpd):
         """Args:
           output_dir: the absolute path to the layout test result directory
         """
-        http_server.Lighttpd.__init__(self, port_obj, output_dir,
-                                      port=_DEFAULT_WS_PORT,
-                                      root=root)
+        super(PyWebSocket, self).__init__(port_obj, output_dir,
+                                          port=_DEFAULT_WS_PORT,
+                                          root=root)
         self._output_dir = output_dir
         self._pid_file = pidfile
         self._process = None

@@ -62,9 +62,9 @@ from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
-from webkitpy.layout_tests.servers import apache_http_server
-from webkitpy.layout_tests.servers import http_server
-from webkitpy.layout_tests.servers import websocket_server
+from webkitpy.layout_tests.servers import apache_http
+from webkitpy.layout_tests.servers import lighttpd
+from webkitpy.layout_tests.servers import pywebsocket
 
 _log = logging.getLogger(__name__)
 
@@ -1098,9 +1098,9 @@ class Port(object):
         assert not self._http_server, 'Already running an http server.'
 
         if self.uses_apache():
-            server = apache_http_server.LayoutTestApacheHttpd(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
+            server = apache_http.ApacheHTTP(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
         else:
-            server = http_server.Lighttpd(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
+            server = lighttpd.Lighttpd(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=number_of_servers)
 
         server.start()
         self._http_server = server
@@ -1111,7 +1111,7 @@ class Port(object):
         Ports can stub this out if they don't need a websocket server to be running."""
         assert not self._websocket_server, 'Already running a websocket server.'
 
-        server = websocket_server.PyWebSocket(self, self.results_directory())
+        server = pywebsocket.PyWebSocket(self, self.results_directory())
         server.start()
         self._websocket_server = server
 

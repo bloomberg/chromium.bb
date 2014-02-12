@@ -43,7 +43,7 @@ class ServerError(Exception):
     pass
 
 
-class HttpServerBase(object):
+class ServerBase(object):
     """A skeleton class for starting and stopping servers used by the layout tests."""
 
     def __init__(self, port_obj, number_of_servers=None):

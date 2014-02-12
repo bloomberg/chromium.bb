@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A class to start/stop the apache http server used by layout tests."""
+"""A class to start/stop the Apache HTTP server used by layout tests."""
 
 
 import logging
@@ -35,19 +35,19 @@ import re
 import socket
 import sys
 
-from webkitpy.layout_tests.servers import http_server_base
+from webkitpy.layout_tests.servers import server_base
 
 
 _log = logging.getLogger(__name__)
 
 
-class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
+class ApacheHTTP(server_base.ServerBase):
     def __init__(self, port_obj, output_dir, additional_dirs=None, number_of_servers=None):
         """Args:
           port_obj: handle to the platform-specific routines
           output_dir: the absolute path to the layout test result directory
         """
-        http_server_base.HttpServerBase.__init__(self, port_obj, number_of_servers)
+        super(ApacheHTTP, self).__init__(port_obj, number_of_servers)
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
@@ -136,12 +136,12 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))
         retval, err = self._run(self._start_cmd)
         if retval or len(err):
-            raise http_server_base.ServerError('Failed to start %s: %s' % (self._name, err))
+            raise server_base.ServerError('Failed to start %s: %s' % (self._name, err))
 
         # For some reason apache isn't guaranteed to have created the pid file before
         # the process exits, so we wait a little while longer.
         if not self._wait_for_action(lambda: self._filesystem.exists(self._pid_file)):
-            raise http_server_base.ServerError('Failed to start %s: no pid file found' % self._name)
+            raise server_base.ServerError('Failed to start %s: no pid file found' % self._name)
 
         return int(self._filesystem.read_text_file(self._pid_file))
 
@@ -154,13 +154,13 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
 
         retval, err = self._run(self._stop_cmd)
         if retval or len(err):
-            raise http_server_base.ServerError('Failed to stop %s: %s' % (self._name, err))
+            raise server_base.ServerError('Failed to stop %s: %s' % (self._name, err))
 
         # For some reason apache isn't guaranteed to have actually stopped after
         # the stop command returns, so we wait a little while longer for the
         # pid file to be removed.
         if not self._wait_for_action(lambda: not self._filesystem.exists(self._pid_file)):
-            raise http_server_base.ServerError('Failed to stop %s: pid file still exists' % self._name)
+            raise server_base.ServerError('Failed to stop %s: pid file still exists' % self._name)
 
     def _run(self, cmd):
         # Use shell=True because we join the arguments into a string for
