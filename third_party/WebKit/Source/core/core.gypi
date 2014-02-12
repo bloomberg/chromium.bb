@@ -3236,6 +3236,7 @@
             'css/CSSTestHelper.h',
             'css/CSSValueTestHelper.h',
             'css/CSSParserValuesTest.cpp',
+            'css/CSSSelectorTest.cpp',
             'css/CSSValueTestHelper.h',
             'css/DragUpdateTest.cpp',
             'css/HoverUpdateTest.cpp',

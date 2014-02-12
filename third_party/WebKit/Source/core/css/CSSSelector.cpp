@@ -443,26 +443,32 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
 }
 
 #ifndef NDEBUG
+void CSSSelector::show(int indent) const
+{
+    printf("%*sselectorText(): %s\n", indent, "", selectorText().ascii().data());
+    printf("%*sm_match: %d\n", indent, "", m_match);
+    printf("%*sisCustomPseudoElement(): %d\n", indent, "", isCustomPseudoElement());
+    if (m_match != Tag)
+        printf("%*svalue(): %s\n", indent, "", value().ascii().data());
+    printf("%*spseudoType(): %d\n", indent, "", pseudoType());
+    if (m_match == Tag)
+        printf("%*stagQName().localName: %s\n", indent, "", tagQName().localName().ascii().data());
+    printf("%*sisAttributeSelector(): %d\n", indent, "", isAttributeSelector());
+    if (isAttributeSelector())
+        printf("%*sattribute(): %s\n", indent, "", attribute().localName().ascii().data());
+    printf("%*sargument(): %s\n", indent, "", argument().ascii().data());
+    printf("%*sspecificity(): %u\n", indent, "", specificity());
+    if (tagHistory()) {
+        printf("\n%*s--> (relation == %d)\n", indent, "", relation());
+        tagHistory()->show(indent + 2);
+    }
+}
+
 void CSSSelector::show() const
 {
-    printf("\nCSSSelector::show()\n");
-    printf("selectorText: %s\n", selectorText().ascii().data());
-    printf("m_match: %d\n", m_match);
-    printf("isCustomPseudoElement(): %d\n", isCustomPseudoElement());
-    if (m_match != Tag)
-        printf("value(): %s\n", value().ascii().data());
-    printf("relation(): %d\n", relation());
-    printf("pseudoType(): %d\n", pseudoType());
-    if (m_match == Tag)
-        printf("tagQName().localName: %s\n", tagQName().localName().ascii().data());
-    printf("isAttributeSelector(): %d\n", isAttributeSelector());
-    if (isAttributeSelector())
-        printf("attribute(): %s\n", attribute().localName().ascii().data());
-    printf("argument(): %s\n", argument().ascii().data());
-    if (tagHistory()) {
-        printf("\n");
-        tagHistory()->show();
-    }
+    printf("\n******* CSSSelector::show(\"%s\") *******\n", selectorText().ascii().data());
+    show(2);
+    printf("******* end *******\n");
 }
 #endif
 

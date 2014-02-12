@@ -30,7 +30,57 @@
 namespace WebCore {
     class CSSSelectorList;
 
-    // this class represents a selector for a StyleRule
+    // This class represents a selector for a StyleRule.
+
+    // CSS selector representation is somewhat complicated and subtle. A representative list of selectors is
+    // in CSSSelectorTest; run it in a debug build to see useful debugging output.
+    //
+    // ** tagHistory() and relation():
+    //
+    // Selectors are represented as a linked list of simple selectors (defined more or less according to
+    // http://www.w3.org/TR/css3-selectors/#simple-selectors-dfn). The tagHistory() method returns the next
+    // simple selector in the list. The relation() method returns the relationship of the current simple selector to
+    // the one in tagHistory(). For example, the CSS selector .a.b #c is represented as:
+    //
+    // selectorText(): .a.b .c
+    // --> (relation == Descendant)
+    //   selectorText(): .a.b
+    //   --> (relation == SubSelector)
+    //     selectorText(): .b
+    //
+    // Note that currently a bare selector such as ".a" has a relation() of Descendant. This is a bug - instead the relation should be
+    // "None".
+    //
+    // The order of tagHistory() varies depending on the situation.
+    // * Relations using combinators (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant, sibling, etc., are parsed
+    //   right-to-left (in the example above, this is why .c is earlier in the tagHistory() chain than .a.b).
+    // * SubSelector relations are parsed left-to-right in most cases (such as the .a.b example above); a counter-example is the
+    //   ::content pseudo-element. Most (all?) other pseudo elements and pseudo classes are parsed left-to-right.
+    // * ShadowPseudo relations are parsed right-to-left. Example: summary::-webkit-details-marker is parsed as:
+    //   selectorText(): summary::-webkit-details-marker
+    //    --> (relation == ShadowPseudo)
+    //     selectorText(): summary
+    //
+    // ** match():
+    //
+    // The match of the current simple selector tells us the type of selector, such as class, id, tagname, or pseudo-class.
+    // Inline comments in the Match enum give examples of when each type would occur.
+    //
+    // ** value(), attribute():
+    //
+    // value() tells you the value of the simple selector. For example, for class selectors, value() will tell you the class string,
+    // and for id selectors it will tell you the id(). See below for the special case of attribute selectors.
+    //
+    // ** Attribute selectors.
+    //
+    // Attribute selectors return the attribute name in the attribute() method. The value() method returns the value matched against
+    // in case of selectors like [attr="value"].
+    //
+    // ** isCustomPseudoElement():
+    //
+    // It appears this is used only for pseudo elements that appear in user-agent shadow DOM. They are not exposed to author-created
+    // shadow DOM.
+
     class CSSSelector {
         WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -50,36 +100,38 @@ namespace WebCore {
 
         // tag == -1 means apply to all elements (Selector = *)
 
+        // http://www.w3.org/TR/css3-selectors/#specificity
+        // We use 256 as the base of the specificity number system.
         unsigned specificity() const;
 
         /* how the attribute value has to match.... Default is Exact */
         enum Match {
             Unknown = 0,
-            Tag,
-            Id,
-            Class,
-            Exact,
-            Set,
-            List,
-            Hyphen,
-            PseudoClass,
-            PseudoElement,
+            Tag, // Example: div
+            Id, // Example: #id
+            Class, // example: .class
+            Exact, // Example: E[foo="bar"]
+            Set, // Example: E[foo]
+            List, // Example: E[foo~="bar"]
+            Hyphen, // Example: E[foo|="bar"]
+            PseudoClass, // Example:  :nth-child(2)
+            PseudoElement, // Example: ::first-line
             Contain, // css3: E[foo*="bar"]
             Begin, // css3: E[foo^="bar"]
             End, // css3: E[foo$="bar"]
-            PagePseudoClass
+            PagePseudoClass // ??
         };
 
         enum Relation {
-            Descendant = 0,
-            Child,
-            DirectAdjacent,
-            IndirectAdjacent,
-            SubSelector,
-            ShadowPseudo,
+            Descendant = 0, // "Space" combinator
+            Child, // > combinator
+            DirectAdjacent, // + combinator
+            IndirectAdjacent, // ~ combinator
+            SubSelector, // "No space" combinator
+            ShadowPseudo, // Special case of shadow DOM pseudo elements
             // FIXME: rename ChildTree and DescendantTree when the spec for this is written down.
-            ChildTree,
-            DescendantTree
+            ChildTree, // ^ operator for shadow DOM
+            DescendantTree // ^^ operator for shadow DOM
         };
 
         enum PseudoType {
@@ -210,11 +262,13 @@ namespace WebCore {
         // how you use the returned QualifiedName.
         // http://www.w3.org/TR/css3-selectors/#attrnmsp
         const QualifiedName& attribute() const;
+        // Returns the argument of a parameterized selector. For example, nth-child(2) would have an argument of 2.
         const AtomicString& argument() const { return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom; }
         const CSSSelectorList* selectorList() const { return m_hasRareData ? m_data.m_rareData->m_selectorList.get() : 0; }
 
 #ifndef NDEBUG
         void show() const;
+        void show(int indent) const;
 #endif
 
         void setValue(const AtomicString&);

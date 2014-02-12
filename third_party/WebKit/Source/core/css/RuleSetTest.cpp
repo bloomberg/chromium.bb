@@ -39,7 +39,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("summary::-webkit-details-marker { position: absolute }");
+    helper.addCSSRules("summary::-webkit-details-marker { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("-webkit-details-marker");
     const RuleData* ruleData = ruleSet.shadowPseudoElementRules(str);
@@ -51,7 +51,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_Id)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("#id { position: absolute }");
+    helper.addCSSRules("#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     const RuleData* ruleData = ruleSet.idRules(str);
@@ -63,7 +63,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("div:nth-child(2) { position: absolute }");
+    helper.addCSSRules("div:nth-child(2) { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
     const RuleData* ruleData = ruleSet.tagRules(str);
@@ -75,7 +75,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules(".class#id { position: absolute }");
+    helper.addCSSRules(".class#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     // id is prefered over class even if class preceeds it in the selector.
@@ -89,7 +89,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("#id.class { position: absolute }");
+    helper.addCSSRules("#id.class { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     const RuleData* ruleData = ruleSet.idRules(str);
@@ -101,7 +101,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("[attr]#id { position: absolute }");
+    helper.addCSSRules("[attr]#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     const RuleData* ruleData = ruleSet.idRules(str);
@@ -114,7 +114,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("div[attr]#id { position: absolute }");
+    helper.addCSSRules("div[attr]#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     const RuleData* ruleData = ruleSet.idRules(str);
@@ -127,7 +127,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
 {
     CSSTestHelper helper;
 
-    helper.addCSSRules("div::content { position: absolute }");
+    helper.addCSSRules("div::content { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
     const RuleData* ruleData = ruleSet.tagRules(str);

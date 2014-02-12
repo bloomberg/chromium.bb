@@ -153,6 +153,10 @@ public:
         compactRules();
     }
 
+#ifndef NDEBUG
+    void show();
+#endif
+
     struct RuleSetSelectorPair {
         RuleSetSelectorPair(const CSSSelector* selector, PassOwnPtr<RuleSet> ruleSet) : selector(selector), ruleSet(ruleSet) { }
         RuleSetSelectorPair(const RuleSetSelectorPair& rs) : selector(rs.selector), ruleSet(const_cast<RuleSetSelectorPair*>(&rs)->ruleSet.release()) { }
@@ -219,6 +223,10 @@ private:
 
     unsigned m_ruleCount;
     OwnPtr<PendingRuleMaps> m_pendingRules;
+
+#ifndef NDEBUG
+    Vector<RuleData> m_allRules;
+#endif
 };
 
 } // namespace WebCore

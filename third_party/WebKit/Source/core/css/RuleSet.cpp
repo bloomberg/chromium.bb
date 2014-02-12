@@ -242,6 +242,10 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
     AtomicString customPseudoElementName;
     AtomicString tagName;
 
+#ifndef NDEBUG
+    m_allRules.append(ruleData);
+#endif
+
     const CSSSelector* it = &component;
     for (; it->relation() == CSSSelector::SubSelector; it = it->tagHistory()) {
         extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
@@ -451,5 +455,14 @@ void RuleSet::compactRules()
     m_treeBoundaryCrossingRules.shrinkToFit();
     m_shadowDistributedRules.shrinkToFit();
 }
+
+#ifndef NDEBUG
+
+void RuleSet::show()
+{
+    for (Vector<RuleData>::const_iterator it = m_allRules.begin(); it != m_allRules.end(); ++it)
+        it->selector().show();
+}
+#endif
 
 } // namespace WebCore
