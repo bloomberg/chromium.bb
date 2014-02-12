@@ -76,6 +76,8 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
   owner_stub->AddDestructionObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
   owner_stub->channel()->AddRoute(route_id, this);
+  surface_texture_->SetFrameAvailableCallback(base::Bind(
+      &StreamTexture::OnFrameAvailable, weak_factory_.GetWeakPtr()));
 }
 
 StreamTexture::~StreamTexture() {
@@ -153,8 +155,7 @@ void StreamTexture::WillUseTexImage() {
 
 void StreamTexture::OnFrameAvailable() {
   has_pending_frame_ = true;
-  DCHECK(has_listener_);
-  if (owner_stub_) {
+  if (has_listener_ && owner_stub_) {
     owner_stub_->channel()->Send(
         new GpuStreamTextureMsg_FrameAvailable(route_id_));
   }
@@ -180,8 +181,6 @@ bool StreamTexture::OnMessageReceived(const IPC::Message& message) {
 void StreamTexture::OnStartListening() {
   DCHECK(!has_listener_);
   has_listener_ = true;
-  surface_texture_->SetFrameAvailableCallback(base::Bind(
-      &StreamTexture::OnFrameAvailable, weak_factory_.GetWeakPtr()));
 }
 
 void StreamTexture::OnEstablishPeer(int32 primary_id, int32 secondary_id) {

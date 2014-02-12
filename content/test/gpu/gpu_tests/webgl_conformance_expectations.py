@@ -186,8 +186,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['linux', ('nvidia', 0x1040)], bug=325884)
 
     # Android failures
-    self.Fail('conformance/textures/texture-npot-video.html',
-        ['android'], bug=306485)
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
