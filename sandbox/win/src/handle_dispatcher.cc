@@ -78,7 +78,8 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
   EvalResult eval = policy_base_->EvalPolicy(IPC_DUPLICATEHANDLEPROXY_TAG,
                                              params.GetBase());
   ipc->return_info.win32_result =
-      HandlePolicy::DuplicateHandleProxyAction(eval, handle,
+      HandlePolicy::DuplicateHandleProxyAction(eval, *ipc->client_info,
+                                               source_handle,
                                                target_process_id,
                                                &ipc->return_info.handle,
                                                desired_access, options);
