@@ -71,8 +71,8 @@ shouldThrow('svg.checkEnclosure(svg, undefined)');
 shouldThrow('svg.checkEnclosure(svg, null)');
 
 debug('');
-debug('SVGTransform createSVGTransformFromMatrix([Default=Undefined] optional SVGMatrix matrix)');
-// shouldNotThrow('svg.createSVGTransformFromMatrix()'); // FAIL
+debug('SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix)');
+shouldThrow('svg.createSVGTransformFromMatrix()');
 shouldNotThrow('svg.createSVGTransformFromMatrix(matrix)');
 shouldThrow('svg.createSVGTransformFromMatrix(undefined)');
 shouldThrow('svg.createSVGTransformFromMatrix(null)');

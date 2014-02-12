@@ -46,7 +46,8 @@ PASS svg.checkEnclosure(null, rect) threw exception TypeError: Failed to execute
 PASS svg.checkEnclosure(svg, undefined) threw exception TypeError: Failed to execute 'checkEnclosure' on 'SVGSVGElement': parameter 2 is not of type 'SVGRect'..
 PASS svg.checkEnclosure(svg, null) threw exception TypeError: Failed to execute 'checkEnclosure' on 'SVGSVGElement': parameter 2 is not of type 'SVGRect'..
 
-SVGTransform createSVGTransformFromMatrix([Default=Undefined] optional SVGMatrix matrix)
+SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix)
+PASS svg.createSVGTransformFromMatrix() threw exception TypeError: Failed to execute 'createSVGTransformFromMatrix' on 'SVGSVGElement': 1 argument required, but only 0 present..
 PASS svg.createSVGTransformFromMatrix(matrix) did not throw exception.
 PASS svg.createSVGTransformFromMatrix(undefined) threw exception TypeError: Failed to execute 'createSVGTransformFromMatrix' on 'SVGSVGElement': parameter 1 is not of type 'SVGMatrix'..
 PASS svg.createSVGTransformFromMatrix(null) threw exception TypeError: Failed to execute 'createSVGTransformFromMatrix' on 'SVGSVGElement': parameter 1 is not of type 'SVGMatrix'..

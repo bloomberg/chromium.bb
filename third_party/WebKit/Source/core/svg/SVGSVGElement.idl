@@ -23,7 +23,7 @@
 // TODO: no css::ViewCSS available!
 // TODO: no events::DocumentEvent available!
 [
-    // StrictTypeChecking,  // FIXME: createSVGTransformFromMatrix doesn't have [StrictTypeChecking]
+    StrictTypeChecking,
 ] interface SVGSVGElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
@@ -50,14 +50,10 @@
     boolean animationsPaused();
     float getCurrentTime();
     void setCurrentTime(float seconds);
-    [StrictTypeChecking] NodeList getIntersectionList(SVGRect rect,
-                                                      SVGElement? referenceElement);
-    [StrictTypeChecking] NodeList getEnclosureList(SVGRect rect,
-                                                   SVGElement? referenceElement);
-    [StrictTypeChecking] boolean checkIntersection(SVGElement element,
-                                                   SVGRect rect);
-    [StrictTypeChecking] boolean checkEnclosure(SVGElement element,
-                                                SVGRect rect);
+    NodeList getIntersectionList(SVGRect rect, SVGElement? referenceElement);
+    NodeList getEnclosureList(SVGRect rect, SVGElement? referenceElement);
+    boolean checkIntersection(SVGElement element, SVGRect rect);
+    boolean checkEnclosure(SVGElement element, SVGRect rect);
     void deselectAll();
 
     SVGNumber createSVGNumber();
@@ -67,11 +63,7 @@
     SVGMatrix createSVGMatrix();
     SVGRect createSVGRect();
     SVGTransform createSVGTransform();
-    // FIXME: want to turn on [StrictTypeChecking] for interface, but causes
-    // createSVGTransformFromMatrix to fail.
-    // FIXME: Also, the definition doesn't make sense: [Default=Undefined]
-    // requires that the parameter be nullable!
-    SVGTransform createSVGTransformFromMatrix([Default=Undefined] optional SVGMatrix matrix);
+    SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
     Element getElementById([Default=Undefined] optional DOMString elementId);
 };
 
