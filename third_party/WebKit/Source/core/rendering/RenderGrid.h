@@ -134,7 +134,6 @@ private:
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 
     virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    void paintChildrenSlowCase(PaintInfo&, const LayoutPoint&);
 
     bool gridIsDirty() const { return m_gridIsDirty; }
 
@@ -161,7 +160,9 @@ private:
     Vector<LayoutUnit> m_columnPositions;
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
     OrderIterator m_orderIterator;
-    bool m_gridItemOverflowGridArea;
+    Vector<RenderBox*> m_gridItemsOverflowingGridArea;
+
+    friend class GridCoordinateSorter;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
