@@ -147,6 +147,8 @@
         'test/test_content_browser_client.h',
         'test/test_content_client.cc',
         'test/test_content_client.h',
+        'test/test_context_provider_factory.cc',
+        'test/test_context_provider_factory.h',
         'test/test_media_stream_client.cc',
         'test/test_media_stream_client.h',
         'test/test_render_frame_host.cc',
