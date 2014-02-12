@@ -295,9 +295,6 @@ void WorkspaceLayoutManager::ShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType last_show_type) {
   if (window_state->IsMinimized()) {
-    if (last_show_type == wm::SHOW_TYPE_MINIMIZED)
-      return;
-
     // Save the previous show state so that we can correctly restore it.
     window_state->window()->SetProperty(aura::client::kRestoreShowStateKey,
                                         wm::ToWindowShowState(last_show_type));
@@ -383,7 +380,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
           work_area_in_parent_, &bounds);
       break;
   }
-  AdjustSnappedBounds(window_state, &bounds);
+  //AdjustSnappedBounds(window_state, &bounds);
   if (window_state->window()->bounds() != bounds)
     SetChildBoundsAnimated(window_state->window(), bounds);
 }
