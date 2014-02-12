@@ -290,7 +290,7 @@ User::UserType GuestUser::GetType() const {
 
 KioskAppUser::KioskAppUser(const std::string& kiosk_app_username)
     : User(kiosk_app_username) {
-  set_display_email(std::string());
+  set_display_email(kiosk_app_username);
 }
 
 KioskAppUser::~KioskAppUser() {}
