@@ -687,6 +687,17 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaFieldTrial) {
   EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
 }
 
+TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaCommandLine) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kPrefetchSearchResults);
+  // Command-line enable should override Finch.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:80 prefetch_results:0"));
+  EXPECT_TRUE(ShouldPrefetchSearchResults());
+  EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
+}
+
 TEST_F(SearchTest,
        ShouldReuseInstantSearchBasePage_PrefetchResultsFlagDisabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
@@ -727,6 +738,18 @@ TEST_F(SearchTest, ShouldShowGoogleLocalNTP_DisabledViaFinch) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 google_local_ntp:0"));
   EXPECT_FALSE(ShouldShowGoogleLocalNTP());
+}
+
+TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_EnabledViaCommandLine) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kPrefetchSearchResults);
+  // Command-line enable should override Finch.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:89 prefetch_results:0 reuse_instant_search_base_page:0"));
+  EXPECT_TRUE(ShouldPrefetchSearchResults());
+  EXPECT_TRUE(ShouldReuseInstantSearchBasePage());
+  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
 }
 
 TEST_F(SearchTest, IsNTPURL) {

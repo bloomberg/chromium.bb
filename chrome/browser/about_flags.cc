@@ -2018,6 +2018,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableFastTextAutosizing)
   },
 #endif
+  {
+    "prefetch-search-results",
+    IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME,
+    IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kPrefetchSearchResults)
+  },
 };
 
 const Experiment* experiments = kExperiments;

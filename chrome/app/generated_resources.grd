@@ -15103,6 +15103,14 @@ Do you accept?
     <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION" desc="Description of the disable ignore autocomplete='off' lab">
       Disable ignore autocomplete='off' for password forms in the password manager.
     </message>
+
+    <!-- Prefetch search results experiment flags -->
+    <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME" desc="An about::flags experiment title to prefetch search results">
+      Prefetch search results
+    </message>
+    <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION" desc="Describes an about:flags experiment for prefetching search results">
+      If enabled, prefetch search results for the typed omnibox query and reuse prerendered search base page to commit any search query (not just prefetch query).
+    </message>
   </messages>
   </release>
 </grit>

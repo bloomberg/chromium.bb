@@ -540,12 +540,22 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
 }
 
 bool ShouldPrefetchSearchResults() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrefetchSearchResults)) {
+    return true;
+  }
+
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsFlagName, false, flags);
 }
 
 bool ShouldReuseInstantSearchBasePage() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrefetchSearchResults)) {
+    return true;
+  }
+
   if (!ShouldPrefetchSearchResults())
     return false;
 
