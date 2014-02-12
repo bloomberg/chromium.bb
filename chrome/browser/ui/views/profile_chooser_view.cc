@@ -431,8 +431,6 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
-  views::GridLayout* layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
-
   if (view_to_display == GAIA_SIGNIN_VIEW ||
       view_to_display == GAIA_ADD_ACCOUNT_VIEW) {
     // Minimum size for embedded sign in pages as defined in Gaia.
@@ -446,6 +444,8 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     GURL url(signin::GetPromoURL(
         source, false /* auto_close */, true /* is_constrained */));
     web_view->LoadInitialURL(url);
+    views::GridLayout* layout =
+        CreateSingleColumnLayout(this, kMinGaiaViewWidth);
     layout->StartRow(1, 0);
     layout->AddView(web_view);
     layout->set_minimum_size(
@@ -456,6 +456,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     return;
   }
 
+  views::GridLayout* layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
   // Separate items into active and alternatives.
   Indexes other_profiles;
   bool is_guest_view = true;
