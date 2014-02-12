@@ -1174,12 +1174,25 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
     }
   }
 
-  // If we didn't set the shape for any reason, reset the shaping information
-  // by ShapeSet-ing with our bounds rect.
-  XRectangle r = { 0, 0, static_cast<unsigned short>(bounds_.width()),
-                   static_cast<unsigned short>(bounds_.height()) };
-  XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding,
-                          0, 0, &r, 1, ShapeSet, YXBanded);
+  // If we didn't set the shape for any reason, reset the shaping information.
+  // How this is done depends on the border style, due to quirks and bugs in
+  // various window managers.
+  if (ShouldUseNativeFrame()) {
+    // If the window has system borders, the mask must be set to null (not a
+    // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
+    // not put borders on a window with a custom shape.
+    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, None, ShapeSet);
+  } else {
+    // Conversely, if the window does not have system borders, the mask must be
+    // manually set to a rectangle that covers the whole window (not null). This
+    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
+    // shape causes the hint to disable system borders to be ignored (resulting
+    // in a double border).
+    XRectangle r = {0, 0, static_cast<unsigned short>(bounds_.width()),
+                    static_cast<unsigned short>(bounds_.height())};
+    XShapeCombineRectangles(
+        xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1, ShapeSet, YXBanded);
+  }
 }
 
 void DesktopWindowTreeHostX11::SerializeImageRepresentation(
