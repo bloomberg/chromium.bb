@@ -129,6 +129,10 @@ class DevToolsWindow : private content::NotificationObserver,
   // the overlaying inspected WebContents size.
   gfx::Size GetMinimumSize() const;
 
+  // Sets closure to be called after load is done. If already loaded, calls
+  // closure immediately.
+  void SetLoadCompletedCallback(const base::Closure& closure);
+
   // BeforeUnload interception ////////////////////////////////////////////////
 
   // In order to preserve any edits the user may have made in devtools, the
@@ -386,6 +390,7 @@ class DevToolsWindow : private content::NotificationObserver,
   // True if we're in the process of handling a beforeunload event originating
   // from the inspected webcontents, see InterceptPageBeforeUnload for details.
   bool intercepted_page_beforeunload_;
+  base::Closure load_completed_callback_;
 
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;

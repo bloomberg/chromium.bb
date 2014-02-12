@@ -827,12 +827,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 
   // Ensure no DevTools open for the ShellWindow, then open one.
   ASSERT_FALSE(DevToolsAgentHost::HasFor(rvh));
-  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(rvh);
-  content::WindowedNotificationObserver loaded_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &devtools_window->web_contents()->GetController()));
-  loaded_observer.Wait();
+  DevToolsWindow::OpenDevToolsWindow(rvh);
   ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
 
   if (test_flags & RELAUNCH) {

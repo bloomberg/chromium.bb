@@ -67,6 +67,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
@@ -1506,4 +1507,17 @@ void DevToolsWindow::LoadCompleted() {
   action_on_load_ = DevToolsToggleAction::NoOp();
   UpdateTheme();
   AddDevToolsExtensionsToClient();
+  if (!load_completed_callback_.is_null()) {
+    load_completed_callback_.Run();
+    load_completed_callback_ = base::Closure();
+  }
+}
+
+void DevToolsWindow::SetLoadCompletedCallback(const base::Closure& closure) {
+  if (load_state_ == kLoadCompleted) {
+    if (!closure.is_null())
+      closure.Run();
+    return;
+  }
+  load_completed_callback_ = closure;
 }

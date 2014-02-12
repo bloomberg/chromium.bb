@@ -122,25 +122,18 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   void LoadTestPage(const std::string& test_page) {
-    content::WindowedNotificationObserver load_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
     GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
-    load_observer.Wait();
   }
 
   void OpenDevToolsWindow(const std::string& test_page, bool is_docked) {
     ASSERT_TRUE(test_server()->Start());
     LoadTestPage(test_page);
 
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
     inspected_rvh_ = GetInspectedTab()->GetRenderViewHost();
     window_ =
         DevToolsWindow::OpenDevToolsWindowForTest(inspected_rvh_, is_docked);
-    observer.Wait();
+    ui_test_utils::WaitUntilDevToolsWindowLoaded(window_);
   }
 
   WebContents* GetInspectedTab() {
@@ -267,12 +260,9 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
   DevToolsWindow* OpenDevToolWindowOnWebContents(
       content::WebContents* contents, bool is_docked) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
     DevToolsWindow* window = DevToolsWindow::OpenDevToolsWindowForTest(
         contents->GetRenderViewHost(), is_docked);
-    observer.Wait();
+    ui_test_utils::WaitUntilDevToolsWindowLoaded(window);
     return window;
   }
 
@@ -556,13 +546,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     window_ = DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
-    if (client_contents->IsLoading()) {
-      content::WindowedNotificationObserver observer(
-          content::NOTIFICATION_LOAD_STOP,
-          content::Source<NavigationController>(
-              &client_contents->GetController()));
-      observer.Wait();
-    }
+    content::WaitForLoadStop(client_contents);
   }
 
   void CloseDevToolsWindow() {
@@ -862,6 +846,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   OpenDevToolsWindow(kDebuggerTestPage, true);
   GURL url = test_server()->GetURL(kNavigateBackTestPage);
+  // TODO(dgozman): remove this once notifications are gone.
+  // Right now notifications happen after observers, so DevTools window is
+  // already loaded, but we still catch it's notification when looking for
+  // all sources.
+  content::WaitForLoadStop(window_->web_contents());
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
@@ -872,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
 
   ASSERT_TRUE(window_->web_contents()->GetURL().
                   SchemeIs(chrome::kChromeDevToolsScheme));
-  ASSERT_EQ(GetInspectedTab()->GetURL(), url);
+  ASSERT_EQ(url, GetInspectedTab()->GetURL());
   CloseDevToolsWindow();
 }
 

@@ -55,36 +55,30 @@ namespace {
 // Opens an inspector window and delays the response to the
 // AppWindowCreateFunction until the DevToolsWindow has finished loading, and is
 // ready to stop on breakpoints in the callback.
-class DevToolsRestorer : public content::NotificationObserver {
+class DevToolsRestorer : public base::RefCounted<DevToolsRestorer> {
  public:
   DevToolsRestorer(AppWindowCreateFunction* delayed_create_function,
                    content::RenderViewHost* created_view)
       : delayed_create_function_(delayed_create_function) {
+    AddRef();  // Balanced in LoadCompleted.
     DevToolsWindow* devtools_window =
         DevToolsWindow::OpenDevToolsWindow(
             created_view,
             DevToolsToggleAction::ShowConsole());
-
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &devtools_window->web_contents()->GetController()));
-  }
-
- protected:
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == content::NOTIFICATION_LOAD_STOP);
-    delayed_create_function_->SendDelayedResponse();
-    delete this;
+    devtools_window->SetLoadCompletedCallback(
+        base::Bind(&DevToolsRestorer::LoadCompleted, this));
   }
 
  private:
+  friend class base::RefCounted<DevToolsRestorer>;
+  ~DevToolsRestorer() {}
+
+  void LoadCompleted() {
+    delayed_create_function_->SendDelayedResponse();
+    Release();
+  }
+
   scoped_refptr<AppWindowCreateFunction> delayed_create_function_;
-  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace
