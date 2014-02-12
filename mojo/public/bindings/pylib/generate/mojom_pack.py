@@ -23,6 +23,8 @@ class PackedField(object):
     mojom.FLOAT:   4,
     mojom.HANDLE:  4,
     mojom.MSGPIPE: 4,
+    mojom.DCPIPE:  4,
+    mojom.DPPIPE:  4,
     mojom.INT64:   8,
     mojom.UINT64:  8,
     mojom.DOUBLE:  8,

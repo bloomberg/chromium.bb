@@ -50,6 +50,25 @@ class SampleFactoryImpl : public sample::Factory {
     client_->DidStuff(response.Finish(), text1);
   }
 
+  virtual void DoStuff2(ScopedDataPipeConsumerHandle pipe) MOJO_OVERRIDE {
+    // Read the data from the pipe, writing the response (as a string) to
+    // DidStuff2().
+    ASSERT_TRUE(pipe.is_valid());
+    uint32_t data_size = 0;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              ReadDataRaw(pipe.get(), NULL, &data_size,
+                          MOJO_READ_DATA_FLAG_QUERY));
+    ASSERT_NE(0, static_cast<int>(data_size));
+    char data[64];
+    ASSERT_LT(static_cast<int>(data_size), 64);
+    ASSERT_EQ(MOJO_RESULT_OK,
+              ReadDataRaw(pipe.get(), data, &data_size,
+                          MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+
+    AllocationScope scope;
+    client_->DidStuff2(String(std::string(data)));
+  }
+
  private:
   RemotePtr<sample::FactoryClient> client_;
   ScopedMessagePipeHandle pipe1_;
@@ -91,6 +110,31 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
     factory_->DoStuff(request.Finish(), ScopedMessagePipeHandle().Pass());
   }
 
+  // Writes a string to a data pipe and passes the data pipe (consumer) to the
+  // factory.
+  void StartDataPipe() {
+    expected_text_reply_.clear();
+
+    ScopedDataPipeProducerHandle producer_handle;
+    ScopedDataPipeConsumerHandle consumer_handle;
+    MojoCreateDataPipeOptions options = {
+        sizeof(MojoCreateDataPipeOptions),
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+        1,
+        1024};
+    ASSERT_EQ(MOJO_RESULT_OK,
+              CreateDataPipe(&options, &producer_handle, &consumer_handle));
+    expected_text_reply_ = "got it";
+    // +1 for \0.
+    uint32_t data_size = static_cast<uint32_t>(expected_text_reply_.size() + 1);
+    ASSERT_EQ(MOJO_RESULT_OK,
+              WriteDataRaw(producer_handle.get(), expected_text_reply_.c_str(),
+                           &data_size, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+
+    AllocationScope scope;
+    factory_->DoStuff2(consumer_handle.Pass());
+  }
+
   bool got_response() const {
     return got_response_;
   }
@@ -115,6 +159,11 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
     }
 
     got_response_ = true;
+  }
+
+  virtual void DidStuff2(const String& text_reply) MOJO_OVERRIDE {
+    got_response_ = true;
+    EXPECT_EQ(expected_text_reply_, text_reply.To<std::string>());
   }
 
  private:
@@ -160,6 +209,22 @@ TEST_F(HandlePassingTest, PassInvalid) {
   SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
 
   factory_client.StartNoPipes();
+
+  EXPECT_FALSE(factory_client.got_response());
+
+  PumpMessages();
+
+  EXPECT_TRUE(factory_client.got_response());
+}
+
+// Verifies DataPipeConsumer can be passed and read from.
+TEST_F(HandlePassingTest, DataPipe) {
+  InterfacePipe<sample::Factory> pipe;
+
+  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
+  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
+
+  ASSERT_NO_FATAL_FAILURE(factory_client.StartDataPipe());
 
   EXPECT_FALSE(factory_client.got_response());
 
