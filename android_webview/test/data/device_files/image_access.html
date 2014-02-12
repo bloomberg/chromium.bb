@@ -6,8 +6,7 @@
       }
     </script>
   </head>
-  <!-- TODO(mnaganov): Remove setInterval once img.onload fix is landed in WebKit (crbug.com/146554). -->
-  <body onload="updateTitle(); setInterval('updateTitle()', 500)">
+  <body onload="updateTitle()">
     <img id="img" onload="updateTitle()" src="chrome.png" />
   </body>
 </html>
