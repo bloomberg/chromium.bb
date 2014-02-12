@@ -46,7 +46,7 @@ public:
 
     virtual bool avoidsFloats() const OVERRIDE { return true; }
     virtual bool isDeprecatedFlexibleBox() const OVERRIDE { return true; }
-    virtual bool isStretchingChildren() const OVERRIDE { return m_stretchingChildren; }
+    bool isStretchingChildren() const { return m_stretchingChildren; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
 
     void placeChild(RenderBox* child, const LayoutPoint& location);
@@ -69,6 +69,8 @@ private:
     void applyLineClamp(FlexBoxIterator&, bool relayoutChildren);
     void clearLineClamp();
 };
+
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
 
 } // namespace WebCore
 

@@ -43,6 +43,7 @@
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxRegionInfo.h"
+#include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -2721,8 +2722,7 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // Block children of horizontal flexible boxes fill the height of the box.
         // FIXME: Account for block-flow in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
-        if (h.isAuto() && parent()->isDeprecatedFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL
-                && parent()->isStretchingChildren()) {
+        if (h.isAuto() && inHorizontalBox && toRenderDeprecatedFlexibleBox(parent())->isStretchingChildren()) {
             h = Length(parentBox()->contentLogicalHeight() - marginBefore() - marginAfter() - borderAndPaddingLogicalHeight(), Fixed);
             checkMinMaxHeight = false;
         }
@@ -2746,8 +2746,8 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         if (hasPerpendicularContainingBlock) {
             bool shouldFlipBeforeAfter = shouldFlipBeforeAfterMargins(cb->style(), style());
             computeInlineDirectionMargins(cb, containingBlockLogicalWidthForContent(), heightResult,
-                    shouldFlipBeforeAfter ? computedValues.m_margins.m_after : computedValues.m_margins.m_before,
-                    shouldFlipBeforeAfter ? computedValues.m_margins.m_before : computedValues.m_margins.m_after);
+                shouldFlipBeforeAfter ? computedValues.m_margins.m_after : computedValues.m_margins.m_before,
+                shouldFlipBeforeAfter ? computedValues.m_margins.m_before : computedValues.m_margins.m_after);
         }
     }
 
