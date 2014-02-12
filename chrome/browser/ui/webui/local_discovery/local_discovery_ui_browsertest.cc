@@ -143,7 +143,7 @@ const uint8 kGoodbyePacket[] = {
   0x00, 0x00,               // ID is zeroed out
   0x80, 0x00,               // Standard query response, RA, no error
   0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x02,               // 1 RR (answers)
   0x00, 0x00,               // 0 authority RRs
   0x00, 0x00,               // 0 additional RRs
 
@@ -158,6 +158,21 @@ const uint8 kGoodbyePacket[] = {
   0x00, 0x0c,        // RDLENGTH is 12 bytes.
   0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
   0xc0, 0x0c,
+
+
+  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
+  0xc0, 0x0c,
+  0x00, 0x21,        // Type is SRV
+  0x00, 0x01,        // CLASS is IN
+  0x00, 0x00,        // TTL (4 bytes) is 0 seconds.
+  0x00, 0x00,
+  0x00, 0x17,        // RDLENGTH is 23
+  0x00, 0x00,
+  0x00, 0x00,
+  0x22, 0xb8,        // port 8888
+  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
 };
 
 const uint8 kAnnouncePacketRegistered[] = {

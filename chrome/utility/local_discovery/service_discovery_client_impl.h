@@ -84,16 +84,38 @@ class ServiceWatcherImpl : public ServiceWatcher,
                      net::MDnsClient* mdns_client);
     ~ServiceListeners();
     bool Start();
+    void SetActiveRefresh(bool auto_update);
 
     void set_update_pending(bool update_pending) {
       update_pending_ = update_pending;
     }
 
     bool update_pending() { return update_pending_; }
+
+    void set_has_ptr(bool has_ptr) {
+      has_ptr_ = has_ptr;
+    }
+
+    void set_has_srv(bool has_srv);
+
+    bool has_ptr_or_srv() { return has_ptr_ || has_srv_; }
+
    private:
+    void OnSRVRecord(net::MDnsTransaction::Result result,
+                     const net::RecordParsed* record);
+
+    void DoQuerySRV();
+
     scoped_ptr<net::MDnsListener> srv_listener_;
     scoped_ptr<net::MDnsListener> txt_listener_;
+    scoped_ptr<net::MDnsTransaction> srv_transaction_;
+
+    std::string service_name_;
+    net::MDnsClient* mdns_client_;
     bool update_pending_;
+
+    bool has_ptr_;
+    bool has_srv_;
   };
 
   typedef std::map<std::string, linked_ptr<ServiceListeners> >
@@ -101,7 +123,9 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   void ReadCachedServices();
   void AddService(const std::string& service);
-  void RemoveService(const std::string& service);
+  void RemovePTR(const std::string& service);
+  void RemoveSRV(const std::string& service);
+  void AddSRV(const std::string& service);
   bool CreateTransaction(bool active, bool alert_existing_services,
                          bool force_refresh,
                          scoped_ptr<net::MDnsTransaction>* transaction);
@@ -123,6 +147,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   ServiceWatcher::UpdatedCallback callback_;
   bool started_;
+  bool actively_refresh_services_;
 
   net::MDnsClient* mdns_client_;
 

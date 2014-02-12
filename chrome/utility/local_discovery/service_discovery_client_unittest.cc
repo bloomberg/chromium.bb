@@ -169,6 +169,26 @@ const uint8 kSamplePacketPTR2[] = {
   0xc0, 0x0c
 };
 
+const uint8 kSamplePacketQuerySRV[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x00, 0x00,               // No flags.
+  0x00, 0x01,               // One question.
+  0x00, 0x00,               // 0 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  // Question
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x21,        // TYPE is SRV.
+  0x00, 0x01,        // CLASS is IN.
+};
+
+
 class MockServiceWatcherClient {
  public:
   MOCK_METHOD2(OnServiceUpdated,
@@ -346,6 +366,44 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
 
   base::MessageLoop::current()->RunUntilIdle();
 };
+
+TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
+  StrictMock<MockServiceWatcherClient> delegate;
+  scoped_ptr<ServiceWatcher> watcher(
+      service_discovery_client_.CreateServiceWatcher(
+          "_privet._tcp.local", delegate.GetCallback()));
+
+  watcher->Start();
+  watcher->SetActivelyRefreshServices(true);
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_ADDED,
+                                         "hello._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  std::string query_packet = std::string((const char*)(kSamplePacketQuerySRV),
+                                         sizeof(kSamplePacketQuerySRV));
+
+  EXPECT_CALL(socket_factory_, OnSendTo(query_packet))
+      .Times(2);
+
+  socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
+
+  EXPECT_CALL(socket_factory_, OnSendTo(query_packet))
+      .Times(4);  // IPv4 and IPv6 at 85% and 95%
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_REMOVED,
+                                         "hello._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  RunFor(base::TimeDelta::FromSeconds(2));
+
+  base::MessageLoop::current()->RunUntilIdle();
+};
+
 
 class ServiceResolverTest : public ServiceDiscoveryTest {
  public:
