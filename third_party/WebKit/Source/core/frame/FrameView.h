@@ -96,7 +96,6 @@ public:
 
     bool needsLayout() const;
     void setNeedsLayout();
-    void setViewportConstrainedObjectsNeedLayout();
 
     // Methods for getting/setting the size Blink should use to layout the contents.
     IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
@@ -162,6 +161,7 @@ public:
     // This is different than visibleContentRect() in that it ignores negative (or overly positive)
     // offsets from rubber-banding, and it takes zooming into account.
     LayoutRect viewportConstrainedVisibleContentRect() const;
+    void viewportConstrainedVisibleContentRectChanged(bool viewportWidthChanged, bool viewportHeightChanged);
 
     AtomicString mediaType() const;
     void setMediaType(const AtomicString&);

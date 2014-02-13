@@ -5136,4 +5136,42 @@ TEST_F(WebFrameTest, heightChangeRepaint)
     }
 }
 
+TEST_F(WebFrameTest, fixedPositionInFixedViewport)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("fixed-position-in-fixed-viewport.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "fixed-position-in-fixed-viewport.html", true, 0, 0, enableViewportSettings);
+
+    WebView* webView = webViewHelper.webView();
+    webView->resize(WebSize(100, 100));
+    webView->layout();
+
+    Document* document = toWebFrameImpl(webView->mainFrame())->frame()->document();
+    Element* bottomFixed = document->getElementById("bottom-fixed");
+    Element* topBottomFixed = document->getElementById("top-bottom-fixed");
+    Element* rightFixed = document->getElementById("right-fixed");
+    Element* leftRightFixed = document->getElementById("left-right-fixed");
+
+    webView->resize(WebSize(100, 200));
+    webView->layout();
+    EXPECT_EQ(200, bottomFixed->offsetTop() + bottomFixed->offsetHeight());
+    EXPECT_EQ(200, topBottomFixed->offsetHeight());
+
+    webView->settings()->setMainFrameResizesAreOrientationChanges(false);
+    webView->resize(WebSize(200, 200));
+    webView->layout();
+    EXPECT_EQ(200, rightFixed->offsetLeft() + rightFixed->offsetWidth());
+    EXPECT_EQ(200, leftRightFixed->offsetWidth());
+
+    webView->settings()->setMainFrameResizesAreOrientationChanges(true);
+    // Will scale the page by 1.5.
+    webView->resize(WebSize(300, 330));
+    webView->layout();
+    EXPECT_EQ(220, bottomFixed->offsetTop() + bottomFixed->offsetHeight());
+    EXPECT_EQ(220, topBottomFixed->offsetHeight());
+    EXPECT_EQ(200, rightFixed->offsetLeft() + rightFixed->offsetWidth());
+    EXPECT_EQ(200, leftRightFixed->offsetWidth());
+}
+
 } // namespace

@@ -346,11 +346,13 @@ void FrameView::invalidateRect(const IntRect& rect)
 void FrameView::setFrameRect(const IntRect& newRect)
 {
     IntRect oldRect = frameRect();
-    if (newRect == oldRect)
+    bool widthChanged = oldRect.width() != newRect.width();
+    bool heightChanged = oldRect.height() != newRect.height();
+    if (!widthChanged && !heightChanged)
         return;
 
     // Autosized font sizes depend on the width of the viewing area.
-    if (newRect.width() != oldRect.width()) {
+    if (widthChanged) {
         if (isMainFrame()) {
             Page* page = m_frame->page();
             bool textAutosizingEnabled = m_frame->settings()->textAutosizingEnabled();
@@ -372,6 +374,8 @@ void FrameView::setFrameRect(const IntRect& newRect)
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidChangeSize();
     }
+
+    viewportConstrainedVisibleContentRectChanged(widthChanged, heightChanged);
 }
 
 bool FrameView::scheduleAnimation()
@@ -1339,6 +1343,32 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
     return viewportRect;
 }
 
+void FrameView::viewportConstrainedVisibleContentRectChanged(bool widthChanged, bool heightChanged)
+{
+    // If viewport is not enabled, frameRect change will cause layout size change and then layout.
+    // Otherwise, viewport constrained objects need their layout flags set separately to ensure
+    // they are positioned correctly.
+    if ((m_frame->settings() && !m_frame->settings()->viewportEnabled()) || !hasViewportConstrainedObjects())
+        return;
+
+    ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
+    for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
+        RenderObject* renderer = *it;
+        RenderStyle* style = renderer->style();
+        if (widthChanged) {
+            if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
+                renderer->setNeedsPositionedMovementLayout();
+            else
+                renderer->setNeedsLayout();
+        }
+        if (heightChanged) {
+            if (style->height().isFixed() && (style->top().isAuto() || style->bottom().isAuto()))
+                renderer->setNeedsPositionedMovementLayout();
+            else
+                renderer->setNeedsLayout();
+        }
+    }
+}
 
 IntSize FrameView::scrollOffsetForFixedPosition() const
 {
@@ -1596,18 +1626,6 @@ void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint
 
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, false);
     notifyScrollPositionChanged(newScrollPosition);
-}
-
-void FrameView::setViewportConstrainedObjectsNeedLayout()
-{
-    if (!hasViewportConstrainedObjects())
-        return;
-
-    ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
-    for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
-        RenderObject* renderer = *it;
-        renderer->setNeedsLayout();
-    }
 }
 
 IntSize FrameView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
