@@ -48,6 +48,8 @@ class WebApplicationCacheHostImpl
   // blink::WebApplicationCacheHost:
   virtual void willStartMainResourceRequest(blink::WebURLRequest&,
                                             const blink::WebFrame*);
+  virtual void willStartMainResourceRequest(
+      blink::WebURLRequest&, const blink::WebApplicationCacheHost*);
   virtual void willStartSubResourceRequest(blink::WebURLRequest&);
   virtual void selectCacheWithoutManifest();
   virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL);

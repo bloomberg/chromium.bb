@@ -19,6 +19,10 @@ void WorkerWebApplicationCacheHostImpl::willStartMainResourceRequest(
     blink::WebURLRequest&, const blink::WebFrame*) {
 }
 
+void WorkerWebApplicationCacheHostImpl::willStartMainResourceRequest(
+    blink::WebURLRequest&, const blink::WebApplicationCacheHost*) {
+}
+
 void WorkerWebApplicationCacheHostImpl::didReceiveResponseForMainResource(
     const blink::WebURLResponse&) {
 }

@@ -162,6 +162,21 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request, const WebFrame* frame) {
+  WebApplicationCacheHostImpl* spawning_host = NULL;
+  if (frame) {
+    const WebFrame* spawning_frame = frame->parent();
+    if (!spawning_frame)
+      spawning_frame = frame->opener();
+    if (!spawning_frame)
+      spawning_frame = frame;
+
+    spawning_host = FromFrame(spawning_frame);
+  }
+  willStartMainResourceRequest(request, spawning_host);
+}
+
+void WebApplicationCacheHostImpl::willStartMainResourceRequest(
+    WebURLRequest& request, const WebApplicationCacheHost* spawning_host) {
   request.setAppCacheHostID(host_id_);
 
   original_main_resource_url_ = ClearUrlRef(request.url());
@@ -170,18 +185,11 @@ void WebApplicationCacheHostImpl::willStartMainResourceRequest(
   is_get_method_ = (method == appcache::kHttpGETMethod);
   DCHECK(method == StringToUpperASCII(method));
 
-  if (frame) {
-    const WebFrame* spawning_frame = frame->parent();
-    if (!spawning_frame)
-      spawning_frame = frame->opener();
-    if (!spawning_frame)
-      spawning_frame = frame;
-
-    WebApplicationCacheHostImpl* spawning_host = FromFrame(spawning_frame);
-    if (spawning_host && (spawning_host != this) &&
-        (spawning_host->status_ != appcache::UNCACHED)) {
-      backend_->SetSpawningHostId(host_id_, spawning_host->host_id());
-    }
+  const WebApplicationCacheHostImpl* spawning_host_impl =
+      static_cast<const WebApplicationCacheHostImpl*>(spawning_host);
+  if (spawning_host_impl && (spawning_host_impl != this) &&
+      (spawning_host_impl->status_ != appcache::UNCACHED)) {
+    backend_->SetSpawningHostId(host_id_, spawning_host_impl->host_id());
   }
 }
 
