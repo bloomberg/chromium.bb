@@ -33,6 +33,7 @@
 [
     NoInterfaceObject
 ] interface InspectorFrontendHost {
+    // FIXME: setZoomFactor is here only for old frontends. Remove in M38.
     void setZoomFactor(float zoom);
     float zoomFactor();
     void inspectedURLChanged(DOMString newURL);
