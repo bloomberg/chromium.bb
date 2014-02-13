@@ -149,3 +149,6 @@ GinBrowserTest.GinAndGarbageCollection
 
 # http://crbug.com/341995
 TracingControllerTest.EnableCaptureAndDisableMonitoringWithFilePath
+
+# http://crbug.com/343604
+MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo/0
