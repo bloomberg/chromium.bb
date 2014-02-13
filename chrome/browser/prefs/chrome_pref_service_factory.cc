@@ -71,27 +71,27 @@ namespace {
 const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   {
     0, prefs::kShowHomeButton,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     1, prefs::kHomePageIsNewTabPage,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     2, prefs::kHomePage,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     3, prefs::kRestoreOnStartup,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     4, prefs::kURLsToRestoreOnStartup,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
@@ -101,33 +101,33 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
   {
     6, prefs::kGoogleServicesLastUsername,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     7, prefs::kSearchProviderOverrides,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     8, prefs::kDefaultSearchProviderSearchURL,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     9, prefs::kDefaultSearchProviderKeyword,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
     10, prefs::kDefaultSearchProviderName,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #if !defined(OS_ANDROID)
   {
     11, prefs::kPinnedTabs,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #endif
@@ -138,7 +138,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
   {
     13, prefs::kProfileResetPromptMemento,
-    PrefHashFilter::ENFORCE_ALL,
+    PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 };
@@ -148,36 +148,31 @@ const size_t kTrackedPrefsReportingIDsCount = 14;
 COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
                need_to_increment_ids_count);
 
-PrefHashFilter::EnforcementLevel GetSettingsEnforcementLevel() {
-  static const char kSettingsEnforcementExperiment[] = "SettingsEnforcement";
+enum SettingsEnforcementGroup {
+  GROUP_NO_ENFORCEMENT,
+  // Only enforce settings on profile loads; still allow seeding of unloaded
+  // profiles.
+  GROUP_ENFORCE_ON_LOAD,
+  // TOOD(gab): Block unloaded profile seeding in this mode.
+  GROUP_ENFORCE_ALWAYS
+};
+
+SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   struct {
-    const char* level_name;
-    PrefHashFilter::EnforcementLevel level;
+    const char* group_name;
+    SettingsEnforcementGroup group;
   } static const kEnforcementLevelMap[] = {
-    {
-      "no_enforcement",
-      PrefHashFilter::NO_ENFORCEMENT
-    },
-    {
-      "enforce",
-      PrefHashFilter::ENFORCE
-    },
-    {
-      "enforce_no_seeding",
-      PrefHashFilter::ENFORCE_NO_SEEDING
-    },
-    {
-      "enforce_no_seeding_no_migration",
-      PrefHashFilter::ENFORCE_NO_SEEDING_NO_MIGRATION
-    },
+    { chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
+      GROUP_NO_ENFORCEMENT },
+    { chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
+      GROUP_ENFORCE_ON_LOAD },
+    { chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
+      GROUP_ENFORCE_ALWAYS },
   };
-  COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kEnforcementLevelMap) ==
-                     (PrefHashFilter::ENFORCE_ALL -
-                      PrefHashFilter::NO_ENFORCEMENT),
-                 missing_enforcement_level);
 
   base::FieldTrial* trial =
-      base::FieldTrialList::Find(kSettingsEnforcementExperiment);
+      base::FieldTrialList::Find(
+          chrome_prefs::internals::kSettingsEnforcementTrialName);
   if (trial) {
     const std::string& group_name = trial->group_name();
     // ARRAYSIZE_UNSAFE must be used since the array is declared locally; it is
@@ -185,17 +180,17 @@ PrefHashFilter::EnforcementLevel GetSettingsEnforcementLevel() {
     // non-array pointer types; this is fine since kEnforcementLevelMap is
     // clearly an array.
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEnforcementLevelMap); ++i) {
-      if (kEnforcementLevelMap[i].level_name == group_name)
-        return kEnforcementLevelMap[i].level;
+      if (kEnforcementLevelMap[i].group_name == group_name)
+        return kEnforcementLevelMap[i].group;
     }
   }
 #if defined(OS_WIN)
-  // Default to ENFORCE_ALL in the absence of a valid value for the
+  // Default to GROUP_ENFORCE_ALWAYS in the absence of a valid value for the
   // SettingsEnforcement field trial.
   // TODO(gab): Switch other platforms over to this mode.
-  return PrefHashFilter::ENFORCE_ALL;
+  return GROUP_ENFORCE_ALWAYS;
 #else
-  return PrefHashFilter::NO_ENFORCEMENT;
+  return GROUP_NO_ENFORCEMENT;
 #endif
 }
 
@@ -274,11 +269,14 @@ void HandleResetEvent() {
 
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store) {
+  const PrefHashFilter::EnforcementLevel enforcement_level =
+      GetSettingsEnforcementGroup() == GROUP_NO_ENFORCEMENT ?
+          PrefHashFilter::NO_ENFORCEMENT : PrefHashFilter::ENFORCE_ON_LOAD;
   return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
                                             kTrackedPrefs,
                                             arraysize(kTrackedPrefs),
                                             kTrackedPrefsReportingIDsCount,
-                                            GetSettingsEnforcementLevel(),
+                                            enforcement_level,
                                             base::Bind(&HandleResetEvent)));
 }
 
@@ -397,6 +395,15 @@ void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
 }  // namespace
 
 namespace chrome_prefs {
+
+namespace internals {
+
+const char kSettingsEnforcementTrialName[] = "SettingsEnforcement";
+const char kSettingsEnforcementGroupNoEnforcement[] = "no_enforcement";
+const char kSettingsEnforcementGroupEnforceOnload[] = "enforce_on_load";
+const char kSettingsEnforcementGroupEnforceAlways[] = "enforce_always";
+
+}  // namespace internals
 
 scoped_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,

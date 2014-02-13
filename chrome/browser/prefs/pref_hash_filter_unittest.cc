@@ -32,7 +32,7 @@ const char kSplitPref[] = "split_pref";
 
 const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
   {
-    0, kAtomicPref, PrefHashFilter::ENFORCE_ALL,
+    0, kAtomicPref, PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
@@ -40,7 +40,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    2, kSplitPref, PrefHashFilter::ENFORCE_ALL,
+    2, kSplitPref, PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_SPLIT
   },
   {
@@ -48,11 +48,11 @@ const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_SPLIT
   },
   {
-    4, kAtomicPref2, PrefHashFilter::ENFORCE_ALL,
+    4, kAtomicPref2, PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
   {
-    5, kAtomicPref3, PrefHashFilter::ENFORCE_ALL,
+    5, kAtomicPref3, PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 };
@@ -520,7 +520,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
             stored_atomic_value.second);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             stored_split_value.second);
-  if (GetParam() >= PrefHashFilter::ENFORCE_NO_SEEDING) {
+  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
     // Ensure the prefs were cleared and the hashes for NULL were restored if
     // the current enforcement level denies seeding.
     ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
@@ -627,7 +627,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
             stored_atomic_value.second);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             stored_split_value.second);
-  if (GetParam() >= PrefHashFilter::ENFORCE) {
+  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
     // Ensure the atomic pref was cleared and the hash for NULL was restored if
     // the current enforcement level prevents changes.
     ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
@@ -717,7 +717,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
        mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
             stored_atomic_value.second);
-  if (GetParam() >= PrefHashFilter::ENFORCE_NO_SEEDING_NO_MIGRATION) {
+  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
     // Ensure the pref was cleared and the hash for NULL was restored if the
     // current enforcement level prevents migration.
     ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
@@ -778,7 +778,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
             mock_pref_hash_store_->stored_value(kReportOnlySplitPref).first);
 
   // All other prefs should have been reset if the enforcement level allows it.
-  if (GetParam() >= PrefHashFilter::ENFORCE) {
+  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
     ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref, NULL));
     ASSERT_FALSE(pref_store_contents_.Get(kAtomicPref2, NULL));
     ASSERT_EQ(NULL, mock_pref_hash_store_->stored_value(kAtomicPref).first);
@@ -801,26 +801,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   }
 }
 
-// This is a hack to allow testing::Range to iterate over enum values in
-// PrefHashFilter::EnforcementLevel. This is required as
-// testing::internals::RangeGenerator used by testing::Range needs to be able
-// to do |i = i + step| where i is an EnforcementLevel and |step| is 1 by
-// default; |enum + 1| results in an |int| type, not an |enum|, and there is no
-// implicit conversion from |int| to |enum|. This hack works around this
-// limitation by making |step| an |EnforcementLevelIncrement| which forces the
-// explicit cast in the overloaded operator+ below and makes |i = i + step| a
-// valid statement.
-class EnforcementLevelIncrement {};
-PrefHashFilter::EnforcementLevel operator+(
-    PrefHashFilter::EnforcementLevel current_level,
-    const EnforcementLevelIncrement& /* increment */) {
-  return static_cast<PrefHashFilter::EnforcementLevel>(
-      current_level + 1);
-}
-
 INSTANTIATE_TEST_CASE_P(
     PrefHashFilterTestInstance, PrefHashFilterTest,
-    testing::Range(PrefHashFilter::NO_ENFORCEMENT,
-                   static_cast<PrefHashFilter::EnforcementLevel>(
-                       PrefHashFilter::ENFORCE_ALL + 1),
-                   EnforcementLevelIncrement()));
+    testing::Values(PrefHashFilter::NO_ENFORCEMENT,
+                    PrefHashFilter::ENFORCE_ON_LOAD));

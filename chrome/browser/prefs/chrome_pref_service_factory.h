@@ -32,6 +32,15 @@ class PrefStore;
 
 namespace chrome_prefs {
 
+namespace internals {
+
+extern const char kSettingsEnforcementTrialName[];
+extern const char kSettingsEnforcementGroupNoEnforcement[];
+extern const char kSettingsEnforcementGroupEnforceOnload[];
+extern const char kSettingsEnforcementGroupEnforceAlways[];
+
+}  // namespace internals
+
 // Factory methods that create and initialize a new instance of a
 // PrefService for Chrome with the applicable PrefStores. The
 // |pref_filename| points to the user preference file. This is the

@@ -29,10 +29,10 @@ class TrackedPreferenceHelper {
                           size_t reporting_ids_count,
                           PrefHashFilter::EnforcementLevel enforcement_level);
 
-  // Returns a ResetAction stating whether a reset is desired (DO_RESET) based
-  // on observing |value_state| or not (DONT_RESET). |allow_changes_|,
-  // |allow_seeding_|, and |allow_migration_| make the decision softer in favor
-  // of WANTED_RESET over DO_RESET in various scenarios.
+  // Returns a ResetAction stating whether a reset is desired (DO_RESET) or not
+  // (DONT_RESET) based on observing |value_state|. Can also return WANTED_RESET
+  // if a reset would have been desired but the current |enforcement_level|
+  // doesn't allow it.
   ResetAction GetAction(
       PrefHashStoreTransaction::ValueState value_state) const;
 
@@ -53,12 +53,8 @@ class TrackedPreferenceHelper {
   const size_t reporting_id_;
   const size_t reporting_ids_count_;
 
-  // Allow setting changes.
-  const bool allow_changes_;
-  // Allow seeding unknown values for atomic preferences.
-  const bool allow_seeding_;
-  // Allow migration of values validated by the old MAC algorithm.
-  const bool allow_migration_;
+  // Deny setting changes and hash seeding/migration.
+  const bool enforce_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedPreferenceHelper);
 };

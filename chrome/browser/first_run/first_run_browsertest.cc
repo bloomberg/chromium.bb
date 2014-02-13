@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -247,7 +250,9 @@ class FirstRunMasterPrefsWithTrackedPreferences
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     FirstRunMasterPrefsBrowserTestT::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials, "SettingsEnforcement/" + GetParam() + "/");
+        switches::kForceFieldTrials,
+        std::string(chrome_prefs::internals::kSettingsEnforcementTrialName) +
+            "/" + GetParam() + "/");
   }
 };
 
@@ -277,11 +282,13 @@ IN_PROC_BROWSER_TEST_P(FirstRunMasterPrefsWithTrackedPreferences,
   EXPECT_TRUE(default_homepage_is_ntp);
 }
 
-INSTANTIATE_TEST_CASE_P(FirstRunMasterPrefsWithTrackedPreferencesInstance,
-                        FirstRunMasterPrefsWithTrackedPreferences,
-                        testing::Values("no_enforcement",
-                                        "enforce",
-                                        "enforce_no_seeding",
-                                        "enforce_no_seeding_no_migration"));
+INSTANTIATE_TEST_CASE_P(
+    FirstRunMasterPrefsWithTrackedPreferencesInstance,
+    FirstRunMasterPrefsWithTrackedPreferences,
+    testing::Values(
+        chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways));
+
 
 #endif  // !defined(OS_CHROMEOS)

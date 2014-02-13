@@ -14,10 +14,7 @@ TrackedPreferenceHelper::TrackedPreferenceHelper(
     PrefHashFilter::EnforcementLevel enforcement_level)
     : pref_path_(pref_path),
       reporting_id_(reporting_id), reporting_ids_count_(reporting_ids_count),
-      allow_changes_(enforcement_level < PrefHashFilter::ENFORCE),
-      allow_seeding_(enforcement_level < PrefHashFilter::ENFORCE_NO_SEEDING),
-      allow_migration_(enforcement_level <
-                       PrefHashFilter::ENFORCE_NO_SEEDING_NO_MIGRATION) {
+      enforce_(enforcement_level == PrefHashFilter::ENFORCE_ON_LOAD) {
 }
 
 TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
@@ -32,12 +29,10 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     case PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE:
       // It is okay to seed the hash in this case.
       return DONT_RESET;
-    case PrefHashStoreTransaction::MIGRATED:
-      return allow_migration_ ? WANTED_RESET : DO_RESET;
-    case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
-      return allow_seeding_ ? WANTED_RESET : DO_RESET;
+    case PrefHashStoreTransaction::MIGRATED:  // Falls through.
+    case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:  // Falls through.
     case PrefHashStoreTransaction::CHANGED:
-      return allow_changes_ ? WANTED_RESET : DO_RESET;
+      return enforce_ ? DO_RESET : WANTED_RESET;
   }
   NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
                << value_state;

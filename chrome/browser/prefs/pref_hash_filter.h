@@ -30,17 +30,9 @@ class Value;
 // are changed.
 class PrefHashFilter : public PrefFilter {
  public:
-  // Enforcement levels are defined in order of intensity; the next level always
-  // implies the previous one and more.
   enum EnforcementLevel {
     NO_ENFORCEMENT,
-    ENFORCE,
-    ENFORCE_NO_SEEDING,
-    ENFORCE_NO_SEEDING_NO_MIGRATION,
-    // ENFORCE_ALL must always remain last; it is meant to be used when the
-    // desired level is underdetermined and the caller wants to enforce the
-    // strongest level to be safe.
-    ENFORCE_ALL
+    ENFORCE_ON_LOAD
   };
 
   enum PrefTrackingStrategy {
