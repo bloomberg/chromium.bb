@@ -41,3 +41,13 @@ EmbeddedTestServerThreadingTestInstantiation.*
 
 # Hang: crbug.com/331468
 MultiThreadedCertVerifierTest.DifferentCACerts
+
+# Hang: crbug.com/343565
+TestCompletionCallbackTest.Simple
+MultiThreadedCertVerifierTest.CacheHit
+
+# Failing tests: crbug.com/343565
+HttpServerTest.RequestWithTooLargeBody
+TransportClientSocketPoolTest.IPv6FallbackSocketIPv6FinishesFirst
+NextProto_SpdyStreamTest.SendLargeDataAfterOpenRequestResponse_2
+NextProto_SpdyStreamTest.SendLargeDataAfterOpenRequestResponse_4
