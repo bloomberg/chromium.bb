@@ -123,6 +123,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       int process_id,
       int route_id,
       const GURL& url,
+      uint32 rel_types,
       const content::Referrer& referrer,
       const gfx::Size& size);
 

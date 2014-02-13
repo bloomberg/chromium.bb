@@ -859,7 +859,7 @@ TEST_F(PrerenderTest, RelNextByFieldTrial) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, FINAL_STATUS_USED);
+          url, ORIGIN_LINK_REL_NEXT, FINAL_STATUS_USED);
 
   prerender_link_manager()->OnAddPrerender(
       kDefaultChildId, GetNextPrerenderID(), url, PrerenderRelTypeNext,

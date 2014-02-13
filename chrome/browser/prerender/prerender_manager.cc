@@ -48,6 +48,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/common/prerender_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -314,9 +315,12 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int process_id,
     int route_id,
     const GURL& url,
+    const uint32 rel_types,
     const content::Referrer& referrer,
     const gfx::Size& size) {
-  Origin origin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
+  Origin origin = rel_types & PrerenderRelTypePrerender ?
+                      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN :
+                      ORIGIN_LINK_REL_NEXT;
   SessionStorageNamespace* session_storage_namespace = NULL;
   // Unit tests pass in a process_id == -1.
   if (process_id != -1) {
@@ -328,8 +332,10 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
         WebContents::FromRenderViewHost(source_render_view_host);
     if (!source_web_contents)
       return NULL;
-    if (source_web_contents->GetURL().host() == url.host())
+    if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN &&
+        source_web_contents->GetURL().host() == url.host()) {
       origin = ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN;
+    }
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace =
         source_web_contents->GetController()

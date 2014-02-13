@@ -374,7 +374,7 @@ void PrerenderLinkManager::StartPrerenders() {
 
     PrerenderHandle* handle = manager_->AddPrerenderFromLinkRelPrerender(
         (*i)->launcher_child_id, (*i)->render_view_route_id,
-        (*i)->url, (*i)->referrer, (*i)->size);
+        (*i)->url, (*i)->rel_types, (*i)->referrer, (*i)->size);
     if (!handle) {
       // This prerender couldn't be launched, it's gone.
       prerenders_.erase(*i);

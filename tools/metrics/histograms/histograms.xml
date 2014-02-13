@@ -34959,8 +34959,11 @@ other types of suffix sets.
   <group name="omnibox" label="Triggered from the omnibox."/>
   <group name="wash" label="Multiple sources could have triggered."/>
   <group name="web" label="Link triggered prerender."/>
-  <group name="webcross" label="Link triggered prerender, cross domain."/>
-  <group name="websame" label="Link triggered prerender, same domain."/>
+  <group name="webcross"
+      label="Link triggered prerender, rel=prerender, cross domain."/>
+  <group name="websame"
+      label="Link triggered prerender, rel=prerender, same domain."/>
+  <group name="webnext" label="Link triggered prerender, rel=next."/>
   <affected-histogram name="Prerender.CookieStatus"/>
   <affected-histogram name="Prerender.Event"/>
   <affected-histogram name="Prerender.FinalStatus"/>

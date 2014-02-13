@@ -62,6 +62,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
         return ComposeHistogramName("externalrequest", name);
     case ORIGIN_INSTANT:
       return ComposeHistogramName("Instant", name);
+    case ORIGIN_LINK_REL_NEXT:
+      return ComposeHistogramName("webnext", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
@@ -130,6 +132,8 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (origin == ORIGIN_EXTERNAL_REQUEST) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_INSTANT) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_LINK_REL_NEXT) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \
