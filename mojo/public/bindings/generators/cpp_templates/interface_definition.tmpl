@@ -8,7 +8,7 @@
 {#--- Proxy definitions #}
 {%- macro params_list(method) %}
 {%-   for param in method.parameters -%}
-{{param.kind|cpp_const_wrapper_type}} {{param.name}}
+{{param.kind|cpp_const_wrapper_type}} in_{{param.name}}
 {%- if not loop.last %}, {% endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -23,8 +23,8 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {#--- Computes #}
 {%-   for param in method.parameters %}
 {%-     if param.kind|is_object_kind %}
-  if (!{{param.name}}.is_null())
-    payload_size += mojo::internal::Unwrap({{param.name}})->ComputeSize();
+  if (!in_{{param.name}}.is_null())
+    payload_size += mojo::internal::Unwrap(in_{{param.name}})->ComputeSize();
 {%-     endif %}
 {%-   endfor %}
 
@@ -36,13 +36,13 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {#--- Sets #}
 {%   for param in method.parameters %}
 {%-     if param.kind|is_object_kind %}
-  if (!{{param.name}}.is_null())
+  if (!in_{{param.name}}.is_null())
     params->set_{{param.name}}(
-        mojo::internal::Unwrap({{param.name}})->Clone(builder.buffer()));
+        mojo::internal::Unwrap(in_{{param.name}})->Clone(builder.buffer()));
 {%-     elif param.kind|is_handle_kind %}
-  params->set_{{param.name}}({{param.name}}.release());
+  params->set_{{param.name}}(in_{{param.name}}.release());
 {%-     else %}
-  params->set_{{param.name}}({{param.name}});
+  params->set_{{param.name}}(in_{{param.name}});
 {%-     endif %}
 {%-   endfor %}
 
