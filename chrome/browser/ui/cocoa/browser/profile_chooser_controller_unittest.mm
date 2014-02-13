@@ -103,15 +103,17 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
   // There should be a separator.
   EXPECT_TRUE([[subviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
 
-  // There should be two "other profiles" items.
-  for (NSUInteger i = 2; i < 4; ++i) {
-    int profileIndex = i - 1;  // The separator is a view but not a profile.
+  // There should be two "other profiles" items. The items are drawn from the
+  // bottom up, so in the opposite order of those in the AvatarMenu.
+  int profileIndex = 1;
+  for (NSUInteger i = 3; i >= 2; --i) {
     NSButton* button = static_cast<NSButton*>([subviews objectAtIndex:i]);
     EXPECT_EQ(menu()->GetItemAt(profileIndex).name,
               base::SysNSStringToUTF16([button title]));
     EXPECT_EQ(profileIndex, [button tag]);
     EXPECT_EQ(@selector(switchToProfile:), [button action]);
     EXPECT_EQ(controller(), [button target]);
+    profileIndex++;
   }
 
   // There should be the profile avatar, name and links container in the active
@@ -128,6 +130,36 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
   EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
       [static_cast<NSButton*>(activeProfileName) title]));
+}
+
+TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
+  // Add two extra profiles, to make sure sorting is alphabetical and not
+  // by order of creation.
+  testing_profile_manager()->
+      CreateTestingProfile("test3", scoped_ptr<PrefServiceSyncable>(),
+                           base::ASCIIToUTF16("New Profile"), 1, std::string(),
+                           TestingProfile::TestingFactories());
+  testing_profile_manager()->
+      CreateTestingProfile("test4", scoped_ptr<PrefServiceSyncable>(),
+                           base::ASCIIToUTF16("Another Test"), 1, std::string(),
+                           TestingProfile::TestingFactories());
+  StartProfileChooserController();
+
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  NSString* sortedNames[] = { @"Another Test",
+                              @"New Profile",
+                              @"Test 1",
+                              @"Test 2" };
+  // There should be three "other profiles" items, sorted alphabetically.
+  // The "other profiles" start at index 2, after the option buttons and
+  // a separator. We need to iterate through the profiles in the order
+  // displayed in the bubble, which is opposite from the drawn order.
+  int sortedNameIndex = 0;
+  for (NSUInteger i = 5; i >= 2; --i) {
+    NSButton* button = static_cast<NSButton*>([subviews objectAtIndex:i]);
+    EXPECT_TRUE(
+        [[button title] isEqualToString:sortedNames[sortedNameIndex++]]);
+  }
 }
 
 TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {

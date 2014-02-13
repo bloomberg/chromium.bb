@@ -673,8 +673,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
 
-  // Separate items into active and other profiles.
-  for (size_t i = 0; i < avatarMenu_->GetNumberOfItems(); ++i) {
+  // Loop over the profiles in reverse, so that they are sorted by their
+  // y-coordinate, and separate them into active and "other" profiles.
+  for (int i = avatarMenu_->GetNumberOfItems() - 1; i >= 0; --i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
       currentProfileView = [self createCurrentProfileView:item];
@@ -701,7 +702,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
   if (viewToDisplay == PROFILE_CHOOSER_VIEW) {
-    // Other profiles switcher.
+    // Other profiles switcher. The profiles have already been sorted
+    // by their y-coordinate, so they can be added in the existing order.
     for (NSView *otherProfileView in otherProfiles.get()) {
       [otherProfileView setFrameOrigin:NSMakePoint(kHorizontalSpacing,
                                                    yOffset)];
