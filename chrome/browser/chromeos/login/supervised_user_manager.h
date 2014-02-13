@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 
 class PrefRegistrySimple;
 
@@ -33,6 +35,9 @@ extern const char kPasswordUpdateFile[];
 // lookup methods that make sense only for supervised users.
 class SupervisedUserManager {
  public:
+  typedef base::Callback<void(const std::string& /* token */)>
+      LoadTokenCallback;
+
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -110,6 +115,14 @@ class SupervisedUserManager {
   virtual void SetPasswordInformation(
       const std::string& user_id,
       const base::DictionaryValue* password_info) = 0;
+
+  // Loads a sync oauth token in background, and passes it to callback.
+  virtual void LoadSupervisedUserToken(Profile* profile,
+                                       const LoadTokenCallback& callback) = 0;
+
+  // Configures sync service with oauth token.
+  virtual void ConfigureSyncWithToken(Profile* profile,
+                                      const std::string& token) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserManager);

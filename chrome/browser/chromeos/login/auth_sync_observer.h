@@ -35,6 +35,9 @@ class AuthSyncObserver : public BrowserContextKeyedService,
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
+  // Called on attempt to restore supervised user token.
+  void OnSupervisedTokenLoaded(const std::string& token);
+
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthSyncObserver);
