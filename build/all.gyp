@@ -192,6 +192,7 @@
             '../sandbox/sandbox.gyp:*',
             '<(angle_path)/src/build_angle.gyp:*',
             '../third_party/bspatch/bspatch.gyp:*',
+            '../tools/win/static_initializers/static_initializers.gyp:*',
           ],
         }, {
           'dependencies': [
