@@ -72,13 +72,13 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
   }
 }
 
-void FrameTreeNode::ResetForNewProcess() {
+void FrameTreeNode::ResetForMainFrameSwap() {
   frame_id_ = kInvalidFrameId;
   current_url_ = GURL();
 
   // The children may not have been cleared if a cross-process navigation
   // commits before the old process cleans everything up.  Make sure the child
-  // nodes get deleted before swapping to a new process.
+  // nodes get deleted.
   children_.clear();
 }
 

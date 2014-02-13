@@ -43,15 +43,6 @@ bool FrameTreeNodeForFrameId(int64 frame_id,
   return true;
 }
 
-// Iterate over the FrameTree to reset any node affected by the loss of the
-// given RenderViewHost's process.
-bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
-                             FrameTreeNode* node) {
-  if (render_view_host == node->current_frame_host()->render_view_host())
-    node->ResetForNewProcess();
-  return true;
-}
-
 }  // namespace
 
 FrameTree::FrameTree(Navigator* navigator,
@@ -162,17 +153,7 @@ void FrameTree::SetFrameUrl(int64 frame_id, const GURL& url) {
 }
 
 void FrameTree::ResetForMainFrameSwap() {
-  root_->ResetForNewProcess();
-}
-
-void FrameTree::RenderProcessGone(RenderViewHost* render_view_host) {
-  // Walk the full tree looking for nodes that may be affected.  Once a frame
-  // crashes, all of its child FrameTreeNodes go away.
-  // Note that the helper function may call ResetForNewProcess on a node, which
-  // clears its children before we iterate over them.  That's ok, because
-  // ForEach does not add a node's children to the queue until after visiting
-  // the node itself.
-  ForEach(base::Bind(&ResetNodesForNewProcess, render_view_host));
+  return root_->ResetForMainFrameSwap();
 }
 
 RenderFrameHostImpl* FrameTree::GetMainFrame() const {

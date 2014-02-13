@@ -258,68 +258,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             child->current_frame_host()->GetProcess());
 }
 
-// Crash a subframe and ensures its children are cleared from the FrameTree.
-// See http://crbug.com/338508.
-// TODO(creis): Enable this on Android when we can kill the process there.
-#if defined(OS_ANDROID)
-#define MAYBE_CrashSubframe DISABLED_CrashSubframe
-#else
-#define MAYBE_CrashSubframe CrashSubframe
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrashSubframe) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
-
-  StartFrameAtDataURL();
-
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-
-  // Load cross-site page into iframe.
-  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-  EXPECT_TRUE(NavigateIframeToURL(shell(), cross_site_url, "test"));
-
-  // Check the subframe process.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
-  ASSERT_EQ(1U, root->child_count());
-  FrameTreeNode* child = root->child_at(0);
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->child_at(0)->frame_id());
-
-  // Crash the subframe process.
-  RenderProcessHost* root_process = root->current_frame_host()->GetProcess();
-  RenderProcessHost* child_process = child->current_frame_host()->GetProcess();
-  {
-    RenderProcessHostWatcher crash_observer(
-        child_process,
-        RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    base::KillProcess(child_process->GetHandle(), 0, false);
-    crash_observer.Wait();
-  }
-
-  // Ensure that the child frame still exists but has been cleared.
-  EXPECT_EQ(1U, root->child_count());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->child_at(0)->frame_id());
-
-  // Now crash the top-level page to clear the child frame.
-  {
-    RenderProcessHostWatcher crash_observer(
-        root_process,
-        RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    base::KillProcess(root_process->GetHandle(), 0, false);
-    crash_observer.Wait();
-  }
-  EXPECT_EQ(0U, root->child_count());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->frame_id());
-}
-
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
 // TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run

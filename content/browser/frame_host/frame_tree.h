@@ -60,9 +60,7 @@ class CONTENT_EXPORT FrameTree {
 
   // Executes |on_node| on each node in the frame tree.  If |on_node| returns
   // false, terminates the iteration immediately. Returning false is useful
-  // if |on_node| is just doing a search over the tree.  The iteration proceeds
-  // top-down and visits a node before adding its children to the queue, making
-  // it safe to remove children during the callback.
+  // if |on_node| is just doing a search over the tree.
   void ForEach(const base::Callback<bool(FrameTreeNode*)>& on_node) const;
 
   // After the FrameTree is created, or after SwapMainFrame() has been called,
@@ -93,13 +91,6 @@ class CONTENT_EXPORT FrameTree {
   // support bookkeeping for top-level navigations.
   // TODO(creis): Look into how we can remove the need for this method.
   void ResetForMainFrameSwap();
-
-  // Update the frame tree after a process exits.  Any nodes currently using the
-  // given |render_view_host| will lose all their children.
-  // TODO(creis): This should take a RenderProcessHost once RenderFrameHost
-  // knows its process.  Until then, we would just be asking the RenderViewHost
-  // for its process, so we'll skip that step.
-  void RenderProcessGone(RenderViewHost* render_view_host);
 
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
