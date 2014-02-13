@@ -12,26 +12,16 @@
 
 namespace autofill {
 
-namespace {
-const char kTestCountry[] = "AQ";
-}
-
 TEST(CountryComboboxModel, RespectsManagerDefaultCountry) {
+  const std::string test_country = "AQ";
   TestPersonalDataManager manager;
-  manager.set_timezone_country_code(kTestCountry);
+  manager.set_timezone_country_code(test_country);
 
   CountryComboboxModel model(manager);
-  EXPECT_EQ(kTestCountry, model.GetDefaultCountryCode());
+  EXPECT_EQ(test_country, model.GetDefaultCountryCode());
 }
 
-// http://crbug.com/341329
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AllCountriesHaveComponents DISABLED_AllCountriesHaveComponents
-#else
-#define MAYBE_AllCountriesHaveComponents AllCountriesHaveComponents
-#endif
-
-TEST(CountryComboboxModel, MAYBE_AllCountriesHaveComponents) {
+TEST(CountryComboboxModel, AllCountriesHaveComponents) {
   TestPersonalDataManager manager;
   CountryComboboxModel model(manager);
 
