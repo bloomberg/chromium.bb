@@ -36,7 +36,7 @@ class MockInstantServiceObserver : public InstantServiceObserver {
 class InstantServiceTest : public InstantUnitTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
-    InstantUnitTestBase::SetUpWithoutCacheableNTP();
+    InstantUnitTestBase::SetUp();
 
     instant_service_observer_.reset(new MockInstantServiceObserver());
     instant_service_->AddObserver(instant_service_observer_.get());

@@ -37,12 +37,6 @@ void InstantUnitTestBase::SetUp() {
   SetUpHelper();
 }
 
-void InstantUnitTestBase::SetUpWithoutCacheableNTP() {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "InstantExtended", "Group1 use_cacheable_ntp:0"));
-  SetUpHelper();
-}
-
 void InstantUnitTestBase::SetUpHelper() {
   chrome::EnableQueryExtractionForTesting();
   BrowserWithTestWindowTest::SetUp();

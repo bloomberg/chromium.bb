@@ -25,7 +25,6 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  virtual void SetUpWithoutCacheableNTP();
   virtual void SetUpHelper();
 
   // Adds and sets the default search provider using the base_url.
