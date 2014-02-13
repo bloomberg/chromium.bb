@@ -327,22 +327,8 @@
   }
 
   if (window.internals) {
-    if (internals.runtimeFlags.webAnimationsCSSEnabled) {
-      durationSeconds = 0;
-      document.documentElement.addEventListener(endEvent, endEventListener);
-    } else {
-      // FIXME: Once http://crbug.com/279039 is fixed we can use the same logic as Web Animations for testing.
-      durationSeconds = 1000;
-      iterationCount = 1;
-      document.documentElement.addEventListener(startEvent, function() {
-        animationEventCount++;
-        if (!isLastAnimationEvent()) {
-          return;
-        }
-        internals.pauseAnimations(durationSeconds / 2);
-        finishTest();
-      });
-    }
+    durationSeconds = 0;
+    document.documentElement.addEventListener(endEvent, endEventListener);
   } else if (webkitPrefix) {
     durationSeconds = 1e9;
     iterationCount = 1;
