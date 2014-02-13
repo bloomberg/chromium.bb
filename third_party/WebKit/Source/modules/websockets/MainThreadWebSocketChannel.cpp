@@ -574,7 +574,7 @@ bool MainThreadWebSocketChannel::processFrame()
     // A new data frame is received before the previous continuous frame finishes.
     // Note that control frames are allowed to come in the middle of continuous frames.
     if (m_hasContinuousFrame && frame.opCode != WebSocketFrame::OpCodeContinuation && !WebSocketFrame::isControlOpCode(frame.opCode)) {
-        failAsError("Received new data frame but previous continuous frame is unfinished.");
+        failAsError("Received start of new message but previous message is unfinished.");
         return false;
     }
 
