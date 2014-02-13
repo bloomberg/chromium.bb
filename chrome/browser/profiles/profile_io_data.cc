@@ -970,12 +970,16 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
 #if defined(OS_CHROMEOS)
   username_hash_ = profile_params_->username_hash;
-  crypto::ScopedPK11Slot public_slot =
-      crypto::GetPublicSlotForChromeOSUser(username_hash_);
-  // The private slot won't be ready by this point. It shouldn't be necessary
-  // for cert trust purposes anyway.
-  scoped_refptr<net::CertVerifyProc> verify_proc =
-      new chromeos::CertVerifyProcChromeOS(public_slot.Pass());
+  scoped_refptr<net::CertVerifyProc> verify_proc;
+  if (chromeos::UserManager::IsMultipleProfilesAllowed()) {
+    crypto::ScopedPK11Slot public_slot =
+        crypto::GetPublicSlotForChromeOSUser(username_hash_);
+    // The private slot won't be ready by this point. It shouldn't be necessary
+    // for cert trust purposes anyway.
+    verify_proc = new chromeos::CertVerifyProcChromeOS(public_slot.Pass());
+  } else {
+    verify_proc = net::CertVerifyProc::CreateDefault();
+  }
   if (cert_verifier_) {
     cert_verifier_->InitializeOnIOThread(verify_proc);
     main_request_context_->set_cert_verifier(cert_verifier_.get());
