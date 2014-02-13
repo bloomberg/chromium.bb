@@ -26,6 +26,10 @@
 class PrefService;
 class PrefRegistrySimple;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chrome_variations {
 
 class VariationsSeed;
@@ -67,8 +71,18 @@ class VariationsService
   // Register Variations related prefs in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Register Variations related prefs in the Profile prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   // Factory method for creating a VariationsService.
   static VariationsService* Create(PrefService* local_state);
+
+  // Set the PrefService responsible for getting policy-related preferences,
+  // such as the restrict parameter.
+  void set_policy_pref_service(PrefService* service) {
+    DCHECK(service);
+    policy_pref_service_ = service;
+  }
 
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
@@ -109,6 +123,10 @@ class VariationsService
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;
+
+  // Used to obtain policy-related preferences. Depending on the platform, will
+  // either be Local State or Profile prefs.
+  PrefService* policy_pref_service_;
 
   VariationsSeedStore seed_store_;
 

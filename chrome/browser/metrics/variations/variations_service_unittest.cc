@@ -14,6 +14,7 @@
 #include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "content/public/test/test_browser_thread.h"
@@ -123,8 +124,14 @@ class VariationsServiceTest : public ::testing::Test {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(VariationsServiceTest, VariationsURLIsValid) {
+#if defined(OS_ANDROID)
+  // Android uses profile prefs as the PrefService to generate the URL.
+  TestingPrefServiceSyncable prefs;
+  VariationsService::RegisterProfilePrefs(prefs.registry());
+#else
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
+#endif
   const std::string default_variations_url =
       VariationsService::GetDefaultVariationsServerURLForTesting();
 

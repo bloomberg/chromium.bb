@@ -17,6 +17,7 @@
 #include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,16 +105,18 @@ std::string GetPlatformString() {
 #endif
 }
 
-// Gets the restrict parameter from |local_state| or from Chrome OS settings in
-// the case of that platform.
-std::string GetRestrictParameterPref(PrefService* local_state) {
+// Gets the restrict parameter from |policy_pref_service| or from Chrome OS
+// settings in the case of that platform.
+std::string GetRestrictParameterPref(PrefService* policy_pref_service) {
   std::string parameter;
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Get()->GetString(
       chromeos::kVariationsRestrictParameter, &parameter);
 #else
-  if (local_state)
-    parameter = local_state->GetString(prefs::kVariationsRestrictParameter);
+  if (policy_pref_service) {
+    parameter =
+        policy_pref_service->GetString(prefs::kVariationsRestrictParameter);
+  }
 #endif
   return parameter;
 }
@@ -172,8 +175,8 @@ Study_FormFactor GetCurrentFormFactor() {
 
 VariationsService::VariationsService(PrefService* local_state)
     : local_state_(local_state),
+      policy_pref_service_(local_state),
       seed_store_(local_state),
-      variations_server_url_(GetVariationsServerURL(local_state)),
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
       resource_request_allowed_notifier_(
@@ -184,8 +187,8 @@ VariationsService::VariationsService(PrefService* local_state)
 VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier,
                                      PrefService* local_state)
     : local_state_(local_state),
+      policy_pref_service_(local_state),
       seed_store_(local_state),
-      variations_server_url_(GetVariationsServerURL(NULL)),
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
       resource_request_allowed_notifier_(notifier) {
@@ -242,6 +245,9 @@ bool VariationsService::CreateTrialsFromSeed() {
 void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  // Initialize the Variations server URL.
+  variations_server_url_ = GetVariationsServerURL(policy_pref_service_);
+
   // Check that |CreateTrialsFromSeed| was called, which is necessary to
   // retrieve the serial number that will be sent to the server.
   DCHECK(create_trials_from_seed_called_);
@@ -258,14 +264,16 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 }
 
 // static
-GURL VariationsService::GetVariationsServerURL(PrefService* local_state) {
+GURL VariationsService::GetVariationsServerURL(
+    PrefService* policy_pref_service) {
   std::string server_url_string(CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kVariationsServerURL));
   if (server_url_string.empty())
     server_url_string = kDefaultVariationsServerURL;
   GURL server_url = GURL(server_url_string);
 
-  const std::string restrict_param = GetRestrictParameterPref(local_state);
+  const std::string restrict_param =
+      GetRestrictParameterPref(policy_pref_service);
   if (!restrict_param.empty()) {
     server_url = net::AppendOrReplaceQueryParameter(server_url,
                                                     "restrict",
@@ -298,8 +306,21 @@ std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
 void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   VariationsSeedStore::RegisterPrefs(registry);
   registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
+  // This preference will only be written by the policy service, which will fill
+  // it according to a value stored in the User Policy.
   registry->RegisterStringPref(prefs::kVariationsRestrictParameter,
                                std::string());
+}
+
+// static
+void VariationsService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // This preference will only be written by the policy service, which will fill
+  // it according to a value stored in the User Policy.
+  registry->RegisterStringPref(
+      prefs::kVariationsRestrictParameter,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -1500,8 +1500,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_ANDROID)
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
-  if (variations_service)
+  if (variations_service) {
+    variations_service->set_policy_pref_service(profile_->GetPrefs());
     variations_service->StartRepeatedVariationsSeedFetch();
+  }
 #else
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
