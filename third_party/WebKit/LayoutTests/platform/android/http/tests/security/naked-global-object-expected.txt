@@ -1,4 +1,4 @@
-PASS undefined is undefined.
+FAIL 42 should be undefined. Was 42
 PASS successfullyParsed is true
 
 TEST COMPLETE
