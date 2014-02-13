@@ -213,7 +213,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
     anchor = dialog->GetWidget()->GetNativeWindow();
     client = aura::client::GetDispatcherClient(anchor->GetRootWindow());
   }
-  client->RunWithDispatcher(dialog.get(), anchor, true);
+  client->RunWithDispatcher(dialog.get(), anchor);
   return dialog->result();
 }
 

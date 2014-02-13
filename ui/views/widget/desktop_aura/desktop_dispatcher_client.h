@@ -19,8 +19,7 @@ class VIEWS_EXPORT DesktopDispatcherClient
   virtual ~DesktopDispatcherClient();
 
   virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
-                                 aura::Window* associated_window,
-                                 bool nestable_tasks_allowed) OVERRIDE;
+                                 aura::Window* associated_window) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopDispatcherClient);

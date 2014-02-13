@@ -18,11 +18,9 @@ NestedDispatcherController::~NestedDispatcherController() {
 
 void NestedDispatcherController::RunWithDispatcher(
     base::MessagePumpDispatcher* nested_dispatcher,
-    aura::Window* associated_window,
-    bool nestable_tasks_allowed) {
+    aura::Window* associated_window) {
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  bool did_allow_task_nesting = loop->NestableTasksAllowed();
-  loop->SetNestableTasksAllowed(nestable_tasks_allowed);
+  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
   AcceleratorDispatcher dispatcher(nested_dispatcher, associated_window);
 
@@ -30,7 +28,6 @@ void NestedDispatcherController::RunWithDispatcher(
   //              use run_loop.QuitClosure().
   base::RunLoop run_loop(&dispatcher);
   run_loop.Run();
-  loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 
 }  // namespace ash

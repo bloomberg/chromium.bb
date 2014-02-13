@@ -17,8 +17,7 @@ namespace client {
 class AURA_EXPORT DispatcherClient {
  public:
   virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
-                                 aura::Window* associated_window,
-                                 bool nestable_tasks_allowed) = 0;
+                                 aura::Window* associated_window) = 0;
 };
 
 AURA_EXPORT void SetDispatcherClient(Window* root_window,

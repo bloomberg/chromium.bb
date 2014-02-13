@@ -23,8 +23,7 @@ class ASH_EXPORT NestedDispatcherController
   virtual ~NestedDispatcherController();
 
   virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
-                                 aura::Window* associated_window,
-                                 bool nestable_tasks_allowed) OVERRIDE;
+                                 aura::Window* associated_window) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NestedDispatcherController);

@@ -109,8 +109,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
-      associated_window.get(),
-      true /* nestable_tasks_allowed */);
+      associated_window.get());
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
   Shell::GetInstance()->session_state_delegate()->UnlockScreen();
 }
@@ -130,8 +129,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
-      associated_window.get(),
-      true /* nestable_tasks_allowed */);
+      associated_window.get());
   EXPECT_EQ(1, inner_dispatcher.num_key_events_dispatched());
 }
 
@@ -149,8 +147,7 @@ TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
   DispatchKeyReleaseA();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
-      root_window,
-      true /* nestable_tasks_allowed */);
+      root_window);
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

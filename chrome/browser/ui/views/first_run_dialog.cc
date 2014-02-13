@@ -65,7 +65,7 @@ bool FirstRunDialog::Show(Profile* profile) {
     aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
     aura::client::DispatcherClient* client =
         aura::client::GetDispatcherClient(anchor->GetRootWindow());
-    client->RunWithDispatcher(dialog, anchor, true);
+    client->RunWithDispatcher(dialog, anchor);
     dialog_shown = true;
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
