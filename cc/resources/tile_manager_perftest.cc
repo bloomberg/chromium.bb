@@ -52,9 +52,10 @@ class TileManagerPerfTest : public testing::Test {
   GlobalStateThatImpactsTilePriority GlobalStateForTest() {
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
-    state.memory_limit_in_bytes =
+    state.soft_memory_limit_in_bytes =
         10000u * 4u *
         static_cast<size_t>(tile_size.width() * tile_size.height());
+    state.hard_memory_limit_in_bytes = state.soft_memory_limit_in_bytes;
     state.num_resources_limit = 10000;
     state.memory_limit_policy = ALLOW_ANYTHING;
     state.tree_priority = SMOOTHNESS_TAKES_PRIORITY;

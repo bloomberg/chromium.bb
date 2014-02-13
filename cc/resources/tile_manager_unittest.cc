@@ -21,7 +21,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   TileManagerTest()
       : memory_limit_policy_(ALLOW_ANYTHING),
-        max_memory_tiles_(0),
+        max_tiles_(0),
         ready_to_activate_(false) {}
 
   void Initialize(int max_tiles,
@@ -37,39 +37,31 @@ class TileManagerTest : public testing::TestWithParam<bool>,
         this, resource_provider_.get(), allow_on_demand_raster));
 
     memory_limit_policy_ = memory_limit_policy;
-    max_memory_tiles_ = max_tiles;
-    GlobalStateThatImpactsTilePriority state;
-    gfx::Size tile_size = settings_.default_tile_size;
-
-    // The parametrization specifies whether the max tile limit should
-    // be applied to RAM or to tile limit.
-    if (GetParam()) {
-      state.memory_limit_in_bytes =
-          max_tiles * 4 * tile_size.width() * tile_size.height();
-      state.num_resources_limit = 100;
-    } else {
-      state.memory_limit_in_bytes = 100 * 1000 * 1000;
-      state.num_resources_limit = max_tiles;
-    }
-    state.unused_memory_limit_in_bytes = state.memory_limit_in_bytes;
-    state.memory_limit_policy = memory_limit_policy;
-    state.tree_priority = tree_priority;
-
-    global_state_ = state;
-    tile_manager_->SetGlobalStateForTesting(state);
+    max_tiles_ = max_tiles;
     picture_pile_ = FakePicturePileImpl::CreatePile();
+
+    SetTreePriority(tree_priority);
   }
 
   void SetTreePriority(TreePriority tree_priority) {
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
-    state.memory_limit_in_bytes =
-        max_memory_tiles_ * 4 * tile_size.width() * tile_size.height();
-    state.unused_memory_limit_in_bytes = state.memory_limit_in_bytes;
+
+    if (UsingMemoryLimit()) {
+      state.soft_memory_limit_in_bytes =
+          max_tiles_ * 4 * tile_size.width() * tile_size.height();
+      state.num_resources_limit = 100;
+    } else {
+      state.soft_memory_limit_in_bytes = 100 * 1000 * 1000;
+      state.num_resources_limit = max_tiles_;
+    }
+    state.hard_memory_limit_in_bytes = state.soft_memory_limit_in_bytes * 2;
+    state.unused_memory_limit_in_bytes = state.soft_memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy_;
-    state.num_resources_limit = 100;
     state.tree_priority = tree_priority;
+
     global_state_ = state;
+    tile_manager_->SetGlobalStateForTesting(state);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -134,6 +126,11 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   bool ready_to_activate() const { return ready_to_activate_; }
 
+  // The parametrization specifies whether the max tile limit should
+  // be applied to memory or resources.
+  bool UsingResourceLimit() { return !GetParam(); }
+  bool UsingMemoryLimit() { return GetParam(); }
+
  protected:
   GlobalStateThatImpactsTilePriority global_state_;
 
@@ -145,7 +142,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   TileMemoryLimitPolicy memory_limit_policy_;
-  int max_memory_tiles_;
+  int max_tiles_;
   bool ready_to_activate_;
 };
 
@@ -236,14 +233,14 @@ TEST_P(TileManagerTest, PartialOOMMemoryToPending) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree that are
   // required for activation, but only enough memory for 8 tiles. The result
   // is all pending tree tiles get memory, and 3 of the active tree tiles
-  // get memory.
+  // get memory. None of these tiles is needed to avoid calimity (flickering or
+  // raster-on-demand) so the soft memory limit is used.
 
   Initialize(8, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForEventualBin(), TilePriority());
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
-
   tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
@@ -260,6 +257,8 @@ TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
   // but only enough memory for 8 tiles. The result is all active tree tiles
   // get memory, and 3 of the pending tree tiles get memory.
+  // The pending tiles are not needed to avoid calimity (flickering or
+  // raster-on-demand) and the active tiles fit, so the soft limit is used.
 
   Initialize(8, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
@@ -274,16 +273,16 @@ TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
 }
 
 TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
-  // 5 tiles on active tree eventually bin, 5 tiles on pending tree that are
-  // required for activation, but only enough memory for 4 tiles. The result
+  // 10 tiles on active tree eventually bin, 10 tiles on pending tree that are
+  // required for activation, but only enough tiles for 4 tiles. The result
   // is 4 pending tree tiles get memory, and none of the active tree tiles
   // get memory.
 
   Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForEventualBin(), TilePriority());
+      CreateTiles(10, TilePriorityForEventualBin(), TilePriority());
   TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
+      CreateTiles(10, TilePriority(), TilePriorityRequiredForActivation());
 
   tile_manager()->AssignMemoryToTiles(global_state_);
 
@@ -293,21 +292,28 @@ TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
   SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   tile_manager()->AssignMemoryToTiles(global_state_);
 
-  EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
-  EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
+  if (UsingResourceLimit()) {
+    EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
+  } else {
+    // Pending tiles are now required to avoid calimity (flickering or
+    // raster-on-demand). Hard-limit is used and double the tiles fit.
+    EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(8, AssignedMemoryCount(pending_tree_tiles));
+  }
 }
 
 TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
-  // 5 tiles on active tree soon bin, 5 tiles on pending tree that are
-  // required for activation, but only enough memory for 4 tiles. The result
+  // 10 tiles on active tree soon bin, 10 tiles on pending tree that are
+  // required for activation, but only enough tiles for 4 tiles. The result
   // is 4 pending tree tiles get memory, and none of the active tree tiles
   // get memory.
 
   Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForSoonBin(), TilePriority());
+      CreateTiles(10, TilePriorityForSoonBin(), TilePriority());
   TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
+      CreateTiles(10, TilePriority(), TilePriorityRequiredForActivation());
 
   tile_manager()->AssignMemoryToTiles(global_state_);
 
@@ -317,25 +323,78 @@ TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   tile_manager()->AssignMemoryToTiles(global_state_);
 
-  EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
-  EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
+  if (UsingResourceLimit()) {
+    EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
+  } else {
+    // Pending tiles are now required to avoid calimity (flickering or
+    // raster-on-demand). Hard-limit is used and double the tiles fit.
+    EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(8, AssignedMemoryCount(pending_tree_tiles));
+  }
 }
 
 TEST_P(TileManagerTest, TotalOOMMemoryToActive) {
-  // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
-  // but only enough memory for 4 tiles. The result is 5 active tree tiles
+  // 10 tiles on active tree eventually bin, 10 tiles on pending tree now bin,
+  // but only enough memory for 4 tiles. The result is 4 active tree tiles
   // get memory, and none of the pending tree tiles get memory.
 
   Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
+      CreateTiles(10, TilePriorityForNowBin(), TilePriority());
   TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+      CreateTiles(10, TilePriority(), TilePriorityForNowBin());
 
   tile_manager()->AssignMemoryToTiles(global_state_);
 
-  EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
+  if (UsingResourceLimit()) {
+    EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
+  } else {
+    // Active tiles are required to avoid calimity (flickering or
+    // raster-on-demand). Hard-limit is used and double the tiles fit.
+    EXPECT_EQ(8, AssignedMemoryCount(active_tree_tiles));
+    EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
+  }
+}
+
+TEST_P(TileManagerTest, TotalOOMMemoryToNewContent) {
+  // 10 tiles on active tree now bin, 10 tiles on pending tree now bin,
+  // but only enough memory for 8 tiles. Any tile missing would cause
+  // a calamity (flickering or raster-on-demand). Depending on mode,
+  // we should use varying amounts of the higher hard memory limit.
+  if (UsingResourceLimit())
+    return;
+
+  Initialize(8, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(10, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(10, TilePriority(), TilePriorityForNowBin());
+
+  // Active tiles are required to avoid calimity. The hard-limit is used and all
+  // active-tiles fit. No pending tiles are needed to avoid calamity so only 10
+  // tiles total are used.
+  tile_manager()->AssignMemoryToTiles(global_state_);
+  EXPECT_EQ(10, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
+
+  // Even the hard-limit won't save us now. All tiles are required to avoid
+  // a clamity but we only have 16. The tiles will be distribted randomly
+  // given they are identical, in practice depending on their screen location.
+  SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
+  tile_manager()->AssignMemoryToTiles(global_state_);
+  EXPECT_EQ(16,
+            AssignedMemoryCount(active_tree_tiles) +
+                AssignedMemoryCount(pending_tree_tiles));
+
+  // The pending tree is now more important. Active tiles will take higher
+  // priority if they are ready-to-draw in practice. Importantly though,
+  // pending tiles also utilize the hard-limit.
+  SetTreePriority(NEW_CONTENT_TAKES_PRIORITY);
+  tile_manager()->AssignMemoryToTiles(global_state_);
+  EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
+  EXPECT_EQ(10, AssignedMemoryCount(pending_tree_tiles));
 }
 
 TEST_P(TileManagerTest, RasterAsLCD) {
@@ -483,9 +542,14 @@ TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
 }
 
 TEST_P(TileManagerTest, RespectMemoryLimit) {
+  if (UsingResourceLimit())
+    return;
+
   Initialize(5, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+
+  // We use double the tiles since the hard-limit is double.
   TileVector large_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
+      CreateTiles(10, TilePriorityForNowBin(), TilePriority());
 
   size_t memory_required_bytes;
   size_t memory_nice_to_have_bytes;
@@ -498,7 +562,7 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
                                  &memory_allocated_bytes,
                                  &memory_used_bytes);
   // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
+  EXPECT_LE(memory_allocated_bytes, global_state_.hard_memory_limit_in_bytes);
 
   // Finish raster of large tiles.
   tile_manager()->UpdateVisibleTiles();
@@ -508,10 +572,10 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
   large_tiles.clear();
 
   // Create a new set of tiles using a different size. These tiles
-  // can use the memory currently assigned to the lerge tiles but
+  // can use the memory currently assigned to the large tiles but
   // they can't use the same resources as the size doesn't match.
   TileVector small_tiles = CreateTilesWithSize(
-      5, TilePriorityForNowBin(), TilePriority(), gfx::Size(128, 128));
+      10, TilePriorityForNowBin(), TilePriority(), gfx::Size(128, 128));
 
   tile_manager()->AssignMemoryToTiles(global_state_);
   tile_manager()->GetMemoryStats(&memory_required_bytes,
@@ -519,7 +583,7 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
                                  &memory_allocated_bytes,
                                  &memory_used_bytes);
   // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
+  EXPECT_LE(memory_allocated_bytes, global_state_.hard_memory_limit_in_bytes);
 }
 
 TEST_P(TileManagerTest, AllowRasterizeOnDemand) {

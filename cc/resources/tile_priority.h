@@ -138,25 +138,28 @@ class GlobalStateThatImpactsTilePriority {
  public:
   GlobalStateThatImpactsTilePriority()
       : memory_limit_policy(ALLOW_NOTHING),
-        memory_limit_in_bytes(0),
+        soft_memory_limit_in_bytes(0),
+        hard_memory_limit_in_bytes(0),
         unused_memory_limit_in_bytes(0),
         num_resources_limit(0),
         tree_priority(SAME_PRIORITY_FOR_BOTH_TREES) {}
 
   TileMemoryLimitPolicy memory_limit_policy;
 
-  size_t memory_limit_in_bytes;
+  size_t soft_memory_limit_in_bytes;
+  size_t hard_memory_limit_in_bytes;
   size_t unused_memory_limit_in_bytes;
   size_t num_resources_limit;
 
   TreePriority tree_priority;
 
   bool operator==(const GlobalStateThatImpactsTilePriority& other) const {
-    return memory_limit_policy == other.memory_limit_policy
-        && memory_limit_in_bytes == other.memory_limit_in_bytes
-        && unused_memory_limit_in_bytes == other.unused_memory_limit_in_bytes
-        && num_resources_limit == other.num_resources_limit
-        && tree_priority == other.tree_priority;
+    return memory_limit_policy == other.memory_limit_policy &&
+           soft_memory_limit_in_bytes == other.soft_memory_limit_in_bytes &&
+           hard_memory_limit_in_bytes == other.hard_memory_limit_in_bytes &&
+           unused_memory_limit_in_bytes == other.unused_memory_limit_in_bytes &&
+           num_resources_limit == other.num_resources_limit &&
+           tree_priority == other.tree_priority;
   }
   bool operator!=(const GlobalStateThatImpactsTilePriority& other) const {
     return !(*this == other);

@@ -461,8 +461,10 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   if (state != global_state_) {
     global_state_ = state;
     prioritized_tiles_dirty_ = true;
+    // Soft limit is used for resource pool such that
+    // memory returns to soft limit after going over.
     resource_pool_->SetResourceUsageLimits(
-        global_state_.memory_limit_in_bytes,
+        global_state_.soft_memory_limit_in_bytes,
         global_state_.unused_memory_limit_in_bytes,
         global_state_.num_resources_limit);
   }
@@ -598,21 +600,30 @@ void TileManager::AssignGpuMemoryToTiles(
   all_tiles_required_for_activation_have_memory_ = true;
 
   // Cast to prevent overflow.
-  int64 bytes_available =
+  int64 soft_bytes_available =
       static_cast<int64>(bytes_releasable_) +
-      static_cast<int64>(global_state_.memory_limit_in_bytes) -
+      static_cast<int64>(global_state_.soft_memory_limit_in_bytes) -
+      static_cast<int64>(resource_pool_->acquired_memory_usage_bytes());
+  int64 hard_bytes_available =
+      static_cast<int64>(bytes_releasable_) +
+      static_cast<int64>(global_state_.hard_memory_limit_in_bytes) -
       static_cast<int64>(resource_pool_->acquired_memory_usage_bytes());
   int resources_available = resources_releasable_ +
                             global_state_.num_resources_limit -
                             resource_pool_->acquired_resource_count();
-
-  size_t bytes_allocatable = std::max(static_cast<int64>(0), bytes_available);
+  size_t soft_bytes_allocatable =
+      std::max(static_cast<int64>(0), soft_bytes_available);
+  size_t hard_bytes_allocatable =
+      std::max(static_cast<int64>(0), hard_bytes_available);
   size_t resources_allocatable = std::max(0, resources_available);
 
   size_t bytes_that_exceeded_memory_budget = 0;
-  size_t bytes_left = bytes_allocatable;
+  size_t soft_bytes_left = soft_bytes_allocatable;
+  size_t hard_bytes_left = hard_bytes_allocatable;
+
   size_t resources_left = resources_allocatable;
-  bool oomed = false;
+  bool oomed_soft = false;
+  bool oomed_hard = false;
 
   // Memory we assign to raster tasks now will be deducted from our memory
   // in future iterations if priorities change. By assigning at most half
@@ -644,8 +655,11 @@ void TileManager::AssignGpuMemoryToTiles(
       continue;
     }
 
-    size_t bytes_if_allocated = BytesConsumedIfAllocated(tile);
-    size_t raster_bytes_if_rastered = raster_bytes + bytes_if_allocated;
+    const bool tile_uses_hard_limit = mts.bin <= NOW_BIN;
+    const size_t bytes_if_allocated = BytesConsumedIfAllocated(tile);
+    const size_t raster_bytes_if_rastered = raster_bytes + bytes_if_allocated;
+    const size_t tile_bytes_left =
+        (tile_uses_hard_limit) ? hard_bytes_left : soft_bytes_left;
 
     size_t tile_bytes = 0;
     size_t tile_resources = 0;
@@ -671,7 +685,7 @@ void TileManager::AssignGpuMemoryToTiles(
     }
 
     // Tile is OOM.
-    if (tile_bytes > bytes_left || tile_resources > resources_left) {
+    if (tile_bytes > tile_bytes_left || tile_resources > resources_left) {
       FreeResourcesForTile(tile);
 
       // This tile was already on screen and now its resources have been
@@ -680,12 +694,16 @@ void TileManager::AssignGpuMemoryToTiles(
       if (mts.visible_and_ready_to_draw && use_rasterize_on_demand_)
         tile_version.set_rasterize_on_demand();
 
-      oomed = true;
-      bytes_that_exceeded_memory_budget += tile_bytes;
+      oomed_soft = true;
+      if (tile_uses_hard_limit) {
+        oomed_hard = true;
+        bytes_that_exceeded_memory_budget += tile_bytes;
+      }
     } else {
-      bytes_left -= tile_bytes;
       resources_left -= tile_resources;
-
+      hard_bytes_left -= tile_bytes;
+      soft_bytes_left =
+          (soft_bytes_left > tile_bytes) ? soft_bytes_left - tile_bytes : 0;
       if (tile_version.resource_)
         continue;
     }
@@ -700,7 +718,7 @@ void TileManager::AssignGpuMemoryToTiles(
     // 1. Tile size should not impact raster priority.
     // 2. Tiles with existing raster task could otherwise incorrectly
     //    be added as they are not affected by |bytes_allocatable|.
-    if (oomed || raster_bytes_if_rastered > max_raster_bytes) {
+    if (oomed_soft || raster_bytes_if_rastered > max_raster_bytes) {
       all_tiles_that_need_to_be_rasterized_have_memory_ = false;
       if (tile->required_for_activation())
         all_tiles_required_for_activation_have_memory_ = false;
@@ -712,22 +730,23 @@ void TileManager::AssignGpuMemoryToTiles(
     tiles_that_need_to_be_rasterized->push_back(tile);
   }
 
-  ever_exceeded_memory_budget_ |= bytes_that_exceeded_memory_budget > 0;
+  // OOM reporting uses hard-limit, soft-OOM is normal depending on limit.
+  ever_exceeded_memory_budget_ |= oomed_hard;
   if (ever_exceeded_memory_budget_) {
     TRACE_COUNTER_ID2("cc",
                       "over_memory_budget",
                       this,
                       "budget",
-                      global_state_.memory_limit_in_bytes,
+                      global_state_.hard_memory_limit_in_bytes,
                       "over",
                       bytes_that_exceeded_memory_budget);
   }
   memory_stats_from_last_assign_.total_budget_in_bytes =
-      global_state_.memory_limit_in_bytes;
+      global_state_.hard_memory_limit_in_bytes;
   memory_stats_from_last_assign_.bytes_allocated =
-      bytes_allocatable - bytes_left;
+      hard_bytes_allocatable - hard_bytes_left;
   memory_stats_from_last_assign_.bytes_unreleasable =
-      bytes_allocatable - bytes_releasable_;
+      hard_bytes_allocatable - bytes_releasable_;
   memory_stats_from_last_assign_.bytes_over = bytes_that_exceeded_memory_budget;
 }
 

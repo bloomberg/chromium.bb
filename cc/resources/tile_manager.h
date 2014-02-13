@@ -106,11 +106,13 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   void SetGlobalStateForTesting(
       const GlobalStateThatImpactsTilePriority& state) {
+    // Soft limit is used for resource pool such that
+    // memory returns to soft limit after going over.
     if (state != global_state_) {
       global_state_ = state;
       prioritized_tiles_dirty_ = true;
       resource_pool_->SetResourceUsageLimits(
-          global_state_.memory_limit_in_bytes,
+          global_state_.soft_memory_limit_in_bytes,
           global_state_.unused_memory_limit_in_bytes,
           global_state_.num_resources_limit);
     }

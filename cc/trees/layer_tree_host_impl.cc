@@ -1171,12 +1171,21 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 
   // TODO(reveman): We should avoid keeping around unused resources if
   // possible. crbug.com/224475
-  global_tile_state_.memory_limit_in_bytes =
-      visible_ ?
-      policy.bytes_limit_when_visible : 0;
+  global_tile_state_.hard_memory_limit_in_bytes = 0;
+  global_tile_state_.soft_memory_limit_in_bytes = 0;
+  if (visible_ && policy.bytes_limit_when_visible > 0) {
+    global_tile_state_.hard_memory_limit_in_bytes =
+        policy.bytes_limit_when_visible;
+    global_tile_state_.soft_memory_limit_in_bytes =
+        global_tile_state_.hard_memory_limit_in_bytes *
+        settings_.max_memory_for_prepaint_percentage / 100;
+  }
+  // Unused limit is calculated from soft-limit, as hard-limit may
+  // be very high and shouldn't typically be exceeded.
   global_tile_state_.unused_memory_limit_in_bytes = static_cast<size_t>(
-      (static_cast<int64>(global_tile_state_.memory_limit_in_bytes) *
-       settings_.max_unused_resource_memory_percentage) / 100);
+      (static_cast<int64>(global_tile_state_.soft_memory_limit_in_bytes) *
+       settings_.max_unused_resource_memory_percentage) /
+      100);
   global_tile_state_.memory_limit_policy =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
           visible_ ?
