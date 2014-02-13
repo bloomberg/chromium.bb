@@ -21,7 +21,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/event_factory_ozone.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 
@@ -56,23 +56,15 @@ TouchEventConverterEvdev::~TouchEventConverterEvdev() {
 }
 
 void TouchEventConverterEvdev::Init() {
-  if (x_max_ && y_max_ && gfx::SurfaceFactoryOzone::GetInstance()) {
-    const char* display =
-        gfx::SurfaceFactoryOzone::GetInstance()->DefaultDisplaySpec();
-    int screen_width, screen_height;
-    int sc = sscanf(display, "%dx%d", &screen_width, &screen_height);
-    if (sc == 2) {
-      x_scale_ = (double)screen_width / (x_max_ - x_min_);
-      y_scale_ = (double)screen_height / (y_max_ - y_min_);
-      x_max_ = screen_width - 1;
-      y_max_ = screen_height - 1;
-      VLOG(1) << "touch input x_scale=" << x_scale_
-              << " y_scale=" << y_scale_;
-    } else {
-      LOG(WARNING) << "malformed display spec from "
-                   << "SurfaceFactoryOzone::DefaultDisplaySpec";
-    }
-  }
+  gfx::Screen *screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  if (!screen)
+    return;  // No scaling.
+  gfx::Display display = screen->GetPrimaryDisplay();
+  gfx::Size size = display.GetSizeInPixel();
+
+  x_scale_ = (double)size.width() / (x_max_ - x_min_);
+  y_scale_ = (double)size.height() / (y_max_ - y_min_);
+  VLOG(1) << "touch scaling x_scale=" << x_scale_ << " y_scale=" << y_scale_;
 }
 
 void TouchEventConverterEvdev::Start() {

@@ -67,10 +67,6 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // Returns the instance
   static SurfaceFactoryOzone* GetInstance();
 
-  // Returns a display spec as in |CreateDisplayFromSpec| for the default
-  // native surface.
-  virtual const char* DefaultDisplaySpec();
-
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(SurfaceFactoryOzone* impl);
 

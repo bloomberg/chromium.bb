@@ -29,13 +29,6 @@ void SurfaceFactoryOzone::SetInstance(SurfaceFactoryOzone* impl) {
   impl_ = impl;
 }
 
-const char* SurfaceFactoryOzone::DefaultDisplaySpec() {
-  char* envvar = getenv("ASH_DISPLAY_SPEC");
-  if (envvar)
-    return envvar;
-  return  "720x1280*2";
-}
-
 gfx::Screen* SurfaceFactoryOzone::CreateDesktopScreen() {
   return NULL;
 }
