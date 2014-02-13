@@ -95,7 +95,11 @@ class BluetoothGattCharacteristic {
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Callback<const std::string&> ErrorCallback;
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
+
+  // The ValueCallback is used to return the value of a remote characteristic
+  // upon a read request.
+  typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
 
   // Adds and removes observers for events on this GATT characteristic. If
   // monitoring multiple characteristics, check the |characteristic| parameter
@@ -159,6 +163,13 @@ class BluetoothGattCharacteristic {
   // This method only makes sense for local characteristics and does nothing and
   // returns false if this instance represents a remote characteristic.
   virtual bool UpdateValue(const std::vector<uint8>& value) = 0;
+
+  // Sends a read request to a remote characteristic to read its value.
+  // |callback| is called to return the read value on success and
+  // |error_callback| is called for failures.
+  virtual void ReadRemoteCharacteristic(
+      const ValueCallback& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Sends a write request to a remote characteristic, to modify the
   // characteristic's value starting at offset |offset| with the new value

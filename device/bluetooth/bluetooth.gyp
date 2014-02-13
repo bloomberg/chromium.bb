@@ -41,6 +41,8 @@
         'bluetooth_device_win.h',
         'bluetooth_gatt_characteristic.cc',
         'bluetooth_gatt_characteristic.h',
+        'bluetooth_gatt_descriptor.cc',
+        'bluetooth_gatt_descriptor.h',
         'bluetooth_gatt_service.cc',
         'bluetooth_gatt_service.h',
         'bluetooth_init_win.cc',

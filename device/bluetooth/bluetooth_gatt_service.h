@@ -147,7 +147,7 @@ class BluetoothGattService {
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Callback<const std::string&> ErrorCallback;
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   // Constructs a BluetoothGattService that can be locally hosted when the local
   // adapter is in the peripheral role. The resulting object can then be made
