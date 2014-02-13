@@ -206,11 +206,6 @@ WebDocumentType WebDocument::doctype() const
     return WebDocumentType(constUnwrap<Document>()->doctype());
 }
 
-void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel)
-{
-    insertStyleSheet(sourceCode);
-}
-
 void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
     RefPtr<Document> document = unwrap<Document>();
