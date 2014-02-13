@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 

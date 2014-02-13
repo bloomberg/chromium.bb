@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/wifi/wifi_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "net/base/network_change_notifier.h"

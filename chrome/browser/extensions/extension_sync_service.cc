@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/extensions/sync_helper.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -244,7 +243,6 @@ extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
       extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
       extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()),
       extensions::GetLaunchTypePrefValue(extension_prefs_, extension.id()));
-
 }
 
 std::vector<extensions::ExtensionSyncData>

@@ -13,7 +13,6 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"

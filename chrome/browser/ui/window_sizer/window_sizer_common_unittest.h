@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "content/public/test/test_browser_thread.h"
 #include "ui/gfx/rect.h"
 
 // Some standard primary monitor sizes (no task bar).

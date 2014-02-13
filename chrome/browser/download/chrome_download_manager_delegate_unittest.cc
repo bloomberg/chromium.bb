@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,8 +121,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
           const DownloadTargetDeterminerDelegate::FileSelectedCallback&));
 };
 
-class ChromeDownloadManagerDelegateTest :
-      public ChromeRenderViewHostTestHarness {
+class ChromeDownloadManagerDelegateTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   ChromeDownloadManagerDelegateTest();
 

@@ -11,7 +11,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/compositor/test/context_factories_for_test.h"

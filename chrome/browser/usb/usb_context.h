@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/browser/browser_thread.h"
 
 struct libusb_context;
 

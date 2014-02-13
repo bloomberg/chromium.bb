@@ -7,6 +7,7 @@
 #include <string>
 
 #include "apps/pref_names.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 

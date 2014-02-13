@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/interrupt.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 

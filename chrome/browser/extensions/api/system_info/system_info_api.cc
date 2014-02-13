@@ -20,6 +20,7 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/system_display.h"
 #include "chrome/common/extensions/api/system_storage.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/display_observer.h"
 
 #if defined(OS_CHROMEOS)

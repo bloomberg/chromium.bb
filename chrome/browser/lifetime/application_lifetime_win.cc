@@ -12,7 +12,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)

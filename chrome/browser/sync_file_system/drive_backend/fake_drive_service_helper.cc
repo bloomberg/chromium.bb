@@ -11,7 +11,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-#include "content/public/test/test_browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

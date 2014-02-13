@@ -20,7 +20,6 @@
 #include "base/win/scoped_propvariant.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace media_transfer_protocol {
 

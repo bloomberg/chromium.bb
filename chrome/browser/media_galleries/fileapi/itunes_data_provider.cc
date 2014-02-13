@@ -20,7 +20,6 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/itunes_library.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 

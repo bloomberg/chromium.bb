@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
-#include "content/public/browser/browser_thread.h"
 #include "policy/proto/device_management_local.pb.h"
 
 namespace em = enterprise_management;

@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -100,7 +99,7 @@ void EphemeralAppLauncher::Start() {
       extension_enable_flow_->StartForNativeWindow(parent_window_);
 
     // Keep this object alive until the enable flow is complete.
-    AddRef(); // Balanced in WebstoreStandaloneInstaller::CompleteInstall.
+    AddRef();  // Balanced in WebstoreStandaloneInstaller::CompleteInstall.
     return;
   }
 

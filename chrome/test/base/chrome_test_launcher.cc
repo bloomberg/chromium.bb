@@ -20,7 +20,6 @@
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/public/app/content_main.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/test/ui_controls.h"
 

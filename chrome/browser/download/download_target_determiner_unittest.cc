@@ -29,7 +29,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/common/extension.h"
@@ -1556,7 +1555,6 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedNoPrompt) {
     EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _));
     RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
   }
-
 }
 
 // Test that a forced download doesn't prompt, even if the interrupt reason
@@ -2006,8 +2004,8 @@ class ScopedRegisterInternalPlugin {
 // needs to disable plugin discovery and we need to use a
 // ShadowingAtExitManager to discard the tainted PluginService. Unfortunately,
 // PluginService carries global state.
-class DownloadTargetDeterminerTestWithPlugin :
-  public DownloadTargetDeterminerTest {
+class DownloadTargetDeterminerTestWithPlugin
+    : public DownloadTargetDeterminerTest {
  public:
   DownloadTargetDeterminerTestWithPlugin()
       : old_plugin_service_filter_(NULL) {}
@@ -2185,6 +2183,6 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       GetPathInDownloadDir(kInitialPath), item.get());
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
-#endif // ENABLE_PLUGINS
+#endif  // defined(ENABLE_PLUGINS)
 
 }  // namespace

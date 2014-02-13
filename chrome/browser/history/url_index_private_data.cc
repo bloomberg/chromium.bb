@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

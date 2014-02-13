@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"

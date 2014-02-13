@@ -10,8 +10,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,8 +31,8 @@ namespace chromeos {
 
 class PeripheralBatteryObserverTest : public InProcessBrowserTest {
  public:
-  PeripheralBatteryObserverTest () {}
-  virtual ~PeripheralBatteryObserverTest () {}
+  PeripheralBatteryObserverTest() {}
+  virtual ~PeripheralBatteryObserverTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     FakeDBusThreadManager* fake_dbus_thread_manager =

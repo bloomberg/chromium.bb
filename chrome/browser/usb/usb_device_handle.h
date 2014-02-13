@@ -13,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/usb/usb_interface.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 

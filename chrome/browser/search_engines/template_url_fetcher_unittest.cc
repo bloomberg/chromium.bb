@@ -15,7 +15,6 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

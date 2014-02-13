@@ -13,7 +13,6 @@
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/extensions/api/tabs.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

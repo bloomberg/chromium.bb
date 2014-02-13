@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -92,7 +91,6 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
     if (entry->GetString(extensions::ExternalProviderImpl::kExternalCrx,
                          &external_crx) &&
         external_crx == path.value()) {
-
       std::string id = it.key();
       LOG(ERROR) << "ExternalCache extension at " << path.value()
                  << " failed to install, deleting it.";

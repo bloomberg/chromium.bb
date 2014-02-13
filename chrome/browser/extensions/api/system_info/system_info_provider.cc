@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 
+#include "base/bind.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace extensions {
 
 SystemInfoProvider::SystemInfoProvider()

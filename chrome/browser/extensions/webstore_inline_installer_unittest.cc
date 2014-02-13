@@ -6,9 +6,7 @@
 
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -106,7 +104,7 @@ bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
   return installer->TestCheckRequestorPermitted(webstore_data);
 }
 
-} // namespace
+}  // namespace
 
 TEST_F(WebstoreInlineInstallerTest, DomainVerification) {
   // Exact domain match.

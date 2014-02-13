@@ -17,7 +17,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/root_window.h"
 #include "ui/message_center/message_center_switches.h"
@@ -94,6 +93,7 @@ class ScreenshotTakerTest : public AshTestBase,
   base::FilePath screenshot_path_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTakerTest);
 };
 

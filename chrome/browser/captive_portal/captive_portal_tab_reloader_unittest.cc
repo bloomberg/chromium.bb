@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/web_contents.h"

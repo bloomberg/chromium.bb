@@ -16,7 +16,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace iphoto {
 
@@ -82,7 +81,7 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
       else
         album_paths.insert(filename);
     }
- }
+  }
 
   // Now build the directory index.
   dir_index_.clear();

@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -71,7 +70,7 @@ void AddToPerfHistogram(GetPerfDataOutcome outcome) {
                             NUM_OUTCOMES);
 }
 
-} // namespace
+}  // namespace
 
 
 namespace metrics {
@@ -192,4 +191,5 @@ void PerfProvider::ParseProtoIfValid(
 
   state_ = READY_TO_UPLOAD;
 }
-} // namespace metrics
+
+}  // namespace metrics

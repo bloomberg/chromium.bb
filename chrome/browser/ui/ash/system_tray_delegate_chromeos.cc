@@ -97,7 +97,6 @@
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"

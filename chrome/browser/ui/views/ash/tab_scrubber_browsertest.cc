@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -421,4 +420,4 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, CloseBrowser) {
   EXPECT_FALSE(TabScrubber::GetInstance()->IsActivationPending());
 }
 
-#endif // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)

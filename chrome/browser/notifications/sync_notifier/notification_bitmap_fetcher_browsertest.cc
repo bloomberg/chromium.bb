@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"

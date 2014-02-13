@@ -40,7 +40,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -252,7 +251,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual bool ShouldShowTooltip() OVERRIDE { return false; }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
 };
 
@@ -614,6 +612,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   ash::ShelfItemDelegateManager* item_delegate_manager_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
 
@@ -635,7 +634,6 @@ class LegacyShelfLayoutChromeLauncherControllerTest
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(LegacyShelfLayoutChromeLauncherControllerTest);
 };
 

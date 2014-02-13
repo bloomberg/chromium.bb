@@ -18,7 +18,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"

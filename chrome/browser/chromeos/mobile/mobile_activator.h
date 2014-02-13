@@ -17,7 +17,6 @@
 #include "base/timer/timer.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace base {
 class DictionaryValue;

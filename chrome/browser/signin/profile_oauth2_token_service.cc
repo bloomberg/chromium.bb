@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
