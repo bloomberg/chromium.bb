@@ -18,6 +18,10 @@
 #include <getopt.h>
 #endif
 
+#if !NACL_WINDOWS
+#include <signal.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -209,6 +213,7 @@ int NaClSelLdrMain(int argc, char **argv) {
   int                           fuzzing_quit_after_load = 0;
   int                           debug_mode_bypass_acl_checks = 0;
   int                           debug_mode_ignore_validator = 0;
+  int                           debug_mode_startup_signal = 0;
   int                           skip_qualification = 0;
   int                           handle_signals = 0;
   int                           enable_debug_stub = 0;
@@ -269,7 +274,7 @@ int NaClSelLdrMain(int argc, char **argv) {
 #if NACL_LINUX
                        "+D:z:"
 #endif
-                       "aB:ceE:f:Fgh:i:l:qQr:RsSvw:X:Z")) != -1) {
+                       "aB:cdeE:f:Fgh:i:l:qQr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'a':
         if (!quiet)
@@ -281,6 +286,9 @@ int NaClSelLdrMain(int argc, char **argv) {
         break;
       case 'c':
         ++debug_mode_ignore_validator;
+        break;
+      case 'd':
+        debug_mode_startup_signal = 1;
         break;
 #if NACL_LINUX
       case 'D':
@@ -419,6 +427,28 @@ int NaClSelLdrMain(int argc, char **argv) {
         PrintUsage();
         exit(-1);
     }
+  }
+
+  if (debug_mode_startup_signal) {
+#if NACL_WINDOWS
+    fprintf(stderr, "DEBUG startup signal not supported on Windows\n");
+    exit(1);
+#else
+    /*
+     * SIGCONT is ignored by default, so this doesn't actually do anything
+     * by itself.  The purpose of raising the signal is to get a debugger
+     * to stop and inspect the process before it does anything else.  When
+     * sel_ldr is started via nacl_helper_bootstrap, it needs to run as far
+     * as doing its option processing and calling NaClHandleRDebug before
+     * the debugger will understand the association between the address
+     * space and the sel_ldr binary and its dependent shared libraries.
+     * When the debugger stops for the signal, the hacker can run the
+     * "sharedlibrary" command (if the debugger is GDB) and thereafter
+     * it becomes possible to set symbolic breakpoints and so forth.
+     */
+    fprintf(stderr, "DEBUG taking startup signal (SIGCONT) now\n");
+    raise(SIGCONT);
+#endif
   }
 
   if (debug_mode_ignore_validator == 1) {
