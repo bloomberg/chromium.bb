@@ -97,7 +97,7 @@ class WallpaperManager: public content::NotificationObserver {
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnWallpaperAnimationFinished(const std::string& email) = 0;
+    virtual void OnWallpaperAnimationFinished(const std::string& user_id) = 0;
   };
 
   // This is "wallpaper either scheduled to load, or loading right now".
@@ -214,8 +214,8 @@ class WallpaperManager: public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Removes all |email| related wallpaper info and saved wallpapers.
-  void RemoveUserWallpaperInfo(const std::string& email);
+  // Removes all |user_id| related wallpaper info and saved wallpapers.
+  void RemoveUserWallpaperInfo(const std::string& user_id);
 
   // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
   // and |preferred_height| while maintaining aspect ratio.
@@ -263,14 +263,14 @@ class WallpaperManager: public content::NotificationObserver {
   // Sets last selected user on user pod row.
   void SetLastSelectedUser(const std::string& last_selected_user);
 
-  // Sets |email|'s wallpaper (asynchronously with zero delay).
-  void SetUserWallpaperNow(const std::string& email);
+  // Sets |user_id|'s wallpaper (asynchronously with zero delay).
+  void SetUserWallpaperNow(const std::string& user_id);
 
-  // Sets |email|'s wallpaper (asynchronously with default delay).
-  void SetUserWallpaperDelayed(const std::string& email);
+  // Sets |user_id|'s wallpaper (asynchronously with default delay).
+  void SetUserWallpaperDelayed(const std::string& user_id);
 
   // Sets wallpaper to |wallpaper| (asynchronously with zero delay).
-  void SetWallpaperFromImageSkia(const std::string& email,
+  void SetWallpaperFromImageSkia(const std::string& user_id,
                                  const gfx::ImageSkia& wallpaper,
                                  ash::WallpaperLayout layout);
 
@@ -290,7 +290,7 @@ class WallpaperManager: public content::NotificationObserver {
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
   // Gets encoded wallpaper from cache. Returns true if success.
-  bool GetWallpaperFromCache(const std::string& email,
+  bool GetWallpaperFromCache(const std::string& user_id,
                              gfx::ImageSkia* wallpaper);
 
   // The number of wallpapers have loaded. For test only.
@@ -308,8 +308,8 @@ class WallpaperManager: public content::NotificationObserver {
   // should be only executed once.
   void CacheUsersWallpapers();
 
-  // Caches |email|'s wallpaper to memory.
-  void CacheUserWallpaper(const std::string& email);
+  // Caches |user_id|'s wallpaper to memory.
+  void CacheUserWallpaper(const std::string& user_id);
 
   // Clears all obsolete wallpaper prefs from old version wallpaper pickers.
   void ClearObsoleteWallpaperPrefs();
@@ -320,8 +320,8 @@ class WallpaperManager: public content::NotificationObserver {
   // Deletes a list of wallpaper files in |file_list|.
   void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list);
 
-  // Deletes all |email| related custom wallpapers and directories.
-  void DeleteUserWallpapers(const std::string& email,
+  // Deletes all |user_id| related custom wallpapers and directories.
+  void DeleteUserWallpapers(const std::string& user_id,
                             const std::string& path_to_file);
 
   // Creates all new custom wallpaper directories for |user_id_hash| if not
@@ -335,45 +335,45 @@ class WallpaperManager: public content::NotificationObserver {
   // Note that before device is enrolled, it proceeds with untrusted setting.
   void InitializeRegisteredDeviceWallpaper();
 
-  // Loads |email|'s wallpaper. When |update_wallpaper| is true, sets wallpaper
-  // to the loaded wallpaper.
-  void LoadWallpaper(const std::string& email,
+  // Loads |user_id|'s wallpaper. When |update_wallpaper| is true, sets
+  // wallpaper to the loaded wallpaper.
+  void LoadWallpaper(const std::string& user_id,
                      const WallpaperInfo& info,
                      bool update_wallpaper,
                      MovableOnDestroyCallbackHolder on_finish);
 
-  // Moves custom wallpapers from |email| directory to |user_id_hash|
+  // Moves custom wallpapers from |user_id| directory to |user_id_hash|
   // directory.
-  void MoveCustomWallpapersOnWorker(const std::string& email,
+  void MoveCustomWallpapersOnWorker(const std::string& user_id,
                                     const std::string& user_id_hash);
 
   // Called when the original custom wallpaper is moved to the new place.
   // Updates the corresponding user wallpaper info.
-  void MoveCustomWallpapersSuccess(const std::string& email,
+  void MoveCustomWallpapersSuccess(const std::string& user_id,
                                    const std::string& user_id_hash);
 
   // Moves custom wallpaper to a new place. Email address was used as directory
   // name in the old system, this is not safe. New directory system uses
-  // user_id_hash instead of email. This must be called after user_id_hash is
+  // user_id_hash instead of user_id. This must be called after user_id_hash is
   // ready.
   void MoveLoggedInUserCustomWallpaper();
 
-  // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
-  // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
-  // loaded wallpaper. Must run on wallpaper sequenced worker thread.
-  void GetCustomWallpaperInternal(const std::string& email,
+  // Gets |user_id|'s custom wallpaper at |wallpaper_path|. Falls back on
+  // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
+  // to the loaded wallpaper. Must run on wallpaper sequenced worker thread.
+  void GetCustomWallpaperInternal(const std::string& user_id,
                                   const WallpaperInfo& info,
                                   const base::FilePath& wallpaper_path,
                                   bool update_wallpaper,
                                   MovableOnDestroyCallbackHolder on_finish);
 
-  // Gets wallpaper information of |email| from Local State or memory. Returns
+  // Gets wallpaper information of |user_id| from Local State or memory. Returns
   // false if wallpaper information is not found.
-  bool GetUserWallpaperInfo(const std::string& email, WallpaperInfo* info);
+  bool GetUserWallpaperInfo(const std::string& user_id, WallpaperInfo* info);
 
   // Sets wallpaper to the decoded wallpaper if |update_wallpaper| is true.
   // Otherwise, cache wallpaper to memory if not logged in.
-  void OnWallpaperDecoded(const std::string& email,
+  void OnWallpaperDecoded(const std::string& user_id,
                           ash::WallpaperLayout layout,
                           bool update_wallpaper,
                           MovableOnDestroyCallbackHolder on_finish,
@@ -403,7 +403,7 @@ class WallpaperManager: public content::NotificationObserver {
                              int size);
 
   // Creates new PendingWallpaper request (or updates currently pending).
-  void ScheduleSetUserWallpaper(const std::string& email, bool delayed);
+  void ScheduleSetUserWallpaper(const std::string& user_id, bool delayed);
 
   // Sets wallpaper to default.
   void DoSetDefaultWallpaper(
@@ -412,7 +412,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
   // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
-  void StartLoad(const std::string& email,
+  void StartLoad(const std::string& user_id,
                  const WallpaperInfo& info,
                  bool update_wallpaper,
                  const base::FilePath& wallpaper_path,
