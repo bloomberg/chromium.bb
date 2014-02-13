@@ -87,10 +87,7 @@ static bool DebugURLHandler(GURL* url, BrowserContext* browser_context) {
   }
 
   // Circumvent processing URLs that the renderer process will handle.
-  return *url == GURL(kChromeUICrashURL) ||
-         *url == GURL(kChromeUIHangURL) ||
-         *url == GURL(kChromeUIKillURL) ||
-         *url == GURL(kChromeUIShorthangURL);
+  return IsRendererDebugURL(*url);
 }
 
 // static
