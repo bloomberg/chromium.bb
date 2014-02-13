@@ -109,7 +109,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_protectorCount(0)
     , m_preloadResult(PreloadNotReferenced)
     , m_cacheLiveResourcePriority(CacheLiveResourcePriorityLow)
-    , m_inLiveDecodedResourcesList(false)
     , m_requestedFromNetworkingLayer(false)
     , m_inCache(false)
     , m_loading(false)
@@ -120,12 +119,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_needsSynchronousCacheHit(false)
 #ifndef NDEBUG
     , m_deleted(false)
-    , m_lruIndex(0)
 #endif
-    , m_nextInAllResourcesList(0)
-    , m_prevInAllResourcesList(0)
-    , m_nextInLiveResourcesList(0)
-    , m_prevInLiveResourcesList(0)
     , m_resourceToRevalidate(0)
     , m_proxyResource(0)
 {
@@ -422,7 +416,7 @@ CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
 
 void Resource::setCacheLiveResourcePriority(CacheLiveResourcePriority priority)
 {
-    if (inCache() && m_inLiveDecodedResourcesList && cacheLiveResourcePriority() != static_cast<unsigned>(priority)) {
+    if (inCache() && memoryCache()->isInLiveDecodedResourcesList(this) && cacheLiveResourcePriority() != static_cast<unsigned>(priority)) {
         memoryCache()->removeFromLiveDecodedResourcesList(this);
         m_cacheLiveResourcePriority = priority;
         memoryCache()->insertInLiveDecodedResourcesList(this);
@@ -584,9 +578,9 @@ void Resource::setDecodedSize(size_t size)
         // violation of the invariant that the list is to be kept sorted
         // by access time. The weakening of the invariant does not pose
         // a problem. For more details please see: https://bugs.webkit.org/show_bug.cgi?id=30209
-        if (m_decodedSize && !m_inLiveDecodedResourcesList && hasClients())
+        if (m_decodedSize && !memoryCache()->isInLiveDecodedResourcesList(this) && hasClients())
             memoryCache()->insertInLiveDecodedResourcesList(this);
-        else if (!m_decodedSize && m_inLiveDecodedResourcesList)
+        else if (!m_decodedSize && memoryCache()->isInLiveDecodedResourcesList(this))
             memoryCache()->removeFromLiveDecodedResourcesList(this);
 
         // Update the cache's size totals.
@@ -622,7 +616,7 @@ void Resource::didAccessDecodedData(double timeStamp)
 {
     m_lastDecodedAccessTime = timeStamp;
     if (inCache()) {
-        if (m_inLiveDecodedResourcesList) {
+        if (memoryCache()->isInLiveDecodedResourcesList(this)) {
             memoryCache()->removeFromLiveDecodedResourcesList(this);
             memoryCache()->insertInLiveDecodedResourcesList(this);
         }
