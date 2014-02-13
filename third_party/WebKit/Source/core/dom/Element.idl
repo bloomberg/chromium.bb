@@ -51,7 +51,7 @@
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // DOM4
-    [Reflect] attribute DOMString id;
+    [Reflect, PerWorldBindings] attribute DOMString id;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
