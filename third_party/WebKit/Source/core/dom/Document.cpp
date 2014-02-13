@@ -713,7 +713,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionS
     if (isXHTMLDocument() || isHTMLDocument())
         return HTMLElementFactory::createHTMLElement(isHTMLDocument() ? name.lower() : name, *this, 0, false);
 
-    return createElement(QualifiedName(nullAtom, name, nullAtom), false);
+    return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
 
 PassRefPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState& exceptionState)
@@ -1336,7 +1336,7 @@ void Document::setTitle(const String& title)
         m_titleElement = 0;
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
-            m_titleElement = createElement(titleTag, false);
+            m_titleElement = HTMLTitleElement::create(*this);
             headElement->appendChild(m_titleElement);
         }
     }
