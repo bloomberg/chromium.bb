@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
@@ -34,6 +36,20 @@ class WebContents;
 // For Flash, FullscreenController will auto-accept all permission requests for
 // fullscreen and/or mouse lock, since the assumption is that the plugin handles
 // this for us.
+//
+// FullscreenWithinTab Note:
+// When the browser is configured as such, all fullscreen widgets are displayed
+// within the tab contents area, and FullscreenController will expand the
+// browser window so that the tab contents area fills the entire
+// screen. However, special behavior applies when a tab is being
+// screen-captured. First, the browser window will not be fullscreened. This
+// allows the user to retain control of their desktop to work in other browser
+// tabs or applications while the fullscreen view is displayed on a remote
+// screen. Second, FullscreenController will auto-resize fullscreen widgets to
+// that of the capture video resolution when they are hidden (e.g., when a user
+// has switched to another tab). This is both a performance and quality
+// improvement since scaling and letterboxing steps can be skipped in the
+// capture pipeline.
 
 // This class implements fullscreen and mouselock behaviour.
 class FullscreenController : public content::NotificationObserver {
@@ -54,6 +70,11 @@ class FullscreenController : public content::NotificationObserver {
   // Returns true if fullscreen has been caused by a tab.
   // The window may still be transitioning, and window_->IsFullscreen()
   // may still return false.
+  //
+  // NOTE: The zero-argument version returns true iff a fullscreen tab and its
+  // browser window is/will be fullscreen. On the other hand, the one-argument
+  // version will return true while the renderer is/will be in fullscreen mode,
+  // but not necessarily the browser window. See 'FullscreenWithinTab Note'.
   bool IsFullscreenForTabOrPending() const;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const;
@@ -97,6 +118,9 @@ class FullscreenController : public content::NotificationObserver {
 
   // Called by Browser::TabDeactivated.
   void OnTabDeactivated(content::WebContents* web_contents);
+
+  // Called by Browser::ActiveTabChanged.
+  void OnTabDetachedFromView(content::WebContents* web_contents);
 
   // Called by Browser::TabClosingAt.
   void OnTabClosing(content::WebContents* web_contents);
@@ -173,6 +197,17 @@ class FullscreenController : public content::NotificationObserver {
 
   bool IsPrivilegedFullscreenForTab() const;
   void SetPrivilegedFullscreenForTesting(bool is_privileged);
+  // Returns true if fullscreen-within-tab has been enabled for the
+  // |browser_|. See 'FullscreenWithinTab Note'.
+  bool IsFullscreenWithinTabPossible() const;
+  // Returns true if |web_contents| was toggled into/out of fullscreen mode as a
+  // screen-captured tab. See 'FullscreenWithinTab Note'.
+  bool MaybeToggleFullscreenForCapturedTab(content::WebContents* web_contents,
+                                           bool enter_fullscreen);
+  // Returns true if |web_contents| is in fullscreen mode as a screen-captured
+  // tab. See 'FullscreenWithinTab Note'.
+  bool IsFullscreenForCapturedTab(const content::WebContents* web_contents)
+      const;
   void UnlockMouse();
 
   Browser* const browser_;
@@ -216,6 +251,12 @@ class FullscreenController : public content::NotificationObserver {
   // Used to verify that calls we expect to reenter by calling
   // WindowFullscreenStateChanged do so.
   bool reentrant_window_state_change_call_check_;
+
+  // A WebContents pointer is in this set if it entered fullscreen mode during
+  // screen capture. In other words, this tracks those WebContentses that are in
+  // fullscreen mode, but the browser window is not. See 'FullscreenWithinTab
+  // Note'.
+  std::set<const content::WebContents*> captured_tabs_;
 
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.

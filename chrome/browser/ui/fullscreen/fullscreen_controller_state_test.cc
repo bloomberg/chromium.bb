@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -384,14 +385,17 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
       break;
 
     case TAB_FULLSCREEN_TRUE:
-      GetFullscreenController()->ToggleFullscreenModeForTab(
-           GetBrowser()->tab_strip_model()->GetActiveWebContents(), true);
+    case TAB_FULLSCREEN_FALSE: {
+      content::WebContents* const active_tab =
+          GetBrowser()->tab_strip_model()->GetActiveWebContents();
+      GetFullscreenController()->
+          ToggleFullscreenModeForTab(active_tab, event == TAB_FULLSCREEN_TRUE);
+      // Activating/Deactivating tab fullscreen on a captured tab should not
+      // evoke a state change in the browser window.
+      if (active_tab->GetCapturerCount() > 0)
+        state_ = source_state;
       break;
-
-    case TAB_FULLSCREEN_FALSE:
-      GetFullscreenController()->ToggleFullscreenModeForTab(
-           GetBrowser()->tab_strip_model()->GetActiveWebContents(), false);
-      break;
+    }
 
     case METRO_SNAP_TRUE:
 #if defined(OS_WIN)

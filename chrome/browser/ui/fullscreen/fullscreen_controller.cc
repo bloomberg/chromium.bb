@@ -25,6 +25,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_MACOSX)
@@ -73,10 +74,13 @@ bool FullscreenController::IsFullscreenForTabOrPending() const {
 
 bool FullscreenController::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
-  if (web_contents != fullscreened_tab_)
-    return false;
-  DCHECK(web_contents == browser_->tab_strip_model()->GetActiveWebContents());
-  return true;
+  if (web_contents == fullscreened_tab_) {
+    DCHECK(web_contents == browser_->tab_strip_model()->GetActiveWebContents());
+    DCHECK(!IsFullscreenWithinTabPossible() ||
+           web_contents->GetCapturerCount() == 0);
+    return true;
+  }
+  return IsFullscreenForCapturedTab(web_contents);
 }
 
 bool FullscreenController::IsFullscreenCausedByTab() const {
@@ -85,6 +89,11 @@ bool FullscreenController::IsFullscreenCausedByTab() const {
 
 void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
                                                       bool enter_fullscreen) {
+  if (MaybeToggleFullscreenForCapturedTab(web_contents, enter_fullscreen)) {
+    // During tab capture of fullscreen-within-tab views, the browser window
+    // fullscreen state is unchanged, so return now.
+    return;
+  }
   if (fullscreened_tab_) {
     if (web_contents != fullscreened_tab_)
       return;
@@ -273,8 +282,37 @@ void FullscreenController::OnTabDeactivated(WebContents* web_contents) {
     ExitTabFullscreenOrMouseLockIfNecessary();
 }
 
+void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
+  if (!IsFullscreenForCapturedTab(old_contents))
+    return;
+
+  // A fullscreen-within-tab view undergoing screen capture has been detached
+  // and is no longer visible to the user. Set it to exactly the WebContents'
+  // preferred size. See 'FullscreenWithinTab Note'.
+  //
+  // When the user later selects the tab to show |old_contents| again, UI code
+  // elsewhere (e.g., views::WebView) will resize the view to fit within the
+  // browser window once again.
+  if (old_contents->GetCapturerCount() == 0 ||
+      old_contents->GetPreferredSize().IsEmpty()) {
+    // Do nothing if tab capture ended after toggling fullscreen, or a preferred
+    // size was never specified by the capturer.
+    return;
+  }
+  content::RenderWidgetHostView* const current_fs_view =
+      old_contents->GetFullscreenRenderWidgetHostView();
+  if (current_fs_view)
+    current_fs_view->SetSize(old_contents->GetPreferredSize());
+  old_contents->GetView()->SizeContents(old_contents->GetPreferredSize());
+}
+
 void FullscreenController::OnTabClosing(WebContents* web_contents) {
-  if (web_contents == fullscreened_tab_ || web_contents == mouse_lock_tab_) {
+  if (IsFullscreenForCapturedTab(web_contents)) {
+    RenderViewHost* const rvh = web_contents->GetRenderViewHost();
+    if (rvh)
+      rvh->ExitFullscreen();
+  } else if (web_contents == fullscreened_tab_ ||
+             web_contents == mouse_lock_tab_) {
     ExitTabFullscreenOrMouseLockIfNecessary();
     // The call to exit fullscreen may result in asynchronous notification of
     // fullscreen state change (e.g., on Linux). We don't want to rely on it
@@ -306,8 +344,15 @@ void FullscreenController::WindowFullscreenStateChanged() {
 }
 
 bool FullscreenController::HandleUserPressedEscape() {
-  if (IsFullscreenForTabOrPending() ||
-      IsMouseLocked() || IsMouseLockRequested()) {
+  WebContents* const active_web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (IsFullscreenForCapturedTab(active_web_contents)) {
+    RenderViewHost* const rvh = active_web_contents->GetRenderViewHost();
+    if (rvh)
+      rvh->ExitFullscreen();
+    return true;
+  } else if (IsFullscreenForTabOrPending() ||
+             IsMouseLocked() || IsMouseLockRequested()) {
     ExitTabFullscreenOrMouseLockIfNecessary();
     return true;
   }
@@ -679,14 +724,50 @@ bool FullscreenController::IsPrivilegedFullscreenForTab() const {
   const bool embedded_widget_present =
       fullscreened_tab_ &&
       fullscreened_tab_->GetFullscreenRenderWidgetHostView() &&
-      implicit_cast<const content::WebContentsDelegate*>(browser_)->
-          EmbedsFullscreenWidget();
+      IsFullscreenWithinTabPossible();
   return embedded_widget_present || is_privileged_fullscreen_for_testing_;
 }
 
 void FullscreenController::SetPrivilegedFullscreenForTesting(
     bool is_privileged) {
   is_privileged_fullscreen_for_testing_ = is_privileged;
+}
+
+bool FullscreenController::IsFullscreenWithinTabPossible() const {
+  return implicit_cast<const content::WebContentsDelegate*>(browser_)->
+      EmbedsFullscreenWidget();
+}
+
+bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
+    WebContents* web_contents, bool enter_fullscreen) {
+  if (!IsFullscreenWithinTabPossible())
+    return false;
+
+  if (enter_fullscreen) {
+    if (web_contents->GetCapturerCount() > 0) {
+      captured_tabs_.insert(web_contents);
+      return true;
+    }
+  } else {
+    const std::set<const WebContents*>::iterator it =
+        captured_tabs_.find(web_contents);
+    if (it != captured_tabs_.end()) {
+      captured_tabs_.erase(it);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool FullscreenController::IsFullscreenForCapturedTab(
+    const WebContents* web_contents) const {
+  if (captured_tabs_.find(web_contents) != captured_tabs_.end()) {
+    DCHECK(IsFullscreenWithinTabPossible());
+    DCHECK_NE(fullscreened_tab_, web_contents);
+    return true;
+  }
+  return false;
 }
 
 void FullscreenController::UnlockMouse() {

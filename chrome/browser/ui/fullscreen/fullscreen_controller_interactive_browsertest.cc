@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   fullscreen_observer.Wait();
 
   // Confirm they are enabled and there is no prompt.
-  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   ASSERT_TRUE(IsMouseLocked());

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_state_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -472,4 +475,243 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
           0, new_web_contents));
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
+}
+
+// Tests that, in a browser configured for Fullscreen-Within-Tab mode,
+// fullscreening a screen-captured tab will NOT cause any fullscreen state
+// change to the browser window. Furthermore, the test switches between tabs to
+// confirm a captured tab will be resized by FullscreenController to the capture
+// video resolution once the widget is detached from the UI.
+//
+// See 'FullscreenWithinTab Note' in fullscreen_controller.h.
+TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
+  CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kEmbedFlashFullscreen);
+  content::WebContentsDelegate* const wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
+
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  content::WebContents* const first_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* const second_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Activate the first tab and tell its WebContents it is being captured.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  const gfx::Size kCaptureSize(1280, 720);
+  first_tab->IncrementCapturerCount(kCaptureSize);
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  ASSERT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  ASSERT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  ASSERT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Enter tab fullscreen.  Since the tab is being captured, the browser window
+  // should not expand to fill the screen.
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Switch to the other tab.  Check that the first tab was resized to the
+  // WebContents' preferred size.
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  // TODO(miu): Need to make an adjustment to content::WebContentsViewMac for
+  // the following to work:
+#if !defined(OS_MACOSX)
+  EXPECT_EQ(kCaptureSize, first_tab->GetView()->GetViewBounds().size());
+#endif
+
+  // Switch back to the first tab and exit fullscreen.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+}
+
+// Tests that, in a browser configured for Fullscreen-Within-Tab mode, more than
+// one tab can be in fullscreen mode at the same time without interfering with
+// each other.  One tab is being screen-captured and is toggled into fullscreen
+// mode, and then the user switches to another tab not being screen-captured and
+// fullscreens it.  The first tab's fullscreen toggle does not affect the
+// browser window fullscreen, while the second one's does.  Then, the order of
+// operations is reversed.
+//
+// See 'FullscreenWithinTab Note' in fullscreen_controller.h.
+TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
+  CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kEmbedFlashFullscreen);
+  content::WebContentsDelegate* const wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
+
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  content::WebContents* const first_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* const second_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Start capturing the first tab, fullscreen it, then switch to the second tab
+  // and fullscreen that.  The second tab will cause the browser window to
+  // expand to fill the screen.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  const gfx::Size kCaptureSize(1280, 720);
+  first_tab->IncrementCapturerCount(kCaptureSize);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Now exit fullscreen while still in the second tab.  The browser window
+  // should no longer be fullscreened.
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Finally, exit fullscreen on the captured tab.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+}
+
+// Tests that, in a browser configured for Fullscreen-Within-Tab mode, more than
+// one tab can be in fullscreen mode at the same time.  This is like the
+// TwoFullscreenedTabsOneCaptured test above, except that the screen-captured
+// tab exits fullscreen mode while the second tab is still in the foreground.
+// When the first tab exits fullscreen, the fullscreen state of the second tab
+// and the browser window should remain unchanged.
+//
+// See 'FullscreenWithinTab Note' in fullscreen_controller.h.
+TEST_F(FullscreenControllerStateUnitTest,
+       BackgroundCapturedTabExitsFullscreen) {
+  CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kEmbedFlashFullscreen);
+  content::WebContentsDelegate* const wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
+
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  content::WebContents* const first_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* const second_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Start capturing the first tab, fullscreen it, then switch to the second tab
+  // and fullscreen that.  The second tab will cause the browser window to
+  // expand to fill the screen.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  const gfx::Size kCaptureSize(1280, 720);
+  first_tab->IncrementCapturerCount(kCaptureSize);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Now, the first tab (backgrounded) exits fullscreen.  This should not affect
+  // the second tab's fullscreen, nor the state of the browser window.
+  GetFullscreenController()->ToggleFullscreenModeForTab(first_tab, false);
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+
+  // Finally, exit fullscreen on the second tab.
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+}
+
+// Tests that, in a browser configured for Fullscreen-Within-Tab mode,
+// fullscreening a screen-captured tab will NOT cause any fullscreen state
+// change to the browser window. Then, toggling Browser Fullscreen mode should
+// fullscreen the browser window, but this should behave fully independently of
+// the tab's fullscreen state.
+//
+// See 'FullscreenWithinTab Note' in fullscreen_controller.h.
+TEST_F(FullscreenControllerStateUnitTest,
+       OneCapturedTabFullscreenedBeforeBrowserFullscreen) {
+  CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kEmbedFlashFullscreen);
+  content::WebContentsDelegate* const wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
+
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  // Start capturing the tab and fullscreen it.  The state of the browser window
+  // should remain unchanged.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  const gfx::Size kCaptureSize(1280, 720);
+  tab->IncrementCapturerCount(kCaptureSize);
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser());
+
+  // Now, toggle into Browser Fullscreen mode.  The browser window should now be
+  // fullscreened.
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser());
+
+  // Now, toggle back out of Browser Fullscreen mode.  The browser window exits
+  // fullscreen mode, but the tab stays in fullscreen mode.
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser());
+
+  // Finally, toggle back into Browser Fullscreen mode and then toggle out of
+  // tab fullscreen mode.  The browser window should stay fullscreened, while
+  // the tab exits fullscreen mode.
+  ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
+  EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(tab));
+  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser());
 }
