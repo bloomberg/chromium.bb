@@ -2382,6 +2382,7 @@ const Extension* ExtensionService::GetPendingExtensionUpdate(
 void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   // No need to check for duplicates; inserting a duplicate is a no-op.
   registry_->AddTerminated(make_scoped_refptr(extension));
+  extensions_being_terminated_.erase(extension->id());
   UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
 }
 
@@ -2561,6 +2562,11 @@ void ExtensionService::Observe(int type,
 
       extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
+
+      // If the extension is already being terminated, there is nothing left to
+      // do.
+      if (!extensions_being_terminated_.insert(host->extension_id()).second)
+        break;
 
       // Mark the extension as terminated and Unload it. We want it to
       // be in a consistent state: either fully working or not loaded

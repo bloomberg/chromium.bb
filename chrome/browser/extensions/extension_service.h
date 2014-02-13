@@ -812,6 +812,10 @@ class ExtensionService
   // avoid showing a "new install" notice for an extension reinstall.
   std::set<std::string> extensions_being_reloaded_;
 
+  // A set of the extension ids currently being terminated. We use this to
+  // avoid trying to unload the same extension twice.
+  std::set<std::string> extensions_being_terminated_;
+
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
   // Sequenced task runner for extension related file operations.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
