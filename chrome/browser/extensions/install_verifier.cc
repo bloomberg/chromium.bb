@@ -176,6 +176,13 @@ bool InstallVerifier::NeedsBootstrap() {
   return signature_.get() == NULL && ShouldFetchSignature();
 }
 
+base::Time InstallVerifier::SignatureTimestamp() {
+  if (signature_.get())
+    return signature_->timestamp;
+  else
+    return base::Time();
+}
+
 void InstallVerifier::Add(const std::string& id,
                           const AddResultCallback& callback) {
   ExtensionIdSet ids;
@@ -265,10 +272,10 @@ enum MustRemainDisabledOutcome {
   NO_SIGNATURE,
   NOT_VERIFIED_BUT_NOT_ENFORCING,
   NOT_VERIFIED,
+  NOT_VERIFIED_BUT_INSTALL_TIME_NEWER_THAN_SIGNATURE,
 
   // This is used in histograms - do not remove or reorder entries above! Also
   // the "MAX" item below should always be the last element.
-
   MUST_REMAIN_DISABLED_OUTCOME_MAX
 };
 
@@ -312,8 +319,12 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     // get a signature.
     outcome = NO_SIGNATURE;
   } else if (!IsVerified(extension->id())) {
-    verified = false;
-    outcome = NOT_VERIFIED;
+    if (WasInstalledAfterSignature(extension->id())) {
+      outcome = NOT_VERIFIED_BUT_INSTALL_TIME_NEWER_THAN_SIGNATURE;
+    } else {
+      verified = false;
+      outcome = NOT_VERIFIED;
+    }
   }
   if (!verified && !ShouldEnforce()) {
     verified = true;
@@ -379,6 +390,19 @@ bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
 bool InstallVerifier::IsVerified(const std::string& id) const {
   return ((signature_.get() && ContainsKey(signature_->ids, id)) ||
           ContainsKey(provisional_, id));
+}
+
+bool InstallVerifier::WasInstalledAfterSignature(const std::string& id) const {
+  if (!signature_.get() || signature_->timestamp.is_null())
+    return true;
+
+  base::Time install_time = prefs_->GetInstallTime(id);
+  // If the extension install time is in the future, just assume it isn't
+  // newer than the signature. (Either the clock went backwards, or
+  // an attacker changed the install time in the preferences).
+  if (install_time >= base::Time::Now())
+    return false;
+  return install_time > signature_->timestamp;
 }
 
 void InstallVerifier::BeginFetch() {

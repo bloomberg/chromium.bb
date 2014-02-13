@@ -48,6 +48,7 @@ const char kInvalidIdsKey[] = "invalid_ids";
 const char kProtocolVersionKey[] = "protocol_version";
 const char kSaltKey[] = "salt";
 const char kSignatureKey[] = "signature";
+const char kTimestampKey[] = "timestamp";
 
 const size_t kSaltBytes = 32;
 
@@ -133,6 +134,8 @@ void InstallSignature::ToValue(base::DictionaryValue* value) const {
   base::Base64Encode(signature, &signature_base64);
   value->SetString(kSaltKey, salt_base64);
   value->SetString(kSignatureKey, signature_base64);
+  value->SetString(kTimestampKey,
+                   base::Int64ToString(timestamp.ToInternalValue()));
 }
 
 // static
@@ -150,6 +153,19 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
       !base::Base64Decode(signature_base64, &result->signature)) {
     result.reset();
     return result.Pass();
+  }
+
+  // Note: earlier versions of the code did not write out a timestamp value
+  // so older entries will not necessarily have this.
+  if (value.HasKey(kTimestampKey)) {
+    std::string timestamp;
+    int64 timestamp_value = 0;
+    if (!value.GetString(kTimestampKey, &timestamp) ||
+        !base::StringToInt64(timestamp, &timestamp_value)) {
+      result.reset();
+      return result.Pass();
+    }
+    result->timestamp = base::Time::FromInternalValue(timestamp_value);
   }
 
   const base::ListValue* ids = NULL;
@@ -343,6 +359,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   }
   url_fetcher_->SetUploadData("application/json", json);
   LogRequestStartHistograms();
+  request_start_time_ = base::Time::Now();
   url_fetcher_->Start();
 }
 
@@ -437,6 +454,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
     result->salt = salt_;
     result->signature = signature;
     result->expire_date = expire_date;
+    result->timestamp = request_start_time_;
     bool verified = VerifySignature(*result);
     UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ResultWasValid", verified);
     UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.InvalidCount",

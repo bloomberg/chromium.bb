@@ -574,10 +574,7 @@ void ExtensionService::Init() {
     // rather than running immediately at startup.
     CheckForExternalUpdates();
 
-    InstallVerifier* verifier =
-        extensions::ExtensionSystem::Get(profile_)->install_verifier();
-    if (verifier->NeedsBootstrap())
-      VerifyAllExtensions(true);  // bootstrap=true.
+    MaybeBootstrapVerifier();
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
@@ -609,6 +606,35 @@ void ExtensionService::LoadGreylistFromPrefs() {
         state == extensions::BLACKLISTED_CWS_POLICY_VIOLATION)
       greylist_.Insert(*it);
   }
+}
+
+void ExtensionService::MaybeBootstrapVerifier() {
+  InstallVerifier* verifier =
+      extensions::ExtensionSystem::Get(profile_)->install_verifier();
+  bool do_bootstrap = false;
+
+  if (verifier->NeedsBootstrap()) {
+    do_bootstrap = true;
+  } else {
+    // If any of the installed extensions have an install time newer than the
+    // signature's timestamp, we need to bootstrap because our signature may
+    // be missing valid extensions.
+    base::Time timestamp = verifier->SignatureTimestamp();
+    for (extensions::ExtensionSet::const_iterator i = extensions()->begin();
+         i != extensions()->end();
+         ++i) {
+      const Extension& extension = **i;
+      base::Time install_time =
+          extension_prefs_->GetInstallTime(extension.id());
+      if (verifier->NeedsVerification(extension) &&
+          install_time < base::Time::Now() && install_time >= timestamp) {
+        do_bootstrap = true;
+        break;
+      }
+    }
+  }
+  if (do_bootstrap)
+    VerifyAllExtensions(true);  // bootstrap=true.
 }
 
 void ExtensionService::VerifyAllExtensions(bool bootstrap) {
