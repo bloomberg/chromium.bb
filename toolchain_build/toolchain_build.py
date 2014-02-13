@@ -62,7 +62,7 @@ TAR_FILES = {
     'gmp': command.path.join('gmp', 'gmp-5.1.3.tar.bz2'),
     'mpfr': command.path.join('mpfr', 'mpfr-3.1.2.tar.bz2'),
     'mpc': command.path.join('mpc', 'mpc-1.0.2.tar.gz'),
-    'isl': command.path.join('cloog', 'isl-0.12.1.tar.bz2'),
+    'isl': command.path.join('cloog', 'isl-0.12.2.tar.bz2'),
     'cloog': command.path.join('cloog', 'cloog-0.18.1.tar.gz'),
     'expat': command.path.join('expat', 'expat-2.0.1.tar.gz'),
     }
