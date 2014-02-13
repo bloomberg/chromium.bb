@@ -111,8 +111,8 @@ class CC_EXPORT ManagedTileState {
 
   TileResolution resolution;
   bool required_for_activation;
-  float time_to_needed_in_seconds;
-  float distance_to_visible_in_pixels;
+  TilePriority::PriorityBin priority_bin;
+  float distance_to_visible;
   bool visible_and_ready_to_draw;
 
   // Priority for this state from the last time we assigned memory.

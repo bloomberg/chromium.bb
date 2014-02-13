@@ -62,6 +62,9 @@ class CC_EXPORT PictureLayerImpl
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const OVERRIDE;
+  virtual size_t GetMaxTilesForInterestArea() const OVERRIDE;
+  virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE;
+  virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
@@ -127,9 +130,6 @@ class CC_EXPORT PictureLayerImpl
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
 
-  gfx::Transform last_screen_space_transform_;
-  gfx::Size last_bounds_;
-  float last_content_scale_;
   bool is_mask_;
 
   float ideal_page_scale_;

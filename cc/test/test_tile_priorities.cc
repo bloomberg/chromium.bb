@@ -7,16 +7,16 @@
 namespace cc {
 
 TilePriorityForSoonBin::TilePriorityForSoonBin()
-    : TilePriority(HIGH_RESOLUTION, 0.5, 300.0) {}
+    : TilePriority(HIGH_RESOLUTION, SOON, 300.0) {}
 
 TilePriorityForEventualBin::TilePriorityForEventualBin()
-    : TilePriority(HIGH_RESOLUTION, 2.0, 315.0) {}
+    : TilePriority(HIGH_RESOLUTION, EVENTUALLY, 315.0) {}
 
 TilePriorityForNowBin::TilePriorityForNowBin()
-    : TilePriority(HIGH_RESOLUTION, 0, 0) {}
+    : TilePriority(HIGH_RESOLUTION, NOW, 0) {}
 
 TilePriorityRequiredForActivation::TilePriorityRequiredForActivation()
-    : TilePriority(HIGH_RESOLUTION, 0, 0) {
+    : TilePriority(HIGH_RESOLUTION, NOW, 0) {
   required_for_activation = true;
 }
 

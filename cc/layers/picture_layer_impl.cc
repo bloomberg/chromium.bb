@@ -40,7 +40,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       twin_layer_(NULL),
       pile_(PicturePileImpl::Create()),
-      last_content_scale_(0),
       is_mask_(false),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
@@ -334,40 +333,30 @@ void PictureLayerImpl::UpdateTilePriorities() {
 
   UpdateLCDTextStatus(can_use_lcd_text());
 
-  gfx::Transform current_screen_space_transform = screen_space_transform();
-
-  gfx::Size viewport_size = layer_tree_impl()->DrawViewportSize();
-  gfx::Rect viewport_in_content_space;
-  gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
-  if (screen_space_transform().GetInverse(&screen_to_layer)) {
-    viewport_in_content_space = MathUtil::ProjectEnclosingClippedRect(
-        screen_to_layer, gfx::Rect(viewport_size));
+  // Use visible_content_rect, unless it's empty. If it's empty, then
+  // try to inverse project the viewport into layer space and use that.
+  gfx::Rect visible_rect_in_content_space = visible_content_rect();
+  if (visible_rect_in_content_space.IsEmpty()) {
+    gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
+    if (screen_space_transform().GetInverse(&screen_to_layer)) {
+      gfx::Size viewport_size = layer_tree_impl()->DrawViewportSize();
+      visible_rect_in_content_space =
+          gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
+              screen_to_layer, gfx::Rect(viewport_size)));
+      visible_rect_in_content_space.Intersect(gfx::Rect(content_bounds()));
+    }
   }
 
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-  size_t max_tiles_for_interest_area =
-      layer_tree_impl()->settings().max_tiles_for_interest_area;
-  tilings_->UpdateTilePriorities(
-      tree,
-      viewport_size,
-      viewport_in_content_space,
-      visible_content_rect(),
-      last_bounds_,
-      bounds(),
-      last_content_scale_,
-      contents_scale_x(),
-      last_screen_space_transform_,
-      current_screen_space_transform,
-      current_frame_time_in_seconds,
-      max_tiles_for_interest_area);
+
+  tilings_->UpdateTilePriorities(tree,
+                                 visible_rect_in_content_space,
+                                 contents_scale_x(),
+                                 current_frame_time_in_seconds);
 
   if (layer_tree_impl()->IsPendingTree())
     MarkVisibleResourcesAsRequired();
-
-  last_screen_space_transform_ = current_screen_space_transform;
-  last_bounds_ = bounds();
-  last_content_scale_ = contents_scale_x();
 
   // Tile priorities were modified.
   layer_tree_impl()->DidModifyTilePriorities();
@@ -510,6 +499,20 @@ const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
         tiling->contents_scale())
       return twin_layer_->tilings_->tiling_at(i);
   return NULL;
+}
+
+size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
+  return layer_tree_impl()->settings().max_tiles_for_interest_area;
+}
+
+float PictureLayerImpl::GetSkewportTargetTimeInSeconds() const {
+  return layer_tree_impl()->settings().skewport_target_time_in_seconds;
+}
+
+int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {
+  return layer_tree_impl()
+      ->settings()
+      .skewport_extrapolation_limit_in_content_pixels;
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
@@ -722,12 +725,6 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
       if (!*iter || !iter->IsReadyToDraw())
         continue;
 
-      // This iteration is over the visible content rect which is potentially
-      // less conservative than projecting the viewport into the layer.
-      // Ignore tiles that are know to be outside the viewport.
-      if (iter->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
-        continue;
-
       missing_region.Subtract(iter.geometry_rect());
       iter->MarkRequiredForActivation();
     }
@@ -790,12 +787,6 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     Tile* tile = *iter;
     // A null tile (i.e. missing recording) can just be skipped.
     if (!tile)
-      continue;
-
-    // This iteration is over the visible content rect which is potentially
-    // less conservative than projecting the viewport into the layer.
-    // Ignore tiles that are know to be outside the viewport.
-    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
       continue;
 
     // If the missing region doesn't cover it, this tile is fully

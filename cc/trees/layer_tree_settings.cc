@@ -50,6 +50,8 @@ LayerTreeSettings::LayerTreeSettings()
       use_pinch_virtual_viewport(false),
       // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
       max_tiles_for_interest_area(128),
+      skewport_target_time_in_seconds(1.0f),
+      skewport_extrapolation_limit_in_content_pixels(2000),
       max_unused_resource_memory_percentage(100),
       highp_threshold_min(0),
       strict_layer_property_change_checking(false),
@@ -57,8 +59,7 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       use_rgba_4444_textures(false),
       touch_hit_testing(true),
-      texture_id_allocation_chunk_size(64) {
-}
+      texture_id_allocation_chunk_size(64) {}
 
 LayerTreeSettings::~LayerTreeSettings() {}
 

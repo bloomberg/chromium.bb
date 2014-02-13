@@ -115,37 +115,17 @@ const ManagedTileBin kBinIsActiveMap[2][NUM_BINS] = {
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline ManagedTileBin BinFromTilePriority(const TilePriority& prio) {
-  // The amount of time/pixels for which we want to have prepainting coverage.
-  // Note: All very arbitrary constants: metric-based tuning is welcome!
-  const float kPrepaintingWindowTimeSeconds = 1.0f;
   const float kBackflingGuardDistancePixels = 314.0f;
-  // Note: The max distances here assume that SOON_BIN will never help overcome
-  // raster being too slow (only caching in advance will do that), so we just
-  // need enough padding to handle some latency and per-tile variability.
-  const float kMaxPrepaintingDistancePixelsHighRes = 2000.0f;
-  const float kMaxPrepaintingDistancePixelsLowRes = 4000.0f;
 
-  if (prio.distance_to_visible_in_pixels ==
-      std::numeric_limits<float>::infinity())
-    return NEVER_BIN;
-
-  if (prio.time_to_visible_in_seconds == 0)
+  if (prio.priority_bin == TilePriority::NOW)
     return NOW_BIN;
 
-  if (prio.resolution == NON_IDEAL_RESOLUTION)
-    return EVENTUALLY_BIN;
-
-  float max_prepainting_distance_pixels =
-      (prio.resolution == HIGH_RESOLUTION)
-          ? kMaxPrepaintingDistancePixelsHighRes
-          : kMaxPrepaintingDistancePixelsLowRes;
-
-  // Soon bin if we are within backfling-guard, or under both the time window
-  // and the max distance window.
-  if (prio.distance_to_visible_in_pixels < kBackflingGuardDistancePixels ||
-      (prio.time_to_visible_in_seconds < kPrepaintingWindowTimeSeconds &&
-       prio.distance_to_visible_in_pixels <= max_prepainting_distance_pixels))
+  if (prio.priority_bin == TilePriority::SOON ||
+      prio.distance_to_visible < kBackflingGuardDistancePixels)
     return SOON_BIN;
+
+  if (prio.distance_to_visible == std::numeric_limits<float>::infinity())
+    return NEVER_BIN;
 
   return EVENTUALLY_BIN;
 }
@@ -449,9 +429,8 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
       mts.bin = tile_is_active ? AT_LAST_AND_ACTIVE_BIN : AT_LAST_BIN;
 
     mts.resolution = tile_priority.resolution;
-    mts.time_to_needed_in_seconds = tile_priority.time_to_visible_in_seconds;
-    mts.distance_to_visible_in_pixels =
-        tile_priority.distance_to_visible_in_pixels;
+    mts.priority_bin = tile_priority.priority_bin;
+    mts.distance_to_visible = tile_priority.distance_to_visible;
     mts.required_for_activation = tile_priority.required_for_activation;
 
     mts.visible_and_ready_to_draw =
@@ -955,7 +934,7 @@ void TileManager::OnRasterTaskCompleted(
   }
 
   FreeUnusedResourcesForTile(tile);
-  if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
+  if (tile->priority(ACTIVE_TREE).distance_to_visible == 0.f)
     did_initialize_visible_tile_ = true;
 }
 

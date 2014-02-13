@@ -7,49 +7,6 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 
-namespace {
-
-// TODO(qinmin): modify ui/gfx/range/range.h to support template so that we
-// don't need to define this.
-struct Range {
-  Range(float start, float end) : start_(start), end_(end) {}
-  bool IsEmpty();
-  float start_;
-  float end_;
-};
-
-bool Range::IsEmpty() {
-  return start_ >= end_;
-}
-
-inline void IntersectNegativeHalfplane(Range* out,
-                                       float previous,
-                                       float current,
-                                       float target,
-                                       float time_delta) {
-  float time_per_dist = time_delta / (current - previous);
-  float t = (target - current) * time_per_dist;
-  if (time_per_dist > 0.0f)
-    out->start_ = std::max(out->start_, t);
-  else
-    out->end_ = std::min(out->end_, t);
-}
-
-inline void IntersectPositiveHalfplane(Range* out,
-                                       float previous,
-                                       float current,
-                                       float target,
-                                       float time_delta) {
-  float time_per_dist = time_delta / (current - previous);
-  float t = (target - current) * time_per_dist;
-  if (time_per_dist < 0.0f)
-    out->start_ = std::max(out->start_, t);
-  else
-    out->end_ = std::min(out->end_, t);
-}
-
-}  // namespace
-
 namespace cc {
 
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
@@ -81,53 +38,28 @@ scoped_ptr<base::Value> TileResolutionAsValue(
       "<unknown TileResolution value>"));
 }
 
+scoped_ptr<base::Value> TilePriorityBinAsValue(TilePriority::PriorityBin bin) {
+  switch (bin) {
+    case TilePriority::NOW:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue("NOW"));
+    case TilePriority::SOON:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue("SOON"));
+    case TilePriority::EVENTUALLY:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("EVENTUALLY"));
+  }
+  DCHECK(false) << "Unrecognized TilePriority::PriorityBin value " << bin;
+  return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      "<unknown TilePriority::PriorityBin value>"));
+}
+
 scoped_ptr<base::Value> TilePriority::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
-  state->Set("time_to_visible_in_seconds",
-             MathUtil::AsValueSafely(time_to_visible_in_seconds).release());
-  state->Set("distance_to_visible_in_pixels",
-             MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
+  state->Set("priority_bin", TilePriorityBinAsValue(priority_bin).release());
+  state->Set("distance_to_visible",
+             MathUtil::AsValueSafely(distance_to_visible).release());
   return state.PassAs<base::Value>();
-}
-
-float TilePriority::TimeForBoundsToIntersect(const gfx::RectF& previous_bounds,
-                                             const gfx::RectF& current_bounds,
-                                             float time_delta,
-                                             const gfx::RectF& target_bounds) {
-  // Perform an intersection test explicitly between current and target.
-  if (current_bounds.x() < target_bounds.right() &&
-      current_bounds.y() < target_bounds.bottom() &&
-      target_bounds.x() < current_bounds.right() &&
-      target_bounds.y() < current_bounds.bottom())
-    return 0.0f;
-
-  const float kMaxTimeToVisibleInSeconds =
-      std::numeric_limits<float>::infinity();
-
-  if (time_delta == 0.0f)
-    return kMaxTimeToVisibleInSeconds;
-
-  // As we are trying to solve the case of both scaling and scrolling, using
-  // a single coordinate with velocity is not enough. The logic here is to
-  // calculate the velocity for each edge. Then we calculate the time range that
-  // each edge will stay on the same side of the target bounds. If there is an
-  // overlap between these time ranges, the bounds must have intersect with
-  // each other during that period of time.
-  Range range(0.0f, kMaxTimeToVisibleInSeconds);
-  IntersectPositiveHalfplane(
-      &range, previous_bounds.x(), current_bounds.x(),
-      target_bounds.right(), time_delta);
-  IntersectNegativeHalfplane(
-      &range, previous_bounds.right(), current_bounds.right(),
-      target_bounds.x(), time_delta);
-  IntersectPositiveHalfplane(
-      &range, previous_bounds.y(), current_bounds.y(),
-      target_bounds.bottom(), time_delta);
-  IntersectNegativeHalfplane(
-      &range, previous_bounds.bottom(), current_bounds.bottom(),
-      target_bounds.y(), time_delta);
-  return range.IsEmpty() ? kMaxTimeToVisibleInSeconds : range.start_;
 }
 
 scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(

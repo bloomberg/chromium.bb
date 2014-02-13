@@ -22,6 +22,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
+    picture_layer_tiling_client_.set_max_tiles_for_interest_area(250);
     picture_layer_tiling_ = PictureLayerTiling::Create(
         1, gfx::Size(256 * 50, 256 * 50), &picture_layer_tiling_client_);
     picture_layer_tiling_->CreateAllTilesForTesting();
@@ -61,36 +62,28 @@ class PictureLayerTilingPerfTest : public testing::Test {
                            num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
   }
 
-  void RunUpdateTilePrioritiesStationaryTest(
-      const std::string& test_name,
-      const gfx::Transform& transform) {
+  void RunUpdateTilePrioritiesStationaryTest(const std::string& test_name,
+                                             const gfx::Transform& transform) {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
 
     gfx::Size layer_bounds(50 * 256, 50 * 256);
+    gfx::Rect viewport_rect(0, 0, 1024, 768);
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-        ACTIVE_TREE,
-        layer_bounds,
-        gfx::Rect(layer_bounds),
-        gfx::Rect(layer_bounds),
-        layer_bounds,
-        layer_bounds,
-        1.f,
-        1.f,
-        transform,
-        transform,
-        num_runs_ + 1,
-        250);
+          ACTIVE_TREE, viewport_rect, 1.f, num_runs_ + 1);
     } while (DidRun());
 
-    perf_test::PrintResult("update_tile_priorities_stationary", "", test_name,
-                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
+    perf_test::PrintResult("update_tile_priorities_stationary",
+                           "",
+                           test_name,
+                           num_runs_ / elapsed_.InSecondsF(),
+                           "runs/s",
+                           true);
   }
 
-  void RunUpdateTilePrioritiesScrollingTest(
-      const std::string& test_name,
-      const gfx::Transform& transform) {
+  void RunUpdateTilePrioritiesScrollingTest(const std::string& test_name,
+                                            const gfx::Transform& transform) {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
 
@@ -104,24 +97,12 @@ class PictureLayerTilingPerfTest : public testing::Test {
     const int maxOffsetCount = 1000;
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-        ACTIVE_TREE,
-        viewport_size,
-        viewport_rect,
-        gfx::Rect(layer_bounds),
-        layer_bounds,
-        layer_bounds,
-        1.f,
-        1.f,
-        transform,
-        transform,
-        num_runs_ + 1,
-        250);
+          ACTIVE_TREE, viewport_rect, 1.f, num_runs_ + 1);
 
-      viewport_rect = gfx::Rect(
-        viewport_rect.x() + xoffsets[offsetIndex],
-        viewport_rect.y() + yoffsets[offsetIndex],
-        viewport_rect.width(),
-        viewport_rect.height());
+      viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offsetIndex],
+                                viewport_rect.y() + yoffsets[offsetIndex],
+                                viewport_rect.width(),
+                                viewport_rect.height());
 
       if (++offsetCount > maxOffsetCount) {
         offsetCount = 0;
@@ -129,8 +110,12 @@ class PictureLayerTilingPerfTest : public testing::Test {
       }
     } while (DidRun());
 
-    perf_test::PrintResult("update_tile_priorities_scrolling", "", test_name,
-                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
+    perf_test::PrintResult("update_tile_priorities_scrolling",
+                           "",
+                           test_name,
+                           num_runs_ / elapsed_.InSecondsF(),
+                           "runs/s",
+                           true);
   }
 
  private:
@@ -160,6 +145,7 @@ TEST_F(PictureLayerTilingPerfTest, DISABLED_UpdateTilePriorities) {
 TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
 #endif  // defined(OS_ANDROID)
   gfx::Transform transform;
+
   RunUpdateTilePrioritiesStationaryTest("no_transform", transform);
   RunUpdateTilePrioritiesScrollingTest("no_transform", transform);
 

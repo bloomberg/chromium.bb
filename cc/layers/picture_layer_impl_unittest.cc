@@ -1196,7 +1196,7 @@ TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
 
 TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   gfx::Size tile_size(100, 100);
-  gfx::Size layer_bounds(200, 100);
+  gfx::Size layer_bounds(200, 200);
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -1208,12 +1208,12 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   host_impl_.pending_tree()->UpdateDrawProperties();
   EXPECT_EQ(tiling->resolution(), HIGH_RESOLUTION);
 
+  pending_layer_->draw_properties().visible_content_rect =
+      gfx::Rect(0, 0, 100, 200);
+
   // Fake set priorities.
-  int tile_count = 0;
   for (PictureLayerTiling::CoverageIterator iter(
-           tiling,
-           pending_layer_->contents_scale_x(),
-           gfx::Rect(pending_layer_->visible_content_rect()));
+           tiling, pending_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
        iter;
        ++iter) {
     if (!*iter)
@@ -1221,12 +1221,13 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
     Tile* tile = *iter;
     TilePriority priority;
     priority.resolution = HIGH_RESOLUTION;
-    if (++tile_count % 2) {
-      priority.time_to_visible_in_seconds = 0.f;
-      priority.distance_to_visible_in_pixels = 0.f;
+    gfx::Rect tile_bounds = iter.geometry_rect();
+    if (pending_layer_->visible_content_rect().Intersects(tile_bounds)) {
+      priority.priority_bin = TilePriority::NOW;
+      priority.distance_to_visible = 0.f;
     } else {
-      priority.time_to_visible_in_seconds = 1.f;
-      priority.distance_to_visible_in_pixels = 1.f;
+      priority.priority_bin = TilePriority::SOON;
+      priority.distance_to_visible = 1.f;
     }
     tile->SetPriority(PENDING_TREE, priority);
   }
@@ -1237,15 +1238,13 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_offscreen = 0;
 
   for (PictureLayerTiling::CoverageIterator iter(
-           tiling,
-           pending_layer_->contents_scale_x(),
-           gfx::Rect(pending_layer_->visible_content_rect()));
+           tiling, pending_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
        iter;
        ++iter) {
     if (!*iter)
       continue;
     const Tile* tile = *iter;
-    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels == 0.f) {
+    if (tile->priority(PENDING_TREE).distance_to_visible == 0.f) {
       EXPECT_TRUE(tile->required_for_activation());
       num_visible++;
     } else {

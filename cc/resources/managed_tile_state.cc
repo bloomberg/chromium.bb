@@ -49,8 +49,8 @@ ManagedTileState::ManagedTileState()
       bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
-      time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),
-      distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
+      priority_bin(TilePriority::EVENTUALLY),
+      distance_to_visible(std::numeric_limits<float>::infinity()),
       visible_and_ready_to_draw(false),
       scheduled_priority(0) {}
 
@@ -94,10 +94,9 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->SetBoolean("is_using_gpu_memory", is_using_gpu_memory);
   state->Set("bin", ManagedTileBinAsValue(bin).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
-  state->Set("time_to_needed_in_seconds",
-             MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
-  state->Set("distance_to_visible_in_pixels",
-             MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
+  state->Set("priority_bin", TilePriorityBinAsValue(priority_bin).release());
+  state->Set("distance_to_visible",
+             MathUtil::AsValueSafely(distance_to_visible).release());
   state->SetBoolean("required_for_activation", required_for_activation);
   state->SetBoolean(
       "is_solid_color",

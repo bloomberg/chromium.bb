@@ -35,6 +35,9 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual const Region* GetInvalidation() = 0;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
+  virtual size_t GetMaxTilesForInterestArea() const = 0;
+  virtual float GetSkewportTargetTimeInSeconds() const = 0;
+  virtual int GetSkewportExtrapolationLimitInContentPixels() const = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -133,19 +136,10 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void UpdateTilePriorities(
-      WhichTree tree,
-      const gfx::Size& device_viewport,
-      const gfx::Rect& viewport_in_layer_space,
-      const gfx::Rect& visible_layer_rect,
-      const gfx::Size& last_layer_bounds,
-      const gfx::Size& current_layer_bounds,
-      float last_layer_contents_scale,
-      float current_layer_contents_scale,
-      const gfx::Transform& last_screen_transform,
-      const gfx::Transform& current_screen_transform,
-      double current_frame_time_in_seconds,
-      size_t max_tiles_for_interest_area);
+  void UpdateTilePriorities(WhichTree tree,
+                            const gfx::Rect& visible_layer_rect,
+                            float layer_contents_scale,
+                            double current_frame_time_in_seconds);
 
   // Copies the src_tree priority into the dst_tree priority for all tiles.
   // The src_tree priority is reset to the lowest priority possible.  This
@@ -198,6 +192,14 @@ class CC_EXPORT PictureLayerTiling {
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
 
+  // Computes a skewport. The calculation extrapolates the last visible
+  // rect and the current visible rect to expand the skewport to where it
+  // would be in |skewport_target_time| seconds. Note that the skewport
+  // is guaranteed to contain the current visible rect.
+  gfx::Rect ComputeSkewport(double current_frame_time_in_seconds,
+                            const gfx::Rect& visible_rect_in_content_space)
+      const;
+
   // Given properties.
   float contents_scale_;
   gfx::Size layer_bounds_;
@@ -211,6 +213,7 @@ class CC_EXPORT PictureLayerTiling {
 
   // State saved for computing velocities based upon finite differences.
   double last_impl_frame_time_in_seconds_;
+  gfx::RectF last_visible_rect_in_content_space_;
 
   friend class CoverageIterator;
 

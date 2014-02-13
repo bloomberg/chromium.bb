@@ -18,20 +18,17 @@ class BinComparator {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
 
+    if (ams.priority_bin != bms.priority_bin)
+      return ams.priority_bin < bms.priority_bin;
+
     if (ams.required_for_activation != bms.required_for_activation)
       return ams.required_for_activation;
 
     if (ams.resolution != bms.resolution)
       return ams.resolution < bms.resolution;
 
-    if (ams.time_to_needed_in_seconds !=  bms.time_to_needed_in_seconds)
-      return ams.time_to_needed_in_seconds < bms.time_to_needed_in_seconds;
-
-    if (ams.distance_to_visible_in_pixels !=
-        bms.distance_to_visible_in_pixels) {
-      return ams.distance_to_visible_in_pixels <
-             bms.distance_to_visible_in_pixels;
-    }
+    if (ams.distance_to_visible != bms.distance_to_visible)
+      return ams.distance_to_visible < bms.distance_to_visible;
 
     gfx::Rect a_rect = a->content_rect();
     gfx::Rect b_rect = b->content_rect();

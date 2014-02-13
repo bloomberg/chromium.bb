@@ -54,19 +54,10 @@ class CC_EXPORT PictureLayerTilingSet {
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
 
-  void UpdateTilePriorities(
-      WhichTree tree,
-      const gfx::Size& device_viewport,
-      const gfx::Rect& viewport_in_content_space,
-      const gfx::Rect& visible_content_rect,
-      const gfx::Size& last_layer_bounds,
-      const gfx::Size& current_layer_bounds,
-      float last_layer_contents_scale,
-      float current_layer_contents_scale,
-      const gfx::Transform& last_screen_transform,
-      const gfx::Transform& current_screen_transform,
-      double current_frame_time_in_seconds,
-      size_t max_tiles_for_interest_area);
+  void UpdateTilePriorities(WhichTree tree,
+                            const gfx::Rect& visible_content_rect,
+                            float layer_contents_scale,
+                            double current_frame_time_in_seconds);
 
   void DidBecomeActive();
   void DidBecomeRecycled();

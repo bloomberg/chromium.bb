@@ -27,7 +27,10 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
-      allow_create_tile_(true) {}
+      allow_create_tile_(true),
+      max_tiles_for_interest_area_(10000),
+      skewport_target_time_in_seconds_(1.0f),
+      skewport_extrapolation_limit_in_content_pixels_(2000) {}
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
@@ -35,7 +38,9 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
           new FakeTileManager(&tile_manager_client_, resource_provider)),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
-      allow_create_tile_(true) {}
+      allow_create_tile_(true),
+      max_tiles_for_interest_area_(10000),
+      skewport_target_time_in_seconds_(1.0f) {}
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
@@ -56,6 +61,19 @@ void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {
 gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
     const gfx::Size& /* content_bounds */) const {
   return tile_size_;
+}
+
+size_t FakePictureLayerTilingClient::GetMaxTilesForInterestArea() const {
+  return max_tiles_for_interest_area_;
+}
+
+float FakePictureLayerTilingClient::GetSkewportTargetTimeInSeconds() const {
+  return skewport_target_time_in_seconds_;
+}
+
+int FakePictureLayerTilingClient::GetSkewportExtrapolationLimitInContentPixels()
+    const {
+  return skewport_extrapolation_limit_in_content_pixels_;
 }
 
 const Region* FakePictureLayerTilingClient::GetInvalidation() {
