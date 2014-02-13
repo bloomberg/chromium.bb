@@ -812,6 +812,9 @@ crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_pro
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
+crbug.com/342848 virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ NeedsRebaseline ]
+crbug.com/342848 virtual/softwarecompositing/reflections/nested-reflection-animated.html [ NeedsRebaseline ]
+
 # Flaky on all platforms
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
