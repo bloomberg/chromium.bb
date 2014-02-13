@@ -89,9 +89,7 @@ WebURL WebPrerender::url() const
 
 unsigned WebPrerender::relTypes() const
 {
-    // For now, all prerenders have RelTypePrerender.
-    // TODO: Once https://codereview.chromium.org/113803003/ lands in Chrome, re-land r164241 to set this correctly.
-    return PrerenderRelTypePrerender;
+    return m_private->relTypes();
 }
 
 WebString WebPrerender::referrer() const

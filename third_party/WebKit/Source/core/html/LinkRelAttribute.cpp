@@ -45,6 +45,7 @@ LinkRelAttribute::LinkRelAttribute()
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isLinkNext(false)
     , m_isImport(false)
 {
 }
@@ -57,6 +58,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isLinkNext(false)
     , m_isImport(false)
 {
     if (equalIgnoringCase(rel, "stylesheet")) {
@@ -98,6 +100,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
                 m_isLinkSubresource = true;
             } else if (equalIgnoringCase(*it, "prerender")) {
                 m_isLinkPrerender = true;
+            } else if (equalIgnoringCase(*it, "next")) {
+                m_isLinkNext = true;
             } else if (equalIgnoringCase(*it, "apple-touch-icon")) {
                 if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
                     m_iconType = TouchIcon;
