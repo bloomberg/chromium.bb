@@ -832,11 +832,23 @@ public abstract class TabBase implements NavigationClient {
     @CalledByNative
     private void swapWebContents(
             final long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
-        if (mContentViewCore != null) mContentViewCore.onHide();
+        int originalWidth = 0;
+        int originalHeight = 0;
+        if (mContentViewCore != null) {
+            originalWidth = mContentViewCore.getViewportWidthPix();
+            originalHeight = mContentViewCore.getViewportHeightPix();
+            mContentViewCore.onHide();
+        }
         destroyContentView(false);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
         initContentView(newWebContents);
+        // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
+        // next onShow() call would send a resize message with the current ContentViewCore size
+        // (zero) to the renderer process, although the new size will be set soon.
+        // However, this size fluttering may confuse Blink and rendered result can be broken
+        // (see http://crbug.com/340987).
+        mContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
