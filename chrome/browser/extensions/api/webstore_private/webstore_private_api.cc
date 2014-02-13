@@ -240,7 +240,7 @@ bool WebstorePrivateInstallBundleFunction::
 
 void WebstorePrivateInstallBundleFunction::OnBundleInstallApproved() {
   bundle_->CompleteInstall(
-      &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
+      dispatcher()->delegate()->GetAssociatedWebContents(),
       this);
 }
 
@@ -570,7 +570,7 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       GetProfile(),
       this,
-      &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
+      dispatcher()->delegate()->GetAssociatedWebContents(),
       params->expected_id,
       approval_.Pass(),
       WebstoreInstaller::INSTALL_SOURCE_OTHER);

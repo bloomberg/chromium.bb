@@ -244,13 +244,13 @@ const WebstoreInstaller::Approval* WebstoreInstaller::GetAssociatedApproval(
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
-                                     NavigationController* controller,
+                                     content::WebContents* web_contents,
                                      const std::string& id,
                                      scoped_ptr<Approval> approval,
                                      InstallSource source)
-    : profile_(profile),
+    : content::WebContentsObserver(web_contents),
+      profile_(profile),
       delegate_(delegate),
-      controller_(controller),
       id_(id),
       install_source_(source),
       download_item_(NULL),
@@ -258,7 +258,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       total_modules_(0),
       download_started_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(controller_);
+  DCHECK(web_contents);
 
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::NotificationService::AllSources());
@@ -406,7 +406,6 @@ void WebstoreInstaller::SetDownloadDirectoryForTests(
 }
 
 WebstoreInstaller::~WebstoreInstaller() {
-  controller_ = NULL;
   if (download_item_) {
     download_item_->RemoveObserver(this);
     download_item_ = NULL;
@@ -558,37 +557,38 @@ void WebstoreInstaller::DownloadCrx(
 void WebstoreInstaller::StartDownload(const base::FilePath& file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadManager* download_manager =
-    BrowserContext::GetDownloadManager(profile_);
   if (file.empty()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
+
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(profile_);
   if (!download_manager) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!controller_) {
+
+  content::WebContents* contents = web_contents();
+  if (!contents) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!controller_->GetWebContents()) {
+  if (!contents->GetRenderProcessHost()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!controller_->GetWebContents()->GetRenderProcessHost()) {
+  if (!contents->GetRenderViewHost()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!controller_->GetWebContents()->GetRenderViewHost()) {
+
+  content::NavigationController& controller = contents->GetController();
+  if (!controller.GetBrowserContext()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!controller_->GetBrowserContext()) {
-    ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
-    return;
-  }
-  if (!controller_->GetBrowserContext()->GetResourceContext()) {
+  if (!controller.GetBrowserContext()->GetResourceContext()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
@@ -597,21 +597,20 @@ void WebstoreInstaller::StartDownload(const base::FilePath& file) {
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_WEBSTORE_INSTALLER);
-  int render_process_host_id =
-    controller_->GetWebContents()->GetRenderProcessHost()->GetID();
+  int render_process_host_id = contents->GetRenderProcessHost()->GetID();
   int render_view_host_routing_id =
-    controller_->GetWebContents()->GetRenderViewHost()->GetRoutingID();
+      contents->GetRenderViewHost()->GetRoutingID();
   content::ResourceContext* resource_context =
-    controller_->GetBrowserContext()->GetResourceContext();
+      controller.GetBrowserContext()->GetResourceContext();
   scoped_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_,
       render_process_host_id,
       render_view_host_routing_id ,
       resource_context));
   params->set_file_path(file);
-  if (controller_->GetVisibleEntry())
+  if (controller.GetVisibleEntry())
     params->set_referrer(
-        content::Referrer(controller_->GetVisibleEntry()->GetURL(),
+        content::Referrer(controller.GetVisibleEntry()->GetURL(),
                           blink::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   download_manager->DownloadUrl(params.Pass());

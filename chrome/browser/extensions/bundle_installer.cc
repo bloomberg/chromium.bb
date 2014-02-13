@@ -19,15 +19,12 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::NavigationController;
 
 namespace extensions {
 
@@ -136,7 +133,7 @@ void BundleInstaller::PromptForApproval(Delegate* delegate) {
   ParseManifests();
 }
 
-void BundleInstaller::CompleteInstall(NavigationController* controller,
+void BundleInstaller::CompleteInstall(content::WebContents* web_contents,
                                       Delegate* delegate) {
   CHECK(approved_);
 
@@ -168,7 +165,7 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
     scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
         profile_,
         this,
-        controller,
+        web_contents,
         i->first,
         approval.Pass(),
         WebstoreInstaller::INSTALL_SOURCE_OTHER);

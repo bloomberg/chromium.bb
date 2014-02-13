@@ -254,7 +254,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile_,
       this,
-      &(GetWebContents()->GetController()),
+      GetWebContents(),
       id_,
       approval.Pass(),
       install_source_);

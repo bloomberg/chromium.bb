@@ -23,7 +23,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace content {
-class NavigationController;
+class WebContents;
 }  // namespace content
 
 class Browser;
@@ -96,11 +96,10 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   // If the bundle has been approved, this downloads and installs the member
   // extensions. OnBundleInstallComplete will be called when the process is
   // complete and |delegate| is not NULL. The download process uses the
-  // specified |controller|. When complete, we show a confirmation bubble in
-  // the specified |browser|.
+  // NavigationController of the specified |web_contents|. When complete, we
+  // show a confirmation bubble in the specified |browser|.
   // Note: the |delegate| must stay alive until receiving the callback.
-  void CompleteInstall(content::NavigationController* controller,
-                       Delegate* delegate);
+  void CompleteInstall(content::WebContents* web_contents, Delegate* delegate);
 
   // We change the headings in the install prompt and installed bubble depending
   // on whether the bundle contains apps, extensions or both. This method gets
