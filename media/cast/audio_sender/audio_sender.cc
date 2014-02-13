@@ -50,16 +50,23 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
 
   virtual void GetStatistics(const base::TimeTicks& now,
                              transport::RtcpSenderInfo* sender_info) OVERRIDE {
-    // Update RTP timestamp and return last stored statistics.
-    if (rtp_timestamp_) {
+    // Update and return last stored statistics.
+    uint32 ntp_seconds = 0;
+    uint32 ntp_fraction = 0;
+    uint32 rtp_timestamp = 0;
+    if (rtp_timestamp_ > 0) {
       base::TimeDelta time_since_last_send = now - time_sent_;
-      sender_info_.rtp_timestamp =
-          rtp_timestamp_ +
-          time_since_last_send.InMilliseconds() * (frequency_ / 1000);
-    } else {
-      sender_info_.rtp_timestamp = 0;
+      rtp_timestamp = rtp_timestamp_ + time_since_last_send.InMilliseconds() *
+                                           (frequency_ / 1000);
+      // Update NTP time to current time.
+      ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
     }
-    memcpy(sender_info, &sender_info_, sizeof(transport::RtcpSenderInfo));
+    // Populate sender info.
+    sender_info->rtp_timestamp = rtp_timestamp;
+    sender_info->ntp_seconds = sender_info_.ntp_seconds;
+    sender_info->ntp_fraction = sender_info_.ntp_fraction;
+    sender_info->send_packet_count = sender_info_.send_packet_count;
+    sender_info->send_octet_count = sender_info_.send_octet_count;
   }
 
   void StoreStatistics(transport::RtcpSenderInfo& sender_info,

@@ -38,26 +38,34 @@ double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
 void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   int width = frame->coded_size().width();
   int height = frame->coded_size().height();
-  int half_width = (width + 1) / 2;
+  int stride_y = frame->stride(VideoFrame::kYPlane);
+  int stride_u = frame->stride(VideoFrame::kUPlane);
+  int stride_v = frame->stride(VideoFrame::kVPlane);
   int half_height = (height + 1) / 2;
   uint8* y_plane = frame->data(VideoFrame::kYPlane);
   uint8* u_plane = frame->data(VideoFrame::kUPlane);
   uint8* v_plane = frame->data(VideoFrame::kVPlane);
 
   // Set Y.
-  for (int i = 0; i < width * height; ++i) {
-    y_plane[i] = static_cast<uint8>(start_value + i);
-  }
+  for (int j = 0; j < height; ++j)
+    for (int i = 0; i < stride_y; ++i) {
+      *y_plane = static_cast<uint8>(start_value + i + j);
+      ++y_plane;
+    }
 
   // Set U.
-  for (int i = 0; i < half_width * half_height; ++i) {
-    u_plane[i] = static_cast<uint8>(start_value + i);
-  }
+  for (int j = 0; j < half_height; ++j)
+    for (int i = 0; i < stride_u; ++i) {
+      *u_plane = static_cast<uint8>(start_value + i + j);
+      ++u_plane;
+    }
 
   // Set V.
-  for (int i = 0; i < half_width * half_height; ++i) {
-    v_plane[i] = static_cast<uint8>(start_value + i);
-  }
+  for (int j = 0; j < half_height; ++j)
+    for (int i = 0; i < stride_v; ++i) {
+      *v_plane = static_cast<uint8>(start_value + i + j);
+      ++v_plane;
+    }
 }
 
 bool PopulateVideoFrameFromFile(VideoFrame* frame, FILE* video_file) {

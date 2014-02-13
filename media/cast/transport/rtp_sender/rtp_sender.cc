@@ -14,8 +14,10 @@ namespace media {
 namespace cast {
 namespace transport {
 
-// Schedule the RTP statistics callback every 100mS.
-static const int kStatsCallbackIntervalMs = 100;
+// Schedule the RTP statistics callback every 33mS. As this interval affects the
+// time offset of the render and playout times, we want it in the same ball park
+// as the frame rate.
+static const int kStatsCallbackIntervalMs = 33;
 
 RtpSender::RtpSender(
     base::TickClock* clock,
@@ -23,8 +25,7 @@ RtpSender::RtpSender(
     bool is_audio,
     const scoped_refptr<base::TaskRunner>& transport_task_runner,
     PacedSender* const transport)
-    : clock_(clock),
-      config_(),
+    : config_(),
       transport_(transport),
       stats_callback_(),
       transport_task_runner_(transport_task_runner) {
@@ -48,7 +49,8 @@ RtpSender::RtpSender(
   }
   // Randomly set start values.
   config_.sequence_number = base::RandInt(0, 65535);
-  packetizer_.reset(new RtpPacketizer(transport, storage_.get(), config_));
+  packetizer_.reset(
+      new RtpPacketizer(transport, storage_.get(), config_));
 }
 
 RtpSender::~RtpSender() {}
@@ -138,12 +140,6 @@ void RtpSender::ScheduleNextStatsReport() {
 
 void RtpSender::RtpStatistics() {
   RtcpSenderInfo sender_info;
-  uint32 ntp_seconds = 0;
-  uint32 ntp_fraction = 0;
-  ConvertTimeTicksToNtp(clock_->NowTicks(), &ntp_seconds, &ntp_fraction);
-  sender_info.ntp_seconds = ntp_seconds;
-  sender_info.ntp_fraction = ntp_fraction;
-
   base::TimeTicks time_sent;
   uint32 rtp_timestamp = 0;
   packetizer_->LastSentTimestamp(&time_sent, &rtp_timestamp);

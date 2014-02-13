@@ -75,6 +75,7 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
                    const base::TimeTicks& recorded_time,
                    const base::Closure& done_callback) {
     int src_pos = 0;
+    int packet_count = 0;
     while (audio_bus && src_pos < audio_bus->frames()) {
       const int num_samples_to_xfer = std::min(
           samples_per_10ms_ - buffer_fill_end_, audio_bus->frames() - src_pos);
@@ -124,12 +125,19 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
               base::TimeDelta::FromMilliseconds(10) / samples_per_10ms_;
           // TODO(miu): Consider batching EncodedAudioFrames so we only post a
           // at most one task for each call to this method.
-          cast_environment_->PostTask(
+          // Postpone every packet by 10mS with respect to the previous. Playout
+          // is postponed already by 10mS, and this will better correlate with
+          // the pacer's expectations.
+          //TODO(mikhal): Turn this into a list of packets.
+          // Update the end2end allowed error once this is fixed.
+          cast_environment_->PostDelayedTask(
               CastEnvironment::MAIN,
               FROM_HERE,
               base::Bind(callback_,
                          base::Passed(&audio_frame),
-                         recorded_time - buffer_time_offset));
+                         recorded_time - buffer_time_offset),
+              base::TimeDelta::FromMilliseconds(packet_count * 10));
+          ++packet_count;
         }
         buffer_fill_end_ = 0;
       }

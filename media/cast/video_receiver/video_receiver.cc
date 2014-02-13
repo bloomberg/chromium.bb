@@ -365,6 +365,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   // Note: the senders clock and our local clock might not be synced.
   base::TimeTicks rtp_timestamp_in_ticks;
 
+  // Compute the time offset_in_ticks based on the incoming_rtp_timestamp_.
   if (time_offset_.InMilliseconds() == 0) {
     if (!rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
                                          incoming_rtp_timestamp_,
@@ -387,6 +388,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   }
   // Reset |time_incoming_packet_updated_| to enable a future measurement.
   time_incoming_packet_updated_ = false;
+  // Compute the actual rtp_timestamp_in_ticks based on the current timestamp.
   if (!rtcp_->RtpTimestampInSenderTime(
            kVideoFrequency, rtp_timestamp, &rtp_timestamp_in_ticks)) {
     // This can fail if we have not received any RTCP packets in a long time.

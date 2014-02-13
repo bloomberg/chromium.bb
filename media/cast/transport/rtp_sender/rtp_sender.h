@@ -59,7 +59,6 @@ class RtpSender {
   void RtpStatistics();
   void UpdateSequenceNumber(Packet* packet);
 
-  base::TickClock* clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;

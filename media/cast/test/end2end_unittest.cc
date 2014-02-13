@@ -44,8 +44,10 @@ static const int64 kStartMillisecond = GG_INT64_C(1245);
 static const int kAudioChannels = 2;
 static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
 static const float kSoundVolume = 0.5f;
-static const int kVideoWidth = 1280;
-static const int kVideoHeight = 720;
+static const int kVideoHdWidth = 1280;
+static const int kVideoHdHeight = 720;
+static const int kVideoQcifWidth = 176;
+static const int kVideoQcifHeight = 144;
 static const int kCommonRtpHeaderLength = 12;
 static const uint8 kCastReferenceFrameIdBitReset = 0xDF;  // Mask is 0x40.
 
@@ -61,7 +63,14 @@ static const int kFrameTimerMs = 33;
 // The packets pass through the pacer which can delay the beginning of the
 // frame by 10 ms if there is packets belonging to the previous frame being
 // retransmitted.
-static const int kTimerErrorMs = 15;
+// In addition, audio packets are sent in 10mS intervals in audio_encoder.cc,
+// although we send an audio frame every 33mS, which adds an extra delay.
+// A TODO was added in the code to resolve this.
+static const int kTimerErrorMs = 20;
+
+// Start the video synthetic start value to medium range value, to avoid edge
+// effects cause by encoding and quantization.
+static const int kVideoStart = 100;
 
 std::string ConvertFromBase16String(const std::string base_16) {
   std::string compressed;
@@ -95,7 +104,8 @@ std::map<RtpTimestamp, LoggingEventCounts> GetEventCountForFrameEvents(
     const std::vector<FrameEvent>& frame_events) {
   std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame;
   for (std::vector<FrameEvent>::const_iterator it = frame_events.begin();
-       it != frame_events.end(); ++it) {
+       it != frame_events.end();
+       ++it) {
     std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
         event_counter_for_frame.find(it->rtp_timestamp);
     if (map_it == event_counter_for_frame.end()) {
@@ -117,7 +127,8 @@ std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
     const std::vector<PacketEvent>& packet_events) {
   std::map<uint16, LoggingEventCounts> event_counter_for_packet;
   for (std::vector<PacketEvent>::const_iterator it = packet_events.begin();
-       it != packet_events.end(); ++it) {
+       it != packet_events.end();
+       ++it) {
     std::map<uint16, LoggingEventCounts>::iterator map_it =
         event_counter_for_packet.find(it->packet_id);
     if (map_it == event_counter_for_packet.end()) {
@@ -253,7 +264,8 @@ class TestReceiverAudioCallback
       return;  // No more checks needed.
 
     EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
-                CountZeroCrossings(audio_frame->samples), 1);
+                CountZeroCrossings(audio_frame->samples),
+                1);
   }
 
   void CheckCodedPcmAudioFrame(
@@ -291,7 +303,8 @@ class TestReceiverAudioCallback
     }
 
     EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
-                CountZeroCrossings(output_audio_samples), 1);
+                CountZeroCrossings(output_audio_samples),
+                1);
   }
 
   int number_times_called() const { return num_called_; }
@@ -320,7 +333,9 @@ class TestReceiverVideoCallback
 
   TestReceiverVideoCallback() : num_called_(0) {}
 
-  void AddExpectedResult(int start_value, int width, int height,
+  void AddExpectedResult(int start_value,
+                         int width,
+                         int height,
                          const base::TimeTicks& capture_time) {
     ExpectedVideoFrame expected_video_frame;
     expected_video_frame.start_value = start_value;
@@ -379,8 +394,6 @@ class End2EndTest : public ::testing::Test {
       : start_time_(),
         testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        transport_task_runner_(
-            new test::FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
@@ -430,8 +443,8 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.incoming_feedback_ssrc = 4;
     video_sender_config_.rtp_config.payload_type = 97;
     video_sender_config_.use_external_encoder = false;
-    video_sender_config_.width = kVideoWidth;
-    video_sender_config_.height = kVideoHeight;
+    video_sender_config_.width = kVideoHdWidth;
+    video_sender_config_.height = kVideoHdHeight;
     video_sender_config_.max_bitrate = 5000000;
     video_sender_config_.min_bitrate = 1000000;
     video_sender_config_.start_bitrate = 5000000;
@@ -471,7 +484,7 @@ class End2EndTest : public ::testing::Test {
         testing_clock_,
         transport_config_,
         base::Bind(&UpdateCastTransportStatus),
-        transport_task_runner_,
+        task_runner_,
         &sender_to_receiver_));
 
     cast_sender_.reset(CastSender::CreateCastSender(
@@ -508,10 +521,9 @@ class End2EndTest : public ::testing::Test {
 
   void SendVideoFrame(int start_value, const base::TimeTicks& capture_time) {
     if (start_time_.is_null())
-      start_time_ = testing_clock_->NowTicks();
-    start_time_ = testing_clock_->NowTicks();
-    base::TimeDelta time_diff = testing_clock_->NowTicks() - start_time_;
-    gfx::Size size(kVideoWidth, kVideoHeight);
+      start_time_ = capture_time;
+    base::TimeDelta time_diff = capture_time - start_time_;
+    gfx::Size size(video_sender_config_.width, video_sender_config_.height);
     EXPECT_TRUE(VideoFrame::IsValidConfig(
         VideoFrame::I420, size, gfx::Rect(size), size));
     scoped_refptr<media::VideoFrame> video_frame =
@@ -526,7 +538,6 @@ class End2EndTest : public ::testing::Test {
       // Call process the timers every 1 ms.
       testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
-      transport_task_runner_->RunTasks();
     }
   }
 
@@ -541,9 +552,8 @@ class End2EndTest : public ::testing::Test {
   transport::CastTransportConfig transport_config_;
 
   base::TimeTicks start_time_;
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  base::SimpleTestTickClock* testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> transport_task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
   LoopBackTransport receiver_to_sender_;
@@ -566,33 +576,36 @@ class End2EndTest : public ::testing::Test {
   std::vector<GenericEvent> generic_events_;
 };
 
-// Audio and video test without packet loss using raw PCM 16 audio "codec";
-// This test is too slow. Disabled for now: crbug.com/329333.
-TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
+#if defined(OS_WIN)
+#define MAYBE_LoopNoLossPcm16 DISABLED_LoopNoLossPcm16
+#else
+#define MAYBE_LoopNoLossPcm16 LoopNoLossPcm16
+#endif
+// TODO(mikhal): Crashes in win bots (http://crbug.com/329563)
+TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
+  // Reduce video resolution to allow processing multiple frames within a
+  // reasonable time frame.
+  video_sender_config_.width = kVideoQcifWidth;
+  video_sender_config_.height = kVideoQcifHeight;
   Create();
 
-  int video_start = 1;
+  int video_start = kVideoStart;
   int audio_diff = kFrameTimerMs;
   int i = 0;
 
-  for (; i < 10; ++i) {
+  for (; i < 300; ++i) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;
-    base::TimeTicks send_time = testing_clock_->NowTicks();
-
-    test_receiver_video_callback_->AddExpectedResult(
-        video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
-        send_time);
 
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
+    base::TimeTicks send_time = testing_clock_->NowTicks();
     if (i != 0) {
       // Due to the re-sampler and NetEq in the webrtc AudioCodingModule the
-      // first samples will be 0 and then slowly ramp up to its real amplitude;
+      // first samples will be 0 and then slowly ramp up to its real
+      // amplitude;
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
@@ -606,10 +619,12 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
+    test_receiver_video_callback_->AddExpectedResult(
+        video_start,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
     SendVideoFrame(video_start, send_time);
-
-    RunTasks(kFrameTimerMs);
-    audio_diff += kFrameTimerMs;
 
     if (i == 0) {
       frame_receiver_->GetRawAudioFrame(
@@ -629,6 +644,8 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
                    test_receiver_video_callback_));
 
+    RunTasks(kFrameTimerMs);
+    audio_diff += kFrameTimerMs;
     video_start++;
   }
 
@@ -736,7 +753,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
 
-  int video_start = 1;
+  int video_start = kVideoStart;
   int audio_diff = kFrameTimerMs;
 
   sender_to_receiver_.SetSendPackets(false);
@@ -827,7 +844,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
 
-  int video_start = 50;
+  int video_start = kVideoStart;
   base::TimeTicks send_time = testing_clock_->NowTicks();
   SendVideoFrame(video_start, send_time);
   RunTasks(kFrameTimerMs);
@@ -883,7 +900,7 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
   Create();
   sender_to_receiver_.DropAllPacketsBelongingToOddFrames();
 
-  int video_start = 50;
+  int video_start = kVideoStart;
   base::TimeTicks send_time;
 
   int i = 0;
@@ -1009,7 +1026,8 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
 
     if (frames_counter != 0) {
       // Due to the re-sampler and NetEq in the webrtc AudioCodingModule the
-      // first samples will be 0 and then slowly ramp up to its real amplitude;
+      // first samples will be 0 and then slowly ramp up to its real
+      // amplitude;
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
@@ -1043,13 +1061,13 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
             test_receiver_audio_callback_->number_times_called());
 }
 
-// Video test without packet loss; This test is targeted at testing the logging
-// aspects of the end2end, but is basically equivalent to LoopNoLossPcm16.
+// Video test without packet loss - tests the logging aspects of the end2end,
+// but is basically equivalent to LoopNoLossPcm16.
 TEST_F(End2EndTest, VideoLogging) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
   Create();
 
-  int video_start = 1;
+  int video_start = kVideoStart;
   const int num_frames = 1;
   for (int i = 0; i < num_frames; ++i) {
     base::TimeTicks send_time = testing_clock_->NowTicks();
@@ -1093,7 +1111,8 @@ TEST_F(End2EndTest, VideoLogging) {
   // Verify that each frame have the expected types of events logged.
   for (std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
            event_counter_for_frame.begin();
-       map_it != event_counter_for_frame.end(); ++map_it) {
+       map_it != event_counter_for_frame.end();
+       ++map_it) {
     int total_event_count_for_frame = 0;
     for (int i = 0; i < kNumOfLoggingEvents; ++i) {
       total_event_count_for_frame += map_it->second.counter[i];
@@ -1120,7 +1139,8 @@ TEST_F(End2EndTest, VideoLogging) {
     expected_event_count_for_frame +=
         map_it->second.counter[kVideoFrameDecoded];
 
-    // Verify that there were no other events logged with respect to this frame.
+    // Verify that there were no other events logged with respect to this
+    // frame.
     // (i.e. Total event count = expected event count)
     EXPECT_EQ(total_event_count_for_frame, expected_event_count_for_frame);
   }
@@ -1134,7 +1154,8 @@ TEST_F(End2EndTest, VideoLogging) {
   // Verify that each packet have the expected types of events logged.
   for (std::map<uint16, LoggingEventCounts>::iterator map_it =
            event_count_for_packet.begin();
-       map_it != event_count_for_packet.end(); ++map_it) {
+       map_it != event_count_for_packet.end();
+       ++map_it) {
     int total_event_count_for_packet = 0;
     for (int i = 0; i < kNumOfLoggingEvents; ++i) {
       total_event_count_for_packet += map_it->second.counter[i];
@@ -1157,8 +1178,8 @@ TEST_F(End2EndTest, VideoLogging) {
 #else
 #define MAYBE_AudioLogging AudioLogging
 #endif
-// Audio test without packet loss; This test is targeted at testing the logging
-// aspects of the end2end, but is basically equivalent to LoopNoLossPcm16.
+// Audio test without packet loss - tests the logging aspects of the end2end,
+// but is basically equivalent to LoopNoLossPcm16.
 TEST_F(End2EndTest, MAYBE_AudioLogging) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
   Create();
@@ -1175,7 +1196,8 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
 
     if (i != 0) {
       // Due to the re-sampler and NetEq in the webrtc AudioCodingModule the
-      // first samples will be 0 and then slowly ramp up to its real amplitude;
+      // first samples will be 0 and then slowly ramp up to its real
+      // amplitude;
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
@@ -1228,39 +1250,34 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
 
   // TODO(imcheng): This only checks the first frame. This doesn't work
   // properly for all frames for two reasons:
-  // 1. There is a loopback of kAudioPlayoutDelay and kAudioFrameDecoded events
-  // due to shared CastEnvironment between sender and
-  // receiver in the test setup. We will need to create separate CastEnvironment
-  // once again to fix this.
-  // 2. kAudioPlayoutDelay and kAudioFrameDecoded RTP timestamps aren't exactly
-  // aligned with those of kAudioFrameReceived and kAudioFrameEncoded. Note that
-  // these RTP timestamps are output from webrtc::AudioCodingModule which are
-  // different from RTP timestamps that the cast library generates during the
-  // encode step (and which are sent to receiver). The first frame just happen
-  // to be aligned.
+  // 1. There is a loopback of kAudioPlayoutDelay and kAudioFrameDecoded
+  // events due to shared CastEnvironment between sender and
+  // receiver in the test setup. We will need to create separate
+  // CastEnvironment once again to fix this.
+  // 2. kAudioPlayoutDelay and kAudioFrameDecoded RTP timestamps aren't
+  // exactly aligned with those of kAudioFrameReceived and kAudioFrameEncoded.
+  // Note that these RTP timestamps are output from webrtc::AudioCodingModule
+  // which are different from RTP timestamps that the cast library generates
+  // during the encode step (and which are sent to receiver). The first frame
+  // just happen to be aligned.
   int total_event_count_for_frame = 0;
   for (int j = 0; j < kNumOfLoggingEvents; ++j)
     total_event_count_for_frame += map_it->second.counter[j];
 
-
   int expected_event_count_for_frame = 0;
 
   EXPECT_GT(map_it->second.counter[kAudioFrameReceived], 0);
-  expected_event_count_for_frame +=
-      map_it->second.counter[kAudioFrameReceived];
+  expected_event_count_for_frame += map_it->second.counter[kAudioFrameReceived];
 
   EXPECT_GT(map_it->second.counter[kAudioFrameEncoded], 0);
-  expected_event_count_for_frame +=
-      map_it->second.counter[kAudioFrameEncoded];
+  expected_event_count_for_frame += map_it->second.counter[kAudioFrameEncoded];
 
   // Note that this is a big positive number instead of just 1 due to loopback
   // described in TODO above.
   EXPECT_GT(map_it->second.counter[kAudioPlayoutDelay], 0);
-  expected_event_count_for_frame +=
-      map_it->second.counter[kAudioPlayoutDelay];
+  expected_event_count_for_frame += map_it->second.counter[kAudioPlayoutDelay];
   EXPECT_GT(map_it->second.counter[kAudioFrameDecoded], 0);
-  expected_event_count_for_frame +=
-      map_it->second.counter[kAudioFrameDecoded];
+  expected_event_count_for_frame += map_it->second.counter[kAudioFrameDecoded];
 
   // Verify that there were no other events logged with respect to this frame.
   // (i.e. Total event count = expected event count)

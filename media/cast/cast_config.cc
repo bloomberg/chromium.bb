@@ -36,6 +36,8 @@ AudioReceiverConfig::AudioReceiverConfig()
       incoming_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
+      rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
+      rtp_payload_type(0),
       use_external_decoder(false),
       frequency(0),
       channels(0) {}

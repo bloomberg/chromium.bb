@@ -129,7 +129,8 @@ bool UdpTransport::SendPacket(const Packet& packet) {
       base::Bind(&UdpTransport::OnSent, weak_factory_.GetWeakPtr(), buf));
   if (ret == net::ERR_IO_PENDING)
     send_pending_ = true;
-  return ret == net::OK;
+  // When ok, will return a positive value equal the number of bytes sent.
+  return ret >= net::OK;
 }
 
 void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf, int result) {

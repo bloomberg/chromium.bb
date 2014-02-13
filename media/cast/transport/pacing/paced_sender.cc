@@ -67,7 +67,7 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
   }
   packets_not_sent->insert(
       packets_not_sent->end(), first_to_store_it, packets.end());
-  packets_sent_in_burst_ += packets_to_send.size();
+  packets_sent_in_burst_ = packets_to_send.size();
   if (packets_to_send.empty())
     return true;
 
@@ -127,6 +127,8 @@ void PacedSender::SendStoredPackets() {
     if (packet_list_.empty()) {
       burst_size_ = 1;  // Reset burst size after we sent the last stored packet
       packets_sent_in_burst_ = 0;
+    } else {
+      packets_sent_in_burst_ = packets_to_resend.size();
     }
   }
   TransmitPackets(packets_to_resend);

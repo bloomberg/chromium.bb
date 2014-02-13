@@ -126,7 +126,7 @@ void LinuxOutputWindow::RenderFrame(
                      video_frame->data(VideoFrame::kVPlane),
                      video_frame->stride(VideoFrame::kVPlane),
                      render_buffer_,
-                     video_frame->coded_size().width() * 4,  // Stride.
+                     video_frame->stride(VideoFrame::kYPlane) * 4,
                      video_frame->coded_size().width(),
                      video_frame->coded_size().height());
 
