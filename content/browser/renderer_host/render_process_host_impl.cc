@@ -206,7 +206,7 @@ IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::PlatformFile aec_dump_file = base::CreatePlatformFile(
       file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_APPEND,
       NULL,
       &error);
   if (error != base::PLATFORM_FILE_OK) {
@@ -220,7 +220,6 @@ IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
 void DisableAecDumpOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
-
 #endif
 
 // the global list of all renderer processes

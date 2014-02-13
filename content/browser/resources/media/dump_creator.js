@@ -42,7 +42,11 @@ var DumpCreator = (function() {
         ' future WebRTC calls, but an ongoing call will continue to record' +
         ' until the call is ended. Only recording in one tab is supported.' +
         ' If several tabs are running WebRTC calls, the resulting file will' +
-        ' be invalid.</p>';
+        ' be invalid. To restart the dump, the tab with the call being' +
+        ' recorded must be closed and recording disabled and enabled again.' +
+        ' When enabling, you select a file to save the dump to. Choose a' +
+        ' non-existing file name. Selecting an existing file will append to' +
+        ' it, not overwrite it, rendering the file invalid. </p>';
 
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
