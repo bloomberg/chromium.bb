@@ -5,6 +5,7 @@
 import os
 import environment
 
+from caching_file_system import CachingFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from extensions_paths import LOCAL_GCS_DIR, LOCAL_GCS_DEBUG_CONF
 from local_file_system import LocalFileSystem
@@ -81,9 +82,9 @@ class CloudStorageFileSystemProvider(object):
     # gcs_file_system has strong dependencies on runtime appengine APIs,
     # so we only import it when we are sure we are not on preview.py or tests.
     from gcs_file_system import CloudStorageFileSystem
-    return CloudStorageFileSystem(
-        bucket, debug_access_token, debug_bucket_prefix)
-
+    return CachingFileSystem(CloudStorageFileSystem(bucket,
+        debug_access_token, debug_bucket_prefix),
+        self._object_store_creator)
 
   @staticmethod
   def ForEmpty():
