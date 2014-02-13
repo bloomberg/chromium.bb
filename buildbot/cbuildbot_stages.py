@@ -1249,22 +1249,21 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       started may have status None.
     """
 
-    # TODO(mtennant): When testing a master in debug mode, it is actually very
-    # helpful to allow this code to check on slave status IF the run was with
-    # a specified manifest version (--version argument).  In such a case, the
-    # master fetches the statuses of previously finished slaves (from the real
-    # runs, presumably completed earlier), nicely executing more of this code.
-    # I suggest allowing a master with --debug and --version to run this code.
-    if self._run.options.debug:
-      # In debug mode, nothing is uploaded to Google Storage, so we bypass
-      # the extra hop and just look at what we have locally.
-      status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
-      status_obj = manifest_version.BuilderStatus(status, self.message)
-      return {self._bot_id: status_obj}
-    elif not self._run.config.master:
-      # Slaves only need to look at their own status.
-      return self._run.attrs.manifest_manager.GetBuildersStatus([self._bot_id])
+    if not self._run.config.master:
+      if self._run.options.debug:
+        # In debug mode, nothing is uploaded to Google Storage, so we bypass
+        # the extra hop and just look at what we have locally.
+        status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
+        status_obj = manifest_version.BuilderStatus(status, self.message)
+        return {self._bot_id: status_obj}
+      else:
+        # Slaves only need to look at their own status.
+        return self._run.attrs.manifest_manager.GetBuildersStatus(
+            [self._bot_id])
     else:
+      # Wait for slaves to finish, unless this is a debug run.
+      wait_for_results = not self._run.options.debug
+
       builders = self._GetSlavesForMaster(self._run.config)
       manager = self._run.attrs.manifest_manager
       sub_manager = MasterSlaveSyncStage.sub_manager
@@ -1273,11 +1272,15 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         # statuses cannot be gathered at the same time.  This would avoid
         # having two separate long timeout periods involved.
         public_builders = [b['name'] for b in builders if not b['internal']]
-        statuses = sub_manager.GetBuildersStatus(public_builders)
+        statuses = sub_manager.GetBuildersStatus(public_builders,
+                                                 wait_for_results)
         private_builders = [b['name'] for b in builders if b['internal']]
-        statuses.update(manager.GetBuildersStatus(private_builders))
+        statuses.update(manager.GetBuildersStatus(private_builders,
+                                                  wait_for_results))
       else:
-        statuses = manager.GetBuildersStatus([b['name'] for b in builders])
+        builder_names = [b['name'] for b in builders]
+        statuses = manager.GetBuildersStatus(builder_names, wait_for_results)
+
       return statuses
 
   def _AbortCQHWTests(self):
@@ -3114,6 +3117,7 @@ def _RunPaygenInProcess(channel, board, version, debug):
   # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
   # These modules are imported here because they aren't always available at
   # cbuildbot startup.
+  # pylint: disable=F0401
   from crostools.lib import gspaths
   from crostools.lib import paygen_build_lib
 

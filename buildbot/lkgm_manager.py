@@ -164,24 +164,42 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       assert cbuildbot_config.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
 
-  def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
-    """Runs function_to_run until it returns a value or timeout is reached."""
+  def _GetMaxLongTimeout(self):
+    """Get the long "max timeout" for this builder.
+
+    Returns:
+      Timeout in seconds.
+    """
+    if self.build_type == constants.PFQ_TYPE:
+      return self.LONG_MAX_TIMEOUT_SECONDS
+    else:
+      return self.CHROME_LONG_MAX_TIMEOUT_SECONDS
+
+  def _RunLambdaWithTimeout(self, function_to_run, max_timeout):
+    """Runs function_to_run until it returns a value or timeout is reached.
+
+    function_to_run is called with one argument equal to the number of seconds
+    left until timing out.
+
+    Args:
+      function_to_run: Function to run until it returns a value or the timeout
+        is reached.
+      max_timeout: Time to wait for function_to_run to return a value.
+      use_long_timeout: Adjusts the timeout to use.  See logic below.
+    """
     function_success = False
     start_time = time.time()
-    max_timeout = self.MAX_TIMEOUT_SECONDS
-    if use_long_timeout:
-      if self.build_type == constants.PFQ_TYPE:
-        max_timeout = self.LONG_MAX_TIMEOUT_SECONDS
-      else:
-        max_timeout = self.CHROME_LONG_MAX_TIMEOUT_SECONDS
 
     # Monitor the repo until all builders report in or we've waited too long.
-    while (time.time() - start_time) < max_timeout:
-      function_success = function_to_run()
+    seconds_left = max_timeout - (time.time() - start_time)
+    while seconds_left > 0:
+      function_success = function_to_run(seconds_left)
       if function_success:
         break
       else:
         time.sleep(self.SLEEP_TIMEOUT)
+
+      seconds_left = max_timeout - (time.time() - start_time)
 
     return function_success
 
@@ -399,7 +417,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     Raises:
       GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    def _AttemptToGetLatestCandidate():
+    def _AttemptToGetLatestCandidate(seconds_left):
       """Attempts to acquire latest candidate using manifest repo."""
       self.RefreshManifestCheckout()
       self.InitializeManifestVariables(self.GetCurrentVersionInfo())
@@ -408,7 +426,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       elif self.dry_run and self.latest:
         return self.latest
       else:
-        logging.info('Found nothing new to build, trying again later.')
+        minutes_left = int((seconds_left / 60) + 0.5)
+        logging.info('Found nothing new to build, will keep trying for %d more'
+                     ' minutes.', minutes_left)
         logging.info('If this is a PFQ, then you should have forced the master'
                      ', which runs cbuildbot_master')
         return None
@@ -416,8 +436,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # TODO(sosa):  We only really need the overlay for the version info but we
     # do a full checkout here because we have no way of refining it currently.
     self.CheckoutSourceCode()
-    version_to_build = self._RunLambdaWithTimeout(_AttemptToGetLatestCandidate,
-                                                  use_long_timeout=True)
+    version_to_build = self._RunLambdaWithTimeout(
+        _AttemptToGetLatestCandidate, self._GetMaxLongTimeout())
+
     if version_to_build:
       logging.info('Starting build spec: %s', version_to_build)
       self.SetInFlight(version_to_build)
@@ -431,16 +452,18 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       return None
 
-  def GetBuildersStatus(self, builders_array):
+  def GetBuildersStatus(self, builders_array, wait_for_results=True):
     """Returns a build-names->status dictionary of build statuses.
 
     Args:
       builders_array: A list of the names of the builders to check.
+      wait_for_results: If True, keep trying until all builder statuses are
+        available or until timeout is reached.
     """
     builders_completed = set()
     builder_statuses = {}
 
-    def _CheckStatusOfBuildersArray():
+    def _CheckStatusOfBuildersArray(seconds_left):
       """Helper function that iterates through current statuses."""
       for b in builders_array:
         cached_status = builder_statuses.get(b)
@@ -458,17 +481,24 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             logging.info('Builder %s completed with status failed', b)
 
       if len(builders_completed) < len(builders_array):
-        logging.info('Still waiting for the following builds to complete: %r',
+        minutes_left = int((seconds_left / 60) + 0.5)
+        logging.info('Still waiting (up to %d more minutes) for the following'
+                     ' builds to complete: %r', minutes_left,
                      sorted(set(builders_array).difference(builders_completed)))
         return None
       else:
         return 'Builds completed.'
 
+    # Even if we do not want to wait for results long, wait a little bit
+    # just to exercise the same code.
+    max_timeout = self._GetMaxLongTimeout() if wait_for_results else 3 * 60
+
     # Check for build completion until all builders report in.
-    builds_succeeded = self._RunLambdaWithTimeout(_CheckStatusOfBuildersArray,
-                                                  use_long_timeout=True)
+    builds_succeeded = self._RunLambdaWithTimeout(
+        _CheckStatusOfBuildersArray, max_timeout)
     if not builds_succeeded:
-      logging.error('Not all builds finished before MAX_TIMEOUT reached.')
+      logging.error('Not all builds finished before timeout (%d minutes)'
+                    ' reached.', int((max_timeout / 60) + 0.5))
 
     return builder_statuses
 
@@ -486,7 +516,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         if attempt > 0:
           self.RefreshManifestCheckout()
         git.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                        self.manifest_dir, sync=False)
+                             self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
         git.RunGit(self.manifest_dir, ['add', self.LKGM_PATH])
         self.PushSpecChanges(
