@@ -77,7 +77,7 @@ void WindowTreeHostOzone::SetCapture() { NOTIMPLEMENTED(); }
 void WindowTreeHostOzone::ReleaseCapture() { NOTIMPLEMENTED(); }
 
 void WindowTreeHostOzone::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  gfx::SurfaceFactoryOzone::GetInstance()->SetCursorImage(*cursor.platform());
 }
 
 bool WindowTreeHostOzone::QueryMouseLocation(gfx::Point* location_return) {
@@ -97,7 +97,7 @@ void WindowTreeHostOzone::OnCursorVisibilityChanged(bool show) {
 }
 
 void WindowTreeHostOzone::MoveCursorTo(const gfx::Point& location) {
-  NOTIMPLEMENTED();
+  gfx::SurfaceFactoryOzone::GetInstance()->MoveCursorTo(location);
 }
 
 void WindowTreeHostOzone::PostNativeEvent(

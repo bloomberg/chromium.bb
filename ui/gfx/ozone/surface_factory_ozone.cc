@@ -57,4 +57,10 @@ const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(
   return desired_attributes;
 }
 
+void SurfaceFactoryOzone::SetCursorImage(const SkBitmap& image) {
+}
+
+void SurfaceFactoryOzone::MoveCursorTo(const gfx::Point& location) {
+}
+
 }  // namespace gfx

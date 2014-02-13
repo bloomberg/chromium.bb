@@ -8,10 +8,12 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
+class SkBitmap;
 class SkCanvas;
 
 namespace gfx {
@@ -136,6 +138,12 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // terminated with EGL_NONE. Ownership of the array is not transferred to
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
+
+  // Sets the cursor image to |image|.
+  virtual void SetCursorImage(const SkBitmap& image);
+
+  // Sets the cursor position to |location|.
+  virtual void MoveCursorTo(const gfx::Point& location);
 
  private:
   static SurfaceFactoryOzone* impl_; // not owned

@@ -127,13 +127,13 @@
         'base/cursor/cursor.h',
         'base/cursor/cursor_android.cc',
         'base/cursor/cursor_loader.h',
-        'base/cursor/cursor_loader_null.cc',
-        'base/cursor/cursor_loader_null.h',
+        'base/cursor/cursor_loader_ozone.cc',
+        'base/cursor/cursor_loader_ozone.h',
         'base/cursor/cursor_loader_win.cc',
         'base/cursor/cursor_loader_win.h',
         'base/cursor/cursor_loader_x11.cc',
         'base/cursor/cursor_loader_x11.h',
-        'base/cursor/cursor_null.cc',
+        'base/cursor/cursor_ozone.cc',
         'base/cursor/cursor_mac.mm',
         'base/cursor/cursor_win.cc',
         'base/cursor/cursor_x11.cc',
@@ -534,13 +534,6 @@
             '../build/linux/system.gyp:xext',
             '../build/linux/system.gyp:xfixes',
             '../build/linux/system.gyp:xrender',  # For XRender* function calls in x11_util.cc.
-          ],
-        }],
-        ['use_ozone==0', {
-          'sources!': [
-            'base/cursor/cursor_null.cc',
-            'base/cursor/cursor_loader_null.cc',
-            'base/cursor/cursor_loader_null.h',
           ],
         }],
         ['toolkit_views==0', {

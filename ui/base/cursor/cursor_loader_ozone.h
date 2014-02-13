@@ -1,22 +1,27 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_CURSOR_CURSOR_LOADER_NULL_H_
-#define UI_BASE_CURSOR_CURSOR_LOADER_NULL_H_
+#ifndef UI_BASE_CURSOR_CURSOR_LOADER_OZONE_H_
+#define UI_BASE_CURSOR_CURSOR_LOADER_OZONE_H_
 
-#include "base/compiler_specific.h"
+#include <map>
+
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/ui_base_export.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorLoaderNull : public CursorLoader {
+class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
  public:
-  CursorLoaderNull();
-  virtual ~CursorLoaderNull();
+  CursorLoaderOzone();
+  virtual ~CursorLoaderOzone();
 
-  // Overridden from CursorLoader:
+  // CursorLoader overrides:
   virtual void LoadImageCursor(int id,
                                int resource_id,
                                const gfx::Point& hot) OVERRIDE;
@@ -28,9 +33,14 @@ class UI_BASE_EXPORT CursorLoaderNull : public CursorLoader {
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CursorLoaderNull);
+  // Pointers are owned by ResourceBundle and must not be freed here.
+  std::map<int, const gfx::ImageSkia*> cursors_;
+
+  SkBitmap invisible_cursor_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_CURSOR_CURSOR_LOADER_NULL_H_
+#endif  // UI_BASE_CURSOR_CURSOR_LOADER_OZONE_H_
