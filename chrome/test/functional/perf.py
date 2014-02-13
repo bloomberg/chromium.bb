@@ -51,7 +51,6 @@ import simplejson  # Must be imported after pyauto; located in third_party.
 from netflix import NetflixTestHelper
 import pyauto_utils
 import test_utils
-import webpagereplay
 from youtube import YoutubeTestHelper
 
 
@@ -2083,97 +2082,6 @@ class PageCyclerTest(BasePageCyclerTest):
 
   def testMoz2File(self):
     self.RunPageCyclerTest('moz2', 'Moz2File')
-
-
-class PageCyclerReplay(object):
-  """Run page cycler tests with network simulation via Web Page Replay.
-
-  Web Page Replay is a proxy that can record and "replay" web pages with
-  simulated network characteristics -- without having to edit the pages
-  by hand. With WPR, tests can use "real" web content, and catch
-  performance issues that may result from introducing network delays and
-  bandwidth throttling.
-  """
-  _PATHS = {
-      'archive':    'src/data/page_cycler/webpagereplay/{test_name}.wpr',
-      'page_sets':  'src/tools/page_cycler/webpagereplay/tests/{test_name}.js',
-      'start_page': 'src/tools/page_cycler/webpagereplay/start.html',
-      'extension':  'src/tools/page_cycler/webpagereplay/extension',
-      }
-
-  WEBPAGEREPLAY_HOST = '127.0.0.1'
-  WEBPAGEREPLAY_HTTP_PORT = 8080
-  WEBPAGEREPLAY_HTTPS_PORT = 8413
-
-  CHROME_FLAGS = webpagereplay.GetChromeFlags(
-      WEBPAGEREPLAY_HOST,
-      WEBPAGEREPLAY_HTTP_PORT,
-      WEBPAGEREPLAY_HTTPS_PORT) + [
-          '--log-level=0',
-          '--disable-background-networking',
-          '--enable-experimental-extension-apis',
-          '--enable-logging',
-          '--enable-benchmarking',
-          '--enable-net-benchmarking',
-          '--metrics-recording-only',
-          '--activate-on-launch',
-          '--no-first-run',
-          '--no-proxy-server',
-          ]
-
-  @classmethod
-  def Path(cls, key, **kwargs):
-    return FormatChromePath(cls._PATHS[key], **kwargs)
-
-  @classmethod
-  def ReplayServer(cls, test_name, replay_options=None):
-    archive_path = cls.Path('archive', test_name=test_name)
-    return webpagereplay.ReplayServer(archive_path,
-                                      cls.WEBPAGEREPLAY_HOST, 0,
-                                      cls.WEBPAGEREPLAY_HTTP_PORT,
-                                      cls.WEBPAGEREPLAY_HTTPS_PORT,
-                                      replay_options)
-
-
-class PageCyclerNetSimTest(BasePageCyclerTest):
-  """Tests to run Web Page Replay backed page cycler tests."""
-  MAX_ITERATION_SECONDS = 180
-
-  def ExtraChromeFlags(self):
-    """Ensures Chrome is launched with custom flags.
-
-    Returns:
-      A list of extra flags to pass to Chrome when it is launched.
-    """
-    flags = super(PageCyclerNetSimTest, self).ExtraChromeFlags()
-    flags.append('--load-extension=%s' % PageCyclerReplay.Path('extension'))
-    flags.extend(PageCyclerReplay.CHROME_FLAGS)
-    return flags
-
-  def StartUrl(self, test_name, iterations):
-    start_path = PageCyclerReplay.Path('start_page')
-    start_url = 'file://%s?test=%s&iterations=%d' % (
-        start_path, test_name, iterations)
-    if self.use_auto:
-      start_url += '&auto=1'
-    return start_url
-
-  def RunPageCyclerTest(self, test_name, description):
-    """Runs the specified PageCycler test.
-
-    Args:
-      test_name: name for archive (.wpr) and config (.js) files.
-      description: a string description for the test
-    """
-    replay_options = None
-    with PageCyclerReplay.ReplayServer(test_name, replay_options) as server:
-      if server.is_record_mode:
-        self._num_iterations = 1
-      super_self = super(PageCyclerNetSimTest, self)
-      super_self.RunPageCyclerTest(test_name, description)
-
-  def test2012Q2(self):
-    self.RunPageCyclerTest('2012Q2', '2012Q2')
 
 
 class MemoryTest(BasePerfTest):
