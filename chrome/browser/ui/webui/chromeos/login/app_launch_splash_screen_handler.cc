@@ -178,6 +178,10 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
     error_screen_actor_->Show(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH, NULL);
 }
 
+bool AppLaunchSplashScreenHandler::IsNetworkReady() {
+  return network_state_informer_->state() == NetworkStateInformer::ONLINE;
+}
+
 void AppLaunchSplashScreenHandler::OnNetworkReady() {
   // Purposely leave blank because the online case is handled in UpdateState
   // call below.

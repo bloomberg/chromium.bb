@@ -8,6 +8,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -54,6 +56,15 @@ const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ibjkkfdnfcaoapcpheeijckmpcfkifob
 const char kTestEnterpriseKioskApp[] = "ibjkkfdnfcaoapcpheeijckmpcfkifob";
+
+// An offline enable test app. Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/ajoggoflpgplnnjkjamcmbepjdjdnpdp
+// An app profile with version 1.0.0 installed is in
+//   chrome/test/data/chromeos/app_mode/offline_enabled_app_profile
+// The version 2.0.0 crx is in
+//   chrome/test/data/chromeos/app_mode/webstore/downloads/
+const char kTestOfflineEnabledKioskApp[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
 
 // Timeout while waiting for network connectivity during tests.
 const int kTestNetworkTimeoutSeconds = 1;
@@ -244,8 +255,8 @@ class KioskTest : public OobeBaseTest {
   virtual ~KioskTest() {}
 
  protected:
-
   virtual void SetUp() OVERRIDE {
+    test_app_id_ = kTestKioskApp;
     mock_user_manager_.reset(new MockUserManager);
     AppLaunchController::SkipSplashWaitForTesting();
     AppLaunchController::SetNetworkWaitForTesting(kTestNetworkTimeoutSeconds);
@@ -270,11 +281,7 @@ class KioskTest : public OobeBaseTest {
     // Create gaia and webstore URL from test server url but using different
     // host names. This is to avoid gaia response being tagged as from
     // webstore in chrome_resource_dispatcher_host_delegate.cc.
-    const GURL& server_url = embedded_test_server()->base_url();
-    std::string webstore_host("webstore");
-    GURL::Replacements replace_webstore_host;
-    replace_webstore_host.SetHostStr(webstore_host);
-    GURL webstore_url = server_url.ReplaceComponents(replace_webstore_host);
+    GURL webstore_url = GetTestWebstoreUrl();
     command_line->AppendSwitchASCII(
         ::switches::kAppsGalleryURL,
         webstore_url.Resolve("/chromeos/app_mode/webstore").spec());
@@ -284,13 +291,21 @@ class KioskTest : public OobeBaseTest {
             "/chromeos/app_mode/webstore/downloads/%s.crx").spec());
   }
 
+  GURL GetTestWebstoreUrl() {
+    const GURL& server_url = embedded_test_server()->base_url();
+    std::string webstore_host("webstore");
+    GURL::Replacements replace_webstore_host;
+    replace_webstore_host.SetHostStr(webstore_host);
+    return server_url.ReplaceComponents(replace_webstore_host);
+  }
+
   void ReloadKioskApps() {
-    KioskAppManager::Get()->AddApp(kTestKioskApp);
+    KioskAppManager::Get()->AddApp(test_app_id_);
   }
 
   void ReloadAutolaunchKioskApps() {
-    KioskAppManager::Get()->AddApp(kTestKioskApp);
-    KioskAppManager::Get()->SetAutoLaunchApp(kTestKioskApp);
+    KioskAppManager::Get()->AddApp(test_app_id_);
+    KioskAppManager::Get()->SetAutoLaunchApp(test_app_id_);
   }
 
   void PrepareAppLaunch() {
@@ -323,12 +338,20 @@ class KioskTest : public OobeBaseTest {
 
     GetLoginUI()->CallJavascriptFunction(
         "login.AppsMenuButton.runAppForTesting",
-        base::StringValue(kTestKioskApp));
+        base::StringValue(test_app_id_));
+  }
+
+  const extensions::Extension* GetInstalledApp() {
+    Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+    return extensions::ExtensionSystem::Get(app_profile)->
+        extension_service()->GetInstalledExtension(test_app_id_);
+  }
+
+  const Version& GetInstalledAppVersion() {
+    return *GetInstalledApp()->version();
   }
 
   void WaitForAppLaunchSuccess() {
-    SimulateNetworkOnline();
-
     ExtensionTestMessageListener
         launch_data_check_listener("launchData.isKioskSession = true", false);
 
@@ -348,14 +371,14 @@ class KioskTest : public OobeBaseTest {
     // Check if the kiosk webapp is really installed for the default profile.
     const extensions::Extension* app =
         extensions::ExtensionSystem::Get(app_profile)->
-        extension_service()->GetInstalledExtension(kTestKioskApp);
+        extension_service()->GetInstalledExtension(test_app_id_);
     EXPECT_TRUE(app);
 
     // App should appear with its window.
     apps::ShellWindowRegistry* shell_window_registry =
         apps::ShellWindowRegistry::Get(app_profile);
     apps::ShellWindow* window =
-        ShellWindowObserver(shell_window_registry, kTestKioskApp).Wait();
+        ShellWindowObserver(shell_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
     // Login screen should be gone or fading out.
@@ -367,7 +390,7 @@ class KioskTest : public OobeBaseTest {
             0.0f);
 
     // Wait until the app terminates if it is still running.
-    if (!shell_window_registry->GetShellWindowsForApp(kTestKioskApp).empty())
+    if (!shell_window_registry->GetShellWindowsForApp(test_app_id_).empty())
       content::RunMessageLoop();
 
     // Check that the app had been informed that it is running in a kiosk
@@ -420,12 +443,44 @@ class KioskTest : public OobeBaseTest {
     return status;
   }
 
+  // Copies the app profile from |relative_app_profile_dir| from test directory
+  // to the app profile directory (assuming "user") under testing profile. This
+  // is for that needs to have a kiosk app already installed from a previous
+  // run. Note this must be called before app profile is loaded.
+  void SetupAppProfile(const std::string& relative_app_profile_dir) {
+    base::FilePath app_profile_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &app_profile_dir));
+    app_profile_dir = app_profile_dir.AppendASCII("user");
+    ASSERT_TRUE(base::CreateDirectory(app_profile_dir));
+
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    test_data_dir = test_data_dir.AppendASCII(relative_app_profile_dir);
+    ASSERT_TRUE(base::CopyFile(test_data_dir.AppendASCII("Preferences"),
+                               app_profile_dir.AppendASCII("Preferences")));
+    ASSERT_TRUE(
+        base::CopyDirectory(test_data_dir.AppendASCII("Extensions"),
+                            app_profile_dir,
+                            true));
+  }
+
   AppLaunchController* GetAppLaunchController() {
     return chromeos::LoginDisplayHostImpl::default_host()
         ->GetAppLaunchController();
   }
 
+  MockUserManager* mock_user_manager() { return mock_user_manager_.get(); }
+
+  void set_test_app_id(const std::string& test_app_id) {
+    test_app_id_ = test_app_id;
+  }
+  const std::string& test_app_id() const { return test_app_id_; }
+
+ private:
+  std::string test_app_id_;
   scoped_ptr<MockUserManager> mock_user_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
 
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
@@ -447,8 +502,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   JsExpect("$('splash-config-network').hidden == false");
 
   // Set up fake user manager with an owner for the test.
-  mock_user_manager_->SetActiveUser(kTestOwnerEmail);
-  AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager_.get());
+  mock_user_manager()->SetActiveUser(kTestOwnerEmail);
+  AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
   static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
       ->GetOobeUI()->ShowOobeUI(false);
 
@@ -466,6 +521,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 
+  SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
 
@@ -483,6 +539,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   JsExpect("$('splash-config-network').hidden == true");
 
   // Network becomes online and app launch is resumed.
+  SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
 
@@ -501,6 +558,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
+  SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
 
@@ -544,6 +602,61 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
       "})();"));
 
   WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoNetwork) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  PrepareAppLaunch();
+  SimulateNetworkOffline();
+
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AppsMenuButton.runAppForTesting",
+      base::StringValue(test_app_id()));
+  WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoUpdate) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  GURL webstore_url = GetTestWebstoreUrl();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ::switches::kAppsGalleryUpdateURL,
+      webstore_url.Resolve(
+          "/chromeos/app_mode/webstore/update_check/no_update.xml").spec());
+
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AppsMenuButton.runAppForTesting",
+      base::StringValue(test_app_id()));
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppHasUpdate) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  GURL webstore_url = GetTestWebstoreUrl();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ::switches::kAppsGalleryUpdateURL,
+      webstore_url.Resolve(
+          "/chromeos/app_mode/webstore/update_check/has_update.xml").spec());
+
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AppsMenuButton.runAppForTesting",
+      base::StringValue(test_app_id()));
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {

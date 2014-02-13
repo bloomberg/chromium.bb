@@ -43,6 +43,7 @@ class AppLaunchSplashScreenHandler
   virtual void SetDelegate(
       AppLaunchSplashScreenHandler::Delegate* delegate) OVERRIDE;
   virtual void ShowNetworkConfigureUI() OVERRIDE;
+  virtual bool IsNetworkReady() OVERRIDE;
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void OnNetworkReady() OVERRIDE;

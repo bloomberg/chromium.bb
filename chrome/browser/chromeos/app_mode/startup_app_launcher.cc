@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
@@ -134,10 +135,10 @@ class StartupAppLauncher::AppUpdateChecker
     }
 
     const Version& existing_version = *GetInstalledApp()->version();
-    Version update_version(update.version);
-    if (existing_version.IsValid() &&
-        update_version.IsValid() &&
-        update_version.CompareTo(existing_version) <= 0) {
+    const Version update_version(update.version);
+    if (!update_version.IsValid() ||
+        (existing_version.IsValid() &&
+         update_version.CompareTo(existing_version) <= 0)) {
       launcher_->OnUpdateCheckNoUpdate();
       return;
     }
@@ -261,8 +262,23 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
   InitializeTokenService();
 }
 
-void StartupAppLauncher::InitializeNetwork() {
-  delegate_->InitializeNetwork();
+void StartupAppLauncher::MaybeInitializeNetwork() {
+  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetInstalledExtension(app_id_);
+  const bool requires_network = !extension ||
+      !extensions::OfflineEnabledInfo::IsOfflineEnabled(extension);
+
+  if (requires_network) {
+    delegate_->InitializeNetwork();
+    return;
+  }
+
+  // Offline enabled app attempts update if network is ready. Otherwise,
+  // go directly to launch.
+  if (delegate_->IsNetworkReady())
+    ContinueWithNetworkReady();
+  else
+    OnReadyToLaunch();
 }
 
 void StartupAppLauncher::InitializeTokenService() {
@@ -275,7 +291,7 @@ void StartupAppLauncher::InitializeTokenService() {
   if (profile_token_service->RefreshTokenIsAvailable(
           signin_manager->GetAuthenticatedAccountId()) ||
       auth_params_.refresh_token.empty()) {
-    InitializeNetwork();
+    MaybeInitializeNetwork();
   } else {
     // Pass oauth2 refresh token from the auth file.
     // TODO(zelidrag): We should probably remove this option after M27.
@@ -301,13 +317,13 @@ void StartupAppLauncher::OnRefreshTokenAvailable(
     const std::string& account_id) {
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
       ->RemoveObserver(this);
-  InitializeNetwork();
+  MaybeInitializeNetwork();
 }
 
 void StartupAppLauncher::OnRefreshTokensLoaded() {
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
       ->RemoveObserver(this);
-  InitializeNetwork();
+  MaybeInitializeNetwork();
 }
 
 void StartupAppLauncher::LaunchApp() {

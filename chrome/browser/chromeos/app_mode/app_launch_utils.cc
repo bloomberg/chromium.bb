@@ -39,6 +39,10 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
     // network configure handling.
     startup_app_launcher_->ContinueWithNetworkReady();
   }
+  virtual bool IsNetworkReady() OVERRIDE {
+    // See comments above. Network is assumed to be online here.
+    return true;
+  }
   virtual void OnLoadingOAuthFile() OVERRIDE {}
   virtual void OnInitializingTokenService() OVERRIDE {}
   virtual void OnInstallingApp() OVERRIDE {}

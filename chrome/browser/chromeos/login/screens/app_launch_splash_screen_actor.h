@@ -59,6 +59,9 @@ class AppLaunchSplashScreenActor {
 
   // Shows the network error and configure UI.
   virtual void ShowNetworkConfigureUI() = 0;
+
+  // Returns true if the default network has Internet access.
+  virtual bool IsNetworkReady() = 0;
 };
 
 }  // namespace chromeos

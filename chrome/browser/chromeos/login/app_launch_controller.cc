@@ -304,6 +304,10 @@ void AppLaunchController::InitializeNetwork() {
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
 }
 
+bool AppLaunchController::IsNetworkReady() {
+  return app_launch_splash_screen_actor_->IsNetworkReady();
+}
+
 void AppLaunchController::OnLoadingOAuthFile() {
   app_launch_splash_screen_actor_->UpdateAppLaunchState(
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_LOADING_AUTH_FILE);
