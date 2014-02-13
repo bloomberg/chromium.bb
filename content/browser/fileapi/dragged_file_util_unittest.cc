@@ -15,9 +15,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/dragged_file_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -26,7 +26,7 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/test_file_set.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemType;

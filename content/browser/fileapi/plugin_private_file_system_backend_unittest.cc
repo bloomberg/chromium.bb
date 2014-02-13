@@ -9,17 +9,17 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/plugin_private_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
 using fileapi::IsolatedContext;

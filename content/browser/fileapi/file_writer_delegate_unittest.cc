@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
@@ -20,13 +21,12 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemURL;
 using fileapi::FileWriterDelegate;
 

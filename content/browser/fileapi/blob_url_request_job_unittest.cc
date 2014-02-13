@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
@@ -23,7 +24,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/blob_url_request_job.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -211,12 +211,12 @@ class BlobURLRequestJobTest : public testing::Test {
             base::FilePath().AppendASCII(filename));
 
     ASSERT_EQ(base::File::FILE_OK,
-              fileapi::AsyncFileTestHelper::CreateFileWithData(
+              content::AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_, url, buf, buf_size));
 
     base::File::Info file_info;
     ASSERT_EQ(base::File::FILE_OK,
-              fileapi::AsyncFileTestHelper::GetMetadata(
+              content::AsyncFileTestHelper::GetMetadata(
                   file_system_context_, url, &file_info));
     if (modification_time)
       *modification_time = file_info.last_modified;

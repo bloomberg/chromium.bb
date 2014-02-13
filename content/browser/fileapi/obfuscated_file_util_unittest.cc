@@ -14,10 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -35,7 +35,7 @@
 #include "webkit/common/database/database_identifier.h"
 #include "webkit/common/quota/quota_types.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;

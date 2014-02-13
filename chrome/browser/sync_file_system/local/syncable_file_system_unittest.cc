@@ -8,12 +8,12 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
@@ -271,10 +271,10 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
   const FileSystemURL kSrcChild = other_file_system_.CreateURLFromUTF8("/a/b");
 
   EXPECT_EQ(base::File::FILE_OK,
-            fileapi::AsyncFileTestHelper::CreateDirectory(
+            content::AsyncFileTestHelper::CreateDirectory(
                 other_file_system_.file_system_context(), kSrcDir));
   EXPECT_EQ(base::File::FILE_OK,
-            fileapi::AsyncFileTestHelper::CreateFile(
+            content::AsyncFileTestHelper::CreateFile(
                 other_file_system_.file_system_context(), kSrcChild));
 
   // Now try copying the directory into the syncable file system, which should

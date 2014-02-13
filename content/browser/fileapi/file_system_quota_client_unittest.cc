@@ -9,10 +9,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_client.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
@@ -21,7 +21,7 @@
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/common/quota/quota_types.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemQuotaClient;
 using fileapi::FileSystemType;
 using fileapi::FileSystemURL;

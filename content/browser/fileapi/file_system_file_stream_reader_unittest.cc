@@ -11,17 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/run_loop.h"
+#include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
-using fileapi::AsyncFileTestHelper;
+using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemFileStreamReader;
 using fileapi::FileSystemType;
@@ -110,7 +110,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     FileSystemURL url = GetFileSystemURL(file_name);
 
     ASSERT_EQ(base::File::FILE_OK,
-              fileapi::AsyncFileTestHelper::CreateFileWithData(
+              content::AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_, url, buf, buf_size));
 
     base::File::Info file_info;

@@ -31,6 +31,8 @@
         '..',
       ],
       'sources': [
+        'public/test/async_file_test_helper.cc',
+        'public/test/async_file_test_helper.h',
         'public/test/browser_test_base.cc',
         'public/test/browser_test_base.h',
         'public/test/browser_test.h',
@@ -182,8 +184,6 @@
         # TODO(kinuko): Those files should be moved to content/public/test.
         '../webkit/browser/appcache/appcache_test_helper.cc',
         '../webkit/browser/appcache/appcache_test_helper.h',
-        '../webkit/browser/fileapi/async_file_test_helper.cc',
-        '../webkit/browser/fileapi/async_file_test_helper.h',
       ],
       'conditions': [
         ['OS == "ios"', {
