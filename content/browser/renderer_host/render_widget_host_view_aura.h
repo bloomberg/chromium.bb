@@ -62,6 +62,7 @@ class Display;
 
 namespace ui {
 class CompositorLock;
+class CompositorVSyncManager;
 class InputMethod;
 class LocatedEvent;
 class Texture;
@@ -639,6 +640,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // This holds the current software framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
+
+  // The vsync manager we are observing for changes, if any.
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
 
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
