@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for the core backends modules."""
+
 import logging
 import os
 import sys
