@@ -27,6 +27,20 @@ class ImageSkia;
 
 class AppListService {
  public:
+  // Source that triggers the app launcher being enabled. This is used for UMA
+  // to track discoverability of the app lancher shortcut after install.
+  enum AppListEnableSource {
+    ENABLE_NOT_RECORDED,        // Indicates app launcher not recently enabled.
+    ENABLE_FOR_APP_INSTALL,     // Triggered by a webstore packaged app install.
+    ENABLE_VIA_WEBSTORE_LINK,   // Triggered by webstore explicitly via API.
+    ENABLE_VIA_COMMAND_LINE,    // Triggered by --enable-app-list.
+    ENABLE_ON_REINSTALL,        // Triggered by Chrome reinstall finding pref.
+    ENABLE_SHOWN_UNDISCOVERED,  // This overrides a prior ENABLE_FOR_APP_INSTALL
+                                // when the launcher is auto-shown without
+                                // being "discovered" beforehand.
+    ENABLE_NUM_ENABLE_SOURCES
+  };
+
   // Get the AppListService for the current platform and specified
   // |desktop_type|.
   static AppListService* Get(chrome::HostDesktopType desktop_type);
@@ -62,6 +76,12 @@ class AppListService {
   // profile to local prefs as the default app list profile.
   virtual void ShowForProfile(Profile* requested_profile) = 0;
 
+  // Show the app list due to a trigger which was not an explicit user action
+  // to show the app list. E.g. the auto-show when installing an app. This
+  // permits UMA to distinguish between a user discovering the app list shortcut
+  // themselves versus having it shown for them automatically.
+  virtual void AutoShowForProfile(Profile* requested_profile) = 0;
+
   // Dismiss the app list.
   virtual void DismissAppList() = 0;
 
@@ -73,7 +93,8 @@ class AppListService {
 
   // Enable the app list. What this does specifically will depend on the host
   // operating system and shell.
-  virtual void EnableAppList(Profile* initial_profile) = 0;
+  virtual void EnableAppList(Profile* initial_profile,
+                             AppListEnableSource enable_source) = 0;
 
   // Get the window the app list is in, or NULL if the app list isn't visible.
   virtual gfx::NativeWindow GetAppListWindow() = 0;

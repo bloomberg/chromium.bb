@@ -34,12 +34,13 @@ class AppListServiceDisabled : public AppListService {
   virtual void Show() OVERRIDE {}
   virtual void CreateForProfile(Profile* profile) OVERRIDE {}
   virtual void ShowForProfile(Profile* profile) OVERRIDE {}
+  virtual void AutoShowForProfile(Profile* profile) OVERRIDE {}
   virtual void DismissAppList() OVERRIDE {}
 
   virtual Profile* GetCurrentAppListProfile() OVERRIDE { return NULL; }
   virtual bool IsAppListVisible() const OVERRIDE { return false; }
-  virtual void EnableAppList(Profile* initial_profile) OVERRIDE {}
-
+  virtual void EnableAppList(Profile* initial_profile,
+                             AppListEnableSource enable_source) OVERRIDE {}
   virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE {
     return NULL;
   }

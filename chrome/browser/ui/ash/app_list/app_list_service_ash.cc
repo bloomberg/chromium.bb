@@ -35,7 +35,8 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual void ShowForProfile(Profile* default_profile) OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
-  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
+  virtual void EnableAppList(Profile* initial_profile,
+                             AppListEnableSource enable_source) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
   virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
@@ -76,7 +77,8 @@ void AppListServiceAsh::DismissAppList() {
     ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
-void AppListServiceAsh::EnableAppList(Profile* initial_profile) {}
+void AppListServiceAsh::EnableAppList(Profile* initial_profile,
+                                      AppListEnableSource enable_source) {}
 
 gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
   if (ash::Shell::HasInstance())
