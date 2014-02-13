@@ -265,37 +265,33 @@ private:
     T* m_raw;
 };
 
+// FIXME: derive affinity based on the collection.
+template<typename Collection, ThreadAffinity Affinity = AnyThread>
+class PersistentHeapCollectionBase
+    : public Collection
+    , public PersistentBase<Affinity, PersistentHeapCollectionBase<Collection, Affinity> > {
+    // Never allocate these objects with new. Use Persistent<Collection> instead.
+    DISALLOW_ALLOCATION();
+public:
+    void trace(Visitor* visitor) { visitor->trace(*static_cast<Collection*>(this)); }
+};
+
 template<
     typename KeyArg,
     typename MappedArg,
     typename HashArg = typename DefaultHash<KeyArg>::Hash,
     typename KeyTraitsArg = HashTraits<KeyArg>,
     typename MappedTraitsArg = HashTraits<MappedArg> >
-class PersistentHeapHashMap : public HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> {
-public:
-    PersistentHeapHashMap() : m_self(this) { }
-private:
-    Persistent<HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> > m_self;
-};
+class PersistentHeapHashMap : public PersistentHeapCollectionBase<HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg> > { };
 
 template<
     typename ValueArg,
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg> >
-class PersistentHeapHashSet : public HeapHashSet<ValueArg, HashArg, TraitsArg> {
-public:
-    PersistentHeapHashSet() : m_self(this) { }
-private:
-    Persistent<HeapHashSet<ValueArg, HashArg, TraitsArg> > m_self;
-};
+class PersistentHeapHashSet : public PersistentHeapCollectionBase<HeapHashSet<ValueArg, HashArg, TraitsArg> > { };
 
 template<typename T, size_t inlineCapacity = 0>
-class PersistentHeapVector : public HeapVector<T, inlineCapacity> {
-public:
-    PersistentHeapVector() : m_self(this) { }
-private:
-    Persistent<HeapVector<T, inlineCapacity> > m_self;
-};
+class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> > { };
 
 // Members are used in classes to contain strong pointers to other oilpan heap
 // allocated objects.
