@@ -84,6 +84,7 @@
           'test/data/',
           'third_party/mock4js/',
         ],
+        'read_only': 1,
       },
     }],
     ['OS=="linux" or OS=="win"', {
