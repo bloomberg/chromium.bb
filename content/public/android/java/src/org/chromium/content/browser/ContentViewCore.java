@@ -1232,6 +1232,7 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onFlingStartEventConsumed(int vx, int vy) {
+        temporarilyHideTextHandles();
         for (mGestureStateListenersIterator.rewind();
                     mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onFlingStartGesture(
@@ -1257,12 +1258,15 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollBeginEventAck() {
+        temporarilyHideTextHandles();
+        mZoomControlsDelegate.invokeZoomPicker();
         updateGestureStateListener(GestureEventType.SCROLL_START);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollUpdateGestureConsumed() {
+        mZoomControlsDelegate.invokeZoomPicker();
         for (mGestureStateListenersIterator.rewind();
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onScrollUpdateGestureConsumed();
@@ -1278,6 +1282,7 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onPinchBeginEventAck() {
+        temporarilyHideTextHandles();
         updateGestureStateListener(GestureEventType.PINCH_BEGIN);
     }
 
@@ -1287,21 +1292,23 @@ public class ContentViewCore
         updateGestureStateListener(GestureEventType.PINCH_END);
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onDoubleTapEventAck() {
+        temporarilyHideTextHandles();
+    }
+
     /**
-     * Called just prior to a gesture being forwarded to the renderer. All listening
-     * for the sending of (synthetic or touch-derived) gestures should occur here.
+     * Called just prior to a tap or press gesture being forwarded to the renderer.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private boolean filterGestureEvent(int type, int x, int y) {
-        if (offerGestureToEmbedder(type)) return true;
-        updateTextHandlesForGesture(type);
+    private boolean filterTapOrPressEvent(int type, int x, int y) {
+        if (type == GestureEventType.LONG_PRESS && offerLongPressToEmbedder()) {
+            return true;
+        }
         updateForTapOrPress(type, x, y);
         updateForDoubleTapUMA(type);
-        // TODO(jdduke): Determine if this should be called while a pinch is active.
-        if (type == GestureEventType.SCROLL_BY) {
-            mZoomControlsDelegate.invokeZoomPicker();
-        }
         return false;
     }
 
@@ -2393,20 +2400,6 @@ public class ContentViewCore
         return mInsertionHandleController != null && mInsertionHandleController.isShowing();
     }
 
-    private void updateTextHandlesForGesture(int type) {
-        switch(type) {
-            case GestureEventType.DOUBLE_TAP:
-            case GestureEventType.SCROLL_START:
-            case GestureEventType.FLING_START:
-            case GestureEventType.PINCH_BEGIN:
-                temporarilyHideTextHandles();
-                break;
-
-            default:
-                break;
-        }
-    }
-
     // Makes the insertion/selection handles invisible. They will fade back in shortly after the
     // last call to scheduleTextHandleFadeIn (or temporarilyHideTextHandles).
     private void temporarilyHideTextHandles() {
@@ -3265,18 +3258,12 @@ public class ContentViewCore
     }
 
     /**
-     * Offer a subset of gesture events to the embedding View,
-     * primarily for WebView compatibility.
-     *
-     * @param type The type of the event.
+     * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
      * @return true if the embedder handled the event.
      */
-    private boolean offerGestureToEmbedder(int type) {
-        if (type == GestureEventType.LONG_PRESS) {
-            return mContainerView.performLongClick();
-        }
-        return false;
+    private boolean offerLongPressToEmbedder() {
+        return mContainerView.performLongClick();
     }
 
     private native long nativeInit(long webContentsPtr,

@@ -619,13 +619,19 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
     case WebInputEvent::GesturePinchEnd:
       Java_ContentViewCore_onPinchEndEventAck(env, j_obj.obj());
       break;
+    case WebInputEvent::GestureDoubleTap:
+      Java_ContentViewCore_onDoubleTapEventAck(env, j_obj.obj());
+      break;
     default:
       break;
   }
 }
 
 bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
-  if (!WebInputEvent::isGestureEventType(event.type))
+  if (event.type != WebInputEvent::GestureTap &&
+      event.type != WebInputEvent::GestureDoubleTap &&
+      event.type != WebInputEvent::GestureLongTap &&
+      event.type != WebInputEvent::GestureLongPress)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
@@ -636,11 +642,11 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
   int gesture_type = ToContentViewGestureHandlerType(event.type);
-  return Java_ContentViewCore_filterGestureEvent(env,
-                                                 j_obj.obj(),
-                                                 gesture_type,
-                                                 gesture.x,
-                                                 gesture.y);
+  return Java_ContentViewCore_filterTapOrPressEvent(env,
+                                                    j_obj.obj(),
+                                                    gesture_type,
+                                                    gesture.x,
+                                                    gesture.y);
 }
 
 bool ContentViewCoreImpl::HasFocus() {
