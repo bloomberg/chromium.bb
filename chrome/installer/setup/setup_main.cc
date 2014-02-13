@@ -18,6 +18,7 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
@@ -1278,16 +1279,16 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
 
 // Initialize crash reporting for this process. This involves connecting to
 // breakpad, etc.
-google_breakpad::ExceptionHandler* InitializeCrashReporting(
+scoped_ptr<google_breakpad::ExceptionHandler> InitializeCrashReporting(
     bool system_install) {
   // Only report crashes if the user allows it.
   if (!GoogleUpdateSettings::GetCollectStatsConsent())
-    return NULL;
+    return scoped_ptr<google_breakpad::ExceptionHandler>();
 
   // Get the alternate dump directory. We use the temp path.
   base::FilePath temp_directory;
   if (!base::GetTempDir(&temp_directory) || temp_directory.empty())
-    return NULL;
+    return scoped_ptr<google_breakpad::ExceptionHandler>();
 
   wchar_t exe_path[MAX_PATH * 2] = {0};
   GetModuleFileName(NULL, exe_path, arraysize(exe_path));
@@ -1299,19 +1300,18 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
 
   if (!system_install) {
     if (!base::win::GetUserSidString(&user_sid)) {
-      return NULL;
+      return scoped_ptr<google_breakpad::ExceptionHandler>();
     }
   }
 
   base::string16 pipe_name = kGoogleUpdatePipeName;
   pipe_name += user_sid;
 
-  google_breakpad::ExceptionHandler* breakpad =
+  return scoped_ptr<google_breakpad::ExceptionHandler>(
       new google_breakpad::ExceptionHandler(
           temp_directory.value(), NULL, NULL, NULL,
           google_breakpad::ExceptionHandler::HANDLER_ALL, kLargerDumpType,
-          pipe_name.c_str(), GetCustomInfo(exe_path));
-  return breakpad;
+          pipe_name.c_str(), GetCustomInfo(exe_path)));
 }
 
 // Uninstalls multi-install Chrome Frame if the current operation is a
@@ -1695,7 +1695,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   prefs.GetBool(installer::master_preferences::kSystemLevel, &system_install);
   VLOG(1) << "system install is " << system_install;
 
-  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
+  scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(system_install));
 
   InstallationState original_state;
