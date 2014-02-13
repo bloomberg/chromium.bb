@@ -1301,8 +1301,7 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
                                      "$FONTFAMILY", system_font_family_);
     ReplaceFirstSubstringAfterOffset(&stylesheet, 0,
                                      "$FONTSIZE", system_font_size_);
-    frame->document().insertUserStyleSheet(
-        WebString::fromUTF8(stylesheet), WebDocument::UserStyleAuthorLevel);
+    frame->document().insertStyleSheet(WebString::fromUTF8(stylesheet));
   }
 
   content_watcher_->DidCreateDocumentElement(frame);

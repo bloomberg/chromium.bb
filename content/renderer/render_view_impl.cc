@@ -4323,9 +4323,7 @@ void RenderViewImpl::OnCSSInsertRequest(const base::string16& frame_xpath,
   if (!frame)
     return;
 
-  frame->document().insertUserStyleSheet(
-      WebString::fromUTF8(css),
-      WebDocument::UserStyleAuthorLevel);
+  frame->document().insertStyleSheet(WebString::fromUTF8(css));
 }
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {

@@ -238,10 +238,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
             result ? result : base::Value::CreateNullValue());
       }
     } else {
-      child_frame->document().insertUserStyleSheet(
-          WebString::fromUTF8(params.code),
-          // Author level is consistent with WebView::injectStyleSheet.
-          WebDocument::UserStyleAuthorLevel);
+      child_frame->document().insertStyleSheet(
+          WebString::fromUTF8(params.code));
     }
   }
 
