@@ -55,6 +55,10 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
 
   void ResumeIfDeferred();
 
+  // Called when about to defer a request.  Sets |did_defer_| and logs the
+  // defferral
+  void OnDidDefer();
+
   bool has_started_response_;
   bool in_cross_site_transition_;
   bool completed_during_transition_;

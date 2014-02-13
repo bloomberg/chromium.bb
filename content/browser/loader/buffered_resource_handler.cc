@@ -334,6 +334,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
       PluginServiceImpl::GetInstance()->GetPlugins(
           base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
+      request()->LogBlockedBy("BufferedResourceHandler");
       *defer = true;
       return true;
     }
@@ -473,6 +474,7 @@ bool BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
 
 void BufferedResourceHandler::OnPluginsLoaded(
     const std::vector<WebPluginInfo>& plugins) {
+  request()->LogUnblocked();
   bool defer = false;
   if (!ProcessResponse(&defer)) {
     controller()->Cancel();

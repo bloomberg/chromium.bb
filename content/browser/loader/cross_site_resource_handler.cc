@@ -176,7 +176,8 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   StartCrossSiteTransition(request_id, response, should_transfer);
 
   // Defer loading until after the onunload event handler has run.
-  did_defer_ = *defer = true;
+  *defer = true;
+  OnDidDefer();
   return true;
 }
 
@@ -220,8 +221,8 @@ void CrossSiteResourceHandler::OnResponseCompleted(
 
   // Defer to tell RDH not to notify the world or clean up the pending request.
   // We will do so in ResumeResponse.
-  did_defer_ = true;
   *defer = true;
+  OnDidDefer();
 }
 
 // We can now send the response to the new renderer, which will cause
@@ -314,9 +315,15 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
 
 void CrossSiteResourceHandler::ResumeIfDeferred() {
   if (did_defer_) {
+    request()->LogUnblocked();
     did_defer_ = false;
     controller()->Resume();
   }
+}
+
+void CrossSiteResourceHandler::OnDidDefer() {
+  did_defer_ = true;
+  request()->LogBlockedBy("CrossSiteResourceHandler");
 }
 
 }  // namespace content
