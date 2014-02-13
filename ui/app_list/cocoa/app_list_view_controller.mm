@@ -197,6 +197,12 @@ void AppListModelObserverBridge::OnProfilesChanged() {
           [AppsGridController scrollerPadding]);
 
   contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
+
+  // The contents view contains animations both from an NSCollectionView and the
+  // app list's own transitive drag layers. Ensure the subviews have access to
+  // a compositing layer they can share.
+  [contentsView_ setWantsLayer:YES];
+
   backgroundView_.reset(
       [[BackgroundView alloc] initWithFrame:
               NSMakeRect(0, 0, NSMaxX(contentsRect), NSMaxY(contentsRect))]);
