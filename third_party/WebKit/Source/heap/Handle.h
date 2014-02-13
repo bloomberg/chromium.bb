@@ -572,12 +572,30 @@ using WillBePersistentHeapVector = PersistentHeapVector<T, inlineCapacity>;
 #define WillBePersistentHeapVector PersistentHeapVector
 #endif // COMPILER(CLANG)
 
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBeRawPtr<T>(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
+{
+    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<T, RefCounted>::value;
+    COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
+    COMPILE_ASSERT(notRefCounted, youMustAdopt);
+    return PassRefPtrWillBeRawPtr<T>(ptr);
+}
+
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr)
 {
+    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
+    COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
     return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
 }
-template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBeRawPtr<T>(ptr); }
+
+template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
+{
+    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<T, RefCounted>::value;
+    COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
+    COMPILE_ASSERT(notRefCounted, youMustAdopt);
+    return PassOwnPtrWillBeRawPtr<T>(ptr);
+}
 
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED // do nothing when oilpan is enabled.
 
