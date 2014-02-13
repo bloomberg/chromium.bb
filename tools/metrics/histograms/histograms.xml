@@ -29685,6 +29685,7 @@ other types of suffix sets.
   <int value="656561383" label="PPB_FlashFullscreen;1.0"/>
   <int value="657117235" label="PPB_Flash_DRM;1.0"/>
   <int value="668624105" label="PPB_Flash_DeviceID;1.0"/>
+  <int value="706893509" label="PPB_ContentDecryptor_Private;0.11"/>
   <int value="714324031" label="PPB_Graphics3D;1.0"/>
   <int value="724664149" label="PPB_Flash_Menu;0.2"/>
   <int value="760024173" label="PPB_FileIO;1.0"/>
