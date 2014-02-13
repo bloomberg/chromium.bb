@@ -9,7 +9,8 @@
 
 label Chrome {
   M14 = 1.0,
-  M18 = 1.1
+  M18 = 1.1,
+  M34 = 1.2
 };
 
 /**
@@ -112,5 +113,29 @@ interface PPB_Var {
    */
   [version=1.0]
   str_t VarToUtf8([in] PP_Var var, [out] uint32_t len);
+
+  /**
+   * Converts a resource-type var to a <code>PP_Resource</code>.
+   *
+   * @param[in] var A <code>PP_Var</code> struct containing a resource-type var.
+   *
+   * @return A <code>PP_Resource</code> retrieved from the var, or 0 if the var
+   * is not a resource. The reference count of the resource is incremented on
+   * behalf of the caller.
+   */
+  [version=1.2]
+  PP_Resource VarToResource([in] PP_Var var);
+
+  /**
+   * Creates a new <code>PP_Var</code> from a given resource.
+   *
+   * @param[in] resource A <code>PP_Resource</code> to be wrapped in a var.
+   *
+   * @return A <code>PP_Var</code> created for this resource, with type
+   * <code>PP_VARTYPE_RESOURCE</code>. The reference count of the var is set to
+   * 1 on behalf of the caller.
+   */
+  [version=1.2]
+  PP_Var VarFromResource([in] PP_Resource resource);
 };
 

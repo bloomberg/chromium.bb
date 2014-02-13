@@ -10,6 +10,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/pass_ref.h"
+#include "ppapi/cpp/resource.h"
 
 /// @file
 /// This file defines the API for handling the passing of data types between
@@ -49,6 +50,9 @@ class Var {
 
   /// A constructor used to create a UTF-8 character <code>Var</code>.
   Var(const std::string& utf8_str);  // Must be encoded in UTF-8.
+
+  /// A constructor used to create a resource <code>Var</code>.
+  explicit Var(const pp::Resource& resource);
 
   /// A constructor used when you have received a <code>Var</code> as a return
   /// value that has had its reference count incremented for you.
@@ -208,6 +212,12 @@ class Var {
   ///
   /// @return A string version of this <code>Var</code>.
   std::string AsString() const;
+
+  /// Gets the resource contained in the var. If this object is not a resource,
+  /// it will assert in debug mode, and return a null resource.
+  ///
+  /// @return The <code>pp::Resource</code> that is contained in the var.
+  pp::Resource AsResource() const;
 
   /// This function returns the internal <code>PP_Var</code>
   /// managed by this <code>Var</code> object.

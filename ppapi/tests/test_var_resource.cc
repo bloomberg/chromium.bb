@@ -19,10 +19,8 @@ bool TestVarResource::Init() {
       pp::Module::Get()->GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
   var_interface_ = static_cast<const PPB_Var*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  var_resource_interface_ = static_cast<const PPB_VarResource_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_RESOURCE_DEV_INTERFACE));
   return core_interface_ && file_system_interface_ && var_interface_ &&
-         var_resource_interface_ && CheckTestingInterface();
+         CheckTestingInterface();
 }
 
 void TestVarResource::RunTests(const std::string& filter) {
@@ -41,18 +39,18 @@ std::string TestVarResource::TestBasicResource() {
     ASSERT_NE(0, file_system);
 
     // Build a var to wrap the resource.
-    PP_Var var = var_resource_interface_->VarFromResource(file_system);
+    PP_Var var = var_interface_->VarFromResource(file_system);
     ASSERT_EQ(PP_VARTYPE_RESOURCE, var.type);
 
     // Reading back the resource should work. This will increment the reference
     // on the resource, so we must release it afterwards.
-    PP_Resource result = var_resource_interface_->VarToResource(var);
+    PP_Resource result = var_interface_->VarToResource(var);
     ASSERT_EQ(file_system, result);
     core_interface_->ReleaseResource(result);
 
     // Destroy the var, readback should now fail.
     var_interface_->Release(var);
-    result = var_resource_interface_->VarToResource(var);
+    result = var_interface_->VarToResource(var);
     ASSERT_EQ(0, result);
 
     // Release the resource. There should be no more references to it.
@@ -76,32 +74,31 @@ std::string TestVarResource::TestInvalidAndEmpty() {
     invalid_resource.value.as_id = 31415926;
 
     // Invalid resource vars should give 0 as the return value.
-    PP_Resource result =
-        var_resource_interface_->VarToResource(invalid_resource);
+    PP_Resource result = var_interface_->VarToResource(invalid_resource);
     ASSERT_EQ(0, result);
 
     // Test writing and reading a non-existant resource.
     PP_Resource fake_resource = 27182818;
-    PP_Var var = var_resource_interface_->VarFromResource(fake_resource);
+    PP_Var var = var_interface_->VarFromResource(fake_resource);
     if (testing_interface()->IsOutOfProcess()) {
       // An out-of-process plugin is expected to generate null in this case.
       ASSERT_EQ(PP_VARTYPE_NULL, var.type);
-      result = var_resource_interface_->VarToResource(var);
+      result = var_interface_->VarToResource(var);
       ASSERT_EQ(0, result);
     } else {
       // An in-process plugin is expected to generate a valid resource var
       // (because it does not validate the resource).
       ASSERT_EQ(PP_VARTYPE_RESOURCE, var.type);
-      result = var_resource_interface_->VarToResource(var);
+      result = var_interface_->VarToResource(var);
       ASSERT_EQ(fake_resource, result);
       var_interface_->Release(var);
     }
     // Note: Not necessary to release the resource, since it does not exist.
 
     // Write the resource 0; expect a valid resource var with 0.
-    var = var_resource_interface_->VarFromResource(0);
+    var = var_interface_->VarFromResource(0);
     ASSERT_EQ(PP_VARTYPE_RESOURCE, var.type);
-    result = var_resource_interface_->VarToResource(var);
+    result = var_interface_->VarToResource(var);
     ASSERT_EQ(0, result);
     var_interface_->Release(var);
   }
@@ -115,20 +112,19 @@ std::string TestVarResource::TestInvalidAndEmpty() {
 }
 
 std::string TestVarResource::TestWrongType() {
-  PP_Resource result =
-      var_resource_interface_->VarToResource(PP_MakeUndefined());
+  PP_Resource result = var_interface_->VarToResource(PP_MakeUndefined());
   ASSERT_EQ(0, result);
 
-  result = var_resource_interface_->VarToResource(PP_MakeNull());
+  result = var_interface_->VarToResource(PP_MakeNull());
   ASSERT_EQ(0, result);
 
-  result = var_resource_interface_->VarToResource(PP_MakeBool(PP_TRUE));
+  result = var_interface_->VarToResource(PP_MakeBool(PP_TRUE));
   ASSERT_EQ(0, result);
 
-  result = var_resource_interface_->VarToResource(PP_MakeInt32(42));
+  result = var_interface_->VarToResource(PP_MakeInt32(42));
   ASSERT_EQ(0, result);
 
-  result = var_resource_interface_->VarToResource(PP_MakeDouble(1.0));
+  result = var_interface_->VarToResource(PP_MakeDouble(1.0));
   ASSERT_EQ(0, result);
 
   PASS();

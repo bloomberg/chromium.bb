@@ -34,6 +34,8 @@ LEGACY_IFACE(PPB_VAR_INTERFACE_1_0,
              ::ppapi::PPB_Var_Shared::GetVarInterface1_0())
 LEGACY_IFACE(PPB_VAR_INTERFACE_1_1,
              ::ppapi::PPB_Var_Shared::GetVarInterface1_1())
+LEGACY_IFACE(PPB_VAR_INTERFACE_1_2,
+             ::ppapi::PPB_Var_Shared::GetVarInterface1_2())
 LEGACY_IFACE(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
              ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface1_0())
 

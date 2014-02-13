@@ -6,7 +6,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/var_resource_dev.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/graphics_3d_client.h"
 #include "ppapi/cpp/instance.h"
@@ -132,7 +131,7 @@ void MediaStreamVideoDemoInstance::HandleMessage(const pp::Var& var_message) {
   if (!var_track.is_resource())
     return;
 
-  pp::Resource resource_track = pp::VarResource_Dev(var_track).AsResource();
+  pp::Resource resource_track = var_track.AsResource();
 
   video_track_ = pp::MediaStreamVideoTrack(resource_track);
 

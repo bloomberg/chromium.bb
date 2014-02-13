@@ -26,7 +26,6 @@
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/dev/ppb_var_resource_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/extensions/dev/ppb_ext_socket_dev.h"
@@ -238,6 +237,8 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetQueryInterface(), PERMISSION_NONE);
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0(), PERMISSION_NONE);
+  AddPPB(PPB_VAR_INTERFACE_1_2,
+         PPB_Var_Shared::GetVarInterface1_2(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_1,
          PPB_Var_Shared::GetVarInterface1_1(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_0,

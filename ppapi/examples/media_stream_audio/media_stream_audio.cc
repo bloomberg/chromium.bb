@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ppapi/cpp/audio_buffer.h"
-#include "ppapi/cpp/dev/var_resource_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
@@ -74,7 +73,7 @@ class MediaStreamAudioInstance : public pp::Instance {
     if (!var_track.is_resource())
       return;
 
-    pp::Resource resource_track = pp::VarResource_Dev(var_track).AsResource();
+    pp::Resource resource_track = var_track.AsResource();
     audio_track_ = pp::MediaStreamAudioTrack(resource_track);
     audio_track_.GetBuffer(callback_factory_.NewCallbackWithOutput(
           &MediaStreamAudioInstance::OnGetBuffer));

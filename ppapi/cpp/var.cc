@@ -25,6 +25,9 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Var_1_2>() {
+  return PPB_VAR_INTERFACE_1_2;
+}
 template <> const char* interface_name<PPB_Var_1_1>() {
   return PPB_VAR_INTERFACE_1_1;
 }
@@ -42,7 +45,9 @@ inline bool NeedsRefcounting(const PP_Var& var) {
 // This helper function uses the latest available version of VarFromUtf8. Note
 // that version 1.0 of this method has a different API to later versions.
 PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
-  if (has_interface<PPB_Var_1_1>()) {
+  if (has_interface<PPB_Var_1_2>()) {
+    return get_interface<PPB_Var_1_2>()->VarFromUtf8(utf8_str, len);
+  } else if (has_interface<PPB_Var_1_1>()) {
     return get_interface<PPB_Var_1_1>()->VarFromUtf8(utf8_str, len);
   } else if (has_interface<PPB_Var_1_0>()) {
     return get_interface<PPB_Var_1_0>()->VarFromUtf8(Module::Get()->pp_module(),
@@ -55,7 +60,10 @@ PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
 // This helper function uses the latest available version of AddRef.
 // Returns true on success, false if no appropriate interface was available.
 bool AddRefHelper(const PP_Var& var) {
-  if (has_interface<PPB_Var_1_1>()) {
+  if (has_interface<PPB_Var_1_2>()) {
+    get_interface<PPB_Var_1_2>()->AddRef(var);
+    return true;
+  } else if (has_interface<PPB_Var_1_1>()) {
     get_interface<PPB_Var_1_1>()->AddRef(var);
     return true;
   } else if (has_interface<PPB_Var_1_0>()) {
@@ -68,7 +76,10 @@ bool AddRefHelper(const PP_Var& var) {
 // This helper function uses the latest available version of Release.
 // Returns true on success, false if no appropriate interface was available.
 bool ReleaseHelper(const PP_Var& var) {
-  if (has_interface<PPB_Var_1_1>()) {
+  if (has_interface<PPB_Var_1_2>()) {
+    get_interface<PPB_Var_1_2>()->Release(var);
+    return true;
+  } else if (has_interface<PPB_Var_1_1>()) {
     get_interface<PPB_Var_1_1>()->Release(var);
     return true;
   } else if (has_interface<PPB_Var_1_0>()) {
@@ -122,6 +133,19 @@ Var::Var(const char* utf8_str) {
 Var::Var(const std::string& utf8_str) {
   var_ = VarFromUtf8Helper(utf8_str.c_str(),
                            static_cast<uint32_t>(utf8_str.size()));
+  is_managed_ = true;
+}
+
+Var::Var(const pp::Resource& resource) {
+  if (has_interface<PPB_Var_1_2>()) {
+    var_ = get_interface<PPB_Var_1_2>()->VarFromResource(
+        resource.pp_resource());
+  } else {
+    PP_NOTREACHED();
+    return;
+  }
+  // Set |is_managed_| to true, so |var_| will be properly released upon
+  // destruction.
   is_managed_ = true;
 }
 
@@ -191,7 +215,8 @@ bool Var::operator==(const Var& other) const {
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_ARRAY_BUFFER:
     case PP_VARTYPE_DICTIONARY:
-    default:  // Objects, arrays, dictionaries.
+    case PP_VARTYPE_RESOURCE:
+    default:  // Objects, arrays, dictionaries, resources.
       return var_.value.as_id == other.var_.value.as_id;
   }
 }
@@ -230,13 +255,29 @@ std::string Var::AsString() const {
 
   uint32_t len;
   const char* str;
-  if (has_interface<PPB_Var_1_1>())
+  if (has_interface<PPB_Var_1_2>())
+    str = get_interface<PPB_Var_1_2>()->VarToUtf8(var_, &len);
+  else if (has_interface<PPB_Var_1_1>())
     str = get_interface<PPB_Var_1_1>()->VarToUtf8(var_, &len);
   else if (has_interface<PPB_Var_1_0>())
     str = get_interface<PPB_Var_1_0>()->VarToUtf8(var_, &len);
   else
     return std::string();
   return std::string(str, len);
+}
+
+pp::Resource Var::AsResource() const {
+  if (!is_resource()) {
+    PP_NOTREACHED();
+    return pp::Resource();
+  }
+
+  if (has_interface<PPB_Var_1_2>()) {
+    return pp::Resource(pp::PASS_REF,
+                        get_interface<PPB_Var_1_2>()->VarToResource(var_));
+  } else {
+    return pp::Resource();
+  }
 }
 
 std::string Var::DebugString() const {
@@ -269,6 +310,8 @@ std::string Var::DebugString() const {
     snprintf(buf, sizeof(buf), "Var(DICTIONARY)");
   } else if (is_array_buffer()) {
     snprintf(buf, sizeof(buf), "Var(ARRAY_BUFFER)");
+  } else if (is_resource()) {
+    snprintf(buf, sizeof(buf), "Var(RESOURCE)");
   } else {
     buf[0] = '\0';
   }

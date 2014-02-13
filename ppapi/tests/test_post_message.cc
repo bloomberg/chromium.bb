@@ -11,7 +11,6 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_file_io.h"
-#include "ppapi/cpp/dev/var_resource_dev.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -599,8 +598,7 @@ std::string TestPostMessage::TestSendingResource() {
   ASSERT_EQ(PostAsyncMessageFromJavaScriptAndWait(js_code), 1);
   pp::Var var = message_data_.back();
   ASSERT_TRUE(var.is_resource());
-  pp::VarResource_Dev var_resource(var);
-  pp::Resource result = var_resource.AsResource();
+  pp::Resource result = var.AsResource();
   ASSERT_TRUE(pp::FileSystem::IsFileSystem(result));
   {
     pp::FileSystem file_system(result);

@@ -14,7 +14,7 @@
 /// with the module.
 namespace pp {
 
-class VarResource_Dev;
+class Var;
 
 /// A reference counted module resource.
 class Resource {
@@ -87,7 +87,7 @@ class Resource {
   void Clear();
 
  private:
-  friend class VarResource_Dev;
+  friend class Var;
 
   PP_Resource pp_resource_;
 };

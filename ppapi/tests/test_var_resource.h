@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "ppapi/c/dev/ppb_var_resource_dev.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/test_case.h"
@@ -29,7 +28,6 @@ class TestVarResource : public TestCase {
   const PPB_Core* core_interface_;
   const PPB_FileSystem* file_system_interface_;
   const PPB_Var* var_interface_;
-  const PPB_VarResource_Dev* var_resource_interface_;
 };
 
 #endif  // PPAPI_TEST_TEST_VAR_RESOURCE_H_

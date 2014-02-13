@@ -90,7 +90,6 @@
         'string_wrapper_dev.cc',
         'graphics_2d_dev.cc',
         'widget_dev.cc',
-        'var_resource_dev.cc',
 
         # ppapi/cpp/extensions/dev
         'socket_dev.cc',
@@ -193,7 +192,6 @@
         'to_c_type_converter_dev.h',
         'truetype_font_dev.h',
         'url_util_dev.h',
-        'var_resource_dev.h',
         'video_capture_client_dev.h',
         'video_capture_dev.h',
         'video_decoder_client_dev.h',

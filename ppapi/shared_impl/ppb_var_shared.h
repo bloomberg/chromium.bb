@@ -17,6 +17,7 @@ namespace ppapi {
 
 class PPAPI_SHARED_EXPORT PPB_Var_Shared {
  public:
+  static const PPB_Var_1_2* GetVarInterface1_2();
   static const PPB_Var_1_1* GetVarInterface1_1();
   static const PPB_Var_1_0* GetVarInterface1_0();
   static const PPB_VarArrayBuffer_1_0* GetVarArrayBufferInterface1_0();

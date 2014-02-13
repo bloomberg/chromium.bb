@@ -11,6 +11,8 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/resource_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
@@ -53,7 +55,31 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
   return NULL;
 }
 
+PP_Resource VarToResource(PP_Var var) {
+  ProxyAutoLock lock;
+  ResourceVar* resource = ResourceVar::FromPPVar(var);
+  if (!resource)
+    return 0;
+  PP_Resource pp_resource = resource->GetPPResource();
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(pp_resource);
+  return pp_resource;
+}
+
+PP_Var VarFromResource(PP_Resource resource) {
+  ProxyAutoLock lock;
+  return PpapiGlobals::Get()->GetVarTracker()->MakeResourcePPVar(resource);
+}
+
 const PPB_Var var_interface = {
+  &AddRefVar,
+  &ReleaseVar,
+  &VarFromUtf8,
+  &VarToUtf8,
+  &VarToResource,
+  &VarFromResource
+};
+
+const PPB_Var_1_1 var_interface1_1 = {
   &AddRefVar,
   &ReleaseVar,
   &VarFromUtf8,
@@ -110,8 +136,13 @@ const PPB_VarArrayBuffer_1_0 var_arraybuffer_interface = {
 }  // namespace
 
 // static
-const PPB_Var_1_1* PPB_Var_Shared::GetVarInterface1_1() {
+const PPB_Var_1_2* PPB_Var_Shared::GetVarInterface1_2() {
   return &var_interface;
+}
+
+// static
+const PPB_Var_1_1* PPB_Var_Shared::GetVarInterface1_1() {
+  return &var_interface1_1;
 }
 
 // static

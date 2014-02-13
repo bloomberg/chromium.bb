@@ -29690,6 +29690,7 @@ other types of suffix sets.
   <int value="944161065" label="PPB_Flash_DRM;1.1"/>
   <int value="946515854" label="PPB_View(Dev);0.1"/>
   <int value="948969343" label="PPB_OpenGLES2;1.0"/>
+  <int value="961061294" label="PPB_Var;1.2"/>
   <int value="961317980" label="PPB_Fullscreen;1.0"/>
   <int value="964595048" label="PPB_BrokerTrusted;0.2"/>
   <int value="965548627" label="PPB_Audio;1.1"/>
@@ -29728,7 +29729,6 @@ other types of suffix sets.
   <int value="1374976378" label="PPB_OpenGLES2Query;1.0"/>
   <int value="1437724812" label="PPB_AudioConfig;1.0"/>
   <int value="1443771913" label="PPB_NetAddress;1.0"/>
-  <int value="1465557812" label="PPB_VarResource(Dev);0.1"/>
   <int value="1504691399" label="PPB_Flash;13.0"/>
   <int value="1505595424" label="PPB_Crypto(Dev);0.1"/>
   <int value="1508192415" label="PPB_VarDictionary;1.0"/>
