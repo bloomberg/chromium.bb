@@ -24,11 +24,11 @@ shouldBe("htmlCollection.length", "6");
 // - The supported property names are the values from the list returned by these steps:
 //   1. Let result be an empty list.
 //   2. For each element represented by the collection, in tree order, run these substeps:
-//       1. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
+//       1. If element has an ID which is neither the empty string nor is in result, append element's ID to result.
+//       2. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
 //          nor is in result, append element's name attribute value to result.
-//       2. If element has an ID which is neither the empty string nor is in result, append element's ID to result.
 //   3. Return result.
-var expectedEnumeratedProperties = ["0", "1" , "2", "3", "4", "5", "length", "name1", "id1", "id2", "id3", "name4", "id4", "name5", "name6", "item", "namedItem"];
+var expectedEnumeratedProperties = ["0", "1" , "2", "3", "4", "5", "length", "id1", "name1", "id2", "id3", "id4", "name4", "name5", "name6", "item", "namedItem"];
 
 var enumeratedProperties = [];
 for (var property in htmlCollection) {

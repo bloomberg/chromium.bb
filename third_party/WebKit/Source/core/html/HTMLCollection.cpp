@@ -500,26 +500,26 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names)
     // The supported property names are the values from the list returned by these steps:
     // 1. Let result be an empty list.
     // 2. For each element represented by the collection, in tree order, run these substeps:
-    //   1. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
+    //   1. If element has an ID which is neither the empty string nor is in result, append element's ID to result.
+    //   2. If element is in the HTML namespace and has a name attribute whose value is neither the empty string
     //      nor is in result, append element's name attribute value to result.
-    //   2. If element has an ID which is neither the empty string nor is in result, append element's ID to result.
     // 3. Return result.
     HashSet<AtomicString> existingNames;
     ContainerNode& root = rootNode();
     for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
-        if (element->isHTMLElement()) {
-            const AtomicString& nameAttribute = element->getNameAttribute();
-            if (!nameAttribute.isEmpty()) {
-                HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
-                if (addResult.isNewEntry)
-                    names.append(nameAttribute);
-            }
-        }
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
             if (addResult.isNewEntry)
                 names.append(idAttribute);
+        }
+        if (!element->isHTMLElement())
+            continue;
+        const AtomicString& nameAttribute = element->getNameAttribute();
+        if (!nameAttribute.isEmpty()) {
+            HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
+            if (addResult.isNewEntry)
+                names.append(nameAttribute);
         }
     }
 }
