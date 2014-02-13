@@ -19,8 +19,8 @@ class NET_EXPORT_PRIVATE HostMappingRules {
   HostMappingRules();
   ~HostMappingRules();
 
-  // Modifies |*host_port| based on the current rules. Returns true if the
-  // RequestInfo was modified, false otherwise.
+  // Modifies |*host_port| based on the current rules. Returns true if
+  // |*host_port| was modified, false otherwise.
   bool RewriteHost(HostPortPair* host_port) const;
 
   // Adds a rule to this mapper. The format of the rule can be one of:
