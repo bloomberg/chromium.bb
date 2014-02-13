@@ -150,7 +150,7 @@ class ContentProvider(object):
     return self._content_cache.GetFromFile(path)
 
   def Cron(self):
-    futures = []
+    futures = [self._path_canonicalizer.Cron()]
     for root, _, files in self.file_system.Walk(''):
       for f in files:
         futures.append(self.GetContentAndType(posixpath.join(root, f)))

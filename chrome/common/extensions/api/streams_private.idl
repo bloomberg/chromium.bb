@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Streams Private API.
 namespace streamsPrivate {
   interface Events {
     // Fired when a resource is fetched which matches a mime type handled by
@@ -20,6 +21,7 @@ namespace streamsPrivate {
       long tabId,
       // The amount of data the Stream should contain, if known.  If there is
       // no information on the size it will be -1.
-      long expectedContentSize);
+      long expectedContentSize
+    );
   };
 };
