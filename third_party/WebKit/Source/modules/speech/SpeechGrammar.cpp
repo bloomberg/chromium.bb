@@ -35,12 +35,12 @@ DEFINE_GC_INFO(SpeechGrammar);
 
 PassRefPtrWillBeRawPtr<SpeechGrammar> SpeechGrammar::create()
 {
-    return adoptRefWillBeNoop(new SpeechGrammar);
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechGrammar);
 }
 
 PassRefPtrWillBeRawPtr<SpeechGrammar> SpeechGrammar::create(const KURL& src, double weight)
 {
-    return adoptRefWillBeNoop(new SpeechGrammar(src, weight));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechGrammar(src, weight));
 }
 
 void SpeechGrammar::setSrc(ExecutionContext* executionContext, const String& src)
