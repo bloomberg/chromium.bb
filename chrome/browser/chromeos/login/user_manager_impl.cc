@@ -1452,6 +1452,9 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& app_id) {
   command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitchASCII(::switches::kAppId, kiosk_app_id);
 
+  // TODO(hshi): re-enable ubercomp in kiosk mode. http://crbug.com/342061
+  command_line->AppendSwitch(::switches::kDisableDelegatedRenderer);
+
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
   command_line->AppendSwitch(
