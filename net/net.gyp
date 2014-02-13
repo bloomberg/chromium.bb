@@ -1554,6 +1554,9 @@
               '../third_party/nss/nss.gyp:nss',
               'third_party/nss/ssl.gyp:libssl',
             ],
+            'sources!': [
+              'disk_cache/file_posix.cc',
+            ],
             'link_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/CFNetwork.framework',
@@ -1561,9 +1564,6 @@
                 '$(SDKROOT)/System/Library/Frameworks/Security.framework',
                 '$(SDKROOT)/System/Library/Frameworks/SystemConfiguration.framework',
                 '$(SDKROOT)/usr/lib/libresolv.dylib',
-              ],
-              'sources!': [
-                'disk_cache/file_posix.cc',
               ],
             },
           },
