@@ -308,6 +308,7 @@ public:
         PrefixedPutImageDataHD = 266,
         PrefixedImageSmoothingEnabled = 267,
         UnprefixedImageSmoothingEnabled = 268,
+        ShadowRootApplyAuthorStyles = 269,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

@@ -816,10 +816,13 @@ crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 # Flaky on all platforms
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Failure ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-002.html [ Failure ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-003.html [ Failure ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Failure ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-002.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-003.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-004.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-004.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 

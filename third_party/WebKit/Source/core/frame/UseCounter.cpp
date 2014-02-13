@@ -709,6 +709,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedPutImageDataHD:
         return "'CanvasRenderingContext2D.webkitPutImageDataHD' is deprecated. Please use putImageData instead.";
 
+    case ShadowRootApplyAuthorStyles:
+        return "'ShadowRoot.applyAuthorStyles' is deprecated.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
