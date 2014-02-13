@@ -740,9 +740,6 @@ crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
 crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
-crbug.com/315321 compositing/squashing/squash-transform.html [ Crash ]
-crbug.com/315321 virtual/softwarecompositing/squashing/squash-transform.html [ Crash ]
-
 # Template tests that need a merge from upstream to match spec (and subsequent Blink) changes
 crbug.com/325442 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-test-001.html [ Failure ]
 crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/node-document-changes.html [ Failure ]
