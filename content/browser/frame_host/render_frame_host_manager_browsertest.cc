@@ -50,8 +50,7 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
 };
 
 // Web pages should not have script access to the swapped out page.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       DISABLED_NoScriptAccessAfterSwapOut) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(

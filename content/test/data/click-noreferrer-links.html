@@ -38,9 +38,13 @@
 
   function testScriptAccessToWindow() {
     // Grab a reference to the existing foo window and access its location.
-    var w = window.open("", "foo");
-    var url = w.location.href;
-    return url != undefined;
+    try {
+      var w = window.open("", "foo");
+      var url = w.location.href;
+      return url != undefined;
+    } catch (e) {
+      return false;
+    }
   }
 
   function testCloseWindow() {
