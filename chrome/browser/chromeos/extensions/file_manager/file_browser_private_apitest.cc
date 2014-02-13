@@ -128,10 +128,13 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
         disk_mount_manager_mock_);
     disk_mount_manager_mock_->SetupDefaultReplies();
 
-    // OVERRIDE FindDiskBySourcePath mock function.
-    ON_CALL(*disk_mount_manager_mock_, FindDiskBySourcePath(_)).
-        WillByDefault(Invoke(
-            this, &FileBrowserPrivateApiTest::FindVolumeBySourcePath));
+    // OVERRIDE mock functions.
+    ON_CALL(*disk_mount_manager_mock_, FindDiskBySourcePath(_)).WillByDefault(
+        Invoke(this, &FileBrowserPrivateApiTest::FindVolumeBySourcePath));
+    EXPECT_CALL(*disk_mount_manager_mock_, disks())
+        .WillRepeatedly(ReturnRef(volumes_));
+    EXPECT_CALL(*disk_mount_manager_mock_, mount_points())
+        .WillRepeatedly(ReturnRef(mount_points_));
   }
 
   // ExtensionApiTest override
@@ -247,12 +250,6 @@ IN_PROC_BROWSER_TEST_F(FileBrowserPrivateApiTest, Mount) {
                   chromeos::CrosDisksClient::GetArchiveMountPoint().AppendASCII(
                       "archive_mount_path").AsUTF8Unsafe(),
                   chromeos::UNMOUNT_OPTIONS_NONE, _)).Times(1);
-
-  EXPECT_CALL(*disk_mount_manager_mock_, disks())
-      .WillRepeatedly(ReturnRef(volumes_));
-
-  EXPECT_CALL(*disk_mount_manager_mock_, mount_points())
-      .WillRepeatedly(ReturnRef(mount_points_));
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/mount_test"))
       << message_;

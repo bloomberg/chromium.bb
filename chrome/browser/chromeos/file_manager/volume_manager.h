@@ -160,6 +160,11 @@ class VolumeManager : public BrowserContextKeyedService,
  private:
   void OnPrivetVolumesAvailable(
       const local_discovery::PrivetVolumeLister::VolumeList& volumes);
+  void DoMountEvent(chromeos::MountError error_code,
+                    const VolumeInfo& volume_info,
+                    bool is_remounting);
+  void DoUnmountEvent(chromeos::MountError error_code,
+                      const VolumeInfo& volume_info);
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;
@@ -168,6 +173,9 @@ class VolumeManager : public BrowserContextKeyedService,
   PrefChangeRegistrar pref_change_registrar_;
   ObserverList<VolumeManagerObserver> observers_;
   scoped_ptr<local_discovery::PrivetVolumeLister> privet_volume_lister_;
+
+  std::map<std::string, VolumeInfo> mounted_volumes_;
+
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };
 

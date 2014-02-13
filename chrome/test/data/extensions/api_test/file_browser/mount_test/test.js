@@ -70,11 +70,11 @@ var expectedArchiveVolume = {
 
 // List of expected mount points.
 // NOTE: this has to be synced with values in file_browser_private_apitest.cc
-//       and values sorted by mountPath.
+//       and values sorted by volumeId.
 var expectedVolumeList = [
-  expectedDriveVolume,
-  expectedDownloadsVolume,
   expectedArchiveVolume,
+  expectedDownloadsVolume,
+  expectedDriveVolume,
   expectedVolume1,
   expectedVolume2,
   expectedVolume3,
@@ -126,7 +126,7 @@ chrome.test.runTests([
   function getVolumeMetadataList() {
     chrome.fileBrowserPrivate.getVolumeMetadataList(
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(result.length, expectedVolumeList.length,
+          chrome.test.assertEq(expectedVolumeList.length, result.length,
               'getMountPoints returned wrong number of mount points.');
           for (var i = 0; i < expectedVolumeList.length; i++) {
             chrome.test.assertTrue(

@@ -229,18 +229,42 @@ void VolumeManager::Initialize() {
 
   // Register 'Downloads' folder for the profile to the file system.
   if (!chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    bool success = RegisterDownloadsMountPoint(
-        profile_,
-        file_manager::util::GetDownloadsFolderForProfile(profile_));
+    const base::FilePath downloads =
+        file_manager::util::GetDownloadsFolderForProfile(profile_);
+    const bool success = RegisterDownloadsMountPoint(profile_, downloads);
     DCHECK(success);
+
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+                 CreateDownloadsVolumeInfo(downloads),
+                 false /* is_remounting */);
   }
 
   // Subscribe to DriveIntegrationService.
-  if (drive_integration_service_)
+  if (drive_integration_service_) {
     drive_integration_service_->AddObserver(this);
+    if (drive_integration_service_->IsMounted()) {
+      DoMountEvent(
+          chromeos::MOUNT_ERROR_NONE, CreateDriveVolumeInfo(profile_), false);
+    }
+  }
 
   // Subscribe to DiskMountManager.
   disk_mount_manager_->AddObserver(this);
+
+  const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
+      disk_mount_manager_->mount_points();
+  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
+           mount_points.begin();
+       it != mount_points.end();
+       ++it) {
+    DoMountEvent(
+        chromeos::MOUNT_ERROR_NONE,
+        CreateVolumeInfoFromMountPointInfo(
+            it->second,
+            disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)),
+        false /* is_remounting */);
+  }
+
   disk_mount_manager_->RequestMountInfoRefresh();
 
   // Subscribe to Profile Preference change.
@@ -283,39 +307,12 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::vector<VolumeInfo> result;
-
-  // Adds "Drive" volume.
-  if (drive_integration_service_ && drive_integration_service_->IsMounted())
-    result.push_back(CreateDriveVolumeInfo(profile_));
-
-  // Adds "Downloads".
-  // Usually, the path of the directory is where we registered in Initialize(),
-  // but in tests, the mount point may be overridden. To take it into account,
-  // here we explicitly retrieves the path from the file API mount points.
-  base::FilePath downloads;
-  if (FindDownloadsMountPointPath(profile_, &downloads))
-    result.push_back(CreateDownloadsVolumeInfo(downloads));
-
-  // Adds disks (both removable disks and zip archives).
-  const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
-      disk_mount_manager_->mount_points();
-  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
-           mount_points.begin();
-       it != mount_points.end(); ++it) {
-    result.push_back(CreateVolumeInfoFromMountPointInfo(
-        it->second,
-        disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)));
+  for (std::map<std::string, VolumeInfo>::const_iterator iter =
+           mounted_volumes_.begin();
+       iter != mounted_volumes_.end();
+       ++iter) {
+    result.push_back(iter->second);
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivetStorage)) {
-    for (local_discovery::PrivetVolumeLister::VolumeList::const_iterator i =
-             privet_volume_lister_->volume_list().begin();
-         i != privet_volume_lister_->volume_list().end(); i++) {
-      result.push_back(CreatePrivetVolumeInfo(*i));
-    }
-  }
-
   return result;
 }
 
@@ -324,21 +321,30 @@ bool VolumeManager::FindVolumeInfoById(const std::string& volume_id,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(result);
 
-  std::vector<VolumeInfo> info_list = GetVolumeInfoList();
-  for (size_t i = 0; i < info_list.size(); ++i) {
-    if (info_list[i].volume_id == volume_id) {
-      *result = info_list[i];
-      return true;
-    }
-  }
-
-  return false;
+  std::map<std::string, VolumeInfo>::const_iterator iter =
+      mounted_volumes_.find(volume_id);
+  if (iter == mounted_volumes_.end())
+    return false;
+  *result = iter->second;
+  return true;
 }
 
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(
     const base::FilePath& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return RegisterDownloadsMountPoint(profile_, path);
+
+  base::FilePath old_path;
+  if (FindDownloadsMountPointPath(profile_, &old_path)) {
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   CreateDownloadsVolumeInfo(old_path));
+  }
+
+  bool success = RegisterDownloadsMountPoint(profile_, path);
+  DoMountEvent(
+      success ? chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_INVALID_PATH,
+      CreateDownloadsVolumeInfo(path),
+      false /* is_remounting */);
+  return success;
 }
 
 void VolumeManager::OnFileSystemMounted() {
@@ -348,19 +354,15 @@ void VolumeManager::OnFileSystemMounted() {
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
   VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
-  FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
-                    OnVolumeMounted(chromeos::MOUNT_ERROR_NONE,
-                                    volume_info,
-                                    false));  // Not remounting.
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info,
+               false /* is_remounting */);
 }
 
 void VolumeManager::OnFileSystemBeingUnmounted() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
-  FOR_EACH_OBSERVER(
-      VolumeManagerObserver, observers_,
-      OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, volume_info));
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, volume_info);
 }
 
 void VolumeManager::OnDiskEvent(
@@ -477,14 +479,11 @@ void VolumeManager::OnMountEvent(
     case chromeos::disks::DiskMountManager::MOUNTING: {
       bool is_remounting =
           disk && mounted_disk_monitor_->DiskIsRemounting(*disk);
-      FOR_EACH_OBSERVER(
-          VolumeManagerObserver, observers_,
-          OnVolumeMounted(error_code, volume_info, is_remounting));
+      DoMountEvent(error_code, volume_info, is_remounting);
       return;
     }
     case chromeos::disks::DiskMountManager::UNMOUNTING:
-      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
-                        OnVolumeUnmounted(error_code, volume_info));
+      DoUnmountEvent(error_code, volume_info);
       return;
   }
   NOTREACHED();
@@ -550,11 +549,33 @@ void VolumeManager::OnPrivetVolumesAvailable(
   for (local_discovery::PrivetVolumeLister::VolumeList::const_iterator i =
            volumes.begin(); i != volumes.end(); i++) {
     VolumeInfo volume_info = CreatePrivetVolumeInfo(*i);
-
-    FOR_EACH_OBSERVER(
-          VolumeManagerObserver, observers_,
-          OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, volume_info, false));
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, false);
   }
+}
+
+void VolumeManager::DoMountEvent(chromeos::MountError error_code,
+                                 const VolumeInfo& volume_info,
+                                 bool is_remounting) {
+  // TODO(kinaba): filter zip.
+
+  if (error_code == chromeos::MOUNT_ERROR_NONE || volume_info.mount_condition)
+    mounted_volumes_[volume_info.volume_id] = volume_info;
+
+  FOR_EACH_OBSERVER(VolumeManagerObserver,
+                    observers_,
+                    OnVolumeMounted(error_code, volume_info, is_remounting));
+}
+
+void VolumeManager::DoUnmountEvent(chromeos::MountError error_code,
+                                   const VolumeInfo& volume_info) {
+  if (mounted_volumes_.find(volume_info.volume_id) == mounted_volumes_.end())
+    return;
+  if (error_code == chromeos::MOUNT_ERROR_NONE)
+    mounted_volumes_.erase(volume_info.volume_id);
+
+  FOR_EACH_OBSERVER(VolumeManagerObserver,
+                    observers_,
+                    OnVolumeUnmounted(error_code, volume_info));
 }
 
 }  // namespace file_manager

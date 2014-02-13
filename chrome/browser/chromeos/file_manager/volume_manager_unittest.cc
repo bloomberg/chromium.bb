@@ -159,36 +159,39 @@ class VolumeManagerTest : public testing::Test {
   scoped_ptr<VolumeManager> volume_manager_;
 };
 
-TEST_F(VolumeManagerTest, OnFileSystemMounted) {
+TEST_F(VolumeManagerTest, OnDriveFileSystemMountAndUnmount) {
   LoggingObserver observer;
   volume_manager_->AddObserver(&observer);
 
   volume_manager_->OnFileSystemMounted();
 
   ASSERT_EQ(1U, observer.events().size());
-  const LoggingObserver::Event& event = observer.events()[0];
+  LoggingObserver::Event event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
   EXPECT_EQ(drive::util::GetDriveMountPointPath(profile_.get()).AsUTF8Unsafe(),
             event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
   EXPECT_FALSE(event.is_remounting);
 
-  volume_manager_->RemoveObserver(&observer);
-}
-
-TEST_F(VolumeManagerTest, OnFileSystemBeingUnmounted) {
-  LoggingObserver observer;
-  volume_manager_->AddObserver(&observer);
-
   volume_manager_->OnFileSystemBeingUnmounted();
 
-  ASSERT_EQ(1U, observer.events().size());
-  const LoggingObserver::Event& event = observer.events()[0];
+  ASSERT_EQ(2U, observer.events().size());
+  event = observer.events()[1];
   EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
   EXPECT_EQ(drive::util::GetDriveMountPointPath(profile_.get()).AsUTF8Unsafe(),
             event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
 
+  volume_manager_->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnDriveFileSystemUnmountWithoutMount) {
+  LoggingObserver observer;
+  volume_manager_->AddObserver(&observer);
+  volume_manager_->OnFileSystemBeingUnmounted();
+
+  // Unmount event for non-mounted volume is not reported.
+  ASSERT_EQ(0U, observer.events().size());
   volume_manager_->RemoveObserver(&observer);
 }
 
@@ -435,7 +438,7 @@ TEST_F(VolumeManagerTest, OnDeviceEvent_Scanned) {
   volume_manager_->RemoveObserver(&observer);
 }
 
-TEST_F(VolumeManagerTest, OnMountEvent_Mounting) {
+TEST_F(VolumeManagerTest, OnMountEvent_MountingAndUnmounting) {
   LoggingObserver observer;
   volume_manager_->AddObserver(&observer);
 
@@ -450,11 +453,21 @@ TEST_F(VolumeManagerTest, OnMountEvent_Mounting) {
                                 kMountPoint);
 
   ASSERT_EQ(1U, observer.events().size());
-  const LoggingObserver::Event& event = observer.events()[0];
+  LoggingObserver::Event event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
   EXPECT_EQ("device1", event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
   EXPECT_FALSE(event.is_remounting);
+
+  volume_manager_->OnMountEvent(chromeos::disks::DiskMountManager::UNMOUNTING,
+                                chromeos::MOUNT_ERROR_NONE,
+                                kMountPoint);
+
+  ASSERT_EQ(2U, observer.events().size());
+  event = observer.events()[1];
+  EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
 
   volume_manager_->RemoveObserver(&observer);
 }
@@ -510,7 +523,7 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
   volume_manager_->RemoveObserver(&observer);
 }
 
-TEST_F(VolumeManagerTest, OnMountEvent_Unmounting) {
+TEST_F(VolumeManagerTest, OnMountEvent_UnmountingWithoutMounting) {
   LoggingObserver observer;
   volume_manager_->AddObserver(&observer);
 
@@ -524,11 +537,8 @@ TEST_F(VolumeManagerTest, OnMountEvent_Unmounting) {
                                 chromeos::MOUNT_ERROR_NONE,
                                 kMountPoint);
 
-  ASSERT_EQ(1U, observer.events().size());
-  const LoggingObserver::Event& event = observer.events()[0];
-  EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
-  EXPECT_EQ("device1", event.device_path);
-  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
+  // Unmount event for a disk not mounted in this manager is not reported.
+  ASSERT_EQ(0U, observer.events().size());
 
   volume_manager_->RemoveObserver(&observer);
 }
