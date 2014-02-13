@@ -220,14 +220,16 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   };
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
+  // The returned form will not have 'action' or '*_element' fields set. This
+  // is because credentials imported from IE don't have this information.
   PasswordFormData expected_form_data = {
     PasswordForm::SCHEME_HTML,
     "http://example.com/",
     "http://example.com/origin",
-    "http://example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
+    "",
+    L"",
+    L"",
+    L"",
     L"abcdefgh",
     L"abcdefghijkl",
     true, false, 1,

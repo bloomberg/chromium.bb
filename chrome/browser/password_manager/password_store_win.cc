@@ -117,12 +117,15 @@ std::vector<PasswordForm*> PasswordStoreWin::DBHandler::GetIE7Results(
                                        info.encrypted_data,
                                        &credentials)) {
       for (size_t i = 0; i < credentials.size(); ++i) {
-        PasswordForm* autofill = new PasswordForm(form);
+        PasswordForm* autofill = new PasswordForm();
         autofill->username_value = credentials[i].username;
         autofill->password_value = credentials[i].password;
+        autofill->signon_realm = form.signon_realm;
+        autofill->origin = form.origin;
         autofill->preferred = true;
         autofill->ssl_valid = form.origin.SchemeIsSecure();
         autofill->date_created = info.date_created;
+
         matching_forms.push_back(autofill);
         // Add this PasswordForm to the saved password table. We're on the DB
         // thread already, so we use AddLoginImpl.
