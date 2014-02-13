@@ -71,3 +71,45 @@ function getMockHandlerContainer(eventIdentifier) {
 
   return mockEventContainer;
 }
+
+/**
+ * MockPromise
+ * The JS test harness expects all calls to complete synchronously.
+ * As a result, we can't use built-in JS promises since they run asynchronously.
+ * Instead of mocking all possible calls to promises, a skeleton
+ * implementation is provided to get the tests to pass.
+ */
+var Promise = function() {
+  function PromisePrototypeObject(asyncTask) {
+    var result;
+    asyncTask(
+        function(asyncResult) {
+          result = asyncResult;
+        },
+        function() {}); // Errors are unsupported.
+
+    function then(callback) {
+      callback.call(null, result);
+    }
+    return {then: then, isPromise: true};
+  }
+
+  function all(arrayOfPromises) {
+    var results = [];
+    for (i = 0; i < arrayOfPromises.length; i++) {
+      if (arrayOfPromises[i].isPromise) {
+        arrayOfPromises[i].then(function(result) {
+          results[i] = result;
+        });
+      } else {
+        results[i] = arrayOfPromises[i];
+      }
+    }
+    var promise = new PromisePrototypeObject(function(resolve) {
+      resolve(results);
+    });
+    return promise;
+  }
+  PromisePrototypeObject.all = all;
+  return PromisePrototypeObject;
+}();

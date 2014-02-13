@@ -437,6 +437,17 @@ wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
 wrapper.instrumentChromeApiFunction('webstorePrivate.getBrowserLogin', 0);
 
 /**
+ * Add task tracking support to Promises.
+ * @override
+ */
+Promise.prototype.then = function() {
+  var originalThen = Promise.prototype.then;
+  return function(callback) {
+    originalThen.call(this, wrapper.wrapCallback(callback, false));
+  }
+}();
+
+/**
  * Builds the object to manage tasks (mutually exclusive chains of events).
  * @param {function(string, string): boolean} areConflicting Function that
  *     checks if a new task can't be added to a task queue that contains an

@@ -1087,34 +1087,80 @@ function updateRunningState(
  */
 function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function() {
+    Promise.all([
+        isSignedIn(),
+        isGeolocationEnabled(),
+        canEnableBackground(),
+        isNotificationsEnabled(),
+        isGoogleNowEnabled()])
+        .then(function(results) {
+          updateRunningState.apply(null, results);
+        });
+  });
+}
+
+/**
+ * Determines if the user is signed in.
+ * @return {Promise} A promise to evaluate the signed in state.
+ */
+function isSignedIn() {
+  return new Promise(function(resolve) {
     authenticationManager.isSignedIn(function(signedIn) {
-      instrumented.metricsPrivate.getVariationParams(
-          'GoogleNow',
-          function(response) {
-            var canEnableBackground =
-                (!response || (response.canEnableBackground != 'false'));
-            instrumented.notifications.getPermissionLevel(function(level) {
-              var notificationEnabled = (level == 'granted');
-              instrumented.
-                preferencesPrivate.
-                googleGeolocationAccessEnabled.
-                get({}, function(prefValue) {
-                  var geolocationEnabled = !!prefValue.value;
-                  instrumented.storage.local.get(
-                      'googleNowEnabled',
-                      function(items) {
-                        var googleNowEnabled =
-                            items && !!items.googleNowEnabled;
-                        updateRunningState(
-                            signedIn,
-                            geolocationEnabled,
-                            canEnableBackground,
-                            notificationEnabled,
-                            googleNowEnabled);
-                      });
-                });
-            });
-          });
+      resolve(signedIn);
+    });
+  });
+}
+
+/**
+ * Gets the geolocation enabled preference.
+ * @return {Promise} A promise to get the geolocation enabled preference.
+ */
+function isGeolocationEnabled() {
+  return new Promise(function(resolve) {
+    instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get(
+        {},
+        function(prefValue) {
+          resolve(!!prefValue.value);
+        });
+  });
+}
+
+/**
+ * Determines if background mode should be requested.
+ * @return {Promise} A promise to determine if background can be enabled.
+ */
+function canEnableBackground() {
+  return new Promise(function(resolve) {
+    instrumented.metricsPrivate.getVariationParams(
+        'GoogleNow',
+        function(response) {
+          resolve(!response || (response.canEnableBackground != 'false'));
+        });
+  });
+}
+
+/**
+ * Checks if Google Now is enabled in the notifications center.
+ * @return {Promise} A promise to determine if Google Now is enabled
+ *     in the notifications center.
+ */
+function isNotificationsEnabled() {
+  return new Promise(function(resolve) {
+    instrumented.notifications.getPermissionLevel(function(level) {
+      resolve(level == 'granted');
+    });
+  });
+}
+
+/**
+ * Gets the previous Google Now opt-in state.
+ * @return {Promise} A promise to determine the previous Google Now
+ *     opt-in state.
+ */
+function isGoogleNowEnabled() {
+  return new Promise(function(resolve) {
+    instrumented.storage.local.get('googleNowEnabled', function(items) {
+      resolve(items && !!items.googleNowEnabled);
     });
   });
 }
