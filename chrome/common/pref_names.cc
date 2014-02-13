@@ -352,6 +352,14 @@ const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
+#if defined(OS_ANDROID)
+// Integer indicating the Contextual Search enabled state.
+// -1 - opt-out (disabled)
+//  0 - undecided
+//  1 - opt-in (enabled)
+const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
+#endif
+
 // Boolean that indicates whether the browser should put up a confirmation
 // window when the user is attempting to quit. Mac only.
 const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";

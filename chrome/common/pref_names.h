@@ -143,6 +143,9 @@ extern const char kSafeBrowsingReportingEnabled[];
 extern const char kSafeBrowsingProceedAnywayDisabled[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
+#if defined(OS_ANDROID)
+extern const char kContextualSearchEnabled[];
+#endif
 extern const char kConfirmToQuitEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE
 extern const char kSyncedDefaultSearchProviderGUID[];

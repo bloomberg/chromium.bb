@@ -64,6 +64,12 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSearchSuggestEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  registry->RegisterIntegerPref(
+      prefs::kContextualSearchEnabled,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif
   registry->RegisterBooleanPref(
       prefs::kSessionExitedCleanly,
       true,
