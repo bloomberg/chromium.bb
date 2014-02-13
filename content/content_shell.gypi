@@ -698,7 +698,6 @@
         'shell/tools/plugin/PluginTest.cpp',
         'shell/tools/plugin/PluginTest.h',
         'shell/tools/plugin/TestObject.cpp',
-        'shell/tools/plugin/TestObject.h',
         'shell/tools/plugin/Tests/DocumentOpenInDestroyStream.cpp',
         'shell/tools/plugin/Tests/EvaluateJSAfterRemovingPluginElement.cpp',
         'shell/tools/plugin/Tests/FormValue.cpp',
@@ -718,6 +717,7 @@
         'shell/tools/plugin/Tests/PluginScriptableNPObjectInvokeDefault.cpp',
         'shell/tools/plugin/Tests/PluginScriptableObjectOverridesAllProperties.cpp',
         'shell/tools/plugin/main.cpp',
+        'shell/tools/plugin/test_object.h',
       ],
       'include_dirs': [
         '<(DEPTH)',

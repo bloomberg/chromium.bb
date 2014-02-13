@@ -27,7 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TestObject.h"
+#include "content/shell/tools/plugin/test_object.h"
+
 #include "PluginObject.h"
 
 #include <string.h>
@@ -51,17 +52,14 @@ static bool testConstruct(NPObject* obj,
                           uint32_t argCount,
                           NPVariant* result);
 
-static NPClass testClass = {
+static NPClass g_test_class = {
     NP_CLASS_STRUCT_VERSION, testAllocate, testDeallocate, 0,
     testHasMethod,           testInvoke,   0,              testHasProperty,
     testGetProperty,         0,            0,              testEnumerate,
     testConstruct};
 
-NPClass* getTestClass(void) { return &testClass; }
 
-static int testObjectCount = 0;
-
-int getTestObjectCount() { return testObjectCount; }
+static int g_test_object_count = 0;
 
 typedef struct {
   NPObject header;
@@ -103,7 +101,7 @@ static NPObject* testAllocate(NPP npp, NPClass* /*theClass*/) {
   TestObject* newInstance =
       static_cast<TestObject*>(malloc(sizeof(TestObject)));
   newInstance->testObject = 0;
-  ++testObjectCount;
+  ++g_test_object_count;
 
   if (!identifiersInitialized) {
     identifiersInitialized = true;
@@ -118,7 +116,7 @@ static void testDeallocate(NPObject* obj) {
   if (testObject->testObject)
     browser->releaseobject(testObject->testObject);
 
-  --testObjectCount;
+  --g_test_object_count;
   free(obj);
 }
 
@@ -176,7 +174,7 @@ static bool testGetProperty(NPObject* npobj,
   if (name == testIdentifiers[ID_PROPERTY_TEST_OBJECT]) {
     TestObject* testObject = reinterpret_cast<TestObject*>(npobj);
     if (!testObject->testObject)
-      testObject->testObject = browser->createobject(0, &testClass);
+      testObject->testObject = browser->createobject(0, &g_test_class);
     browser->retainobject(testObject->testObject);
     OBJECT_TO_NPVARIANT(testObject->testObject, *result);
     return true;
@@ -213,3 +211,11 @@ static bool testConstruct(NPObject* npobj,
   OBJECT_TO_NPVARIANT(npobj, *result);
   return true;
 }
+
+namespace content {
+
+NPClass* GetTestClass() { return &g_test_class; }
+
+int GetTestObjectCount() { return g_test_object_count; }
+
+}  // namespace content

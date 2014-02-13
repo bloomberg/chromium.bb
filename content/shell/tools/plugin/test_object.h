@@ -27,8 +27,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef CONTENT_SHELL_TOOLS_PLUGIN_TEST_OBJECT_H_
+#define CONTENT_SHELL_TOOLS_PLUGIN_TEST_OBJECT_H_
+
 #include <bindings/npapi.h>
 #include <bindings/npruntime.h>
 
-NPClass* getTestClass(void);
-int getTestObjectCount();
+namespace content {
+
+NPClass* GetTestClass();
+int GetTestObjectCount();
+
+}  // namespace content
+
+#endif  // CONTENT_SHELL_TOOLS_PLUGIN_TEST_OBJECT_H_

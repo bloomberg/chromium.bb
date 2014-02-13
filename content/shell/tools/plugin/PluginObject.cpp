@@ -32,7 +32,7 @@
 #include "PluginObject.h"
 
 #include "PluginTest.h"
-#include "TestObject.h"
+#include "content/shell/tools/plugin/test_object.h"
 #include "base/strings/string_util.h"
 #include <assert.h>
 #include <stdio.h>
@@ -370,7 +370,7 @@ static bool pluginGetProperty(NPObject* obj,
     return true;
   }
   if (name == pluginPropertyIdentifiers[ID_PROPERTY_TEST_OBJECT_COUNT]) {
-    INT32_TO_NPVARIANT(getTestObjectCount(), *result);
+    INT32_TO_NPVARIANT(content::GetTestObjectCount(), *result);
     return true;
   }
 
@@ -1261,7 +1261,8 @@ static bool pluginInvoke(NPObject* header,
     return true;
   }
   if (name == pluginMethodIdentifiers[ID_TEST_CREATE_TEST_OBJECT]) {
-    NPObject* testObject = browser->createobject(plugin->npp, getTestClass());
+    NPObject* testObject =
+        browser->createobject(plugin->npp, content::GetTestClass());
     assert(testObject->referenceCount == 1);
     OBJECT_TO_NPVARIANT(testObject, *result);
     return true;
@@ -1352,7 +1353,7 @@ static NPObject* pluginAllocate(NPP npp, NPClass* theClass) {
 
   newInstance->pluginTest = 0;
   newInstance->npp = npp;
-  newInstance->testObject = browser->createobject(npp, getTestClass());
+  newInstance->testObject = browser->createobject(npp, content::GetTestClass());
   newInstance->rememberedObject = 0;
   newInstance->eventLogging = false;
   newInstance->onStreamLoad = 0;
