@@ -78,6 +78,14 @@ bool IsSuggestPrefEnabled(Profile* profile);
 // the Instant Extended API is not enabled.
 uint64 EmbeddedSearchPageVersion();
 
+// Returns a string indicating whether InstantExtended is enabled, suitable
+// for adding as a query string param to the homepage or search requests.
+// Returns an empty string otherwise.
+//
+// |for_search| should be set to true for search requests, in which case this
+// returns a non-empty string only if query extraction is enabled.
+std::string InstantExtendedEnabledParam(bool for_search);
+
 // Returns whether query extraction is enabled.
 bool IsQueryExtractionEnabled();
 

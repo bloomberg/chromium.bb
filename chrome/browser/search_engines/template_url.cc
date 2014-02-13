@@ -899,9 +899,10 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:
         DCHECK(!i->is_post_param);
-        HandleReplacement(
-            std::string(), search_terms_data.InstantExtendedEnabledParam(), *i,
-            &url);
+        HandleReplacement(std::string(),
+                          chrome::InstantExtendedEnabledParam(type_ == SEARCH),
+                          *i,
+                          &url);
         break;
 
       case GOOGLE_NTP_IS_THEMED:

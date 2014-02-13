@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -166,7 +167,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     SetSearchProvider(true, false);
   }
 
-  void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url) {
+  virtual void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url) {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;
@@ -797,6 +798,87 @@ TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
 
   EXPECT_EQ(GURL("https://foo.com/instant?ion=1&foo=foo#foo=foo&strk"),
             GetSearchResultPrefetchBaseURL(profile()));
+}
+
+class SearchURLTest : public SearchTest {
+ protected:
+  virtual void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url)
+      OVERRIDE {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+    TemplateURLData data;
+    data.SetURL("{google:baseURL}search?"
+                "{google:instantExtendedEnabledParameter}q={searchTerms}");
+    data.search_terms_replacement_key = "espv";
+    template_url_ = new TemplateURL(profile(), data);
+    // |template_url_service| takes ownership of |template_url_|.
+    template_url_service->Add(template_url_);
+    template_url_service->SetDefaultSearchProvider(template_url_);
+  }
+
+  TemplateURL* template_url_;
+};
+
+TEST_F(SearchURLTest, QueryExtractionEnabled) {
+  EnableQueryExtractionForTesting();
+  EXPECT_TRUE(IsQueryExtractionEnabled());
+  TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
+  GURL result(template_url_->url_ref().ReplaceSearchTerms(search_terms_args));
+  ASSERT_TRUE(result.is_valid());
+  // Query extraction is enabled. Make sure
+  // {google:instantExtendedEnabledParameter} is set in the search URL.
+  EXPECT_EQ("http://www.google.com/search?espv=2&q=foo", result.spec());
+}
+
+TEST_F(SearchURLTest, QueryExtractionDisabled) {
+  EXPECT_FALSE(IsQueryExtractionEnabled());
+  TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
+  GURL result(template_url_->url_ref().ReplaceSearchTerms(search_terms_args));
+  ASSERT_TRUE(result.is_valid());
+  // Query extraction is disabled. Make sure
+  // {google:instantExtendedEnabledParameter} is not set in the search URL.
+  EXPECT_EQ("http://www.google.com/search?q=foo", result.spec());
+}
+
+typedef SearchTest InstantExtendedEnabledParamTest;
+
+TEST_F(InstantExtendedEnabledParamTest, QueryExtractionDisabled) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 espv:12"));
+  // Make sure InstantExtendedEnabledParam() returns an empty string for search
+  // requests.
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  // Query extraction is always enabled on mobile.
+  EXPECT_TRUE(IsQueryExtractionEnabled());
+  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(true));
+#else
+  EXPECT_FALSE(IsQueryExtractionEnabled());
+  EXPECT_EQ("", InstantExtendedEnabledParam(true));
+#endif
+  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(false));
+}
+
+TEST_F(InstantExtendedEnabledParamTest, QueryExtractionEnabled) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:10 query_extraction:1"));
+  EXPECT_TRUE(IsQueryExtractionEnabled());
+  // Make sure InstantExtendedEnabledParam() returns a non-empty param string
+  // for search requests.
+  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(true));
+  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(false));
+}
+
+TEST_F(InstantExtendedEnabledParamTest, UseDefaultEmbeddedSearchPageVersion) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:-1 query_extraction:1"));
+  EXPECT_TRUE(IsQueryExtractionEnabled());
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  EXPECT_EQ("espv=1&", InstantExtendedEnabledParam(true));
+  EXPECT_EQ("espv=1&", InstantExtendedEnabledParam(false));
+#else
+  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(true));
+  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(false));
+#endif
 }
 
 typedef SearchTest IsQueryExtractionEnabledTest;

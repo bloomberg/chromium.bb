@@ -364,6 +364,13 @@ uint64 EmbeddedSearchPageVersion() {
   return kEmbeddedPageVersionDefault;
 }
 
+std::string InstantExtendedEnabledParam(bool for_search) {
+  if (for_search && !chrome::IsQueryExtractionEnabled())
+    return std::string();
+  return std::string(google_util::kInstantExtendedAPIParam) + "=" +
+      base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
+}
+
 bool IsQueryExtractionEnabled() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   return true;

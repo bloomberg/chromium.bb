@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -81,10 +80,6 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
 
 std::string SearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
-  return std::string();
-}
-
-std::string SearchTermsData::InstantExtendedEnabledParam() const {
   return std::string();
 }
 
@@ -183,17 +178,6 @@ std::string UIThreadSearchTermsData::ForceInstantResultsParam(
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   return (for_prerender || !chrome::IsInstantExtendedAPIEnabled()) ? "ion=1&" :
       std::string();
-}
-
-std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  uint64 instant_extended_api_version = chrome::EmbeddedSearchPageVersion();
-  if (instant_extended_api_version) {
-    return std::string(google_util::kInstantExtendedAPIParam) + "=" +
-        base::Uint64ToString(instant_extended_api_version) + "&";
-  }
-  return std::string();
 }
 
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -41,8 +42,7 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetQueryExtractionParam(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   UIThreadSearchTermsData search_terms_data(profile);
   return base::android::ConvertUTF8ToJavaString(
-      env,
-      search_terms_data.InstantExtendedEnabledParam());
+      env, chrome::InstantExtendedEnabledParam(true));
 }
 
 ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetCorpusChipText(

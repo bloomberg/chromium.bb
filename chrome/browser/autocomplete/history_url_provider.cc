@@ -241,7 +241,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string ForceInstantResultsParam(
       bool for_prerender) const OVERRIDE;
-  virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
 
  private:
@@ -250,7 +249,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   base::string16 rlz_parameter_value_;
   std::string search_client_;
   std::string force_instant_results_param_;
-  std::string instant_extended_enabled_param_;
   std::string ntp_is_themed_param_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
@@ -264,8 +262,6 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       search_client_(search_terms_data.GetSearchClient()),
       force_instant_results_param_(
           search_terms_data.ForceInstantResultsParam(false)),
-      instant_extended_enabled_param_(
-          search_terms_data.InstantExtendedEnabledParam()),
       ntp_is_themed_param_(search_terms_data.NTPIsThemedParam()) {}
 
 SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
@@ -290,10 +286,6 @@ std::string SearchTermsDataSnapshot::GetSearchClient() const {
 std::string SearchTermsDataSnapshot::ForceInstantResultsParam(
     bool for_prerender) const {
   return force_instant_results_param_;
-}
-
-std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam() const {
-  return instant_extended_enabled_param_;
 }
 
 std::string SearchTermsDataSnapshot::NTPIsThemedParam() const {
