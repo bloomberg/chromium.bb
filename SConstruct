@@ -1850,7 +1850,7 @@ def FileSizeTest(env, name, envFile, max_size=None):
     command_tester.LogPerfResult(name,
                                  env.GetPerfEnvDescription(),
                                  '%.3f' % (actual_size / 1024.0),
-                                 'kilobytes')
+                                 'KB')
     # Also get zipped size.
     nexe_file = open(filepath, 'rb')
     zipped_size = len(zlib.compress(nexe_file.read()))
@@ -1858,7 +1858,7 @@ def FileSizeTest(env, name, envFile, max_size=None):
     command_tester.LogPerfResult(name,
                                  'ZIPPED_' + env.GetPerfEnvDescription(),
                                  '%.3f' % (zipped_size / 1024.0),
-                                 'kilobytes')
+                                 'KB')
     # Finally, do the size check.
     if max_size is not None and actual_size > max_size:
       # NOTE: this exception only triggers a failure for this particular test,

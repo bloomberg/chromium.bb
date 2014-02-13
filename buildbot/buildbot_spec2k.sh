@@ -182,7 +182,7 @@ get-validator() {
 
 LogTimeHelper() {
   # This format is recognized by the buildbot system
-  echo "RESULT $1_$2: $3= $(bc) secs"
+  echo "RESULT $1_$2: $3= $(bc) seconds"
 }
 
 LogTimedRun() {

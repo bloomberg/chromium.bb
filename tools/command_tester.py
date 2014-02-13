@@ -169,7 +169,7 @@ def PrintTotalTime(total_time):
     LogPerfResult(GlobalSettings['name'],
                   'TOTAL_' + GlobalSettings['perf_env_description'],
                   '%f' % total_time,
-                  'secs')
+                  'seconds')
 
 
 # On POSIX systems, exit() codes are 8-bit.  You cannot use exit() to

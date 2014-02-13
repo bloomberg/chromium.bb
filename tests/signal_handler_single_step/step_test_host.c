@@ -113,11 +113,11 @@ static void TrapSignalHandler(int signal,
                        g_jump_count);
       if (is_untrusted && g_call_count == kNumberOfCallsToTest - 1) {
         SignalSafePrintf("RESULT InstructionsPerSyscall: value= "
-                         "%i instructions\n", g_instruction_count);
+                         "%i count\n", g_instruction_count);
         SignalSafePrintf("RESULT InstructionBytesPerSyscall: value= "
-                         "%i instructions\n", g_instruction_byte_count);
+                         "%i count\n", g_instruction_byte_count);
         SignalSafePrintf("RESULT JumpsPerSyscall: value= "
-                         "%i jumps\n", g_jump_count);
+                         "%i count\n", g_jump_count);
       }
       g_instruction_count = 0;
       g_instruction_byte_count = 0;

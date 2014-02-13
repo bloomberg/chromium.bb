@@ -19,7 +19,7 @@ LogRealTime() {
   # will know to average this list of times.
   local times="[$(awk '{print $3}' ${time_file} | \
                    tr '\n' ',' | sed 's/,$//')]"
-  LogPerf ${graph_label} ${bench} ${setup} "${times}" "secs"
+  LogPerf ${graph_label} ${bench} ${setup} "${times}" "seconds"
 }
 
 #@ LogGzippedSize <file_to_zip> <graph_label> <bench> <compiler_setup>

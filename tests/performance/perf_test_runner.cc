@@ -90,7 +90,7 @@ void PerfTestRealTime(const char *description_string, const char *test_name,
   printf("  relative stddev: %.2f%%\n", stddev / mean * 100);
   // Output the result in a format that Buildbot will recognise in the
   // logs and record, using the Chromium perf testing infrastructure.
-  printf("RESULT %s: %s= {%.6f, %.6f} microseconds\n",
+  printf("RESULT %s: %s= {%.6f, %.6f} us\n",
          test_name, description_string, mean * 1e6, stddev * 1e6);
   *result_mean = mean;
 }
@@ -151,7 +151,7 @@ void PerfTestCycleCount(const char *description_string, const char *test_name,
   printf("  max:     %" PRId64 " cycles\n", times[count]);
   // The "{...}" RESULT syntax usually means standard deviation but
   // here we report the interquartile range.
-  printf("RESULT %s_CycleCount: %s= {%" PRId64 ", %" PRId64 "} cycles\n",
+  printf("RESULT %s_CycleCount: %s= {%" PRId64 ", %" PRId64 "} count\n",
          test_name, description_string, q2, q3 - q1);
   *result_cycles = q2;
 }

@@ -44,7 +44,7 @@ def GetEventPatterns():
   return [
       # NaClPerfCounterInterval (${SERIES} ${EVENT_A}:*${EVENT_B}): N microsecs
       # -->
-      # RESULT ${GRAPH}: ${EVENT_B}_${SETUP_INFO}= N/1000 millisecs
+      # RESULT ${GRAPH}: ${EVENT_B}_${SETUP_INFO}= N/1000 ms
       # Thus, this assumes that the EVENT_B provides the useful name
       # E.g., EVENT_A might be "Pre-Validation"
       # while EVENT_B is "Validation" (so this times validation)
@@ -56,7 +56,7 @@ def GetEventPatterns():
 
       # NaClPerf [${EVENT_NAME}]: N millisecs
       # -->
-      # RESULT ${GRAPH}: ${EVENT_NAME}_${SETUP_INFO}= N millisecs
+      # RESULT ${GRAPH}: ${EVENT_NAME}_${SETUP_INFO}= N ms
       Pattern('BrowserTester',
               'NaClPerf \[(.*)\] (\d+\.*\d*) millisecs',
               1, 2, 1.0),
@@ -106,7 +106,7 @@ class Pattern(object):
 
   def PrintSummary(self, graph_label, trace_label_extra):
     for event, time in self.accumulatedTimes.iteritems():
-      sys.stdout.write('RESULT %s: %s_%s= %f millisecs\n' %
+      sys.stdout.write('RESULT %s: %s_%s= %f ms\n' %
                        (graph_label, event, trace_label_extra, time))
 
 def Main():
