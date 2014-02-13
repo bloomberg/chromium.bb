@@ -29,9 +29,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const Vector<RefPtr<SpeechRecognitionResult> >& results)
+DEFINE_GC_INFO(SpeechRecognitionResultList);
+
+PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const Vector<RefPtr<SpeechRecognitionResult> >& results)
 {
-    return adoptRef(new SpeechRecognitionResultList(results));
+    return adoptRefWillBeNoop(new SpeechRecognitionResultList(results));
 }
 
 SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
@@ -43,9 +45,21 @@ SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
 }
 
 SpeechRecognitionResultList::SpeechRecognitionResultList(const Vector<RefPtr<SpeechRecognitionResult> >& results)
+#if !ENABLE(OILPAN)
     : m_results(results)
+#endif
 {
     ScriptWrappable::init(this);
+#if ENABLE(OILPAN)
+    m_results.grow(results.size());
+    for (size_t i = 0; i < results.size(); i++)
+        m_results[i] = results[i].get();
+#endif
+}
+
+void SpeechRecognitionResultList::trace(Visitor* visitor)
+{
+    visitor->trace(m_results);
 }
 
 } // namespace WebCore

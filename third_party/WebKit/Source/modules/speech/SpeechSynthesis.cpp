@@ -34,9 +34,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext* context)
+DEFINE_GC_INFO(SpeechSynthesis);
+
+PassRefPtrWillBeRawPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext* context)
 {
-    return adoptRef(new SpeechSynthesis(context));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechSynthesis(context));
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
@@ -65,7 +67,7 @@ void SpeechSynthesis::voicesDidChange()
         dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
-const Vector<RefPtr<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
+const WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
 {
     if (m_voiceList.size())
         return m_voiceList;
@@ -125,7 +127,7 @@ void SpeechSynthesis::cancel()
 {
     // Remove all the items from the utterance queue.
     // Hold on to the current utterance so the platform synthesizer can have a chance to clean up.
-    RefPtr<SpeechSynthesisUtterance> current = m_currentSpeechUtterance;
+    RefPtrWillBeMember<SpeechSynthesisUtterance> current = m_currentSpeechUtterance;
     m_utteranceQueue.clear();
     m_platformSpeechSynthesizer->cancel();
     current = 0;
@@ -162,7 +164,7 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
     fireEvent(errorOccurred ? EventTypeNames::error : EventTypeNames::end, utterance, 0, String());
 
     if (m_utteranceQueue.size()) {
-        RefPtr<SpeechSynthesisUtterance> firstUtterance = m_utteranceQueue.first();
+        RefPtrWillBeMember<SpeechSynthesisUtterance> firstUtterance = m_utteranceQueue.first();
         ASSERT(firstUtterance == utterance);
         if (firstUtterance == utterance)
             m_utteranceQueue.removeFirst();
@@ -225,6 +227,13 @@ void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUt
 const AtomicString& SpeechSynthesis::interfaceName() const
 {
     return EventTargetNames::SpeechSynthesisUtterance;
+}
+
+void SpeechSynthesis::trace(Visitor* visitor)
+{
+    visitor->trace(m_voiceList);
+    visitor->trace(m_currentSpeechUtterance);
+    visitor->trace(m_utteranceQueue);
 }
 
 } // namespace WebCore

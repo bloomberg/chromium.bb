@@ -27,6 +27,7 @@
 #define DOMWindowSpeechSynthesis_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "modules/speech/SpeechSynthesis.h"
 #include "platform/Supplementable.h"
 
@@ -47,7 +48,7 @@ private:
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();
 
-    RefPtr<SpeechSynthesis> m_speechSynthesis;
+    RefPtrWillBePersistent<SpeechSynthesis> m_speechSynthesis;
 };
 
 } // namespace WebCore

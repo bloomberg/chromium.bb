@@ -27,6 +27,7 @@
 #define SpeechSynthesisVoice_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -34,9 +35,10 @@
 
 namespace WebCore {
 
-class SpeechSynthesisVoice FINAL : public ScriptWrappable, public RefCounted<SpeechSynthesisVoice> {
+class SpeechSynthesisVoice FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechSynthesisVoice>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
+    static PassRefPtrWillBeRawPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
 
     const String& voiceURI() const { return m_platformVoice->voiceURI(); }
     const String& name() const { return m_platformVoice->name(); }
@@ -45,6 +47,8 @@ public:
     bool isDefault() const { return m_platformVoice->isDefault(); }
 
     PlatformSpeechSynthesisVoice* platformVoice() const { return m_platformVoice.get(); }
+
+    void trace(Visitor*) { }
 
 private:
     explicit SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice>);

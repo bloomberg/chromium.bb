@@ -27,6 +27,8 @@
 #define SpeechRecognitionEvent_h
 
 #include "core/events/Event.h"
+#include "heap/Handle.h"
+#include "heap/Heap.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "wtf/RefPtr.h"
@@ -35,11 +37,13 @@ namespace WebCore {
 
 class Document;
 
-struct SpeechRecognitionEventInit : public EventInit {
+class SpeechRecognitionEventInit : public EventInit {
+    DISALLOW_ALLOCATION();
+public:
     SpeechRecognitionEventInit();
 
     unsigned long resultIndex;
-    RefPtr<SpeechRecognitionResultList> results;
+    RefPtrWillBeRawPtr<SpeechRecognitionResultList> results;
 };
 
 class SpeechRecognitionEvent FINAL : public Event {
@@ -64,10 +68,10 @@ public:
 private:
     SpeechRecognitionEvent();
     SpeechRecognitionEvent(const AtomicString&, const SpeechRecognitionEventInit&);
-    SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtr<SpeechRecognitionResultList> results);
+    SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> results);
 
     unsigned long m_resultIndex;
-    RefPtr<SpeechRecognitionResultList> m_results;
+    RefPtrWillBePersistent<SpeechRecognitionResultList> m_results;
 };
 
 } // namespace WebCore

@@ -29,7 +29,9 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/speech/SpeechGrammarList.h"
+#include "modules/speech/SpeechRecognitionResult.h"
 #include "wtf/Compiler.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,18 +43,17 @@ class ExceptionState;
 class ExecutionContext;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
-class SpeechRecognitionResult;
-class SpeechRecognitionResultList;
 
-class SpeechRecognition FINAL : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SpeechRecognition);
+class SpeechRecognition FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechRecognition>);
 public:
-    static PassRefPtr<SpeechRecognition> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<SpeechRecognition> create(ExecutionContext*);
     virtual ~SpeechRecognition();
 
     // Attributes.
-    PassRefPtr<SpeechGrammarList> grammars() { return m_grammars; }
-    void setGrammars(PassRefPtr<SpeechGrammarList> grammars) { m_grammars = grammars; }
+    SpeechGrammarList* grammars() { return m_grammars.get(); }
+    void setGrammars(PassRefPtrWillBeRawPtr<SpeechGrammarList> grammars) { m_grammars = grammars; }
     String lang() { return m_lang; }
     void setLang(const String& lang) { m_lang = lang; }
     bool continuous() { return m_continuous; }
@@ -99,12 +100,14 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
 
+    void trace(Visitor*);
+
 private:
     friend class RefCounted<SpeechRecognition>;
 
     explicit SpeechRecognition(ExecutionContext*);
 
-    RefPtr<SpeechGrammarList> m_grammars;
+    RefPtrWillBeMember<SpeechGrammarList> m_grammars;
     String m_lang;
     bool m_continuous;
     bool m_interimResults;

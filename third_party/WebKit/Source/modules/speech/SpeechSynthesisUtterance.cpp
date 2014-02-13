@@ -28,9 +28,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
+DEFINE_GC_INFO(SpeechSynthesisUtterance);
+
+PassRefPtrWillBeRawPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
 {
-    return adoptRef(new SpeechSynthesisUtterance(context, text));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechSynthesisUtterance(context, text));
 }
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, const String& text)
@@ -69,6 +71,11 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice)
 
     if (voice)
         m_platformUtterance->setVoice(voice->platformVoice());
+}
+
+void SpeechSynthesisUtterance::trace(Visitor* visitor)
+{
+    visitor->trace(m_voice);
 }
 
 } // namespace WebCore

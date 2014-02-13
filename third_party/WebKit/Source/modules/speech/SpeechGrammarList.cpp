@@ -31,9 +31,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechGrammarList> SpeechGrammarList::create()
+DEFINE_GC_INFO(SpeechGrammarList);
+
+PassRefPtrWillBeRawPtr<SpeechGrammarList> SpeechGrammarList::create()
 {
-    return adoptRef(new SpeechGrammarList);
+    return adoptRefWillBeNoop(new SpeechGrammarList);
 }
 
 SpeechGrammar* SpeechGrammarList::item(unsigned long index) const
@@ -59,6 +61,11 @@ void SpeechGrammarList::addFromString(const String& string, double weight)
 SpeechGrammarList::SpeechGrammarList()
 {
     ScriptWrappable::init(this);
+}
+
+void SpeechGrammarList::trace(Visitor* visitor)
+{
+    visitor->trace(m_grammars);
 }
 
 } // namespace WebCore

@@ -319,6 +319,18 @@ public:
 #endif
     }
 
+    // Similarly, this trace method is to trace a RawPtrWillBeMember
+    // when ENABLE(OILPAN) is not enabled.
+    // Remove this once we remove RawPtrWillBeMember.
+    template<typename T>
+    void trace(const RawPtr<T>&)
+    {
+#if ENABLE(OILPAN)
+        // RawPtrs should never be traced.
+        ASSERT_NOT_REACHED();
+#endif
+    }
+
     // This method marks an object and adds it to the set of objects
     // that should have their trace method called. Since not all
     // objects have vtables we have to have the callback as an

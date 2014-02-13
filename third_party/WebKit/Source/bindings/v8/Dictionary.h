@@ -88,8 +88,8 @@ public:
     bool get(const String&, RefPtr<MediaKeyError>&) const;
     bool get(const String&, RefPtr<TrackBase>&) const;
     bool get(const String&, RefPtr<SpeechRecognitionError>&) const;
-    bool get(const String&, RefPtr<SpeechRecognitionResult>&) const;
-    bool get(const String&, RefPtr<SpeechRecognitionResultList>&) const;
+    bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResult>&) const;
+    bool get(const String&, RefPtrWillBeRawPtr<SpeechRecognitionResultList>&) const;
     bool get(const String&, RefPtr<MediaStream>&) const;
     bool get(const String&, RefPtr<EventTarget>&) const;
     bool get(const String&, HashSet<AtomicString>&) const;
@@ -153,14 +153,16 @@ public:
     bool convert(ConversionContext&, const String&, ScriptValue&) const;
 
     template<typename IntegralType>
-    bool convert(ConversionContext &, const String&, IntegralType&) const;
-    bool convert(ConversionContext &, const String&, MessagePortArray&) const;
-    bool convert(ConversionContext &, const String&, HashSet<AtomicString>&) const;
-    bool convert(ConversionContext &, const String&, Dictionary&) const;
-    bool convert(ConversionContext &, const String&, Vector<String>&) const;
-    bool convert(ConversionContext &, const String&, ArrayValue&) const;
+    bool convert(ConversionContext&, const String&, IntegralType&) const;
+    bool convert(ConversionContext&, const String&, MessagePortArray&) const;
+    bool convert(ConversionContext&, const String&, HashSet<AtomicString>&) const;
+    bool convert(ConversionContext&, const String&, Dictionary&) const;
+    bool convert(ConversionContext&, const String&, Vector<String>&) const;
+    bool convert(ConversionContext&, const String&, ArrayValue&) const;
     template<typename T>
-    bool convert(ConversionContext &, const String&, RefPtr<T>&) const;
+    bool convert(ConversionContext&, const String&, RefPtr<T>&) const;
+    template<typename T>
+    bool convert(ConversionContext&, const String&, RawPtr<T>&) const;
 
     template<typename StringType>
     bool getStringType(const String&, StringType&) const;
@@ -303,6 +305,25 @@ template<typename T> bool Dictionary::convert(ConversionContext& context, const 
 }
 
 template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, RefPtr<T>& value) const
+{
+    ConversionContextScope scope(context);
+
+    if (!get(key, value))
+        return true;
+
+    if (value)
+        return true;
+
+    v8::Local<v8::Value> v8Value;
+    getKey(key, v8Value);
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a " + context.typeName() + " type."));
+    return false;
+}
+
+template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, RawPtr<T>& value) const
 {
     ConversionContextScope scope(context);
 

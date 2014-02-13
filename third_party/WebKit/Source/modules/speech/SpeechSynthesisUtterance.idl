@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     Constructor([Default=NullString] optional DOMString text),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=SpeechSynthesis,

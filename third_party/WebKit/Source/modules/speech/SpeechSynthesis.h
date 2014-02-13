@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
@@ -42,12 +43,12 @@ namespace WebCore {
 
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
-class SpeechSynthesisVoice;
 
-class SpeechSynthesis FINAL : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis>, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SpeechSynthesis);
+class SpeechSynthesis FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>);
 public:
-    static PassRefPtr<SpeechSynthesis> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<SpeechSynthesis> create(ExecutionContext*);
 
     bool pending() const;
     bool speaking() const;
@@ -58,7 +59,7 @@ public:
     void pause();
     void resume();
 
-    const Vector<RefPtr<SpeechSynthesisVoice> >& getVoices();
+    const WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> >& getVoices();
 
     // Used in testing to use a mock platform synthesizer
     void setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer>);
@@ -66,6 +67,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     explicit SpeechSynthesis(ExecutionContext*);
@@ -84,9 +87,9 @@ private:
     void fireEvent(const AtomicString& type, SpeechSynthesisUtterance*, unsigned long charIndex, const String& name);
 
     OwnPtr<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
-    Vector<RefPtr<SpeechSynthesisVoice> > m_voiceList;
-    SpeechSynthesisUtterance* m_currentSpeechUtterance;
-    Deque<RefPtr<SpeechSynthesisUtterance> > m_utteranceQueue;
+    WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> > m_voiceList;
+    RawPtrWillBeMember<SpeechSynthesisUtterance> m_currentSpeechUtterance;
+    Deque<RefPtrWillBeMember<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
 
     // EventTarget

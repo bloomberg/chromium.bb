@@ -26,10 +26,20 @@
 #include "config.h"
 #include "WebSpeechRecognitionResult.h"
 
+#include "heap/Handle.h"
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RawPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+
+// Move them into WebCore for the benefit of template aliases.
+namespace WebCore {
+using WTF::RawPtr;
+using WTF::RefPtr;
+using WTF::Vector;
+};
 
 namespace blink {
 
@@ -42,7 +52,7 @@ void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
 {
     ASSERT(transcripts.size() == confidences.size());
 
-    Vector<RefPtr<WebCore::SpeechRecognitionAlternative> > alternatives(transcripts.size());
+    WebCore::WillBeHeapVector<WebCore::RefPtrWillBeMember<WebCore::SpeechRecognitionAlternative> > alternatives(transcripts.size());
     for (size_t i = 0; i < transcripts.size(); ++i)
         alternatives[i] = WebCore::SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
 

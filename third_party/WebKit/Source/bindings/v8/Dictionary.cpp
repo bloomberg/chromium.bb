@@ -501,7 +501,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) c
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResult>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<SpeechRecognitionResult>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))
@@ -513,7 +513,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResult>& value) 
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResultList>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<SpeechRecognitionResultList>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

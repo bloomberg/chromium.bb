@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject
 ] interface SpeechRecognitionAlternative {
     readonly attribute DOMString transcript;

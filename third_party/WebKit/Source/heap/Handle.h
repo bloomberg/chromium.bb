@@ -385,6 +385,17 @@ public:
     }
 };
 
+// TraceTrait to allow compilation of trace method bodies when oilpan is disabled.
+// This should never be called, but is needed to compile.
+template<typename T>
+class TraceTrait<RefPtr<T> > {
+public:
+    static void trace(Visitor*, void*)
+    {
+        ASSERT_NOT_REACHED();
+    }
+};
+
 // WeakMember is similar to Member in that it is used to point to other oilpan
 // heap allocated objects.
 // However instead of creating a strong pointer to the object, the WeakMember creates
@@ -787,6 +798,11 @@ template<typename Key, typename Value, typename Extractor, typename Traits, type
 struct IsWeak<WebCore::HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
     static const bool value = Traits::isWeak;
 };
+
+template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
+{
+    return p.get();
+}
 
 } // namespace WTF
 

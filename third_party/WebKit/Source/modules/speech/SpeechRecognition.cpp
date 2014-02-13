@@ -37,9 +37,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
+DEFINE_GC_INFO(SpeechRecognition);
+
+PassRefPtrWillBeRawPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
 {
-    RefPtr<SpeechRecognition> speechRecognition(adoptRef(new SpeechRecognition(context)));
+    RefPtrWillBeRawPtr<SpeechRecognition> speechRecognition(adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechRecognition(context)));
     speechRecognition->suspendIfNeeded();
     return speechRecognition.release();
 }
@@ -187,6 +189,11 @@ SpeechRecognition::SpeechRecognition(ExecutionContext* context)
 
 SpeechRecognition::~SpeechRecognition()
 {
+}
+
+void SpeechRecognition::trace(Visitor* visitor)
+{
+    visitor->trace(m_grammars);
 }
 
 } // namespace WebCore

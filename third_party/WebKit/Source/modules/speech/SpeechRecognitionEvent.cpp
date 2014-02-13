@@ -79,7 +79,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, co
     ScriptWrappable::init(this);
 }
 
-SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtr<SpeechRecognitionResultList> results)
+SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> results)
     : Event(eventName, /*canBubble=*/false, /*cancelable=*/false)
     , m_resultIndex(resultIndex)
     , m_results(results)
