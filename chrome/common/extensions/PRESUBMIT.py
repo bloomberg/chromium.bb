@@ -48,7 +48,9 @@ def _FindMatchingTemplates(template_name, template_path_list):
   unix_name = _UnixName(template_name)
   for template in template_path_list:
     if unix_name == _UnixName(template.split(os.sep)[-1]):
-      matches.append(template)
+      # The docserver expects clean (extensionless) template URLs, so we strip
+      # extensions here when generating the list of matches.
+      matches.append(os.path.splitext(template)[0])
   return matches
 
 def _SanitizeAPIName(name, api_path):
