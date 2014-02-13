@@ -998,7 +998,8 @@ void ResourceProvider::InitializeSoftware() {
   CleanUpGLIfNeeded();
 
   default_resource_type_ = Bitmap;
-  max_texture_size_ = INT_MAX / 2;
+  // Pick an arbitrary limit here similar to what hardware might.
+  max_texture_size_ = 16 * 1024;
   best_texture_format_ = RGBA_8888;
 }
 
