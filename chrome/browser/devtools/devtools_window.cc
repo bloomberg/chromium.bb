@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
@@ -851,6 +852,12 @@ void DevToolsWindow::CloseContents(content::WebContents* source) {
   // Embedding DevTools window will be deleted as a result of
   // WebContentsDestroyed callback.
   delete web_contents_;
+}
+
+void DevToolsWindow::ContentsZoomChange(bool zoom_in) {
+  DCHECK(is_docked_);
+  chrome_page_zoom::Zoom(web_contents(),
+      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }
 
 void DevToolsWindow::BeforeUnloadFired(content::WebContents* tab,

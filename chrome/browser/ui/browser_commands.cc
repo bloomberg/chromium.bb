@@ -68,6 +68,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -891,11 +892,16 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
 }
 
 void Zoom(Browser* browser, content::PageZoom zoom) {
-  if (browser->is_devtools())
+  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+  DevToolsWindow* devtools =
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+  if (devtools && devtools->web_contents()->GetRenderWidgetHostView() &&
+      devtools->web_contents()->GetRenderWidgetHostView()->HasFocus()) {
+    chrome_page_zoom::Zoom(devtools->web_contents(), zoom);
     return;
+  }
 
-  chrome_page_zoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
-                         zoom);
+  chrome_page_zoom::Zoom(contents, zoom);
 }
 
 void FocusToolbar(Browser* browser) {

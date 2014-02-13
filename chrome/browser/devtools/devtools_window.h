@@ -270,6 +270,7 @@ class DevToolsWindow : private content::NotificationObserver,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;
