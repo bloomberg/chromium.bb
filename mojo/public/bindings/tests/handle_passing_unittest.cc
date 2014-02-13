@@ -5,7 +5,7 @@
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
-#include "mojo/public/tests/test_support.h"
+#include "mojo/public/tests/test_utils.h"
 #include "mojo/public/utility/run_loop.h"
 #include "mojom/sample_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

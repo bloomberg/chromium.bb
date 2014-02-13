@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_
-#define MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_
+#ifndef MOJO_PUBLIC_TESTS_TEST_UTILS_H_
+#define MOJO_PUBLIC_TESTS_TEST_UTILS_H_
 
 #include <string>
 
@@ -36,4 +36,4 @@ void IterateAndReportPerf(const char* test_name,
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_
+#endif  // MOJO_PUBLIC_TESTS_TEST_UTILS_H_
