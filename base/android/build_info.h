@@ -72,6 +72,10 @@ class BASE_EXPORT BuildInfo {
     return package_name_;
   }
 
+  const char* build_type() const {
+    return build_type_;
+  }
+
   int sdk_int() const {
     return sdk_int_;
   }
@@ -102,6 +106,7 @@ class BASE_EXPORT BuildInfo {
   const char* const package_version_name_;
   const char* const package_label_;
   const char* const package_name_;
+  const char* const build_type_;
   const int sdk_int_;
   // This is set via set_java_exception_info, not at constructor time.
   const char* java_exception_info_;

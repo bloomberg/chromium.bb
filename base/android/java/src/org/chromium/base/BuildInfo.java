@@ -109,6 +109,11 @@ public class BuildInfo {
     }
 
     @CalledByNative
+    public static String getBuildType() {
+        return Build.TYPE;
+    }
+
+    @CalledByNative
     public static int getSdkInt() {
         return Build.VERSION.SDK_INT;
     }
