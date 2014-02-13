@@ -680,8 +680,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           # doesn't cause the bots to break.
           if not os.environ.get('CHROME_HEADLESS'):
             return False
-          return socket.gethostname() in ('vm859-m1', 'BUILD1-M1',
-                                          'vm630-m1.golo.chromium.org')
+          hostname = socket.gethostname()
+          logging.warning('Hostname of this machine: %s' % hostname)
+          return hostname in ('vm859-m1', 'build1-m1', 'vm630-m1')
 
         # When updating, determine whether the destination directory contains a
         # checkout of the desired repository. If not, avoid conflicts by
