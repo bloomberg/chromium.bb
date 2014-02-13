@@ -99,10 +99,13 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
     while (Node* node = walker.get()) {
         if (node->hasTagName(SVGNames::foreignObjectTag))
             return false;
-        if (node->hasTagName(SVGNames::imageTag))
-            return toSVGImageElement(node)->currentFrameHasSingleSecurityOrigin();
-        if (node->hasTagName(SVGNames::feImageTag))
-            return toSVGFEImageElement(node)->currentFrameHasSingleSecurityOrigin();
+        if (node->hasTagName(SVGNames::imageTag)) {
+            if (!toSVGImageElement(node)->currentFrameHasSingleSecurityOrigin())
+                return false;
+        } else if (node->hasTagName(SVGNames::feImageTag)) {
+            if (!toSVGFEImageElement(node)->currentFrameHasSingleSecurityOrigin())
+                return false;
+        }
         walker.next();
     }
 
