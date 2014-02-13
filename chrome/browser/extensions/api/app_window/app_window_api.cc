@@ -14,6 +14,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"

@@ -365,7 +365,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   UpdateWindowMinMaxSize();
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
-      shell_window_->profile(),
+      Profile::FromBrowserContext(shell_window_->browser_context()),
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       shell_window));

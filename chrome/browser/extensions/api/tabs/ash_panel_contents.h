@@ -39,7 +39,8 @@ class AshPanelContents : public apps::ShellWindowContents,
   virtual ~AshPanelContents();
 
   // apps::ShellWindowContents
-  virtual void Initialize(Profile* profile, const GURL& url) OVERRIDE;
+  virtual void Initialize(content::BrowserContext* context,
+                          const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
   virtual void NativeWindowChanged(apps::NativeAppWindow* native_app_window)
       OVERRIDE;

@@ -29,13 +29,13 @@ class ImmersiveFullscreenController;
 #endif
 
 class ExtensionKeybindingRegistryViews;
-class Profile;
 
 namespace apps {
 class ShellWindowFrameView;
 }
 
 namespace content {
+class BrowserContext;
 class RenderViewHost;
 class WebContents;
 }
@@ -76,7 +76,10 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void Show() OVERRIDE;
   virtual void Activate() OVERRIDE;
 
-  Profile* profile() { return shell_window_->profile(); }
+  content::BrowserContext* browser_context() {
+    return shell_window_->browser_context();
+  }
+
   const extensions::Extension* extension() {
     return shell_window_->extension();
   }
