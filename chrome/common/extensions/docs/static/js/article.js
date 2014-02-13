@@ -9,11 +9,17 @@
 // button: click logic, and when to show it.
 (function() {
 
-var isLargerThanMobile = window.matchMedia('screen and (min-width: 580px)').matches;
+var isLargerThanMobileQuery =
+    window.matchMedia('screen and (min-width: 581px)');
 
 var sidebar = document.querySelector('.inline-toc');
+var sidebarOffsetTop = null;
 var articleBody = document.querySelector('[itemprop="articleBody"]');
 
+// Bomb out unless we're on an article page and have a TOC.
+if (!(sidebar && articleBody)) {
+  return;
+}
 
 function addPermalink(el) {
   el.classList.add('has-permalink');
@@ -31,47 +37,51 @@ function addPermalinkHeadings(container) {
   }
 }
 
-// Bomb out if we're not on an article page and have a TOC.
-if (!(sidebar && articleBody)) {
-  return;
+function onScroll(e) {
+  window.scrollY >= sidebarOffsetTop ? sidebar.classList.add('sticky') :
+                                       sidebar.classList.remove('sticky');
 }
 
-if (isLargerThanMobile) {
-  var toc = sidebar.querySelector('#toc');
-  var offsetTop = sidebar.offsetParent.offsetTop
+function onMediaQuery(e) {
+  if (e.matches) {
+    // On tablet & desktop, show permalinks, manage TOC position.
+    document.body.classList.remove('no-permalink');
+    sidebarOffsetTop = sidebar.offsetParent.offsetTop
+    document.addEventListener('scroll', onScroll);
+  } else {
+    // On mobile, hide permalinks. TOC is hidden, doesn't need to scroll.
+    document.body.classList.add('no-permalink');
+    document.removeEventListener('scroll', onScroll);
+  }
+}
 
-  document.addEventListener('scroll', function(e) {
-    window.scrollY >= offsetTop ? sidebar.classList.add('sticky') :
-                                  sidebar.classList.remove('sticky');
-  });
+// Toggle collapsible sections (mobile).
+articleBody.addEventListener('click', function(e) {
+  if (e.target.localName == 'h2' && !isLargerThanMobileQuery.matches) {
+    e.target.parentElement.classList.toggle('active');
+  }
+});
 
-  // Add +/- expander to headings with subheading children.
-  [].forEach.call(toc.querySelectorAll('.toplevel'), function(heading) {
-    if (heading.querySelector('.toc')) {
-      heading.firstChild.classList.add('hastoc');
-    }
-  });
-
-  toc.addEventListener('click', function(e) {
-    var parent = e.target.parentElement;
-    if (e.target.localName == 'a' && e.target.classList.contains('hastoc') &&
-        parent.classList.contains('toplevel')) {
-      // Allow normal link click if  h2 toplevel heading doesn't have h3s.
+sidebar.querySelector('#toc').addEventListener('click', function(e) {
+  var parent = e.target.parentElement;
+  if (e.target.localName == 'a' && parent.classList.contains('toplevel')) {
+    // Allow normal link click if  h2 toplevel heading doesn't have h3s.
+    if (parent.querySelector('.toc')) {
       e.preventDefault();
       parent.classList.toggle('active');
     }
-  });
+  }
+});
 
-} else {
-  // Prevent permalinks from appearong on mobile.
-  document.body.classList.add('no-permalink');
+// Add +/- expander to headings with subheading children.
+[].forEach.call(toc.querySelectorAll('.toplevel'), function(heading) {
+  if (heading.querySelector('.toc')) {
+    heading.firstChild.classList.add('hastoc');
+  }
+});
 
-  articleBody.addEventListener('click', function(e) {
-    if (e.target.localName == 'h2') {
-      e.target.parentElement.classList.toggle('active');
-    }
-  });
-}
+isLargerThanMobileQuery.addListener(onMediaQuery);
+onMediaQuery(isLargerThanMobileQuery);
 
 addPermalinkHeadings(articleBody);
 

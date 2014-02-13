@@ -39,19 +39,6 @@ var pillars = document.querySelectorAll('.pillar');
                        this.classList.add('active');
     }
   });
-
-  pillar.addEventListener('mouseleave', function(e) {
-    if (!e.target.classList.contains('pillar') ||
-        e.toElement.classList.contains('expandee')) {
-      return;
-    }
-
-    if (e.toElement != fatNav && !e.toElement.classList.contains('pillar') &&
-        e.toElement != search) {
-      hideActive(fatNav);
-    }
-  });
-
 });
 
 if (isLargerThanPhone) {
