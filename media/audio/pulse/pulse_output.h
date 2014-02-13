@@ -20,6 +20,8 @@
 #ifndef MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 #define MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -35,6 +37,7 @@ class AudioManagerBase;
 class PulseAudioOutputStream : public AudioOutputStream {
  public:
   PulseAudioOutputStream(const AudioParameters& params,
+                         const std::string& device_id,
                          AudioManagerBase* manager);
 
   virtual ~PulseAudioOutputStream();
@@ -65,6 +68,9 @@ class PulseAudioOutputStream : public AudioOutputStream {
 
   // AudioParameters from the constructor.
   const AudioParameters params_;
+
+  // The device ID for the device to open.
+  const std::string device_id_;
 
   // Audio manager that created us.  Used to report that we've closed.
   AudioManagerBase* manager_;

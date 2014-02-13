@@ -69,6 +69,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
                         pa_context** context,
                         pa_stream** stream,
                         const AudioParameters& params,
+                        const std::string& device_id,
                         pa_stream_notify_cb_t stream_callback,
                         pa_stream_request_cb_t write_callback,
                         void* user_data);

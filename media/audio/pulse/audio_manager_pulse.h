@@ -69,7 +69,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
                                      void* user_data);
 
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
-  AudioOutputStream* MakeOutputStream(const AudioParameters& params);
+  AudioOutputStream* MakeOutputStream(const AudioParameters& params,
+                                      const std::string& device_id);
 
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,

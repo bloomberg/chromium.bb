@@ -39,8 +39,10 @@ void PulseAudioOutputStream::StreamRequestCallback(pa_stream* s, size_t len,
 }
 
 PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
+                                               const std::string& device_id,
                                                AudioManagerBase* manager)
     : params_(params),
+      device_id_(device_id),
       manager_(manager),
       pa_context_(NULL),
       pa_mainloop_(NULL),
@@ -64,7 +66,7 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
 bool PulseAudioOutputStream::Open() {
   DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   return pulse::CreateOutputStream(&pa_mainloop_, &pa_context_, &pa_stream_,
-                                   params_, &StreamNotifyCallback,
+                                   params_, device_id_, &StreamNotifyCallback,
                                    &StreamRequestCallback, this);
 }
 

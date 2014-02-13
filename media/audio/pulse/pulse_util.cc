@@ -205,6 +205,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
                         pa_context** context,
                         pa_stream** stream,
                         const AudioParameters& params,
+                        const std::string& device_id,
                         pa_stream_notify_cb_t stream_callback,
                         pa_stream_request_cb_t write_callback,
                         void* user_data) {
@@ -287,12 +288,16 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   // and error.
   RETURN_ON_FAILURE(
       pa_stream_connect_playback(
-          *stream, NULL, &pa_buffer_attributes,
+          *stream,
+          device_id == AudioManagerBase::kDefaultDeviceId ?
+              NULL : device_id.c_str(),
+          &pa_buffer_attributes,
           static_cast<pa_stream_flags_t>(
               PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY |
               PA_STREAM_AUTO_TIMING_UPDATE | PA_STREAM_NOT_MONOTONIC |
               PA_STREAM_START_CORKED),
-          NULL, NULL) == 0,
+          NULL,
+          NULL) == 0,
       "pa_stream_connect_playback FAILED ");
 
   // Wait for the stream to be ready.
