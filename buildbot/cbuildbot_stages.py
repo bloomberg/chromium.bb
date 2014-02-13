@@ -2784,8 +2784,6 @@ class VMTestStage(ArchivingStage):
         commands.RunDevModeTest(
             self._build_root, self._current_board, self.GetImageDirSymlink())
 
-        commands.RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
-
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG %
                            dict(vm_test_results=test_basename))

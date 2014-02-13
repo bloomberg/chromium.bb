@@ -109,7 +109,7 @@ def RunCommandFuncWrapper(func, msg, *args, **kwargs):
     logging.warning(msg)
 
 
-def CompileSSHConnectSettings(ConnectTimeout=30, ConnectionAttempts=4):
+def CompileSSHConnectSettings(ConnectTimeout=10, ConnectionAttempts=2):
   return ['-o', 'ConnectTimeout=%s' % ConnectTimeout,
           '-o', 'ConnectionAttempts=%s' % ConnectionAttempts,
           '-o', 'NumberOfPasswordPrompts=0',
