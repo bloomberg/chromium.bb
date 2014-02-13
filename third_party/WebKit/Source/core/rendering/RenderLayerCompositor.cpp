@@ -1437,6 +1437,10 @@ void RenderLayerCompositor::frameViewDidScroll()
     if (!m_renderView->rootBackgroundIsEntirelyFixed())
         return;
 
+    // FIXME: fixedRootBackgroundLayer calls compositingState, which is not necessarily up to date here on mac.
+    // See crbug.com/343179.
+    DisableCompositingQueryAsserts disabler;
+
     blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         !!fixedRootBackgroundLayer()
             ? ScrolledMainFrameWithAcceleratedFixedRootBackground
