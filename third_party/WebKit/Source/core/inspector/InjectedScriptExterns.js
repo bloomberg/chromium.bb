@@ -157,8 +157,6 @@ function JavaScriptFunction()
     this.rawScopes;
 }
 
-var InspectorBackend = { };
-
 // http://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
 /**
  * @constructor
