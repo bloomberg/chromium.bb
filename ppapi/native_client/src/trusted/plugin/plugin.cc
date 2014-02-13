@@ -118,24 +118,11 @@ bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {
   pp::TextInputController(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
 #endif
 
-  // Remember the embed/object argn/argv pairs.
-  argn_ = new char*[argc];
-  argv_ = new char*[argc];
-  argc_ = 0;
   for (int i = 0; i < argc; ++i) {
-    if (NULL != argn_ && NULL != argv_) {
-      argn_[argc_] = strdup(argn[i]);
-      argv_[argc_] = strdup(argv[i]);
-      if (NULL == argn_[argc_] || NULL == argv_[argc_]) {
-        // Give up on passing arguments.
-        free(argn_[argc_]);
-        free(argv_[argc_]);
-        continue;
-      }
-      ++argc_;
-    }
+    std::string name(argn[i]);
+    std::string value(argv[i]);
+    args_[name] = value;
   }
-  // TODO(sehr): this leaks strings if there is a subsequent failure.
 
   // Set up the factory used to produce DescWrappers.
   wrapper_factory_ = new nacl::DescWrapperFactory();
@@ -497,14 +484,11 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   return nacl_subprocess.release();
 }
 
-char* Plugin::LookupArgument(const char* key) {
-  char** keys = argn_;
-  for (int ii = 0, len = argc_; ii < len; ++ii) {
-    if (!strcmp(keys[ii], key)) {
-      return argv_[ii];
-    }
-  }
-  return NULL;
+std::string Plugin::LookupArgument(const std::string& key) const {
+  std::map<std::string, std::string>::const_iterator it = args_.find(key);
+  if (it != args_.end())
+    return it->second;
+  return std::string();
 }
 
 const char* const Plugin::kNaClMIMEType = "application/x-nacl";
@@ -547,17 +531,13 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   if (status) {
     // Look for the developer attribute; if it's present, enable 'dev'
     // interfaces.
-    const char* dev_settings = LookupArgument(kDevAttribute);
-    enable_dev_interfaces_ = (dev_settings != NULL);
+    enable_dev_interfaces_ = args_.find(kDevAttribute) != args_.end();
 
-    const char* type_attr = LookupArgument(kTypeAttribute);
-    if (type_attr != NULL) {
-      mime_type_ = nacl::string(type_attr);
-      std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
-                     tolower);
-    }
+    mime_type_ = LookupArgument(kTypeAttribute);
+    std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
+                   tolower);
 
-    const char* manifest_url = LookupArgument(kSrcManifestAttribute);
+    std::string manifest_url;
     if (NexeIsContentHandler()) {
       // For content handlers 'src' will be the URL for the content
       // and 'nacl' will be the URL for the manifest.
@@ -565,6 +545,8 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       // For content handlers the NEXE runs in the security context of the
       // content it is rendering and the NEXE itself appears to be a
       // cross-origin resource stored in a Chrome extension.
+    } else {
+      manifest_url = LookupArgument(kSrcManifestAttribute);
     }
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
@@ -576,12 +558,12 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       return false;
     }
     set_plugin_base_url(base_var.AsString());
-    if (manifest_url == NULL) {
+    if (manifest_url.empty()) {
       // TODO(sehr,polina): this should be a hard error when scripting
       // the src property is no longer allowed.
       PLUGIN_PRINTF(("Plugin::Init:"
                      " WARNING: no 'src' property, so no manifest loaded.\n"));
-      if (NULL != LookupArgument(kNaClManifestAttribute)) {
+      if (args_.find(kNaClManifestAttribute) != args_.end()) {
         PLUGIN_PRINTF(("Plugin::Init:"
                        " WARNING: 'nacl' property is incorrect. Use 'src'.\n"));
       }
@@ -589,7 +571,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       // Issue a GET for the manifest_url.  The manifest file will be parsed to
       // determine the nexe URL.
       // Sets src property to full manifest URL.
-      RequestNaClManifest(manifest_url);
+      RequestNaClManifest(manifest_url.c_str());
     }
   }
 
@@ -599,9 +581,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      argc_(-1),
-      argn_(NULL),
-      argv_(NULL),
       main_subprocess_("main subprocess", NULL, NULL),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
@@ -677,8 +656,6 @@ Plugin::~Plugin() {
   ShutDownSubprocesses();
 
   delete wrapper_factory_;
-  delete[] argv_;
-  delete[] argn_;
 
   HistogramTimeSmall(
       "NaCl.Perf.ShutdownTime.Total",

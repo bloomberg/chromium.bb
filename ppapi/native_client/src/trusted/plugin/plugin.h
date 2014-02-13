@@ -117,8 +117,7 @@ class Plugin : public pp::Instance {
                                        ErrorInfo* error_info);
 
   // Returns the argument value for the specified key, or NULL if not found.
-  // The callee retains ownership of the result.
-  char* LookupArgument(const char* key);
+  std::string LookupArgument(const std::string& key) const;
 
   enum LengthComputable {
     LENGTH_IS_NOT_COMPUTABLE = 0,
@@ -381,9 +380,7 @@ class Plugin : public pp::Instance {
 
   void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
 
-  int argc_;
-  char** argn_;
-  char** argv_;
+  std::map<std::string, std::string> args_;
 
   // Keep track of the NaCl module subprocess that was spun up in the plugin.
   NaClSubprocess main_subprocess_;
