@@ -49,6 +49,8 @@ def print_landmines(target):
       gyp_msvs_version().startswith('2013')):
     print "Switched win from VS2010 to VS2013."
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
+  if (platform() != 'ios'):
+    print 'Clobber to get rid of obselete test plugin after r248358'
 
 
 def main():
