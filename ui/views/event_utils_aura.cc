@@ -18,16 +18,26 @@ namespace views {
 
 bool RepostLocatedEvent(gfx::NativeWindow window,
                         const ui::LocatedEvent& event) {
+#if defined(OS_WIN)
+  // On Windows, if the |window| parameter is NULL, then we attempt to repost
+  // the event to the window at the current location, if it is on the current
+  // thread.
+  HWND target_window = NULL;
+  if (!window) {
+    target_window = ::WindowFromPoint(event.location().ToPOINT());
+    if (::GetWindowThreadProcessId(target_window, NULL) !=
+        ::GetCurrentThreadId())
+      return false;
+  } else {
+    if (ViewsDelegate::views_delegate &&
+        !ViewsDelegate::views_delegate->IsWindowInMetro(window))
+      target_window = window->GetDispatcher()->host()->GetAcceleratedWidget();
+  }
+  return RepostLocatedEventWin(target_window, event);
+#endif
   if (!window)
     return false;
 
-#if defined(OS_WIN)
-  if (ViewsDelegate::views_delegate &&
-      !ViewsDelegate::views_delegate->IsWindowInMetro(window)) {
-    return RepostLocatedEventWin(
-        window->GetDispatcher()->host()->GetAcceleratedWidget(), event);
-  }
-#endif
   aura::Window* root_window = window->GetRootWindow();
 
   gfx::Point root_loc(event.location());

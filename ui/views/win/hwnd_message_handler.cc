@@ -1628,7 +1628,6 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
     SetCapture();
   }
-
   MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime(),
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   ui::MouseEvent event(msg);
@@ -1638,7 +1637,10 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
     delegate_->HandleTooltipMouseMove(message, w_param, l_param);
 
-  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture()) {
+  // Certain child windows forward mouse events to us. We don't want to track
+  // these mouse moves as the child window will also send us a WM_MOUSELEAVE.
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture() &&
+      HIWORD(w_param) != SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED) {
     // Windows only fires WM_MOUSELEAVE events if the application begins
     // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
     // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.

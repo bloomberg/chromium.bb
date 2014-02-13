@@ -67,6 +67,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_NCPAINT, OnNCPaint)
     MESSAGE_HANDLER_EX(WM_ERASEBKGND, OnEraseBkGnd)
     MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
+    MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseLeave)
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor)
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouch)
@@ -107,6 +108,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnKeyboardRange(UINT message, WPARAM w_param, LPARAM l_param,
                           BOOL& handled);
+  LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param,
                        BOOL& handled);
   LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
@@ -118,6 +120,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
   content::BrowserAccessibilityManagerWin* manager_;
   base::win::ScopedComPtr<IAccessible> window_accessible_;
+
+  // Set to true if we turned on mouse tracking.
+  bool mouse_tracking_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
+#include "base/win/win_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/public/common/content_switches.h"
@@ -22,13 +23,15 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
 // static
 scoped_ptr<LegacyRenderWidgetHostHWND> LegacyRenderWidgetHostHWND::Create(
     HWND parent) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableLegacyIntermediateWindow))
+    return scoped_ptr<LegacyRenderWidgetHostHWND>();
+
   scoped_ptr<LegacyRenderWidgetHostHWND> legacy_window_instance;
   legacy_window_instance.reset(new LegacyRenderWidgetHostHWND(parent));
   // If we failed to create the child, or if the switch to disable the legacy
   // window is passed in, then return NULL.
-  if (!::IsWindow(legacy_window_instance->hwnd()) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableLegacyIntermediateWindow))
+  if (!::IsWindow(legacy_window_instance->hwnd()))
     return scoped_ptr<LegacyRenderWidgetHostHWND>();
 
   legacy_window_instance->Init();
@@ -74,7 +77,8 @@ void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
 }
 
 LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
-    : manager_(NULL) {
+    : manager_(NULL),
+      mouse_tracking_enabled_(false) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
                WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
@@ -130,12 +134,50 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
                                                  WPARAM w_param,
                                                  LPARAM l_param,
                                                  BOOL& handled) {
-  POINT mouse_coords;
-  mouse_coords.x = GET_X_LPARAM(l_param);
-  mouse_coords.y = GET_Y_LPARAM(l_param);
-  ::MapWindowPoints(hwnd(), GetParent(), &mouse_coords, 1);
-  return ::SendMessage(GetParent(), message, w_param,
-                       MAKELPARAM(mouse_coords.x, mouse_coords.y));
+  // Mark the WM_MOUSEMOVE message with a special flag in the high word of
+  // the WPARAM.
+  // The parent window has code to track mouse events, i.e to detect if the
+  // cursor left the bounds of the parent window. Technically entering a child
+  // window indicates that the cursor left the parent window.
+  // To ensure that the parent does not turn on tracking for the WM_MOUSEMOVE
+  // messages sent from us, we flag this in the WPARAM and track the mouse for
+  // our window to send the WM_MOUSELEAVE if needed to the parent.
+  if (message == WM_MOUSEMOVE) {
+    if (!mouse_tracking_enabled_) {
+      mouse_tracking_enabled_ = true;
+      TRACKMOUSEEVENT tme;
+      tme.cbSize = sizeof(tme);
+      tme.dwFlags = TME_LEAVE;
+      tme.hwndTrack = hwnd();
+      tme.dwHoverTime = 0;
+      TrackMouseEvent(&tme);
+    }
+    w_param = MAKEWPARAM(LOWORD(w_param), SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED);
+  }
+
+  // The offsets in mouse wheel messages are in screen coordinates. We should
+  // not be converting them to parent coordinates.
+  if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
+    POINT mouse_coords;
+    mouse_coords.x = GET_X_LPARAM(l_param);
+    mouse_coords.y = GET_Y_LPARAM(l_param);
+    ::MapWindowPoints(hwnd(), GetParent(), &mouse_coords, 1);
+    l_param = MAKELPARAM(mouse_coords.x, mouse_coords.y);
+  }
+  return ::SendMessage(GetParent(), message, w_param, l_param);
+}
+
+LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param) {
+  mouse_tracking_enabled_ = false;
+  // We should send a WM_MOUSELEAVE to the parent window only if the mouse has
+  // moved outside the bounds of the parent.
+  POINT cursor_pos;
+  ::GetCursorPos(&cursor_pos);
+  if (::WindowFromPoint(cursor_pos) != GetParent())
+    return ::SendMessage(GetParent(), message, w_param, l_param);
+  return 0;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnMouseActivate(UINT message,

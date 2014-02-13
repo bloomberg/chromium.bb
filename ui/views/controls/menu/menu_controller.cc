@@ -2130,16 +2130,15 @@ void MenuController::RepostEvent(SubmenuView* source,
   gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
   gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
 
-  if (!window)
-    return;
-
+  // On Windows, it is ok for window to be NULL. Please refer to the
+  // RepostLocatedEvent function for more information.
 #if defined(OS_WIN)
   // Release the capture.
   SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
   submenu->ReleaseCapture();
 
   gfx::NativeView view = submenu->GetWidget()->GetNativeView();
-  if (view) {
+  if (view && window) {
     DWORD view_tid = GetWindowThreadProcessId(HWNDForNativeView(view), NULL);
     if (view_tid != GetWindowThreadProcessId(HWNDForNativeView(window), NULL)) {
       // Even though we have mouse capture, windows generates a mouse event if
@@ -2149,6 +2148,9 @@ void MenuController::RepostEvent(SubmenuView* source,
       return;
     }
   }
+#else
+  if (!window)
+    return;
 #endif
 
   scoped_ptr<ui::LocatedEvent> clone;

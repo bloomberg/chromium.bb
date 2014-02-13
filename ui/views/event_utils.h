@@ -17,6 +17,8 @@ namespace views {
 // Reposts a located event natively. Returns false when |event| could not be
 // reposted. |event| should be in screen coordinates. |window| is the target
 // window that the event will be forwarded to. Only some events are supported.
+// On Windows |window| can be NULL, in which case the event is forwarded to
+// the HWND at the current location if it is on the same thread.
 VIEWS_EXPORT bool RepostLocatedEvent(gfx::NativeWindow window,
                                      const ui::LocatedEvent& event);
 
