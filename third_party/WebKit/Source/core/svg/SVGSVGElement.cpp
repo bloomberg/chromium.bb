@@ -387,16 +387,12 @@ PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> 
 
 bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
 {
-    if (!element)
-        return false;
     RefPtr<SVGRectTearOff> rect = passRect;
     return RenderSVGModelObject::checkIntersection(element->renderer(), rect->target()->value());
 }
 
 bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
 {
-    if (!element)
-        return false;
     RefPtr<SVGRectTearOff> rect = passRect;
     return RenderSVGModelObject::checkEnclosure(element->renderer(), rect->target()->value());
 }
