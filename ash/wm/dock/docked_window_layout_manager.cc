@@ -791,7 +791,7 @@ void DockedWindowLayoutManager::OnBackgroundUpdated(
 /////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager, WindowStateObserver implementation:
 
-void DockedWindowLayoutManager::OnWindowShowTypeChanged(
+void DockedWindowLayoutManager::OnPreWindowShowTypeChange(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
   aura::Window* window = window_state->window();

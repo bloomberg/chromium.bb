@@ -62,7 +62,7 @@ class ImmersiveModeControllerAsh
   virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const OVERRIDE;
 
   // ash::wm::WindowStateObserver override:
-  virtual void OnWindowShowTypeChanged(
+  virtual void OnPostWindowShowTypeChange(
       ash::wm::WindowState* window_state,
       ash::wm::WindowShowType old_type) OVERRIDE;
 

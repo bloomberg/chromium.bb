@@ -104,8 +104,8 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // WindowStateObserver overrides:
-  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
-                                       wm::WindowShowType type) OVERRIDE;
+  virtual void OnPreWindowShowTypeChange(wm::WindowState* window_state,
+                                         wm::WindowShowType type) OVERRIDE;
 
  private:
   ToplevelWindowEventHandler* handler_;
@@ -144,7 +144,8 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
     handler_->CompleteDrag(DRAG_COMPLETE);
 }
 
-void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged(
+void
+ToplevelWindowEventHandler::ScopedWindowResizer::OnPreWindowShowTypeChange(
     wm::WindowState* window_state,
     wm::WindowShowType old) {
   handler_->CompleteDrag(DRAG_COMPLETE);
