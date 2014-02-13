@@ -703,9 +703,9 @@ inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph 
     return fontData->widthForGlyph(glyph) / 2;
 }
 
-inline static float offsetToMiddleOfGlyphAtIndex(const GlyphBuffer& glyphBuffer, size_t i)
+inline static float offsetToMiddleOfAdvanceAtIndex(const GlyphBuffer& glyphBuffer, size_t i)
 {
-    return offsetToMiddleOfGlyph(glyphBuffer.fontDataAt(i), glyphBuffer.glyphAt(i));
+    return glyphBuffer.advanceAt(i) / 2;
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const AtomicString& mark, const FloatPoint& point) const
@@ -724,12 +724,12 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     Glyph markGlyph = markGlyphData.glyph;
     Glyph spaceGlyph = markFontData->spaceGlyph();
 
-    float middleOfLastGlyph = offsetToMiddleOfGlyphAtIndex(glyphBuffer, 0);
+    float middleOfLastGlyph = offsetToMiddleOfAdvanceAtIndex(glyphBuffer, 0);
     FloatPoint startPoint(point.x() + middleOfLastGlyph - offsetToMiddleOfGlyph(markFontData, markGlyph), point.y());
 
     GlyphBuffer markBuffer;
     for (unsigned i = 0; i + 1 < glyphBuffer.size(); ++i) {
-        float middleOfNextGlyph = offsetToMiddleOfGlyphAtIndex(glyphBuffer, i + 1);
+        float middleOfNextGlyph = offsetToMiddleOfAdvanceAtIndex(glyphBuffer, i + 1);
         float advance = glyphBuffer.advanceAt(i) - middleOfLastGlyph + middleOfNextGlyph;
         markBuffer.add(glyphBuffer.glyphAt(i) ? markGlyph : spaceGlyph, markFontData, advance);
         middleOfLastGlyph = middleOfNextGlyph;
