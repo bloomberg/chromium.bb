@@ -1689,7 +1689,6 @@
         'browser/ui/uninstall_browser_prompt.h',
         'browser/ui/unload_controller.cc',
         'browser/ui/unload_controller.h',
-        'browser/ui/user_data_dir_dialog.h',
         'browser/ui/validation_message_bubble.h',
         'browser/ui/view_ids.h',
         'browser/ui/views/accelerator_utils_aura.cc',

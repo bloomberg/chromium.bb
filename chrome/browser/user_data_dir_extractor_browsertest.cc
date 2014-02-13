@@ -1,8 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "chrome/test/ui/ui_test.h"
 
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -10,14 +8,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/user_data_dir_extractor_win.h"
+#include "chrome/browser/user_data_dir_extractor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/ui/ui_test.h"
 
-// These tests only apply to the Windows version; see chrome_browser_main.cc:
-// function GetUserDataDir() for details.
 class ChromeMainUserDataDirTest : public InProcessBrowserTest {
  public:
   ChromeMainUserDataDirTest()

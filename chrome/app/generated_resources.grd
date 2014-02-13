@@ -12256,9 +12256,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">
         Failed To Create Data Directory
       </message>
-      <message name="IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON" desc="Text on button that opens another dialog to choose a new directory for user data.">
-        Choose Another Directory...
-      </message>
 
       <!-- Advanced Section Titles -->
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">

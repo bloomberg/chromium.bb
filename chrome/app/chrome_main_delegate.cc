@@ -5,7 +5,6 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -15,16 +14,12 @@
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
@@ -582,32 +577,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_WIN)
   child_process_logging::Init();
 #endif
-
-  // Notice a user data directory override if any
-  base::FilePath user_data_dir =
-      command_line.GetSwitchValuePath(switches::kUserDataDir);
-#if defined(OS_LINUX)
-  // On Linux, Chrome does not support running multiple copies under different
-  // DISPLAYs, so the profile directory can be specified in the environment to
-  // support the virtual desktop use-case.
-  if (user_data_dir.empty()) {
-    std::string user_data_dir_string;
-    scoped_ptr<base::Environment> environment(base::Environment::Create());
-    if (environment->GetVar("CHROME_USER_DATA_DIR", &user_data_dir_string) &&
-        IsStringUTF8(user_data_dir_string)) {
-      user_data_dir = base::FilePath::FromUTF8Unsafe(user_data_dir_string);
-    }
-  }
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
-#endif
-  if (!user_data_dir.empty()) {
-    CHECK(PathService::OverrideAndCreateIfNeeded(
-        chrome::DIR_USER_DATA,
-        user_data_dir,
-        chrome::ProcessNeedsProfileDir(process_type)));
-  }
 
   stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
