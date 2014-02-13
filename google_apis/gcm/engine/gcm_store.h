@@ -91,6 +91,9 @@ class GCM_EXPORT GCMStore {
   virtual bool AddOutgoingMessage(const std::string& persistent_id,
                                   const MCSMessage& message,
                                   const UpdateCallback& callback) = 0;
+  virtual void OverwriteOutgoingMessage(const std::string& persistent_id,
+                                        const MCSMessage& message,
+                                        const UpdateCallback& callback) = 0;
   virtual void RemoveOutgoingMessage(const std::string& persistent_id,
                                      const UpdateCallback& callback) = 0;
   virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,

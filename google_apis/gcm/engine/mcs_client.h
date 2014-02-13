@@ -35,6 +35,7 @@ class LoginRequest;
 
 namespace gcm {
 
+class CollapseKey;
 class ConnectionFactory;
 struct ReliablePacketInfo;
 
@@ -192,6 +193,10 @@ class GCM_EXPORT MCSClient {
   void NotifyMessageSendStatus(const google::protobuf::MessageLite& protobuf,
                                MessageSendStatus status);
 
+  // Pops the next message from the front of the send queue (cleaning up
+  // any associated state).
+  MCSPacketInternal PopMessageForSend();
+
   // Clock for enforcing TTL. Passed in for testing.
   base::Clock* const clock_;
 
@@ -221,6 +226,9 @@ class GCM_EXPORT MCSClient {
   // Send/acknowledge queues.
   std::deque<MCSPacketInternal> to_send_;
   std::deque<MCSPacketInternal> to_resend_;
+
+  // Map of collapse keys to their pending messages.
+  std::map<CollapseKey, ReliablePacketInfo*> collapse_key_map_;
 
   // Last device_to_server stream id acknowledged by the server.
   StreamId last_device_to_server_stream_id_received_;

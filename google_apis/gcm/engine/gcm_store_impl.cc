@@ -372,11 +372,11 @@ void GCMStoreImpl::Backend::RemoveOutgoingMessages(
     mcs_proto::DataMessageStanza data_message;
     // Skip the initial tag byte and parse the rest to extract the message.
     if (data_message.ParseFromString(outgoing_message.substr(1))) {
-      DCHECK(!data_message.from().empty());
-      if (removed_message_counts.count(data_message.from()) != 0)
-        removed_message_counts[data_message.from()]++;
+      DCHECK(!data_message.category().empty());
+      if (removed_message_counts.count(data_message.category()) != 0)
+        removed_message_counts[data_message.category()]++;
       else
-        removed_message_counts[data_message.from()] = 1;
+        removed_message_counts[data_message.category()] = 1;
     }
     DVLOG(1) << "Removing outgoing message with id " << *iter;
     s = db_->Delete(write_options, MakeSlice(key));
@@ -688,7 +688,7 @@ bool GCMStoreImpl::AddOutgoingMessage(const std::string& persistent_id,
                                       const UpdateCallback& callback) {
   DCHECK_EQ(message.tag(), kDataMessageStanzaTag);
   std::string app_id = reinterpret_cast<const mcs_proto::DataMessageStanza*>(
-      &message.GetProtobuf())->from();
+                           &message.GetProtobuf())->category();
   DCHECK(!app_id.empty());
   if (app_message_counts_.count(app_id) == 0)
     app_message_counts_[app_id] = 0;
@@ -708,6 +708,25 @@ bool GCMStoreImpl::AddOutgoingMessage(const std::string& persistent_id,
     return true;
   }
   return false;
+}
+
+void GCMStoreImpl::OverwriteOutgoingMessage(const std::string& persistent_id,
+                                            const MCSMessage& message,
+                                            const UpdateCallback& callback) {
+  DCHECK_EQ(message.tag(), kDataMessageStanzaTag);
+  std::string app_id = reinterpret_cast<const mcs_proto::DataMessageStanza*>(
+                           &message.GetProtobuf())->category();
+  DCHECK(!app_id.empty());
+  // There should already be pending messages for this app.
+  DCHECK(app_message_counts_.count(app_id));
+  // TODO(zea): consider verifying the specific message already exists.
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::AddOutgoingMessage,
+                 backend_,
+                 persistent_id,
+                 message,
+                 callback));
 }
 
 void GCMStoreImpl::RemoveOutgoingMessage(const std::string& persistent_id,
@@ -779,12 +798,12 @@ void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
        iter != result->outgoing_messages.end(); ++iter) {
     const mcs_proto::DataMessageStanza* data_message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(iter->second.get());
-    DCHECK(!data_message->from().empty());
-    if (app_message_counts_.count(data_message->from()) == 0)
-      app_message_counts_[data_message->from()] = 1;
+    DCHECK(!data_message->category().empty());
+    if (app_message_counts_.count(data_message->category()) == 0)
+      app_message_counts_[data_message->category()] = 1;
     else
-      app_message_counts_[data_message->from()]++;
-    if (app_message_counts_[data_message->from()] == kMessagesPerAppLimit)
+      app_message_counts_[data_message->category()]++;
+    if (app_message_counts_[data_message->category()] == kMessagesPerAppLimit)
       num_throttled_apps++;
   }
   UMA_HISTOGRAM_COUNTS("GCM.NumThrottledApps", num_throttled_apps);
