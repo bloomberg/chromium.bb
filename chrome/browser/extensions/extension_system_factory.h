@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_system_impl.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
 
 class BrowserContextKeyedService;
 
@@ -35,13 +35,17 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSystemSharedFactory);
 };
 
-// BrowserContextKeyedServiceFactory for ExtensionSystem.
-class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
+// BrowserContextKeyedServiceFactory for ExtensionSystemImpl.
+// TODO(yoz): Rename to ExtensionSystemImplFactory.
+class ExtensionSystemFactory : public ExtensionSystemProvider {
  public:
-  static ExtensionSystem* GetForBrowserContext(
-      content::BrowserContext* context);
+  // ExtensionSystem provider implementation:
+  virtual ExtensionSystem* GetForBrowserContext(
+      content::BrowserContext* context) OVERRIDE;
 
   static ExtensionSystemFactory* GetInstance();
 
@@ -57,6 +61,8 @@ class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSystemFactory);
 };
 
 }  // namespace extensions

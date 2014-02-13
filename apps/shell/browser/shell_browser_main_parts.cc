@@ -6,6 +6,7 @@
 
 #include "apps/shell/browser/shell_browser_context.h"
 #include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extensions_browser_client.h"
 #include "apps/shell/browser/web_view_window.h"
 #include "apps/shell/common/shell_extensions_client.h"
@@ -41,6 +42,7 @@ namespace {
 // ChromeBrowserMainExtraPartsProfiles for details.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::RendererStartupHelperFactory::GetInstance();
+  extensions::ShellExtensionSystemFactory::GetInstance();
 }
 
 // A ViewsDelegate to attach new unparented windows to app_shell's root window.
@@ -110,6 +112,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   // Create our custom ExtensionSystem first because other
   // BrowserContextKeyedServices depend on it.
+  // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
   CreateExtensionSystem();
 
   EnsureBrowserContextKeyedServiceFactoriesBuilt();

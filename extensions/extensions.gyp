@@ -201,6 +201,8 @@
         'browser/extension_scoped_prefs.h',
         'browser/extension_system.cc',
         'browser/extension_system.h',
+        'browser/extension_system_provider.cc',
+        'browser/extension_system_provider.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',

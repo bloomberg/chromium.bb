@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class BrowserContextKeyedServiceFactory;
 class CommandLine;
 class PrefService;
 
@@ -27,6 +26,7 @@ class AppSorting;
 class Extension;
 class ExtensionHost;
 class ExtensionSystem;
+class ExtensionSystemProvider;
 
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
@@ -122,13 +122,9 @@ class ExtensionsBrowserClient {
   virtual ApiActivityMonitor* GetApiActivityMonitor(
       content::BrowserContext* context) = 0;
 
-  // Returns the dependencies of ExtensionSystem. May return an empty list.
-  virtual std::vector<BrowserContextKeyedServiceFactory*>
-      GetExtensionSystemDependencies() = 0;
-
-  // Creates a new ExtensionSystem for |context|.
-  virtual ExtensionSystem* CreateExtensionSystem(
-      content::BrowserContext* context) = 0;
+  // Returns the factory that provides an ExtensionSystem to be returned from
+  // ExtensionSystem::Get.
+  virtual ExtensionSystemProvider* GetExtensionSystemFactory() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

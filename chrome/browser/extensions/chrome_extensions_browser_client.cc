@@ -203,16 +203,9 @@ ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
   return ActivityLog::GetInstance(context);
 }
 
-std::vector<BrowserContextKeyedServiceFactory*>
-ChromeExtensionsBrowserClient::GetExtensionSystemDependencies() {
-  std::vector<BrowserContextKeyedServiceFactory*> dependencies;
-  dependencies.push_back(ExtensionSystemSharedFactory::GetInstance());
-  return dependencies;
-}
-
-ExtensionSystem* ChromeExtensionsBrowserClient::CreateExtensionSystem(
-    content::BrowserContext* context) {
-  return new ExtensionSystemImpl(static_cast<Profile*>(context));
+ExtensionSystemProvider*
+ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
+  return ExtensionSystemFactory::GetInstance();
 }
 
 }  // namespace extensions

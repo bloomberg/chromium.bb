@@ -137,6 +137,8 @@
             'shell/browser/shell_content_browser_client.h',
             'shell/browser/shell_extension_system.cc',
             'shell/browser/shell_extension_system.h',
+            'shell/browser/shell_extension_system_factory.cc',
+            'shell/browser/shell_extension_system_factory.h',
             'shell/browser/shell_extensions_browser_client.cc',
             'shell/browser/shell_extensions_browser_client.h',
             'shell/browser/web_view_window.cc',

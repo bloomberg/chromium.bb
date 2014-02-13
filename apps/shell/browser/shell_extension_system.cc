@@ -17,9 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -36,15 +34,6 @@ ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
 }
 
 ShellExtensionSystem::~ShellExtensionSystem() {
-}
-
-// static
-std::vector<BrowserContextKeyedServiceFactory*>
-ShellExtensionSystem::GetDependencies() {
-  std::vector<BrowserContextKeyedServiceFactory*> depends_on;
-  depends_on.push_back(ExtensionPrefsFactory::GetInstance());
-  depends_on.push_back(ExtensionRegistryFactory::GetInstance());
-  return depends_on;
 }
 
 bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {

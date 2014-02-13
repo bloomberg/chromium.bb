@@ -4,7 +4,9 @@
 
 #include "extensions/browser/extension_system.h"
 
-#include "chrome/browser/extensions/extension_system_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -16,7 +18,9 @@ ExtensionSystem::~ExtensionSystem() {
 
 // static
 ExtensionSystem* ExtensionSystem::Get(content::BrowserContext* context) {
-  return ExtensionSystemFactory::GetForBrowserContext(context);
+  return ExtensionsBrowserClient::Get()
+      ->GetExtensionSystemFactory()
+      ->GetForBrowserContext(context);
 }
 
 }  // namespace extensions

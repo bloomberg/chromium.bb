@@ -51,7 +51,6 @@ class ExtensionSystem : public BrowserContextKeyedService {
   virtual ~ExtensionSystem();
 
   // Returns the instance for the given browser context, or NULL if none.
-  // A convenience wrapper around ExtensionSystemFactory::GetForBrowserContext.
   static ExtensionSystem* Get(content::BrowserContext* context);
 
   // Initializes extensions machinery.

@@ -36,9 +36,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   explicit ShellExtensionSystem(content::BrowserContext* browser_context);
   virtual ~ShellExtensionSystem();
 
-  // Returns the list of services on which |this| depends.
-  static std::vector<BrowserContextKeyedServiceFactory*> GetDependencies();
-
   // Loads an unpacked application from a directory and attempts to launch it.
   // Returns true on success.
   bool LoadAndLaunchApp(const base::FilePath& app_dir);

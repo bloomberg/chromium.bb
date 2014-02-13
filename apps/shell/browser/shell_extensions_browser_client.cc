@@ -5,7 +5,7 @@
 #include "apps/shell/browser/shell_extensions_browser_client.h"
 
 #include "apps/shell/browser/shell_app_sorting.h"
-#include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/browser/shell_extension_system_factory.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
@@ -148,14 +148,9 @@ ApiActivityMonitor* ShellExtensionsBrowserClient::GetApiActivityMonitor(
   return NULL;
 }
 
-std::vector<BrowserContextKeyedServiceFactory*>
-ShellExtensionsBrowserClient::GetExtensionSystemDependencies() {
-  return ShellExtensionSystem::GetDependencies();
-}
-
-ExtensionSystem* ShellExtensionsBrowserClient::CreateExtensionSystem(
-    BrowserContext* context) {
-  return new ShellExtensionSystem(context);
+ExtensionSystemProvider*
+ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
+  return ShellExtensionSystemFactory::GetInstance();
 }
 
 }  // namespace extensions

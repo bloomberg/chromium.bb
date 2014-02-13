@@ -73,15 +73,11 @@ ExtensionSystemFactory* ExtensionSystemFactory::GetInstance() {
 }
 
 ExtensionSystemFactory::ExtensionSystemFactory()
-    : BrowserContextKeyedServiceFactory(
-        "ExtensionSystem",
-        BrowserContextDependencyManager::GetInstance()) {
+    : ExtensionSystemProvider("ExtensionSystem",
+                              BrowserContextDependencyManager::GetInstance()) {
   DCHECK(ExtensionsBrowserClient::Get())
       << "ExtensionSystemFactory must be initialized after BrowserProcess";
-  std::vector<BrowserContextKeyedServiceFactory*> dependencies =
-      ExtensionsBrowserClient::Get()->GetExtensionSystemDependencies();
-  for (size_t i = 0; i < dependencies.size(); ++i)
-    DependsOn(dependencies[i]);
+  DependsOn(ExtensionSystemSharedFactory::GetInstance());
 }
 
 ExtensionSystemFactory::~ExtensionSystemFactory() {
@@ -89,7 +85,7 @@ ExtensionSystemFactory::~ExtensionSystemFactory() {
 
 BrowserContextKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return ExtensionsBrowserClient::Get()->CreateExtensionSystem(context);
+  return new ExtensionSystemImpl(static_cast<Profile*>(context));
 }
 
 content::BrowserContext* ExtensionSystemFactory::GetBrowserContextToUse(
