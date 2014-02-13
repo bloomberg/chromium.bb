@@ -74,6 +74,7 @@ public:
     virtual ~WebApplicationCacheHost() { }
 
     // Called for every request made within the context.
+    virtual void willStartMainResourceRequest(WebURLRequest& r, const WebApplicationCacheHost* spawningHost) { }
     virtual void willStartMainResourceRequest(WebURLRequest& r, const WebFrame*) { }
     virtual void willStartSubResourceRequest(WebURLRequest&) { }
 
