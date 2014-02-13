@@ -91,7 +91,7 @@ void MockInputMethodManager::ChangeInputMethod(
     const std::string& input_method_id) {
 }
 
-void MockInputMethodManager::ActivateInputMethodProperty(
+void MockInputMethodManager::ActivateInputMethodMenuItem(
     const std::string& key) {
 }
 
@@ -142,15 +142,6 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
                                  GURL());  // input view page url.
   }
   return descriptor;
-}
-
-InputMethodPropertyList
-MockInputMethodManager::GetCurrentInputMethodProperties() const {
-  return InputMethodPropertyList();
-}
-
-void MockInputMethodManager::SetCurrentInputMethodProperties(
-    const InputMethodPropertyList& property_list) {
 }
 
 XKeyboard* MockInputMethodManager::GetXKeyboard() {

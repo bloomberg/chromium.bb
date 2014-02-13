@@ -142,9 +142,6 @@ void InputMethodPersistence::InputMethodChanged(
   NOTREACHED();
 }
 
-void InputMethodPersistence::InputMethodPropertyChanged(
-    InputMethodManager* manager) {}
-
 void InputMethodPersistence::OnSessionStateChange(
     InputMethodManager::State new_state) {
   state_ = new_state;

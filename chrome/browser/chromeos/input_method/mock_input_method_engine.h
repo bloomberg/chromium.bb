@@ -15,13 +15,18 @@ namespace ui {
 class KeyEvent;
 }  // namespace ui
 
+namespace ash {
+namespace ime {
+struct InputMethodMenuItem;
+}  // namespace ime
+}  // namespace ash
+
 namespace chromeos {
 
 class CompositionText;
 
 namespace input_method {
 class CandidateWindow;
-struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 

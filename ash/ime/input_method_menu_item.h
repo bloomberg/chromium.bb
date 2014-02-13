@@ -1,29 +1,29 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
-#define CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
+#ifndef ASH_IME_INPUT_METHOD_MENU_ITEM_H_
+#define ASH_IME_INPUT_METHOD_MENU_ITEM_H_
 
 #include <string>
 #include <vector>
-#include "chromeos/chromeos_export.h"
+#include "ash/ash_export.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 // A structure which represents a property for an input method engine.
-struct CHROMEOS_EXPORT InputMethodProperty {
-  InputMethodProperty(const std::string& in_key,
+struct ASH_EXPORT InputMethodMenuItem {
+  InputMethodMenuItem(const std::string& in_key,
                       const std::string& in_label,
                       bool in_is_selection_item,
                       bool in_is_selection_item_checked);
 
-  InputMethodProperty();
-  ~InputMethodProperty();
+  InputMethodMenuItem();
+  ~InputMethodMenuItem();
 
-  bool operator==(const InputMethodProperty& other) const;
-  bool operator!=(const InputMethodProperty& other) const;
+  bool operator==(const InputMethodMenuItem& other) const;
+  bool operator!=(const InputMethodMenuItem& other) const;
 
   // Debug print function.
   std::string ToString() const;
@@ -36,9 +36,9 @@ struct CHROMEOS_EXPORT InputMethodProperty {
   bool is_selection_item_checked;  // true if |is_selection_item| is true and
                                    // the selection_item is selected.
 };
-typedef std::vector<InputMethodProperty> InputMethodPropertyList;
+typedef std::vector<InputMethodMenuItem> InputMethodMenuItemList;
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
 
-#endif  // CHROMEOS_IME_INPUT_METHOD_PROPERTY_H_
+#endif  // ASH_IME_INPUT_METHOD_MENU_ITEM_H_

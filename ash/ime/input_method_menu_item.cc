@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/input_method_property.h"
+#include "ash/ime/input_method_menu_item.h"
 
 #include <sstream>
 
 #include "base/logging.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
-InputMethodProperty::InputMethodProperty(const std::string& in_key,
+InputMethodMenuItem::InputMethodMenuItem(const std::string& in_key,
                                          const std::string& in_label,
                                          bool in_is_selection_item,
                                          bool in_is_selection_item_checked)
@@ -22,26 +22,26 @@ InputMethodProperty::InputMethodProperty(const std::string& in_key,
   DCHECK(!key.empty());
 }
 
-InputMethodProperty::InputMethodProperty()
+InputMethodMenuItem::InputMethodMenuItem()
     : is_selection_item(false),
       is_selection_item_checked(false) {
 }
 
-InputMethodProperty::~InputMethodProperty() {
+InputMethodMenuItem::~InputMethodMenuItem() {
 }
 
-bool InputMethodProperty::operator==(const InputMethodProperty& other) const {
+bool InputMethodMenuItem::operator==(const InputMethodMenuItem& other) const {
   return key == other.key &&
       label == other.label &&
       is_selection_item == other.is_selection_item &&
       is_selection_item_checked == other.is_selection_item_checked;
 }
 
-bool InputMethodProperty::operator!=(const InputMethodProperty& other) const {
+bool InputMethodMenuItem::operator!=(const InputMethodMenuItem& other) const {
   return !(*this == other);
 }
 
-std::string InputMethodProperty::ToString() const {
+std::string InputMethodMenuItem::ToString() const {
   std::stringstream stream;
   stream << "key=" << key
          << ", label=" << label
@@ -50,5 +50,5 @@ std::string InputMethodProperty::ToString() const {
   return stream.str();
 }
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
