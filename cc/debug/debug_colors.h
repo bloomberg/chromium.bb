@@ -69,9 +69,9 @@ class DebugColors {
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();
 
-  static SkColor PaintRectBorderColor();
+  static SkColor PaintRectBorderColor(int color_index);
   static int PaintRectBorderWidth();
-  static SkColor PaintRectFillColor();
+  static SkColor PaintRectFillColor(int color_index);
 
   static SkColor PropertyChangedRectBorderColor();
   static int PropertyChangedRectBorderWidth();

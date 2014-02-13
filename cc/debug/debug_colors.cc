@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
+
 #include "cc/debug/debug_colors.h"
 
 #include "cc/trees/layer_tree_impl.h"
@@ -171,13 +173,23 @@ SkColor DebugColors::EvictedTileCheckerboardColor() {
 
 // ======= Debug rect colors =======
 
-// Paint rects in red.
-SkColor DebugColors::PaintRectBorderColor() {
-  return SkColorSetARGB(255, 255, 0, 0);
+// Paint rects in shades of green.
+static const int kPaintRectColors[][3] = {{0, 155, 0}, {0, 195, 0},
+                                          {0, 235, 0}};
+SkColor DebugColors::PaintRectBorderColor(int color_index) {
+  int real_index = color_index % arraysize(kPaintRectColors);
+  return SkColorSetARGB(255,
+                        kPaintRectColors[real_index][0],
+                        kPaintRectColors[real_index][1],
+                        kPaintRectColors[real_index][2]);
 }
 int DebugColors::PaintRectBorderWidth() { return 2; }
-SkColor DebugColors::PaintRectFillColor() {
-  return SkColorSetARGB(30, 255, 0, 0);
+SkColor DebugColors::PaintRectFillColor(int color_index) {
+  int real_index = color_index % arraysize(kPaintRectColors);
+  return SkColorSetARGB(30,
+                        kPaintRectColors[real_index][0],
+                        kPaintRectColors[real_index][1],
+                        kPaintRectColors[real_index][2]);
 }
 
 // Property-changed rects in blue.
