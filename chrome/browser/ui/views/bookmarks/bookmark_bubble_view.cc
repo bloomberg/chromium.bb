@@ -270,6 +270,7 @@ BookmarkBubbleView::BookmarkBubbleView(
   const SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   set_color(background_color);
+  set_move_with_anchor(true);
   set_background(views::Background::CreateSolidBackground(background_color));
   set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
   // Compensate for built-in vertical padding in the anchor view's image.
