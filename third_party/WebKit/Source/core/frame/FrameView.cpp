@@ -2099,16 +2099,11 @@ void FrameView::autoSizeIfEnabled()
     TemporaryChange<bool> changeInAutoSize(m_inAutoSize, true);
 
     Document* document = frame().document();
-    if (!document)
+    if (!document || !document->isActive())
         return;
 
-    RenderView* documentView = document->renderView();
     Element* documentElement = document->documentElement();
-    if (!documentView || !documentElement)
-        return;
-
-    RenderBox* documentRenderBox = documentElement->renderBox();
-    if (!documentRenderBox)
+    if (!documentElement)
         return;
 
     // If this is the first time we run autosize, start from small height and
@@ -2123,7 +2118,17 @@ void FrameView::autoSizeIfEnabled()
     for (int i = 0; i < 2; i++) {
         // Update various sizes including contentsSize, scrollHeight, etc.
         document->updateLayoutIgnorePendingStylesheets();
-        int width = documentView->minPreferredLogicalWidth();
+
+        RenderView* renderView = document->renderView();
+        if (!renderView)
+            return;
+
+        int width = renderView->minPreferredLogicalWidth();
+
+        RenderBox* documentRenderBox = documentElement->renderBox();
+        if (!documentRenderBox)
+            return;
+
         int height = documentRenderBox->scrollHeight();
         IntSize newSize(width, height);
 
