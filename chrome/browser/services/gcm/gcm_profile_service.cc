@@ -479,6 +479,9 @@ void GCMProfileService::RegisterProfilePrefs(
       prefs::kGCMChannelEnabled,
       on_by_default,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(
+      prefs::kGCMRegisteredAppIDs,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 GCMProfileService::GCMProfileService(Profile* profile)
@@ -513,9 +516,6 @@ void GCMProfileService::Initialize(
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
   // TODO(jianli): move extension specific logic out of GCMProfileService.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome:: NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -601,6 +601,10 @@ void GCMProfileService::DoRegister(const std::string& app_id,
   registration_info.sender_ids = normalized_sender_ids;
   registration_info_map_[app_id] = registration_info;
 
+  // Save the IDs of all registered apps such that we know what to remove from
+  // the the app's state store when the profile is signed out.
+  WriteRegisteredAppIDs();
+
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -682,15 +686,6 @@ void GCMProfileService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       ResetGCMClient();
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      extensions::Extension* extension =
-          content::Details<extensions::Extension>(details).ptr();
-      // No need to load the persisted registration info if the extension does
-      // not have the GCM permission.
-      if (extension->HasAPIPermission(extensions::APIPermission::kGcm))
-        EnsureAppReady(extension->id());
-      break;
-    }
     case chrome:: NOTIFICATION_EXTENSION_UNINSTALLED: {
       extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
@@ -708,6 +703,9 @@ void GCMProfileService::CheckIn(const std::string& username) {
 
   DCHECK(!delayed_task_controller_);
   delayed_task_controller_.reset(new DelayedTaskController);
+
+  // Load all register apps.
+  ReadRegisteredAppIDs();
 
   // Let the IO thread create and initialize GCMClient.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
@@ -727,6 +725,17 @@ void GCMProfileService::CheckOut() {
 
   DCHECK(!username_.empty());
   username_.clear();
+
+  // Remove persisted data from app's state store.
+  for (RegistrationInfoMap::const_iterator iter =
+           registration_info_map_.begin();
+       iter != registration_info_map_.end(); ++iter) {
+    DeleteRegistrationInfo(iter->first);
+  }
+
+  // Remove persisted data from prefs store.
+  profile_->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
+  profile_->GetPrefs()->ClearPref(prefs::kGCMRegisteredAppIDs);
 
   gcm_client_ready_ = false;
   delayed_task_controller_.reset();
@@ -768,6 +777,9 @@ void GCMProfileService::Unregister(const std::string& app_id) {
   if (registration_info_iter == registration_info_map_.end())
     return;
   registration_info_map_.erase(registration_info_iter);
+
+  // Update the persisted IDs of registered apps.
+  WriteRegisteredAppIDs();
 
   // Remove the persisted registration info.
   DeleteRegistrationInfo(app_id);
@@ -895,6 +907,27 @@ GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id)
 #else
   return js_event_router_.get();
 #endif
+}
+
+void GCMProfileService::ReadRegisteredAppIDs() {
+  const base::ListValue* app_id_list =
+      profile_->GetPrefs()->GetList(prefs::kGCMRegisteredAppIDs);
+  for (size_t i = 0; i < app_id_list->GetSize(); ++i) {
+    std::string app_id;
+    if (!app_id_list->GetString(i, &app_id))
+      continue;
+    ReadRegistrationInfo(app_id);
+  }
+}
+
+void GCMProfileService::WriteRegisteredAppIDs() {
+  base::ListValue apps;
+  for (RegistrationInfoMap::const_iterator iter =
+           registration_info_map_.begin();
+       iter != registration_info_map_.end(); ++iter) {
+    apps.Append(new base::StringValue(iter->first));
+  }
+  profile_->GetPrefs()->Set(prefs::kGCMRegisteredAppIDs, apps);
 }
 
 void GCMProfileService::DeleteRegistrationInfo(const std::string& app_id) {

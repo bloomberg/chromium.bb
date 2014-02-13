@@ -410,6 +410,7 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 extern const char kProfileResetPromptMemento[];
 
 extern const char kGCMChannelEnabled[];
+extern const char kGCMRegisteredAppIDs[];
 
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];

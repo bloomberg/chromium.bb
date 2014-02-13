@@ -271,8 +271,12 @@ void GCMClientImpl::SetDeviceCredentialsCallback(bool success) {
 }
 
 void GCMClientImpl::CheckOut() {
-  // TODO(jianli): to be implemented.
   delegate_ = NULL;
+  device_checkin_info_.Reset();
+  mcs_client_->Destroy();  // This will also destroy GCM store.
+  mcs_client_.reset();
+  checkin_request_.reset();
+  pending_registrations_.clear();
 }
 
 void GCMClientImpl::Register(const std::string& app_id,

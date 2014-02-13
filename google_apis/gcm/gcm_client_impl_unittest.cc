@@ -329,6 +329,12 @@ TEST_F(GCMClientImplTest, LoadingCompleted) {
   EXPECT_EQ(kDeviceSecurityToken, mcs_client()->last_security_token());
 }
 
+TEST_F(GCMClientImplTest, CheckOut) {
+  EXPECT_TRUE(mcs_client());
+  gcm_client()->CheckOut();
+  EXPECT_FALSE(mcs_client());
+}
+
 TEST_F(GCMClientImplTest, RegisterApp) {
   std::vector<std::string> senders;
   senders.push_back("sender");

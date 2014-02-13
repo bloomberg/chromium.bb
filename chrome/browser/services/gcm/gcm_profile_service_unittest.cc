@@ -765,10 +765,8 @@ TEST_F(GCMProfileServiceSingleProfileTest, ReadRegistrationFromStateStore) {
   consumer()->ReloadExtension(extension);
 
   // This should read the registration info from the extension's state store.
-  // We still need to wait since the reading from state store might happen at
-  // the same time.
   consumer()->Register(extension->id(), sender_ids);
-  WaitUntilCompleted();
+  PumpUILoop();
   EXPECT_EQ(old_registration_id, consumer()->registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
 }
@@ -811,6 +809,25 @@ TEST_F(GCMProfileServiceSingleProfileTest,
   WaitUntilCompleted();
   EXPECT_EQ(old_registration_id, consumer()->registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest,
+       PersistedRegistrationInfoRemoveAfterSignOut) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  consumer()->Register(kTestingAppId, sender_ids);
+  WaitUntilCompleted();
+
+  // The app id and registration info should be persisted.
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMRegisteredAppIDs));
+  EXPECT_TRUE(consumer()->HasPersistedRegistrationInfo(kTestingAppId));
+
+  consumer()->SignOut();
+  PumpUILoop();
+
+  // The app id and persisted registration info should be removed.
+  EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMRegisteredAppIDs));
+  EXPECT_FALSE(consumer()->HasPersistedRegistrationInfo(kTestingAppId));
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, RegisterAfterSignOut) {

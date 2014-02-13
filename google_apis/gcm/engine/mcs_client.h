@@ -123,6 +123,8 @@ class GCM_EXPORT MCSClient {
   // Disconnects the client and permanently destroys the persistent GCM store.
   // WARNING: This is permanent, and the client must be recreated with new
   // credentials afterwards.
+  // TODO(jianli): destroying the persistent GCM store should be moved to
+  // GCMClient.
   void Destroy();
 
   // Returns the current state of the client.

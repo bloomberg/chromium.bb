@@ -161,6 +161,10 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Returns the event router to fire the event for the given app.
   GCMEventRouter* GetEventRouter(const std::string& app_id) const;
 
+  // Used to persist the IDs of registered apps.
+  void ReadRegisteredAppIDs();
+  void WriteRegisteredAppIDs();
+
   // Used to persist registration info into the app's state store.
   void DeleteRegistrationInfo(const std::string& app_id);
   void WriteRegistrationInfo(const std::string& app_id);
