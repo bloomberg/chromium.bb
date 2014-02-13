@@ -87,7 +87,6 @@ import platform
 import posixpath
 import pprint
 import re
-import socket
 import sys
 import time
 import urllib
@@ -669,43 +668,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             command, options, parsed_url, self.parent.name, revision_overrides)
         self._used_scm = gclient_scm.CreateSCM(
             parsed_url, self.root.root_dir, self.name)
-
-        def enable_deletion_of_conflicting_checkouts():
-          """Determines whether to enable new checkout deletion behavior.
-
-          Initially, enables the experimental functionality on a small set of
-          bots.
-          """
-          # TODO(borenet): Remove this hack as soon as we've verified that it
-          # doesn't cause the bots to break.
-          if not os.environ.get('CHROME_HEADLESS'):
-            return False
-          hostname = socket.gethostname()
-          logging.warning('Hostname of this machine: %s' % hostname)
-          return hostname in ('vm859-m1', 'build1-m1', 'vm630-m1')
-
-        # When updating, determine whether the destination directory contains a
-        # checkout of the desired repository. If not, avoid conflicts by
-        # deleting the directory before running the update.
-        if command == 'update' and enable_deletion_of_conflicting_checkouts():
-          logging.warning('Experimental deletion of mismatching checkouts '
-                          'enabled.')
-          actual_remote_url = self._used_scm.GetRemoteURL(options)
-          url, _ = gclient_utils.SplitUrlRevision(parsed_url)
-          url = url.rstrip('/')
-          dest_dir = os.path.join(self.root.root_dir, self.name)
-          if os.path.isdir(dest_dir) and actual_remote_url != url:
-            if options.force:
-              logging.warning('%s does not contain a checkout of %s. Removing '
-                              ' %s' % (dest_dir, url, dest_dir))
-              gclient_utils.rmtree(dest_dir)
-            else:
-              raise gclient_utils.Error('%s does not contain a checkout of %s '
-                                        '(found %s instead). Please fix the '
-                                        'solution manually or run with --force '
-                                        'to delete automatically.' % (
-                                            dest_dir, url, actual_remote_url))
-
         self._got_revision = self._used_scm.RunCommand(command, options, args,
                                                        file_list)
         if file_list:
