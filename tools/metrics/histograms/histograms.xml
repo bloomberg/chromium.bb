@@ -5505,6 +5505,24 @@ other types of suffix sets.
   <summary>Net error results from GCM connection attempts.</summary>
 </histogram>
 
+<histogram name="GCM.ConnectionResetReason" enum="GCMConnectionResetReason">
+  <summary>Reasons for GCM connection resets.</summary>
+</histogram>
+
+<histogram name="GCM.ConnectionSuccessRate">
+  <summary>
+    GCM connection success rate. Does not take into account login success. See
+    GCM.ConnectionFailureErrorCode for a breakdown of connection failure
+    reasons.
+  </summary>
+</histogram>
+
+<histogram name="GCM.ConnectionUpTime" units="milliseconds">
+  <summary>
+    Time (from login until reset) that a GCM connection was active.
+  </summary>
+</histogram>
+
 <histogram name="GCM.NumThrottledApps">
   <summary>
     Number of applications hitting GCM per-app outstanding message limits at
@@ -26466,6 +26484,13 @@ other types of suffix sets.
   <int value="4" label="HTTP not OK"/>
   <int value="5" label="Response parsing failed"/>
   <int value="6" label="Zero ID or token"/>
+</enum>
+
+<enum name="GCMConnectionResetReason" type="int">
+  <int value="0" label="Login failure"/>
+  <int value="1" label="Close command"/>
+  <int value="2" label="Heartbeat failure"/>
+  <int value="3" label="Socket failure"/>
 </enum>
 
 <enum name="GCMRegistrationRequestStatus" type="int">

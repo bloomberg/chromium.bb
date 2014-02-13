@@ -8,6 +8,7 @@
 #include "google_apis/gcm/engine/connection_factory.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
@@ -44,7 +45,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
-  virtual void SignalConnectionReset() OVERRIDE;
+  virtual void SignalConnectionReset(ConnectionResetReason reason) OVERRIDE;
 
   // NetworkChangeNotifier observer implementations.
   virtual void OnConnectionTypeChanged(
@@ -91,16 +92,25 @@ class GCM_EXPORT ConnectionFactoryImpl :
   net::NetLog* const net_log_;
   // The handle to the socket for the current connection, if one exists.
   net::ClientSocketHandle socket_handle_;
-  // Connection attempt backoff policy.
+  // Current backoff entry.
   scoped_ptr<net::BackoffEntry> backoff_entry_;
-  // Backoff policy from previous backoff attempt.
+  // Backoff entry from previous connection attempt. Updated on each login
+  // completion.
   scoped_ptr<net::BackoffEntry> previous_backoff_;
-  base::TimeTicks backoff_reset_time_;
 
   // Whether a connection attempt is currently in progress or we're in backoff
   // waiting until the next connection attempt. |!connecting_| denotes
   // steady state with an active connection.
   bool connecting_;
+
+  // Whether login successfully completed after the connection was established.
+  // If a connection reset happens while attempting to log in, the current
+  // backoff entry is reused (after incrementing with a new failure).
+  bool logging_in_;
+
+  // The time of the last login completion. Used for calculating whether to
+  // restore a previous backoff entry and for measuring uptime.
+  base::TimeTicks last_login_time_;
 
   // The current connection handler, if one exists.
   scoped_ptr<ConnectionHandlerImpl> connection_handler_;

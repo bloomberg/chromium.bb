@@ -606,6 +606,9 @@ void MCSClient::HandlePacketFromWire(
         state_ = UNINITIALIZED;
         DVLOG(1) << "  Error code: " << login_response->error().code();
         DVLOG(1) << "  Error message: " << login_response->error().message();
+        LOG(ERROR) << "Failed to log in to GCM, resetting connection.";
+        connection_factory_->SignalConnectionReset(
+            ConnectionFactory::LOGIN_FAILURE);
         mcs_error_callback_.Run();
         return;
       }
@@ -656,7 +659,8 @@ void MCSClient::HandlePacketFromWire(
     case kCloseTag:
       LOG(ERROR) << "Received close command, resetting connection.";
       state_ = LOADED;
-      connection_factory_->SignalConnectionReset();
+      connection_factory_->SignalConnectionReset(
+          ConnectionFactory::CLOSE_COMMAND);
       return;
     case kIqStanzaTag: {
       DCHECK_GE(stream_id_in_, 1U);
@@ -805,7 +809,8 @@ MCSClient::PersistentId MCSClient::GetNextPersistentId() {
 }
 
 void MCSClient::OnConnectionResetByHeartbeat() {
-  connection_factory_->SignalConnectionReset();
+  connection_factory_->SignalConnectionReset(
+      ConnectionFactory::HEARTBEAT_FAILURE);
 }
 
 void MCSClient::NotifyMessageSendStatus(

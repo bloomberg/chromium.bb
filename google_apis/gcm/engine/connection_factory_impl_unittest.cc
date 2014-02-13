@@ -351,7 +351,7 @@ TEST_F(ConnectionFactoryImplTest, FailViaSignalReset) {
   factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 
-  factory()->SignalConnectionReset();
+  factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
   EXPECT_FALSE(factory()->GetConnectionHandler()->CanSendMessage());
 }
@@ -365,13 +365,13 @@ TEST_F(ConnectionFactoryImplTest, IgnoreResetWhileConnecting) {
   factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 
-  factory()->SignalConnectionReset();
+  factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   base::TimeTicks retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
 
   const int kNumAttempts = 5;
   for (int i = 0; i < kNumAttempts; ++i)
-    factory()->SignalConnectionReset();
+    factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_EQ(retry_time, factory()->NextRetryAttempt());
 }
 
@@ -395,7 +395,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
   WaitForConnections();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 
-  factory()->SignalConnectionReset();
+  factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_FALSE(factory()->GetConnectionHandler()->CanSendMessage());
   EXPECT_NE(retry_time, factory()->NextRetryAttempt());
   retry_time = factory()->NextRetryAttempt();
@@ -410,7 +410,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
   WaitForConnections();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 
-  factory()->SignalConnectionReset();
+  factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_NE(retry_time, factory()->NextRetryAttempt());
   retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());

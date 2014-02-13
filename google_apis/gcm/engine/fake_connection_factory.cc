@@ -10,7 +10,9 @@
 
 namespace gcm {
 
-FakeConnectionFactory::FakeConnectionFactory() {
+FakeConnectionFactory::FakeConnectionFactory()
+    : reconnect_pending_(false),
+      delay_reconnect_(false) {
 }
 
 FakeConnectionFactory::~FakeConnectionFactory() {
@@ -43,8 +45,12 @@ base::TimeTicks FakeConnectionFactory::NextRetryAttempt() const {
   return base::TimeTicks();
 }
 
-void FakeConnectionFactory::SignalConnectionReset() {
-  Connect();
+void FakeConnectionFactory::SignalConnectionReset(
+    ConnectionResetReason reason) {
+  if (!delay_reconnect_)
+    Connect();
+  else
+    reconnect_pending_ = true;
 }
 
 }  // namespace gcm

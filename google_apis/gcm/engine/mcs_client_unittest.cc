@@ -274,15 +274,18 @@ TEST_F(MCSClientTest, LoginSuccess) {
   EXPECT_EQ(kLoginResponseTag, received_message()->tag());
 }
 
-// Encounter a server error during the login attempt.
+// Encounter a server error during the login attempt. Should trigger a
+// reconnect.
 TEST_F(MCSClientTest, FailLogin) {
   BuildMCSClient();
   InitializeClient();
   GetFakeHandler()->set_fail_login(true);
+  connection_factory()->set_delay_reconnect(true);
   LoginClient(std::vector<std::string>());
   EXPECT_FALSE(connection_factory()->IsEndpointReachable());
   EXPECT_FALSE(init_success());
   EXPECT_FALSE(received_message());
+  EXPECT_TRUE(connection_factory()->reconnect_pending());
 }
 
 // Send a message without RMQ support.

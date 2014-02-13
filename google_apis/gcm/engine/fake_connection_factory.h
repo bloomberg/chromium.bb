@@ -28,12 +28,25 @@ class FakeConnectionFactory : public ConnectionFactory {
   virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
-  virtual void SignalConnectionReset() OVERRIDE;
+  virtual void SignalConnectionReset(ConnectionResetReason reason) OVERRIDE;
+
+  // Whether a connection reset has been triggered and is yet to run.
+  bool reconnect_pending() const { return reconnect_pending_; }
+
+  // Whether connection resets should be handled immediately or delayed until
+  // release.
+  void set_delay_reconnect(bool should_delay) {
+    delay_reconnect_ = should_delay;
+  }
 
  private:
   scoped_ptr<FakeConnectionHandler> connection_handler_;
 
   BuildLoginRequestCallback request_builder_;
+
+  // Logic for handling connection resets.
+  bool reconnect_pending_;
+  bool delay_reconnect_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionFactory);
 };
