@@ -1079,11 +1079,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       (now.InSecondsF() - input_event->timeStampSeconds) *
           base::Time::kMicrosecondsPerSecond);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.AggregatedLatency.Renderer2",
-                              delta, 0, 10000000, 100);
+                              delta, 1, 10000000, 100);
   base::HistogramBase* counter_for_type =
       base::Histogram::FactoryGet(
           base::StringPrintf("Event.Latency.Renderer2.%s", event_name),
-          0,
+          1,
           10000000,
           100,
           base::HistogramBase::kUmaTargetedHistogramFlag);

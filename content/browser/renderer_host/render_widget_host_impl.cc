@@ -2386,7 +2386,7 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.Latency.Browser.TouchUI",
       ui_delta.InMicroseconds(),
-      0,
+      1,
       20000,
       100);
 
@@ -2399,7 +2399,7 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Event.Latency.Browser.TouchAcked",
         acked_delta.InMicroseconds(),
-        0,
+        1,
         1000000,
         100);
   }
@@ -2439,7 +2439,7 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.Latency.TouchToScrollUpdateSwap",
           delta.InMicroseconds(),
-          0,
+          1,
           1000000,
           100);
     }

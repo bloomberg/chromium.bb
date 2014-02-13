@@ -51,7 +51,7 @@ void SendScrollLatencyUma(const WebInputEvent& event,
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Event.Latency.RendererImpl.GestureScroll2",
         delta.InMicroseconds(),
-        0,
+        1,
         1000000,
         100);
   }

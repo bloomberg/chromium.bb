@@ -177,13 +177,13 @@ Event::Event(const base::NativeEvent& native_event,
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser",
-                              delta.InMicroseconds(), 0, 1000000, 100);
+                              delta.InMicroseconds(), 1, 1000000, 100);
   std::string name_for_event =
       base::StringPrintf("Event.Latency.Browser.%s", name_.c_str());
   base::HistogramBase* counter_for_type =
       base::Histogram::FactoryGet(
           name_for_event,
-          0,
+          1,
           1000000,
           100,
           base::HistogramBase::kUmaTargetedHistogramFlag);
