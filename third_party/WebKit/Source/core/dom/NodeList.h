@@ -41,11 +41,10 @@ public:
     virtual Node* item(unsigned index) const = 0;
 
     // Other methods (not part of DOM)
-    virtual bool isLiveNodeList() const { return false; }
     virtual bool isEmptyNodeList() const { return false; }
     virtual bool isChildNodeList() const { return false; }
 
-    Node* ownerNode() const;
+    virtual Node* virtualOwnerNode() const { return 0; }
 
 protected:
     NodeList()

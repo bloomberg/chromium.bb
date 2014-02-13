@@ -53,6 +53,7 @@ private:
     virtual Node* item(unsigned) const OVERRIDE { return 0; }
 
     virtual bool isEmptyNodeList() const OVERRIDE { return true; }
+    virtual Node* virtualOwnerNode() const OVERRIDE;
 
     RefPtr<Node> m_owner;
 };

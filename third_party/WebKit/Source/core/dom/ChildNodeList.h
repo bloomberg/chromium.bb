@@ -59,6 +59,7 @@ private:
     explicit ChildNodeList(PassRefPtr<ContainerNode> rootNode);
 
     virtual bool isChildNodeList() const OVERRIDE { return true; }
+    virtual Node* virtualOwnerNode() const OVERRIDE;
 
     RefPtr<ContainerNode> m_parent;
     mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;

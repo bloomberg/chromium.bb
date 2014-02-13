@@ -42,4 +42,9 @@ EmptyNodeList::~EmptyNodeList()
     m_owner->nodeLists()->removeEmptyChildNodeList(this);
 }
 
+Node* EmptyNodeList::virtualOwnerNode() const
+{
+    return ownerNode();
+}
+
 } // namespace WebCore

@@ -135,8 +135,6 @@ public:
     virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual bool nodeMatches(const Element&) const = 0;
-    // Avoid ambiguity since both NodeList and LiveNodeListBase have an ownerNode() method.
-    using LiveNodeListBase::ownerNode;
 
     virtual void invalidateCache() const OVERRIDE FINAL;
     bool shouldOnlyIncludeDirectChildren() const { return false; }
@@ -148,7 +146,7 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
-    virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }
+    virtual Node* virtualOwnerNode() const OVERRIDE FINAL;
 
     mutable CollectionIndexCache<LiveNodeList, Element> m_collectionIndexCache;
 };

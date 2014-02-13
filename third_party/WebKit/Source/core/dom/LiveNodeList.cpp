@@ -41,6 +41,11 @@ void LiveNodeListBase::invalidateIdNameCacheMaps() const
     static_cast<const HTMLCollection*>(this)->invalidateIdNameCacheMaps();
 }
 
+Node* LiveNodeList::virtualOwnerNode() const
+{
+    return ownerNode();
+}
+
 void LiveNodeList::invalidateCache() const
 {
     m_collectionIndexCache.invalidate();

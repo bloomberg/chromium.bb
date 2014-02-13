@@ -35,6 +35,11 @@ ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> parent)
     ASSERT(m_parent);
 }
 
+Node* ChildNodeList::virtualOwnerNode() const
+{
+    return ownerNode();
+}
+
 ChildNodeList::~ChildNodeList()
 {
     m_parent->nodeLists()->removeChildNodeList(this);

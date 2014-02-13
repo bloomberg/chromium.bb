@@ -1956,7 +1956,6 @@
             'dom/NodeFilterCondition.h',
             'dom/NodeIterator.cpp',
             'dom/NodeIterator.h',
-            'dom/NodeList.cpp',
             'dom/NodeRareData.cpp',
             'dom/NodeRareData.h',
             'dom/RenderTreeBuilder.cpp',
