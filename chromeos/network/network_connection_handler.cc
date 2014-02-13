@@ -374,7 +374,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
   // Get VPN provider type and host (required for configuration) and ensure
   // that required VPN non-cert properties are set.
   const base::DictionaryValue* provider_properties = NULL;
-  std::string vpn_provider_type, vpn_provider_host;
+  std::string vpn_provider_type, vpn_provider_host, vpn_client_cert_id;
   if (type == shill::kTypeVPN) {
     // VPN Provider values are read from the "Provider" dictionary, not the
     // "Provider.Type", etc keys (which are used only to set the values).
@@ -384,6 +384,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
           shill::kTypeProperty, &vpn_provider_type);
       provider_properties->GetStringWithoutPathExpansion(
           shill::kHostProperty, &vpn_provider_host);
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, &vpn_client_cert_id);
     }
     if (vpn_provider_type.empty() || vpn_provider_host.empty()) {
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
@@ -391,12 +393,26 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     }
   }
 
+  scoped_ptr<NetworkUIData> ui_data =
+      shill_property_util::GetUIDataFromProperties(service_properties);
+
   client_cert::ConfigType client_cert_type = client_cert::CONFIG_TYPE_NONE;
   if (type == shill::kTypeVPN) {
-    if (vpn_provider_type == shill::kProviderOpenVpn)
+    if (vpn_provider_type == shill::kProviderOpenVpn) {
       client_cert_type = client_cert::CONFIG_TYPE_OPENVPN;
-    else
-      client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
+    } else {
+      // L2TP/IPSec only requires a certificate if one is specified in ONC
+      // or one was configured by the UI. Otherwise it is L2TP/IPSec with
+      // PSK and doesn't require a certificate.
+      //
+      // TODO(benchan): Modify shill to specify the authentication type via
+      // the kL2tpIpsecAuthenticationType property, so that Chrome doesn't need
+      // to deduce the authentication type based on the
+      // kL2tpIpsecClientCertIdProperty here (and also in VPNConfigView).
+      if (!vpn_client_cert_id.empty() ||
+          (ui_data && ui_data->certificate_type() != CLIENT_CERT_TYPE_NONE))
+        client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
+    }
   } else if (type == shill::kTypeWifi && security == shill::kSecurity8021x) {
     client_cert_type = client_cert::CONFIG_TYPE_EAP;
   }
@@ -410,8 +426,6 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     // Check certificate properties in kUIDataProperty if configured.
     // Note: Wifi/VPNConfigView set these properties explicitly, in which case
     //   only the TPM must be configured.
-    scoped_ptr<NetworkUIData> ui_data =
-        shill_property_util::GetUIDataFromProperties(service_properties);
     if (ui_data && ui_data->certificate_type() == CLIENT_CERT_TYPE_PATTERN) {
       // User must be logged in to connect to a network requiring a certificate.
       if (!logged_in_ || !cert_loader_) {
@@ -471,6 +485,13 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
             service_path, vpn_provider_type, *provider_properties)) {
       NET_LOG_USER("VPN Requires Credentials", service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
+      return;
+    }
+
+    // If it's L2TP/IPsec PSK, there is no properties to configure, so proceed
+    // to connect.
+    if (client_cert_type == client_cert::CONFIG_TYPE_NONE) {
+      CallShillConnect(service_path);
       return;
     }
   }
