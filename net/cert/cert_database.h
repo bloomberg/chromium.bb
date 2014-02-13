@@ -82,7 +82,13 @@ class NET_EXPORT CertDatabase {
 #endif
 
 #if defined(OS_ANDROID)
-  // On android, the system database is used. When the system notifies the
+  // On Android, the system key store may be replaced with a device-specific
+  // KeyStore used for storing client certificates. When the Java side replaces
+  // the KeyStore used for client certificates, notifies the observers as if a
+  // new client certificate was added.
+  void OnAndroidKeyStoreChanged();
+
+  // On Android, the system database is used. When the system notifies the
   // application that the certificates changed, the observers must be notified.
   void OnAndroidKeyChainChanged();
 #endif
