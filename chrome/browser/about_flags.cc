@@ -1995,13 +1995,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_ANDROID)
   {
-    "app-banners",
-    IDS_FLAGS_DISABLE_APP_BANNERS_NAME,
-    IDS_FLAGS_DISABLE_APP_BANNERS_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kDisableAppBanners)
-  },
-  {
     "enable-fast-text-autosizing",
     IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_NAME,
     IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_DESCRIPTION,
