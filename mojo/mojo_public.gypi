@@ -47,9 +47,30 @@
       },
       'sources': [
         'public/gles2/gles2.h',
+        'public/gles2/gles2_export.h',
         'public/gles2/gles2_private.cc',
         'public/gles2/gles2_private.h',
-        'public/gles2/gles2_export.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_test_support',
+      'type': 'shared_library',
+      'defines': [
+        'MOJO_TEST_SUPPORT_IMPLEMENTATION',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'sources': [
+        'public/tests/test_support.h',
+        'public/tests/test_support_private.cc',
+        'public/tests/test_support_private.h',
+        'public/tests/test_support_export.h',
       ],
     },
     {
@@ -59,6 +80,7 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'mojo_system',
+        'mojo_test_support',
       ],
       'sources': [
         'public/tests/test_utils.cc',

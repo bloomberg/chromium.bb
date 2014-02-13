@@ -68,6 +68,8 @@
         '../testing/gtest.gyp:gtest',
         'mojo_system',
         'mojo_system_impl',
+        'mojo_test_support',
+        'mojo_test_support_impl',
       ],
       'sources': [
         'common/test/run_all_unittests.cc',
@@ -80,6 +82,8 @@
         '../base/base.gyp:test_support_base',
         'mojo_system',
         'mojo_system_impl',
+        'mojo_test_support',
+        'mojo_test_support_impl',
       ],
       'sources': [
         'common/test/run_all_perftests.cc',
@@ -208,6 +212,17 @@
         'gles2/gles2_support_impl.h',
         'gles2/gles2_context.cc',
         'gles2/gles2_context.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_test_support_impl',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'common/test/test_support_impl.cc',
+        'common/test/test_support_impl.h',
       ],
     },
     {

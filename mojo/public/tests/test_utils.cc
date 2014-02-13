@@ -4,8 +4,8 @@
 
 #include "mojo/public/tests/test_utils.h"
 
-#include "base/test/perf_log.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojo/public/tests/test_support.h"
 
 namespace mojo {
 namespace test {
@@ -82,9 +82,9 @@ void IterateAndReportPerf(const char* test_name,
     end_time = GetTimeTicksNow();
   } while (end_time - start_time < kPerftestTimeMicroseconds);
 
-  base::LogPerfResult(test_name,
-                      1000000.0 * iterations / (end_time - start_time),
-                      "iterations/second");
+  MojoTestSupportLogPerfResult(test_name,
+                               1000000.0 * iterations / (end_time - start_time),
+                               "iterations/second");
 }
 
 }  // namespace test
