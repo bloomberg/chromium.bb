@@ -308,6 +308,7 @@ WebContentsImpl::WebContentsImpl(
       notify_disconnection_(false),
       dialog_manager_(NULL),
       is_showing_before_unload_dialog_(false),
+      last_active_time_(base::TimeTicks::Now()),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
@@ -901,8 +902,8 @@ void WebContentsImpl::NotifyNavigationStateChanged(unsigned changed_flags) {
     delegate_->NavigationStateChanged(this, changed_flags);
 }
 
-base::TimeTicks WebContentsImpl::GetLastSelectedTime() const {
-  return last_selected_time_;
+base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
+  return last_active_time_;
 }
 
 void WebContentsImpl::WasShown() {
@@ -916,7 +917,7 @@ void WebContentsImpl::WasShown() {
 #endif
   }
 
-  last_selected_time_ = base::TimeTicks::Now();
+  last_active_time_ = base::TimeTicks::Now();
 
   // The resize rect might have changed while this was inactive -- send the new
   // one to make sure it's up to date.

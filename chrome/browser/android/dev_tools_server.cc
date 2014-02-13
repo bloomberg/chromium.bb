@@ -86,7 +86,7 @@ class TargetBase : public content::DevToolsTarget {
       : title_(base::UTF16ToUTF8(web_contents->GetTitle())),
         url_(web_contents->GetURL()),
         favicon_url_(GetFaviconURL(web_contents)),
-        last_activity_time_(web_contents->GetLastSelectedTime()) {
+        last_activity_time_(web_contents->GetLastActiveTime()) {
   }
 
   TargetBase(const base::string16& title, const GURL& url)

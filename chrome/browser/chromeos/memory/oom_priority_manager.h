@@ -78,7 +78,7 @@ class OomPriorityManager : public content::NotificationObserver,
     bool is_pinned;
     bool is_selected;  // selected in the currently active browser window
     bool is_discarded;
-    base::TimeTicks last_selected;
+    base::TimeTicks last_active;
     base::ProcessHandle renderer_handle;
     base::string16 title;
     int64 tab_contents_id;  // unique ID per WebContents

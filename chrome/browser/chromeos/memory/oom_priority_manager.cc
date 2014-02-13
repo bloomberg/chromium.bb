@@ -449,8 +449,8 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
   // for beforeUnload handlers, which are likely to present a dialog asking
   // if the user wants to discard state.  crbug.com/123049
 
-  // Being more recently selected is more important.
-  return first.last_selected > second.last_selected;
+  // Being more recently active is more important.
+  return first.last_active > second.last_active;
 }
 
 void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
@@ -578,7 +578,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);
-        stats.last_selected = contents->GetLastSelectedTime();
+        stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromWebContents(contents);

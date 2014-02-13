@@ -233,7 +233,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual base::TerminationStatus GetCrashedStatus() const OVERRIDE;
   virtual bool IsBeingDestroyed() const OVERRIDE;
   virtual void NotifyNavigationStateChanged(unsigned changed_flags) OVERRIDE;
-  virtual base::TimeTicks GetLastSelectedTime() const OVERRIDE;
+  virtual base::TimeTicks GetLastActiveTime() const OVERRIDE;
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
@@ -626,6 +626,7 @@ class CONTENT_EXPORT WebContentsImpl
                            CrossSiteCantPreemptAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, PendingContents);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FrameTreeShape);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, GetLastActiveTime);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
@@ -988,8 +989,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Settings that get passed to the renderer process.
   RendererPreferences renderer_preferences_;
 
-  // The time that this tab was last selected.
-  base::TimeTicks last_selected_time_;
+  // The time that this WebContents was last made active. The initial value is
+  // the WebContents creation time.
+  base::TimeTicks last_active_time_;
 
   // See description above setter.
   bool closed_by_user_gesture_;

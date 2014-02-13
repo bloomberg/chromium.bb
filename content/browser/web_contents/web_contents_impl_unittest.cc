@@ -2216,4 +2216,19 @@ TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 }
 
+// Tests that GetLastActiveTime starts with a real, non-zero time and updates
+// on activity.
+TEST_F(WebContentsImplTest, GetLastActiveTime) {
+  // The WebContents starts with a valid creation time.
+  EXPECT_FALSE(contents()->GetLastActiveTime().is_null());
+
+  // Reset the last active time to a known-bad value.
+  contents()->last_active_time_ = base::TimeTicks();
+  ASSERT_TRUE(contents()->GetLastActiveTime().is_null());
+
+  // Simulate activating the WebContents. The active time should update.
+  contents()->WasShown();
+  EXPECT_FALSE(contents()->GetLastActiveTime().is_null());
+}
+
 }  // namespace content

@@ -72,7 +72,7 @@ Target::Target(WebContents* web_contents) {
   description_ = GetViewDescription(web_contents);
   title_ = base::UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
-  last_activity_time_ = web_contents->GetLastSelectedTime();
+  last_activity_time_ = web_contents->GetLastActiveTime();
 }
 
 // Delegate implementation for the devtools http handler for WebView. A new

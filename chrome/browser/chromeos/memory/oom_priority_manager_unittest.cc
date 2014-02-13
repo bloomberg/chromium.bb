@@ -62,21 +62,21 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     OomPriorityManager::TabStats stats;
-    stats.last_selected = now - base::TimeDelta::FromSeconds(10);
+    stats.last_active = now - base::TimeDelta::FromSeconds(10);
     stats.renderer_handle = kRecent;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.last_selected = now - base::TimeDelta::FromMinutes(15);
+    stats.last_active = now - base::TimeDelta::FromMinutes(15);
     stats.renderer_handle = kOld;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.last_selected = now - base::TimeDelta::FromDays(365);
+    stats.last_active = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kReallyOld;
     test_list.push_back(stats);
   }
@@ -84,7 +84,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   {
     OomPriorityManager::TabStats stats;
     stats.is_pinned = true;
-    stats.last_selected = now - base::TimeDelta::FromDays(365);
+    stats.last_active = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kOldButPinned;
     test_list.push_back(stats);
   }
