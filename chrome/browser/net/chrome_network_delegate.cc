@@ -538,7 +538,10 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
       request, bytes_read);
 
 #if defined(ENABLE_TASK_MANAGER)
-  TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+  // This is not completely accurate, but as a first approximation ignore
+  // requests that are served from the cache. See bug 330931 for more info.
+  if (!request.was_cached())
+    TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
