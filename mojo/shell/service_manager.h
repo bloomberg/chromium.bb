@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_SERVICE_CONNECTOR_H_
-#define MOJO_SHELL_SERVICE_CONNECTOR_H_
+#ifndef MOJO_SHELL_service_manager_H_
+#define MOJO_SHELL_service_manager_H_
 
 #include <map>
 
@@ -16,7 +16,7 @@
 namespace mojo {
 namespace shell {
 
-class ServiceConnector {
+class ServiceManager {
  public:
   // Interface to allowing default loading behavior to be overridden for a
   // specific url.
@@ -32,16 +32,16 @@ class ServiceConnector {
   // API for testing.
   class TestAPI {
    private:
-    friend class ServiceConnectorTest;
-    explicit TestAPI(ServiceConnector* connector) : connector_(connector) {}
+    friend class ServiceManagerTest;
+    explicit TestAPI(ServiceManager* manager) : manager_(manager) {}
     // Returns true if there is a ServiceFactory for this URL.
     bool HasFactoryForURL(const GURL& url) const;
 
-    ServiceConnector* connector_;
+    ServiceManager* manager_;
   };
 
-  ServiceConnector();
-  ~ServiceConnector();
+  ServiceManager();
+  ~ServiceManager();
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   // Does not take ownership of |loader|.
@@ -65,10 +65,10 @@ class ServiceConnector {
   ServiceFactoryMap url_to_service_factory_;
   typedef std::map<GURL, Loader*> LoaderMap;
   LoaderMap url_to_loader_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceConnector);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_SERVICE_CONNECTOR_H_
+#endif  // MOJO_SHELL_service_manager_H_

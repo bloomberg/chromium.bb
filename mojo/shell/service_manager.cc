@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/service_connector.h"
+#include "mojo/shell/service_manager.h"
 
 #include "base/logging.h"
 #include "mojo/public/bindings/allocation_scope.h"
@@ -13,14 +13,14 @@
 namespace mojo {
 namespace shell {
 
-class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
+class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
  public:
-  ServiceFactory(ServiceConnector* connector, const GURL& url)
-      : connector_(connector),
+  ServiceFactory(ServiceManager* manager, const GURL& url)
+      : manager_(manager),
         url_(url) {
     InterfacePipe<Shell> pipe;
     shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
-    connector_->GetLoaderForURL(url)->Load(url, pipe.handle_to_self.Pass());
+    manager_->GetLoaderForURL(url)->Load(url, pipe.handle_to_self.Pass());
   }
   virtual ~ServiceFactory() {}
 
@@ -33,34 +33,34 @@ class ServiceConnector::ServiceFactory : public Shell, public ErrorHandler {
 
   virtual void Connect(const String& url,
                        ScopedMessagePipeHandle client_pipe) MOJO_OVERRIDE {
-    connector_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
+    manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
   }
 
   virtual void OnError() MOJO_OVERRIDE {
-    connector_->RemoveServiceFactory(this);
+    manager_->RemoveServiceFactory(this);
   }
 
   const GURL& url() const { return url_; }
 
  private:
-  ServiceConnector* const connector_;
+  ServiceManager* const manager_;
   const GURL url_;
   RemotePtr<ShellClient> shell_client_;
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
 
-ServiceConnector::Loader::Loader() {}
-ServiceConnector::Loader::~Loader() {}
+ServiceManager::Loader::Loader() {}
+ServiceManager::Loader::~Loader() {}
 
-bool ServiceConnector::TestAPI::HasFactoryForURL(const GURL& url) const {
-  return connector_->url_to_service_factory_.find(url) !=
-      connector_->url_to_service_factory_.end();
+bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
+  return manager_->url_to_service_factory_.find(url) !=
+      manager_->url_to_service_factory_.end();
 }
 
-ServiceConnector::ServiceConnector() : default_loader_(NULL) {
+ServiceManager::ServiceManager() : default_loader_(NULL) {
 }
 
-ServiceConnector::~ServiceConnector() {
+ServiceManager::~ServiceManager() {
   for (ServiceFactoryMap::iterator it = url_to_service_factory_.begin();
        it != url_to_service_factory_.end(); ++it) {
     delete it->second;
@@ -68,12 +68,12 @@ ServiceConnector::~ServiceConnector() {
   url_to_service_factory_.clear();
 }
 
-void ServiceConnector::SetLoaderForURL(Loader* loader, const GURL& gurl) {
+void ServiceManager::SetLoaderForURL(Loader* loader, const GURL& gurl) {
   DCHECK(url_to_loader_.find(gurl) == url_to_loader_.end());
   url_to_loader_[gurl] = loader;
 }
 
-ServiceConnector::Loader* ServiceConnector::GetLoaderForURL(const GURL& gurl) {
+ServiceManager::Loader* ServiceManager::GetLoaderForURL(const GURL& gurl) {
   LoaderMap::const_iterator it = url_to_loader_.find(gurl);
   if (it != url_to_loader_.end())
     return it->second;
@@ -81,7 +81,7 @@ ServiceConnector::Loader* ServiceConnector::GetLoaderForURL(const GURL& gurl) {
   return default_loader_;
 }
 
-void ServiceConnector::Connect(const GURL& url,
+void ServiceManager::Connect(const GURL& url,
                                ScopedMessagePipeHandle client_handle) {
   ServiceFactoryMap::const_iterator service_it =
       url_to_service_factory_.find(url);
@@ -95,7 +95,7 @@ void ServiceConnector::Connect(const GURL& url,
   service_factory->ConnectToClient(client_handle.Pass());
 }
 
-void ServiceConnector::RemoveServiceFactory(ServiceFactory* service_factory) {
+void ServiceManager::RemoveServiceFactory(ServiceFactory* service_factory) {
   ServiceFactoryMap::iterator it =
       url_to_service_factory_.find(service_factory->url());
   DCHECK(it != url_to_service_factory_.end());

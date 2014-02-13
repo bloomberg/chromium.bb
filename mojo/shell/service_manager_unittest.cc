@@ -7,7 +7,7 @@
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/shell/application.h"
 #include "mojo/public/utility/run_loop.h"
-#include "mojo/shell/service_connector.h"
+#include "mojo/shell/service_manager.h"
 #include "mojom/shell.h"
 #include "mojom/test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,27 +73,27 @@ class TestClientImpl : public TestClient {
 };
 }  // namespace
 
-class ServiceConnectorTest : public testing::Test,
-                             public ServiceConnector::Loader {
+class ServiceManagerTest : public testing::Test,
+                             public ServiceManager::Loader {
  public:
-  ServiceConnectorTest() {}
+  ServiceManagerTest() {}
 
-  virtual ~ServiceConnectorTest() {}
+  virtual ~ServiceManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     GURL test_url(kTestURLString);
-    service_connector_.reset(new ServiceConnector);
-    service_connector_->SetLoaderForURL(this, test_url);
+    service_manager_.reset(new ServiceManager);
+    service_manager_->SetLoaderForURL(this, test_url);
 
     InterfacePipe<TestService, AnyInterface> pipe;
     test_client_.reset(new TestClientImpl(pipe.handle_to_self.Pass()));
-    service_connector_->Connect(test_url, pipe.handle_to_peer.Pass());
+    service_manager_->Connect(test_url, pipe.handle_to_peer.Pass());
   }
 
   virtual void TearDown() OVERRIDE {
     test_client_.reset(NULL);
     test_app_.reset(NULL);
-    service_connector_.reset(NULL);
+    service_manager_.reset(NULL);
   }
 
   virtual void Load(const GURL& url,
@@ -104,8 +104,8 @@ class ServiceConnectorTest : public testing::Test,
   }
 
   bool HasFactoryForTestURL() {
-    ServiceConnector::TestAPI connector_test_api(service_connector_.get());
-    return connector_test_api.HasFactoryForURL(GURL(kTestURLString));
+    ServiceManager::TestAPI manager_test_api(service_manager_.get());
+    return manager_test_api.HasFactoryForURL(GURL(kTestURLString));
   }
 
  protected:
@@ -114,17 +114,17 @@ class ServiceConnectorTest : public testing::Test,
   TestContext context_;
   scoped_ptr<Application> test_app_;
   scoped_ptr<TestClientImpl> test_client_;
-  scoped_ptr<ServiceConnector> service_connector_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceConnectorTest);
+  scoped_ptr<ServiceManager> service_manager_;
+  DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
 };
 
-TEST_F(ServiceConnectorTest, Basic) {
+TEST_F(ServiceManagerTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
   EXPECT_EQ(std::string("test"), context_.last_test_string);
 }
 
-TEST_F(ServiceConnectorTest, ClientError) {
+TEST_F(ServiceManagerTest, ClientError) {
   test_client_->Test("test");
   EXPECT_TRUE(HasFactoryForTestURL());
   loop_.Run();

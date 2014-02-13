@@ -17,7 +17,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
-#include "mojo/shell/service_connector.h"
+#include "mojo/shell/service_manager.h"
 #include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;
@@ -32,7 +32,7 @@ LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
 LazyInstance<scoped_ptr<shell::Context> > g_context =
     LAZY_INSTANCE_INITIALIZER;
 
-class NativeViewportServiceLoader : public shell::ServiceConnector::Loader {
+class NativeViewportServiceLoader : public shell::ServiceManager::Loader {
  public:
   NativeViewportServiceLoader() {}
   virtual ~NativeViewportServiceLoader() {}
@@ -92,7 +92,7 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   shell::Context* shell_context = new shell::Context();
   shell_context->set_activity(activity.obj());
   g_viewport_service_loader.Get().reset(new NativeViewportServiceLoader());
-  shell_context->service_connector()->SetLoaderForURL(
+  shell_context->service_manager()->SetLoaderForURL(
       g_viewport_service_loader.Get().get(),
       GURL("mojo:mojo_native_viewport_service"));
 

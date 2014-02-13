@@ -7,7 +7,7 @@
 
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/loader.h"
-#include "mojo/shell/service_connector.h"
+#include "mojo/shell/service_manager.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
 
@@ -28,7 +28,7 @@ class Context {
   TaskRunners* task_runners() { return &task_runners_; }
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
-  ServiceConnector* service_connector() { return &service_connector_; }
+  ServiceManager* service_manager() { return &service_manager_; }
   KeepAliveCounter* keep_alive_counter() { return &keep_alive_counter_; }
 
 #if defined(OS_ANDROID)
@@ -40,7 +40,7 @@ class Context {
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;
-  ServiceConnector service_connector_;
+  ServiceManager service_manager_;
   scoped_ptr<DynamicServiceLoader> dynamic_service_loader_;
 
 #if defined(OS_ANDROID)
