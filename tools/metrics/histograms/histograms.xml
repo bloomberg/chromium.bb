@@ -5500,6 +5500,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.CheckinRequestStatus" enum="GCMCheckinRequestStatus">
+  <summary>Status code of the outcome of a GCM checkin request.</summary>
+</histogram>
+
 <histogram name="GCM.ConnectionDisconnectErrorCode" enum="NetErrorCodes">
   <summary>Net error results from GCM disconnect events.</summary>
 </histogram>
@@ -26431,6 +26435,16 @@ other types of suffix sets.
   <int value="6" label="ListAccounts call failed"/>
   <int value="7" label="No restore needed, fresh cookies found"/>
   <int value="8" label="Overflow"/>
+</enum>
+
+<enum name="GCMCheckinRequestStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="URL fetching failed"/>
+  <int value="2" label="HTTP bad request"/>
+  <int value="3" label="HTTP unauthorized"/>
+  <int value="4" label="HTTP not OK"/>
+  <int value="5" label="Response parsing failed"/>
+  <int value="6" label="Zero ID or token"/>
 </enum>
 
 <enum name="GCMRegistrationRequestStatus" type="int">

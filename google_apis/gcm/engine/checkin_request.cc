@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -19,6 +20,30 @@ const char kCheckinURL[] = "https://android.clients.google.com/checkin";
 const char kRequestContentType[] = "application/x-protobuf";
 const int kRequestVersionValue = 2;
 const int kDefaultUserSerialNumber = 0;
+
+// This enum is also used in an UMA histogram (GCMCheckinRequestStatus
+// enum defined in tools/metrics/histograms/histogram.xml). Hence the entries
+// here shouldn't be deleted or re-ordered and new ones should be added to
+// the end.
+enum CheckinRequestStatus {
+  SUCCESS,                    // Checkin completed successfully.
+  URL_FETCHING_FAILED,        // URL fetching failed.
+  HTTP_BAD_REQUEST,           // The request was malformed.
+  HTTP_UNAUTHORIZED,          // The security token didn't match the android id.
+  HTTP_NOT_OK,                // HTTP status was not OK.
+  RESPONSE_PARSING_FAILED,    // Check in response parsing failed.
+  ZERO_ID_OR_TOKEN,           // Either returned android id or security token
+                              // was zero.
+  // NOTE: always keep this entry at the end. Add new status types only
+  // immediately above this line. Make sure to update the corresponding
+  // histogram enum accordingly.
+  STATUS_COUNT
+};
+
+void RecordCheckinStatusToUMA(CheckinRequestStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.CheckinRequestStatus", status, STATUS_COUNT);
+}
+
 }  // namespace
 
 CheckinRequest::CheckinRequest(
@@ -93,6 +118,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   checkin_proto::AndroidCheckinResponse response_proto;
   if (!source->GetStatus().is_success()) {
     LOG(ERROR) << "Failed to get checkin response. Fetcher failed. Retrying.";
+    RecordCheckinStatusToUMA(URL_FETCHING_FAILED);
     RetryWithBackoff(true);
     return;
   }
@@ -105,6 +131,8 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     // UNAUTHORIZED indicates that security token didn't match the android id.
     LOG(ERROR) << "No point retrying the checkin with status: "
                << response_status << ". Checkin failed.";
+    RecordCheckinStatusToUMA(response_status == net::HTTP_BAD_REQUEST ?
+        HTTP_BAD_REQUEST : HTTP_UNAUTHORIZED);
     callback_.Run(0,0);
     return;
   }
@@ -114,6 +142,8 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       !response_proto.ParseFromString(response_string)) {
     LOG(ERROR) << "Failed to get checkin response. HTTP Status: "
                << response_status << ". Retrying.";
+    RecordCheckinStatusToUMA(response_status != net::HTTP_OK ?
+        HTTP_NOT_OK : RESPONSE_PARSING_FAILED);
     RetryWithBackoff(true);
     return;
   }
@@ -123,10 +153,12 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       response_proto.android_id() == 0 ||
       response_proto.security_token() == 0) {
     LOG(ERROR) << "Android ID or security token is 0. Retrying.";
+    RecordCheckinStatusToUMA(ZERO_ID_OR_TOKEN);
     RetryWithBackoff(true);
     return;
   }
 
+  RecordCheckinStatusToUMA(SUCCESS);
   callback_.Run(response_proto.android_id(), response_proto.security_token());
 }
 

@@ -73,6 +73,11 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
          status == RegistrationRequest::DEVICE_REGISTRATION_ERROR;
 }
 
+void RecordRegistrationStatusToUMA(RegistrationRequest::Status status) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.RegistrationRequestStatus", status,
+                            RegistrationRequest::STATUS_COUNT);
+}
+
 }  // namespace
 
 RegistrationRequest::RequestInfo::RequestInfo(
@@ -187,6 +192,7 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   if (token_pos != std::string::npos) {
     std::string token =
         response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+    RecordRegistrationStatusToUMA(SUCCESS);
     callback_.Run(SUCCESS, token);
     return;
   }
@@ -198,8 +204,7 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
         response.substr(error_pos + arraysize(kErrorPrefix) - 1);
     status = GetStatusFromError(error);
   }
-  UMA_HISTOGRAM_ENUMERATION("GCM.RegistrationRequestStatus", status,
-                            RegistrationRequest::STATUS_COUNT);
+  RecordRegistrationStatusToUMA(status);
 
   if (ShouldRetryWithStatus(status)) {
     RetryWithBackoff(true);
