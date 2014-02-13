@@ -7,8 +7,10 @@
 """Creates a TOC file from a Java jar.
 
 The TOC file contains the non-package API of the jar. This includes all
-public/protected classes/functions/members and the values of static final
-variables. Some other information (major/minor javac version) is also included.
+public/protected/package classes/functions/members and the values of static
+final variables (members with package access are kept because in some cases we
+have multiple libraries with the same package, particularly test+non-test). Some
+other information (major/minor javac version) is also included.
 
 This TOC file then can be used to determine if a dependent library should be
 rebuilt when this jar changes. I.e. any change to the jar that would require a
@@ -38,7 +40,7 @@ def GetClassesInZipFile(zip_file):
 def CallJavap(classpath, classes):
   javap_cmd = [
       'javap',
-      '-protected',  # In reality both public & protected.
+      '-package',  # Show public/protected/package.
       # -verbose is required to get constant values (which can be inlined in
       # dependents).
       '-verbose',
