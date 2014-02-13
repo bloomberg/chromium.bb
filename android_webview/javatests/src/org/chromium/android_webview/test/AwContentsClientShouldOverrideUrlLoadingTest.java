@@ -31,60 +31,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
 
-    private static class TestAwContentsClient
-            extends org.chromium.android_webview.test.TestAwContentsClient {
-
-        public static class ShouldOverrideUrlLoadingHelper extends CallbackHelper {
-            private String mShouldOverrideUrlLoadingUrl;
-            private String mPreviousShouldOverrideUrlLoadingUrl;
-            private boolean mShouldOverrideUrlLoadingReturnValue = false;
-            void setShouldOverrideUrlLoadingUrl(String url) {
-                mShouldOverrideUrlLoadingUrl = url;
-            }
-            void setPreviousShouldOverrideUrlLoadingUrl(String url) {
-                mPreviousShouldOverrideUrlLoadingUrl = url;
-            }
-            void setShouldOverrideUrlLoadingReturnValue(boolean value) {
-                mShouldOverrideUrlLoadingReturnValue = value;
-            }
-            public String getShouldOverrideUrlLoadingUrl() {
-                assert getCallCount() > 0;
-                return mShouldOverrideUrlLoadingUrl;
-            }
-            public String getPreviousShouldOverrideUrlLoadingUrl() {
-                assert getCallCount() > 1;
-                return mPreviousShouldOverrideUrlLoadingUrl;
-            }
-            public boolean getShouldOverrideUrlLoadingReturnValue() {
-                return mShouldOverrideUrlLoadingReturnValue;
-            }
-            public void notifyCalled(String url) {
-                mPreviousShouldOverrideUrlLoadingUrl = mShouldOverrideUrlLoadingUrl;
-                mShouldOverrideUrlLoadingUrl = url;
-                notifyCalled();
-            }
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(String url) {
-            super.shouldOverrideUrlLoading(url);
-            boolean returnValue =
-                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
-            mShouldOverrideUrlLoadingHelper.notifyCalled(url);
-            return returnValue;
-        }
-
-        private ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
-
-        public TestAwContentsClient() {
-            mShouldOverrideUrlLoadingHelper = new ShouldOverrideUrlLoadingHelper();
-        }
-
-        public ShouldOverrideUrlLoadingHelper getShouldOverrideUrlLoadingHelper() {
-            return mShouldOverrideUrlLoadingHelper;
-        }
-    }
-
     private TestWebServer mWebServer;
 
     @Override
