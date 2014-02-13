@@ -120,6 +120,21 @@ void ImageResource::switchClientsToRevalidatedResource()
     Resource::switchClientsToRevalidatedResource();
 }
 
+bool ImageResource::isSafeToUnlock() const
+{
+    return !m_image || (m_image->hasOneRef() && m_image->isBitmapImage());
+}
+
+void ImageResource::destroyDecodedDataIfPossible()
+{
+    if (isSafeToUnlock() && !hasClients() && !isLoading()) {
+        m_image = 0;
+        setDecodedSize(0);
+    } else if (m_image && !errorOccurred()) {
+        m_image->destroyDecodedData(true);
+    }
+}
+
 void ImageResource::allClientsRemoved()
 {
     m_pendingContainerSizeRequests.clear();
@@ -270,7 +285,7 @@ void ImageResource::notifyObservers(const IntRect* changeRect)
 
 void ImageResource::clear()
 {
-    destroyDecodedData();
+    prune();
     clearImage();
     m_pendingContainerSizeRequests.clear();
     setEncodedSize(0);
@@ -386,20 +401,6 @@ void ImageResource::responseReceived(const ResourceResponse& response)
         }
     }
     Resource::responseReceived(response);
-}
-
-void ImageResource::destroyDecodedData()
-{
-    bool canDeleteImage = !m_image || (m_image->hasOneRef() && m_image->isBitmapImage());
-    if (isSafeToMakePurgeable() && canDeleteImage && !isLoading()) {
-        // Image refs the data buffer so we should not make it purgeable while the image is alive.
-        // Invoking addClient() will reconstruct the image object.
-        m_image = 0;
-        setDecodedSize(0);
-        makePurgeable(true);
-    } else if (m_image && !errorOccurred()) {
-        m_image->destroyDecodedData(true);
-    }
 }
 
 void ImageResource::decodedSizeChanged(const WebCore::Image* image, int delta)

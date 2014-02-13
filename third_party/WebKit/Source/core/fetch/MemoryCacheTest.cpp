@@ -57,7 +57,8 @@ public:
             setDecodedSize(this->size());
         }
 
-        virtual void destroyDecodedData()
+    protected:
+        virtual void destroyDecodedDataIfPossible() OVERRIDE
         {
             setDecodedSize(0);
         }

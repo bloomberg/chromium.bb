@@ -148,7 +148,7 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
         // FIXME: should we do something else in the case of a purged
         // resource that informs the user why there is no data in the
         // inspector?
-        if (!cachedResource->makePurgeable(false))
+        if (!cachedResource->lock())
             return false;
     }
 

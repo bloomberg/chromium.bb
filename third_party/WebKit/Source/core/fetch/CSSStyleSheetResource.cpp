@@ -108,6 +108,22 @@ void CSSStyleSheetResource::checkNotify()
     m_decodedSheetText = String();
 }
 
+bool CSSStyleSheetResource::isSafeToUnlock() const
+{
+    return m_parsedStyleSheetCache;
+}
+
+void CSSStyleSheetResource::destroyDecodedDataIfPossible()
+{
+    if (!isSafeToUnlock())
+        return;
+
+    m_parsedStyleSheetCache->removedFromMemoryCache();
+    m_parsedStyleSheetCache.clear();
+
+    setDecodedSize(0);
+}
+
 bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const
 {
     if (errorOccurred())
@@ -130,20 +146,6 @@ bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIME
     if (!enforceMIMEType)
         return true;
     return typeOK;
-}
-
-void CSSStyleSheetResource::destroyDecodedData()
-{
-    if (!m_parsedStyleSheetCache)
-        return;
-
-    m_parsedStyleSheetCache->removedFromMemoryCache();
-    m_parsedStyleSheetCache.clear();
-
-    setDecodedSize(0);
-
-    if (isSafeToMakePurgeable())
-        makePurgeable(true);
 }
 
 PassRefPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
