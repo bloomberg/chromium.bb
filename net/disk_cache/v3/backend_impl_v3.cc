@@ -28,11 +28,11 @@
 #include "net/disk_cache/storage_block-inl.h"
 #include "net/disk_cache/v3/disk_format_v3.h"
 #include "net/disk_cache/v3/entry_impl_v3.h"
+#include "net/disk_cache/v3/histogram_macros.h"
 #include "net/disk_cache/v3/index_table.h"
 
-// This has to be defined before including histogram_macros.h from this file.
-#define NET_DISK_CACHE_BACKEND_IMPL_CC_
-#include "net/disk_cache/v3/histogram_macros.h"
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ this
 
 using base::Time;
 using base::TimeDelta;

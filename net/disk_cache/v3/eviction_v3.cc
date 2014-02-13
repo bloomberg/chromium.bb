@@ -40,6 +40,9 @@
 #include "net/disk_cache/v3/entry_impl_v3.h"
 #include "net/disk_cache/v3/histogram_macros.h"
 
+// Define CACHE_UMA_BACKEND_IMPL_OBJ to be a disk_cache::BackendImpl* in order
+// to use the CACHE_UMA histogram macro.
+#define CACHE_UMA_BACKEND_IMPL_OBJ backend_
 
 using base::Time;
 using base::TimeTicks;

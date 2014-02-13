@@ -13,6 +13,9 @@
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/histogram_macros.h"
 
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ backend_
+
 namespace disk_cache {
 
 BackendIO::BackendIO(InFlightIO* controller, BackendImpl* backend,

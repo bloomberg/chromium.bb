@@ -84,12 +84,6 @@
 #define CACHE_HISTOGRAM_CACHE_ERROR(name, sample) \
     CACHE_HISTOGRAM_ENUMERATION(name, sample, 50)
 
-#ifdef NET_DISK_CACHE_BACKEND_IMPL_CC_
-#define BACKEND_OBJ this
-#else
-#define BACKEND_OBJ backend_
-#endif
-
 // Generates a UMA histogram of the given type, generating the proper name for
 // it (asking backend_->HistogramName), and adding the provided sample.
 // For example, to generate a regualar UMA_HISTOGRAM_COUNTS, this macro would
@@ -101,8 +95,9 @@
 //  UMA_HISTOGRAM_COUNTS("DiskCache.2.MyExperiment_530", 55);
 //
 #define CACHE_UMA(type, name, experiment, sample) {\
-    const std::string my_name = BACKEND_OBJ->HistogramName(name, experiment);\
-    switch (BACKEND_OBJ->cache_type()) {\
+    const std::string my_name =\
+        CACHE_UMA_BACKEND_IMPL_OBJ->HistogramName(name, experiment);\
+    switch (CACHE_UMA_BACKEND_IMPL_OBJ->cache_type()) {\
       case net::DISK_CACHE:\
         CACHE_HISTOGRAM_##type(my_name.data(), sample);\
         break;\

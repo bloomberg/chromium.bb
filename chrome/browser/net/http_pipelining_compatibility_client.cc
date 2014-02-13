@@ -366,6 +366,8 @@ void HttpPipeliningCompatibilityClient::OnRequestFinished(
     int request_id, internal::PipelineTestRequest::Status status) {
   // The CACHE_HISTOGRAM_* macros are used, because they allow dynamic metric
   // names.
+  // TODO(gavinp): Clean up this dependency by moving the needed functionality
+  // into base/.
   CACHE_HISTOGRAM_ENUMERATION(GetMetricName(request_id, "Status"),
                               status,
                               internal::PipelineTestRequest::STATUS_MAX);

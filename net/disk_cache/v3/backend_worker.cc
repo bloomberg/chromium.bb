@@ -26,10 +26,10 @@
 #include "net/disk_cache/errors.h"
 #include "net/disk_cache/experiments.h"
 #include "net/disk_cache/file.h"
-
-// This has to be defined before including histogram_macros.h from this file.
-#define NET_DISK_CACHE_BACKEND_IMPL_CC_
 #include "net/disk_cache/histogram_macros.h"
+
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ this
 
 using base::Time;
 using base::TimeDelta;

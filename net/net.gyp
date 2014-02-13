@@ -457,6 +457,7 @@
         'disk_cache/v3/entry_impl_v3.h',
         'disk_cache/v3/eviction_v3.cc',
         'disk_cache/v3/eviction_v3.h',
+        'disk_cache/v3/histogram_macros.h',
         'disk_cache/v3/index_table.cc',
         'disk_cache/v3/index_table.h',
         'dns/address_sorter.h',

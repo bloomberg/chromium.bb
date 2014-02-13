@@ -41,6 +41,9 @@
 #include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/trace.h"
 
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ backend_
+
 using base::Time;
 using base::TimeTicks;
 

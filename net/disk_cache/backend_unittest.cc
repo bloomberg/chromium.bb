@@ -35,6 +35,9 @@
 #include "base/win/scoped_handle.h"
 #endif
 
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ backend_
+
 using base::Time;
 
 namespace {

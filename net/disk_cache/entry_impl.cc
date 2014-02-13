@@ -18,6 +18,9 @@
 #include "net/disk_cache/net_log_parameters.h"
 #include "net/disk_cache/sparse_control.h"
 
+// Provide a BackendImpl object to macros from histogram_macros.h.
+#define CACHE_UMA_BACKEND_IMPL_OBJ backend_
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
