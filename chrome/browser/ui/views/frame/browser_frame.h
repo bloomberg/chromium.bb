@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/prefs/pref_member.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "ui/views/context_menu_controller.h"
@@ -74,6 +75,9 @@ class BrowserFrame
   // Returns the NonClientFrameView of this frame.
   views::View* GetFrameView() const;
 
+  // Returns |true| if we should use the custom frame.
+  bool UseCustomFrame() const;
+
   // Overridden from views::Widget:
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
@@ -102,6 +106,9 @@ class BrowserFrame
   ui::MenuModel* GetSystemMenuModel();
 
  private:
+  // Called when the preference changes.
+  void OnUseCustomChromeFrameChanged();
+
   NativeBrowserFrame* native_browser_frame_;
 
   // A weak reference to the root view associated with the window. We save a
@@ -127,6 +134,9 @@ class BrowserFrame
   // externally).
   scoped_ptr<ui::ThemeProvider> owned_theme_provider_;
   ui::ThemeProvider* theme_provider_;
+
+  // Whether the custom Chrome frame preference is set.
+  BooleanPrefMember use_custom_frame_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

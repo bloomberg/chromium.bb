@@ -7,10 +7,19 @@
 
 class PrefRegistrySimple;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chrome {
 
 // Register local state preferences specific to BrowserView.
-void RegisterBrowserViewPrefs(PrefRegistrySimple* registry);
+void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry);
+
+// Register profile-specific preferences specific to BrowserView. These
+// preferences may be synced, depending on the pref's |sync_status| parameter.
+void RegisterBrowserViewProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace chrome
 

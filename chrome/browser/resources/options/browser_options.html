@@ -83,7 +83,7 @@
         </span>
       </span>
     </div>
-<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+<if expr="is_posix and not pp_ifdef('chromeos') and not is_macosx">
     <div class="checkbox"><label>
         <input id="show-window-decorations" type="checkbox"
             pref="browser.custom_chrome_frame" metric="Options_CustomFrame"

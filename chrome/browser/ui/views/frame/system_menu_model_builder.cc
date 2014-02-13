@@ -64,6 +64,11 @@ void SystemMenuModelBuilder::BuildSystemMenuForBrowserWindow(
     model->AddSeparator(ui::NORMAL_SEPARATOR);
     model->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   }
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  model->AddSeparator(ui::NORMAL_SEPARATOR);
+  model->AddCheckItemWithStringId(IDC_USE_SYSTEM_TITLE_BAR,
+                                  IDS_SHOW_WINDOW_DECORATIONS_MENU);
+#endif
   AppendTeleportMenu(model);
   // If it's a regular browser window with tabs, we don't add any more items,
   // since it already has menus (Page, Chrome).

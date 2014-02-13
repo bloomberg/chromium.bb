@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -596,7 +594,7 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
 bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Do not show the custom title bar if the system title bar option is enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
+  if (!frame()->UseCustomFrame())
     return false;
 #endif
 

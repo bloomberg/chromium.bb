@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -82,6 +83,12 @@ const gfx::FontList& BrowserFrame::GetTitleFontList() {
 }
 
 void BrowserFrame::InitBrowserFrame() {
+  use_custom_frame_pref_.Init(
+      prefs::kUseCustomChromeFrame,
+      browser_view_->browser()->profile()->GetPrefs(),
+      base::Bind(&BrowserFrame::OnUseCustomChromeFrameChanged,
+                 base::Unretained(this)));
+
   native_browser_frame_ =
       NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);
   views::Widget::InitParams params;
@@ -131,8 +138,9 @@ void BrowserFrame::InitBrowserFrame() {
   params.wm_role_name = browser_view_->browser()->is_type_tabbed() ?
       std::string(kX11WindowRoleBrowser) : std::string(kX11WindowRolePopup);
 
-  params.remove_standard_frame =
-      !command_line.HasSwitch(switches::kUseSystemTitleBar);
+  params.remove_standard_frame = UseCustomFrame();
+  set_frame_type(UseCustomFrame() ? Widget::FRAME_TYPE_FORCE_CUSTOM
+                                  : Widget::FRAME_TYPE_FORCE_NATIVE);
 #endif  // defined(OS_LINUX)
 
   Init(params);
@@ -170,6 +178,10 @@ void BrowserFrame::UpdateThrobber(bool running) {
 
 views::View* BrowserFrame::GetFrameView() const {
   return browser_frame_view_;
+}
+
+bool BrowserFrame::UseCustomFrame() const {
+  return use_custom_frame_pref_.GetValue();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -279,3 +291,10 @@ bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
   return !IsMaximized();
 }
 #endif  // OS_WIN
+
+void BrowserFrame::OnUseCustomChromeFrameChanged() {
+  // Tell the window manager to add or remove system borders.
+  set_frame_type(UseCustomFrame() ? Widget::FRAME_TYPE_FORCE_CUSTOM
+                                  : Widget::FRAME_TYPE_FORCE_NATIVE);
+  FrameTypeChanged();
+}

@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 namespace {
 
@@ -19,11 +20,23 @@ const int kDefaultHungPluginDetectFrequency = 2000;
 
 namespace chrome {
 
-void RegisterBrowserViewPrefs(PrefRegistrySimple* registry) {
+void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
                                 kDefaultPluginMessageResponseTimeout);
   registry->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
                                 kDefaultHungPluginDetectFrequency);
+}
+
+void RegisterBrowserViewProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // TODO(mgiuca): Decide on this default depending on the window manager. See
+  // BrowserWindowGtk::GetCustomFramePrefDefault.
+  bool custom_frame_default = true;
+
+  registry->RegisterBooleanPref(
+      prefs::kUseCustomChromeFrame,
+      custom_frame_default,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace chrome

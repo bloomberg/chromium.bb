@@ -324,7 +324,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  RegisterBrowserViewPrefs(registry);
+  RegisterBrowserViewLocalPrefs(registry);
   RegisterTabStripLayoutTypePrefs(registry);
 #endif
 }
@@ -452,6 +452,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+  RegisterBrowserViewProfilePrefs(registry);
   RegisterInvertBubbleUserPrefs(registry);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterProfilePrefs(registry);

@@ -474,6 +474,15 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_GTK)
+    case IDC_USE_SYSTEM_TITLE_BAR: {
+      PrefService* prefs = browser_->profile()->GetPrefs();
+      prefs->SetBoolean(prefs::kUseCustomChromeFrame,
+                        !prefs->GetBoolean(prefs::kUseCustomChromeFrame));
+      break;
+    }
+#endif
+
 #if defined(OS_WIN)
     // Windows 8 specific commands.
     case IDC_METRO_SNAP_ENABLE:
@@ -894,6 +903,9 @@ void BrowserCommandController::InitCommandState() {
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_2, true);
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
+#endif
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_GTK)
+  command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR, true);
 #endif
 
   // Page-related commands
