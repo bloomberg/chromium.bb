@@ -127,8 +127,8 @@ cr.define('speech', function() {
       this.setState_(SpeechState.HOTWORD_RECOGNIZING);
     } else {
       this.audioManager_.stop();
+      this.setState_(SpeechState.READY);
     }
-    chrome.send('setSpeechRecognitionState', ['off']);
   };
 
   /**
@@ -158,19 +158,30 @@ cr.define('speech', function() {
   };
 
   /**
-   * Initialize the hotword plugin manager, or do nothing if already
-   * initialization is on.
+   * Changes the availability of the hotword plugin.
+   *
+   * @param {boolean} enabled Whether enabled or not.
    */
-  SpeechManager.prototype.maybeInitializePlugin = function() {
-    if ($('recognizer'))
-      return;
+  SpeechManager.prototype.setHotwordEnabled = function(enabled) {
+    var recognizer = $('recognizer');
+    if (enabled) {
+      if (recognizer)
+        return;
 
-    var pluginManager = new speech.PluginManager(
-        this.onHotwordRecognizerReady_.bind(this),
-        this.onHotwordRecognized_.bind(this));
-    pluginManager.scheduleInitialize(
-        this.audioManager_.getSampleRate(),
-        'chrome://app-list/okgoogle_hotword.config');
+      var pluginManager = new speech.PluginManager(
+          this.onHotwordRecognizerReady_.bind(this),
+          this.onHotwordRecognized_.bind(this));
+      pluginManager.scheduleInitialize(
+          this.audioManager_.getSampleRate(),
+          'chrome://app-list/okgoogle_hotword.config');
+    } else {
+      if (!recognizer)
+        return;
+      document.body.removeChild(recognizer);
+      this.pluginManager_ = null;
+      if (this.state == SpeechState.HOTWORD_RECOGNIZING)
+        this.setState(SpeechState.READY);
+    }
   };
 
   /**

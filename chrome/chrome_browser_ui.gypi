@@ -237,6 +237,8 @@
         'browser/ui/app_list/start_page_observer.h',
         'browser/ui/app_list/start_page_service.cc',
         'browser/ui/app_list/start_page_service.h',
+        'browser/ui/app_list/start_page_service_factory.cc',
+        'browser/ui/app_list/start_page_service_factory.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',

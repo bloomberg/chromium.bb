@@ -230,6 +230,8 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
         };
+        $('hotword-app-list').hidden =
+            !loadTimeData.getBoolean('shouldShowAppListHotword');
       } else {
         $('import-data').onclick = function(event) {
           ImportDataOverlay.show();

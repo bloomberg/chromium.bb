@@ -35,7 +35,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -96,15 +95,10 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
   RegisterForNotifications();
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 
-  // Hotword listening is on by default in ChromeOS right now. Here shouldn't
-  // use the current state in the webui because it will be changed to 'hotword
-  // listening' state from 'ready' after the view is initialized.
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
   speech_ui_.reset(new app_list::SpeechUIModel(
-#if defined(OS_CHROMEOS)
-      app_list::switches::IsVoiceSearchEnabled() ?
-        app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING :
-#endif
-        app_list::SPEECH_RECOGNITION_OFF));
+      service ? service->state() : app_list::SPEECH_RECOGNITION_OFF));
 
 #if defined(GOOGLE_CHROME_BUILD)
   speech_ui_->set_logo(
@@ -113,8 +107,6 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
 #endif
 
   OnProfileChanged();  // sets model_
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
   if (service)
     service->AddObserver(this);
 }

@@ -67,10 +67,12 @@ cr.define('appList.startPage', function() {
   }
 
   /**
-   * Invoked when the hotword plugin should be loaded.
+   * Invoked when the hotword plugin availability is changed.
+   *
+   * @param {boolean} enabled Whether the plugin is enabled or not.
    */
-  function maybeInitializePlugin() {
-    speechManager.maybeInitializePlugin();
+  function setHotwordEnabled(enabled) {
+    speechManager.setHotwordEnabled(enabled);
   }
 
   /**
@@ -98,7 +100,7 @@ cr.define('appList.startPage', function() {
   return {
     initialize: initialize,
     setRecommendedApps: setRecommendedApps,
-    maybeInitializePlugin: maybeInitializePlugin,
+    setHotwordEnabled: setHotwordEnabled,
     onAppListShown: onAppListShown,
     onAppListHidden: onAppListHidden,
     toggleSpeechRecognition: toggleSpeechRecognition

@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
@@ -97,6 +100,36 @@ void StartPageHandler::SendRecommendedApps() {
                                    recommended_list);
 }
 
+#if defined(OS_CHROMEOS)
+bool StartPageHandler::HotwordEnabled() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return HotwordService::DoesHotwordSupportLanguage(profile) &&
+      profile->GetPrefs()->GetBoolean(prefs::kHotwordAppListEnabled);
+}
+
+void StartPageHandler::OnHotwordEnabledChanged() {
+  web_ui()->CallJavascriptFunction(
+      "appList.startPage.setHotwordEnabled",
+      base::FundamentalValue(HotwordEnabled()));
+}
+
+void StartPageHandler::SynchronizeHotwordEnabled() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* pref_service = profile->GetPrefs();
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kHotwordSearchEnabled);
+  if (!pref || pref->IsDefaultValue())
+    return;
+
+  bool search_enabled = false;
+  if (!pref->GetValue()->GetAsBoolean(&search_enabled))
+    return;
+
+  if (pref_service->GetBoolean(prefs::kHotwordAppListEnabled) != search_enabled)
+    pref_service->SetBoolean(prefs::kHotwordAppListEnabled, search_enabled);
+}
+#endif
+
 void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   StartPageService* service = StartPageService::Get(profile);
@@ -109,11 +142,20 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   SendRecommendedApps();
 
 #if defined(OS_CHROMEOS)
-  // TODO(mukai): respect the configuration of the availability of the hotword
-  // plugin.
   if (app_list::switches::IsVoiceSearchEnabled() &&
+      HotwordService::DoesHotwordSupportLanguage(profile) &&
       base::SysInfo::IsRunningOnChromeOS()) {
-    web_ui()->CallJavascriptFunction("appList.startPage.maybeInitializePlugin");
+    SynchronizeHotwordEnabled();
+    OnHotwordEnabledChanged();
+    pref_change_registrar_.Init(profile->GetPrefs());
+    pref_change_registrar_.Add(
+        prefs::kHotwordSearchEnabled,
+        base::Bind(&StartPageHandler::SynchronizeHotwordEnabled,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(
+        prefs::kHotwordAppListEnabled,
+        base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
+                   base::Unretained(this)));
   }
 #endif
 }

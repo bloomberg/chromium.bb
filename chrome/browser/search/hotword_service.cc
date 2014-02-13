@@ -26,6 +26,21 @@ const char kHotwordFieldTrialName[] = "VoiceTrigger";
 const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
 }  // namespace hotword_internal
 
+// static
+bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
+  std::string locale =
+#if defined(OS_CHROMEOS)
+      // On ChromeOS locale is per-profile.
+      profile->GetPrefs()->GetString(prefs::kApplicationLocale);
+#else
+      g_browser_process->GetApplicationLocale();
+#endif
+  // Only available for English now.
+  std::string normalized_locale = l10n_util::NormalizeLocale(locale);
+  return normalized_locale == "en" || normalized_locale == "en_us" ||
+      normalized_locale =="en_US";
+}
+
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile) {
 }
@@ -72,19 +87,7 @@ bool HotwordService::IsServiceAvailable() {
 bool HotwordService::IsHotwordAllowed() {
   std::string group = base::FieldTrialList::FindFullName(
       hotword_internal::kHotwordFieldTrialName);
-  if (!group.empty() &&
-      group != hotword_internal::kHotwordFieldTrialDisabledGroupName) {
-    std::string locale =
-#if defined(OS_CHROMEOS)
-        // On ChromeOS locale is per-profile.
-        profile_->GetPrefs()->GetString(prefs::kApplicationLocale);
-#else
-        g_browser_process->GetApplicationLocale();
-#endif
-    // Only available for English now.
-    std::string normalized_locale = l10n_util::NormalizeLocale(locale);
-    return normalized_locale == "en" || normalized_locale == "en_us" ||
-        normalized_locale =="en_US";
-  }
-  return false;
+  return !group.empty() &&
+      group != hotword_internal::kHotwordFieldTrialDisabledGroupName &&
+      DoesHotwordSupportLanguage(profile_);
 }

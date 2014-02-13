@@ -9,16 +9,13 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
+#include "chrome/browser/ui/app_list/start_page_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,46 +27,6 @@
 #include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
-
-class StartPageService::Factory : public BrowserContextKeyedServiceFactory {
- public:
-  static StartPageService* GetForProfile(Profile* profile) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kShowAppListStartPage) &&
-        !app_list::switches::IsVoiceSearchEnabled()) {
-      return NULL;
-    }
-
-    return static_cast<StartPageService*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-
-  static Factory* GetInstance() {
-    return Singleton<Factory>::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<Factory>;
-
-  Factory()
-      : BrowserContextKeyedServiceFactory(
-            "AppListStartPageService",
-            BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(extensions::ExtensionSystemFactory::GetInstance());
-    DependsOn(extensions::InstallTrackerFactory::GetInstance());
-  }
-
-  virtual ~Factory() {}
-
-  // BrowserContextKeyedServiceFactory overrides:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE {
-     Profile* profile = static_cast<Profile*>(context);
-     return new StartPageService(profile);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(Factory);
-};
 
 class StartPageService::ProfileDestroyObserver
     : public content::NotificationObserver {
@@ -118,13 +75,22 @@ class StartPageService::StartPageWebContentsDelegate
 
 // static
 StartPageService* StartPageService::Get(Profile* profile) {
-  return Factory::GetForProfile(profile);
+  return StartPageServiceFactory::GetForProfile(profile);
 }
 
 StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
       profile_destroy_observer_(new ProfileDestroyObserver(this)),
-      recommended_apps_(new RecommendedApps(profile)) {
+      recommended_apps_(new RecommendedApps(profile)),
+      state_(app_list::SPEECH_RECOGNITION_OFF) {
+#if defined(OS_CHROMEOS)
+  // Updates the default state to hotword listening, because this is
+  // the default behavior. This will be updated when the page is loaded and
+  // the nacl module is loaded.
+  if (app_list::switches::IsVoiceSearchEnabled())
+    state_ = app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING;
+#endif
+
   contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile_)));
   contents_delegate_.reset(new StartPageWebContentsDelegate());
@@ -183,6 +149,7 @@ void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
+  state_ = new_state;
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechRecognitionStateChanged(new_state));

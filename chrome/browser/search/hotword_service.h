@@ -20,6 +20,9 @@ extern const char kHotwordFieldTrialDisabledGroupName[];
 // search.
 class HotwordService : public BrowserContextKeyedService {
  public:
+  // Returns true if the hotword supports the current system language.
+  static bool DoesHotwordSupportLanguage(Profile* profile);
+
   explicit HotwordService(Profile* profile);
   virtual ~HotwordService();
 
