@@ -465,17 +465,20 @@
             'remoting_core',
             'remoting_desktop',
             'remoting_host_exe',
+            'remoting_me2me_native_messaging_host',
             'remoting_native_messaging_manifests',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_core.dll',
             '<(PRODUCT_DIR)/remoting_desktop.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
+            '<(PRODUCT_DIR)/remoting_native_messaging_host.exe',
           ],
           'compiled_inputs_dst': [
             'files/remoting_core.dll',
             'files/remoting_desktop.exe',
             'files/remoting_host.exe',
+            'files/remoting_native_messaging_host.exe',
           ],
           'conditions': [
             ['buildtype == "Official"', {

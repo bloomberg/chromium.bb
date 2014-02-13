@@ -14,8 +14,12 @@
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 
 #if defined(OS_WIN)
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "remoting/host/pairing_registry_delegate_win.h"
 #endif  // defined(OS_WIN)
+
+using remoting::protocol::PairingRegistry;
 
 namespace {
 
@@ -140,14 +144,61 @@ int Me2MeNativeMessagingHostMain() {
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 
-  // Create the pairing registry and native messaging host.
-  scoped_refptr<protocol::PairingRegistry> pairing_registry =
+  // Create the pairing registry.
+  scoped_refptr<PairingRegistry> pairing_registry;
+
+#if defined(OS_WIN)
+  base::win::RegKey root;
+  LONG result = root.Open(HKEY_LOCAL_MACHINE, kPairingRegistryKeyName,
+                          KEY_READ);
+  if (result != ERROR_SUCCESS) {
+    SetLastError(result);
+    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName;
+    return kInitializationFailed;
+  }
+
+  base::win::RegKey unprivileged;
+  result = unprivileged.Open(root.Handle(), kPairingRegistrySecretsKeyName,
+                             needs_elevation ? KEY_READ : KEY_READ | KEY_WRITE);
+  if (result != ERROR_SUCCESS) {
+    SetLastError(result);
+    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistrySecretsKeyName
+                << "\\" << kPairingRegistrySecretsKeyName;
+    return kInitializationFailed;
+  }
+
+  // Only try to open the privileged key if the current process is elevated.
+  base::win::RegKey privileged;
+  if (!needs_elevation) {
+    result = privileged.Open(root.Handle(), kPairingRegistryClientsKeyName,
+                             KEY_READ | KEY_WRITE);
+    if (result != ERROR_SUCCESS) {
+      SetLastError(result);
+      PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName << "\\"
+                  << kPairingRegistryClientsKeyName;
+      return kInitializationFailed;
+    }
+  }
+
+  // Initialize the pairing registry delegate and set the root keys.
+  scoped_ptr<PairingRegistryDelegateWin> delegate(
+      new PairingRegistryDelegateWin());
+  if (!delegate->SetRootKeys(privileged.Take(), unprivileged.Take()))
+    return kInitializationFailed;
+
+  pairing_registry = new PairingRegistry(
+      io_thread.message_loop_proxy(),
+      delegate.PassAs<PairingRegistry::Delegate>());
+#else  // defined(OS_WIN)
+  pairing_registry =
       CreatePairingRegistry(io_thread.message_loop_proxy());
+#endif  // !defined(OS_WIN)
 
   // Set up the native messaging channel.
   scoped_ptr<NativeMessagingChannel> channel(
       new NativeMessagingChannel(read_file, write_file));
 
+  // Create the native messaging host.
   scoped_ptr<Me2MeNativeMessagingHost> host(
       new Me2MeNativeMessagingHost(
           needs_elevation,

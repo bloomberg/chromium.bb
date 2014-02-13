@@ -19,6 +19,17 @@ class ListValue;
 
 namespace remoting {
 
+#if defined(OFFICIAL_BUILD)
+const wchar_t kPairingRegistryKeyName[] =
+    L"SOFTWARE\\Google\\Chrome Remote Desktop\\paired-clients";
+#else
+const wchar_t kPairingRegistryKeyName[] =
+    L"SOFTWARE\\Chromoting\\paired-clients";
+#endif
+
+const wchar_t kPairingRegistryClientsKeyName[] = L"secrets";
+const wchar_t kPairingRegistrySecretsKeyName[] = L"clients";
+
 // Stores client pairing information in Windows registry. Two separate registry
 // keys are used:
 //  - |privileged| - contains the shared secrets of all pairings. This key must

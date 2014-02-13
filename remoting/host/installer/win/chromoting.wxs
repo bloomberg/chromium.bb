@@ -188,6 +188,22 @@
               Vital="yes"/>
       </Component>
 
+      <Component Id="remoting_native_messaging_host" Guid="*">
+        <File Id="remoting_native_messaging_host.exe"
+              DiskId="1"
+              KeyPath="yes"
+              Name="remoting_native_messaging_host.exe"
+              Vital="yes"/>
+      </Component>
+
+      <Component Id="native_messaging_host_manifest" Guid="*">
+        <File Id="com.google.chrome.remote_desktop.json"
+              DiskId="1"
+              KeyPath="yes"
+              Name="com.google.chrome.remote_desktop.json"
+              Vital="yes"/>
+      </Component>
+
       <Component Id="icudtl" Guid="*">
         <File Id="icudtl.dat"
               DiskId="1"
@@ -492,9 +508,28 @@
                  Windows Installer version 4.5 or lower. Also Cannot use
                  PermissionEx in WixUtilExtension because it automatically
                  inherits all the ACLs from the parent. -->
-            <Permission User="SYSTEM" GenericAll="yes"
-                                      ChangePermission="yes"
-                                      TakeOwnership="yes"/>
+            <Permission User="SYSTEM"
+                        GenericAll="yes"
+                        ChangePermission="yes"
+                        TakeOwnership="yes"/>
+            <Permission User="Administrators"
+                        Domain="[LOCAL_MACHINE_NAME]"
+                        GenericAll="yes"
+                        ChangePermission="yes"
+                        TakeOwnership="yes"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
+      <Component Id="native_messaging_host_registry" Guid="*">
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Google\chrome\NativeMessagingHosts"
+                     Action="create">
+          <RegistryKey Key="com.google.chrome.remote_desktop" Action="create">
+            <RegistryValue
+                Type="string"
+                Value="[binaries]com.google.chrome.remote_desktop.json"/>
           </RegistryKey>
         </RegistryKey>
         <CreateFolder/>
@@ -600,6 +635,9 @@
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
       <ComponentRef Id="icudtl"/>
+      <ComponentRef Id="remoting_native_messaging_host"/>
+      <ComponentRef Id="native_messaging_host_manifest"/>
+      <ComponentRef Id="native_messaging_host_registry"/>
       <ComponentRef Id="remoting_core"/>
       <ComponentRef Id="remoting_desktop"/>
       <ComponentRef Id="remoting_host"/>

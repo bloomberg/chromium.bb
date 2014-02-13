@@ -557,6 +557,28 @@
           ],
         },  # end of target 'remoting_it2me_host_static'
         {
+          'target_name': 'remoting_me2me_native_messaging_host',
+          'type': 'executable',
+          'product_name': 'remoting_native_messaging_host',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_host',
+            'remoting_host_setup_base',
+            'remoting_native_messaging_base',
+          ],
+          'sources': [
+            'host/setup/me2me_native_messaging_host_main.cc',
+          ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_me2me_native_messaging_host'
+        {
           'target_name': 'remoting_it2me_native_messaging_host',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -610,7 +632,7 @@
           'conditions': [
             [ 'OS == "win"', {
               'variables': {
-                'me2me_host_path': 'remoting_host.exe',
+                'me2me_host_path': 'remoting_native_messaging_host.exe',
                 'it2me_host_path': 'remoting_assistance_host.exe',
               },
             }],
@@ -789,28 +811,6 @@
             }],  # OS=linux
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host'
-        {
-          'target_name': 'remoting_me2me_native_messaging_host',
-          'type': 'executable',
-          'product_name': 'remoting_native_messaging_host',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            'remoting_host',
-            'remoting_host_setup_base',
-            'remoting_native_messaging_base',
-          ],
-          'sources': [
-            'host/setup/me2me_native_messaging_host_main.cc',
-          ],
-          'conditions': [
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        },  # end of target 'remoting_me2me_native_messaging_host'
       ],  # end of 'targets'
     }],  # OS!="win"
 

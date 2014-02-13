@@ -289,11 +289,6 @@ void Me2MeNativeMessagingHost::ProcessGetPairedClients(
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (needs_elevation_) {
-    DelegateToElevatedHost(message.Pass(), response.Pass());
-    return;
-  }
-
   if (pairing_registry_) {
     pairing_registry_->GetAllPairings(
         base::Bind(&Me2MeNativeMessagingHost::SendPairedClientsResponse,

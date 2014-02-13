@@ -28,6 +28,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
+#include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
@@ -37,17 +38,6 @@ using base::win::ScopedHandle;
 using base::TimeDelta;
 
 namespace {
-
-#if defined(OFFICIAL_BUILD)
-const wchar_t kPairingRegistryKeyName[] =
-    L"SOFTWARE\\Google\\Chrome Remote Desktop\\paired-clients";
-#else
-const wchar_t kPairingRegistryKeyName[] =
-    L"SOFTWARE\\Chromoting\\paired-clients";
-#endif
-
-const wchar_t kPrivilegedKeyName[] = L"secrets";
-const wchar_t kUnprivilegedKeyName[] = L"clients";
 
 // Duplicates |key| into |target_process| and returns the value that can be sent
 // over IPC.
@@ -318,22 +308,22 @@ bool DaemonProcessWin::OpenPairingRegistry() {
   }
 
   base::win::RegKey privileged;
-  result = privileged.Open(root.Handle(), kPrivilegedKeyName,
+  result = privileged.Open(root.Handle(), kPairingRegistryClientsKeyName,
                            KEY_READ | KEY_WRITE);
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
     PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName << "\\"
-                << kPrivilegedKeyName;
+                << kPairingRegistryClientsKeyName;
     return false;
   }
 
   base::win::RegKey unprivileged;
-  result = unprivileged.Open(root.Handle(), kUnprivilegedKeyName,
+  result = unprivileged.Open(root.Handle(), kPairingRegistrySecretsKeyName,
                              KEY_READ | KEY_WRITE);
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kUnprivilegedKeyName << "\\"
-                << kUnprivilegedKeyName;
+    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistrySecretsKeyName
+                << "\\" << kPairingRegistrySecretsKeyName;
     return false;
   }
 
