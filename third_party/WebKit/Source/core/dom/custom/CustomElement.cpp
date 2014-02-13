@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "MathMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementObserver.h"
@@ -60,15 +59,8 @@ void CustomElement::addEmbedderCustomElementName(const AtomicString& name)
     embedderCustomElementNames().append(lower);
 }
 
-static CustomElement::NameSet enabledNameSet()
-{
-    return CustomElement::NameSet((RuntimeEnabledFeatures::customElementsEnabled() ? CustomElement::StandardNames : 0) | CustomElement::EmbedderNames);
-}
-
 bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
 {
-    validNames = NameSet(validNames & enabledNameSet());
-
     if ((validNames & EmbedderNames) && kNotFound != embedderCustomElementNames().find(name))
         return Document::isValidName(name);
 

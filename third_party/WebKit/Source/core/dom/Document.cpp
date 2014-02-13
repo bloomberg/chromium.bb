@@ -733,7 +733,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
             return 0;
     }
 
-    if (RuntimeEnabledFeatures::customElementsEnabled() && !typeExtension.isEmpty())
+    if (!typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
 
     return element;

@@ -34,7 +34,6 @@ CSSTouchActionDelay status=test
 CSSViewport status=experimental
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
-CustomElements status=stable
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DeviceMotion status=stable

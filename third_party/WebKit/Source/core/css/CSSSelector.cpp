@@ -429,6 +429,7 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
+        nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
         if (RuntimeEnabledFeatures::shadowDOMEnabled()) {
             nameToPseudoType->set(host.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
@@ -436,8 +437,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
             nameToPseudoType->set(ancestorWithParams.impl(), CSSSelector::PseudoAncestor);
             nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
         }
-        if (RuntimeEnabledFeatures::customElementsEnabled())
-            nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
     }
     return nameToPseudoType;
 }
