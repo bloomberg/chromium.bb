@@ -202,8 +202,6 @@ def getter_expression(interface, attribute, contents):
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
         arguments.append('exceptionState')
-    if attribute.idl_type == 'EventHandler':
-        arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
     return '%s(%s)' % (getter_name, ', '.join(arguments))
 
 
@@ -298,19 +296,15 @@ def setter_expression(interface, attribute, contents):
         arguments.append('imp')
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
-        # FIXME: pass the isolate instead of the isolated world
-        isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
         getter_name = v8_utilities.scoped_name(interface, attribute, cpp_name(attribute))
-        getter_arguments = arguments + [isolated_world]
         contents['event_handler_getter_expression'] = '%s(%s)' % (
-            getter_name, ', '.join(getter_arguments))
+            getter_name, ', '.join(arguments))
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
             attribute.name == 'onerror'):
             includes.add('bindings/v8/V8ErrorHandler.h')
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate())')
         else:
             arguments.append('V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)')
-        arguments.append(isolated_world)
     elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')
