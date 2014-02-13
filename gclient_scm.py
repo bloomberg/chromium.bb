@@ -13,6 +13,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 import urlparse
 
 import download_from_google_storage
@@ -862,6 +863,9 @@ class GitWrapper(SCMWrapper):
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
+    except:
+      traceback.print_exc(file=sys.stderr)
+      raise
     finally:
       if os.listdir(tmp_dir):
         print('\n_____ removing non-empty tmp dir %s' % tmp_dir)
