@@ -25,6 +25,8 @@
 
 namespace {
 const char kWiFiServiceError[] = "Error.WiFiService";
+const char kWiFiServiceErrorNotImplemented[] =
+    "Error.WiFiService.NotImplemented";
 const wchar_t kNwCategoryWizardRegKey[] =
     L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Network\\"
     L"NwCategoryWizard";
@@ -208,6 +210,10 @@ class WiFiServiceImpl : public WiFiService {
   virtual void StartDisconnect(const std::string& network_guid,
                                std::string* error) OVERRIDE;
 
+  virtual void GetKeyFromSystem(const std::string& network_guid,
+                                std::string* key_data,
+                                std::string* error) OVERRIDE;
+
   virtual void SetEventObservers(
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const NetworkGuidListCallback& networks_changed_observer,
@@ -360,7 +366,11 @@ class WiFiServiceImpl : public WiFiService {
   DWORD SaveTempProfile(const std::string& network_guid);
 
   // Get previously stored |profile_xml| for |network_guid|.
-  DWORD GetProfile(const std::string& network_guid, std::string* profile_xml);
+  // If |get_plaintext_key| is true, and process has sufficient privileges, then
+  // <sharedKey> data in |profile_xml| will be unprotected.
+  DWORD GetProfile(const std::string& network_guid,
+                   bool get_plaintext_key,
+                   std::string* profile_xml);
 
   // Return true if there is previously stored profile xml for |network_guid|.
   bool HaveProfile(const std::string& network_guid);
@@ -637,6 +647,58 @@ void WiFiServiceImpl::StartDisconnect(const std::string& network_guid,
   CheckError(error_code, kWiFiServiceError, error);
 }
 
+void WiFiServiceImpl::GetKeyFromSystem(const std::string& network_guid,
+                                       std::string* key_data,
+                                       std::string* error) {
+  DWORD error_code = EnsureInitialized();
+  if (CheckError(error_code, kWiFiServiceError, error))
+    return;
+
+  std::string profile_xml;
+  error_code = GetProfile(network_guid, true, &profile_xml);
+  if (CheckError(error_code, kWiFiServiceError, error))
+    return;
+
+  const char kSharedKeyElement[] = "sharedKey";
+  const char kProtectedElement[] = "protected";
+  const char kKeyMaterialElement[] = "keyMaterial";
+
+  // Quick check to verify presence of <sharedKey> element.
+  if (profile_xml.find(kSharedKeyElement) == std::string::npos) {
+    *error = kWiFiServiceError;
+    return;
+  }
+
+  XmlReader reader;
+  if (reader.Load(profile_xml)) {
+    while (reader.Read()) {
+      reader.SkipToElement();
+      if (reader.NodeName() == kSharedKeyElement) {
+        while (reader.Read()) {
+          reader.SkipToElement();
+          if (reader.NodeName() == kKeyMaterialElement) {
+            reader.ReadElementContent(key_data);
+          } else if (reader.NodeName() == kProtectedElement) {
+            std::string protected_data;
+            reader.ReadElementContent(&protected_data);
+            // Without UAC privilege escalation call to |GetProfile| with
+            // |WLAN_PROFILE_GET_PLAINTEXT_KEY| flag returns success, but has
+            // protected keyMaterial. Report an error in this case.
+            if (protected_data != "false") {
+              *error = kWiFiServiceError;
+              break;
+            }
+          }
+        }
+        return;
+      }
+    }
+  }
+
+  // Did not find passphrase in the profile.
+  *error = kWiFiServiceError;
+}
+
 void WiFiServiceImpl::SetEventObservers(
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     const NetworkGuidListCallback& networks_changed_observer,
@@ -755,7 +817,7 @@ DWORD WiFiServiceImpl::SaveCurrentConnectedNetwork(
     if (error == ERROR_SUCCESS) {
       SaveTempProfile(*connected_network_guid);
       std::string profile_xml;
-      error = GetProfile(*connected_network_guid, &profile_xml);
+      error = GetProfile(*connected_network_guid, false, &profile_xml);
       if (error == ERROR_SUCCESS) {
         saved_profiles_xml_[*connected_network_guid] = profile_xml;
       }
@@ -1442,6 +1504,7 @@ DWORD WiFiServiceImpl::SaveTempProfile(const std::string& network_guid) {
 }
 
 DWORD WiFiServiceImpl::GetProfile(const std::string& network_guid,
+                                  bool get_plaintext_key,
                                   std::string* profile_xml) {
   if (client_ == NULL) {
     NOTREACHED();
@@ -1450,13 +1513,14 @@ DWORD WiFiServiceImpl::GetProfile(const std::string& network_guid,
 
   DWORD error = ERROR_SUCCESS;
   base::string16 profile_name = ProfileNameFromGUID(network_guid);
+  DWORD flags = get_plaintext_key ? WLAN_PROFILE_GET_PLAINTEXT_KEY : 0;
   LPWSTR str_profile_xml = NULL;
   error = WlanGetProfile_function_(client_,
                                    &interface_guid_,
                                    profile_name.c_str(),
                                    NULL,
                                    &str_profile_xml,
-                                   NULL,
+                                   &flags,
                                    NULL);
 
   if (error == ERROR_SUCCESS && str_profile_xml != NULL) {
@@ -1473,7 +1537,7 @@ DWORD WiFiServiceImpl::GetProfile(const std::string& network_guid,
 bool WiFiServiceImpl::HaveProfile(const std::string& network_guid) {
   DWORD error = ERROR_SUCCESS;
   std::string profile_xml;
-  return GetProfile(network_guid, &profile_xml) == ERROR_SUCCESS;
+  return GetProfile(network_guid, false, &profile_xml) == ERROR_SUCCESS;
 }
 
 bool WiFiServiceImpl::AuthEncryptionFromSecurity(

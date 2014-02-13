@@ -66,6 +66,7 @@ WiFiTest::Result WiFiTest::Main(int argc, const char* argv[]) {
   if (!ParseCommandLine(argc, argv)) {
     VLOG(0) <<  "Usage: " << argv[0] <<
                 " [--list]"
+                " [--get_key]"
                 " [--get_properties]"
                 " [--create]"
                 " [--connect]"
@@ -186,6 +187,18 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       std::string error;
       wifi_service->StartDisconnect(network_guid, &error);
       VLOG(0) << error;
+      return true;
+    }
+  }
+
+  if (parsed_command_line.HasSwitch("get_key")) {
+    if (network_guid.length() > 0) {
+      std::string error;
+      std::string key_data;
+      wifi_service->GetKeyFromSystem(network_guid,
+                                     &key_data,
+                                     &error);
+      VLOG(0) << key_data << error;
       return true;
     }
   }

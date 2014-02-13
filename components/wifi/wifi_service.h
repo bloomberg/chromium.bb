@@ -100,6 +100,14 @@ class WIFI_EXPORT WiFiService {
   virtual void StartDisconnect(const std::string& network_guid,
                                std::string* error) = 0;
 
+  // Get WiFi Key for network identified by |network_guid| from the
+  // system (if it has one) and store it in |key_data|. User privilege elevation
+  // may be required, and function will fail if user privileges are not
+  // sufficient. Populates |error| on failure.
+  virtual void GetKeyFromSystem(const std::string& network_guid,
+                                std::string* key_data,
+                                std::string* error) = 0;
+
   // Set observers to run when |NetworksChanged| and |NetworksListChanged|
   // events needs to be sent. Notifications are posted on |message_loop_proxy|.
   virtual void SetEventObservers(

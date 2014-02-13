@@ -254,6 +254,12 @@ class FakeWiFiService : public WiFiService {
     }
   }
 
+  virtual void GetKeyFromSystem(const std::string& network_guid,
+                                std::string* key_data,
+                                std::string* error) OVERRIDE {
+    *error = "not-found";
+  }
+
   virtual void SetEventObservers(
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const NetworkGuidListCallback& networks_changed_observer,

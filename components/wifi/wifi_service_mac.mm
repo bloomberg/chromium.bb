@@ -9,6 +9,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 
 #include "base/bind.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
@@ -96,6 +97,10 @@ class WiFiServiceMac : public WiFiService {
 
   virtual void StartDisconnect(const std::string& network_guid,
                                std::string* error) OVERRIDE;
+
+  virtual void GetKeyFromSystem(const std::string& network_guid,
+                                std::string* key_data,
+                                std::string* error) OVERRIDE;
 
   virtual void SetEventObservers(
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
@@ -364,6 +369,33 @@ void WiFiServiceMac::StartDisconnect(const std::string& network_guid,
     CheckError(ns_error, kErrorAssociateToNetwork, error);
   } else {
     *error = kErrorNotConnected;
+  }
+}
+
+void WiFiServiceMac::GetKeyFromSystem(const std::string& network_guid,
+                                      std::string* key_data,
+                                      std::string* error) {
+  static const char kAirPortServiceName[] = "AirPort";
+
+  UInt32 password_length = 0;
+  void *password_data = NULL;
+  OSStatus status = SecKeychainFindGenericPassword(NULL,
+                                                   strlen(kAirPortServiceName),
+                                                   kAirPortServiceName,
+                                                   network_guid.length(),
+                                                   network_guid.c_str(),
+                                                   &password_length,
+                                                   &password_data,
+                                                   NULL);
+  if (status != errSecSuccess) {
+    *error = kErrorNotFound;
+    return;
+  }
+
+  if (password_data) {
+    *key_data = std::string(reinterpret_cast<char*>(password_data),
+                            password_length);
+    SecKeychainItemFreeContent(NULL, password_data);
   }
 }
 
