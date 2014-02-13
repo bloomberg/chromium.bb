@@ -46,9 +46,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void AddChild(scoped_ptr<FrameTreeNode> child, int frame_routing_id);
   void RemoveChild(FrameTreeNode* child);
 
-  // Clears process specific-state after a main frame process swap.
-  // TODO(creis): Look into how we can remove the need for this method.
-  void ResetForMainFrameSwap();
+  // Clears process specific-state in this node to prepare for a new process.
+  void ResetForNewProcess();
 
   FrameTree* frame_tree() const {
     return frame_tree_;
