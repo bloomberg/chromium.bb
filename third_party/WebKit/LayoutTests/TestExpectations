@@ -789,7 +789,7 @@ crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video
 
 crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
 
-Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
+Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsRebaseline ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
 crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
