@@ -22,6 +22,12 @@ extern const char kUserPasswordRecord[];
 // (like Sync), even though we're not signed in.
 extern const char kManagedUserPseudoEmail[];
 
+// Keys for managed user shared settings. These can be configured remotely or
+// locally, and are mapped to preferences by the
+// SupervisedUserPrefMappingService.
+extern const char kChromeAvatarIndex[];
+extern const char kChromeOSAvatarIndex[];
+
 }  // namespace managed_users
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_CONSTANTS_H_

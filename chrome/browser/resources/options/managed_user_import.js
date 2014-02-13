@@ -119,7 +119,6 @@ cr.define('options', function() {
       // 'createProfile' is handled by CreateProfileHandler.
       chrome.send('createProfile', [managedUser.name, avatarUrl,
                                     false, true, managedUser.id]);
-      options.ManagedUserListData.reloadExistingManagedUsers();
     },
 
     /**

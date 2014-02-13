@@ -21,6 +21,8 @@
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/managed_mode/supervised_user_pref_mapping_service.h"
+#include "chrome/browser/managed_mode/supervised_user_pref_mapping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -532,6 +534,9 @@ void ManagedUserService::Init() {
   }
 
   settings_service->Activate();
+
+  SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
+      ->Init();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {

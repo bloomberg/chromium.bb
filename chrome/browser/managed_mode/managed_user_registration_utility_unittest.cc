@@ -10,6 +10,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -105,6 +107,9 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
 
   PrefService* prefs() { return profile_.GetTestingPrefService(); }
   ManagedUserSyncService* service() { return service_; }
+  ManagedUserSharedSettingsService* shared_settings_service() {
+    return shared_settings_service_;
+  }
   MockChangeProcessor* change_processor() { return change_processor_; }
 
   bool received_callback() const { return received_callback_; }
@@ -119,6 +124,7 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
   base::RunLoop run_loop_;
   TestingProfile profile_;
   ManagedUserSyncService* service_;
+  ManagedUserSharedSettingsService* shared_settings_service_;
   scoped_ptr<ManagedUserRegistrationUtility> registration_utility_;
 
   // Owned by the ManagedUserSyncService.
@@ -144,6 +150,8 @@ ManagedUserRegistrationUtilityTest::ManagedUserRegistrationUtilityTest()
       error_(GoogleServiceAuthError::NUM_STATES),
       weak_ptr_factory_(this) {
   service_ = ManagedUserSyncServiceFactory::GetForProfile(&profile_);
+  shared_settings_service_ =
+      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(&profile_);
 }
 
 ManagedUserRegistrationUtilityTest::~ManagedUserRegistrationUtilityTest() {
@@ -195,7 +203,8 @@ ManagedUserRegistrationUtilityTest::GetRegistrationUtility() {
   registration_utility_.reset(
       ManagedUserRegistrationUtility::CreateImpl(prefs(),
                                                  token_fetcher.Pass(),
-                                                 service()));
+                                                 service(),
+                                                 shared_settings_service()));
   return registration_utility_.get();
 }
 

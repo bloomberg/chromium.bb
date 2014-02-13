@@ -11,6 +11,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -131,21 +134,32 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
   }
 
   base::ListValue managed_users;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ManagedUserSharedSettingsService* service =
+      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* value = NULL;
     bool success = it.value().GetAsDictionary(&value);
     DCHECK(success);
     std::string name;
     value->GetString(ManagedUserSyncService::kName, &name);
-    std::string avatar_str;
-    value->GetString(ManagedUserSyncService::kChromeAvatar, &avatar_str);
 
     base::DictionaryValue* managed_user = new base::DictionaryValue;
     managed_user->SetString("id", it.key());
     managed_user->SetString("name", name);
 
     int avatar_index = ManagedUserSyncService::kNoAvatar;
-    success = ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
+    const base::Value* avatar_index_value =
+        service->GetValue(it.key(), managed_users::kChromeAvatarIndex);
+    if (avatar_index_value) {
+      success = avatar_index_value->GetAsInteger(&avatar_index);
+    } else {
+      // Check if there is a legacy avatar index stored.
+      std::string avatar_str;
+      value->GetString(ManagedUserSyncService::kChromeAvatar, &avatar_str);
+      success =
+          ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
+    }
     DCHECK(success);
     managed_user->SetBoolean("needAvatar",
                              avatar_index == ManagedUserSyncService::kNoAvatar);

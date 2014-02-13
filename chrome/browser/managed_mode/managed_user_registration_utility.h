@@ -22,6 +22,7 @@
 class GoogleServiceAuthError;
 class ManagedUserRefreshTokenFetcher;
 class ManagedUserRegistrationUtilityTest;
+class ManagedUserSharedSettingsService;
 class PrefService;
 class Profile;
 
@@ -82,7 +83,8 @@ class ManagedUserRegistrationUtility {
   static ManagedUserRegistrationUtility* CreateImpl(
       PrefService* prefs,
       scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
-      ManagedUserSyncService* service);
+      ManagedUserSyncService* service,
+      ManagedUserSharedSettingsService* shared_settings_service);
 
   // Set the instance of ManagedUserRegistrationUtility that will be returned
   // by next Create() call. Takes ownership of the |utility|.

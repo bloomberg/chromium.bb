@@ -18,4 +18,7 @@ const char kUserPasswordRecord[] = "UserPasswordRecord";
 
 const char kManagedUserPseudoEmail[] = "managed_user@localhost";
 
+const char kChromeAvatarIndex[] = "chrome-avatar-index";
+const char kChromeOSAvatarIndex[] = "chromeos-avatar-index";
+
 }  // namespace managed_users

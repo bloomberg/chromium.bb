@@ -1037,6 +1037,7 @@
         'browser/managed_mode/managed_user_settings_service_unittest.cc',
         'browser/managed_mode/managed_user_shared_settings_service_unittest.cc',
         'browser/managed_mode/managed_user_shared_settings_update_unittest.cc',
+        'browser/managed_mode/supervised_user_pref_mapping_service_unittest.cc',
         'browser/managed_mode/supervised_user_pref_store_unittest.cc',
         'browser/media/desktop_media_list_ash_unittest.cc',
         'browser/media/native_desktop_media_list_unittest.cc',
