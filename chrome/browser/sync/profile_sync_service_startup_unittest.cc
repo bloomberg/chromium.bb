@@ -6,7 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -95,8 +94,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return new ProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         profile,
-        new ManagedUserSigninManagerWrapper(
-            SigninManagerFactory::GetForProfile(profile)),
+        SigninManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         ProfileSyncService::MANUAL_START);
   }
@@ -164,7 +162,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     return new ProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         profile,
-        new ManagedUserSigninManagerWrapper(signin),
+        signin,
         oauth2_token_service,
         ProfileSyncService::AUTO_START);
   }

@@ -25,7 +25,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -159,7 +158,7 @@ bool ShouldShowActionOnUI(
 ProfileSyncService::ProfileSyncService(
     ProfileSyncComponentsFactory* factory,
     Profile* profile,
-    ManagedUserSigninManagerWrapper* signin_wrapper,
+    SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* oauth2_token_service,
     StartBehavior start_behavior)
     : OAuth2TokenService::Consumer("sync"),
@@ -174,7 +173,7 @@ ProfileSyncService::ProfileSyncService(
       backend_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
-      signin_(signin_wrapper),
+      signin_(signin_manager),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
@@ -226,15 +225,14 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
     return false;
 
   // Sync is logged in if there is a non-empty effective username.
-  return !signin_->GetEffectiveUsername().empty();
+  return !GetEffectiveUsername().empty();
 }
 
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
   if (!oauth2_token_service_)
     return false;
 
-  return oauth2_token_service_->RefreshTokenIsAvailable(
-      signin_->GetAccountIdToUse());
+  return oauth2_token_service_->RefreshTokenIsAvailable(GetAccountIdToUse());
 }
 
 void ProfileSyncService::Initialize() {
@@ -255,7 +253,7 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted() || signin_->GetEffectiveUsername().empty()) {
+  if (!HasSyncSetupCompleted() || GetEffectiveUsername().empty()) {
     // Clean up in case of previous crash / setup abort / signout.
     DisableForUser();
   }
@@ -536,7 +534,7 @@ void ProfileSyncService::InitSettings() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = signin_->GetEffectiveUsername();
+  credentials.email = GetEffectiveUsername();
   DCHECK(!credentials.email.empty());
   credentials.sync_token = access_token_;
 
@@ -748,7 +746,7 @@ void ProfileSyncService::OnGetTokenFailure(
 
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  if (account_id == signin_->GetAccountIdToUse())
+  if (account_id == GetAccountIdToUse())
     OnRefreshTokensLoaded();
 }
 
@@ -1975,7 +1973,7 @@ void ProfileSyncService::RequestAccessToken() {
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  const std::string& account_id = signin_->GetAccountIdToUse();
+  const std::string& account_id = GetAccountIdToUse();
   if (!access_token_.empty()) {
     oauth2_token_service_->InvalidateToken(
         account_id, oauth2_scopes, access_token_);
@@ -2161,19 +2159,13 @@ bool ProfileSyncService::IsStartSuppressed() const {
   return sync_prefs_.IsStartSuppressed();
 }
 
-SigninManagerBase* ProfileSyncService::signin() const {
-  return signin_->GetOriginal();
-}
-
 void ProfileSyncService::UnsuppressAndStart() {
   DCHECK(profile_);
   sync_prefs_.SetStartSuppressed(false);
   // Set username in SigninManager, as SigninManager::OnGetUserInfoSuccess
   // is never called for some clients.
-  if (signin_.get() &&
-      signin_->GetOriginal()->GetAuthenticatedUsername().empty()) {
-    signin_->GetOriginal()->SetAuthenticatedUsername(
-        sync_prefs_.GetGoogleServicesUsername());
+  if (signin_ && signin_->GetAuthenticatedUsername().empty()) {
+    signin_->SetAuthenticatedUsername(sync_prefs_.GetGoogleServicesUsername());
   }
   TryStart();
 }
@@ -2221,6 +2213,32 @@ bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
 
 std::string ProfileSyncService::GetAccessTokenForTest() const {
   return access_token_;
+}
+
+std::string ProfileSyncService::GetEffectiveUsername() {
+  if (profile_->IsManaged()) {
+#if defined(ENABLE_MANAGED_USERS)
+    DCHECK_EQ(std::string(), signin_->GetAuthenticatedUsername());
+    return managed_users::kManagedUserPseudoEmail;
+#else
+    NOTREACHED();
+#endif
+  }
+
+  return signin_->GetAuthenticatedUsername();
+}
+
+std::string ProfileSyncService::GetAccountIdToUse() {
+  if (profile_->IsManaged()) {
+#if defined(ENABLE_MANAGED_USERS)
+    return managed_users::kManagedUserPseudoEmail;
+#else
+    NOTREACHED();
+#endif
+  }
+
+  // TODO(fgorski): Use GetPrimaryAccountId() when it's available.
+  return signin_->GetAuthenticatedUsername();
 }
 
 WeakHandle<syncer::JsEventHandler> ProfileSyncService::GetJsEventHandler() {

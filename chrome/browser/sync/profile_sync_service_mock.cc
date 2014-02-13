@@ -4,7 +4,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -18,8 +17,7 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncService(
           NULL,
           profile,
-          new ManagedUserSigninManagerWrapper(
-              SigninManagerFactory::GetForProfile(profile)),
+          SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           ProfileSyncService::MANUAL_START) {}
 

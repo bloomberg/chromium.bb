@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -118,7 +117,7 @@ BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       new ProfileSyncComponentsFactoryImpl(profile,
                                            CommandLine::ForCurrentProcess()),
       profile,
-      new ManagedUserSigninManagerWrapper(signin),
+      signin,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       behavior);
 

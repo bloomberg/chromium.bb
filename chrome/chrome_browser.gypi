@@ -1089,8 +1089,6 @@
         'browser/managed_mode/managed_user_shared_settings_service_factory.h',
         'browser/managed_mode/managed_user_shared_settings_update.cc',
         'browser/managed_mode/managed_user_shared_settings_update.h',
-        'browser/managed_mode/managed_user_signin_manager_wrapper.cc',
-        'browser/managed_mode/managed_user_signin_manager_wrapper.h',
         'browser/managed_mode/managed_user_sync_service.cc',
         'browser/managed_mode/managed_user_sync_service.h',
         'browser/managed_mode/managed_user_sync_service_factory.cc',

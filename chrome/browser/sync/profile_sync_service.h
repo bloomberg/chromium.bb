@@ -48,7 +48,6 @@
 #include "sync/js/sync_js_controller.h"
 #include "url/gurl.h"
 
-class ManagedUserSigninManagerWrapper;
 class Profile;
 class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
@@ -260,10 +259,10 @@ class ProfileSyncService
   // Sync server URL for dev channel users
   static const char* kDevServerUrl;
 
-  // Takes ownership of |factory| and |signin_wrapper|.
+  // Takes ownership of |factory|.
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
-                     ManagedUserSigninManagerWrapper* signin_wrapper,
+                     SigninManagerBase* signin,
                      ProfileOAuth2TokenService* oauth2_token_service,
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
@@ -642,7 +641,7 @@ class ProfileSyncService
 
   const GURL& sync_service_url() const { return sync_service_url_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
-  SigninManagerBase* signin() const;
+  SigninManagerBase* signin() const { return signin_; }
   bool setup_in_progress() const { return setup_in_progress_; }
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
@@ -934,7 +933,7 @@ class ProfileSyncService
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  scoped_ptr<ManagedUserSigninManagerWrapper> signin_;
+  SigninManagerBase* signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;
