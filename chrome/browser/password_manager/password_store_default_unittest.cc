@@ -5,13 +5,13 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -46,17 +46,20 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
 
 class PasswordStoreDefaultTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    profile_.reset(new TestingProfile());
-
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     login_db_.reset(new LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(profile_->GetPath().Append(
+    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.Delete());
   }
 
   base::MessageLoopForUI message_loop_;
   scoped_ptr<LoginDatabase> login_db_;
-  scoped_ptr<TestingProfile> profile_;
+  base::ScopedTempDir temp_dir_;
 };
 
 ACTION(STLDeleteElements0) {
