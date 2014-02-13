@@ -32,6 +32,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -128,6 +129,18 @@ def HaveSrcInternalAccess():
         shell=True, stdin=nul, stdout=nul, stderr=nul) == 0
 
 
+def DelayBeforeRemoving(target_dir):
+  """A grace period before deleting the out of date toolchain directory."""
+  if (os.path.isdir(target_dir) and
+      not bool(int(os.environ.get('CHROME_HEADLESS', '0')))):
+    for i in range(9, 0, -1):
+      sys.stdout.write(
+              '\rRemoving old toolchain in %ds... (Ctrl-C to cancel)' % i)
+      sys.stdout.flush()
+      time.sleep(1)
+    print
+
+
 def main():
   if not sys.platform.startswith(('cygwin', 'win32')):
     return 0
@@ -158,8 +171,13 @@ def main():
                       HaveSrcInternalAccess())
     print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
           ('Pro' if should_get_pro else 'Express'))
+    print('  current_hash: %s' % current_hash)
+    print('  desired_hashes: %s' % desired_hashes)
+    DelayBeforeRemoving(target_dir)
     # This stays resident and will make the rmdir below fail.
-    subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'])
+    with open(os.devnull, 'wb') as nul:
+      subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'],
+                      stdin=nul, stdout=nul, stderr=nul)
     if os.path.isdir(target_dir):
       subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
     args = [sys.executable,
