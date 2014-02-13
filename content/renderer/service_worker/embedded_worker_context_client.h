@@ -49,12 +49,10 @@ class EmbeddedWorkerContextClient
 
   void SendMessageToBrowser(int request_id, const IPC::Message& message);
 
-  // WebServiceWorkerContextClient overrides, some of them are just dispatched
-  // on to script_context_.
+  // WebServiceWorkerContextClient overrides.
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void workerContextDestroyed();
-  virtual void didHandleInstallEvent(int request_id);
 
   // TODO: Implement DevTools related method overrides.
 
