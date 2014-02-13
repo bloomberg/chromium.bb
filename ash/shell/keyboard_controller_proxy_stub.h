@@ -20,6 +20,7 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
   KeyboardControllerProxyStub();
   virtual ~KeyboardControllerProxyStub();
 
+  virtual bool HasKeyboardWindow() const OVERRIDE;
   virtual aura::Window* GetKeyboardWindow() OVERRIDE;
 
  private:

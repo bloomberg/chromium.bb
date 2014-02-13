@@ -44,6 +44,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // Whether the keyboard window is resizing from its web contents.
   bool resizing_from_contents() const { return resizing_from_contents_; }
 
+  // Whether the keyboard window is created. The keyboard window is tied to a
+  // WebContent so we can just check if the WebContent is created or not.
+  virtual bool HasKeyboardWindow() const;
+
   // Sets the flag of whether the keyboard window is resizing from
   // its web contents.
   void set_resizing_from_contents(bool resizing) {

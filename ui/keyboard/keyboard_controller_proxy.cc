@@ -160,6 +160,10 @@ aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
   return keyboard_contents_->GetView()->GetNativeView();
 }
 
+bool KeyboardControllerProxy::HasKeyboardWindow() const {
+  return keyboard_contents_;
+}
+
 void KeyboardControllerProxy::ShowKeyboardContainer(aura::Window* container) {
   GetKeyboardWindow()->Show();
   container->Show();

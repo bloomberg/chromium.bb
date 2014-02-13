@@ -649,7 +649,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // GetWindowContainer().
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* keyboard_container = Shell::GetContainer(root_window,
       internal::kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
@@ -660,6 +660,34 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
+}
+
+// Test for crbug.com/342524. After user login, the work space should restore to
+// full screen.
+TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container = Shell::GetContainer(root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer);
+  keyboard_container->Show();
+  keyboard::KeyboardController* controller =
+      Shell::GetInstance()->keyboard_controller();
+  aura::Window* keyboard_window = controller->proxy()->GetKeyboardWindow();
+  keyboard_container->AddChild(keyboard_window);
+  keyboard_window->set_owned_by_parent(false);
+  keyboard_window->Show();
+
+  gfx::Rect before = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+
+  // Notify keyboard bounds changing.
+  controller->NotifyKeyboardBoundsChanging(
+      controller->proxy()->GetKeyboardWindow()->bounds());
+
+  gfx::Rect after = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+  EXPECT_LT(after, before);
+
+  // Mock a login user profile change to reinitialize the keyboard.
+  ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
+  EXPECT_EQ(ash::Shell::GetScreen()->GetPrimaryDisplay().work_area(), before);
 }
 
 }  // namespace test

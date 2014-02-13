@@ -19,6 +19,10 @@ KeyboardControllerProxyStub::KeyboardControllerProxyStub() {
 KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
 }
 
+bool KeyboardControllerProxyStub::HasKeyboardWindow() const {
+  return keyboard_;
+}
+
 aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
   if (!keyboard_) {
     keyboard_.reset(new aura::Window(&delegate_));

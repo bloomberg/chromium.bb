@@ -622,6 +622,9 @@ void RootWindowController::DeactivateKeyboard(
   if (keyboard_container->GetRootWindow() == root_window()) {
     root_window()->RemoveChild(keyboard_container);
     if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
+      // Virtual keyboard may be deactivated while still showing, notify all
+      // observers that keyboard bounds changed to 0 before remove them.
+      keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
       keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
       keyboard_controller->RemoveObserver(panel_layout_manager_);
       keyboard_controller->RemoveObserver(docked_layout_manager_);
