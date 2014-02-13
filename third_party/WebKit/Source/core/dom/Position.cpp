@@ -1046,7 +1046,7 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
 // This assumes that it starts in editable content.
 Position Position::leadingWhitespacePosition(EAffinity affinity, bool considerNonCollapsibleWhitespace) const
 {
-    ASSERT(isEditablePosition(*this));
+    ASSERT(isEditablePosition(*this, ContentIsEditable, DoNotUpdateStyle));
     if (isNull())
         return Position();
 
@@ -1068,7 +1068,7 @@ Position Position::leadingWhitespacePosition(EAffinity affinity, bool considerNo
 // This assumes that it starts in editable content.
 Position Position::trailingWhitespacePosition(EAffinity, bool considerNonCollapsibleWhitespace) const
 {
-    ASSERT(isEditablePosition(*this));
+    ASSERT(isEditablePosition(*this, ContentIsEditable, DoNotUpdateStyle));
     if (isNull())
         return Position();
 

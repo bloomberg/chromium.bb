@@ -152,6 +152,10 @@ int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 // boolean functions on Position
 
 enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
+// FIXME: Both isEditablePosition and isRichlyEditablePosition rely on up-to-date
+// style to give proper results. They shouldn't update style by default, but
+// should make it clear that that is the contract.
+// FIXME: isRichlyEditablePosition should also take EUpdateStyle.
 bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
 bool lineBreakExistsAtPosition(const Position&);

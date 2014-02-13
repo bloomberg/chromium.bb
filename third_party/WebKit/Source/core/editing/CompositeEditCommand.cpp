@@ -313,7 +313,7 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtr<Node> insertChild, PassRef
 
 void CompositeEditCommand::insertNodeAt(PassRefPtr<Node> insertChild, const Position& editingPosition)
 {
-    ASSERT(isEditablePosition(editingPosition));
+    ASSERT(isEditablePosition(editingPosition, ContentIsEditable, DoNotUpdateStyle));
     // For editing positions like [table, 0], insert before the table,
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();
