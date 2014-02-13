@@ -294,29 +294,50 @@
   /**
    * Redistributes the total width amongst the keys in the range provided.
    * @param {Array.<kb-key>} allKeys Ordered list of keys to stretch.
-   * @param {number} pitch The space between two keys.
+   * @param {AlignmentOptions} params Options for aligning the keyset.
    * @param {number} xOffset The x-coordinate of the key who's index is start.
    * @param {number} width The total extraneous width to distribute.
    * @param {number} keyHeight The height of each key.
    * @param {number} yOffset The y-coordinate of the top edge of the row.
    */
-  function redistribute(allKeys, pitch, xOffset, width, keyHeight, yOffset) {
-    var weight = 0;
+  function redistribute(allKeys, params, xOffset, width, keyHeight, yOffset) {
+    var availableWidth = width - (allKeys.length - 1) * params.pitchX;
+    var stretchWeight = 0;
+    var nStretch = 0;
     for (var i = 0; i < allKeys.length; i++) {
       var key = allKeys[i];
-      weight += key.weight;
-    }
-    var availableWidth = width - (allKeys.length - 1) * pitch;
-    var pixelsPerWeight = width / weight;
-    for (var i = 0; i < allKeys.length; i++) {
-      var key = allKeys[i]
-      var keyWidth = Math.floor(key.weight * pixelsPerWeight);
-      if (i == allKeys.length -1) {
-        keyWidth =  availableWidth;
+      if (key.stretch) {
+        stretchWeight += key.weight;
+        nStretch++;
+      } else if (key.weight == DEFAULT_KEY_WEIGHT_X) {
+        availableWidth -= params.keyWidth;
+      } else {
+        availableWidth -=
+            Math.floor(key.weight/DEFAULT_KEY_WEIGHT_X * params.keyWidth);
       }
-      updateKey(allKeys[i], keyWidth, keyHeight, xOffset, yOffset)
-      availableWidth -= keyWidth;
-      xOffset += keyWidth + pitch;
+    }
+    if (stretchWeight <= 0)
+      console.error("Cannot stretch row without a stretchable key");
+    // Rounding error to distribute.
+    var pixelsPerWeight = availableWidth / stretchWeight;
+    for (var i = 0; i < allKeys.length; i++) {
+      var key = allKeys[i];
+      var keyWidth = params.keyWidth;
+      if (key.weight != DEFAULT_KEY_WEIGHT_X) {
+        keyWidth =
+            Math.floor(key.weight/DEFAULT_KEY_WEIGHT_X * params.keyWidth);
+      }
+      if (key.stretch) {
+        nStretch--;
+        if (nStretch > 0) {
+          keyWidth = Math.floor(key.weight * pixelsPerWeight);
+          availableWidth -= keyWidth;
+        } else {
+          keyWidth = availableWidth;
+        }
+      }
+      updateKey(key, keyWidth, keyHeight, xOffset, yOffset)
+      xOffset += keyWidth + params.pitchX;
     }
   }
 
@@ -325,7 +346,7 @@
    * it. A precondition is that all keys in this row can be stretched as needed.
    * @param {!kb-row} row The current row to be aligned.
    * @param {!kb-row} prevRow The row above the current row.
-   * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   * @param {!AlignmentOptions} params Options for aligning the keyset.
    * @param {number} keyHeight The height of the keys in this row.
    * @param {number} heightOffset The height offset caused by the rows above.
    */
@@ -383,7 +404,7 @@
     var leftWidth = leftEdge - params.offsetLeft - params.pitchX;
     var leftKeys = allKeys.array().slice(0, spaceIndex);
     redistribute(leftKeys,
-                 params.pitchX,
+                 params,
                  params.offsetLeft,
                  leftWidth,
                  keyHeight,
@@ -401,7 +422,7 @@
         params.availableWidth - (rightEdge - params.offsetLeft + params.pitchX);
     var rightKeys = allKeys.array().slice(spaceIndex + 1);
     redistribute(rightKeys,
-                 params.pitchX,
+                 params,
                  rightEdge + params.pitchX,//xOffset.
                  rightWidth,
                  keyHeight,
