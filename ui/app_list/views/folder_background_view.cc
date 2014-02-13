@@ -55,9 +55,11 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds((kBubbleTransitionDurationMs)));
   if (show_state_ == SHOW_BUBBLE) {
+    settings.SetTweenType(gfx::Tween::EASE_OUT_2);
     layer()->SetOpacity(1.0f);
     layer()->SetTransform(gfx::Transform());
   } else {
+    settings.SetTweenType(gfx::Tween::EASE_IN_3);
     layer()->SetOpacity(0.0f);
     layer()->SetTransform(transform);
   }

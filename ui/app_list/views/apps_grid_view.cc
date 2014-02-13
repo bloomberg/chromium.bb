@@ -676,7 +676,8 @@ void AppsGridView::ScheduleShowHideAnimation(bool show) {
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
   animation.AddObserver(this);
-  animation.SetTweenType(gfx::Tween::EASE_IN_2);
+  animation.SetTweenType(
+      show ? kFolderFadeInTweenType : kFolderFadeOutTweenType);
   animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
 

@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace app_list {
 
@@ -36,6 +37,8 @@ APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
 APP_LIST_EXPORT extern const int kFolderTransitionInDurationMs;
 APP_LIST_EXPORT extern const int kFolderTransitionOutDurationMs;
+APP_LIST_EXPORT extern const gfx::Tween::Type kFolderFadeInTweenType;
+APP_LIST_EXPORT extern const gfx::Tween::Type kFolderFadeOutTweenType;
 
 APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;

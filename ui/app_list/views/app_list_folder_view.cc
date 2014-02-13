@@ -99,7 +99,8 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
   UpdateFolderNameVisibility(true);
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTweenType(gfx::Tween::EASE_IN_2);
+  animation.SetTweenType(
+      show ? kFolderFadeInTweenType : kFolderFadeOutTweenType);
   animation.AddObserver(this);
   animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));

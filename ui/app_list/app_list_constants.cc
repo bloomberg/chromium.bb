@@ -36,13 +36,22 @@ const int kPageTransitionDurationInMs = 180;
 // Duration in milliseconds for over scroll page transition.
 const int kOverscrollPageTransitionDurationMs = 50;
 
-// Duration in milliseconds for the target page transition when opening or
-// closing a folder.
-const int kFolderTransitionInDurationMs = 200;
+// Duration in milliseconds for fading in the target page when opening
+// or closing a folder, and the duration for the top folder icon animation
+// for flying in or out the folder.
+const int kFolderTransitionInDurationMs = 400;
 
-// Duration in milliseconds for fading out the old page when opening or
-// closing a folder.
+// Duration in milliseconds for fading out the old page when opening or closing
+// a folder.
 const int kFolderTransitionOutDurationMs = 30;
+
+// Animation curve used for fading in the target page when opening or closing
+// a folder.
+const gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
+
+// Animation curve used for fading out the target page when opening or closing
+// a folder.
+const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::EASE_IN_3;
 
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;
