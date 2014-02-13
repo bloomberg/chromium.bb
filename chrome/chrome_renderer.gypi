@@ -441,9 +441,6 @@
           ],
         }],
         ['OS=="win"', {
-          'dependencies': [
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
-          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],

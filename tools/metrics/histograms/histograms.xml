@@ -1282,13 +1282,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Blacklist.PatchedInRenderer" enum="BooleanHit">
-  <summary>
-    Counts the number of times a renderer process is started with the browser
-    blacklist patch. This should never be hit.
-  </summary>
-</histogram>
-
 <histogram name="Blacklist.Setup" enum="BlacklistSetup">
   <summary>
     Records the successes and failures when running the browser blacklist setup
