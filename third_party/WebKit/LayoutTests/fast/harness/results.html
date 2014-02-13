@@ -824,10 +824,12 @@ PixelZoomer._zoomImageContainer = function(url)
     
     var image = new Image();
     image.src = url;
-    image.style.width = kZoomedResultWidth + 'px';
-    image.style.height = kZoomedResultHeight + 'px';
-    image.style.border = '1px solid black';
+    image.style.display = 'none';
+
+    var canvas = document.createElement('canvas');
+
     imageContainer.appendChild(image);
+    imageContainer.appendChild(canvas);
     container.appendChild(imageContainer);
     
     return container;
@@ -861,9 +863,27 @@ PixelZoomer._createContainer = function(e)
 PixelZoomer._draw = function(imageContainer)
 {
     var image = imageContainer.querySelector('img');
-    var containerBounds = imageContainer.getBoundingClientRect();
-    image.style.left = (containerBounds.width / 2 - PixelZoomer._percentX * kZoomedResultWidth) + 'px';
-    image.style.top = (containerBounds.height / 2 - PixelZoomer._percentY * kZoomedResultHeight) + 'px';
+    var canvas = imageContainer.querySelector('canvas');
+
+    if (!image.complete) {
+        image.onload = function() {
+            PixelZoomer._draw(imageContainer);
+        };
+        return;
+    }
+
+    canvas.width = imageContainer.clientWidth;
+    canvas.height = imageContainer.clientHeight;
+
+    var ctx = canvas.getContext('2d');
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);
+    ctx.translate(-PixelZoomer._percentX * kZoomedResultWidth, -PixelZoomer._percentY * kZoomedResultHeight);
+    ctx.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
+    ctx.scale(PixelZoomer._zoomFactor, PixelZoomer._zoomFactor);
+    ctx.drawImage(image, 0, 0);
 }
 
 PixelZoomer._drawAll = function()
