@@ -10,6 +10,7 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/webui/extensions/extension_error_ui_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -48,6 +50,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -155,7 +158,7 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(Profile* profile) : profile_(profile) {
 }
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
-: profile_(profile) {
+    : profile_(profile) {
   int types[] = {
     chrome::NOTIFICATION_EXTENSION_INSTALLED,
     chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -171,10 +174,23 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
                    types[i],
                    content::Source<Profile>(profile_));
   }
+
+  ErrorConsole::Get(profile)->AddObserver(this);
 }
 
+DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
+  ErrorConsole::Get(profile_)->RemoveObserver(this);
+}
 
-DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {}
+void DeveloperPrivateEventRouter::AddExtensionId(
+    const std::string& extension_id) {
+  extension_ids_.insert(extension_id);
+}
+
+void DeveloperPrivateEventRouter::RemoveExtensionId(
+    const std::string& extension_id) {
+  extension_ids_.erase(extension_id);
+}
 
 void DeveloperPrivateEventRouter::Observe(
     int type,
@@ -232,6 +248,25 @@ void DeveloperPrivateEventRouter::Observe(
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
+void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
+  // We don't want to handle errors thrown by extensions subscribed to these
+  // events (currently only the Apps Developer Tool), because doing so risks
+  // entering a loop.
+  if (extension_ids_.find(error->extension_id()) != extension_ids_.end())
+    return;
+
+  developer::EventData event_data;
+  event_data.event_type = developer::EVENT_TYPE_ERROR_ADDED;
+  event_data.item_id = error->extension_id();
+
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  args->Append(event_data.ToValue().release());
+
+  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
+      scoped_ptr<Event>(new Event(
+          developer_private::OnItemStateChanged::kEventName, args.Pass())));
+}
+
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
   last_unpacked_directory_ = path;
 }
@@ -247,16 +282,22 @@ void DeveloperPrivateAPI::Shutdown() {}
 
 void DeveloperPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
-  if (!developer_private_event_router_)
+  if (!developer_private_event_router_) {
     developer_private_event_router_.reset(
         new DeveloperPrivateEventRouter(profile_));
+  }
+
+  developer_private_event_router_->AddExtensionId(details.extension_id);
 }
 
 void DeveloperPrivateAPI::OnListenerRemoved(
     const EventListenerInfo& details) {
   if (!ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
-          developer_private::OnItemStateChanged::kEventName))
+           developer_private::OnItemStateChanged::kEventName)) {
     developer_private_event_router_.reset(NULL);
+  } else {
+    developer_private_event_router_->RemoveExtensionId(details.extension_id);
+  }
 }
 
 namespace api {
@@ -272,9 +313,8 @@ bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
 DeveloperPrivateAutoUpdateFunction::~DeveloperPrivateAutoUpdateFunction() {}
 
 scoped_ptr<developer::ItemInfo>
-  DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(
-      const Extension& item,
-      bool item_is_enabled) {
+DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
+                                                     bool item_is_enabled) {
   scoped_ptr<developer::ItemInfo> info(new developer::ItemInfo());
 
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
@@ -308,12 +348,43 @@ scoped_ptr<developer::ItemInfo>
   if (Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
         new std::string(base::UTF16ToUTF8(item.path().LossyDisplayName())));
-    for (std::vector<extensions::InstallWarning>::const_iterator it =
-             item.install_warnings().begin();
-         it != item.install_warnings().end(); ++it) {
-      developer::InstallWarning* warning = new developer::InstallWarning();
-      warning->message = it->message;
-      info->install_warnings.push_back(make_linked_ptr(warning));
+    // If the ErrorConsole is enabled, get the errors for the extension and add
+    // them to the list. Otherwise, use the install warnings (using both is
+    // redundant).
+    ErrorConsole* error_console = ErrorConsole::Get(GetProfile());
+    if (error_console->enabled()) {
+      const ErrorList& errors = error_console->GetErrorsForExtension(item.id());
+      if (!errors.empty()) {
+        for (ErrorList::const_iterator iter = errors.begin();
+             iter != errors.end();
+             ++iter) {
+          switch ((*iter)->type()) {
+            case ExtensionError::MANIFEST_ERROR:
+              info->manifest_errors.push_back(
+                  make_linked_ptr((*iter)->ToValue().release()));
+            case ExtensionError::RUNTIME_ERROR: {
+              const RuntimeError* error =
+                  static_cast<const RuntimeError*>(*iter);
+              scoped_ptr<base::DictionaryValue> value = error->ToValue();
+              bool can_inspect = content::RenderViewHost::FromID(
+                                     error->render_process_id(),
+                                     error->render_view_id()) != NULL;
+              value->SetBoolean("canInspect", can_inspect);
+              info->runtime_errors.push_back(make_linked_ptr(value.release()));
+            }
+          }
+        }
+      }
+    } else {
+      for (std::vector<extensions::InstallWarning>::const_iterator it =
+               item.install_warnings().begin();
+           it != item.install_warnings().end();
+           ++it) {
+        scoped_ptr<developer::InstallWarning> warning(
+            new developer::InstallWarning);
+        warning->message = it->message;
+        info->install_warnings.push_back(make_linked_ptr(warning.release()));
+      }
     }
   }
 
@@ -1207,120 +1278,6 @@ void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
 
 DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
-bool DeveloperPrivateGetStringsFunction::RunImpl() {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
-
-  webui::SetFontAndTextDirection(dict);
-
-  #define   SET_STRING(id, idr) \
-    dict->SetString(id, l10n_util::GetStringUTF16(idr))
-  SET_STRING("extensionSettings", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-
-  SET_STRING("appsDevtoolSearch", IDS_APPS_DEVTOOL_SEARCH);
-  SET_STRING("appsDevtoolApps", IDS_APPS_DEVTOOL_APPS_INSTALLED);
-  SET_STRING("appsDevtoolExtensions", IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED);
-  SET_STRING("appsDevtoolNoExtensions", IDS_EXTENSIONS_NONE_INSTALLED);
-  SET_STRING("appsDevtoolUnpacked", IDS_APPS_DEVTOOL_UNPACKED_INSTALLED);
-  SET_STRING("appsDevtoolInstalled", IDS_APPS_DEVTOOL_INSTALLED);
-  SET_STRING("appsDevtoolNoPackedApps", IDS_APPS_DEVTOOL_NO_PACKED_APPS);
-  SET_STRING("appsDevtoolNoUnpackedApps", IDS_APPS_DEVTOOL_NO_UNPACKED_APPS);
-  SET_STRING("appsDevtoolNoPackedExtensions",
-      IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS);
-  SET_STRING("appsDevtoolNoUnpackedExtensions",
-      IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS);
-  SET_STRING("appsDevtoolUpdating", IDS_APPS_DEVTOOL_UPDATING);
-  SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
-  SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);
-  SET_STRING("extensionSettingsExtensionPath", IDS_EXTENSIONS_PATH);
-  SET_STRING("extensionSettingsInspectViews", IDS_EXTENSIONS_INSPECT_VIEWS);
-  SET_STRING("extensionSettingsInstallWarnings",
-             IDS_EXTENSIONS_INSTALL_WARNINGS);
-  SET_STRING("viewIncognito", IDS_EXTENSIONS_VIEW_INCOGNITO);
-  SET_STRING("viewInactive", IDS_EXTENSIONS_VIEW_INACTIVE);
-  SET_STRING("backgroundPage", IDS_EXTENSIONS_BACKGROUND_PAGE);
-  SET_STRING("extensionSettingsEnable", IDS_EXTENSIONS_ENABLE);
-  SET_STRING("extensionSettingsEnabled", IDS_EXTENSIONS_ENABLED);
-  SET_STRING("extensionSettingsRemove", IDS_EXTENSIONS_REMOVE);
-  SET_STRING("extensionSettingsEnableIncognito",
-             IDS_EXTENSIONS_ENABLE_INCOGNITO);
-  SET_STRING("extensionSettingsAllowFileAccess",
-             IDS_EXTENSIONS_ALLOW_FILE_ACCESS);
-  SET_STRING("extensionSettingsReloadTerminated",
-             IDS_EXTENSIONS_RELOAD_TERMINATED);
-  SET_STRING("extensionSettingsReloadUnpacked",
-             IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED);
-  SET_STRING("extensionSettingsLaunch", IDS_EXTENSIONS_LAUNCH);
-  SET_STRING("extensionSettingsOptions", IDS_EXTENSIONS_OPTIONS_LINK);
-  SET_STRING("extensionSettingsPermissions", IDS_EXTENSIONS_PERMISSIONS_LINK);
-  SET_STRING("extensionSettingsVisitWebsite", IDS_EXTENSIONS_VISIT_WEBSITE);
-  SET_STRING("extensionSettingsVisitWebStore", IDS_EXTENSIONS_VISIT_WEBSTORE);
-  SET_STRING("extensionSettingsPolicyControlled",
-             IDS_EXTENSIONS_POLICY_CONTROLLED);
-  SET_STRING("extensionSettingsManagedMode",
-             IDS_EXTENSIONS_LOCKED_MANAGED_USER);
-  SET_STRING("extensionSettingsShowButton", IDS_EXTENSIONS_SHOW_BUTTON);
-  SET_STRING("appsDevtoolLoadUnpackedButton",
-             IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON);
-  SET_STRING("appsDevtoolPackButton", IDS_APPS_DEVTOOL_PACK_BUTTON);
-  SET_STRING("extensionSettingsCommandsLink",
-             IDS_EXTENSIONS_COMMANDS_CONFIGURE);
-  SET_STRING("appsDevtoolUpdateButton", IDS_APPS_DEVTOOL_UPDATE_BUTTON);
-  SET_STRING("extensionSettingsWarningsTitle", IDS_EXTENSION_WARNINGS_TITLE);
-  SET_STRING("extensionSettingsShowDetails", IDS_EXTENSIONS_SHOW_DETAILS);
-  SET_STRING("extensionSettingsHideDetails", IDS_EXTENSIONS_HIDE_DETAILS);
-  SET_STRING("extensionUninstall", IDS_EXTENSIONS_UNINSTALL);
-  SET_STRING("extensionsPermissionsHeading",
-             IDS_EXTENSIONS_PERMISSIONS_HEADING);
-  SET_STRING("extensionsPermissionsClose", IDS_EXTENSIONS_PERMISSIONS_CLOSE);
-  SET_STRING("extensionDisabled", IDS_EXTENSIONS_DISABLED);
-  SET_STRING("extensionSettingsShowLogsButton", IDS_EXTENSIONS_SHOW_LOGS);
-  SET_STRING("extensionSettingsMoreDetailsButton", IDS_EXTENSIONS_MORE_DETAILS);
-  SET_STRING("extensionSettingsVersion", IDS_EXTENSIONS_VERSION);
-  SET_STRING("extensionSettingsDelete", IDS_EXTENSIONS_ADT_DELETE);
-  SET_STRING("extensionSettingsPack", IDS_EXTENSIONS_PACK);
-
-// Pack Extension strings
-  SET_STRING("packExtensionOverlay", IDS_EXTENSION_PACK_DIALOG_TITLE);
-  SET_STRING("packExtensionHeading", IDS_EXTENSION_ADT_PACK_DIALOG_HEADING);
-  SET_STRING("packButton", IDS_EXTENSION_ADT_PACK_BUTTON);
-  SET_STRING("ok", IDS_OK);
-  SET_STRING("cancel", IDS_CANCEL);
-  SET_STRING("packExtensionRootDir",
-     IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL);
-  SET_STRING("packExtensionPrivateKey",
-     IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL);
-  SET_STRING("packExtensionBrowseButton", IDS_EXTENSION_PACK_DIALOG_BROWSE);
-  SET_STRING("packExtensionProceedAnyway", IDS_EXTENSION_PROCEED_ANYWAY);
-  SET_STRING("packExtensionWarningTitle", IDS_EXTENSION_PACK_WARNING_TITLE);
-  SET_STRING("packExtensionErrorTitle", IDS_EXTENSION_PACK_ERROR_TITLE);
-  SET_STRING("packAppOverlay", IDS_EXTENSION_PACK_APP_DIALOG_TITLE);
-  SET_STRING("packAppHeading", IDS_EXTENSION_ADT_PACK_APP_DIALOG_HEADING);
-
-// Delete confirmation dialog.
-  SET_STRING("deleteConfirmationDeleteButton",
-      IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON);
-  SET_STRING("deleteConfirmationTitle",
-      IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_TITLE);
-  SET_STRING("deleteConfirmationMessageApp",
-      IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_APP);
-  SET_STRING("deleteConfirmationMessageExtension",
-      IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION);
-
-// Dialog when profile is managed.
-  SET_STRING("managedProfileDialogCloseButton",
-      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON);
-  SET_STRING("managedProfileDialogTitle",
-      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE);
-  SET_STRING("managedProfileDialogDescription",
-      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION);
-
-  #undef   SET_STRING
-  return true;
-}
-
-DeveloperPrivateGetStringsFunction::~DeveloperPrivateGetStringsFunction() {}
-
 bool DeveloperPrivateIsProfileManagedFunction::RunImpl() {
   SetResult(new base::FundamentalValue(GetProfile()->IsManaged()));
   return true;
@@ -1328,6 +1285,58 @@ bool DeveloperPrivateIsProfileManagedFunction::RunImpl() {
 
 DeveloperPrivateIsProfileManagedFunction::
     ~DeveloperPrivateIsProfileManagedFunction() {
+}
+
+DeveloperPrivateRequestFileSourceFunction::
+    DeveloperPrivateRequestFileSourceFunction() {}
+
+DeveloperPrivateRequestFileSourceFunction::
+    ~DeveloperPrivateRequestFileSourceFunction() {}
+
+bool DeveloperPrivateRequestFileSourceFunction::RunImpl() {
+  scoped_ptr<developer::RequestFileSource::Params> params(
+      developer::RequestFileSource::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  base::DictionaryValue* dict = NULL;
+  if (!params->dict->GetAsDictionary(&dict)) {
+    NOTREACHED();
+    return false;
+  }
+
+  AddRef();  // Balanced in LaunchCallback().
+  error_ui_util::HandleRequestFileSource(
+      dict,
+      GetProfile(),
+      base::Bind(&DeveloperPrivateRequestFileSourceFunction::LaunchCallback,
+                 base::Unretained(this)));
+  return true;
+}
+
+void DeveloperPrivateRequestFileSourceFunction::LaunchCallback(
+    const base::DictionaryValue& results) {
+  SetResult(results.DeepCopy());
+  SendResponse(true);
+  Release();  // Balanced in RunImpl().
+}
+
+DeveloperPrivateOpenDevToolsFunction::DeveloperPrivateOpenDevToolsFunction() {}
+DeveloperPrivateOpenDevToolsFunction::~DeveloperPrivateOpenDevToolsFunction() {}
+
+bool DeveloperPrivateOpenDevToolsFunction::RunImpl() {
+  scoped_ptr<developer::OpenDevTools::Params> params(
+      developer::OpenDevTools::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  base::DictionaryValue* dict = NULL;
+  if (!params->dict->GetAsDictionary(&dict)) {
+    NOTREACHED();
+    return false;
+  }
+
+  error_ui_util::HandleOpenDevTools(dict);
+
+  return true;
 }
 
 } // namespace api

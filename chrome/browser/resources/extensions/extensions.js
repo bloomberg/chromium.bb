@@ -129,7 +129,8 @@ cr.define('extensions', function() {
       // Initialize the Commands overlay.
       extensions.ExtensionCommandsOverlay.getInstance().initializePage();
 
-      extensions.ExtensionErrorOverlay.getInstance().initializePage();
+      extensions.ExtensionErrorOverlay.getInstance().initializePage(
+          extensions.ExtensionSettings.showOverlay);
 
       // Initialize the kiosk overlay.
       if (cr.isChromeOS) {

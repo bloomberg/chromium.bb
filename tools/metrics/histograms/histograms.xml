@@ -25465,6 +25465,22 @@ other types of suffix sets.
   <int value="667" label="LOGPRIVATE_STOPNETINTERNALSWATCH"/>
   <int value="668" label="FILEBROWSERPRIVATE_GETPROFILES"/>
   <int value="669" label="FILEBROWSERPRIVATE_VISITDESKTOP"/>
+  <int value="670" label="VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG"/>
+  <int value="671" label="HID_GETDEVICES"/>
+  <int value="672" label="HID_CONNECT"/>
+  <int value="673" label="HID_DISCONNECT"/>
+  <int value="674" label="HID_RECEIVE"/>
+  <int value="675" label="HID_SEND"/>
+  <int value="676" label="HID_RECEIVEFEATUREREPORT"/>
+  <int value="677" label="HID_SENDFEATUREREPORT"/>
+  <int value="678" label="HOTWORDPRIVATE_SETENABLED"/>
+  <int value="679" label="HOTWORDPRIVATE_GETSTATUS"/>
+  <int value="680" label="APP_CURRENTWINDOWINTERNAL_SETBADGEICON"/>
+  <int value="681" label="APP_CURRENTWINDOWINTERNAL_CLEARBADGE"/>
+  <int value="682" label="WEBVIEW_SETZOOM"/>
+  <int value="683" label="WEBVIEW_GETZOOM"/>
+  <int value="684" label="DEVELOPERPRIVATE_REQUESTFILESOURCE"/>
+  <int value="685" label="DEVELOPERPRIVATE_OPENDEVTOOLS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

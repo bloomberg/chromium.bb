@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -43,6 +44,10 @@ class ExtensionErrorHandler : public content::WebUIMessageHandler {
 
   // Handle the "requestFileSource" call.
   void HandleRequestFileSource(const base::ListValue* args);
+
+  // Called when |error_ui_util::HandleRequestFileSource| finishes.
+  void OnFileSourceHandled(const base::DictionaryValue& source);
+
   // Handle the "openDevTools" call.
   void HandleOpenDevTools(const base::ListValue* args);
 
@@ -64,6 +69,9 @@ class ExtensionErrorHandler : public content::WebUIMessageHandler {
 
   // The profile with which this Handler is associated.
   Profile* profile_;
+
+  // Weak pointer factory for posting background tasks.
+  base::WeakPtrFactory<ExtensionErrorHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorHandler);
 };

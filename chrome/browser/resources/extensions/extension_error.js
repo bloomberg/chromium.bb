@@ -41,46 +41,6 @@ cr.define('extensions', function() {
     return div;
   }
 
-  /**
-   * The manifest filename.
-   * @type {string}
-   * @const
-   * @private
-   */
-  ExtensionError.MANIFEST_FILENAME_ = 'manifest.json';
-
-  /**
-   * Determine whether or not chrome can load the source for a given file; this
-   * can only be done if the file belongs to the extension.
-   * @param {string} file The file to load.
-   * @param {string} extensionUrl The url for the extension, in the form
-   *     chrome-extension://<extension-id>/.
-   * @return {boolean} True if the file can be loaded, false otherwise.
-   * @private
-   */
-  ExtensionError.canLoadFileSource_ = function(file, extensionUrl) {
-    return RegExp('^' + extensionUrl).test(file) ||
-           file.toLowerCase() == ExtensionError.MANIFEST_FILENAME_;
-  };
-
-  /**
-   * Determine whether or not there are any user-friendly (non-internal) frames
-   * in the error's stack trace.
-   * @param {Object} error The error to examine.
-   * @return {boolean} True if there are user-friendly stack frames for the
-   *     error, false otherwise.
-   * @private
-   */
-  ExtensionError.hasExternalStackFrames_ = function(error) {
-    // All our internal source begins with the "extensions::" prefix.
-    var extensionPrefix = /^extensions::/;
-    for (var i = 0; i < error.stackTrace.length; ++i) {
-      if (!extensionPrefix.test(error.stackTrace[i].url))
-        return true;
-    }
-    return false;
-  };
-
   ExtensionError.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -107,49 +67,19 @@ cr.define('extensions', function() {
 
       // If we cannot open the file source and there are no external frames in
       // the stack, then there are no details to display.
-      if (!ExtensionError.canLoadFileSource_(error.source, extensionUrl) &&
-          !ExtensionError.hasExternalStackFrames_(error)) {
+      if (!extensions.ExtensionErrorOverlay.canShowOverlayForError(
+              error, extensionUrl)) {
         viewDetailsLink.hidden = true;
-        return;
-      }
-
-      // The relative url is the url without the preceeding
-      // "chrome-extension://<id>"; this is the format which the
-      // requestFileSource call expects.
-      var relativeUrl =
-          error.source.substring(0, extensionUrl.length) == extensionUrl ?
-              error.source.substring(extensionUrl.length) : error.source;
-
-      var requestFileSourceArgs = {extensionId: error.extensionId,
-                                   message: error.message,
-                                   pathSuffix: relativeUrl};
-
-      var viewDetailsStringId;
-      if (relativeUrl.toLowerCase() == 'manifest.json') {
-        requestFileSourceArgs.manifestKey = error.manifestKey;
-        requestFileSourceArgs.manifestSpecific = error.manifestSpecific;
-        viewDetailsStringId = 'extensionErrorViewManifest';
       } else {
-        requestFileSourceArgs.lineNumber =
-            error.stackTrace && error.stackTrace[0] ?
-                error.stackTrace[0].lineNumber : 0;
-        viewDetailsStringId = 'extensionErrorViewDetails';
+        var stringId = extensionUrl.toLowerCase() == 'manifest.json' ?
+            'extensionErrorViewManifest' : 'extensionErrorViewDetails';
+        viewDetailsLink.textContent = loadTimeData.getString(stringId);
+
+        viewDetailsLink.addEventListener('click', function(e) {
+          extensions.ExtensionErrorOverlay.getInstance().setErrorAndShowOverlay(
+              error, extensionUrl);
+        });
       }
-      viewDetailsLink.textContent = loadTimeData.getString(viewDetailsStringId);
-
-      viewDetailsLink.addEventListener('click', function(e) {
-        var overlay = extensions.ExtensionErrorOverlay.getInstance();
-        overlay.setError(error);
-
-        // If we can, request the file source to show to the user in the
-        // overlay. Otherwise, simply show the overlay.
-        if (ExtensionError.canLoadFileSource_(error.source, extensionUrl)) {
-          chrome.send('extensionErrorRequestFileSource',
-                      [requestFileSourceArgs]);
-        } else {
-          overlay.requestFileSourceResponse(null);
-        }
-      }.bind(this));
     },
   };
 

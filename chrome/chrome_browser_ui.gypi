@@ -2341,6 +2341,8 @@
         'browser/ui/webui/extensions/extension_basic_info.h',
         'browser/ui/webui/extensions/extension_error_handler.cc',
         'browser/ui/webui/extensions/extension_error_handler.h',
+        'browser/ui/webui/extensions/extension_error_ui_util.cc',
+        'browser/ui/webui/extensions/extension_error_ui_util.h',
         'browser/ui/webui/extensions/extension_icon_source.cc',
         'browser/ui/webui/extensions/extension_icon_source.h',
         'browser/ui/webui/extensions/extension_info_ui.cc',

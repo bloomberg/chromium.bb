@@ -6,6 +6,19 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
+   * Get the url relative to the main extension url. If the url is
+   * unassociated with the extension, this will be the full url.
+   * @param {string} url The url to make relative.
+   * @param {string} extensionUrl The url for the extension resources, in the
+   *     form "chrome-etxension://<extension_id>/".
+   * @return {string} The url relative to the host.
+   */
+  function getRelativeUrl(url, extensionUrl) {
+    return url.substring(0, extensionUrl.length) == extensionUrl ?
+        url.substring(extensionUrl.length) : url;
+  }
+
+  /**
    * The RuntimeErrorContent manages all content specifically associated with
    * runtime errors; this includes stack frames and the context url.
    * @constructor
@@ -40,6 +53,24 @@ cr.define('extensions', function() {
     return !/^extensions::/.test(url);
   };
 
+  /**
+   * Send a call to chrome to open the developer tools for an error.
+   * This will call either the bound function in ExtensionErrorHandler or the
+   * API function from developerPrivate, depending on whether this is being
+   * used in the native chrome:extensions page or the Apps Developer Tool.
+   * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
+   * @param {Object} args The arguments to pass to openDevTools.
+   * @private
+   */
+  RuntimeErrorContent.openDevtools_ = function(args) {
+    if (chrome.send)
+      chrome.send('extensionErrorOpenDevTools', [args]);
+    else if (chrome.developerPrivate)
+      chrome.developerPrivate.openDevTools(args);
+    else
+      assert(false, 'Cannot call either openDevTools function.');
+  };
+
   RuntimeErrorContent.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -51,7 +82,7 @@ cr.define('extensions', function() {
     error_: undefined,
 
     /**
-     * The URL associated with this extension, i.e. chrome-extension://<id>.
+     * The URL associated with this extension, i.e. chrome-extension://<id>/.
      * @type {string}
      * @private
      */
@@ -90,12 +121,13 @@ cr.define('extensions', function() {
     /**
      * Sets the error for the content.
      * @param {Object} error The error whose content should be displayed.
+     * @param {string} extensionUrl The URL associated with this extension.
      */
-    setError: function(error) {
+    setError: function(error, extensionUrl) {
       this.error_ = error;
-      this.extensionUrl_ = 'chrome-extension://' + error.extensionId + '/';
+      this.extensionUrl_ = extensionUrl;
       this.contextUrl_.textContent = error.contextUrl ?
-          this.getRelativeUrl_(error.contextUrl) :
+          getRelativeUrl(error.contextUrl, this.extensionUrl_) :
           loadTimeData.getString('extensionErrorOverlayContextUnknown');
       this.initStackTrace_();
     },
@@ -109,29 +141,6 @@ cr.define('extensions', function() {
       this.currentFrameNode_ = undefined;
       this.stackTrace_.innerHTML = '';
       this.stackTrace_.hidden = true;
-    },
-
-    /**
-     * Returns whether or not a given |url| is associated with the current
-     * extension.
-     * @param {string} url The url to examine.
-     * @return {boolean} Whether or not the url is associated with the extension
-     * @private
-     */
-    isRelatedUrl_: function(url) {
-      return url.substring(0, this.extensionUrl_.length) == this.extensionUrl_;
-    },
-
-    /**
-     * Get the url relative to the main extension url. If the url is
-     * unassociated with the extension, this will be the full url.
-     * @param {string} url The url to make relative.
-     * @return {string} The url relative to the host.
-     * @private
-     */
-    getRelativeUrl_: function(url) {
-      return this.isRelatedUrl_(url, this.extensionUrl_) ?
-          url.substring(this.extensionUrl_.length) : url;
     },
 
     /**
@@ -171,8 +180,8 @@ cr.define('extensions', function() {
         // The description is a human-readable summation of the frame, in the
         // form "<relative_url>:<line_number> (function)", e.g.
         // "myfile.js:25 (myFunction)".
-        var description =
-            this.getRelativeUrl_(frame.url) + ':' + frame.lineNumber;
+        var description = getRelativeUrl(frame.url, this.extensionUrl_) +
+                          ':' + frame.lineNumber;
         if (frame.functionName) {
           var functionName = frame.functionName == '(anonymous function)' ?
               loadTimeData.getString('extensionErrorOverlayAnonymousFunction') :
@@ -194,11 +203,11 @@ cr.define('extensions', function() {
           // Request the file source with the section highlighted; this will
           // call ExtensionErrorOverlay.requestFileSourceResponse() when
           // completed, which in turn calls setCode().
-          chrome.send('extensionErrorRequestFileSource',
-                      [{extensionId: this.error_.extensionId,
-                        message: this.error_.message,
-                        pathSuffix: this.getRelativeUrl_(frame.url),
-                        lineNumber: frame.lineNumber}]);
+          ExtensionErrorOverlay.requestFileSource(
+              {extensionId: this.error_.extensionId,
+               message: this.error_.message,
+               pathSuffix: getRelativeUrl(frame.url, this.extensionUrl_),
+               lineNumber: frame.lineNumber});
         }.bind(this, frame, frameNode));
 
         this.stackTrace_.appendChild(frameNode);
@@ -221,12 +230,12 @@ cr.define('extensions', function() {
       var stackFrame =
           this.error_.stackTrace[this.currentFrameNode_.indexIntoTrace];
 
-      chrome.send('extensionErrorOpenDevTools',
-                  [{renderProcessId: this.error_.renderProcessId,
-                    renderViewId: this.error_.renderViewId,
-                    url: stackFrame.url,
-                    lineNumber: stackFrame.lineNumber || 0,
-                    columnNumber: stackFrame.columnNumber || 0}]);
+      RuntimeErrorContent.openDevtools_(
+          {renderProcessId: this.error_.renderProcessId,
+           renderViewId: this.error_.renderViewId,
+           url: stackFrame.url,
+           lineNumber: stackFrame.lineNumber || 0,
+           columnNumber: stackFrame.columnNumber || 0});
     }
   };
 
@@ -256,6 +265,71 @@ cr.define('extensions', function() {
    */
   ExtensionErrorOverlay.RUNTIME_ERROR_TYPE_ = 1;
 
+  /**
+   * The manifest filename.
+   * @type {string}
+   * @const
+   * @private
+   */
+  ExtensionErrorOverlay.MANIFEST_FILENAME_ = 'manifest.json';
+
+  /**
+   * Determine whether or not chrome can load the source for a given file; this
+   * can only be done if the file belongs to the extension.
+   * @param {string} file The file to load.
+   * @param {string} extensionUrl The url for the extension, in the form
+   *     chrome-extension://<extension-id>/.
+   * @return {boolean} True if the file can be loaded, false otherwise.
+   * @private
+   */
+  ExtensionErrorOverlay.canLoadFileSource = function(file, extensionUrl) {
+    return file.substr(0, extensionUrl.length) == extensionUrl ||
+           file.toLowerCase() == ExtensionErrorOverlay.MANIFEST_FILENAME_;
+  };
+
+  /**
+   * Determine whether or not we can show an overlay with more details for
+   * the given extension error.
+   * @param {Object} error The extension error.
+   * @param {string} extensionUrl The url for the extension, in the form
+   *     "chrome-extension://<extension-id>/".
+   * @return {boolean} True if we can show an overlay for the error,
+   *     false otherwise.
+   */
+  ExtensionErrorOverlay.canShowOverlayForError = function(error, extensionUrl) {
+    if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl))
+      return true;
+
+    if (error.stackTrace) {
+      for (var i = 0; i < error.stackTrace.length; ++i) {
+        if (RuntimeErrorContent.shouldDisplayForUrl(error.stackTrace[i].url))
+          return true;
+      }
+    }
+
+    return false;
+  };
+
+  /**
+   * Send a call to chrome to request the source of a given file.
+   * This will call either the bound function in ExtensionErrorHandler or the
+   * API function from developerPrivate, depending on whether this is being
+   * used in the native chrome:extensions page or the Apps Developer Tool.
+   * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
+   * @param {Object} args The arguments to pass to requestFileSource.
+   */
+  ExtensionErrorOverlay.requestFileSource = function(args) {
+    if (chrome.send) {
+      chrome.send('extensionErrorRequestFileSource', [args]);
+    } else if (chrome.developerPrivate) {
+      chrome.developerPrivate.requestFileSource(args, function(result) {
+        extensions.ExtensionErrorOverlay.requestFileSourceResponse(result);
+      });
+    } else {
+      assert(false, 'Cannot call either requestFileSource function.');
+    }
+  };
+
   cr.addSingletonGetter(ExtensionErrorOverlay);
 
   ExtensionErrorOverlay.prototype = {
@@ -268,8 +342,12 @@ cr.define('extensions', function() {
 
     /**
      * Initialize the page.
+     * @param {function(HTMLDivElement)} showOverlay The function to show or
+     *     hide the ExtensionErrorOverlay; this should take a single parameter
+     *     which is either the overlay Div if the overlay should be displayed,
+     *     or null if the overlay should be hidden.
      */
-    initializePage: function() {
+    initializePage: function(showOverlay) {
       var overlay = $('overlay');
       cr.ui.overlay.setupOverlay(overlay);
       cr.ui.overlay.globalInitialization();
@@ -293,6 +371,15 @@ cr.define('extensions', function() {
       this.codeDiv_ = $('extension-error-overlay-code');
 
       /**
+       * The function to show or hide the ExtensionErrorOverlay.
+       * @type {function}
+       * @param {boolean} isVisible Whether the overlay should be visible.
+       */
+      this.setVisible = function(isVisible) {
+        showOverlay(isVisible ? this.overlayDiv_ : null);
+      };
+
+      /**
        * The button to open the developer tools (only available for runtime
        * errors).
        * @type {HTMLButtonElement}
@@ -310,7 +397,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleDismiss_: function(e) {
-      extensions.ExtensionSettings.showOverlay(null);
+      this.setVisible(false);
 
       // There's a chance that the overlay receives multiple dismiss events; in
       // this case, handle it gracefully and return (since all necessary work
@@ -336,17 +423,40 @@ cr.define('extensions', function() {
      * with the relevant file, load the stack trace, and generate links for
      * opening devtools (the latter two only happen for runtime errors).
      * @param {Object} error The error to show in the overlay.
+     * @param {string} extensionUrl The URL of the extension, in the form
+     *     "chrome-extension://<extension_id>".
      */
-    setError: function(error) {
+    setErrorAndShowOverlay: function(error, extensionUrl) {
       this.error_ = error;
 
       if (this.error_.type == ExtensionErrorOverlay.RUNTIME_ERROR_TYPE_) {
-        this.runtimeErrorContent_.setError(this.error_);
+        this.runtimeErrorContent_.setError(this.error_, extensionUrl);
         this.overlayDiv_.querySelector('.content-area').insertBefore(
             this.runtimeErrorContent_,
             this.codeDiv_.nextSibling);
         this.openDevtoolsButton_.hidden = false;
         this.openDevtoolsButton_.disabled = !error.canInspect;
+      }
+
+      if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl)) {
+        var relativeUrl = getRelativeUrl(error.source, extensionUrl);
+
+        var requestFileSourceArgs = {extensionId: error.extensionId,
+                                     message: error.message,
+                                     pathSuffix: relativeUrl};
+
+        if (relativeUrl.toLowerCase() ==
+                ExtensionErrorOverlay.MANIFEST_FILENAME_) {
+          requestFileSourceArgs.manifestKey = error.manifestKey;
+          requestFileSourceArgs.manifestSpecific = error.manifestSpecific;
+        } else {
+          requestFileSourceArgs.lineNumber =
+              error.stackTrace && error.stackTrace[0] ?
+                  error.stackTrace[0].lineNumber : 0;
+        }
+        ExtensionErrorOverlay.requestFileSource(requestFileSourceArgs);
+      } else {
+        ExtensionErrorOverlay.requestFileSourceResponse(null);
       }
     },
 
@@ -403,8 +513,9 @@ cr.define('extensions', function() {
    *     and the parts both before and after this portion. These may be empty.
    */
   ExtensionErrorOverlay.requestFileSourceResponse = function(result) {
-    extensions.ExtensionErrorOverlay.getInstance().setCode(result);
-    extensions.ExtensionSettings.showOverlay($('extension-error-overlay'));
+    var overlay = extensions.ExtensionErrorOverlay.getInstance();
+    overlay.setCode(result);
+    overlay.setVisible(true);
   };
 
   // Export

@@ -60,6 +60,8 @@ namespace developerPrivate {
     DOMString? homepage_url;
     DOMString? update_url;
     InstallWarning[] install_warnings;
+    any[] manifest_errors;
+    any[] runtime_errors;
     boolean offline_enabled;
 
     // All views of the current extension.
@@ -97,7 +99,8 @@ namespace developerPrivate {
     // New window / view opened.
     VIEW_REGISTERED,
     // window / view closed.
-    VIEW_UNREGISTERED
+    VIEW_UNREGISTERED,
+    ERROR_ADDED
   };
 
   dictionary PackDirectoryResponse {
@@ -126,11 +129,11 @@ namespace developerPrivate {
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
-  callback GetStringsCallback = void (object result);
   callback GetProjectsInfoCallback = void (ProjectInfo[] result);
   callback PathCallback = void (DOMString path);
   callback PackCallback = void (PackDirectoryResponse response);
   callback VoidCallback = void();
+  callback AnyCallback = void (any result);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -195,13 +198,42 @@ namespace developerPrivate {
                               long flags,
                               PackCallback callback);
 
-    // Gets localized translated strings for apps_debugger. It returns the
-    // strings as a dictionary mapping from string identifier to the
-    // translated string to use in the apps_debugger app UI.
-    static void getStrings(GetStringsCallback callback);
-
     // Returns true if the profile is managed.
     static void isProfileManaged(BooleanCallback callback);
+
+    // Reads and returns the contents of a file related to an extension which
+    // caused an error. The expected argument is a dictionary with the
+    // following entries:
+    // - pathSuffix: The path of the file, relative to the extension; e.g.,
+    //       manifest.json, script.js, or main.html.
+    // - extensionId: The ID of the extension owning the file.
+    // - errorMessage: The error message which was thrown as a result of the
+    //       error in the file.
+    // - manifestKey (required for "manifest.json" file): The key
+    //       in the manifest which caused the error (e.g., "permissions").
+    // - manifestSpecific (optional for "manifest.json" file): The specific
+    //       portion of the manifest key which caused the error (e.g., "foo" in
+    //       the "permissions" key).
+    // - lineNumber (optional for non-manifest files): The line number which
+    //       caused the error.
+    // The callback is called with a dictionary with three keys:
+    // - highlight: The region of the code which threw the error, and should
+    //       be highlighted.
+    // - beforeHighlight: The region before the "highlight" portion.
+    // - afterHighlight: The region after the "highlight" portion.
+    // - highlight: The region of the code which threw the error.
+    // If the region which threw the error was not found, the full contents of
+    // the file will be in the "beforeHighlight" section.
+    static void requestFileSource(any dict, AnyCallback callback);
+
+    // Open the developer tools to focus on a particular error. The expected
+    // argument is a dictionary with the following entries:
+    // - renderViewId: The ID of the render view in which the error occurred.
+    // - renderProcessId: The ID of the process in which the error occurred.
+    // - url (optional): The URL in which the error occurred.
+    // - lineNumber (optional): The line to focus the devtools at.
+    // - columnNumber (optional): The column to focus the devtools at.
+    static void openDevTools(any dict);
   };
 
   interface Events {

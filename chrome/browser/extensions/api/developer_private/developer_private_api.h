@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 
+#include <set>
+
 #include "base/files/file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -26,6 +29,7 @@ class ExtensionService;
 
 namespace extensions {
 
+class ExtensionError;
 class ExtensionSystem;
 class ManagementPolicy;
 
@@ -40,25 +44,26 @@ struct ItemInfo;
 struct ItemInspectView;
 struct ProjectInfo;
 
-}
+}  // namespace developer_private
 
 }  // namespace api
 
-}  // namespace extensions
-
-namespace developer = extensions::api::developer_private;
+namespace developer = api::developer_private;
 
 typedef std::vector<linked_ptr<developer::ItemInfo> > ItemInfoList;
 typedef std::vector<linked_ptr<developer::ProjectInfo> > ProjectInfoList;
 typedef std::vector<linked_ptr<developer::ItemInspectView> >
     ItemInspectViewList;
 
-namespace extensions {
-
-class DeveloperPrivateEventRouter : public content::NotificationObserver {
+class DeveloperPrivateEventRouter : public content::NotificationObserver,
+                                    public ErrorConsole::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
   virtual ~DeveloperPrivateEventRouter();
+
+  // Add or remove an ID to the list of extensions subscribed to events.
+  void AddExtensionId(const std::string& extension_id);
+  void RemoveExtensionId(const std::string& extension_id);
 
  private:
   // content::NotificationObserver implementation
@@ -66,16 +71,27 @@ class DeveloperPrivateEventRouter : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ErrorConsole::Observer implementation
+  virtual void OnErrorAdded(const ExtensionError* error) OVERRIDE;
+
   content::NotificationRegistrar registrar_;
 
   Profile* profile_;
+
+  // The set of IDs of the Extensions that have subscribed to DeveloperPrivate
+  // events. Since the only consumer of the DeveloperPrivate API is currently
+  // the Apps Developer Tool (which replaces the chrome://extensions page), we
+  // don't want to send information about the subscribing extension in an
+  // update. In particular, we want to avoid entering a loop, which could happen
+  // when, e.g., the Apps Developer Tool throws an error.
+  std::set<std::string> extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateEventRouter);
 };
 
 // The profile-keyed service that manages the DeveloperPrivate API.
 class DeveloperPrivateAPI : public BrowserContextKeyedService,
-                            public extensions::EventRouter::Observer {
+                            public EventRouter::Observer {
  public:
   // Convenience method to get the DeveloperPrivateAPI for a profile.
   static DeveloperPrivateAPI* Get(Profile* profile);
@@ -93,10 +109,8 @@ class DeveloperPrivateAPI : public BrowserContextKeyedService,
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
-  virtual void OnListenerRemoved(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
   void RegisterNotifications();
@@ -141,10 +155,8 @@ class DeveloperPrivateGetItemsInfoFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-
-  scoped_ptr<developer::ItemInfo> CreateItemInfo(
-      const extensions::Extension& item,
-      bool item_is_enabled);
+  scoped_ptr<developer::ItemInfo> CreateItemInfo(const Extension& item,
+                                                 bool item_is_enabled);
 
   void GetIconsOnFileThread(
       ItemInfoList item_list,
@@ -157,12 +169,11 @@ class DeveloperPrivateGetItemsInfoFunction
       ItemInspectViewList* result);
 
   ItemInspectViewList GetInspectablePagesForExtension(
-      const extensions::Extension* extension,
+      const Extension* extension,
       bool extension_is_enabled);
 
-  void GetShellWindowPagesForExtensionProfile(
-      const extensions::Extension* extension,
-      ItemInspectViewList* result);
+  void GetShellWindowPagesForExtensionProfile(const Extension* extension,
+                                              ItemInspectViewList* result);
 
   linked_ptr<developer::ItemInspectView> constructInspectView(
       const GURL& url,
@@ -264,7 +275,7 @@ class DeveloperPrivateEnableFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
+  scoped_ptr<RequirementsChecker> requirements_checker_;
 };
 
 class DeveloperPrivateChooseEntryFunction : public ChromeAsyncExtensionFunction,
@@ -316,7 +327,7 @@ class DeveloperPrivateChoosePathFunction
 
 class DeveloperPrivatePackDirectoryFunction
     : public ChromeAsyncExtensionFunction,
-      public extensions::PackExtensionJob::Client {
+      public PackExtensionJob::Client {
 
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.packDirectory",
@@ -327,101 +338,120 @@ class DeveloperPrivatePackDirectoryFunction
   // ExtensionPackJob::Client implementation.
   virtual void OnPackSuccess(const base::FilePath& crx_file,
                              const base::FilePath& key_file) OVERRIDE;
-  virtual void OnPackFailure(
-      const std::string& error,
-      extensions::ExtensionCreator::ErrorType error_type) OVERRIDE;
+  virtual void OnPackFailure(const std::string& error,
+                             ExtensionCreator::ErrorType error_type) OVERRIDE;
 
  protected:
   virtual ~DeveloperPrivatePackDirectoryFunction();
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  scoped_refptr<extensions::PackExtensionJob> pack_job_;
+  scoped_refptr<PackExtensionJob> pack_job_;
   std::string item_path_str_;
   std::string key_path_str_;
 };
 
-class DeveloperPrivateGetStringsFunction : public ChromeSyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.getStrings",
-                              DEVELOPERPRIVATE_GETSTRINGS);
-
-  protected:
-   virtual ~DeveloperPrivateGetStringsFunction();
-
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
-};
-
 class DeveloperPrivateIsProfileManagedFunction
     : public ChromeSyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.isProfileManaged",
-                              DEVELOPERPRIVATE_ISPROFILEMANAGED);
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.isProfileManaged",
+                             DEVELOPERPRIVATE_ISPROFILEMANAGED);
 
-  protected:
-   virtual ~DeveloperPrivateIsProfileManagedFunction();
+ protected:
+  virtual ~DeveloperPrivateIsProfileManagedFunction();
 
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class DeveloperPrivateLoadDirectoryFunction
     : public ChromeAsyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadDirectory",
-                              DEVELOPERPRIVATE_LOADUNPACKEDCROS);
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.loadDirectory",
+                             DEVELOPERPRIVATE_LOADUNPACKEDCROS);
 
-   DeveloperPrivateLoadDirectoryFunction();
+  DeveloperPrivateLoadDirectoryFunction();
 
-  protected:
-   virtual ~DeveloperPrivateLoadDirectoryFunction();
+ protected:
+  virtual ~DeveloperPrivateLoadDirectoryFunction();
 
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
-   void ClearExistingDirectoryContent(const base::FilePath& project_path);
+  void ClearExistingDirectoryContent(const base::FilePath& project_path);
 
-   void ReadSyncFileSystemDirectory(const base::FilePath& project_path,
-                                    const base::FilePath& destination_path);
+  void ReadSyncFileSystemDirectory(const base::FilePath& project_path,
+                                   const base::FilePath& destination_path);
 
-   void ReadSyncFileSystemDirectoryCb(
-       const base::FilePath& project_path,
-       const base::FilePath& destination_path,
-       base::File::Error result,
-       const fileapi::FileSystemOperation::FileEntryList& file_list,
-       bool has_more);
+  void ReadSyncFileSystemDirectoryCb(
+      const base::FilePath& project_path,
+      const base::FilePath& destination_path,
+      base::File::Error result,
+      const fileapi::FileSystemOperation::FileEntryList& file_list,
+      bool has_more);
 
-   void SnapshotFileCallback(
-       const base::FilePath& target_path,
-       base::File::Error result,
-       const base::File::Info& file_info,
-       const base::FilePath& platform_path,
-       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+  void SnapshotFileCallback(
+      const base::FilePath& target_path,
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
-   void CopyFile(const base::FilePath& src_path,
-                 const base::FilePath& dest_path);
+  void CopyFile(const base::FilePath& src_path,
+                const base::FilePath& dest_path);
 
-   void Load();
+  void Load();
 
-   scoped_refptr<fileapi::FileSystemContext> context_;
+  scoped_refptr<fileapi::FileSystemContext> context_;
 
-   // syncfs url representing the root of the folder to be copied.
-   std::string project_base_url_;
+  // syncfs url representing the root of the folder to be copied.
+  std::string project_base_url_;
 
-   // physical path on disc of the folder to be copied.
-   base::FilePath project_base_path_;
+  // physical path on disc of the folder to be copied.
+  base::FilePath project_base_path_;
 
-   // Path of the current folder to be copied.
-   base::FilePath current_path_;
+  // Path of the current folder to be copied.
+  base::FilePath current_path_;
 
-  private:
-   int pending_copy_operations_count_;
+ private:
+  int pending_copy_operations_count_;
 
-   // This is set to false if any of the copyFile operations fail on
-   // call of the API. It is returned as a response of the API call.
-   bool success_;
+  // This is set to false if any of the copyFile operations fail on
+  // call of the API. It is returned as a response of the API call.
+  bool success_;
+};
 
+class DeveloperPrivateRequestFileSourceFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.requestFileSource",
+                             DEVELOPERPRIVATE_REQUESTFILESOURCE);
+
+  DeveloperPrivateRequestFileSourceFunction();
+
+ protected:
+  virtual ~DeveloperPrivateRequestFileSourceFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void LaunchCallback(const base::DictionaryValue& results);
+};
+
+class DeveloperPrivateOpenDevToolsFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.openDevTools",
+                             DEVELOPERPRIVATE_OPENDEVTOOLS);
+
+  DeveloperPrivateOpenDevToolsFunction();
+
+ protected:
+  virtual ~DeveloperPrivateOpenDevToolsFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace api
