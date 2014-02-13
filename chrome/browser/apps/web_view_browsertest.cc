@@ -32,6 +32,11 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
+#endif
+
 // For fine-grained suppression on flaky tests.
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -1544,6 +1549,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   title_watcher.AlsoWaitForTitle(error_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(WebViewTest, ChromeVoxInjection) {
+  EXPECT_FALSE(
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  content::WebContents* guest_web_contents = LoadGuest(
+      "/extensions/platform_apps/web_view/chromevox_injection/guest.html",
+      "web_view/chromevox_injection");
+  ASSERT_TRUE(guest_web_contents);
+
+  chromeos::SpeechMonitor monitor;
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  EXPECT_EQ("chrome vox test title", monitor.GetNextUtterance());
+}
+#endif
 
 // Flaky on Windows. http://crbug.com/303966
 #if defined(OS_WIN)

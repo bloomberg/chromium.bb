@@ -423,6 +423,8 @@
             }],
           ],
           'sources': [
+            'browser/chromeos/accessibility/speech_monitor.cc',
+            'browser/chromeos/accessibility/speech_monitor.h',
             'browser/chromeos/accessibility/spoken_feedback_browsertest.cc',
             'browser/chromeos/accessibility/sticky_keys_browsertest.cc',
             'browser/chromeos/input_method/textinput_browsertest.cc',
@@ -1017,6 +1019,8 @@
         'browser/chrome_switches_browsertest.cc',
         'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
         'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
+        'browser/chromeos/accessibility/speech_monitor.cc',
+        'browser/chromeos/accessibility/speech_monitor.h',
         'browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc',
         'browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc',
         'browser/chromeos/attestation/attestation_policy_browsertest.cc',

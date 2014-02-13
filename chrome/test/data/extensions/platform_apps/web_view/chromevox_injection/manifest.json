@@ -1,0 +1,12 @@
+{
+  "name": "<webview> ChromeVox injection test.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

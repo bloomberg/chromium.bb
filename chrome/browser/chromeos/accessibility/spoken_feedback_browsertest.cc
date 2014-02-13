@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -32,86 +33,6 @@
 using extensions::api::braille_display_private::StubBrailleController;
 
 namespace chromeos {
-
-namespace {
-const char kChromeVoxEnabledMessage[] = "chrome vox spoken feedback is ready";
-}  // anonymous namespace
-
-// Installs itself as the platform speech synthesis engine, allowing it to
-// intercept all speech calls, and then provides a method to block until the
-// next utterance is spoken.
-class SpeechMonitor : public TtsPlatformImpl {
- public:
-  SpeechMonitor();
-  virtual ~SpeechMonitor();
-
-  // Blocks until the next utterance is spoken, and returns its text.
-  std::string GetNextUtterance();
-
-  // TtsPlatformImpl implementation.
-  virtual bool PlatformImplAvailable() OVERRIDE { return true; }
-  virtual bool Speak(
-      int utterance_id,
-      const std::string& utterance,
-      const std::string& lang,
-      const VoiceData& voice,
-      const UtteranceContinuousParameters& params) OVERRIDE {
-    TtsController::GetInstance()->OnTtsEvent(
-        utterance_id,
-        TTS_EVENT_END,
-        static_cast<int>(utterance.size()),
-        std::string());
-    return true;
-  }
-  virtual bool StopSpeaking() OVERRIDE { return true; }
-  virtual bool IsSpeaking() OVERRIDE { return false; }
-  virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE {
-    out_voices->push_back(VoiceData());
-    VoiceData& voice = out_voices->back();
-    voice.native = true;
-    voice.name = "SpeechMonitor";
-    voice.events.insert(TTS_EVENT_END);
-  }
-  virtual void Pause() OVERRIDE {}
-  virtual void Resume() OVERRIDE {}
-  virtual std::string error() OVERRIDE { return ""; }
-  virtual void clear_error() OVERRIDE {}
-  virtual void set_error(const std::string& error) OVERRIDE {}
-  virtual void WillSpeakUtteranceWithVoice(
-      const Utterance* utterance, const VoiceData& voice_data) OVERRIDE;
-
- private:
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-  std::deque<std::string> utterance_queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
-};
-
-SpeechMonitor::SpeechMonitor() {
-  TtsController::GetInstance()->SetPlatformImpl(this);
-}
-
-SpeechMonitor::~SpeechMonitor() {
-  TtsController::GetInstance()->SetPlatformImpl(TtsPlatformImpl::GetInstance());
-}
-
-void SpeechMonitor::WillSpeakUtteranceWithVoice(const Utterance* utterance,
-                                                const VoiceData& voice_data) {
-  utterance_queue_.push_back(utterance->text());
-  if (loop_runner_.get())
-    loop_runner_->Quit();
-}
-
-std::string SpeechMonitor::GetNextUtterance() {
-  if (utterance_queue_.empty()) {
-    loop_runner_ = new content::MessageLoopRunner();
-    loop_runner_->Run();
-    loop_runner_ = NULL;
-  }
-  std::string result = utterance_queue_.front();
-  utterance_queue_.pop_front();
-  return result;
-}
 
 //
 // Spoken feedback tests in a normal browser window.
@@ -141,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, EnableSpokenFeedback) {
   SpeechMonitor monitor;
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
-  EXPECT_EQ(kChromeVoxEnabledMessage, monitor.GetNextUtterance());
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, FocusToolbar) {
@@ -150,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, FocusToolbar) {
   SpeechMonitor monitor;
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
-  EXPECT_EQ(kChromeVoxEnabledMessage, monitor.GetNextUtterance());
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
   // Might be "Google Chrome Toolbar" or "Chromium Toolbar".
@@ -195,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   SpeechMonitor monitor;
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
-  EXPECT_EQ(kChromeVoxEnabledMessage, monitor.GetNextUtterance());
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
   EXPECT_EQ("Select your language:", monitor.GetNextUtterance());
   EXPECT_EQ("English ( United States)", monitor.GetNextUtterance());
