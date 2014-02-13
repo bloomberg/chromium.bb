@@ -10,7 +10,7 @@ define([
 {%- endfor %}
   ], function(core, codec
 {%- for import in imports -%}
-    , {{import.namespace}}
+    , {{import.unique_name}}
 {%- endfor -%}
 ) {
 

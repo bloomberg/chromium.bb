@@ -211,6 +211,7 @@
       'sources': [
         'public/bindings/tests/sample_service.mojom',
         'public/bindings/tests/sample_import.mojom',
+        'public/bindings/tests/sample_import2.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

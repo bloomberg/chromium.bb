@@ -35,7 +35,7 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 }
 {#--- POD types ---#}
 {%-   else -%}
-{{caller(value)}}
+{{caller(value|substitute_namespace(imports))}}
 {%-   endif %}
 {%- endmacro %}
 

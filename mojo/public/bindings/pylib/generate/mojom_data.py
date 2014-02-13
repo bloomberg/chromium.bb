@@ -54,12 +54,19 @@ def KindFromData(kinds, data):
   kinds[data] = kind
   return kind
 
-def ImportFromData(data):
+def ImportFromData(module, data):
   import_module = data['module']
 
   import_item = {}
   import_item['module_name'] = import_module.name
   import_item['namespace'] = import_module.namespace
+
+  # Copy the struct kinds from our imports into the current module.
+  for kind in import_module.kinds.itervalues():
+    # TODO(mpcomplete): Handle enums
+    if isinstance(kind, mojom.Struct) and kind.imported_from is None:
+      kind = mojom.Struct.CreateFromImport(kind, import_item)
+      module.kinds[kind.spec] = kind
   return import_item
 
 def StructToData(struct):
@@ -182,25 +189,19 @@ def ModuleFromData(data):
   module.kinds = {}
   for kind in mojom.PRIMITIVES:
     module.kinds[kind.spec] = kind
-  # Copy the struct kinds from our imports into the current module.
-  for import_data in data['imports']:
-    import_module = import_data['module']
-    for kind in import_module.kinds.itervalues():
-      # TODO(mpcomplete): Handle enums
-      if isinstance(kind, mojom.Struct):
-        kind = mojom.Struct.CreateFromImport(
-            kind, import_module.namespace)
-        module.kinds[kind.spec] = kind
 
   module.name = data['name']
   module.namespace = data['namespace']
+  # Imports must come first, because they add to module.kinds which is used
+  # by by the others.
   module.imports = map(
-      lambda import_data: ImportFromData(import_data), data['imports'])
+      lambda import_data: ImportFromData(module, import_data),
+      data['imports'])
   module.structs = map(
       lambda struct: StructFromData(module, struct), data['structs'])
   module.interfaces = map(
-      lambda interface:
-          InterfaceFromData(module, interface), data['interfaces'])
+      lambda interface: InterfaceFromData(module, interface),
+      data['interfaces'])
   if data.has_key('enums'):
     module.enums = map(
         lambda enum: EnumFromData(module.kinds, enum), data['enums'])

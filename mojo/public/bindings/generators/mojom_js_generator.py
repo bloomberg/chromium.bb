@@ -148,6 +148,19 @@ def JavaScriptEncodeSnippet(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
 
 
+def SubstituteNamespace(value, imports):
+  for import_item in imports:
+    value = value.replace(import_item["namespace"] + ".",
+        import_item["unique_name"] + ".")
+  return value
+
+
+def JavascriptType(kind):
+  if kind.imported_from:
+    return kind.imported_from["unique_name"] + "." + kind.name
+  return kind.name
+
+
 class Generator(mojom_generator.Generator):
 
   js_filters = {
@@ -159,15 +172,16 @@ class Generator(mojom_generator.Generator):
     "is_object_kind": mojom_generator.IsObjectKind,
     "is_string_kind": mojom_generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
-    "js_type": lambda kind: kind.GetFullName("."),
+    "js_type": JavascriptType,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
+    "substitute_namespace": SubstituteNamespace,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)
   def GenerateJsModule(self):
     return {
-      "imports": self.module.imports,
+      "imports": self.GetImports(),
       "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
@@ -176,3 +190,12 @@ class Generator(mojom_generator.Generator):
 
   def GenerateFiles(self):
     self.Write(self.GenerateJsModule(), "%s.js" % self.module.name)
+
+  def GetImports(self):
+    # Since each import is assigned a variable in JS, they need to have unique
+    # names.
+    counter = 1
+    for each in self.module.imports:
+      each["unique_name"] = "import" + str(counter)
+      counter += 1
+    return self.module.imports

@@ -342,6 +342,9 @@ TEST(BindingsSampleTest, DefaultValues) {
 
   EXPECT_EQ(1u, full.shape_masks().size());
   EXPECT_EQ(1 << imported::SHAPE_RECTANGLE, full.shape_masks()[0]);
+
+  EXPECT_EQ(imported::SHAPE_RECTANGLE, full.thing().shape());
+  EXPECT_EQ(imported::COLOR_RED, full.thing().color());
 }
 
 }  // namespace sample

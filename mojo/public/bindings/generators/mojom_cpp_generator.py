@@ -131,8 +131,7 @@ class Generator(mojom_generator.Generator):
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
-  @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
-  def GenerateModuleHeader(self):
+  def GetJinjaExports(self):
     return {
       "module_name": self.module.name,
       "namespace": self.module.namespace,
@@ -143,32 +142,18 @@ class Generator(mojom_generator.Generator):
       "interfaces": self.module.interfaces,
       "include_prefix": self.GetIncludePrefix(),
     }
+
+  @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
+  def GenerateModuleHeader(self):
+    return self.GetJinjaExports()
 
   @UseJinja("cpp_templates/module_internal.h.tmpl", filters=cpp_filters)
   def GenerateModuleInternalHeader(self):
-    return {
-      "module_name": self.module.name,
-      "namespace": self.module.namespace,
-      "imports": self.module.imports,
-      "kinds": self.module.kinds,
-      "enums": self.module.enums,
-      "structs": self.GetStructs(),
-      "interfaces": self.module.interfaces,
-      "include_prefix": self.GetIncludePrefix(),
-    }
+    return self.GetJinjaExports()
 
   @UseJinja("cpp_templates/module.cc.tmpl", filters=cpp_filters)
   def GenerateModuleSource(self):
-    return {
-      "module_name": self.module.name,
-      "namespace": self.module.namespace,
-      "imports": self.module.imports,
-      "kinds": self.module.kinds,
-      "enums": self.module.enums,
-      "structs": self.GetStructs(),
-      "interfaces": self.module.interfaces,
-      "include_prefix": self.GetIncludePrefix(),
-    }
+    return self.GetJinjaExports()
 
   def GenerateFiles(self):
     self.Write(self.GenerateModuleHeader(), "%s.h" % self.module.name)

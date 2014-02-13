@@ -69,7 +69,7 @@ class Field(object):
 class Struct(Kind):
   def __init__(self, name = None):
     self.name = name
-    self.imported_from_namespace = None
+    self.imported_from = None
     if name != None:
       spec = 'x:' + name
     else:
@@ -78,11 +78,11 @@ class Struct(Kind):
     self.fields = []
 
   @classmethod
-  def CreateFromImport(cls, kind, import_namespace):
+  def CreateFromImport(cls, kind, imported_from):
     """Used with 'import module' - clones the kind imported from the
     given module's namespace."""
     kind = copy.deepcopy(kind)
-    kind.imported_from_namespace = import_namespace
+    kind.imported_from = imported_from
     return kind
 
   def AddField(self, name, kind, ordinal = None, default = None):
@@ -92,16 +92,16 @@ class Struct(Kind):
 
   def GetFullName(self, separator):
     """Returns the fully qualified type name, including namespace prefix."""
-    if self.imported_from_namespace:
-      return separator.join([self.imported_from_namespace, self.name])
+    if self.imported_from:
+      return separator.join([self.imported_from["namespace"], self.name])
     return self.name
 
   def GetFullNameInternal(self, separator):
     """Returns the fully qualified type name for an internal data structure,
     including namespace prefix."""
-    if self.imported_from_namespace:
+    if self.imported_from:
       return separator.join(
-          [self.imported_from_namespace, "internal", self.name])
+          [self.imported_from["namespace"], "internal", self.name])
     return self.name
 
 

@@ -8,7 +8,7 @@ module imported {
 // sample_service.mojom, to show how import works.
 
 enum Shape {
-  SHAPE_RECTANGLE,
+  SHAPE_RECTANGLE = 1,
   SHAPE_CIRCLE,
   SHAPE_TRIANGLE,
 };

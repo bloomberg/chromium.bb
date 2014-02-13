@@ -46,7 +46,11 @@ def LoadGenerators(generators_string):
 
 def ProcessFile(args, generator_modules, filename, processed_files):
   # Ensure we only visit each file once.
-  processed_files.append(filename)
+  if filename in processed_files:
+    if processed_files[filename] is None:
+      raise Exception("Circular dependency: " + filename)
+    return processed_files[filename]
+  processed_files[filename] = None
 
   dirname, name = os.path.split(filename)
   name = os.path.splitext(name)[0]
@@ -61,9 +65,8 @@ def ProcessFile(args, generator_modules, filename, processed_files):
   # We use these to generate proper type info.
   for import_data in mojom['imports']:
     import_filename = os.path.join(dirname, import_data['filename'])
-    if import_filename not in processed_files:
-      import_data['module'] = ProcessFile(
-          args, generator_modules, import_filename, processed_files)
+    import_data['module'] = ProcessFile(
+        args, generator_modules, import_filename, processed_files)
 
   module = mojom_data.OrderedModuleFromData(mojom)
   for generator_module in generator_modules:
@@ -71,6 +74,7 @@ def ProcessFile(args, generator_modules, filename, processed_files):
                                            args.output_dir)
     generator.GenerateFiles()
 
+  processed_files[filename] = module
   return module
 
 def Main():
@@ -95,7 +99,7 @@ def Main():
     os.makedirs(args.output_dir)
 
   for filename in args.filename:
-    ProcessFile(args, generator_modules, filename, [])
+    ProcessFile(args, generator_modules, filename, {})
 
   return 0
 
