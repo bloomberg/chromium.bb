@@ -20,11 +20,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
+from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
@@ -38,15 +35,20 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
         f = os.path.join(d, f)
         osutils.Touch(f)
 
+    self.upload_mock = self.PatchObject(upload_symbols, 'UploadSymbol')
+    self.PatchObject(cros_generate_breakpad_symbols, 'ReadSymsHeader',
+                     return_value=cros_generate_breakpad_symbols.SymbolHeader(
+                         os='os', cpu='cpu', id='id', name='name'))
+
   def _testUploadURL(self, official, expected_url):
     """Helper for checking the url used"""
-    m = upload_symbols.UploadSymbol = mock.Mock(return_value=0)
+    self.upload_mock.return_value = 0
     with parallel_unittest.ParallelMock():
       ret = upload_symbols.UploadSymbols('', official=official, retry=False,
                                          breakpad_dir=self.tempdir, sleep=0)
       self.assertEqual(ret, 0)
-      self.assertEqual(m.call_count, 3)
-      for call_args in m.call_args_list:
+      self.assertEqual(self.upload_mock.call_count, 3)
+      for call_args in self.upload_mock.call_args_list:
         sym_file, url = call_args[0]
         self.assertEqual(url, expected_url)
         self.assertTrue(sym_file.endswith('.sym'))
@@ -63,7 +65,7 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
     """Verify that when UploadSymbol fails, the error count is passed up"""
     def UploadSymbol(*_args, **kwargs):
       kwargs['num_errors'].value = 4
-    upload_symbols.UploadSymbol = mock.Mock(side_effect=UploadSymbol)
+    self.upload_mock.side_effect = UploadSymbol
     with parallel_unittest.ParallelMock():
       ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir, sleep=0,
                                          retry=False)
@@ -71,21 +73,21 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
 
   def testUploadCount(self):
     """Verify we can limit the number of uploaded symbols"""
-    m = upload_symbols.UploadSymbol = mock.Mock(return_value=0)
+    self.upload_mock.return_value = 0
     for c in xrange(3):
-      m.reset_mock()
+      self.upload_mock.reset_mock()
       with parallel_unittest.ParallelMock():
         ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir,
                                            sleep=0, upload_limit=c)
         self.assertEquals(ret, 0)
-        self.assertEqual(m.call_count, c)
+        self.assertEqual(self.upload_mock.call_count, c)
 
   def testFailedFileList(self):
     """Verify the failed file list is populated with the right content"""
     def UploadSymbol(*args, **kwargs):
       kwargs['failed_queue'].put(args[0])
       kwargs['num_errors'].value = 4
-    upload_symbols.UploadSymbol = mock.Mock(side_effect=UploadSymbol)
+    self.upload_mock.side_effect = UploadSymbol
     with parallel_unittest.ParallelMock():
       failed_list = os.path.join(self.tempdir, 'list')
       ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir, sleep=0,
@@ -108,15 +110,15 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.sym_file = os.path.join(self.tempdir, 'foo.sym')
     self.url = 'http://eatit'
+    self.upload_mock = self.PatchObject(upload_symbols, 'SymUpload')
 
   def testUploadSymbolNormal(self):
     """Verify we try to upload on a normal file"""
-    m = upload_symbols.SymUpload = mock.Mock()
     osutils.Touch(self.sym_file)
     ret = upload_symbols.UploadSymbol(self.sym_file, self.url)
     self.assertEqual(ret, 0)
-    m.assert_called_with(self.sym_file, self.url)
-    self.assertEqual(m.call_count, 1)
+    self.upload_mock.assert_called_with(self.sym_file, self.url)
+    self.assertEqual(self.upload_mock.call_count, 1)
 
   def testUploadSymbolErrorCountExceeded(self):
     """Verify that when the error count gets too high, we stop uploading"""
@@ -129,12 +131,12 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     """Verify that we retry errors (and eventually give up)"""
     if not side_effect:
       side_effect = urllib2.HTTPError('http://', 400, 'fail', {}, None)
-    m = upload_symbols.SymUpload = mock.Mock(side_effect=side_effect)
+    self.upload_mock.side_effect = side_effect
     errors = ctypes.c_int()
     ret = upload_symbols.UploadSymbol('/dev/null', self.url, num_errors=errors)
     self.assertEqual(ret, 1)
-    m.assert_called_with('/dev/null', self.url)
-    self.assertTrue(m.call_count >= upload_symbols.MAX_RETRIES)
+    self.upload_mock.assert_called_with('/dev/null', self.url)
+    self.assertTrue(self.upload_mock.call_count >= upload_symbols.MAX_RETRIES)
 
   def testConnectRetryErrors(self):
     """Verify that we retry errors (and eventually give up) w/connect errors"""
@@ -146,30 +148,29 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     def SymUpload(sym_file, _url):
       content = osutils.ReadFile(sym_file)
       self.assertEqual(content, 'some junk\n')
-    m = upload_symbols.SymUpload = mock.Mock(side_effect=SymUpload)
-    content = (
+    self.upload_mock.upload_mock.side_effect = SymUpload
+    content = '\n'.join((
         'STACK CFI 1234',
         'some junk',
         'STACK CFI 1234',
-    )
-    osutils.WriteFile(self.sym_file, '\n'.join(content))
+    ))
+    osutils.WriteFile(self.sym_file, content)
     ret = upload_symbols.UploadSymbol(self.sym_file, self.url, file_limit=1)
     self.assertEqual(ret, 0)
-    self.assertNotEqual(m.call_args[0][1], self.sym_file)
-    self.assertEqual(m.call_count, 1)
+    self.assertNotEqual(self.upload_mock.call_args[0][1], self.sym_file)
+    self.assertEqual(self.upload_mock.call_count, 1)
 
   def testTruncateReallyLargeFiles(self):
     """Verify we try to shrink really big files"""
     warn_mock = self.PatchObject(cros_build_lib, 'PrintBuildbotStepWarnings')
-    m = upload_symbols.SymUpload = mock.Mock()
     with open(self.sym_file, 'w+b') as f:
       f.truncate(upload_symbols.CRASH_SERVER_FILE_LIMIT + 100)
       f.seek(0)
       f.write('STACK CFI 1234\n\n')
     ret = upload_symbols.UploadSymbol(self.sym_file, self.url)
     self.assertEqual(ret, 0)
-    self.assertNotEqual(m.call_args[0][1], self.sym_file)
-    self.assertEqual(m.call_count, 1)
+    self.assertNotEqual(self.upload_mock.call_args[0][1], self.sym_file)
+    self.assertEqual(self.upload_mock.call_count, 1)
     self.assertEqual(warn_mock.call_count, 1)
 
 
