@@ -375,14 +375,11 @@ void AudioReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_.GetReceiverLogMessageAndReset(&receiver_log);
-
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->Logging()->InsertGenericEvent(now, kAudioAckSent,
                                                    cast_message.ack_frame_id_);
 
-  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &receiver_log);
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
 }
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,

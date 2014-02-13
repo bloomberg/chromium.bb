@@ -227,8 +227,9 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
   rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
 }
 
-void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
-                                   RtcpReceiverLogMessage* receiver_log) {
+void Rtcp::SendRtcpFromRtpReceiver(
+    const RtcpCastMessage* cast_message,
+    ReceiverRtcpEventSubscriber* event_subscriber) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   uint32 packet_type_flags = 0;
 
@@ -239,7 +240,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
   if (cast_message) {
     packet_type_flags |= RtcpSender::kRtcpCast;
   }
-  if (receiver_log) {
+  if (event_subscriber) {
     packet_type_flags |= RtcpSender::kRtcpReceiverLog;
   }
   if (rtcp_mode_ == kRtcpCompound || now >= next_time_to_send_rtcp_) {
@@ -275,8 +276,8 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
     SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
     UpdateNextTimeToSendRtcp();
   }
-  rtcp_sender_->SendRtcpFromRtpReceiver(packet_type_flags, &report_block, &rrtr,
-                                        cast_message, receiver_log);
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      packet_type_flags, &report_block, &rrtr, cast_message, event_subscriber);
 }
 
 void Rtcp::SendRtcpFromRtpSender(

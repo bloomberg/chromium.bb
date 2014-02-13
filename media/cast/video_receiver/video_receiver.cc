@@ -471,14 +471,11 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_.GetReceiverLogMessageAndReset(&receiver_log);
-
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->Logging()->InsertGenericEvent(
       now, kVideoAckSent, cast_message.ack_frame_id_);
 
-  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &receiver_log);
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
 }
 
 // Cast messages should be sent within a maximum interval. Schedule a call

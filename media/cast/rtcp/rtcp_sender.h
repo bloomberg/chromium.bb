@@ -18,6 +18,8 @@
 namespace media {
 namespace cast {
 
+class ReceiverRtcpEventSubscriber;
+
 // TODO(mikhal): Resolve duplication between this and RtcpBuilder.
 class RtcpSender {
  public:
@@ -36,7 +38,7 @@ class RtcpSender {
                                const transport::RtcpReportBlock* report_block,
                                const RtcpReceiverReferenceTimeReport* rrtr,
                                const RtcpCastMessage* cast_message,
-                               RtcpReceiverLogMessage* receiver_log);
+                               ReceiverRtcpEventSubscriber* event_subscriber);
   enum RtcpPacketType {
     kRtcpSr = 0x0002,
     kRtcpRr = 0x0004,

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
@@ -149,9 +150,11 @@ bool RtcpSender::IsReceiverEvent(const media::cast::CastLoggingEvent& event) {
 }
 
 void RtcpSender::SendRtcpFromRtpReceiver(
-    uint32 packet_type_flags, const transport::RtcpReportBlock* report_block,
+    uint32 packet_type_flags,
+    const transport::RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
-    const RtcpCastMessage* cast_message, RtcpReceiverLogMessage* receiver_log) {
+    const RtcpCastMessage* cast_message,
+    ReceiverRtcpEventSubscriber* event_subscriber) {
   if (packet_type_flags & kRtcpSr || packet_type_flags & kRtcpDlrr ||
       packet_type_flags & kRtcpSenderLog) {
     NOTREACHED() << "Invalid argument";
@@ -182,8 +185,10 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     BuildCast(cast_message, &packet);
   }
   if (packet_type_flags & kRtcpReceiverLog) {
-    DCHECK(receiver_log) << "Invalid argument";
-    BuildReceiverLog(receiver_log, &packet);
+    DCHECK(event_subscriber) << "Invalid argument";
+    RtcpReceiverLogMessage receiver_log;
+    event_subscriber->GetReceiverLogMessageAndReset(&receiver_log);
+    BuildReceiverLog(&receiver_log, &packet);
   }
   if (packet.empty()) return;  // Sanity don't send empty packets.
 

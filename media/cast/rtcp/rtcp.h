@@ -29,6 +29,7 @@ namespace cast {
 class LocalRtcpReceiverFeedback;
 class LocalRtcpRttFeedback;
 class PacedPacketSender;
+class ReceiverRtcpEventSubscriber;
 class RtcpReceiver;
 class RtcpSender;
 
@@ -94,15 +95,12 @@ class Rtcp {
   void SendRtcpFromRtpSender(
       const transport::RtcpSenderLogMessage& sender_log_message);
 
-  // |cast_message| and |receiver_log| is optional; if |cast_message| is
+  // |cast_message| and |event_subscriber| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
-  // Acks and Nacks; if |receiver_log| is provided the RTCP receiver report will
-  // append the log messages. If no argument is set a normal RTCP receiver
-  // report will be sent. Additionally if all messages in |receiver_log| does
-  // not fit in the packet the |receiver_log| will contain the remaining unsent
-  // messages.
+  // Acks and Nacks; if |event_subscriber| is provided the RTCP receiver report
+  // will append the log messages from the subscriber.
   void SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
-                               RtcpReceiverLogMessage* receiver_log);
+                               ReceiverRtcpEventSubscriber* event_subscriber);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt,
