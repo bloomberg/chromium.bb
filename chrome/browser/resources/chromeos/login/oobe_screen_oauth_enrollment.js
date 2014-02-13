@@ -181,6 +181,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-cancel-button').textContent =
             loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack');
       }
+      this.classList.toggle('saml', false);
 
       this.showStep(STEP_SIGNIN);
     },
@@ -329,6 +330,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.showWorking(null);
         chrome.send('oauthEnrollRetrieveAuthenticatedUserEmail',
                     [msg.attemptToken]);
+      }
+
+      if (msg.method == 'authPageLoaded') {
+        if (msg.isSAML) {
+          $('oauth-saml-notice-message').textContent = loadTimeData.getStringF(
+              'samlNotice',
+              msg.domain);
+        }
+        this.classList.toggle('saml', msg.isSAML);
       }
     }
   };
