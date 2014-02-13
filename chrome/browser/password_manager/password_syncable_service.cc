@@ -15,10 +15,17 @@
 
 namespace {
 
+// Describes the result of merging sync and local passwords.
+enum MergeResult {
+  IDENTICAL,
+  SYNC,
+  LOCAL,
+};
+
 // Merges the local and sync passwords and outputs the entry into
-// |new_password_form|. Returns true if the local and the sync passwords differ.
-// Returns false if they are identical.
-bool MergeLocalAndSyncPasswords(
+// |new_password_form|. Returns MergeResult value describing the content of
+// |new_password_form|.
+MergeResult MergeLocalAndSyncPasswords(
     const sync_pb::PasswordSpecificsData& password_specifics,
     const autofill::PasswordForm& password_form,
     autofill::PasswordForm* new_password_form) {
@@ -40,18 +47,18 @@ bool MergeLocalAndSyncPasswords(
       password_form.date_created.ToInternalValue() ==
           password_specifics.date_created() &&
       password_form.blacklisted_by_user == password_specifics.blacklisted()) {
-    return false;
+    return IDENTICAL;
   }
 
   // If the passwords differ, take the one that was created more recently.
   if (base::Time::FromInternalValue(password_specifics.date_created()) <=
           password_form.date_created) {
     *new_password_form = password_form;
-  } else {
-    PasswordFromSpecifics(password_specifics, new_password_form);
+    return LOCAL;
   }
 
-  return true;
+  PasswordFromSpecifics(password_specifics, new_password_form);
+  return SYNC;
 }
 
 std::string MakePasswordSyncTag(const std::string& origin_url,
@@ -114,28 +121,17 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   sync_error_factory_ = sync_error_factory.Pass();
   sync_processor_ = sync_processor.Pass();
 
+  // We add all the db entries as |new_local_entries| initially. During model
+  // association entries that match a sync entry will be removed and this list
+  // will only contain entries that are not in sync.
   ScopedVector<autofill::PasswordForm> password_entries;
-  if (!password_store_->FillAutofillableLogins(&password_entries.get())) {
-    // Password store often fails to load passwords. Track failures with UMA.
-    // (http://crbug.com/249000)
-    UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
-                              syncer::PASSWORDS,
-                              syncer::MODEL_TYPE_COUNT);
+  PasswordEntryMap new_local_entries;
+  if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
+    DCHECK(sync_error_factory_);
     merge_result.set_error(sync_error_factory_->CreateAndUploadError(
         FROM_HERE,
         "Failed to get passwords from store."));
     return merge_result;
-  }
-
-  PasswordEntryMap new_local_entries;
-  for (PasswordForms::iterator it = password_entries.begin();
-       it != password_entries.end(); ++it) {
-     autofill::PasswordForm* password_form = *it;
-     // We add all the db entries as |new_local_entries| initially. During
-     // model association entries that match a sync entry will be
-     // removed and this list will only contain entries that are not in sync.
-     new_local_entries.insert(
-         std::make_pair(MakePasswordSyncTag(*password_form), password_form));
   }
 
   merge_result.set_num_items_before_association(new_local_entries.size());
@@ -160,7 +156,8 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   }
 
   WriteToPasswordStore(new_sync_entries.get(),
-                       updated_sync_entries.get());
+                       updated_sync_entries.get(),
+                       PasswordForms());
 
   merge_result.set_num_items_after_association(
       merge_result.num_items_before_association() + new_sync_entries.size());
@@ -190,18 +187,83 @@ void PasswordSyncableService::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
+  DCHECK_EQ(syncer::PASSWORDS, type);
+  ScopedVector<autofill::PasswordForm> password_entries;
+  ReadFromPasswordStore(&password_entries, NULL);
+
   syncer::SyncDataList sync_data;
+  for (PasswordForms::iterator it = password_entries.begin();
+       it != password_entries.end(); ++it) {
+    sync_data.push_back(SyncDataFromPassword(**it));
+  }
   return sync_data;
 }
 
 syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  syncer::SyncError error(FROM_HERE,
-                          syncer::SyncError::UNRECOVERABLE_ERROR,
-                          "Password Syncable Service Not Implemented.",
-                          syncer::PASSWORDS);
-  return error;
+  // The |db_entries_map| and associated vectors are filled only in case of
+  // update change.
+  PasswordEntryMap db_entries_map;
+  ScopedVector<autofill::PasswordForm> password_db_entries;
+  ScopedVector<autofill::PasswordForm> new_sync_entries;
+  ScopedVector<autofill::PasswordForm> updated_sync_entries;
+  ScopedVector<autofill::PasswordForm> deleted_entries;
+  bool has_read_passwords = false;
+
+  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
+       it != change_list.end();
+       ++it) {
+    switch (it->change_type()) {
+      case syncer::SyncChange::ACTION_ADD: {
+        const sync_pb::EntitySpecifics& specifics =
+            it->sync_data().GetSpecifics();
+        new_sync_entries.push_back(new autofill::PasswordForm);
+        PasswordFromSpecifics(specifics.password().client_only_encrypted_data(),
+                              new_sync_entries.back());
+        break;
+      }
+      case syncer::SyncChange::ACTION_UPDATE: {
+        if (!has_read_passwords) {
+          if (ReadFromPasswordStore(&password_db_entries,
+                                    &db_entries_map)) {
+            has_read_passwords = true;
+          } else {
+            return sync_error_factory_->CreateAndUploadError(
+                FROM_HERE,
+                "Failed to get passwords from store.");
+          }
+        }
+        syncer::SyncChangeList sync_changes;
+
+        CreateOrUpdateEntry(it->sync_data(),
+                            &db_entries_map,
+                            &new_sync_entries,
+                            &updated_sync_entries,
+                            &sync_changes);
+        DCHECK(sync_changes.empty());
+        break;
+      }
+
+      case syncer::SyncChange::ACTION_DELETE: {
+        const sync_pb::EntitySpecifics& specifics =
+            it->sync_data().GetSpecifics();
+        const sync_pb::PasswordSpecificsData& password_specifics(
+            specifics.password().client_only_encrypted_data());
+        deleted_entries.push_back(new autofill::PasswordForm);
+        PasswordFromSpecifics(password_specifics, deleted_entries.back());
+        break;
+      }
+      case syncer::SyncChange::ACTION_INVALID:
+        return sync_error_factory_->CreateAndUploadError(
+            FROM_HERE,
+            "Failed to process sync changes for passwords datatype.");
+    }
+  }
+  WriteToPasswordStore(new_sync_entries.get(),
+                       updated_sync_entries.get(),
+                       deleted_entries.get());
+  return syncer::SyncError();
 }
 
 void PasswordSyncableService::ActOnPasswordStoreChanges(
@@ -220,9 +282,37 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
   sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
 }
 
+bool PasswordSyncableService::ReadFromPasswordStore(
+    ScopedVector<autofill::PasswordForm>* password_entries,
+    PasswordEntryMap* passwords_entry_map) const {
+  DCHECK(password_entries);
+  if (!password_store_->FillAutofillableLogins(&password_entries->get()) ||
+      !password_store_->FillBlacklistLogins(&password_entries->get())) {
+    // Password store often fails to load passwords. Track failures with UMA.
+    // (http://crbug.com/249000)
+    UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
+                              ModelTypeToHistogramInt(syncer::PASSWORDS),
+                              syncer::MODEL_TYPE_COUNT);
+    return false;
+  }
+
+  if (!passwords_entry_map)
+    return true;
+
+  for (PasswordForms::iterator it = password_entries->begin();
+       it != password_entries->end(); ++it) {
+     autofill::PasswordForm* password_form = *it;
+     passwords_entry_map->insert(
+         std::make_pair(MakePasswordSyncTag(*password_form), password_form));
+  }
+
+  return true;
+}
+
 void PasswordSyncableService::WriteToPasswordStore(
     const PasswordForms& new_entries,
-    const PasswordForms& updated_entries) {
+    const PasswordForms& updated_entries,
+    const PasswordForms& deleted_entries) {
   PasswordStoreChangeList changes;
   for (std::vector<autofill::PasswordForm*>::const_iterator it =
            new_entries.begin();
@@ -236,6 +326,13 @@ void PasswordSyncableService::WriteToPasswordStore(
        it != updated_entries.end();
        ++it) {
     AppendChanges(password_store_->UpdateLoginImpl(**it), &changes);
+  }
+
+  for (std::vector<autofill::PasswordForm*>::const_iterator it =
+           deleted_entries.begin();
+       it != deleted_entries.end();
+       ++it) {
+    AppendChanges(password_store_->RemoveLoginImpl(**it), &changes);
   }
 
   // We have to notify password store observers of the change by hand since
@@ -272,18 +369,20 @@ void PasswordSyncableService::CreateOrUpdateEntry(
     // The entry is in password store. If the entries are not identical, then
     // the entries need to be merged.
     scoped_ptr<autofill::PasswordForm> new_password(new autofill::PasswordForm);
-    if (MergeLocalAndSyncPasswords(password_specifics,
-                                   *existing_local_entry_iter->second,
-                                   new_password.get())) {
-      // Rather than checking which database -- sync or local -- needs updating,
-      // simply push an update to both. This will end up being a noop for the
-      // database that didn't need an update.
-      updated_db_entries->push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_UPDATE,
-                             SyncDataFromPassword(*new_password)));
-
-      updated_sync_entries->push_back(new_password.release());
+    switch (MergeLocalAndSyncPasswords(password_specifics,
+                                       *existing_local_entry_iter->second,
+                                       new_password.get())) {
+      case IDENTICAL:
+        break;
+      case SYNC:
+        updated_sync_entries->push_back(new_password.release());
+        break;
+      case LOCAL:
+        updated_db_entries->push_back(
+            syncer::SyncChange(FROM_HERE,
+                               syncer::SyncChange::ACTION_UPDATE,
+                               SyncDataFromPassword(*new_password)));
+        break;
     }
     // Remove the entry from the entry map to indicate a match has been found.
     // Entries that remain in the map at the end of associating all sync entries

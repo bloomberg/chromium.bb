@@ -56,11 +56,20 @@ class PasswordSyncableService : public syncer::SyncableService {
 
  private:
   typedef std::vector<autofill::PasswordForm*> PasswordForms;
+  // Map from password sync tag to password form.
   typedef std::map<std::string, autofill::PasswordForm*> PasswordEntryMap;
 
-  // Use the |PasswordStore| APIs to add and update entries.
+  // Helper function to retrieve the entries from password db and fill both
+  // |password_entries| and |passwords_entry_map|. |passwords_entry_map| can be
+  // NULL.
+  bool ReadFromPasswordStore(
+      ScopedVector<autofill::PasswordForm>* password_entries,
+      PasswordEntryMap* passwords_entry_map) const;
+
+  // Uses the |PasswordStore| APIs to change entries.
   void WriteToPasswordStore(const PasswordForms& new_entries,
-                            const PasswordForms& updated_entries);
+                            const PasswordForms& updated_entries,
+                            const PasswordForms& deleted_entries);
 
   // Notifies password store of a change that was performed by sync.
   // Virtual so tests can override.
