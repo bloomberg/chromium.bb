@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -39,8 +40,8 @@ TEST(CandidateWindow, IsEqualTest) {
   CandidateWindow cw1;
   CandidateWindow cw2;
 
-  const char kSampleString1[] = "Sample 1";
-  const char kSampleString2[] = "Sample 2";
+  const base::string16 kSampleString1 = base::UTF8ToUTF16("Sample 1");
+  const base::string16 kSampleString2 = base::UTF8ToUTF16("Sample 2");
 
   EXPECT_TRUE(cw1.IsEqual(cw2));
   EXPECT_TRUE(cw2.IsEqual(cw1));
@@ -136,7 +137,7 @@ TEST(CandidateWindow, CopyFromTest) {
   CandidateWindow cw1;
   CandidateWindow cw2;
 
-  const char kSampleString[] = "Sample";
+  const base::string16 kSampleString = base::UTF8ToUTF16("Sample");
 
   cw1.set_page_size(1);
   cw1.set_cursor_position(2);
@@ -161,9 +162,9 @@ TEST(CandidateWindow, GetInfolistEntries_DenseCase) {
   candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
     CandidateWindow::Entry entry;
-    entry.value = kSampleCandidate[i];
-    entry.description_title = kSampleDescriptionTitle[i];
-    entry.description_body = kSampleDescriptionBody[i];
+    entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
+    entry.description_title = base::UTF8ToUTF16(kSampleDescriptionTitle[i]);
+    entry.description_body = base::UTF8ToUTF16(kSampleDescriptionBody[i]);
     candidate_window.mutable_candidates()->push_back(entry);
   }
   candidate_window.set_cursor_position(1);
@@ -183,14 +184,16 @@ TEST(CandidateWindow, GetInfolistEntries_SparseCase) {
   candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
     CandidateWindow::Entry entry;
-    entry.value = kSampleCandidate[i];
+    entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
     candidate_window.mutable_candidates()->push_back(entry);
   }
 
   std::vector<CandidateWindow::Entry>* candidates =
       candidate_window.mutable_candidates();
-  (*candidates)[2].description_title = kSampleDescriptionTitle[2];
-  (*candidates)[2].description_body = kSampleDescriptionBody[2];
+  (*candidates)[2].description_title =
+      base::UTF8ToUTF16(kSampleDescriptionTitle[2]);
+  (*candidates)[2].description_body =
+      base::UTF8ToUTF16(kSampleDescriptionBody[2]);
 
   candidate_window.set_cursor_position(2);
 
@@ -211,14 +214,16 @@ TEST(CandidateWindow, GetInfolistEntries_SparseNoSelectionCase) {
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
     CandidateWindow::Entry entry;
-    entry.value = kSampleCandidate[i];
+    entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
     candidate_window.mutable_candidates()->push_back(entry);
   }
 
   std::vector<CandidateWindow::Entry>* candidates =
       candidate_window.mutable_candidates();
-  (*candidates)[2].description_title = kSampleDescriptionTitle[2];
-  (*candidates)[2].description_body = kSampleDescriptionBody[2];
+  (*candidates)[2].description_title =
+      base::UTF8ToUTF16(kSampleDescriptionTitle[2]);
+  (*candidates)[2].description_body =
+      base::UTF8ToUTF16(kSampleDescriptionBody[2]);
 
   candidate_window.set_cursor_position(0);
 
@@ -240,7 +245,7 @@ TEST(CandidateWindow, GetInfolistEntries_NoInfolistCase) {
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
     CandidateWindow::Entry entry;
-    entry.value = kSampleCandidate[i];
+    entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
     candidate_window.mutable_candidates()->push_back(entry);
   }
   candidate_window.set_cursor_position(1);

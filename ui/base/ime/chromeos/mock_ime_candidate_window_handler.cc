@@ -23,10 +23,10 @@ void MockIMECandidateWindowHandler::UpdateLookupTable(
   last_update_lookup_table_arg_.is_visible = visible;
 }
 
-void MockIMECandidateWindowHandler::UpdatePreeditText(const std::string& text,
-                                                      uint32 cursor_pos,
-                                                      bool visible) {
-}
+void MockIMECandidateWindowHandler::UpdatePreeditText(
+    const base::string16& text,
+    uint32 cursor_pos,
+    bool visible) {}
 
 void MockIMECandidateWindowHandler::SetCursorBounds(
     const gfx::Rect& cursor_bounds,

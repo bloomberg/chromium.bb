@@ -315,11 +315,11 @@ bool InputMethodEngine::SetCandidates(
   for (std::vector<Candidate>::const_iterator ix = candidates.begin();
        ix != candidates.end(); ++ix) {
     ui::CandidateWindow::Entry entry;
-    entry.value = ix->value;
-    entry.label = ix->label;
-    entry.annotation = ix->annotation;
-    entry.description_title = ix->usage.title;
-    entry.description_body = ix->usage.body;
+    entry.value = base::UTF8ToUTF16(ix->value);
+    entry.label = base::UTF8ToUTF16(ix->label);
+    entry.annotation = base::UTF8ToUTF16(ix->annotation);
+    entry.description_title = base::UTF8ToUTF16(ix->usage.title);
+    entry.description_body = base::UTF8ToUTF16(ix->usage.body);
 
     // Store a mapping from the user defined ID to the candidate index.
     candidate_indexes_[ix->id] = candidate_ids_.size();

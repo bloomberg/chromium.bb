@@ -496,7 +496,8 @@ void InputMethodChromeOS::UpdateCompositionText(
     chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
         chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
     if (candidate_window)
-      candidate_window->UpdatePreeditText(text.text(), cursor_pos, visible);
+      candidate_window->UpdatePreeditText(
+          base::UTF8ToUTF16(text.text()), cursor_pos, visible);
   }
 
   // |visible| argument is very confusing. For example, what's the correct

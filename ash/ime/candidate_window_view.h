@@ -61,7 +61,7 @@ class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
   void ShowPreeditText();
 
   // Updates the preedit text.
-  void UpdatePreeditText(const std::string& utf8_text);
+  void UpdatePreeditText(const base::string16& text);
 
   // Updates candidates of the candidate window from |candidate_window|.
   // Candidates are arranged per |orientation|.

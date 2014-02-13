@@ -52,10 +52,10 @@ void InitCandidateWindowWithCandidatesFilled(
   InitCandidateWindow(page_size, candidate_window);
   for (size_t i = 0; i < page_size; ++i) {
     ui::CandidateWindow::Entry entry;
-    entry.value = base::StringPrintf("value %lld",
-                                     static_cast<unsigned long long>(i));
-    entry.label = base::StringPrintf("%lld",
-                                     static_cast<unsigned long long>(i));
+    entry.value = base::UTF8ToUTF16(base::StringPrintf(
+        "value %lld", static_cast<unsigned long long>(i)));
+    entry.label = base::UTF8ToUTF16(base::StringPrintf(
+        "%lld", static_cast<unsigned long long>(i)));
     candidate_window->mutable_candidates()->push_back(entry);
   }
 }
@@ -188,11 +188,11 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
       ui::CandidateWindow::Entry entry;
-      entry.value = kSampleCandidate[i];
-      entry.annotation = kSampleAnnotation[i];
-      entry.description_title = kSampleDescriptionTitle[i];
-      entry.description_body = kSampleDescriptionBody[i];
-      entry.label = kEmptyLabel;
+      entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
+      entry.annotation = base::UTF8ToUTF16(kSampleAnnotation[i]);
+      entry.description_title = base::UTF8ToUTF16(kSampleDescriptionTitle[i]);
+      entry.description_body = base::UTF8ToUTF16(kSampleDescriptionBody[i]);
+      entry.label = base::UTF8ToUTF16(kEmptyLabel);
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
@@ -214,11 +214,11 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     candidate_window.set_orientation(ui::CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
       ui::CandidateWindow::Entry entry;
-      entry.value = kSampleCandidate[i];
-      entry.annotation = kSampleAnnotation[i];
-      entry.description_title = kSampleDescriptionTitle[i];
-      entry.description_body = kSampleDescriptionBody[i];
-      entry.label = kEmptyLabel;
+      entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
+      entry.annotation = base::UTF8ToUTF16(kSampleAnnotation[i]);
+      entry.description_title = base::UTF8ToUTF16(kSampleDescriptionTitle[i]);
+      entry.description_body = base::UTF8ToUTF16(kSampleDescriptionBody[i]);
+      entry.label = base::UTF8ToUTF16(kEmptyLabel);
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
@@ -240,11 +240,11 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
       ui::CandidateWindow::Entry entry;
-      entry.value = kSampleCandidate[i];
-      entry.annotation = kSampleAnnotation[i];
-      entry.description_title = kSampleDescriptionTitle[i];
-      entry.description_body = kSampleDescriptionBody[i];
-      entry.label = kCustomizedLabel[i];
+      entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
+      entry.annotation = base::UTF8ToUTF16(kSampleAnnotation[i]);
+      entry.description_title = base::UTF8ToUTF16(kSampleDescriptionTitle[i]);
+      entry.description_body = base::UTF8ToUTF16(kSampleDescriptionBody[i]);
+      entry.label = base::UTF8ToUTF16(kCustomizedLabel[i]);
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
@@ -268,11 +268,11 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     candidate_window.set_orientation(ui::CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
       ui::CandidateWindow::Entry entry;
-      entry.value = kSampleCandidate[i];
-      entry.annotation = kSampleAnnotation[i];
-      entry.description_title = kSampleDescriptionTitle[i];
-      entry.description_body = kSampleDescriptionBody[i];
-      entry.label = kCustomizedLabel[i];
+      entry.value = base::UTF8ToUTF16(kSampleCandidate[i]);
+      entry.annotation = base::UTF8ToUTF16(kSampleAnnotation[i]);
+      entry.description_title = base::UTF8ToUTF16(kSampleDescriptionTitle[i]);
+      entry.description_body = base::UTF8ToUTF16(kSampleDescriptionBody[i]);
+      entry.label = base::UTF8ToUTF16(kCustomizedLabel[i]);
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
@@ -294,17 +294,21 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   ui::CandidateWindow candidate_window;
   ui::CandidateWindow no_shortcut_candidate_window;
 
-  const char kSampleCandidate1[] = "Sample String 1";
-  const char kSampleCandidate2[] = "\xE3\x81\x82";  // multi byte string.
-  const char kSampleCandidate3[] = ".....";
+  const base::string16 kSampleCandidate1 = base::UTF8ToUTF16(
+      "Sample String 1");
+  const base::string16 kSampleCandidate2 = base::UTF8ToUTF16(
+      "\xE3\x81\x82");  // multi byte string.
+  const base::string16 kSampleCandidate3 = base::UTF8ToUTF16(".....");
 
-  const char kSampleShortcut1[] = "1";
-  const char kSampleShortcut2[] = "b";
-  const char kSampleShortcut3[] = "C";
+  const base::string16 kSampleShortcut1 = base::UTF8ToUTF16("1");
+  const base::string16 kSampleShortcut2 = base::UTF8ToUTF16("b");
+  const base::string16 kSampleShortcut3 = base::UTF8ToUTF16("C");
 
-  const char kSampleAnnotation1[] = "Sample Annotation 1";
-  const char kSampleAnnotation2[] = "\xE3\x81\x82";  // multi byte string.
-  const char kSampleAnnotation3[] = "......";
+  const base::string16 kSampleAnnotation1 = base::UTF8ToUTF16(
+      "Sample Annotation 1");
+  const base::string16 kSampleAnnotation2 = base::UTF8ToUTF16(
+      "\xE3\x81\x82");  // multi byte string.
+  const base::string16 kSampleAnnotation3 = base::UTF8ToUTF16("......");
 
   // Create CandidateWindow object.
   InitCandidateWindow(kPageSize, &candidate_window);

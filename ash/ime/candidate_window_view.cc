@@ -114,8 +114,8 @@ class InformationTextArea : public views::View {
   }
 
   // Sets the displayed text.
-  void SetText(const std::string& utf8_text) {
-    label_->SetText(base::UTF8ToUTF16(utf8_text));
+  void SetText(const base::string16& text) {
+    label_->SetText(text);
   }
 
   // Sets the border thickness for top/bottom.
@@ -225,8 +225,8 @@ void CandidateWindowView::ShowPreeditText() {
   UpdateVisibility();
 }
 
-void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
-  preedit_->SetText(utf8_text);
+void CandidateWindowView::UpdatePreeditText(const base::string16& text) {
+  preedit_->SetText(text);
 }
 
 void CandidateWindowView::ShowLookupTable() {
@@ -335,7 +335,8 @@ void CandidateWindowView::UpdateCandidates(
 
   // Updates auxiliary text
   auxiliary_text_->SetVisible(candidate_window_.is_auxiliary_text_visible());
-  auxiliary_text_->SetText(candidate_window_.auxiliary_text());
+  auxiliary_text_->SetText(base::UTF8ToUTF16(
+      candidate_window_.auxiliary_text()));
 }
 
 void CandidateWindowView::SetCursorBounds(const gfx::Rect& cursor_bounds,

@@ -41,11 +41,11 @@ class UI_BASE_EXPORT CandidateWindow {
   struct UI_BASE_EXPORT Entry {
     Entry();
     virtual ~Entry();
-    std::string value;
-    std::string label;
-    std::string annotation;
-    std::string description_title;
-    std::string description_body;
+    base::string16 value;
+    base::string16 label;
+    base::string16 annotation;
+    base::string16 description_title;
+    base::string16 description_body;
   };
 
   CandidateWindow();

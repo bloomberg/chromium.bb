@@ -8,6 +8,7 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_export.h"
@@ -112,8 +113,9 @@ class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
                                  bool visible) = 0;
 
   // Called when the IME updates the preedit text. The |text| is given in
-  // UTF-8 encoding.
-  virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
+  // UTF-16 encoding.
+  virtual void UpdatePreeditText(const base::string16& text,
+                                 uint32 cursor_pos,
                                  bool visible) = 0;
 
   // Called when the application changes its caret bounds.

@@ -71,7 +71,7 @@ class CandidateWindowControllerImpl
   virtual void UpdateLookupTable(
       const ui::CandidateWindow& candidate_window,
       bool visible) OVERRIDE;
-  virtual void UpdatePreeditText(const std::string& utf8_text,
+  virtual void UpdatePreeditText(const base::string16& text,
                                  unsigned int cursor, bool visible) OVERRIDE;
   virtual void FocusStateChanged(bool is_focused) OVERRIDE;
 

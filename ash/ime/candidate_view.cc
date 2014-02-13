@@ -174,12 +174,12 @@ void CandidateView::SetWidths(int shortcut_width, int candidate_width) {
 }
 
 void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
-  std::string label = entry.label;
+  base::string16 label = entry.label;
   if (!label.empty() && orientation_ != ui::CandidateWindow::VERTICAL)
-    label += '.';
-  shortcut_label_->SetText(base::UTF8ToUTF16(label));
-  candidate_label_->SetText(base::UTF8ToUTF16(entry.value));
-  annotation_label_->SetText(base::UTF8ToUTF16(entry.annotation));
+    label += base::ASCIIToUTF16(".");
+  shortcut_label_->SetText(label);
+  candidate_label_->SetText(entry.value);
+  annotation_label_->SetText(entry.annotation);
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {

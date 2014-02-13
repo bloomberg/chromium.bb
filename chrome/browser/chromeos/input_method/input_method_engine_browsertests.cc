@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
@@ -702,20 +703,28 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
     ASSERT_EQ(4U, table.candidates().size());
 
-    EXPECT_EQ("CANDIDATE_1", table.candidates().at(0).value);
+    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_1"),
+              table.candidates().at(0).value);
 
-    EXPECT_EQ("CANDIDATE_2", table.candidates().at(1).value);
-    EXPECT_EQ("LABEL_2", table.candidates().at(1).label);
+    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_2"),
+              table.candidates().at(1).value);
+    EXPECT_EQ(base::UTF8ToUTF16("LABEL_2"), table.candidates().at(1).label);
 
-    EXPECT_EQ("CANDIDATE_3", table.candidates().at(2).value);
-    EXPECT_EQ("LABEL_3", table.candidates().at(2).label);
-    EXPECT_EQ("ANNOTACTION_3", table.candidates().at(2).annotation);
+    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_3"),
+              table.candidates().at(2).value);
+    EXPECT_EQ(base::UTF8ToUTF16("LABEL_3"), table.candidates().at(2).label);
+    EXPECT_EQ(base::UTF8ToUTF16("ANNOTACTION_3"),
+              table.candidates().at(2).annotation);
 
-    EXPECT_EQ("CANDIDATE_4", table.candidates().at(3).value);
-    EXPECT_EQ("LABEL_4", table.candidates().at(3).label);
-    EXPECT_EQ("ANNOTACTION_4", table.candidates().at(3).annotation);
-    EXPECT_EQ("TITLE_4", table.candidates().at(3).description_title);
-    EXPECT_EQ("BODY_4", table.candidates().at(3).description_body);
+    EXPECT_EQ(base::UTF8ToUTF16("CANDIDATE_4"),
+              table.candidates().at(3).value);
+    EXPECT_EQ(base::UTF8ToUTF16("LABEL_4"), table.candidates().at(3).label);
+    EXPECT_EQ(base::UTF8ToUTF16("ANNOTACTION_4"),
+              table.candidates().at(3).annotation);
+    EXPECT_EQ(base::UTF8ToUTF16("TITLE_4"),
+              table.candidates().at(3).description_title);
+    EXPECT_EQ(base::UTF8ToUTF16("BODY_4"),
+              table.candidates().at(3).description_body);
   }
   {
     SCOPED_TRACE("setCursorPosition test");
