@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -70,7 +71,7 @@ void ChromePasswordManagerClient::PromptUserToSavePassword(
     std::string uma_histogram_suffix(
         password_manager_metrics_util::GroupIdToString(
             password_manager_metrics_util::MonitoredDomainGroupId(
-                form_to_save->realm(), GetProfile()->GetPrefs())));
+                form_to_save->realm(), GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
         web_contents_, form_to_save, uma_histogram_suffix);
   }
@@ -112,6 +113,14 @@ Profile* ChromePasswordManagerClient::GetProfile() {
 
 PrefService* ChromePasswordManagerClient::GetPrefs() {
   return GetProfile()->GetPrefs();
+}
+
+PasswordStore* ChromePasswordManagerClient::GetPasswordStore() {
+  // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
+  // itself when it shouldn't access the PasswordStore.
+  // TODO(gcasto): Is is safe to change this to Profile::IMPLICIT_ACCESS?
+  return PasswordStoreFactory::GetForProfile(GetProfile(),
+                                             Profile::EXPLICIT_ACCESS).get();
 }
 
 PasswordManagerDriver* ChromePasswordManagerClient::GetDriver() {

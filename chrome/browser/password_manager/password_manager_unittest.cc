@@ -42,6 +42,7 @@ class MockPasswordManagerClient : public PasswordManagerClient {
  public:
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
+  MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_METHOD1(GetProbabilityForExperiment,
@@ -103,7 +104,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
         factory->GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
     store_ = static_cast<MockPasswordStore*>(store_temp.get());
 
-    EXPECT_CALL(client_, GetProfile()).WillRepeatedly(Return(profile()));
+    EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs())
         .WillRepeatedly(Return(profile()->GetTestingPrefService()));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));

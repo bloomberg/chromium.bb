@@ -11,12 +11,11 @@
 
 class PasswordFormManager;
 class PasswordManagerDriver;
+class PasswordStore;
 class PrefService;
-class Profile;
 
-// An abstraction of operations in the external environment (WebContents)
-// that the PasswordManager depends on.  This allows for more targeted
-// unit testing.
+// An abstraction of operations that depend on the embedders (e.g. Chrome)
+// environment.
 class PasswordManagerClient {
  public:
   PasswordManagerClient() {}
@@ -36,12 +35,11 @@ class PasswordManagerClient {
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) = 0;
 
-  // Get the profile for which we are managing passwords.
-  // TODO(gcasto): Remove this function. crbug.com/335107.
-  virtual Profile* GetProfile() = 0;
-
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;
+
+  // Returns the PasswordStore associated with this instance.
+  virtual PasswordStore* GetPasswordStore() = 0;
 
   // Returns the PasswordManagerDriver instance associated with this instance.
   virtual PasswordManagerDriver* GetDriver() = 0;

@@ -21,20 +21,18 @@ class WebContents;
 }  // namespace content
 
 class PasswordManager;
-class Profile;
+class PasswordManagerClient;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
 // between a given form, the per-tab PasswordManager, and the PasswordStore.
 class PasswordFormManager : public PasswordStoreConsumer {
  public:
-  // profile contains the link to the PasswordStore and whether we're off
-  //           the record
-  // password_manager owns this object
-  // form_on_page is the form that may be submitted and could need login data.
-  // ssl_valid represents the security of the page containing observed_form,
+  // |password_manager| owns this object
+  // |form_on_page| is the form that may be submitted and could need login data.
+  // |ssl_valid| represents the security of the page containing observed_form,
   //           used to filter login results from database.
-  PasswordFormManager(Profile* profile,
-                      PasswordManager* password_manager,
+  PasswordFormManager(PasswordManager* password_manager,
+                      PasswordManagerClient* client,
                       PasswordManagerDriver* driver,
                       const autofill::PasswordForm& observed_form,
                       bool ssl_valid);
@@ -299,8 +297,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // when we actually haven't.
   PasswordFormManagerState state_;
 
-  // The profile from which we get the PasswordStore.
-  Profile* profile_;
+  // The client which implements embedder-specific PasswordManager operations.
+  PasswordManagerClient* client_;
 
   // The driver which implements platform-specific PasswordManager operations.
   PasswordManagerDriver* driver_;

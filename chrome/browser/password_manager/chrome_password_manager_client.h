@@ -13,6 +13,7 @@
 
 class PasswordGenerationManager;
 class PasswordManager;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -32,8 +33,8 @@ class ChromePasswordManagerClient
       const autofill::PasswordFormMap& best_matches) const OVERRIDE;
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE;
-  virtual Profile* GetProfile() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
+  virtual PasswordStore* GetPasswordStore() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name) OVERRIDE;
@@ -45,8 +46,7 @@ class ChromePasswordManagerClient
       content::WebContents* contents);
 
   // Convenience method to allow //chrome code easy access to a
-  // PasswordGenerationManager
-  // from a WebContents instance.
+  // PasswordGenerationManager from a WebContents instance.
   static PasswordGenerationManager* GetGenerationManagerFromWebContents(
       content::WebContents* contents);
 
@@ -58,6 +58,8 @@ class ChromePasswordManagerClient
   // given password authentication request.  If authentication is disabled or
   // not supported, this will be triggered directly.
   void CommitFillPasswordForm(autofill::PasswordFormFillData* fill_data);
+
+  Profile* GetProfile();
 
   content::WebContents* web_contents_;
   ContentPasswordManagerDriver driver_;
