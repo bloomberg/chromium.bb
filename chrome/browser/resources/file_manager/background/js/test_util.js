@@ -817,6 +817,52 @@ test.util.sync.visitDesktop = function(contentWindow, profileId) {
 };
 
 /**
+ * Waits for the 'move to profileId' menu to appear (if waitAppear = true) or
+ * to disappear (if waitAppear = false).
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} profileId Destination profile's ID.
+ * @param {boolean} waitAppear Flag for specifying the mode to wait.
+ * @param {function()} callback Callback for notifying the event.
+ */
+test.util.async.waitForVisitDesktopMenu = function(
+    contentWindow, profileId, waitAppear, callback) {
+  test.util.repeatUntilTrue_(function() {
+    var list = contentWindow.document.querySelectorAll('.visit-desktop');
+    for (var i = 0; i < list.length; ++i) {
+      if (list[i].label.indexOf(profileId) != -1) {  // found
+        if (waitAppear)
+          callback();
+        return waitAppear;
+      }
+    }
+    if (!waitAppear)
+      callback();
+    return !waitAppear;
+  });
+};
+
+/**
+ * Runs the 'Move to profileId' menu.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} profileId Destination profile's ID.
+ * @return {boolean} True if the menu is found and run.
+ */
+test.util.sync.runVisitDesktopMenu = function(contentWindow, profileId) {
+  var list = contentWindow.document.querySelectorAll('.visit-desktop');
+  for (var i = 0; i < list.length; ++i) {
+    if (list[i].label.indexOf(profileId) != -1) {
+      var activateEvent = contentWindow.document.createEvent('Event');
+      activateEvent.initEvent('activate');
+      list[i].dispatchEvent(activateEvent);
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {

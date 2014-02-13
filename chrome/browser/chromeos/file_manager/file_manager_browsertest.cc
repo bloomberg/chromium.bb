@@ -11,6 +11,8 @@
 #include <deque>
 #include <string>
 
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -39,6 +42,8 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -846,7 +851,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   }
 
   // Loads all users to the current session and sets up necessary fields.
-  // This is used for preparing all acounts in PRE_ test setup, and for testing
+  // This is used for preparing all accounts in PRE_ test setup, and for testing
   // actual login behavior.
   void AddAllUsers() {
     for (size_t i = 0; i < arraysize(kTestAccounts); ++i)
@@ -888,6 +893,20 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     if (name == "addAllUsers") {
       AddAllUsers();
       return "true";
+    } else if (name == "getWindowOwnerId") {
+      chrome::MultiUserWindowManager* const window_manager =
+          chrome::MultiUserWindowManager::GetInstance();
+      apps::ShellWindowRegistry* const shell_window_registry =
+          apps::ShellWindowRegistry::Get(profile());
+      DCHECK(window_manager);
+      DCHECK(shell_window_registry);
+
+      const apps::ShellWindowRegistry::ShellWindowList& list =
+          shell_window_registry->GetShellWindowsForApp(
+              file_manager::kFileManagerAppId);
+      return list.size() == 1u ?
+          window_manager->GetUserPresentingWindow(
+              list.front()->GetNativeWindow()) : "";
     }
     return FileManagerBrowserTestBase::OnMessage(name, value);
   }
@@ -925,6 +944,16 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_Badge) {
 
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, Badge) {
   set_test_case_name("multiProfileBadge");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       PRE_VisitDesktopMenu) {
+  AddAllUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, VisitDesktopMenu) {
+  set_test_case_name("multiProfileVisitDesktopMenu");
   StartTest();
 }
 
