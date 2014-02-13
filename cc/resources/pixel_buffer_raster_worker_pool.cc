@@ -227,19 +227,23 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
   CheckForCompletedGpuRasterTasks();
 }
 
-void* PixelBufferRasterWorkerPool::AcquireBufferForRaster(
-    internal::RasterWorkerPoolTask* task,
-    int* stride) {
-  // Request a pixel buffer. This will reserve shared memory.
-  resource_provider()->AcquirePixelBuffer(task->resource()->id());
+SkCanvas* PixelBufferRasterWorkerPool::AcquireCanvasForRaster(
+    internal::RasterWorkerPoolTask* task) {
+  if (task->use_gpu_rasterization())
+    return resource_provider()->MapDirectRasterBuffer(task->resource()->id());
 
-  *stride = 0;
-  return resource_provider()->MapPixelBuffer(task->resource()->id());
+  resource_provider()->AcquirePixelRasterBuffer(task->resource()->id());
+  return resource_provider()->MapPixelRasterBuffer(task->resource()->id());
 }
 
 void PixelBufferRasterWorkerPool::OnRasterCompleted(
     internal::RasterWorkerPoolTask* task,
     const PicturePileImpl::Analysis& analysis) {
+  if (task->use_gpu_rasterization()) {
+    resource_provider()->UnmapDirectRasterBuffer(task->resource()->id());
+    return;
+  }
+
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc"),
                "PixelBufferRasterWorkerPool::OnRasterCompleted",
                "was_canceled",
@@ -250,11 +254,11 @@ void PixelBufferRasterWorkerPool::OnRasterCompleted(
   DCHECK(raster_task_states_.find(task) != raster_task_states_.end());
   DCHECK_EQ(SCHEDULED, raster_task_states_[task]);
 
-  // Balanced with MapPixelBuffer() call in AcquireBufferForRaster().
-  resource_provider()->UnmapPixelBuffer(task->resource()->id());
+  // Balanced with MapPixelRasterBuffer() call in AcquireCanvasForRaster().
+  resource_provider()->UnmapPixelRasterBuffer(task->resource()->id());
 
   if (!task->HasFinishedRunning() || analysis.is_solid_color) {
-    resource_provider()->ReleasePixelBuffer(task->resource()->id());
+    resource_provider()->ReleasePixelRasterBuffer(task->resource()->id());
 
     if (!task->HasFinishedRunning()) {
       // When priorites change, a raster task can be canceled as a result of
@@ -387,7 +391,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
         tasks_with_completed_uploads.front().get();
 
     // It's now safe to release the pixel buffer and the shared memory.
-    resource_provider()->ReleasePixelBuffer(task->resource()->id());
+    resource_provider()->ReleasePixelRasterBuffer(task->resource()->id());
 
     bytes_pending_upload_ -= task->resource()->bytes();
 

@@ -140,20 +140,22 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
   CheckForCompletedGpuRasterTasks();
 }
 
-void* ImageRasterWorkerPool::AcquireBufferForRaster(
-    internal::RasterWorkerPoolTask* task,
-    int* stride) {
-  // Acquire image for resource.
-  resource_provider()->AcquireImage(task->resource()->id());
+SkCanvas* ImageRasterWorkerPool::AcquireCanvasForRaster(
+    internal::RasterWorkerPoolTask* task) {
+  if (task->use_gpu_rasterization())
+    return resource_provider()->MapDirectRasterBuffer(task->resource()->id());
 
-  *stride = resource_provider()->GetImageStride(task->resource()->id());
-  return resource_provider()->MapImage(task->resource()->id());
+  return resource_provider()->MapImageRasterBuffer(task->resource()->id());
 }
 
 void ImageRasterWorkerPool::OnRasterCompleted(
     internal::RasterWorkerPoolTask* task,
     const PicturePileImpl::Analysis& analysis) {
-  resource_provider()->UnmapImage(task->resource()->id());
+  if (task->use_gpu_rasterization()) {
+    resource_provider()->UnmapDirectRasterBuffer(task->resource()->id());
+    return;
+  }
+  resource_provider()->UnmapImageRasterBuffer(task->resource()->id());
 }
 
 void ImageRasterWorkerPool::OnImageDecodeCompleted(

@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
 
 namespace cc {
 namespace {
@@ -96,8 +95,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         source_frame_number_(source_frame_number),
         rendering_stats_(rendering_stats),
         reply_(reply),
-        buffer_(NULL),
-        stride_(0) {}
+        canvas_(NULL) {}
 
   void RunAnalysisOnThread(unsigned thread_index) {
     TRACE_EVENT1("cc",
@@ -124,10 +122,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  void RunRasterOnThread(unsigned thread_index,
-                         void* buffer,
-                         const gfx::Size& size,
-                         int stride) {
+  void RunRasterOnThread(unsigned thread_index) {
     TRACE_EVENT2(
         "cc",
         "RasterWorkerPoolTaskImpl::RunRasterOnThread",
@@ -140,34 +135,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         devtools_instrumentation::kRasterTask, layer_id_);
 
     DCHECK(picture_pile_.get());
-    DCHECK(buffer);
-
-    SkBitmap bitmap;
-    switch (resource()->format()) {
-      case RGBA_4444:
-        // Use the default stride if we will eventually convert this
-        // bitmap to 4444.
-        bitmap.setConfig(
-            SkBitmap::kARGB_8888_Config, size.width(), size.height());
-        bitmap.allocPixels();
-        break;
-      case RGBA_8888:
-      case BGRA_8888:
-        bitmap.setConfig(
-            SkBitmap::kARGB_8888_Config, size.width(), size.height(), stride);
-        bitmap.setPixels(buffer);
-        break;
-      case LUMINANCE_8:
-      case RGB_565:
-      case ETC1:
-        NOTREACHED();
-        break;
-    }
-
-    SkBitmapDevice device(bitmap);
-    SkCanvas canvas(&device);
-    Raster(picture_pile_->GetCloneForDrawingOnThread(thread_index), &canvas);
-    ChangeBitmapConfigIfNeeded(bitmap, buffer);
+    Raster(picture_pile_->GetCloneForDrawingOnThread(thread_index));
   }
 
   // Overridden from internal::Task:
@@ -175,27 +143,23 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     // TODO(alokp): For now run-on-worker-thread implies software rasterization.
     DCHECK(!use_gpu_rasterization());
     RunAnalysisOnThread(thread_index);
-    if (buffer_ && !analysis_.is_solid_color)
-      RunRasterOnThread(thread_index, buffer_, resource()->size(), stride_);
+    if (canvas_ && !analysis_.is_solid_color)
+      RunRasterOnThread(thread_index);
   }
 
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    if (use_gpu_rasterization())
-      return;
-    DCHECK(!buffer_);
-    buffer_ = client->AcquireBufferForRaster(this, &stride_);
+    DCHECK(!canvas_);
+    canvas_ = client->AcquireCanvasForRaster(this);
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    if (use_gpu_rasterization())
-      return;
-    buffer_ = NULL;
+    canvas_ = NULL;
     client->OnRasterCompleted(this, analysis_);
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
-    DCHECK(!buffer_);
+    DCHECK(!canvas_);
     reply_.Run(analysis_, !HasFinishedRunning());
   }
 
@@ -212,31 +176,12 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
             .c_str());
     // TODO(alokp): For now run-on-origin-thread implies gpu rasterization.
     DCHECK(use_gpu_rasterization());
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider,
-                                             resource()->id());
-    DCHECK_NE(lock.texture_id(), 0u);
-
-    GrBackendTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-    desc.fWidth = content_rect_.width();
-    desc.fHeight = content_rect_.height();
-    desc.fConfig = ToGrFormat(resource()->format());
-    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-    desc.fTextureHandle = lock.texture_id();
-
-    GrContext* gr_context = context_provider->GrContext();
-    skia::RefPtr<GrTexture> texture =
-        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-    skia::RefPtr<SkGpuDevice> device =
-        skia::AdoptRef(SkGpuDevice::Create(texture.get()));
-    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(device.get()));
-
-    Raster(picture_pile_, canvas.get());
+    Raster(picture_pile_);
     context_provider->ContextGL()->PopGroupMarkerEXT();
   }
 
  protected:
-  virtual ~RasterWorkerPoolTaskImpl() { DCHECK(!buffer_); }
+  virtual ~RasterWorkerPoolTaskImpl() { DCHECK(!canvas_); }
 
  private:
   scoped_ptr<base::Value> DataAsValue() const {
@@ -248,22 +193,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     return res.PassAs<base::Value>();
   }
 
-  static GrPixelConfig ToGrFormat(ResourceFormat format) {
-    switch (format) {
-      case RGBA_8888:
-        return kRGBA_8888_GrPixelConfig;
-      case BGRA_8888:
-        return kBGRA_8888_GrPixelConfig;
-      case RGBA_4444:
-        return kRGBA_4444_GrPixelConfig;
-      default:
-        break;
-    }
-    DCHECK(false) << "Unsupported resource format.";
-    return kSkia8888_GrPixelConfig;
-  }
-
-  void Raster(PicturePileImpl* picture_pile, SkCanvas* canvas) {
+  void Raster(PicturePileImpl* picture_pile) {
     skia::RefPtr<SkDrawFilter> draw_filter;
     switch (raster_mode_) {
       case LOW_QUALITY_RASTER_MODE:
@@ -278,7 +208,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
       default:
         NOTREACHED();
     }
-    canvas->setDrawFilter(draw_filter.get());
+    canvas_->setDrawFilter(draw_filter.get());
 
     base::TimeDelta prev_rasterize_time =
         rendering_stats_->impl_thread_rendering_stats().rasterize_time;
@@ -289,7 +219,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     // before we draw and sometimes they aren't)
     RenderingStatsInstrumentation* stats =
         tile_resolution_ == HIGH_RESOLUTION ? rendering_stats_ : NULL;
-    picture_pile->RasterToBitmap(canvas, content_rect_, contents_scale_, stats);
+    picture_pile->RasterToBitmap(
+        canvas_, content_rect_, contents_scale_, stats);
 
     if (rendering_stats_->record_rendering_stats()) {
       base::TimeDelta current_rasterize_time =
@@ -300,19 +231,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
           0,
           100000,
           100);
-    }
-  }
-
-  void ChangeBitmapConfigIfNeeded(const SkBitmap& bitmap, void* buffer) {
-    TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::ChangeBitmapConfigIfNeeded");
-    SkBitmap::Config config = SkBitmapConfig(resource()->format());
-    if (bitmap.getConfig() != config) {
-      SkBitmap bitmap_dest;
-      IdentityAllocator allocator(buffer);
-      bitmap.copyTo(&bitmap_dest, config, &allocator);
-      // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-      // bitmap data. This check will be removed once crbug.com/293728 is fixed.
-      CHECK_EQ(0u, bitmap_dest.rowBytes() % 4);
     }
   }
 
@@ -327,8 +245,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   int source_frame_number_;
   RenderingStatsInstrumentation* rendering_stats_;
   const RasterWorkerPool::RasterTask::Reply reply_;
-  void* buffer_;
-  int stride_;
+  SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPoolTaskImpl);
 };

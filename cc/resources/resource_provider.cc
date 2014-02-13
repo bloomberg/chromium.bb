@@ -23,6 +23,9 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
@@ -89,6 +92,44 @@ bool IsFormatSupportedForStorage(ResourceFormat format) {
       return false;
   }
   return false;
+}
+
+GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return kRGBA_8888_GrPixelConfig;
+    case BGRA_8888:
+      return kBGRA_8888_GrPixelConfig;
+    case RGBA_4444:
+      return kRGBA_4444_GrPixelConfig;
+    default:
+      break;
+  }
+  DCHECK(false) << "Unsupported resource format.";
+  return kSkia8888_GrPixelConfig;
+}
+
+class IdentityAllocator : public SkBitmap::Allocator {
+ public:
+  explicit IdentityAllocator(void* buffer) : buffer_(buffer) {}
+  virtual bool allocPixelRef(SkBitmap* dst, SkColorTable*) OVERRIDE {
+    dst->setPixels(buffer_);
+    return true;
+  }
+
+ private:
+  void* buffer_;
+};
+
+void CopyBitmap(const SkBitmap& src,
+                uint8_t* dst,
+                SkBitmap::Config dst_config) {
+  SkBitmap dst_bitmap;
+  IdentityAllocator allocator(dst);
+  src.copyTo(&dst_bitmap, dst_config, &allocator);
+  // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
+  // bitmap data. This check will be removed once crbug.com/293728 is fixed.
+  CHECK_EQ(0u, dst_bitmap.rowBytes() % 4);
 }
 
 class ScopedSetActiveTexture {
@@ -325,6 +366,175 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       shared_bitmap_id(bitmap_id),
       shared_bitmap(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
+}
+
+ResourceProvider::RasterBuffer::RasterBuffer(
+    const Resource* resource,
+    ResourceProvider* resource_provider)
+    : resource_(resource),
+      resource_provider_(resource_provider),
+      locked_canvas_(NULL),
+      canvas_save_count_(0) {
+  DCHECK(resource_);
+  DCHECK(resource_provider_);
+}
+
+ResourceProvider::RasterBuffer::~RasterBuffer() {}
+
+SkCanvas* ResourceProvider::RasterBuffer::LockForWrite() {
+  DCHECK(!locked_canvas_);
+
+  locked_canvas_ = DoLockForWrite();
+  canvas_save_count_ = locked_canvas_ ? locked_canvas_->save() : 0;
+  return locked_canvas_;
+}
+
+void ResourceProvider::RasterBuffer::UnlockForWrite() {
+  if (locked_canvas_) {
+    locked_canvas_->restoreToCount(canvas_save_count_);
+    locked_canvas_ = NULL;
+  }
+  DoUnlockForWrite();
+}
+
+ResourceProvider::DirectRasterBuffer::DirectRasterBuffer(
+    const Resource* resource,
+    ResourceProvider* resource_provider)
+    : RasterBuffer(resource, resource_provider) {}
+
+ResourceProvider::DirectRasterBuffer::~DirectRasterBuffer() {}
+
+SkCanvas* ResourceProvider::DirectRasterBuffer::DoLockForWrite() {
+  if (!surface_)
+    surface_ = CreateSurface();
+  return surface_ ? surface_->getCanvas() : NULL;
+}
+
+void ResourceProvider::DirectRasterBuffer::DoUnlockForWrite() {}
+
+skia::RefPtr<SkSurface> ResourceProvider::DirectRasterBuffer::CreateSurface() {
+  skia::RefPtr<SkSurface> surface;
+  switch (resource()->type) {
+    case GLTexture: {
+      DCHECK(resource()->gl_id);
+      class GrContext* gr_context = resource_provider()->GrContext();
+      if (gr_context) {
+        GrBackendTextureDesc desc;
+        desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+        desc.fWidth = resource()->size.width();
+        desc.fHeight = resource()->size.height();
+        desc.fConfig = ToGrPixelConfig(resource()->format);
+        desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+        desc.fTextureHandle = resource()->gl_id;
+        skia::RefPtr<GrTexture> gr_texture =
+            skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+        surface = skia::AdoptRef(
+            SkSurface::NewRenderTargetDirect(gr_texture->asRenderTarget()));
+      }
+      break;
+    }
+    case Bitmap: {
+      DCHECK(resource()->pixels);
+      DCHECK_EQ(RGBA_8888, resource()->format);
+      SkImageInfo image_info = SkImageInfo::MakeN32Premul(
+          resource()->size.width(), resource()->size.height());
+      size_t row_bytes = SkBitmap::ComputeRowBytes(SkBitmap::kARGB_8888_Config,
+                                                   resource()->size.width());
+      surface = skia::AdoptRef(SkSurface::NewRasterDirect(
+          image_info, resource()->pixels, row_bytes));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  return surface;
+}
+
+ResourceProvider::BitmapRasterBuffer::BitmapRasterBuffer(
+    const Resource* resource,
+    ResourceProvider* resource_provider)
+    : RasterBuffer(resource, resource_provider), mapped_buffer_(NULL) {}
+
+ResourceProvider::BitmapRasterBuffer::~BitmapRasterBuffer() {}
+
+SkCanvas* ResourceProvider::BitmapRasterBuffer::DoLockForWrite() {
+  DCHECK(!mapped_buffer_);
+  DCHECK(!raster_canvas_);
+
+  int stride = 0;
+  mapped_buffer_ = MapBuffer(&stride);
+  if (!mapped_buffer_)
+    return NULL;
+
+  switch (resource()->format) {
+    case RGBA_4444:
+      // Use the default stride if we will eventually convert this
+      // bitmap to 4444.
+      raster_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
+                               resource()->size.width(),
+                               resource()->size.height());
+      raster_bitmap_.allocPixels();
+      break;
+    case RGBA_8888:
+    case BGRA_8888:
+      raster_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
+                               resource()->size.width(),
+                               resource()->size.height(),
+                               stride);
+      raster_bitmap_.setPixels(mapped_buffer_);
+      break;
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+      NOTREACHED();
+      break;
+  }
+  skia::RefPtr<SkBitmapDevice> device =
+      skia::AdoptRef(new SkBitmapDevice(raster_bitmap_));
+  raster_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
+  return raster_canvas_.get();
+}
+
+void ResourceProvider::BitmapRasterBuffer::DoUnlockForWrite() {
+  raster_canvas_.clear();
+
+  SkBitmap::Config buffer_config = SkBitmapConfig(resource()->format);
+  if (mapped_buffer_ && (buffer_config != raster_bitmap_.config()))
+    CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_config);
+  raster_bitmap_.reset();
+
+  UnmapBuffer();
+  mapped_buffer_ = NULL;
+}
+
+ResourceProvider::ImageRasterBuffer::ImageRasterBuffer(
+    const Resource* resource,
+    ResourceProvider* resource_provider)
+    : BitmapRasterBuffer(resource, resource_provider) {}
+
+ResourceProvider::ImageRasterBuffer::~ImageRasterBuffer() {}
+
+uint8_t* ResourceProvider::ImageRasterBuffer::MapBuffer(int* stride) {
+  return resource_provider()->MapImage(resource(), stride);
+}
+
+void ResourceProvider::ImageRasterBuffer::UnmapBuffer() {
+  resource_provider()->UnmapImage(resource());
+}
+
+ResourceProvider::PixelRasterBuffer::PixelRasterBuffer(
+    const Resource* resource,
+    ResourceProvider* resource_provider)
+    : BitmapRasterBuffer(resource, resource_provider) {}
+
+ResourceProvider::PixelRasterBuffer::~PixelRasterBuffer() {}
+
+uint8_t* ResourceProvider::PixelRasterBuffer::MapBuffer(int* stride) {
+  return resource_provider()->MapPixelBuffer(resource(), stride);
+}
+
+void ResourceProvider::PixelRasterBuffer::UnmapBuffer() {
+  resource_provider()->UnmapPixelBuffer(resource());
 }
 
 ResourceProvider::Child::Child() : marked_for_deletion(false) {}
@@ -583,6 +793,10 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   DCHECK(resource->exported_count == 0 || style != Normal);
   if (style == ForShutdown && resource->exported_count > 0)
     lost_resource = true;
+
+  resource->direct_raster_buffer.reset();
+  resource->image_raster_buffer.reset();
+  resource->pixel_raster_buffer.reset();
 
   if (resource->image_id) {
     DCHECK(resource->origin == Resource::Internal);
@@ -1472,8 +1686,64 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 }
 
-void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
+SkCanvas* ResourceProvider::MapDirectRasterBuffer(ResourceId id) {
+  // Resource needs to be locked for write since DirectRasterBuffer writes
+  // directly to it.
+  LockForWrite(id);
   Resource* resource = GetResource(id);
+  if (!resource->direct_raster_buffer.get()) {
+    resource->direct_raster_buffer.reset(
+        new DirectRasterBuffer(resource, this));
+  }
+  return resource->direct_raster_buffer->LockForWrite();
+}
+
+void ResourceProvider::UnmapDirectRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource->direct_raster_buffer.get());
+  resource->direct_raster_buffer->UnlockForWrite();
+  UnlockForWrite(id);
+}
+
+SkCanvas* ResourceProvider::MapImageRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  AcquireImage(resource);
+  if (!resource->image_raster_buffer.get())
+    resource->image_raster_buffer.reset(new ImageRasterBuffer(resource, this));
+  return resource->image_raster_buffer->LockForWrite();
+}
+
+void ResourceProvider::UnmapImageRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  resource->image_raster_buffer->UnlockForWrite();
+  resource->dirty_image = true;
+}
+
+void ResourceProvider::AcquirePixelRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  AcquirePixelBuffer(resource);
+  resource->pixel_raster_buffer.reset(new PixelRasterBuffer(resource, this));
+}
+
+void ResourceProvider::ReleasePixelRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  resource->pixel_raster_buffer.reset();
+  ReleasePixelBuffer(resource);
+}
+
+SkCanvas* ResourceProvider::MapPixelRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource->pixel_raster_buffer.get());
+  return resource->pixel_raster_buffer->LockForWrite();
+}
+
+void ResourceProvider::UnmapPixelRasterBuffer(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(resource->pixel_raster_buffer.get());
+  resource->pixel_raster_buffer->UnlockForWrite();
+}
+
+void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1502,8 +1772,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   }
 }
 
-void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
-  Resource* resource = GetResource(id);
+void ResourceProvider::ReleasePixelBuffer(Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1517,7 +1786,7 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   if (resource->pending_set_pixels) {
     DCHECK(resource->set_pixels_completion_forced);
     resource->pending_set_pixels = false;
-    UnlockForWrite(id);
+    resource->locked_for_write = false;
   }
 
   if (resource->type == GLTexture) {
@@ -1539,12 +1808,13 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   }
 }
 
-uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
-  Resource* resource = GetResource(id);
+uint8_t* ResourceProvider::MapPixelBuffer(const Resource* resource,
+                                          int* stride) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
+  *stride = 0;
   if (resource->type == GLTexture) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
@@ -1562,8 +1832,7 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
   return resource->pixel_buffer;
 }
 
-void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
-  Resource* resource = GetResource(id);
+void ResourceProvider::UnmapPixelBuffer(const Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1815,8 +2084,7 @@ void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,
   resource->enable_read_lock_fences = enable;
 }
 
-void ResourceProvider::AcquireImage(ResourceId id) {
-  Resource* resource = GetResource(id);
+void ResourceProvider::AcquireImage(Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1836,8 +2104,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   DCHECK(resource->image_id);
 }
 
-void ResourceProvider::ReleaseImage(ResourceId id) {
-  Resource* resource = GetResource(id);
+void ResourceProvider::ReleaseImage(Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1853,8 +2120,7 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
   resource->allocated = false;
 }
 
-uint8_t* ResourceProvider::MapImage(ResourceId id) {
-  Resource* resource = GetResource(id);
+uint8_t* ResourceProvider::MapImage(const Resource* resource, int* stride) {
   DCHECK(ReadLockFenceHasPassed(resource));
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
@@ -1863,15 +2129,17 @@ uint8_t* ResourceProvider::MapImage(ResourceId id) {
     DCHECK(resource->image_id);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
+    gl->GetImageParameterivCHROMIUM(
+        resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
     return static_cast<uint8_t*>(
         gl->MapImageCHROMIUM(resource->image_id, GL_READ_WRITE));
   }
   DCHECK_EQ(Bitmap, resource->type);
+  *stride = 0;
   return resource->pixels;
 }
 
-void ResourceProvider::UnmapImage(ResourceId id) {
-  Resource* resource = GetResource(id);
+void ResourceProvider::UnmapImage(const Resource* resource) {
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1879,25 +2147,7 @@ void ResourceProvider::UnmapImage(ResourceId id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     gl->UnmapImageCHROMIUM(resource->image_id);
-    resource->dirty_image = true;
   }
-}
-
-int ResourceProvider::GetImageStride(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->origin == Resource::Internal);
-  DCHECK_EQ(resource->exported_count, 0);
-
-  int stride = 0;
-
-  if (resource->image_id) {
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->GetImageParameterivCHROMIUM(
-        resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, &stride);
-  }
-
-  return stride;
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
@@ -1909,6 +2159,11 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
 GLES2Interface* ResourceProvider::ContextGL() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->ContextGL() : NULL;
+}
+
+class GrContext* ResourceProvider::GrContext() const {
+  ContextProvider* context_provider = output_surface_->context_provider();
+  return context_provider ? context_provider->GrContext() : NULL;
 }
 
 }  // namespace cc

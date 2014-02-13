@@ -57,8 +57,8 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
   }
 
   // Overridden from internal::WorkerPoolTaskClient:
-  virtual void* AcquireBufferForRaster(internal::RasterWorkerPoolTask* task,
-                                       int* stride) OVERRIDE {
+  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterWorkerPoolTask* task)
+      OVERRIDE {
     return NULL;
   }
   virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,

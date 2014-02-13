@@ -30,8 +30,7 @@ class RasterWorkerPoolTask;
 
 class CC_EXPORT WorkerPoolTaskClient {
  public:
-  virtual void* AcquireBufferForRaster(RasterWorkerPoolTask* task,
-                                       int* stride) = 0;
+  virtual SkCanvas* AcquireCanvasForRaster(RasterWorkerPoolTask* task) = 0;
   virtual void OnRasterCompleted(RasterWorkerPoolTask* task,
                                  const PicturePileImpl::Analysis& analysis) = 0;
   virtual void OnImageDecodeCompleted(WorkerPoolTask* task) = 0;
