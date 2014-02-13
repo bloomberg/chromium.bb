@@ -28,7 +28,8 @@ Stopped capturing.
   DEPTH_WRITEMASK: true
   DITHER: false
   ELEMENT_ARRAY_BUFFER_BINDING: null
-  ENABLED_EXTENSIONS[3]
+  ENABLED_EXTENSIONS[4]
+    EXT_texture_filter_anisotropic: EXTTextureFilterAnisotropic
     OES_standard_derivatives: OESStandardDerivatives
     OES_vertex_array_object: OESVertexArrayObject
     WEBKIT_EXT_texture_filter_anisotropic: EXTTextureFilterAnisotropic
