@@ -22,10 +22,6 @@ struct NaClRuntimeHostInterface {
 struct NaClRuntimeHostInterfaceVtbl {
   struct NaClRefCountVtbl       vbase;
 
-  int                           (*Log)(
-      struct NaClRuntimeHostInterface *self,
-      char const                      *message);
-
   int                           (*StartupInitializationComplete)(
       struct NaClRuntimeHostInterface *self);
 
@@ -53,10 +49,6 @@ int NaClRuntimeHostInterfaceCtor_protected(
 
 void NaClRuntimeHostInterfaceDtor(struct NaClRefCount *vself);
 
-int NaClRuntimeHostInterfaceLogNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    char const                      *message);
-
 int NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented(
     struct NaClRuntimeHostInterface *self);
 
@@ -78,4 +70,4 @@ extern struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl;
 
 EXTERN_C_END
 
-#endif /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_RUNTIME_HOST_INTERFACE_H_ */
+#endif

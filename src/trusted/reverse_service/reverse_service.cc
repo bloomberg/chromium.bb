@@ -39,16 +39,6 @@ struct ReverseInterfaceWrapper {
   nacl::ReverseInterface* iface;
 };
 
-void RevLog(NaClReverseInterface* self, char const* message) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "Log, no reverse_interface. Message: %s\n", message);
-  } else {
-    wrapper->iface->Log(message);
-  }
-}
-
 void StartupInitializationComplete(NaClReverseInterface* self) {
   ReverseInterfaceWrapper* wrapper =
       reinterpret_cast<ReverseInterfaceWrapper*>(self);
@@ -244,7 +234,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   {
     ReverseInterfaceWrapperDtor,
   },
-  RevLog,
   StartupInitializationComplete,
   EnumerateManifestKeys,
   OpenManifestEntry,

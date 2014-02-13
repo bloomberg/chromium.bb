@@ -35,15 +35,6 @@ void NaClRuntimeHostInterfaceDtor(struct NaClRefCount *vself) {
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
 }
 
-int NaClRuntimeHostInterfaceLogNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    char const                      *message) {
-  NaClLog(LOG_ERROR,
-          "NaClRuntimeHostInterfaceLog(0x%08"NACL_PRIxPTR", %s)\n",
-          (uintptr_t) self, message);
-  return -NACL_ABI_EINVAL;
-}
-
 int NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented(
     struct NaClRuntimeHostInterface *self) {
   NaClLog(LOG_ERROR,
@@ -91,7 +82,6 @@ struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl = {
   {
     NaClRuntimeHostInterfaceDtor,
   },
-  NaClRuntimeHostInterfaceLogNotImplemented,
   NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented,
   NaClRuntimeHostInterfaceReportExitStatusNotImplemented,
   NaClRuntimeHostInterfacePostMessageNotImplemented,

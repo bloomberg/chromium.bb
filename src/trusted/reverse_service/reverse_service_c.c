@@ -135,22 +135,6 @@ static void NaClReverseServiceAddChannelRpc(
   (*done_cls->Run)(done_cls);
 }
 
-static void NaClReverseServiceRevLogRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  char *msg = in_args[0]->arrays.str;
-  UNREFERENCED_PARAMETER(out_args);
-
-  (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->Log)(
-      nrsp->iface, msg);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 static void NaClReverseServiceModuleInitDoneRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -565,7 +549,6 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_TEST, NaClReverseServiceTestRpc, },
-  { NACL_REVERSE_CONTROL_LOG, NaClReverseServiceRevLogRpc, },
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, NaClReverseServiceAddChannelRpc, },
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
   { NACL_REVERSE_CONTROL_REPORT_STATUS, NaClReverseServiceModuleExitRpc, },
@@ -713,14 +696,6 @@ void NaClReverseInterfaceDtor(struct NaClRefCount *vself) {
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
 }
 
-void NaClReverseInterfaceLog(
-    struct NaClReverseInterface   *self,
-    char const                    *message) {
-  NaClLog(3,
-          "NaClReverseInterfaceLog(0x%08"NACL_PRIxPTR", %s)\n",
-          (uintptr_t) self, message);
-}
-
 void NaClReverseInterfaceStartupInitializationComplete(
     struct NaClReverseInterface *self) {
   NaClLog(3,
@@ -836,7 +811,6 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   {
     NaClReverseInterfaceDtor,
   },
-  NaClReverseInterfaceLog,
   NaClReverseInterfaceStartupInitializationComplete,
   NaClReverseInterfaceEnumerateManifestKeys,
   NaClReverseInterfaceOpenManifestEntry,

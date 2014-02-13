@@ -55,9 +55,6 @@ class ReverseInterface : public RefCountBase {
  public:
   virtual ~ReverseInterface() {}
 
-  // For debugging, messaging.  |message| goes to JavaScript console.
-  virtual void Log(nacl::string message) = 0;
-
   // Startup handshake
   virtual void StartupInitializationComplete() = 0;
 

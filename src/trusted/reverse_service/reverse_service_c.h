@@ -81,11 +81,6 @@ struct NaClReverseInterface {
 struct NaClReverseInterfaceVtbl {
   struct NaClRefCountVtbl       vbase;
 
-  /* For debugging, messaging. |message| goes to console. */
-  void                          (*Log)(
-      struct NaClReverseInterface   *self,
-      char const                    *message);
-
   /* Startup handshake */
   void                          (*StartupInitializationComplete)(
       struct NaClReverseInterface   *self);
