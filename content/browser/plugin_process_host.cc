@@ -56,6 +56,7 @@
 #include "base/win/windows_version.h"
 #include "content/common/plugin_constants_win.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "ui/gfx/switches.h"
 #endif
 
 namespace content {
@@ -195,6 +196,9 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 #endif
     switches::kEnableStatsTable,
     switches::kFullMemoryCrashReport,
+#if defined(OS_WIN)
+    switches::kHighDPISupport,
+#endif
     switches::kLoggingLevel,
     switches::kLogPluginMessages,
     switches::kNoSandbox,
