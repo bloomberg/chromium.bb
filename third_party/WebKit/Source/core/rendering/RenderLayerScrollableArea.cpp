@@ -635,8 +635,10 @@ void RenderLayerScrollableArea::updateAfterLayout()
         AllowRepaintScope scoper(m_box->view()->frameView());
 
         // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
-        if (m_box->view())
+        if (m_box->view()) {
+            DisableCompositingQueryAsserts disabler;
             m_box->view()->compositor()->updateLayerCompositingState(m_box->layer());
+        }
     }
 }
 

@@ -257,6 +257,11 @@ LayoutPoint RenderLayer::computeOffsetFromRoot(bool& hasLayerOffset) const
 void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags flags)
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
+
+    // Once we fix the chicken-egg issues, we should move updateLayerPositionsAfterLayout later
+    // in the state machine.
+    DisableCompositingQueryAsserts disabler;
+
     RenderGeometryMap geometryMap(UseTransforms);
     if (this != rootLayer)
         geometryMap.pushMappingsToAncestor(parent(), 0);
@@ -1837,6 +1842,8 @@ static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlag
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
+    DisableCompositingQueryAsserts disabler;
+
     if (compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking) {
         // The updatingControlTints() painting pass goes through compositing layers,
         // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
@@ -3477,9 +3484,7 @@ bool RenderLayer::isAllowedToQueryCompositingState() const
 {
     if (gCompositingQueryMode == CompositingQueriesAreAllowed)
         return true;
-
-    // FIXME: This should be asserting that we're >= IncompositingUpdate.
-    return renderer()->document().lifecycle().state() > DocumentLifecycle::InPreLayout;
+    return renderer()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
 }
 
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
