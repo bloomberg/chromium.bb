@@ -40,6 +40,48 @@ def RunOrDie(command):
   subprocess.check_call(command, shell=True)
 
 
+class ScopedSubstTempDir(object):
+  """Creates a |TempDir()| and subst's a drive to the path.
+
+  This is done to avoid exceedingly long names in some .msi packages which
+  fail to extract because they exceed _MAX_PATH. Only the "subst" part of this
+  is scoped, not the temp dir, which is left for use and cleanup by the
+  caller.
+  """
+  DefineDosDevice = ctypes.windll.kernel32.DefineDosDeviceW
+  DefineDosDevice.argtypes = [ctypes.c_int, ctypes.c_wchar_p, ctypes.c_wchar_p]
+  DDD_NO_BROADCAST_SYSTEM = 0x08
+  DDD_REMOVE_DEFINITION = 0x02
+
+  def __init__(self):
+    self.real_path = TempDir()
+    self.subst_drive = None
+
+  def __enter__(self):
+    """Tries to find a subst that we can use for the temporary directory, and
+    aborts on failure."""
+    for drive in range(ord('Z'), ord('A') - 1, -1):
+      candidate = '%c:' % drive
+      if self.DefineDosDevice(
+          self.DDD_NO_BROADCAST_SYSTEM, candidate, self.real_path) != 0:
+        self.subst_drive = candidate
+        return self
+    raise RuntimeError('Unable to find a subst path')
+
+  def __exit__(self, typ, value, traceback):
+    if self.subst_drive:
+      if self.DefineDosDevice(int(self.DDD_REMOVE_DEFINITION),
+                              self.subst_drive,
+                              self.real_path) == 0:
+        raise RuntimeError('Unable to remove subst')
+
+  def ShortenedPath(self):
+    return self.subst_drive + '\\'
+
+  def RealPath(self):
+    return self.real_path
+
+
 def TempDir():
   """Generates a temporary directory (for downloading or extracting to) and keep
   track of the directory that's created for cleaning up later.
@@ -116,9 +158,10 @@ def ExtractIso(iso_path):
 def ExtractMsi(msi_path):
   """Uses msiexec to extract the contents of the given .msi file."""
   sys.stdout.write('Extracting %s...\n' % msi_path)
-  target_path = TempDir()
-  RunOrDie('msiexec /a "%s" /qn TARGETDIR="%s"' % (msi_path, target_path))
-  return target_path
+  with ScopedSubstTempDir() as temp_dir:
+    RunOrDie('msiexec /a "%s" /qn TARGETDIR="%s"' % (
+               msi_path, temp_dir.ShortenedPath()))
+    return temp_dir.RealPath()
 
 
 def DownloadMainIso(url):
@@ -262,6 +305,7 @@ def ExtractComponents(image):
       (r'vc_libraryDesktop\x64\vc_LibraryDesktopX64.msi', True),
       (r'vc_libraryDesktop\x86\vc_LibraryDesktopX86.msi', True),
       (r'vc_libraryextended\vc_libraryextended.msi', False),
+      (r'professionalcore\Setup\vs_professionalcore.msi', False),
     ]
   extracted_iso = ExtractIso(image.vs_path)
   result = ExtractMsiList(os.path.join(extracted_iso, 'packages'), vs_packages)
@@ -295,7 +339,8 @@ def ExtractComponents(image):
 def CopyToFinalLocation(extracted_dirs, target_dir):
   sys.stdout.write('Copying to final location...\n')
   mappings = {
-      'Program Files\\Microsoft Visual Studio 12.0\\': '.\\',
+      'Program Files\\Microsoft Visual Studio 12.0\\VC\\': 'VC\\',
+      'Program Files\\Microsoft Visual Studio 12.0\\DIA SDK\\': 'DIA SDK\\',
       'System64\\': 'sys64\\',
       'System\\': 'sys32\\',
       'Windows Kits\\8.0\\': 'win8sdk\\',
