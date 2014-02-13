@@ -597,7 +597,7 @@ uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
   QueueTask(
       base::Bind(&RunTaskWithResult<uint32>, task, &stream_id, &completion));
   completion.Wait();
-  return 0;
+  return stream_id;
 }
 
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
