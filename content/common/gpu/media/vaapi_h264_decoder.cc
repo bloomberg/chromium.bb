@@ -1521,7 +1521,9 @@ bool VaapiH264Decoder::ProcessSlice(media::H264SliceHeader* slice_hdr) {
     return VaapiH264Decoder::kDecodeError; \
   } while (0)
 
-void VaapiH264Decoder::SetStream(uint8* ptr, size_t size, int32 input_id) {
+void VaapiH264Decoder::SetStream(const uint8* ptr,
+                                 size_t size,
+                                 int32 input_id) {
   DCHECK(ptr);
   DCHECK(size);
 

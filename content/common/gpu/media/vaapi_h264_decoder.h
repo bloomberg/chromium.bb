@@ -34,7 +34,7 @@ namespace content {
 //
 // This class must be created, called and destroyed on a single thread, and
 // does nothing internally on any other thread.
-class VaapiH264Decoder {
+class CONTENT_EXPORT VaapiH264Decoder {
  public:
   // Callback invoked on the client when a surface is to be displayed.
   // Arguments: input buffer id provided at the time of Decode()
@@ -91,7 +91,7 @@ class VaapiH264Decoder {
   // Set current stream data pointer to |ptr| and |size|. Output surfaces
   // that are decoded from data in this stream chunk are to be returned along
   // with the given |input_id|.
-  void SetStream(uint8* ptr, size_t size, int32 input_id);
+  void SetStream(const uint8* ptr, size_t size, int32 input_id);
 
   // Try to decode more of the stream, returning decoded frames asynchronously
   // via output_pic_cb_. Return when more stream is needed, when we run out

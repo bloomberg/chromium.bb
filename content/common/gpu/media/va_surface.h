@@ -78,7 +78,7 @@ namespace content {
 //                                       v
 //                       VaapiWrapper frees VASurfaceID.
 //
-class VASurface : public base::RefCountedThreadSafe<VASurface> {
+class CONTENT_EXPORT VASurface : public base::RefCountedThreadSafe<VASurface> {
  public:
   // Provided by user, will be called when all references to the surface
   // are released.

@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/va_surface.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_x11.h"
 #include "ui/gfx/size.h"
@@ -80,6 +81,17 @@ class CONTENT_EXPORT VaapiWrapper {
 
   // Returns true if the VAAPI version is less than the specified version.
   bool VAAPIVersionLessThan(int major, int minor);
+
+  // Get a VAImage from a VASurface and map it into memory. The VAImage should
+  // be released using the ReturnVaImage function. Returns true when successful.
+  // This is intended for testing only.
+  bool GetVaImageForTesting(VASurfaceID va_surface_id,
+                            VAImage* image,
+                            void** mem);
+
+  // Release the VAImage (and the associated memory mapping) obtained from
+  // GetVaImage(). This is intended for testing only.
+  void ReturnVaImageForTesting(VAImage* image);
 
  private:
   VaapiWrapper();

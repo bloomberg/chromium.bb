@@ -76,9 +76,13 @@ typedef VAStatus (*VaapiCreateSurfaces8)(VADisplay dpy,
                                          unsigned int num_surfaces,
                                          VASurfaceAttrib *attrib_list,
                                          unsigned int num_attribs);
+typedef VAStatus (*VaapiDeriveImage)(VADisplay dpy,
+                                     VASurfaceID surface,
+                                     VAImage* image);
 typedef VAStatus (*VaapiDestroyBuffer)(VADisplay dpy, VABufferID buffer_id);
 typedef VAStatus (*VaapiDestroyConfig)(VADisplay dpy, VAConfigID config_id);
 typedef VAStatus (*VaapiDestroyContext)(VADisplay dpy, VAContextID context);
+typedef VAStatus (*VaapiDestroyImage)(VADisplay dpy, VAImageID image);
 typedef VAStatus (*VaapiDestroySurfaces)(VADisplay dpy,
                                          VASurfaceID *surfaces,
                                          int num_surfaces);
@@ -94,6 +98,9 @@ typedef VADisplay (*VaapiGetDisplay)(Display *dpy);
 typedef VAStatus (*VaapiInitialize)(VADisplay dpy,
                                     int *major_version,
                                     int *minor_version);
+typedef VAStatus (*VaapiMapBuffer)(VADisplay dpy,
+                                   VABufferID buf_id,
+                                   void** pbuf);
 typedef VAStatus (*VaapiPutSurface)(VADisplay dpy,
                                     VASurfaceID surface,
                                     Drawable draw,
@@ -117,6 +124,7 @@ typedef VAStatus (*VaapiSetDisplayAttributes)(VADisplay dpy,
                                               int num_attributes);
 typedef VAStatus (*VaapiSyncSurface)(VADisplay dpy, VASurfaceID render_target);
 typedef VAStatus (*VaapiTerminate)(VADisplay dpy);
+typedef VAStatus (*VaapiUnmapBuffer)(VADisplay dpy, VABufferID buf_id);
 
 #define VAAPI_SYM(name, handle) Vaapi##name VAAPI_##name = NULL
 
@@ -125,9 +133,11 @@ VAAPI_SYM(CreateBuffer, vaapi_handle);
 VAAPI_SYM(CreateConfig, vaapi_handle);
 VAAPI_SYM(CreateContext, vaapi_handle);
 VAAPI_SYM(CreateSurfaces, vaapi_handle);
+VAAPI_SYM(DeriveImage, vaapi_handle);
 VAAPI_SYM(DestroyBuffer, vaapi_handle);
 VAAPI_SYM(DestroyConfig, vaapi_handle);
 VAAPI_SYM(DestroyContext, vaapi_handle);
+VAAPI_SYM(DestroyImage, vaapi_handle);
 VAAPI_SYM(DestroySurfaces, vaapi_handle);
 VAAPI_SYM(DisplayIsValid, vaapi_handle);
 VAAPI_SYM(EndPicture, vaapi_handle);
@@ -135,11 +145,13 @@ VAAPI_SYM(ErrorStr, vaapi_handle);
 VAAPI_SYM(GetConfigAttributes, vaapi_handle);
 VAAPI_SYM(GetDisplay, vaapi_x11_handle);
 VAAPI_SYM(Initialize, vaapi_handle);
+VAAPI_SYM(MapBuffer, vaapi_handle);
 VAAPI_SYM(PutSurface, vaapi_x11_handle);
 VAAPI_SYM(RenderPicture, vaapi_handle);
 VAAPI_SYM(SetDisplayAttributes, vaapi_handle);
 VAAPI_SYM(SyncSurface, vaapi_x11_handle);
 VAAPI_SYM(Terminate, vaapi_handle);
+VAAPI_SYM(UnmapBuffer, vaapi_handle);
 
 #undef VAAPI_SYM
 
@@ -451,6 +463,37 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
   return true;
 }
 
+bool VaapiWrapper::GetVaImageForTesting(VASurfaceID va_surface_id,
+                                        VAImage* image,
+                                        void** mem) {
+  base::AutoLock auto_lock(va_lock_);
+
+  VAStatus va_res = VAAPI_SyncSurface(va_display_, va_surface_id);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
+
+  // Derive a VAImage from the VASurface
+  va_res = VAAPI_DeriveImage(va_display_, va_surface_id, image);
+  VA_LOG_ON_ERROR(va_res, "vaDeriveImage failed");
+  if (va_res != VA_STATUS_SUCCESS)
+    return false;
+
+  // Map the VAImage into memory
+  va_res = VAAPI_MapBuffer(va_display_, image->buf, mem);
+  VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
+  if (va_res == VA_STATUS_SUCCESS)
+    return true;
+
+  VAAPI_DestroyImage(va_display_, image->image_id);
+  return false;
+}
+
+void VaapiWrapper::ReturnVaImageForTesting(VAImage* image) {
+  base::AutoLock auto_lock(va_lock_);
+
+  VAAPI_UnmapBuffer(va_display_, image->buf);
+  VAAPI_DestroyImage(va_display_, image->image_id);
+}
+
 // static
 bool VaapiWrapper::PostSandboxInitialization() {
   vaapi_handle = dlopen("libva.so.1", RTLD_NOW);
@@ -472,9 +515,11 @@ bool VaapiWrapper::PostSandboxInitialization() {
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateConfig, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateContext, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateSurfaces, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DeriveImage, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyBuffer, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyConfig, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyContext, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyImage, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroySurfaces, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(DisplayIsValid, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(EndPicture, vaapi_handle);
@@ -482,11 +527,13 @@ bool VaapiWrapper::PostSandboxInitialization() {
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(GetConfigAttributes, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(GetDisplay, vaapi_x11_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Initialize, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(MapBuffer, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(PutSurface, vaapi_x11_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(RenderPicture, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(SetDisplayAttributes, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Terminate, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(UnmapBuffer, vaapi_handle);
 #undef VAAPI_DLSYM
 
   return true;
