@@ -36,7 +36,7 @@
     [ImplementedAs=item] getter Element (unsigned long index);
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
-    [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] void submit();
+    [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void submit();
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
 
