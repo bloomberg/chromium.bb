@@ -739,26 +739,41 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     return element;
 }
 
-PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
+static inline QualifiedName createQualifiedName(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
 {
     AtomicString prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
-        return 0;
+    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
+        return nullQName();
 
     QualifiedName qName(prefix, localName, namespaceURI);
-    if (!hasValidNamespaceForElements(qName)) {
+    if (!Document::hasValidNamespaceForElements(qName)) {
         exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
-        return 0;
+        return nullQName();
     }
 
+    return qName;
+}
+
+PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
+{
+    QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
+    if (qName == nullQName())
+        return 0;
+
+    return createElement(qName, false);
+}
+
+PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
+{
+    QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
+    if (qName == nullQName())
+        return 0;
+
     RefPtr<Element> element;
-    if (CustomElement::isValidName(qName.localName()) && registrationContext()) {
+    if (CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
-    } else {
-        element = createElementNS(namespaceURI, qualifiedName, exceptionState);
-        if (exceptionState.hadException())
-            return 0;
-    }
+    else
+        element = createElement(qName, false);
 
     if (!typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
@@ -1053,21 +1068,6 @@ NamedFlowCollection* Document::namedFlows()
         m_namedFlows = NamedFlowCollection::create(this);
 
     return m_namedFlows.get();
-}
-
-PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
-{
-    AtomicString prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
-        return 0;
-
-    QualifiedName qName(prefix, localName, namespaceURI);
-    if (!hasValidNamespaceForElements(qName)) {
-        exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
-        return 0;
-    }
-
-    return createElement(qName, false);
 }
 
 String Document::readyState() const
