@@ -1,0 +1,78 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol for audio messages.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package media.cast.proto;
+
+// Keep in sync with media/cast/logging/logging_defines.h.
+// For compatibility reasons, existing values in this enum must not be changed.
+enum EventType {
+  // Generic events.
+  UNKNOWN = 0;
+  RTT_MS = 1;
+  PACKET_LOSS = 2;
+  JITTER_MS = 3;
+  VIDEO_ACK_RECEIVED = 4;
+  REMB_BITRATE = 5;
+  AUDIO_ACK_SENT = 6;
+  VIDEO_ACK_SENT = 7;
+  // Audio sender.
+  AUDIO_FRAME_RECEIVED = 8;
+  AUDIO_FRAME_CAPTURED = 9;
+  AUDIO_FRAME_ENCODED = 10;
+  // Audio receiver.
+  AUDIO_PLAYOUT_DELAY = 11;
+  AUDIO_FRAME_DECODED = 12;
+  // Video sender.
+  VIDEO_FRAME_CAPTURED = 13;
+  VIEDO_FRAME_RECEIVED = 14;
+  VIDEO_FRAME_SENT_TO_ENCODER = 15;
+  VIDEO_FRAME_ENCODED = 16;
+  // Video receiver.
+  VIDEO_FRAME_DECODED = 17;
+  VIDEO_RENDER_DELAY = 18;
+  // Send-side packet events.
+  PACKET_SENT_TO_PACER = 19;
+  PACKET_SENT_TO_NETWORK = 20;
+  PACKET_RETRANSMITTED = 21;
+  // Receiver-side packet events.
+  AUDIO_PACKET_RECEIVED = 22;
+  VIDEO_PACKET_RECEIVED = 23;
+  DUPLICATE_PACKET_RECEIVED = 24;
+}
+
+message AggregatedFrameEvent {
+  optional uint32 rtp_timestamp = 1;
+
+  repeated EventType event_type = 2 [packed = true];
+  repeated int64 event_timestamp_micros = 3 [packed = true];
+
+  // Size is set only for kAudioFrameEncoded and kVideoFrameEncoded.
+  optional int32 encoded_frame_size = 4;
+
+  // Delay is only set for kAudioPlayoutDelay and kVideoRenderDelay.
+  optional int32 delay_millis = 5;
+};
+
+message BasePacketEvent {
+  optional int32 packet_id = 1;
+  repeated EventType event_type = 2 [packed = true];
+  repeated int64 event_timestamp_micros = 3 [packed = true];
+}
+
+message AggregatedPacketEvent {
+  optional uint32 rtp_timestamp = 1;
+  repeated BasePacketEvent base_packet_event = 2;
+};
+
+message AggregatedGenericEvent {
+  optional EventType event_type = 1;
+  repeated int64 event_timestamp_micros = 2 [packed = true];
+  repeated int32 value = 3 [packed = true];
+};

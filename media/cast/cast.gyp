@@ -36,6 +36,35 @@
         'logging/simple_event_subscriber.h',
       ], # source
     },
+    {
+      'target_name': 'cast_logging_proto_lib',
+      'type': 'static_library',
+      'sources': [
+        'logging/proto/proto_utils.cc',
+        'logging/proto/raw_events.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'logging/proto',
+        'proto_out_dir': 'media/cast/logging/proto',
+      },
+      'includes': ['../../build/protoc.gypi'],
+    },
+    {
+      'target_name': 'sender_logging',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        'cast_config',
+        'cast_logging_proto_lib',
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'sources': [
+        'logging/encoding_event_subscriber.cc',
+        'logging/encoding_event_subscriber.h',
+      ], # source
+    },
   ],  # targets,
   'conditions': [
     ['include_tests==1', {
@@ -45,8 +74,10 @@
           'type': '<(gtest_target_type)',
           'dependencies': [
             'cast_config',
+            'cast_logging_proto_lib',
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
+            'sender_logging',
             'test/utility/utility.gyp:cast_test_utility',
             'transport/cast_transport.gyp:cast_transport',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
@@ -69,6 +100,7 @@
             'framer/cast_message_builder_unittest.cc',
             'framer/frame_buffer_unittest.cc',
             'framer/framer_unittest.cc',
+            'logging/encoding_event_subscriber_unittest.cc',
             'logging/logging_impl_unittest.cc',
             'logging/logging_raw_unittest.cc',
             'logging/simple_event_subscriber_unittest.cc',

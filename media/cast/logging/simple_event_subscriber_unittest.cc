@@ -39,9 +39,9 @@ class SimpleEventSubscriberTest : public ::testing::Test {
 
 TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   // Log some frame events.
-  cast_environment_->Logging()->InsertFrameEventWithDelay(
-      testing_clock_->NowTicks(), kAudioFrameDecoded, /*rtp_timestamp*/ 100u,
-      /*frame_id*/ 0u, /*delay*/ base::TimeDelta::FromMilliseconds(100));
+  cast_environment_->Logging()->InsertFrameEventWithSize(
+      testing_clock_->NowTicks(), kAudioFrameEncoded, /*rtp_timestamp*/ 100u,
+      /*frame_id*/ 0u, /*frame_size*/ 123);
   cast_environment_->Logging()->InsertFrameEventWithDelay(
       testing_clock_->NowTicks(), kAudioPlayoutDelay, /*rtp_timestamp*/ 100u,
       /*frame_id*/ 0u, /*delay*/ base::TimeDelta::FromMilliseconds(100));
