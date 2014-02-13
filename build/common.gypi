@@ -1397,6 +1397,7 @@
              'android_sdk_version%': '<!(/bin/echo -n ${ANDROID_SDK_VERSION})',
              # Android SDK build tools (e.g. dx, aapt, aidl)
              'android_sdk_tools%': '<!(/bin/echo -n ${ANDROID_SDK_TOOLS})',
+             'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',
@@ -1404,6 +1405,7 @@
           'android_sdk_version%': '<(android_sdk_version)',
           'android_sdk_tools%': '<(android_sdk_tools)',
           'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
+          'host_os%': '<(host_os)',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
 
@@ -1455,6 +1457,7 @@
         'android_stlport_root': '<(android_stlport_root)',
         'android_stlport_include': '<(android_stlport_root)/stlport',
         'android_stlport_libs_dir': '<(android_stlport_root)/libs/<(android_app_abi)',
+        'host_os%': '<(host_os)',
 
         # Location of the "strip" binary, used by both gyp and scripts.
         'android_strip%' : '<!(/bin/echo -n <(android_toolchain)/*-strip)',
@@ -2103,6 +2106,9 @@
           # See http://gcc.gnu.org/onlinedocs/gcc-4.4.2/gcc/Optimize-Options.html
           'mac_release_optimization%': '3', # Use -O3 unless overridden
           'mac_debug_optimization%': '0',   # Use -O0 unless overridden
+        }],
+        ['OS=="android"', {
+          'host_os%': '<(host_os)',  # See comment above chromium_code.
         }],
       ],
     },

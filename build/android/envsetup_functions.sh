@@ -26,7 +26,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 
   # The set of GYP_DEFINES to pass to gyp.
   DEFINES="OS=android"
-  DEFINES+=" host_os=${host_os}"
 
   if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
     # These defines are used by various chrome build scripts to tag the binary's
@@ -69,7 +68,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 print_usage() {
   echo "usage: ${0##*/} [--target-arch=value] [--help]" >& 2
   echo "--target-arch=value     target CPU architecture (arm=default, x86)" >& 2
-  echo "--host-os=value         override host OS detection (linux, mac)" >&2
   echo "--help                  this help" >& 2
 }
 
@@ -77,14 +75,10 @@ print_usage() {
 # Process command line options.
 ################################################################################
 process_options() {
-  host_os=$(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')
   while [[ -n $1 ]]; do
     case "$1" in
       --target-arch=*)
         target_arch="$(echo "$1" | sed 's/^[^=]*=//')"
-        ;;
-      --host-os=*)
-        host_os="$(echo "$1" | sed 's/^[^=]*=//')"
         ;;
       --help)
         print_usage
@@ -169,20 +163,11 @@ ${ANDROID_SDK_VERSION}
   ANDROID_SDK=$(python -c \
       "import os.path; print os.path.relpath('${ANDROID_SDK_ROOT}', \
       '${ANDROID_BUILD_TOP}')")
-  case "${host_os}" in
-    "linux")
-      ANDROID_SDK_TOOLS=$(python -c \
-          "import os.path; \
-          print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/linux', \
-          '${ANDROID_BUILD_TOP}')")
-      ;;
-    "mac")
-      ANDROID_SDK_TOOLS=$(python -c \
-          "import os.path; \
-          print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/darwin', \
-          '${ANDROID_BUILD_TOP}')")
-      ;;
-  esac
+  ANDROID_SDK_TOOLS=$(python -c \
+      "import os.path, sys; \
+      print os.path.relpath( \
+      '${ANDROID_SDK_ROOT}/../tools/' + sys.platform.rstrip('23'), \
+      '${ANDROID_BUILD_TOP}')")
   DEFINES+=" android_webview_build=1"
   DEFINES+=" android_src=\$(PWD)"
   DEFINES+=" android_sdk=\$(PWD)/${ANDROID_SDK}"
