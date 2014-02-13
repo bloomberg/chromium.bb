@@ -1,11 +1,11 @@
 {
-  "": "index.html",
-  "experimental.debugger.html": "debugger.html",
-  "experimental_debugger.html": "debugger.html",
-  "experimental.infobars.html": "infobars.html",
-  "experimental_infobars.html": "infobars.html",
-  "experimental.systemInfo_storage.html": "system_storage.html",
-  "experimental_systemInfo_storage.html": "system_storage.html",
-  "systemInfo_cpu.html": "system_cpu.html",
-  "systemInfo_memory.html": "system_memory.html"
+  "": "index",
+  "experimental.debugger": "debugger",
+  "experimental_debugger": "debugger",
+  "experimental.infobars": "infobars",
+  "experimental_infobars": "infobars",
+  "experimental.systemInfo_storage": "system_storage",
+  "experimental_systemInfo_storage": "system_storage",
+  "systemInfo_cpu": "system_cpu",
+  "systemInfo_memory": "system_memory"
 }

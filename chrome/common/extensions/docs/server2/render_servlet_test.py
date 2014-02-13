@@ -25,14 +25,14 @@ class RenderServletTest(unittest.TestCase):
 
   def testExtensionAppRedirect(self):
     self.assertEqual(
-        Response.Redirect('/apps/storage.html', permanent=False),
-        self._Render('storage.html'))
+        Response.Redirect('/apps/storage', permanent=False),
+        self._Render('storage'))
 
   def testChannelRedirect(self):
     for channel in ('stable', 'beta', 'dev', 'trunk'):
       self.assertEqual(
-          Response.Redirect('/extensions/storage.html', permanent=True),
-          self._Render('%s/extensions/storage.html' % channel))
+          Response.Redirect('/extensions/storage', permanent=True),
+          self._Render('%s/extensions/storage' % channel))
 
   def testNotFound(self):
     def create_404_response(real_path):
@@ -41,24 +41,24 @@ class RenderServletTest(unittest.TestCase):
       real_404.status = 404
       return real_404
 
-    root_404 = create_404_response('404.html')
-    extensions_404 = create_404_response('extensions/404.html')
-    apps_404 = create_404_response('apps/404.html')
+    root_404 = create_404_response('404')
+    extensions_404 = create_404_response('extensions/404')
+    apps_404 = create_404_response('apps/404')
 
-    self.assertEqual(root_404, self._Render('not_found.html'))
-    self.assertEqual(root_404, self._Render('not_found/not_found.html'))
+    self.assertEqual(root_404, self._Render('not_found'))
+    self.assertEqual(root_404, self._Render('not_found/not_found'))
 
-    self.assertEqual(extensions_404, self._Render('extensions/not_found.html'))
+    self.assertEqual(extensions_404, self._Render('extensions/not_found'))
     self.assertEqual(
-        extensions_404, self._Render('extensions/manifest/not_found.html'))
+        extensions_404, self._Render('extensions/manifest/not_found'))
     self.assertEqual(
         extensions_404,
-        self._Render('extensions/manifest/not_found/not_found.html'))
+        self._Render('extensions/manifest/not_found/not_found'))
 
-    self.assertEqual(apps_404, self._Render('apps/not_found.html'))
-    self.assertEqual(apps_404, self._Render('apps/manifest/not_found.html'))
+    self.assertEqual(apps_404, self._Render('apps/not_found'))
+    self.assertEqual(apps_404, self._Render('apps/manifest/not_found'))
     self.assertEqual(
-        apps_404, self._Render('apps/manifest/not_found/not_found.html'))
+        apps_404, self._Render('apps/manifest/not_found/not_found'))
 
   def testSampleFile(self):
     sample_file = 'extensions/talking_alarm_clock/background.js'
@@ -86,14 +86,14 @@ class RenderServletTest(unittest.TestCase):
                      response.content.ToString())
 
   def testHtmlTemplate(self):
-    html_file = 'extensions/storage.html'
+    html_file = 'extensions/storage'
     response = self._Render(html_file)
     self.assertEqual(200, response.status)
     self.assertEqual('text/html; charset=utf-8',
                      response.headers.get('Content-Type'))
     # Can't really test rendering all that well.
     self.assertTrue(len(response.content) >
-                    len(ReadFile('%s%s' % (PUBLIC_TEMPLATES, html_file))))
+                    len(ReadFile('%s%s.html' % (PUBLIC_TEMPLATES, html_file))))
 
   def testDevelopersGoogleComRedirect(self):
     def assert_redirect(request_path):
@@ -101,16 +101,16 @@ class RenderServletTest(unittest.TestCase):
       self.assertEqual(('//developers.google.com/chrome', False),
                        response.GetRedirect())
     assert_redirect('')
-    assert_redirect('index.html')
+    assert_redirect('index')
 
   def testIndexRedirect(self):
     response = self._Render('extensions')
-    self.assertEqual(('/extensions/index.html', False),
+    self.assertEqual(('/extensions/index', False),
                      response.GetRedirect())
 
   def testOtherRedirectsJsonRedirect(self):
-    response = self._Render('apps/webview_tag.html')
-    self.assertEqual(('/apps/tags/webview.html', False),
+    response = self._Render('apps/webview_tag')
+    self.assertEqual(('/apps/tags/webview', False),
                      response.GetRedirect())
 
 

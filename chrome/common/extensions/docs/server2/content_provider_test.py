@@ -12,6 +12,7 @@ from compiled_file_system import CompiledFileSystem
 from content_provider import ContentProvider
 from file_system import FileNotFoundError
 from object_store_creator import ObjectStoreCreator
+from path_canonicalizer import PathCanonicalizer
 from test_file_system import TestFileSystem
 from third_party.handlebar import Handlebar
 
@@ -47,6 +48,7 @@ _TEST_DATA = {
       },
     },
   },
+  'dir.txt': 'dir.txt content',
   'img.png': 'img.png content',
   'read.txt': 'read.txt content',
   'redirects.json': _REDIRECTS_JSON,
@@ -62,11 +64,14 @@ class ContentProviderUnittest(unittest.TestCase):
     self._content_provider = self._CreateContentProvider()
 
   def _CreateContentProvider(self, supports_zip=False):
+    object_store_creator = ObjectStoreCreator.ForTest()
     test_file_system = TestFileSystem(_TEST_DATA)
     return ContentProvider(
         'foo',
-        CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()),
+        CompiledFileSystem.Factory(object_store_creator),
         test_file_system,
+        object_store_creator,
+        default_extensions=('.html', '.md'),
         # TODO(kalman): Test supports_templates=False.
         supports_templates=True,
         supports_zip=supports_zip)
@@ -128,9 +133,27 @@ class ContentProviderUnittest(unittest.TestCase):
         ['dir3/a.txt', 'dir3/b.txt', 'dir3/c/d.txt'], 'application/zip',
         content_and_type)
 
+  def testCanonicalZipPaths(self):
+    # Without supports_zip the path is canonicalized as a file.
+    self.assertEqual(
+        'dir.txt',
+        self._content_provider.GetCanonicalPath('dir.zip'))
+    self.assertEqual(
+        'dir.txt',
+        self._content_provider.GetCanonicalPath('diR.zip'))
+    # With supports_zip the path is canonicalized as the zip file which
+    # corresponds to the canonical directory.
+    zip_content_provider = self._CreateContentProvider(supports_zip=True)
+    self.assertEqual(
+        'dir.zip',
+        zip_content_provider.GetCanonicalPath('dir.zip'))
+    self.assertEqual(
+        'dir.zip',
+        zip_content_provider.GetCanonicalPath('diR.zip'))
+
   def testMarkdown(self):
     content_and_type = self._content_provider.GetContentAndType(
-        'markdown.html').Get()
+        'markdown').Get()
     content_and_type.content = content_and_type.content.source
     self._assertContent('\n'.join(text[1] for text in _MARKDOWN_CONTENT),
         'text/html', content_and_type)

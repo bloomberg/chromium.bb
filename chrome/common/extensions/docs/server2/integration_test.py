@@ -20,13 +20,14 @@ from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
 from extensions_paths import CONTENT_PROVIDERS, EXTENSIONS, PUBLIC_TEMPLATES
 from fake_fetchers import ConfigureFakeFetchers
-from third_party.json_schema_compiler import json_parse
+from special_paths import SITE_VERIFICATION_FILE
 from handler import Handler
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
 from path_util import AssertIsValid
 from servlet import Request
+from third_party.json_schema_compiler import json_parse
 from test_util import (
     ChromiumPath, DisableLogging, EnableLogging, ReadFile, Server2Path)
 
@@ -66,7 +67,7 @@ def _GetPublicFiles():
           public_files[request_path] = f.read()
     return public_files
 
-  # Public file locations are defined in content_providers.json, sort of.  Epic
+  # Public file locations are defined in content_providers.json, sort of. Epic
   # hack to pull them out; list all the files from the directories that
   # Chromium content providers ask for.
   public_files = {}
@@ -159,9 +160,18 @@ class IntegrationTest(unittest.TestCase):
         if path.endswith('redirects.json'):
           continue
 
+        # The non-example html and md files are served without their file
+        # extensions.
+        path_without_ext, ext = posixpath.splitext(path)
+        if (ext in ('.html', '.md') and
+            '/examples/' not in path and
+            path != SITE_VERIFICATION_FILE):
+          path = path_without_ext
+
         def check_result(response):
           self.assertEqual(200, response.status,
               'Got %s when rendering %s' % (response.status, path))
+
           # This is reaaaaally rough since usually these will be tiny templates
           # that render large files. At least it'll catch zero-length responses.
           self.assertTrue(len(response.content) >= len(content),
@@ -171,27 +181,28 @@ class IntegrationTest(unittest.TestCase):
         check_result(Handler(Request.ForTest(path)).Get())
 
         if path.startswith(('apps/', 'extensions/')):
-          # Make sure that leaving out the .html will temporarily redirect to
-          # the path with the .html for APIs and articles.
+          # Make sure that adding the .html will temporarily redirect to
+          # the path without the .html for APIs and articles.
           if '/examples/' not in path:
-            base, _ = posixpath.splitext(path)
+            redirect_response = Handler(Request.ForTest(path + '.html')).Get()
             self.assertEqual(
-                ('/' + path, False),
-                Handler(Request.ForTest(base)).Get().GetRedirect(),
-                '%s did not (temporarily) redirect to %s.html' % (path, path))
+                ('/' + path, False), redirect_response.GetRedirect(),
+                '%s.html did not (temporarily) redirect to %s (status %s)' %
+                    (path, path, redirect_response.status))
 
           # Make sure including a channel will permanently redirect to the same
           # path without a channel.
           for channel in BranchUtility.GetAllChannelNames():
-            redirect_result = Handler(
+            redirect_response = Handler(
                 Request.ForTest(posixpath.join(channel, path))).Get()
             self.assertEqual(
                 ('/' + path, True),
-                redirect_result.GetRedirect(),
-                '%s did not redirect to strip channel %s' % (path, channel))
+                redirect_response.GetRedirect(),
+                '%s/%s did not (permanently) redirect to %s (status %s)' %
+                    (channel, path, path, redirect_response.status))
 
         # Samples are internationalized, test some locales.
-        if path.endswith('/samples.html'):
+        if path.endswith('/samples'):
           for lang in ('en-US', 'es', 'ar'):
             check_result(Handler(Request.ForTest(
                 path,
@@ -245,8 +256,12 @@ class IntegrationTest(unittest.TestCase):
 
   @DisableLogging('warning')
   def testFileNotFound(self):
-    response = Handler(Request.ForTest('/extensions/notfound.html')).Get()
+    response = Handler(Request.ForTest('/extensions/notfound')).Get()
     self.assertEqual(404, response.status)
+
+  def testSiteVerificationFile(self):
+    response = Handler(Request.ForTest('/' + SITE_VERIFICATION_FILE)).Get()
+    self.assertEqual(200, response.status)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

@@ -40,10 +40,12 @@ class ContentProviders(object):
   '''
 
   def __init__(self,
+               object_store_creator,
                compiled_fs_factory,
                host_file_system,
                github_file_system_provider,
                gcs_file_system_provider):
+    self._object_store_creator = object_store_creator
     self._compiled_fs_factory = compiled_fs_factory
     self._host_file_system = host_file_system
     self._github_file_system_provider = github_file_system_provider
@@ -82,15 +84,16 @@ class ContentProviders(object):
 
   @memoize
   def GetByServeFrom(self, path):
-    '''Gets a (content_provider, path_in_content_provider) tuple, where
-    content_provider is the ContentProvider with the longest "serveFrom"
-    property that is a subpath of |path|, and path_in_content_provider is the
-    remainder of |path|.
+    '''Gets a (content_provider, serve_from, path_in_content_provider) tuple,
+    where content_provider is the ContentProvider with the longest "serveFrom"
+    property that is a subpath of |path|, serve_from is that property, and
+    path_in_content_provider is the remainder of |path|.
 
     For example, if content provider A serves from "foo" and content provider B
-    serves from "foo/bar", GetByServeFrom("foo/bar/baz") will return (B, "baz").
+    serves from "foo/bar", GetByServeFrom("foo/bar/baz") will return (B,
+    "foo/bar", "baz").
 
-    Returns (None, |path|) if no ContentProvider serves from |path|.
+    Returns (None, '', |path|) if no ContentProvider serves from |path|.
     '''
     serve_from_to_config = dict(
         (config['serveFrom'], (name, config))
@@ -101,13 +104,15 @@ class ContentProviders(object):
       if name_and_config is not None:
         return (self._CreateContentProvider(name_and_config[0],
                                             name_and_config[1]),
+                '/'.join(path_parts[:i]),
                 '/'.join(path_parts[i:]))
-    return None, path
+    return None, '', path
 
   def _GetConfig(self):
     return self._cache.GetFromFile(CONTENT_PROVIDERS).Get()
 
   def _CreateContentProvider(self, name, config):
+    default_extensions = config.get('defaultExtensions', ())
     supports_templates = config.get('supportsTemplates', False)
     supports_zip = config.get('supportsZip', False)
 
@@ -149,6 +154,8 @@ class ContentProviders(object):
     return ContentProvider(name,
                            self._compiled_fs_factory,
                            file_system,
+                           self._object_store_creator,
+                           default_extensions=default_extensions,
                            supports_templates=supports_templates,
                            supports_zip=supports_zip)
 

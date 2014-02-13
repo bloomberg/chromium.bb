@@ -45,6 +45,7 @@
     "chromium": {
       "dir": "chrome/docs"
     },
+    "defaultExtensions": [".html", ".md"],
     "serveFrom": "home",
     "supportsTemplates": true
   },
@@ -59,6 +60,7 @@
     "chromium": {
       "dir": "chrome/common/extensions/docs/templates/public"
     },
+    "defaultExtensions": [".html", ".md"],
     "serveFrom": "",
     "supportsTemplates": true
   },
@@ -72,6 +74,7 @@
     "chromium": {
       "dir": "native_client_sdk/doc_generated"
     },
+    "defaultExtensions": [".html", ".md"],
     "serveFrom": "native-client",
     "supportsTemplates": true
   },

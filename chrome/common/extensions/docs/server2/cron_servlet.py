@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import posixpath
 import traceback
 
 from app_yaml_helper import AppYamlHelper
@@ -22,6 +23,7 @@ from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
+from special_paths import SITE_VERIFICATION_FILE
 from timer import Timer, TimerClosure
 
 
@@ -146,11 +148,18 @@ class CronServlet(Servlet):
       delegate = _SingletonRenderServletDelegate(server_instance)
       return RenderServlet(request, delegate).Get()
 
-    def request_files_in_dir(path, prefix=''):
+    def request_files_in_dir(path, prefix='', strip_ext=None):
       '''Requests every file found under |path| in this host file system, with
-      a request prefix of |prefix|.
+      a request prefix of |prefix|. |strip_ext| is an optional list of file
+      extensions that should be stripped from paths before requesting.
       '''
-      files = [name for name, _ in CreateURLsFromPaths(trunk_fs, path, prefix)]
+      def maybe_strip_ext(name):
+        if name == SITE_VERIFICATION_FILE or not strip_ext:
+          return name
+        base, ext = posixpath.splitext(name)
+        return base if ext in strip_ext else name
+      files = [maybe_strip_ext(name)
+               for name, _ in CreateURLsFromPaths(trunk_fs, path, prefix)]
       return _RequestEachItem(path, files, render)
 
     results = []
@@ -192,7 +201,8 @@ class CronServlet(Servlet):
 
       # Rendering the public templates will also pull in all of the private
       # templates.
-      results.append(request_files_in_dir(PUBLIC_TEMPLATES))
+      results.append(request_files_in_dir(PUBLIC_TEMPLATES,
+                                          strip_ext=('.html', '.md')))
 
       # Rendering the public templates will have pulled in the .js and
       # manifest.json files (for listing examples on the API reference pages),

@@ -137,6 +137,7 @@ class ServerInstance(object):
         self.samples_data_source_factory)
 
     self.content_providers = ContentProviders(
+        object_store_creator,
         self.compiled_fs_factory,
         host_fs_at_trunk,
         self.github_file_system_provider,
