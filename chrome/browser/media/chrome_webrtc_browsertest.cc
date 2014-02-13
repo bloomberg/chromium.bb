@@ -53,6 +53,12 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
 
+#if defined(OS_MACOSX)
+    // TODO(mcasas): Remove this switch when ManyCam virtual video capture
+    // device starts supporting AVFoundation, see http://crbug.com/327618.
+    command_line->AppendSwitch(switches::kDisableAVFoundation);
+#endif
+
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
