@@ -726,9 +726,9 @@
         category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
 #define INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE() \
-    *INTERNAL_TRACE_EVENT_UID(category_group_enabled) & \
+    UNLIKELY(*INTERNAL_TRACE_EVENT_UID(category_group_enabled) & \
         (base::debug::TraceLog::ENABLED_FOR_RECORDING | \
-         base::debug::TraceLog::ENABLED_FOR_EVENT_CALLBACK)
+         base::debug::TraceLog::ENABLED_FOR_EVENT_CALLBACK))
 
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret) \
@@ -854,7 +854,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
     category_group_enabled = \
         reinterpret_cast<const unsigned char*>(TRACE_EVENT_API_ATOMIC_LOAD( \
             atomic)); \
-    if (!category_group_enabled) { \
+    if (UNLIKELY(!category_group_enabled)) { \
       category_group_enabled = \
           TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group); \
       TRACE_EVENT_API_ATOMIC_STORE(atomic, \
