@@ -275,7 +275,6 @@ class DeployChrome(object):
       try:
         self.host.Scp('%s/*' % os.path.abspath(self.staging_dir),
                       '%s/' % self.options.target_dir,
-                      recursive=True,
                       debug_level=logging.INFO,
                       verbose=self.options.verbose)
       except cros_build_lib.RunCommandError as ex:

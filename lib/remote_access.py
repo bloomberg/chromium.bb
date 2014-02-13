@@ -257,7 +257,7 @@ class RemoteAccess(object):
                          % (REBOOT_MAX_WAIT,))
 
   def Rsync(self, src, dest, to_local=False, follow_symlinks=False,
-            inplace=False, verbose=False, sudo=False, **kwargs):
+            recursive=True, inplace=False, verbose=False, sudo=False, **kwargs):
     """Rsync a path to the remote device.
 
     Rsync a path to the remote device. If |to_local| is set True, it
@@ -269,6 +269,7 @@ class RemoteAccess(object):
       to_local: If set, rsync remote path to local path.
       follow_symlinks: If set, transform symlinks into referent
         path. Otherwise, copy symlinks as symlinks.
+      recursive: Whether to recursively copy entire directories.
       inplace: If set, cause rsync to overwrite the dest files in place.  This
         conserves space, but has some side effects - see rsync man page.
       verbose: If set, print more verbose output during rsync file transfer.
@@ -278,9 +279,8 @@ class RemoteAccess(object):
     kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
-    rsync_cmd = ['rsync', '--recursive', '--perms', '--verbose',
-                 '--times', '--compress', '--omit-dir-times',
-                 '--exclude', '.svn']
+    rsync_cmd = ['rsync', '--perms', '--verbose', '--times', '--compress',
+                 '--omit-dir-times', '--exclude', '.svn']
     rsync_cmd.append('--copy-links' if follow_symlinks else '--links')
     # In cases where the developer sets up a ssh daemon manually on a device
     # with a dev image, the ssh login $PATH can be incorrect, and the target
@@ -288,6 +288,8 @@ class RemoteAccess(object):
     rsync_cmd += ['--rsync-path', 'PATH=/usr/local/bin:$PATH rsync']
     if verbose:
       rsync_cmd.append('--progress')
+    if recursive:
+      rsync_cmd.append('--recursive')
     if inplace:
       rsync_cmd.append('--inplace')
 
@@ -307,39 +309,50 @@ class RemoteAccess(object):
     """Rsync a path from the remote device to the local machine."""
     return self.Rsync(*args, to_local=kwargs.pop('to_local', True), **kwargs)
 
-  def Scp(self, src, dest, recursive=False, verbose=False, debug_level=None,
-          sudo=False):
+  def Scp(self, src, dest, to_local=False, recursive=True, verbose=False,
+          sudo=False, **kwargs):
     """Scp a file or directory to the remote device.
 
     Args:
       src: The local src file or directory.
       dest: The remote dest location.
+      to_local: If set, scp remote path to local path.
       recursive: Whether to recursively copy entire directories.
       verbose: If set, print more verbose output during scp file transfer.
-      debug_level: See cros_build_lib.RunCommand documentation.
       sudo: If set, invoke the command via sudo.
+      **kwargs: See cros_build_lib.RunCommand documentation.
 
     Returns:
       A CommandResult object containing the information and return code of
       the scp command.
     """
-    if not debug_level:
-      debug_level = self.debug_level
+    kwargs.setdefault('debug_level', self.debug_level)
+    scp_cmd = (['scp', '-P', str(self.port)] +
+               CompileSSHConnectSettings(ConnectTimeout=60) +
+               ['-i', self.private_key])
 
-    scp_cmd = ['scp', '-p'] + CompileSSHConnectSettings(ConnectTimeout=60)
+    if not self.interactive:
+      scp_cmd.append('-n')
 
     if recursive:
       scp_cmd.append('-r')
     if verbose:
       scp_cmd.append('-v')
 
-    scp_cmd += glob.glob(src) + ['%s:%s' % (self.target_ssh_url, dest)]
+    if to_local:
+      scp_cmd += ['%s:%s' % (self.target_ssh_url, src), dest]
+    else:
+      scp_cmd += glob.glob(src) + ['%s:%s' % (self.target_ssh_url, dest)]
 
     rc_func = cros_build_lib.RunCommand
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
 
-    return rc_func(scp_cmd, debug_level=debug_level, print_cmd=verbose)
+    return rc_func(scp_cmd, print_cmd=verbose, **kwargs)
+
+  def ScpToLocal(self, *args, **kwargs):
+    """Scp a path from the remote device to the local machine."""
+    return self.Scp(*args, to_local=kwargs.pop('to_local', True), **kwargs)
 
   def PipeToRemoteSh(self, producer_cmd, cmd, **kwargs):
     """Run a local command and pipe it to a remote sh command over ssh.
@@ -422,6 +435,11 @@ class RemoteDevice(object):
     """Setup the ssh connection with device."""
     return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port)
 
+  def _HasRsync(self):
+    """Checks if rsync exists on the device."""
+    result = self.agent.RemoteSh(['rsync', '--version'], error_code_ok=True)
+    return result.returncode == 0
+
   def RegisterCleanupCmd(self, cmd, **kwargs):
     """Register a cleanup command to be run on the device in Cleanup().
 
@@ -441,17 +459,37 @@ class RemoteDevice(object):
 
     self.tempdir.Cleanup()
 
-  def CopyToDevice(self, src, dest, **kwargs):
+  def CopyToDevice(self, src, dest, mode=None, **kwargs):
     """Copy path to device."""
     msg = 'Could not copy %s to device.' % src
-    return RunCommandFuncWrapper(
-        self.agent.Rsync, msg, src, dest, **kwargs)
+    if mode is None:
+      # Use rsync by default if it exists.
+      mode = 'rsync' if self._HasRsync() else 'scp'
 
-  def CopyFromDevice(self, src, dest, **kwargs):
+    if mode == 'scp':
+      # scp always follow symlinks
+      kwargs.pop('follow_symlinks', None)
+      func  = self.agent.Scp
+    else:
+      func = self.agent.Rsync
+
+    return RunCommandFuncWrapper(func, msg, src, dest, **kwargs)
+
+  def CopyFromDevice(self, src, dest, mode=None, **kwargs):
     """Copy path from device."""
     msg = 'Could not copy %s from device.' % src
-    return RunCommandFuncWrapper(
-        self.agent.RsyncToLocal, msg, src, dest, **kwargs)
+    if mode is None:
+      # Use rsync by default if it exists.
+      mode = 'rsync' if self._HasRsync() else 'scp'
+
+    if mode == 'scp':
+      # scp always follow symlinks
+      kwargs.pop('follow_symlinks', None)
+      func  = self.agent.ScpToLocal
+    else:
+      func = self.agent.RsyncToLocal
+
+    return RunCommandFuncWrapper(func, msg, src, dest, **kwargs)
 
   def CopyFromWorkDir(self, src, dest, **kwargs):
     """Copy path from working directory on the device."""
