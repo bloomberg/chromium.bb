@@ -14872,8 +14872,19 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Power.RetrySuspendCount">
+  <obsolete>
+    Deprecated Feb 2014 by Power.SuspendAttemptsBeforeCancel and
+    Power.SuspendAttemptsBeforeSuccess.
+  </obsolete>
   <summary>
     The number of times Chrome OS retried suspend due to previous failure.
+  </summary>
+</histogram>
+
+<histogram name="Power.ShutdownReason" enum="ShutdownReason">
+  <summary>
+    The reason for the Chrome OS power manager shutting down or rebooting the
+    system.
   </summary>
 </histogram>
 
@@ -14882,6 +14893,23 @@ other types of suffix sets.
     The number of suspend attempts on Chrome OS. Samples are reported before
     each attempt, so this histogram may include cases where the system crashed
     instead of suspending.
+  </summary>
+</histogram>
+
+<histogram name="Power.SuspendAttemptsBeforeCancel">
+  <summary>
+    The number of suspend attempts performed for a single suspend request (e.g.
+    triggered by the lid being closed) that was eventually canceled on Chrome
+    OS. This also includes requests that were canceled due to the system
+    eventually shutting down due to repeated suspend failures.
+  </summary>
+</histogram>
+
+<histogram name="Power.SuspendAttemptsBeforeSuccess">
+  <summary>
+    The number of suspend attempts performed for a single suspend request (e.g.
+    triggered by the lid being closed) that eventually succeeded on Chrome OS.
+    This includes the successful attempt.
   </summary>
 </histogram>
 
@@ -31040,6 +31068,18 @@ other types of suffix sets.
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="ShutdownReason" type="int">
+  <summary>
+    The reason that the Chrome OS power manager shut down or rebooted the
+    system.
+  </summary>
+  <int value="0" label="User request"/>
+  <int value="1" label="State transition"/>
+  <int value="2" label="Low battery"/>
+  <int value="3" label="Suspend failures"/>
+  <int value="4" label="Dark resume"/>
 </enum>
 
 <enum name="SideloadUIEvents" type="int">
