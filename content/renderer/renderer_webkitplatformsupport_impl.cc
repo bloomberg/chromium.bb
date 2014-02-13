@@ -70,8 +70,6 @@
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
@@ -113,7 +111,6 @@ using blink::WebBlobRegistry;
 using blink::WebDatabaseObserver;
 using blink::WebFileInfo;
 using blink::WebFileSystem;
-using blink::WebFrame;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;

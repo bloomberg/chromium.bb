@@ -70,8 +70,8 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
 #if defined(OS_ANDROID)
-  return webkit_glue::FlingAnimatorImpl::CreateAndroidGestureCurve(velocity,
-                                                      cumulative_scroll);
+  return webkit_glue::FlingAnimatorImpl::CreateAndroidGestureCurve(
+      velocity, cumulative_scroll);
 #endif
 
   if (device_source == blink::WebGestureEvent::Touchscreen)

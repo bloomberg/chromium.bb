@@ -32,17 +32,8 @@
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/WebCookie.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
-#include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/layout.h"
 #include "webkit/child/webkit_child_helpers.h"
 #include "webkit/child/websocketstreamhandle_impl.h"
@@ -57,17 +48,13 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
-using blink::WebAudioBus;
-using blink::WebCookie;
 using blink::WebData;
 using blink::WebLocalizedString;
-using blink::WebPluginListBuilder;
 using blink::WebString;
 using blink::WebSocketStreamHandle;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
-using blink::WebVector;
 
 namespace {
 
