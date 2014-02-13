@@ -1242,14 +1242,16 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     self._slave_statuses = {}
 
   def _FetchSlaveStatuses(self):
-    """Fetch and return build status for this build and any of its slaves.
+    """Fetch and return build status for slaves of this build.
+
+    If this build is not a master then return just the status of this build.
 
     Returns:
       A build-names->status dictionary of build statuses. Builders that never
       started may have status None.
     """
-
     if not self._run.config.master:
+      # This is a slave build, so return the status for this build.
       if self._run.options.debug:
         # In debug mode, nothing is uploaded to Google Storage, so we bypass
         # the extra hop and just look at what we have locally.
@@ -1261,27 +1263,19 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         return self._run.attrs.manifest_manager.GetBuildersStatus(
             [self._bot_id])
     else:
+      # This is a master build, so return the statuses for all its slaves.
+
       # Wait for slaves to finish, unless this is a debug run.
       wait_for_results = not self._run.options.debug
 
       builders = self._GetSlavesForMaster(self._run.config)
-      manager = self._run.attrs.manifest_manager
-      sub_manager = MasterSlaveSyncStage.sub_manager
-      if sub_manager:
-        # TODO(build): There appears to be no reason the public and private
-        # statuses cannot be gathered at the same time.  This would avoid
-        # having two separate long timeout periods involved.
-        public_builders = [b['name'] for b in builders if not b['internal']]
-        statuses = sub_manager.GetBuildersStatus(public_builders,
-                                                 wait_for_results)
-        private_builders = [b['name'] for b in builders if b['internal']]
-        statuses.update(manager.GetBuildersStatus(private_builders,
-                                                  wait_for_results))
-      else:
-        builder_names = [b['name'] for b in builders]
-        statuses = manager.GetBuildersStatus(builder_names, wait_for_results)
+      builder_names = [b['name'] for b in builders]
 
-      return statuses
+      manager = self._run.attrs.manifest_manager
+      if MasterSlaveSyncStage.sub_manager:
+        manager = MasterSlaveSyncStage.sub_manager
+
+      return manager.GetBuildersStatus(builder_names, wait_for_results)
 
   def _AbortCQHWTests(self):
     """Abort any HWTests started by the CQ."""
