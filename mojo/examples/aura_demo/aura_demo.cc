@@ -11,8 +11,8 @@
 #include "mojo/examples/aura_demo/demo_screen.h"
 #include "mojo/examples/aura_demo/root_window_host_mojo.h"
 #include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2_cpp.h"
+#include "mojo/public/shell/application.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 #include "mojom/native_viewport.h"
@@ -115,27 +115,21 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowTreeClient);
 };
 
-class AuraDemo : public ShellClient {
+class AuraDemo : public Application {
  public:
-  explicit AuraDemo(ScopedShellHandle shell_handle)
-      : shell_(shell_handle.Pass(), this) {
+  explicit AuraDemo(MojoHandle shell_handle) : Application(shell_handle) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
     InterfacePipe<NativeViewport, AnyInterface> pipe;
 
     mojo::AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service",
-                    pipe.handle_to_peer.Pass());
+    shell()->Connect("mojo:mojo_native_viewport_service",
+                     pipe.handle_to_peer.Pass());
     root_window_host_.reset(new WindowTreeHostMojo(
         pipe.handle_to_self.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
-  }
-
-  virtual void AcceptConnection(const mojo::String& url,
-                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    NOTREACHED() << "AuraDemo can't be connected to.";
   }
 
  private:
@@ -185,7 +179,6 @@ class AuraDemo : public ShellClient {
   aura::Window* window2_;
   aura::Window* window21_;
 
-  RemotePtr<Shell> shell_;
   scoped_ptr<WindowTreeHostMojo> root_window_host_;
   scoped_ptr<aura::RootWindow> root_window_;
 };
@@ -204,8 +197,7 @@ extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
   //             MessageLoop is not of TYPE_UI. I think we need a way to build
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance();
-  mojo::examples::AuraDemo app(
-      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
+  mojo::examples::AuraDemo app(shell_handle);
   loop.Run();
 
   return MOJO_RESULT_OK;

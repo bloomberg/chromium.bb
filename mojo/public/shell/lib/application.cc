@@ -7,21 +7,18 @@
 namespace mojo {
 
 Application::Application(ScopedShellHandle shell_handle)
-    : shell_(shell_handle.Pass(), this) {
+    : internal::ServiceFactoryBase::Owner(shell_handle.Pass()) {
 }
 
 Application::Application(MojoHandle shell_handle)
-    : shell_(mojo::MakeScopedHandle(ShellHandle(shell_handle)).Pass()) {}
+    : internal::ServiceFactoryBase::Owner(
+          mojo::MakeScopedHandle(ShellHandle(shell_handle)).Pass()) {}
 
 Application::~Application() {
   for (ServiceFactoryList::iterator it = service_factories_.begin();
        it != service_factories_.end(); ++it) {
     delete *it;
   }
-}
-
-Shell* Application::GetShell() {
-  return shell_.get();
 }
 
 void Application::AddServiceFactory(

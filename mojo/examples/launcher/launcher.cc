@@ -16,6 +16,7 @@
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2_cpp.h"
+#include "mojo/public/shell/application.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 #include "mojom/launcher.h"
@@ -187,13 +188,13 @@ class LauncherController : public views::TextfieldController {
   DISALLOW_COPY_AND_ASSIGN(LauncherController);
 };
 
-class LauncherImpl : public ShellClient,
+class LauncherImpl : public Application,
                      public Launcher,
                      public URLReceiver {
  public:
-  explicit LauncherImpl(ScopedShellHandle shell_handle)
-      : launcher_controller_(this),
-        shell_(shell_handle.Pass(), this),
+  explicit LauncherImpl(MojoHandle shell_handle)
+      : Application(shell_handle),
+        launcher_controller_(this),
         pending_show_(false) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
@@ -201,8 +202,8 @@ class LauncherImpl : public ShellClient,
     InterfacePipe<NativeViewport, AnyInterface> pipe;
 
     AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service",
-                    pipe.handle_to_peer.Pass());
+    shell()->Connect("mojo:mojo_native_viewport_service",
+                     pipe.handle_to_peer.Pass());
 
     root_window_host_.reset(new WindowTreeHostMojo(
         pipe.handle_to_self.Pass(), gfx::Rect(50, 50, 450, 60),
@@ -210,7 +211,7 @@ class LauncherImpl : public ShellClient,
   }
 
  private:
-  // Overridden from ShellClient:
+  // Overridden from Application:
   virtual void AcceptConnection(const mojo::String& url,
                                 ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     launcher_client_.reset(
@@ -272,7 +273,6 @@ class LauncherImpl : public ShellClient,
 
   LauncherController launcher_controller_;
 
-  RemotePtr<Shell> shell_;
   RemotePtr<LauncherClient> launcher_client_;
   scoped_ptr<WindowTreeHostMojo> root_window_host_;
   scoped_ptr<aura::RootWindow> root_window_;
@@ -302,8 +302,7 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
   //             MessageLoop is not of TYPE_UI. I think we need a way to build
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance();
-  mojo::examples::LauncherImpl launcher(
-      mojo::MakeScopedHandle(mojo::ShellHandle(shell_handle)).Pass());
+  mojo::examples::LauncherImpl launcher(shell_handle);
   loop.Run();
 
   return MOJO_RESULT_OK;

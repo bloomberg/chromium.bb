@@ -63,9 +63,11 @@ namespace mojo {
 namespace internal {
 class ServiceFactoryBase {
  public:
-  class Owner {
+  class Owner : public ShellClient {
    public:
-    virtual Shell* GetShell() = 0;
+    Owner(ScopedShellHandle shell_handle);
+    ~Owner();
+    Shell* shell() { return shell_.get(); }
     virtual void AddServiceFactory(
         internal::ServiceFactoryBase* service_factory) = 0;
     virtual void RemoveServiceFactory(
@@ -76,10 +78,11 @@ class ServiceFactoryBase {
                                    Owner* owner) {
       service_factory->owner_ = owner;
     }
+    RemotePtr<Shell> shell_;
   };
   ServiceFactoryBase() : owner_(NULL) {}
   virtual ~ServiceFactoryBase();
-  Shell* GetShell() { return owner_->GetShell(); }
+  Shell* shell() { return owner_->shell(); }
   virtual void AcceptConnection(const std::string& url,
                                 ScopedMessagePipeHandle client_handle) = 0;
 
@@ -152,6 +155,7 @@ class Service : public ServiceInterface {
         &reaper_);
   }
 
+  Shell* shell() { return service_factory_->shell(); }
   Context* context() const { return service_factory_->context(); }
   typename ServiceInterface::_Peer* client() { return client_.get(); }
 

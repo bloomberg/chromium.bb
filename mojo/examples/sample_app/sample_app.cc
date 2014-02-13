@@ -35,8 +35,8 @@ class SampleApp : public Application, public mojo::NativeViewportClient {
   explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
     InterfacePipe<NativeViewport, AnyInterface> viewport_pipe;
     mojo::AllocationScope scope;
-    GetShell()->Connect("mojo:mojo_native_viewport_service",
-                        viewport_pipe.handle_to_peer.Pass());
+    shell()->Connect("mojo:mojo_native_viewport_service",
+                     viewport_pipe.handle_to_peer.Pass());
     viewport_.reset(viewport_pipe.handle_to_self.Pass(), this);
     Rect::Builder rect;
     Point::Builder point;
