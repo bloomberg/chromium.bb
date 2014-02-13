@@ -1187,15 +1187,13 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void ClickToNextPageAfterPrerender() {
-    content::WindowedNotificationObserver new_page_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+    TestNavigationObserver nav_observer(GetActiveWebContents());
     RenderViewHost* render_view_host =
         GetActiveWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         base::string16(),
         base::ASCIIToUTF16("ClickOpenLink()"));
-    new_page_observer.Wait();
+    nav_observer.Wait();
   }
 
   void NavigateToNextPageAfterPrerender() const {
@@ -1207,9 +1205,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   // Called after the prerendered page has been navigated to and then away from.
   // Navigates back through the history to the prerendered page.
   void GoBackToPrerender() {
-    content::WindowedNotificationObserver back_nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
+    TestNavigationObserver back_nav_observer(GetActiveWebContents());
     chrome::GoBack(current_browser(), CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;
@@ -3120,8 +3116,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // followed by a navigation to another page from the prerendered page, followed
 // by a back navigation.
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderNavigateClickGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNavigateClickGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -3130,10 +3125,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GoBackToPrerender();
 }
 
-// Disabled due to timeouts on commit queue.
-// http://crbug.com/121130
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderNavigateNavigateGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNavigateNavigateGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -3142,8 +3134,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GoBackToPrerender();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickClickGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickClickGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -3152,10 +3143,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GoBackToPrerender();
 }
 
-// Disabled due to timeouts on commit queue.
-// http://crbug.com/121130
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickNavigateGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNavigateGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -3178,11 +3166,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
   OpenDestURLViaClickNewForegroundTab();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickNewBackgroundTab) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
   scoped_ptr<TestPrerender> prerender =
       PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                       FINAL_STATUS_APP_TERMINATING,
+                       FINAL_STATUS_WINDOW_OPENER,
                        1);
   ASSERT_TRUE(prerender->contents());
   prerender->contents()->set_should_be_shown(false);
@@ -3207,8 +3194,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderSessionStorage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
   set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
   PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,
