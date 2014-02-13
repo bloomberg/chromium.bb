@@ -30,6 +30,7 @@
           'media_player_private.json',
           'music_manager_private.idl',
           'principals_private.idl',
+          'streams_private.idl',
           'top_sites.json',
         ],
         'conditions': [

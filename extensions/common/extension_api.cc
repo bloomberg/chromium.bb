@@ -249,8 +249,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
   RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
   RegisterSchemaResource("scriptBadge", IDR_EXTENSION_API_JSON_SCRIPTBADGE);
-  RegisterSchemaResource("streamsPrivate",
-      IDR_EXTENSION_API_JSON_STREAMSPRIVATE);
   RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
   RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
   RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
