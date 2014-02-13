@@ -90,10 +90,17 @@ void CaptivePortalWindowProxy::OnWidgetClosing(views::Widget* widget) {
   DCHECK(GetState() == STATE_DISPLAYED);
   DCHECK(widget == widget_);
 
-  widget->RemoveObserver(this);
-  widget_ = NULL;
+  DetachFromWidget(widget);
 
   DCHECK(GetState() == STATE_IDLE);
+}
+
+void CaptivePortalWindowProxy::OnWidgetDestroying(views::Widget* widget) {
+  DetachFromWidget(widget);
+}
+
+void CaptivePortalWindowProxy::OnWidgetDestroyed(views::Widget* widget) {
+  DetachFromWidget(widget);
 }
 
 void CaptivePortalWindowProxy::InitCaptivePortalView() {
@@ -119,6 +126,13 @@ CaptivePortalWindowProxy::State CaptivePortalWindowProxy::GetState() const {
       NOTREACHED();
   }
   return STATE_UNKNOWN;
+}
+
+void CaptivePortalWindowProxy::DetachFromWidget(views::Widget* widget) {
+  if (!widget_ || widget_ != widget)
+    return;
+  widget_->RemoveObserver(this);
+  widget_ = NULL;
 }
 
 }  // namespace chromeos

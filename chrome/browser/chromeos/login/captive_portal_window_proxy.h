@@ -63,6 +63,8 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
 
  private:
   friend class CaptivePortalWindowTest;
@@ -90,6 +92,10 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
 
   // Returns symbolic state name based on internal state.
   State GetState() const;
+
+  // When |widget| is not NULL and the same as |widget_| stops to observe
+  // notifications from |widget_| and resets it.
+  void DetachFromWidget(views::Widget* widget);
 
   // Not owned by this class.
   Delegate* delegate_;

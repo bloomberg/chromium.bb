@@ -8,13 +8,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 
 namespace {
+
+const char kStubEthernetServicePath[] = "eth1";
 
 // Stub implementation of CaptivePortalWindowProxyDelegate, does
 // nothing and used to instantiate CaptivePortalWindowProxy.
@@ -165,6 +172,55 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, MultipleCalls) {
 
   OnOriginalURLLoaded();
   CheckState(false, 2);
+}
+
+class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
+ public:
+  CaptivePortalWindowCtorDtorTest()
+      : LoginManagerTest(false) {}
+  virtual ~CaptivePortalWindowCtorDtorTest() {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
+
+    network_portal_detector_ = new NetworkPortalDetectorTestImpl();
+    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
+    NetworkPortalDetector::CaptivePortalState portal_state;
+    portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+    portal_state.response_code = 200;
+    network_portal_detector_->SetDefaultNetworkPathForTesting(
+        kStubEthernetServicePath);
+    network_portal_detector_->SetDetectionResultsForTesting(
+        kStubEthernetServicePath, portal_state);
+  }
+
+ protected:
+  NetworkPortalDetectorTestImpl* network_portal_detector() {
+    return network_portal_detector_;
+  }
+
+ private:
+  NetworkPortalDetectorTestImpl* network_portal_detector_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowCtorDtorTest);
+};
+
+IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, PRE_OpenPortalDialog) {
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
+  network_portal_detector()->NotifyObserversForTesting();
+  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  LoginDisplayHostImpl* host =
+      static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host());
+
+  ASSERT_TRUE(host);
+  OobeUI* oobe = host->GetOobeUI();
+  ASSERT_TRUE(oobe);
+  ErrorScreenActor* actor = oobe->GetErrorScreenActor();
+  ASSERT_TRUE(actor);
+  actor->ShowCaptivePortal();
 }
 
 }  // namespace chromeos
