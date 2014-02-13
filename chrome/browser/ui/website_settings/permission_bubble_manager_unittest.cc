@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -106,15 +108,24 @@ class PermissionBubbleManagerTest : public testing::Test {
     manager_->Accept();
   }
 
+  void WaitForCoalescing() {
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
  protected:
   MockRequest request1_;
   MockRequest request2_;
   MockView view_;
   scoped_ptr<PermissionBubbleManager> manager_;
+
+  base::MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
 };
 
 PermissionBubbleManagerTest::PermissionBubbleManagerTest()
-    : manager_(new PermissionBubbleManager(NULL)) {
+    : manager_(new PermissionBubbleManager(NULL)),
+      ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  manager_->SetCoalesceIntervalForTesting(0);
 }
 
 TEST_F(PermissionBubbleManagerTest, TestFlag) {
@@ -127,6 +138,22 @@ TEST_F(PermissionBubbleManagerTest, TestFlag) {
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {
   manager_->AddRequest(&request1_);
   manager_->SetView(&view_);
+  WaitForCoalescing();
+
+  EXPECT_TRUE(view_.delegate_ == manager_.get());
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(static_cast<size_t>(1), view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+
+  ToggleAccept(0, true);
+  Accept();
+  EXPECT_TRUE(request1_.granted_);
+}
+
+TEST_F(PermissionBubbleManagerTest, SingleRequestViewFirst) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
@@ -142,6 +169,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequests) {
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
   manager_->SetView(&view_);
+  WaitForCoalescing();
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
@@ -160,6 +188,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
   manager_->SetView(&view_);
+  WaitForCoalescing();
 
   EXPECT_TRUE(view_.delegate_ == manager_.get());
   EXPECT_TRUE(view_.shown_);
@@ -176,6 +205,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
   view_.Clear();
 
   manager_->SetView(&view_);
+  WaitForCoalescing();
   EXPECT_TRUE(view_.shown_);
   ASSERT_EQ(static_cast<size_t>(2), view_.permission_requests_.size());
   EXPECT_EQ(&request1_, view_.permission_requests_[0]);
@@ -188,3 +218,68 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
   EXPECT_FALSE(request2_.granted_);
 }
 
+TEST_F(PermissionBubbleManagerTest, NoRequests) {
+  manager_->SetView(&view_);
+  WaitForCoalescing();
+  EXPECT_FALSE(view_.shown_);
+}
+
+TEST_F(PermissionBubbleManagerTest, NoView) {
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  EXPECT_FALSE(view_.shown_);
+}
+
+TEST_F(PermissionBubbleManagerTest, TwoRequestsCoalesce) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&request2_);
+  EXPECT_FALSE(view_.shown_);
+  WaitForCoalescing();
+
+  EXPECT_TRUE(view_.shown_);
+  EXPECT_EQ(2u, view_.permission_requests_.size());
+}
+
+TEST_F(PermissionBubbleManagerTest, TwoRequestsDoNotCoalesce) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  manager_->AddRequest(&request2_);
+
+  EXPECT_TRUE(view_.shown_);
+  EXPECT_EQ(1u, view_.permission_requests_.size());
+}
+
+TEST_F(PermissionBubbleManagerTest, TwoRequestsShownInTwoBubbles) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  manager_->AddRequest(&request2_);
+
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(1u, view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+
+  view_.Hide();
+  Accept();
+  EXPECT_FALSE(view_.shown_);
+
+  WaitForCoalescing();
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(1u, view_.permission_requests_.size());
+  EXPECT_EQ(&request2_, view_.permission_requests_[0]);
+}
+
+TEST_F(PermissionBubbleManagerTest, TestAddDuplicateRequest) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&request2_);
+  manager_->AddRequest(&request1_);
+
+  WaitForCoalescing();
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(2u, view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+  EXPECT_EQ(&request2_, view_.permission_requests_[1]);
+}
