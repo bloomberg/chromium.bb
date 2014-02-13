@@ -173,24 +173,18 @@ remoting.createNpapiPlugin = function(container) {
   return /** @type {remoting.HostPlugin} */ (plugin);
 };
 
-// TODO(sergeyu): We want to show Me2Me host controls only on some Linux
-// distributions that we know work properly with the chromoting host. Implement
-// dome detection mechanism and apply it here.
-/** @type {boolean} */
-remoting.supportedLinuxDistibutionDetected_ = false;
-
 /**
+ * Returns true if the current platform is fully supported. It's only used when
+ * we detect that host native messaging components are not installed. In that
+ * case the result of this function determines if the webapp should show the
+ * controls that allow to install and enable Me2Me host.
+ *
  * @return {boolean}
  */
-remoting.isMe2MeSupported = function isMe2MeSupported() {
+remoting.isMe2MeInstallable = function() {
   /** @type {string} */
   var platform = navigator.platform;
-
-  // Currently Me2Me is supported on Windows, OSX and some versions of Linux.
-  return platform == 'Win32' || platform == 'MacIntel' ||
-           ((platform == 'Linux x86_64' || platform == 'Linux i386') &&
-            remoting.supportedLinuxDistibutionDetected_ &&
-            !remoting.runningOnChromeOS());
+  return platform == 'Win32' || platform == 'MacIntel';
 }
 
 /**
@@ -238,17 +232,21 @@ remoting.initHomeScreenUi = function() {
  */
 remoting.updateLocalHostState = function() {
   /**
-   * @param {string?} hostId Host id.
+   * @param {remoting.HostController.State} state Host state.
    */
-  var onHostId = function(hostId) {
-    remoting.hostController.getLocalHostState(onHostState.bind(null, hostId));
+  var onHostState = function(state) {
+    if (state == remoting.HostController.State.STARTED) {
+      remoting.hostController.getLocalHostId(onHostId.bind(null, state));
+    } else {
+      onHostId(state, null);
+    }
   };
 
   /**
-   * @param {string?} hostId Host id.
    * @param {remoting.HostController.State} state Host state.
+   * @param {string?} hostId Host id.
    */
-  var onHostState = function(hostId, state) {
+  var onHostId = function(state, hostId) {
     remoting.hostList.setLocalHostStateAndId(state, hostId);
     remoting.hostList.display();
   };
@@ -278,7 +276,7 @@ remoting.updateLocalHostState = function() {
 
   remoting.hostController.hasFeature(
       remoting.HostController.Feature.PAIRING_REGISTRY, onHasFeatureResponse);
-  remoting.hostController.getLocalHostId(onHostId);
+  remoting.hostController.getLocalHostState(onHostState);
 };
 
 /**

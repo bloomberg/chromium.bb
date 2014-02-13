@@ -80,9 +80,8 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
    * @type {remoting.HostController.State}
    * @private
    */
-  this.localHostState_ = remoting.isMe2MeSupported()
-                             ? remoting.HostController.State.NOT_INSTALLED
-                             : remoting.HostController.State.NOT_IMPLEMENTED;
+  this.localHostState_ = remoting.HostController.State.UNKNOWN;
+
   /**
    * @type {number}
    * @private

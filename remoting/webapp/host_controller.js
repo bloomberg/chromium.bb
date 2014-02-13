@@ -428,8 +428,10 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
  *     callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  this.hostDispatcher_.getDaemonState(onDone, function() {
-    onDone(remoting.HostController.State.NOT_IMPLEMENTED);
+  this.hostDispatcher_.getDaemonState(onDone, function(error) {
+    onDone(remoting.isMe2MeInstallable()
+               ? remoting.HostController.State.NOT_INSTALLED
+               : remoting.HostController.State.NOT_IMPLEMENTED);
   });
 };
 
