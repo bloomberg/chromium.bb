@@ -1343,7 +1343,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   fps_counter_->SaveTimeStamp(frame_begin_time,
                               !output_surface_->context_provider());
-
   bool on_main_thread = false;
   rendering_stats_instrumentation_->IncrementFrameCount(
       1, on_main_thread);
@@ -1437,6 +1436,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
 
+  devtools_instrumentation::DidDrawFrame(id_);
   BenchmarkInstrumentation::IssueImplThreadRenderingStatsEvent(
       rendering_stats_instrumentation_->impl_thread_rendering_stats());
   rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
@@ -1635,8 +1635,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
 
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())
     DCHECK(active_tree_->root_layer());
-  devtools_instrumentation::didActivateLayerTree(id_,
-      active_tree_->source_frame_number());
+  devtools_instrumentation::DidActivateLayerTree(
+      id_, active_tree_->source_frame_number());
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

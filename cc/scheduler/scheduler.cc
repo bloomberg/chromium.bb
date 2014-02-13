@@ -215,6 +215,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   last_begin_impl_frame_args_ = args;
   last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
   state_machine_.OnBeginImplFrame(last_begin_impl_frame_args_);
+  devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
 
   if (settings_.switch_to_low_latency_if_possible) {
     state_machine_.SetSkipBeginMainFrameToReduceLatency(
@@ -228,7 +229,6 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     return;
 
   state_machine_.OnBeginImplFrameDeadlinePending();
-  devtools_instrumentation::didBeginFrame(layer_tree_host_id_);
   if (settings_.using_synchronous_renderer_compositor) {
     // The synchronous renderer compositor has to make its GL calls
     // within this call to BeginImplFrame.

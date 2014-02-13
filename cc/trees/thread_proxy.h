@@ -167,8 +167,7 @@ class ThreadProxy : public Proxy,
   void BeginMainFrameAbortedOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
-  void InitializeImplOnImplThread(CompletionEvent* completion,
-                                  int layer_tree_host_id);
+  void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
   void UpdateBackgroundAnimateTicking();
@@ -255,8 +254,10 @@ class ThreadProxy : public Proxy,
   const MainThreadOrBlockedMainThread& blocked_main() const;
 
   struct CompositorThreadOnly {
-    explicit CompositorThreadOnly(ThreadProxy* proxy);
+    CompositorThreadOnly(ThreadProxy* proxy, int layer_tree_host_id);
     ~CompositorThreadOnly();
+
+    const int layer_tree_host_id;
 
     // Copy of the main thread side contents texture manager for work
     // that needs to be done on the compositor thread.

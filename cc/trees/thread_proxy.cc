@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/input/input_handler.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
@@ -84,7 +85,7 @@ ThreadProxy::ThreadProxy(
     : Proxy(impl_task_runner),
       main_thread_only_vars_unsafe_(this, layer_tree_host->id()),
       main_thread_or_blocked_vars_unsafe_(layer_tree_host),
-      compositor_thread_vars_unsafe_(this) {
+      compositor_thread_vars_unsafe_(this, layer_tree_host->id()) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(this->layer_tree_host());
@@ -120,8 +121,10 @@ ThreadProxy::MainThreadOrBlockedMainThread::contents_texture_manager() {
   return layer_tree_host->contents_texture_manager();
 }
 
-ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy)
-    : contents_texture_manager(NULL),
+ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
+                                                        int layer_tree_host_id)
+    : layer_tree_host_id(layer_tree_host_id),
+      contents_texture_manager(NULL),
       begin_main_frame_sent_completion_event(NULL),
       readback_request(NULL),
       commit_completion_event(NULL),
@@ -688,8 +691,7 @@ void ThreadProxy::Start() {
       FROM_HERE,
       base::Bind(&ThreadProxy::InitializeImplOnImplThread,
                  base::Unretained(this),
-                 &completion,
-                 main().layer_tree_host_id));
+                 &completion));
   completion.Wait();
 
   main_thread_weak_ptr_ = main().weak_factory.GetWeakPtr();
@@ -782,7 +784,8 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
       base::Bind(&ThreadProxy::BeginMainFrame,
                  main_thread_weak_ptr_,
                  base::Passed(&begin_main_frame_state)));
-
+  devtools_instrumentation::DidRequestMainThreadFrame(
+      impl().layer_tree_host_id);
   if (impl().begin_main_frame_sent_completion_event) {
     impl().begin_main_frame_sent_completion_event->Signal();
     impl().begin_main_frame_sent_completion_event = NULL;
@@ -1443,8 +1446,7 @@ void ThreadProxy::HasInitializedOutputSurfaceOnImplThread(
   completion->Signal();
 }
 
-void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
-                                             int layer_tree_host_id) {
+void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
   impl().layer_tree_host_impl =
@@ -1463,7 +1465,7 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
   scheduler_settings.throttle_frame_production =
       settings.throttle_frame_production;
   impl().scheduler =
-      Scheduler::Create(this, scheduler_settings, layer_tree_host_id);
+      Scheduler::Create(this, scheduler_settings, impl().layer_tree_host_id);
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
 
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();

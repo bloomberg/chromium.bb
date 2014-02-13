@@ -410,7 +410,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // If we're not in impl-side painting, the tree is immediately
     // considered active.
     sync_tree->DidBecomeActive();
-    devtools_instrumentation::didActivateLayerTree(id_, source_frame_number_);
+    devtools_instrumentation::DidActivateLayerTree(id_, source_frame_number_);
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
