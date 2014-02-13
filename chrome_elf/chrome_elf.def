@@ -6,5 +6,4 @@ LIBRARY  "chrome_elf.dll"
 
 EXPORTS
   CreateFileW=CreateFileWRedirect
-  IsBlacklistInitialized
   SignalChromeElf

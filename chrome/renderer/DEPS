@@ -1,5 +1,4 @@
 include_rules = [
-  "+chrome_elf",
   "+components/autofill/content/common",
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
