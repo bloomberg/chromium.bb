@@ -197,7 +197,7 @@ class MessageCenterImpl : public MessageCenter,
   struct NotificationCache {
     NotificationCache();
     ~NotificationCache();
-    void Rebuild(const NotificationList::Notifications& notificaitons);
+    void Rebuild(const NotificationList::Notifications& notifications);
     void RecountUnread();
 
     NotificationList::Notifications visible_notifications;
