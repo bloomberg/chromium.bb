@@ -6,9 +6,9 @@
 
 #include "apps/ui/native_app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -28,16 +28,15 @@ AppWindowContents::AppWindowContents(ShellWindow* host)
 AppWindowContents::~AppWindowContents() {
 }
 
-void AppWindowContents::Initialize(content::BrowserContext* context,
-                                   const GURL& url) {
+void AppWindowContents::Initialize(Profile* profile, const GURL& url) {
   url_ = url;
 
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(context, this));
+      new ExtensionFunctionDispatcher(profile, this));
 
-  web_contents_.reset(
-      content::WebContents::Create(content::WebContents::CreateParams(
-          context, content::SiteInstance::CreateForURL(context, url_))));
+  web_contents_.reset(content::WebContents::Create(
+      content::WebContents::CreateParams(
+          profile, content::SiteInstance::CreateForURL(profile, url_))));
 
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->GetMutableRendererPrefs()->

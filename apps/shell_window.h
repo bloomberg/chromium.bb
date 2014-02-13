@@ -21,6 +21,7 @@
 #include "ui/gfx/rect.h"
 
 class GURL;
+class Profile;
 class SkRegion;
 
 namespace base {
@@ -28,7 +29,6 @@ class DictionaryValue;
 }
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }
 
@@ -58,8 +58,7 @@ class ShellWindowContents {
   virtual ~ShellWindowContents() {}
 
   // Called to initialize the WebContents, before the app window is created.
-  virtual void Initialize(content::BrowserContext* context,
-                          const GURL& url) = 0;
+  virtual void Initialize(Profile* profile, const GURL& url) = 0;
 
   // Called to load the contents, after the app window is created.
   virtual void LoadContents(int32 creator_process_id) = 0;
@@ -202,10 +201,10 @@ class ShellWindow : public content::NotificationObserver,
 
     // Link handling.
     virtual content::WebContents* OpenURLFromTab(
-        content::BrowserContext* context,
+        Profile* profile,
         content::WebContents* source,
         const content::OpenURLParams& params) = 0;
-    virtual void AddNewContents(content::BrowserContext* context,
+    virtual void AddNewContents(Profile* profile,
                                 content::WebContents* new_contents,
                                 WindowOpenDisposition disposition,
                                 const gfx::Rect& initial_pos,
@@ -240,7 +239,7 @@ class ShellWindow : public content::NotificationObserver,
   // with a non-standard render interface (e.g. v1 apps using Ash Panels).
   // Normally ShellWindow::Create should be used.
   // The constructed shell window takes ownership of |delegate|.
-  ShellWindow(content::BrowserContext* context,
+  ShellWindow(Profile* profile,
               Delegate* delegate,
               const extensions::Extension* extension);
 
@@ -261,7 +260,7 @@ class ShellWindow : public content::NotificationObserver,
     return (window_type_ == WINDOW_TYPE_PANEL ||
             window_type_ == WINDOW_TYPE_V1_PANEL);
   }
-  content::BrowserContext* browser_context() const { return browser_context_; }
+  Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
   const GURL& app_icon_url() const { return app_icon_url_; }
   const gfx::Image& badge_icon() const { return badge_icon_; }
@@ -489,10 +488,7 @@ class ShellWindow : public content::NotificationObserver,
   virtual void OnExtensionIconImageChanged(
       extensions::IconImage* image) OVERRIDE;
 
-  // The browser context with which this window is associated. ShellWindow does
-  // not own this object.
-  content::BrowserContext* browser_context_;
-
+  Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
   const std::string extension_id_;

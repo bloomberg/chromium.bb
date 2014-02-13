@@ -9,7 +9,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -41,7 +39,7 @@ bool disable_external_open_for_testing_ = false;
 
 // Opens a URL with Chromium (not external browser) with the right profile.
 content::WebContents* OpenURLFromTabInternal(
-    content::BrowserContext* context,
+    Profile* profile,
     content::WebContents* source,
     const content::OpenURLParams& params) {
   // Force all links to open in a new tab, even if they were trying to open a
@@ -51,7 +49,7 @@ content::WebContents* OpenURLFromTabInternal(
   new_tab_params.disposition = params.disposition == NEW_BACKGROUND_TAB
                                    ? params.disposition
                                    : NEW_FOREGROUND_TAB;
-  new_tab_params.initiating_profile = Profile::FromBrowserContext(context);
+  new_tab_params.initiating_profile = profile;
   chrome::Navigate(&new_tab_params);
 
   return new_tab_params.target_contents;
@@ -150,14 +148,14 @@ apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindow(
 }
 
 content::WebContents* ChromeShellWindowDelegate::OpenURLFromTab(
-    content::BrowserContext* context,
+    Profile* profile,
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  return OpenURLFromTabInternal(context, source, params);
+  return OpenURLFromTabInternal(profile, source, params);
 }
 
 void ChromeShellWindowDelegate::AddNewContents(
-    content::BrowserContext* context,
+    Profile* profile,
     content::WebContents* new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
@@ -170,7 +168,7 @@ void ChromeShellWindowDelegate::AddNewContents(
     return;
   }
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      Profile::FromBrowserContext(context), chrome::GetActiveDesktop());
+      profile, chrome::GetActiveDesktop());
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
   disposition =

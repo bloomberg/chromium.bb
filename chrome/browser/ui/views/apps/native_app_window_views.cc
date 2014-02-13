@@ -266,11 +266,12 @@ void NativeAppWindowViews::Init(
   } else {
     InitializeDefaultWindow(create_params);
   }
-  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-      Profile::FromBrowserContext(browser_context()),
-      window_->GetFocusManager(),
-      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      shell_window_));
+  extension_keybinding_registry_.reset(
+      new ExtensionKeybindingRegistryViews(
+          profile(),
+          window_->GetFocusManager(),
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
+          shell_window_));
 
   OnViewWasResized();
   window_->AddObserver(this);
@@ -361,15 +362,11 @@ void NativeAppWindowViews::InitializeDefaultWindow(
 #if defined(OS_WIN)
   base::string16 app_name_wide = base::UTF8ToWide(app_name);
   HWND hwnd = GetNativeAppWindowHWND();
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          app_name_wide,
-          Profile::FromBrowserContext(browser_context())->GetPath()),
-      hwnd);
+  ui::win::SetAppIdForWindow(ShellIntegration::GetAppModelIdForProfile(
+      app_name_wide, profile()->GetPath()), hwnd);
 
   web_app::UpdateShortcutInfoAndIconForApp(
-      *extension(),
-      Profile::FromBrowserContext(browser_context()),
+      *extension(), profile(),
       base::Bind(&NativeAppWindowViews::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 #endif

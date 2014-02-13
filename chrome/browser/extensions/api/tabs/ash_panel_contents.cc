@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -168,16 +167,15 @@ AshPanelContents::AshPanelContents(ShellWindow* host)
 AshPanelContents::~AshPanelContents() {
 }
 
-void AshPanelContents::Initialize(content::BrowserContext* context,
-                                  const GURL& url) {
+void AshPanelContents::Initialize(Profile* profile, const GURL& url) {
   url_ = url;
 
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(context, this));
+      new ExtensionFunctionDispatcher(profile, this));
 
-  web_contents_.reset(
-      content::WebContents::Create(content::WebContents::CreateParams(
-          context, content::SiteInstance::CreateForURL(context, url_))));
+  web_contents_.reset(content::WebContents::Create(
+      content::WebContents::CreateParams(
+          profile, content::SiteInstance::CreateForURL(profile, url_))));
 
   // Needed to give the web contents a Window ID. Extension APIs expect web
   // contents to have a Window ID. Also required for FaviconTabHelper to
@@ -197,8 +195,8 @@ void AshPanelContents::Initialize(content::BrowserContext* context,
 
 void AshPanelContents::LoadContents(int32 creator_process_id) {
   // This must be created after the native window has been created.
-  window_controller_.reset(new AshPanelWindowController(
-      host_, Profile::FromBrowserContext(host_->browser_context())));
+  window_controller_.reset(
+      new AshPanelWindowController(host_, host_->profile()));
 
   web_contents_->GetController().LoadURL(
       url_, content::Referrer(), content::PAGE_TRANSITION_LINK,

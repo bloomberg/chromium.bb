@@ -81,11 +81,6 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
 
-bool ChromeExtensionsBrowserClient::IsGuestSession(
-    content::BrowserContext* context) {
-  return static_cast<Profile*>(context)->IsGuestSession();
-}
-
 bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {

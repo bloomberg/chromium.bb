@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
+#include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -39,15 +40,15 @@ void NativeAppWindowViewsWin::OnBeforeWidgetInit(
   // If an app has any existing windows, ensure new ones are created on the
   // same desktop.
   apps::ShellWindow* any_existing_window =
-      apps::ShellWindowRegistry::Get(browser_context())
-          ->GetCurrentShellWindowForApp(extension()->id());
+      apps::ShellWindowRegistry::Get(profile())->
+          GetCurrentShellWindowForApp(extension()->id());
   chrome::HostDesktopType desktop_type;
   if (any_existing_window) {
     desktop_type = chrome::GetHostDesktopTypeForNativeWindow(
         any_existing_window->GetNativeWindow());
   } else {
     PerAppSettingsService* settings =
-        PerAppSettingsServiceFactory::GetForBrowserContext(browser_context());
+        PerAppSettingsServiceFactory::GetForBrowserContext(profile());
     if (settings->HasDesktopLastLaunchedFrom(extension()->id())) {
       desktop_type = settings->GetDesktopLastLaunchedFrom(extension()->id());
     } else {

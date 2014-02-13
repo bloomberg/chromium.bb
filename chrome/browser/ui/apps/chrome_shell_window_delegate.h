@@ -7,14 +7,11 @@
 
 #include "apps/shell_window.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
-
-namespace content {
-class BrowserContext;
-}
 
 class ShellWindowLinkDelegate : public content::WebContentsDelegate {
  public:
@@ -43,10 +40,10 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
       apps::ShellWindow* window,
       const apps::ShellWindow::CreateParams& params) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
-      content::BrowserContext* context,
+      Profile* profile,
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual void AddNewContents(content::BrowserContext* context,
+  virtual void AddNewContents(Profile* profile,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,

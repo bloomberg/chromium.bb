@@ -20,6 +20,7 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 
 class ExtensionKeybindingRegistryGtk;
+class Profile;
 
 namespace extensions {
 class Extension;

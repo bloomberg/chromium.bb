@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -32,7 +32,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -44,7 +43,6 @@
 #include "base/prefs/pref_service.h"
 #endif
 
-using content::BrowserContext;
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
@@ -139,10 +137,10 @@ ShellWindow::CreateParams::~CreateParams() {}
 
 ShellWindow::Delegate::~Delegate() {}
 
-ShellWindow::ShellWindow(BrowserContext* context,
+ShellWindow::ShellWindow(Profile* profile,
                          Delegate* delegate,
                          const extensions::Extension* extension)
-    : browser_context_(context),
+    : profile_(profile),
       extension_(extension),
       extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
@@ -152,9 +150,7 @@ ShellWindow::ShellWindow(BrowserContext* context,
       show_on_first_paint_(false),
       first_paint_complete_(false),
       cached_always_on_top_(false) {
-  extensions::ExtensionsBrowserClient* client =
-      extensions::ExtensionsBrowserClient::Get();
-  CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
+  CHECK(!profile->IsGuestSession() || profile->IsOffTheRecord())
       << "Only off the record window may be opened in the guest mode.";
 }
 
@@ -163,7 +159,7 @@ void ShellWindow::Init(const GURL& url,
                        const CreateParams& params) {
   // Initialize the render interface and web contents
   shell_window_contents_.reset(shell_window_contents);
-  shell_window_contents_->Initialize(browser_context(), url);
+  shell_window_contents_->Initialize(profile(), url);
   WebContents* web_contents = shell_window_contents_->GetWebContents();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableAppsShowOnFirstPaint)) {
@@ -211,12 +207,8 @@ void ShellWindow::Init(const GURL& url,
   // about it in case it has any setup to do to make the renderer appear
   // properly. In particular, on Windows, the view's clickthrough region needs
   // to be set.
-  extensions::ExtensionsBrowserClient* client =
-      extensions::ExtensionsBrowserClient::Get();
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<content::BrowserContext>(
-                     client->GetOriginalContext(browser_context_)));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   // Close when the browser process is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -237,7 +229,7 @@ void ShellWindow::Init(const GURL& url,
 
   UpdateExtensionAppIcon();
 
-  ShellWindowRegistry::Get(browser_context_)->AddShellWindow(this);
+  ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
 }
 
 ShellWindow::~ShellWindow() {
@@ -280,8 +272,8 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
     return NULL;
   }
 
-  WebContents* contents =
-      delegate_->OpenURLFromTab(browser_context_, source, params);
+  WebContents* contents = delegate_->OpenURLFromTab(profile_, source,
+                                                    params);
   if (!contents) {
     AddMessageToDevToolsConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
@@ -299,13 +291,10 @@ void ShellWindow::AddNewContents(WebContents* source,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture,
                                  bool* was_blocked) {
-  DCHECK(new_contents->GetBrowserContext() == browser_context_);
-  delegate_->AddNewContents(browser_context_,
-                            new_contents,
-                            disposition,
-                            initial_pos,
-                            user_gesture,
-                            was_blocked);
+  DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
+      profile_);
+  delegate_->AddNewContents(profile_, new_contents, disposition,
+                            initial_pos, user_gesture, was_blocked);
 }
 
 bool ShellWindow::PreHandleKeyboardEvent(
@@ -377,7 +366,7 @@ void ShellWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
 }
 
 void ShellWindow::OnNativeClose() {
-  ShellWindowRegistry::Get(browser_context_)->RemoveShellWindow(this);
+  ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   if (shell_window_contents_) {
     WebContents* web_contents = shell_window_contents_->GetWebContents();
     WebContentsModalDialogManager::FromWebContents(web_contents)->
@@ -405,7 +394,7 @@ void ShellWindow::OnNativeWindowChanged() {
 }
 
 void ShellWindow::OnNativeWindowActivated() {
-  ShellWindowRegistry::Get(browser_context_)->ShellWindowActivated(this);
+  ShellWindowRegistry::Get(profile_)->ShellWindowActivated(this);
 }
 
 content::WebContents* ShellWindow::web_contents() const {
@@ -499,16 +488,13 @@ void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
     return;
   app_icon_ = image;
   native_app_window_->UpdateWindowIcon();
-  ShellWindowRegistry::Get(browser_context_)->ShellWindowIconChanged(this);
+  ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
 }
 
 void ShellWindow::Fullscreen() {
 #if !defined(OS_MACOSX)
   // Do not enter fullscreen mode if disallowed by pref.
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed))
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_WINDOW_API;
@@ -535,10 +521,7 @@ void ShellWindow::Restore() {
 void ShellWindow::OSFullscreen() {
 #if !defined(OS_MACOSX)
   // Do not enter fullscreen mode if disallowed by pref.
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed))
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_OS;
@@ -684,13 +667,13 @@ void ShellWindow::UpdateExtensionAppIcon() {
   // Avoid using any previous app icons were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
-  app_icon_image_.reset(
-      new extensions::IconImage(browser_context(),
-                                extension(),
-                                extensions::IconsInfo::GetIcons(extension()),
-                                delegate_->PreferredIconSize(),
-                                extensions::IconsInfo::GetDefaultAppIcon(),
-                                this));
+  app_icon_image_.reset(new extensions::IconImage(
+      profile(),
+      extension(),
+      extensions::IconsInfo::GetIcons(extension()),
+      delegate_->PreferredIconSize(),
+      extensions::IconsInfo::GetDefaultAppIcon(),
+      this));
 
   // Triggers actual image loading with 1x resources. The 2x resource will
   // be handled by IconImage class when requested.
@@ -803,10 +786,8 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
   // Do not enter fullscreen mode if disallowed by pref.
   // TODO(bartfab): Add a test once it becomes possible to simulate a user
   // gesture. http://crbug.com/174178
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (enter_fullscreen && !prefs->GetBoolean(prefs::kAppFullscreenAllowed)) {
+  if (enter_fullscreen &&
+      !profile()->GetPrefs()->GetBoolean(prefs::kAppFullscreenAllowed)) {
     return;
   }
 #endif
@@ -882,8 +863,7 @@ void ShellWindow::SaveWindowPosition() {
   if (!native_app_window_)
     return;
 
-  ShellWindowGeometryCache* cache =
-      ShellWindowGeometryCache::Get(browser_context());
+  ShellWindowGeometryCache* cache = ShellWindowGeometryCache::Get(profile());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
@@ -939,8 +919,7 @@ ShellWindow::CreateParams ShellWindow::LoadDefaultsAndConstrain(
 
   // Load cached state if it exists.
   if (!params.window_key.empty()) {
-    ShellWindowGeometryCache* cache =
-        ShellWindowGeometryCache::Get(browser_context());
+    ShellWindowGeometryCache* cache = ShellWindowGeometryCache::Get(profile());
 
     gfx::Rect cached_bounds;
     gfx::Rect cached_screen_bounds;

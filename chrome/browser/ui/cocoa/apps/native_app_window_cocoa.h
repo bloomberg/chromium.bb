@@ -18,6 +18,7 @@
 #include "ui/gfx/rect.h"
 
 class ExtensionKeybindingRegistryCocoa;
+class Profile;
 class NativeAppWindowCocoa;
 @class ShellNSWindow;
 class SkRegion;

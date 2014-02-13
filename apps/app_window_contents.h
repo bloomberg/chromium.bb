@@ -17,7 +17,7 @@
 class GURL;
 
 namespace content {
-class BrowserContext;
+class RenderViewHost;
 }
 
 namespace extensions {
@@ -38,8 +38,7 @@ class AppWindowContents : public ShellWindowContents,
   virtual ~AppWindowContents();
 
   // ShellWindowContents
-  virtual void Initialize(content::BrowserContext* context,
-                          const GURL& url) OVERRIDE;
+  virtual void Initialize(Profile* profile, const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
   virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
   virtual void NativeWindowClosed() OVERRIDE;

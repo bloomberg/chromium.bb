@@ -146,7 +146,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
 
   // Add the keybinding registry.
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryGtk(
-      Profile::FromBrowserContext(shell_window_->browser_context()),
+      shell_window_->profile(),
       window_,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       shell_window_));
@@ -624,8 +624,7 @@ bool NativeAppWindowGtk::IsDetached() const {
 }
 
 void NativeAppWindowGtk::UpdateWindowIcon() {
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window_->browser_context());
+  Profile* profile = shell_window_->profile();
   gfx::Image app_icon = shell_window_->app_icon();
   if (!app_icon.IsEmpty())
     gtk_util::SetWindowIcon(window_, profile, app_icon.ToGdkPixbuf());

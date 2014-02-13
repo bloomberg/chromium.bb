@@ -230,16 +230,14 @@ void ExtensionAppShimHandler::QuitAppForWindow(ShellWindow* shell_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Host* host = handler->FindHost(
-      Profile::FromBrowserContext(shell_window->browser_context()),
-      shell_window->extension_id());
+  Host* host = handler->FindHost(shell_window->profile(),
+                                 shell_window->extension_id());
   if (host) {
     handler->OnShimQuit(host);
   } else {
     // App shims might be disabled or the shim is still starting up.
-    ShellWindowRegistry::Get(
-        Profile::FromBrowserContext(shell_window->browser_context()))
-        ->CloseAllShellWindowsForApp(shell_window->extension_id());
+    ShellWindowRegistry::Get(shell_window->profile())->
+        CloseAllShellWindowsForApp(shell_window->extension_id());
   }
 }
 
@@ -247,8 +245,7 @@ void ExtensionAppShimHandler::HideAppForWindow(ShellWindow* shell_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
+  Profile* profile = shell_window->profile();
   Host* host = handler->FindHost(profile, shell_window->extension_id());
   if (host)
     host->OnAppHide();
@@ -261,8 +258,7 @@ void ExtensionAppShimHandler::FocusAppForWindow(ShellWindow* shell_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
+  Profile* profile = shell_window->profile();
   const std::string& app_id = shell_window->extension_id();
   Host* host = handler->FindHost(profile, app_id);
   if (host) {
@@ -281,8 +277,7 @@ bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
+  Profile* profile = shell_window->profile();
   Host* host = handler->FindHost(profile, shell_window->extension_id());
   if (host) {
     // Bring the window to the front without showing it.
