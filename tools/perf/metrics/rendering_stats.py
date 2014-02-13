@@ -19,10 +19,10 @@ def GetScrollInputLatencyEvents(browser_process, timeline_range):
   """Get scroll events' LatencyInfo from the browser process's trace buffer
      that are within the timeline_range.
 
-  Scroll events (MouseWheel or GestureScrollUpdate) dump their LatencyInfo
-  into trace buffer as async trace event with name "InputLatency". The trace
-  event has a memeber 'step' containing its event type and a memeber 'data'
-  containing its latency history.
+  Scroll events (MouseWheel, GestureScrollUpdate or JS scroll on TouchMove)
+  dump their LatencyInfo into trace buffer as async trace event with name
+  "InputLatency". The trace event has a memeber 'step' containing its event
+  type and a memeber 'data' containing its latency history.
 
   """
   mouse_wheel_events = []
@@ -39,6 +39,8 @@ def GetScrollInputLatencyEvents(browser_process, timeline_range):
         if ss.args['step'] == 'MouseWheel':
           mouse_wheel_events.append(ss)
         elif ss.args['step'] == 'GestureScrollUpdate':
+          touch_scroll_events.append(ss)
+        elif ss.args['step'] == 'TouchMove':
           touch_scroll_events.append(ss)
   return (mouse_wheel_events, touch_scroll_events)
 
