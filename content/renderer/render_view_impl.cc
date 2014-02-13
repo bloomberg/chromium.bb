@@ -180,7 +180,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
 #include "third_party/WebKit/public/web/WebRange.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -293,7 +292,6 @@ using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
 using blink::WebReferrerPolicy;
-using blink::WebRuntimeFeatures;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
@@ -4329,9 +4327,6 @@ void RenderViewImpl::OnCSSInsertRequest(const base::string16& frame_xpath,
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    // WebUI uses <dialog> which is not yet enabled by default in Chrome.
-    WebRuntimeFeatures::enableDialogElement(true);
-
     RenderThread::Get()->RegisterExtension(WebUIExtension::Get());
     new WebUIExtensionData(this);
   }
