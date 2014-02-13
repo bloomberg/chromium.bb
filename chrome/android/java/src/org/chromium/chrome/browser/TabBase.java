@@ -13,6 +13,7 @@ import android.view.View;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
@@ -86,6 +87,9 @@ public abstract class TabBase implements NavigationClient {
 
     /** InfoBar container to show InfoBars for this tab. */
     private InfoBarContainer mInfoBarContainer;
+
+    /** Manages app banners shown for this tab. */
+    private AppBannerManager mAppBannerManager;
 
     /** The sync id of the TabBase if session sync is enabled. */
     private int mSyncId;
@@ -671,6 +675,12 @@ public abstract class TabBase implements NavigationClient {
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), getContentView());
         }
+
+        if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
+            mAppBannerManager = new AppBannerManager(this);
+        }
+
+        for (TabObserver observer : mObservers) observer.onContentChanged(this);
     }
 
     /**
