@@ -57,7 +57,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
             continue;
 
         Element* element = toElement(node);
-        AtomicString title = element->getAttribute(titleAttr);
+        const AtomicString& title = element->fastGetAttribute(titleAttr);
         bool enabledViaScript = false;
 
         sheet = toHTMLStyleElement(node)->sheet();
@@ -67,7 +67,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
         // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
         // Should we set preferred/selected stylesheets name in shadow trees and
         // use the name in document?
-        AtomicString rel = element->getAttribute(relAttr);
+        const AtomicString& rel = element->fastGetAttribute(relAttr);
         if (!enabledViaScript && sheet && !title.isEmpty()) {
             if (engine->preferredStylesheetSetName().isEmpty()) {
                 if (element->hasLocalName(styleTag) || !rel.contains("alternate")) {

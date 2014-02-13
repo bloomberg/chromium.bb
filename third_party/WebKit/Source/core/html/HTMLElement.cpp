@@ -581,7 +581,7 @@ void HTMLElement::accessKeyAction(bool sendMouseEvents)
 
 String HTMLElement::title() const
 {
-    return getAttribute(titleAttr);
+    return fastGetAttribute(titleAttr);
 }
 
 short HTMLElement::tabIndex() const

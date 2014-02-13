@@ -132,12 +132,12 @@ bool HTMLTableCellElement::isURLAttribute(const Attribute& attribute) const
 
 const AtomicString& HTMLTableCellElement::abbr() const
 {
-    return getAttribute(abbrAttr);
+    return fastGetAttribute(abbrAttr);
 }
 
 const AtomicString& HTMLTableCellElement::axis() const
 {
-    return getAttribute(axisAttr);
+    return fastGetAttribute(axisAttr);
 }
 
 void HTMLTableCellElement::setColSpan(int n)
@@ -147,7 +147,7 @@ void HTMLTableCellElement::setColSpan(int n)
 
 const AtomicString& HTMLTableCellElement::headers() const
 {
-    return getAttribute(headersAttr);
+    return fastGetAttribute(headersAttr);
 }
 
 void HTMLTableCellElement::setRowSpan(int n)
@@ -157,7 +157,7 @@ void HTMLTableCellElement::setRowSpan(int n)
 
 const AtomicString& HTMLTableCellElement::scope() const
 {
-    return getAttribute(scopeAttr);
+    return fastGetAttribute(scopeAttr);
 }
 
 HTMLTableCellElement* HTMLTableCellElement::cellAbove() const

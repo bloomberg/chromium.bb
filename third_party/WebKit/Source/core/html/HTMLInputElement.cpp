@@ -798,9 +798,9 @@ String HTMLInputElement::altText() const
     String alt = fastGetAttribute(altAttr);
     // fall back to title attribute
     if (alt.isNull())
-        alt = getAttribute(titleAttr);
+        alt = fastGetAttribute(titleAttr);
     if (alt.isNull())
-        alt = getAttribute(valueAttr);
+        alt = fastGetAttribute(valueAttr);
     if (alt.isEmpty())
         alt = locale().queryString(blink::WebLocalizedString::InputElementAltText);
     return alt;

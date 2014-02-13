@@ -41,18 +41,6 @@ public:
 
     int numRows() const;
 
-    const AtomicString& align() const;
-    void setAlign(const AtomicString&);
-
-    const AtomicString& ch() const;
-    void setCh(const AtomicString&);
-
-    const AtomicString& chOff() const;
-    void setChOff(const AtomicString&);
-
-    const AtomicString& vAlign() const;
-    void setVAlign(const AtomicString&);
-
     PassRefPtr<HTMLCollection> rows();
 
 private:

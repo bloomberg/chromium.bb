@@ -1267,7 +1267,7 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
 
 KURL Element::baseURI() const
 {
-    const AtomicString& baseAttribute = getAttribute(baseAttr);
+    const AtomicString& baseAttribute = fastGetAttribute(baseAttr);
     KURL base(KURL(), baseAttribute);
     if (!base.protocol().isEmpty())
         return base;
@@ -2960,7 +2960,7 @@ void Element::webkitRequestPointerLock()
 
 SpellcheckAttributeState Element::spellcheckAttributeState() const
 {
-    const AtomicString& value = getAttribute(HTMLNames::spellcheckAttr);
+    const AtomicString& value = fastGetAttribute(spellcheckAttr);
     if (value == nullAtom)
         return SpellcheckAttributeDefault;
     if (equalIgnoringCase(value, "true") || equalIgnoringCase(value, ""))

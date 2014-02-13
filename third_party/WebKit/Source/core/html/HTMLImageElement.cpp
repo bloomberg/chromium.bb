@@ -182,10 +182,11 @@ const AtomicString& HTMLImageElement::altText() const
     // lets figure out the alt text.. magic stuff
     // http://www.w3.org/TR/1998/REC-html40-19980424/appendix/notes.html#altgen
     // also heavily discussed by Hixie on bugzilla
-    if (!getAttribute(altAttr).isNull())
-        return getAttribute(altAttr);
+    const AtomicString& alt = fastGetAttribute(altAttr);
+    if (!alt.isNull())
+        return alt;
     // fall back to title attribute
-    return getAttribute(titleAttr);
+    return fastGetAttribute(titleAttr);
 }
 
 RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
@@ -320,7 +321,7 @@ bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const
 
 const AtomicString& HTMLImageElement::alt() const
 {
-    return getAttribute(altAttr);
+    return fastGetAttribute(altAttr);
 }
 
 bool HTMLImageElement::draggable() const

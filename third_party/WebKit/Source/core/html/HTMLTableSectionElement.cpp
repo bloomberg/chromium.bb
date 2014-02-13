@@ -106,46 +106,6 @@ int HTMLTableSectionElement::numRows() const
     return rows;
 }
 
-const AtomicString& HTMLTableSectionElement::align() const
-{
-    return getAttribute(alignAttr);
-}
-
-void HTMLTableSectionElement::setAlign(const AtomicString& value)
-{
-    setAttribute(alignAttr, value);
-}
-
-const AtomicString& HTMLTableSectionElement::ch() const
-{
-    return getAttribute(charAttr);
-}
-
-void HTMLTableSectionElement::setCh(const AtomicString& value)
-{
-    setAttribute(charAttr, value);
-}
-
-const AtomicString& HTMLTableSectionElement::chOff() const
-{
-    return getAttribute(charoffAttr);
-}
-
-void HTMLTableSectionElement::setChOff(const AtomicString& value)
-{
-    setAttribute(charoffAttr, value);
-}
-
-const AtomicString& HTMLTableSectionElement::vAlign() const
-{
-    return getAttribute(valignAttr);
-}
-
-void HTMLTableSectionElement::setVAlign(const AtomicString& value)
-{
-    setAttribute(valignAttr, value);
-}
-
 PassRefPtr<HTMLCollection> HTMLTableSectionElement::rows()
 {
     return ensureCachedHTMLCollection(TSectionRows);

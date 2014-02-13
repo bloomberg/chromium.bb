@@ -42,7 +42,7 @@ using namespace HTMLNames;
 
 AtomicString StyleSheetCandidate::title() const
 {
-    return isElement() ? toElement(m_node).getAttribute(titleAttr) : nullAtom;
+    return isElement() ? toElement(m_node).fastGetAttribute(titleAttr) : nullAtom;
 }
 
 bool StyleSheetCandidate::isXSL() const
