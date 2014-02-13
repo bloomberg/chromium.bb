@@ -457,13 +457,6 @@ void WebKitTestController::OnGpuProcessCrashed(
   DiscardMainWindow();
 }
 
-void WebKitTestController::TimeoutHandler() {
-  DCHECK(CalledOnValidThread());
-  printer_->AddErrorMessage(
-      "FAIL: Timed out waiting for notifyDone to be called");
-  DiscardMainWindow();
-}
-
 void WebKitTestController::DiscardMainWindow() {
   // If we're running a test, we need to close all windows and exit the message
   // loop. Otherwise, we're already outside of the message loop, and we just

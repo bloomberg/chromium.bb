@@ -154,7 +154,6 @@ class WebKitTestController : public base::NonThreadSafe,
 
   static WebKitTestController* instance_;
 
-  void TimeoutHandler();
   void DiscardMainWindow();
   void SendTestConfiguration();
 
