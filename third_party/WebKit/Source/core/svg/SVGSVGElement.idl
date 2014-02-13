@@ -41,8 +41,8 @@
              attribute float currentScale;
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
 
-    unsigned long suspendRedraw([Default=Undefined] optional unsigned long maxWaitMilliseconds);
-    void unsuspendRedraw([Default=Undefined] optional unsigned long suspendHandleId);
+    unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
+    void unsuspendRedraw(unsigned long suspendHandleId);
     void unsuspendRedrawAll();
     void forceRedraw();
     void pauseAnimations();
@@ -64,7 +64,7 @@
     SVGRect createSVGRect();
     SVGTransform createSVGTransform();
     SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
-    Element getElementById([Default=Undefined] optional DOMString elementId);
+    Element getElementById(DOMString elementId);
 };
 
 SVGSVGElement implements SVGFitToViewBox;

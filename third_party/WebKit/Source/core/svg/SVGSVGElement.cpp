@@ -331,27 +331,6 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-unsigned SVGSVGElement::suspendRedraw(unsigned /* maxWaitMilliseconds */)
-{
-    // FIXME: Implement me (see bug 11275)
-    return 0;
-}
-
-void SVGSVGElement::unsuspendRedraw(unsigned /* suspendHandleId */)
-{
-    // FIXME: Implement me (see bug 11275)
-}
-
-void SVGSVGElement::unsuspendRedrawAll()
-{
-    // FIXME: Implement me (see bug 11275)
-}
-
-void SVGSVGElement::forceRedraw()
-{
-    // FIXME: Implement me (see bug 11275)
-}
-
 PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
 {
     Vector<RefPtr<Node> > nodes;

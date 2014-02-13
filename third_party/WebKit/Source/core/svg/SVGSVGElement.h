@@ -96,10 +96,11 @@ public:
     float getCurrentTime() const;
     void setCurrentTime(float seconds);
 
-    unsigned suspendRedraw(unsigned maxWaitMilliseconds);
-    void unsuspendRedraw(unsigned suspendHandleId);
-    void unsuspendRedrawAll();
-    void forceRedraw();
+    // Stubs for the deprecated 'redraw' interface.
+    unsigned suspendRedraw(unsigned) { return 1; }
+    void unsuspendRedraw(unsigned) { }
+    void unsuspendRedrawAll() { }
+    void forceRedraw() { }
 
     PassRefPtr<NodeList> getIntersectionList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
     PassRefPtr<NodeList> getEnclosureList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
