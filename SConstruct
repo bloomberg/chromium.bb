@@ -3291,16 +3291,17 @@ if nacl_irt_env.Bit('bitcode'):
 nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
                            replace('pnacl-clang++', 'pnacl-clang')))
 
+if nacl_irt_env.Bit('bitcode'):
+  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native'])
+
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
-# IRT-private TLS from user TLS.
-if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
-elif nacl_irt_env.Bit('target_arm'):
-  nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
-else:
-  nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
+# IRT-private TLS from user TLS. This only applies to mips now, on
+# other platforms we modify the TLS register through tls_edit as a
+# post process.
+if nacl_irt_env.Bit('target_mips32'):
+  nacl_irt_env.Append(LINKFLAGS=['-Wt,-mtls-use-call'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes):

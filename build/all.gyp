@@ -23,7 +23,6 @@
         '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-        '../src/untrusted/irt/irt_test.gyp:*',
         '../src/untrusted/minidump_generator/minidump_generator.gyp:*',
         '../src/untrusted/nacl/nacl.gyp:*',
         '../src/untrusted/nosys/nosys.gyp:*',

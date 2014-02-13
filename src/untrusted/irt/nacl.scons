@@ -99,24 +99,3 @@ env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
 # TODO(mcgrathr): this should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])
-
-# Make sure that the linked IRT nexe never uses TLS via the TLS ABI
-# register (e.g., %gs on x86-32).  All IRT code must avoid direct use
-# of the TLS ABI register, which is reserved for user TLS.  Instead,
-# ensure all TLS accesses use a call to __nacl_read_tp (or __aeabi_read_tp
-# for ARM), which the IRT code overrides to segregate IRT-private TLS
-# from user TLS.
-if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
-    # Do not try to run OBJDUMP if 'built_elsewhere', since that *might*
-    # mean that a toolchain is not even present. E.g., the arm buildbots
-    # do not have the pnacl toolchain, since that is built for x86 hosts.
-    and not env.Bit('built_elsewhere')):
-  check_tls_arch = '${TARGET_FULLARCH}'
-  if env.Bit('build_arm'):
-    check_tls_arch = 'arm'
-  node = env.CommandTest('irt_core_tls_test.out',
-                         ['${PYTHON}', env.File('check_tls.py'),
-                          check_tls_arch, '${OBJDUMP}', irt_core_library],
-                         # don't run ${PYTHON} under the emulator.
-                         direct_emulation=False)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_core_tls_test')

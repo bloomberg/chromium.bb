@@ -578,7 +578,6 @@ def GccCommand(host, target, cmd):
 
 
 def ConfigureGccCommand(source_component, host, target, extra_args=[]):
-  target_cflagstr = ' '.join(CommonTargetCflags(target))
   return GccCommand(
       host,
       target,
@@ -598,8 +597,6 @@ def ConfigureGccCommand(source_component, host, target, extra_args=[]):
           '--with-linker-hash-style=gnu',
           '--enable-linker-build-id',
           '--enable-languages=c,c++,lto',
-          'CFLAGS_FOR_TARGET=' + target_cflagstr,
-          'CXXFLAGS_FOR_TARGET=' + target_cflagstr,
           ] + extra_args)
 
 
@@ -720,16 +717,6 @@ def HostTools(host, target):
 
   return tools
 
-
-# configure defaults to -g -O2 but passing an explicit option overrides that.
-# So we have to list -g -O2 explicitly since we need to add -mtp=soft.
-def CommonTargetCflags(target):
-  options = ['-g', '-O2']
-  if target == 'arm':
-    options.append('-mtp=soft')
-  return options
-
-
 def TargetCommands(host, target, command_list):
   # First we have to copy the host tools into a common directory.
   # We can't just have both directories in our PATH, because the
@@ -768,7 +755,6 @@ def TargetLibs(host, target):
       '--enable-newlib-io-c99-formats',
       '--enable-newlib-mb',
       'CFLAGS=-O2',
-      'CFLAGS_FOR_TARGET=' + ' '.join(CommonTargetCflags(target)),
       'INSTALL_DATA=' + newlib_install_data,
       ]
 

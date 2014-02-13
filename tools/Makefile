@@ -433,14 +433,7 @@ GCC_CONFIGURE_FLAGS-nolibc = --disable-shared \
 			     --enable-languages="c" \
 			     --without-headers
 
-# The newlib-based build of the GCC target libraries (libstdc++ et al)
-# gets used in irt.nexe, which must not use direct register access for
-# TLS.  src/untrusted/irt/nacl.scons:run_irt_tls_test ensures that no
-# such accesses leaked into that binary.  The pregcc build does not
-# produce target libraries that are linked into anything, and the glibc
-# build is not used for building irt.nexe, so they do not need this option.
-GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call \
-			       -I$(HEADERS_FOR_BUILD)
+GCC_CFLAGS_FOR_TARGET-newlib = -I$(HEADERS_FOR_BUILD)
 
 GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
 			     --enable-languages="c,c++,objc" \
@@ -557,7 +550,7 @@ endif
 # by the Native Client threads package build.
 ##################################################################
 
-NEWLIB_CFLAGS = -O2 -mtls-use-call
+NEWLIB_CFLAGS = -O2
 
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
