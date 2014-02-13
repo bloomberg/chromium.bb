@@ -138,16 +138,6 @@ elif env.Bit('build_arm'):
     'arch/arm/nacl_syscall.S',
     'arch/arm/tramp_arm.S',
   ]
-  if env.Bit('target_arm_thumb2'):
-    thumb2_env = env.Clone()
-    thumb2_env.Append(ASFLAGS=['-mthumb'])
-    ldr_inputs += [
-      thumb2_env.DualObject('arch/arm/tramp_arm_thumb2.S'),
-    ]
-  else:
-    ldr_inputs += [
-      'arch/arm/tramp_arm.S',
-    ]
 elif env.Bit('build_mips32'):
   ldr_inputs += [
     'arch/mips/nacl_app.c',

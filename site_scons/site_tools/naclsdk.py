@@ -231,7 +231,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
 def _SetEnvForPnacl(env, root):
   # All the PNaCl tools require Python to be in the PATH.
   arch = env['TARGET_FULLARCH']
-  assert arch in ['arm', 'arm-thumb2', 'mips32', 'x86-32', 'x86-64']
+  assert arch in ['arm', 'mips32', 'x86-32', 'x86-64']
 
   if env.Bit('pnacl_unsandboxed'):
     arch = 'linux-%s' % arch

@@ -190,9 +190,6 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   UNREFERENCED_PARAMETER(nap);
   addr &= ~NACL_CONTROL_FLOW_MASK;
-# if defined(NACL_TARGET_ARM_THUMB2_MODE)
-  addr |= 0xf;
-# endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
   return addr;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
   UNREFERENCED_PARAMETER(nap);

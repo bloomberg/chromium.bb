@@ -935,7 +935,6 @@ AVAILABLE_PLATFORMS = {
     'x86-64'      : { 'arch' : 'x86' , 'subarch' : '64' },
     'mips32'      : { 'arch' : 'mips', 'subarch' : '32' },
     'arm'         : { 'arch' : 'arm' , 'subarch' : '32' },
-    'arm-thumb2'  : { 'arch' : 'arm' , 'subarch' : '32' }
     }
 
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
@@ -953,9 +952,6 @@ DeclareBit('build_mips32', 'Building binaries for the MIPS architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_arm_arm', 'Building binaries for the ARM architecture',
            exclusive_groups='build_arch')
-DeclareBit('build_arm_thumb2',
-           'Building binaries for the ARM architecture (thumb2 ISA)',
-           exclusive_groups='build_arch')
 DeclareBit('target_x86_32', 'Tools being built will process x86-32 binaries',
            exclusive_groups='target_arch')
 DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
@@ -964,15 +960,11 @@ DeclareBit('target_mips32', 'Tools being built will process MIPS binaries',
            exclusive_groups='target_arch')
 DeclareBit('target_arm_arm', 'Tools being built will process ARM binaries',
            exclusive_groups='target_arch')
-DeclareBit('target_arm_thumb2',
-           'Tools being built will process ARM binaries (thumb2 ISA)',
-           exclusive_groups='target_arch')
 
 # Shorthand for either the 32 or 64 bit version of x86.
 DeclareBit('build_x86', 'Building binaries for the x86 architecture')
 DeclareBit('target_x86', 'Tools being built will process x86 binaries')
 
-# Shorthand for either arm or thumb2 versions of ARM
 DeclareBit('build_arm', 'Building binaries for the arm architecture')
 DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
@@ -999,12 +991,12 @@ def MakeArchSpecificEnv(platform=None):
 
   if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
     env.SetBits('build_x86')
-  if env.Bit('build_arm_arm') or env.Bit('build_arm_thumb2'):
+  if env.Bit('build_arm_arm'):
     env.SetBits('build_arm')
 
   if env.Bit('target_x86_32') or env.Bit('target_x86_64'):
     env.SetBits('target_x86')
-  if env.Bit('target_arm_arm') or env.Bit('target_arm_thumb2'):
+  if env.Bit('target_arm_arm'):
     env.SetBits('target_arm')
 
   env.Replace(BUILD_ISA_NAME=platform)
@@ -2065,8 +2057,6 @@ def MakeBaseTrustedEnv(platform=None):
   )
   if base_env.Bit('ncval_testing'):
     base_env.Append(CPPDEFINES = ['NCVAL_TESTING'])
-  if base_env.Bit('target_arm_thumb2'):
-    base_env.Append(CPPDEFINES = ['NACL_TARGET_ARM_THUMB2_MODE=1'])
 
   base_env.Append(BUILD_SCONSCRIPTS = [
       # KEEP THIS SORTED PLEASE

@@ -55,11 +55,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
-#if defined(NACL_TARGET_ARM_THUMB2_MODE)
-  uint16_t *inst = (uint16_t *) start;
-#else
   uint32_t *inst = (uint32_t *) start;
-#endif /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
   uint32_t i;
 
   CHECK(sizeof *inst == NACL_HALT_LEN);
