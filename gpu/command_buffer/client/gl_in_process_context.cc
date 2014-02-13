@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_image.h"
 
@@ -52,13 +51,16 @@ class GLInProcessContextImpl
   explicit GLInProcessContextImpl();
   virtual ~GLInProcessContextImpl();
 
-  bool Initialize(scoped_refptr<gfx::GLSurface> surface,
-                  bool is_offscreen,
-                  bool share_resources,
-                  gfx::AcceleratedWidget window,
-                  const gfx::Size& size,
-                  const GLInProcessContextAttribs& attribs,
-                  gfx::GpuPreference gpu_preference);
+  bool Initialize(
+      scoped_refptr<gfx::GLSurface> surface,
+      bool is_offscreen,
+      bool use_global_share_group,
+      GLInProcessContext* share_context,
+      gfx::AcceleratedWidget window,
+      const gfx::Size& size,
+      const GLInProcessContextAttribs& attribs,
+      gfx::GpuPreference gpu_preference,
+      const scoped_refptr<InProcessCommandBuffer::Service>& service);
 
   // GLInProcessContext implementation:
   virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
@@ -120,11 +122,14 @@ void GLInProcessContextImpl::OnContextLost() {
 bool GLInProcessContextImpl::Initialize(
     scoped_refptr<gfx::GLSurface> surface,
     bool is_offscreen,
-    bool share_resources,
+    bool use_global_share_group,
+    GLInProcessContext* share_context,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
     const GLInProcessContextAttribs& attribs,
-    gfx::GpuPreference gpu_preference) {
+    gfx::GpuPreference gpu_preference,
+    const scoped_refptr<InProcessCommandBuffer::Service>& service) {
+  DCHECK(!use_global_share_group || !share_context);
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
   // Changes to these values should also be copied to
@@ -184,12 +189,12 @@ bool GLInProcessContextImpl::Initialize(
 
   base::Closure wrapped_callback =
       base::Bind(&GLInProcessContextImpl::OnContextLost, AsWeakPtr());
-  command_buffer_.reset(new InProcessCommandBuffer());
+  command_buffer_.reset(new InProcessCommandBuffer(service));
 
   scoped_ptr<base::AutoLock> scoped_shared_context_lock;
   scoped_refptr<gles2::ShareGroup> share_group;
   InProcessCommandBuffer* share_command_buffer = NULL;
-  if (share_resources) {
+  if (use_global_share_group) {
     scoped_shared_context_lock.reset(
         new base::AutoLock(g_all_shared_contexts_lock.Get()));
     for (std::set<GLInProcessContextImpl*>::const_iterator it =
@@ -205,7 +210,15 @@ bool GLInProcessContextImpl::Initialize(
         break;
       }
     }
+  } else if (share_context) {
+    GLInProcessContextImpl* impl =
+        static_cast<GLInProcessContextImpl*>(share_context);
+    share_group = impl->gles2_implementation_->share_group();
+    share_command_buffer = impl->command_buffer_.get();
+    DCHECK(share_group);
+    DCHECK(share_command_buffer);
   }
+
   if (!command_buffer_->Initialize(surface,
                                    is_offscreen,
                                    window,
@@ -241,7 +254,7 @@ bool GLInProcessContextImpl::Initialize(
       free_everything_when_invisible,
       command_buffer_.get()));
 
-  if (share_resources) {
+  if (use_global_share_group) {
     g_all_shared_contexts.Get().insert(this);
     scoped_shared_context_lock.reset();
   }
@@ -307,10 +320,12 @@ GLInProcessContext* GLInProcessContext::CreateContext(
       NULL /* surface */,
       is_offscreen,
       share_resources,
+      NULL,
       window,
       size,
       attribs,
-      gpu_preference))
+      gpu_preference,
+      scoped_refptr<InProcessCommandBuffer::Service>()))
     return NULL;
 
   return context.release();
@@ -319,7 +334,8 @@ GLInProcessContext* GLInProcessContext::CreateContext(
 // static
 GLInProcessContext* GLInProcessContext::CreateWithSurface(
     scoped_refptr<gfx::GLSurface> surface,
-    bool share_resources,
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+    GLInProcessContext* share_context,
     const GLInProcessContextAttribs& attribs,
     gfx::GpuPreference gpu_preference) {
   scoped_ptr<GLInProcessContextImpl> context(
@@ -327,11 +343,13 @@ GLInProcessContext* GLInProcessContext::CreateWithSurface(
   if (!context->Initialize(
       surface,
       surface->IsOffscreen(),
-      share_resources,
+      false,
+      share_context,
       gfx::kNullAcceleratedWidget,
       surface->GetSize(),
       attribs,
-      gpu_preference))
+      gpu_preference,
+      service))
     return NULL;
 
   return context.release();

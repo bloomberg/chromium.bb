@@ -43,8 +43,6 @@ namespace gpu {
 
 namespace {
 
-static bool g_use_virtualized_gl_context = false;
-static bool g_uses_explicit_scheduling = false;
 static GpuMemoryBufferFactory* g_gpu_memory_buffer_factory = NULL;
 
 template <typename T>
@@ -57,13 +55,25 @@ static void RunTaskWithResult(base::Callback<T(void)> task,
 
 class GpuInProcessThread
     : public base::Thread,
+      public InProcessCommandBuffer::Service,
       public base::RefCountedThreadSafe<GpuInProcessThread> {
  public:
   GpuInProcessThread();
 
+  virtual void AddRef() const OVERRIDE {
+    base::RefCountedThreadSafe<GpuInProcessThread>::AddRef();
+  }
+  virtual void Release() const OVERRIDE {
+    base::RefCountedThreadSafe<GpuInProcessThread>::Release();
+  }
+
+  virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
+  virtual void ScheduleIdleWork(const base::Closure& callback) OVERRIDE;
+  virtual bool UseVirtualizedGLContexts() OVERRIDE { return false; }
+
  private:
-  friend class base::RefCountedThreadSafe<GpuInProcessThread>;
   virtual ~GpuInProcessThread();
+  friend class base::RefCountedThreadSafe<GpuInProcessThread>;
 
   DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
 };
@@ -76,164 +86,19 @@ GpuInProcessThread::~GpuInProcessThread() {
   Stop();
 }
 
-// Used with explicit scheduling when there is no dedicated GPU thread.
-class GpuCommandQueue {
- public:
-  GpuCommandQueue();
-  ~GpuCommandQueue();
-
-  void QueueTask(const base::Closure& task);
-  void RunTasks();
-  void SetScheduleCallback(const base::Closure& callback);
-
- private:
-  base::Lock tasks_lock_;
-  std::queue<base::Closure> tasks_;
-  base::Closure schedule_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuCommandQueue);
-};
-
-GpuCommandQueue::GpuCommandQueue() {}
-
-GpuCommandQueue::~GpuCommandQueue() {
-  base::AutoLock lock(tasks_lock_);
-  DCHECK(tasks_.empty());
+void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
+  message_loop()->PostTask(FROM_HERE, task);
 }
 
-void GpuCommandQueue::QueueTask(const base::Closure& task) {
-  {
-    base::AutoLock lock(tasks_lock_);
-    tasks_.push(task);
-  }
-
-  DCHECK(!schedule_callback_.is_null());
-  schedule_callback_.Run();
-}
-
-void GpuCommandQueue::RunTasks() {
-  size_t num_tasks;
-  {
-    base::AutoLock lock(tasks_lock_);
-    num_tasks = tasks_.size();
-  }
-
-  while (num_tasks) {
-    base::Closure task;
-    {
-      base::AutoLock lock(tasks_lock_);
-      task = tasks_.front();
-      tasks_.pop();
-      num_tasks = tasks_.size();
-    }
-
-    task.Run();
-  }
-}
-
-void GpuCommandQueue::SetScheduleCallback(const base::Closure& callback) {
-  DCHECK(schedule_callback_.is_null());
-  schedule_callback_ = callback;
-}
-
-static base::LazyInstance<GpuCommandQueue> g_gpu_queue =
-    LAZY_INSTANCE_INITIALIZER;
-
-class SchedulerClientBase : public InProcessCommandBuffer::SchedulerClient {
- public:
-  explicit SchedulerClientBase(bool need_thread);
-  virtual ~SchedulerClientBase();
-
-  static bool HasClients();
-
- protected:
-  scoped_refptr<GpuInProcessThread> thread_;
-
- private:
-  static base::LazyInstance<std::set<SchedulerClientBase*> > all_clients_;
-  static base::LazyInstance<base::Lock> all_clients_lock_;
-};
-
-base::LazyInstance<std::set<SchedulerClientBase*> >
-    SchedulerClientBase::all_clients_ = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock> SchedulerClientBase::all_clients_lock_ =
-    LAZY_INSTANCE_INITIALIZER;
-
-SchedulerClientBase::SchedulerClientBase(bool need_thread) {
-  base::AutoLock lock(all_clients_lock_.Get());
-  if (need_thread) {
-    if (!all_clients_.Get().empty()) {
-      SchedulerClientBase* other = *all_clients_.Get().begin();
-      thread_ = other->thread_;
-      DCHECK(thread_.get());
-    } else {
-      thread_ = new GpuInProcessThread;
-    }
-  }
-  all_clients_.Get().insert(this);
-}
-
-SchedulerClientBase::~SchedulerClientBase() {
-  base::AutoLock lock(all_clients_lock_.Get());
-  all_clients_.Get().erase(this);
-}
-
-bool SchedulerClientBase::HasClients() {
-  base::AutoLock lock(all_clients_lock_.Get());
-  return !all_clients_.Get().empty();
-}
-
-// A client that talks to the GPU thread
-class ThreadClient : public SchedulerClientBase {
- public:
-  ThreadClient();
-  virtual void QueueTask(const base::Closure& task) OVERRIDE;
-  virtual void ScheduleIdleWork(const base::Closure& callback) OVERRIDE;
-};
-
-ThreadClient::ThreadClient() : SchedulerClientBase(true) {
-  DCHECK(thread_.get());
-}
-
-void ThreadClient::QueueTask(const base::Closure& task) {
-  thread_->message_loop()->PostTask(FROM_HERE, task);
-}
-
-void ThreadClient::ScheduleIdleWork(const base::Closure& callback) {
-  thread_->message_loop()->PostDelayedTask(
+void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
+  message_loop()->PostDelayedTask(
       FROM_HERE, callback, base::TimeDelta::FromMilliseconds(5));
 }
 
-// A client that talks to the GpuCommandQueue
-class QueueClient : public SchedulerClientBase {
- public:
-  QueueClient();
-  virtual void QueueTask(const base::Closure& task) OVERRIDE;
-  virtual void ScheduleIdleWork(const base::Closure& callback) OVERRIDE;
-};
-
-QueueClient::QueueClient() : SchedulerClientBase(false) {
-  DCHECK(!thread_.get());
-}
-
-void QueueClient::QueueTask(const base::Closure& task) {
-  g_gpu_queue.Get().QueueTask(task);
-}
-
-void QueueClient::ScheduleIdleWork(const base::Closure& callback) {
-  // TODO(sievers): Should this do anything?
-}
-
-static scoped_ptr<InProcessCommandBuffer::SchedulerClient>
-CreateSchedulerClient() {
-  scoped_ptr<InProcessCommandBuffer::SchedulerClient> client;
-  if (g_uses_explicit_scheduling)
-    client.reset(new QueueClient);
-  else
-    client.reset(new ThreadClient);
-
-  return client.Pass();
-}
+base::LazyInstance<std::set<InProcessCommandBuffer*> > default_thread_clients_ =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock> default_thread_clients_lock_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 class ScopedEvent {
  public:
@@ -246,15 +111,41 @@ class ScopedEvent {
 
 }  // anonyous namespace
 
-InProcessCommandBuffer::InProcessCommandBuffer()
+InProcessCommandBuffer::Service::Service() {}
+
+InProcessCommandBuffer::Service::~Service() {}
+
+scoped_refptr<InProcessCommandBuffer::Service>
+InProcessCommandBuffer::GetDefaultService() {
+  base::AutoLock lock(default_thread_clients_lock_.Get());
+  scoped_refptr<Service> service;
+  if (!default_thread_clients_.Get().empty()) {
+    InProcessCommandBuffer* other = *default_thread_clients_.Get().begin();
+    service = other->service_;
+    DCHECK(service.get());
+  } else {
+    service = new GpuInProcessThread;
+  }
+  return service;
+}
+
+InProcessCommandBuffer::InProcessCommandBuffer(
+    const scoped_refptr<Service>& service)
     : context_lost_(false),
       last_put_offset_(-1),
       flush_event_(false, false),
-      queue_(CreateSchedulerClient()),
-      gpu_thread_weak_ptr_factory_(this) {}
+      service_(service.get() ? service : GetDefaultService()),
+      gpu_thread_weak_ptr_factory_(this) {
+  if (!service) {
+    base::AutoLock lock(default_thread_clients_lock_.Get());
+    default_thread_clients_.Get().insert(this);
+  }
+}
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
   Destroy();
+  base::AutoLock lock(default_thread_clients_lock_.Get());
+  default_thread_clients_.Get().erase(this);
 }
 
 void InProcessCommandBuffer::OnResizeView(gfx::Size size, float scale_factor) {
@@ -301,7 +192,7 @@ bool InProcessCommandBuffer::Initialize(
     gfx::GpuPreference gpu_preference,
     const base::Closure& context_lost_callback,
     InProcessCommandBuffer* share_group) {
-
+  DCHECK(!share_group || service_ == share_group->service_);
   context_lost_callback_ = WrapCallback(context_lost_callback);
 
   if (surface) {
@@ -398,7 +289,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     return false;
   }
 
-  if (g_use_virtualized_gl_context) {
+  if (service_->UseVirtualizedGLContexts()) {
     context_ = gl_share_group_->GetSharedContext();
     if (!context_.get()) {
       context_ = gfx::GLContext::CreateGLContext(
@@ -548,7 +439,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset) {
   // pump idle work until the query is passed.
   if (put_offset == state_after_last_flush_.get_offset &&
       gpu_scheduler_->HasMoreWork()) {
-    queue_->ScheduleIdleWork(
+    service_->ScheduleIdleWork(
         base::Bind(&InProcessCommandBuffer::ScheduleMoreIdleWork,
                    gpu_thread_weak_ptr_));
   }
@@ -559,7 +450,7 @@ void InProcessCommandBuffer::ScheduleMoreIdleWork() {
   base::AutoLock lock(command_buffer_lock_);
   if (gpu_scheduler_->HasMoreWork()) {
     gpu_scheduler_->PerformIdleWork();
-    queue_->ScheduleIdleWork(
+    service_->ScheduleIdleWork(
         base::Bind(&InProcessCommandBuffer::ScheduleMoreIdleWork,
                    gpu_thread_weak_ptr_));
   }
@@ -780,25 +671,6 @@ InProcessCommandBuffer::GetSurfaceTexture(uint32 stream_id) {
   return stream_texture_manager_->GetSurfaceTexture(stream_id);
 }
 #endif
-
-// static
-void InProcessCommandBuffer::EnableVirtualizedContext() {
-  g_use_virtualized_gl_context = true;
-}
-
-// static
-void InProcessCommandBuffer::SetScheduleCallback(
-    const base::Closure& callback) {
-  DCHECK(!g_uses_explicit_scheduling);
-  DCHECK(!SchedulerClientBase::HasClients());
-  g_uses_explicit_scheduling = true;
-  g_gpu_queue.Get().SetScheduleCallback(callback);
-}
-
-// static
-void InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread() {
-  g_gpu_queue.Get().RunTasks();
-}
 
 // static
 void InProcessCommandBuffer::SetGpuMemoryBufferFactory(

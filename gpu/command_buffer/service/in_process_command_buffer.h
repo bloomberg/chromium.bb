@@ -59,21 +59,10 @@ class TransferBufferManagerInterface;
 class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                           public GpuControl {
  public:
-  InProcessCommandBuffer();
+  class Service;
+  explicit InProcessCommandBuffer(const scoped_refptr<Service>& service);
   virtual ~InProcessCommandBuffer();
 
-  // Used to override the GPU thread with explicit scheduling.
-  // (By default an internal GPU thread will be spawned to handle all GL work
-  // and the two functions are unused.)
-  // The callback will be called from different client threads. After the
-  // callback is issued, the client is expected to eventually call
-  // ProcessGpuWorkOnCurrentThread(). The latter cannot be called from different
-  // threads.
-  // The callback needs to be set before any context is created.
-  static void SetScheduleCallback(const base::Closure& callback);
-  static void ProcessGpuWorkOnCurrentThread();
-
-  static void EnableVirtualizedContext();
   static void SetGpuMemoryBufferFactory(GpuMemoryBufferFactory* factory);
 
   // If |surface| is not NULL, use it directly; in this case, the command
@@ -129,16 +118,22 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
-  class SchedulerClient {
+  class Service {
    public:
-     virtual ~SchedulerClient() {}
+    Service();
+    virtual ~Service();
 
-     // Queues a task to run as soon as possible.
-     virtual void QueueTask(const base::Closure& task) = 0;
+    virtual void AddRef() const = 0;
+    virtual void Release() const = 0;
 
-     // Schedules |callback| to run at an appropriate time for performing idle
-     // work.
-     virtual void ScheduleIdleWork(const base::Closure& task) = 0;
+    // Queues a task to run as soon as possible.
+    virtual void ScheduleTask(const base::Closure& task) = 0;
+
+    // Schedules |callback| to run at an appropriate time for performing idle
+    // work.
+    virtual void ScheduleIdleWork(const base::Closure& task) = 0;
+
+    virtual bool UseVirtualizedGLContexts() = 0;
   };
 
 #if defined(OS_ANDROID)
@@ -179,7 +174,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
-  void QueueTask(const base::Closure& task) { queue_->QueueTask(task); }
+  void QueueTask(const base::Closure& task) { service_->ScheduleTask(task); }
   void CheckSequencedThread();
 
   // Callbacks:
@@ -188,6 +183,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
   void ScheduleMoreIdleWork();
+
+  static scoped_refptr<Service> GetDefaultService();
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
@@ -208,7 +205,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_ptr<CommandBuffer> command_buffer_;
   base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
-  scoped_ptr<SchedulerClient> queue_;
+  scoped_refptr<Service> service_;
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
   scoped_ptr<GpuControl> gpu_control_;

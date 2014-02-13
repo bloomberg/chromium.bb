@@ -13,7 +13,6 @@
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
@@ -21,39 +20,10 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
-#include "ui/gl/gl_surface.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
 
 namespace {
-
-scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  gpu::GLInProcessContextAttribs in_process_attribs;
-  WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-      attributes, &in_process_attribs);
-  scoped_ptr<gpu::GLInProcessContext> context(
-      gpu::GLInProcessContext::CreateWithSurface(surface,
-                                                 attributes.shareResources,
-                                                 in_process_attribs,
-                                                 gpu_preference));
-
-  if (!context.get())
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
-  return WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-      context.Pass(), attributes).Pass();
-}
 
 void DidActivatePendingTree(int routing_id) {
   SynchronousCompositorOutputSurfaceDelegate* delegate =
@@ -190,16 +160,12 @@ void AdjustTransform(gfx::Transform* transform, gfx::Rect viewport) {
 } // namespace
 
 bool SynchronousCompositorOutputSurface::InitializeHwDraw(
-    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<cc::ContextProvider> onscreen_context_provider,
     scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(!context_provider_);
-  DCHECK(surface);
 
-  scoped_refptr<cc::ContextProvider> onscreen_context_provider =
-      webkit::gpu::ContextProviderInProcess::Create(
-          CreateWebGraphicsContext3D(surface), "SynchronousCompositor");
   return InitializeAndSetContext3d(onscreen_context_provider,
                                    offscreen_context_provider);
 }

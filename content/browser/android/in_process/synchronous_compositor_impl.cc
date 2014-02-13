@@ -82,13 +82,27 @@ void SynchronousCompositorImpl::SetClient(
   compositor_client_ = compositor_client;
 }
 
+// static
+void SynchronousCompositor::SetGpuService(
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
+  g_factory.Get().SetDeferredGpuService(service);
+}
+
 bool SynchronousCompositorImpl::InitializeHwDraw(
     scoped_refptr<gfx::GLSurface> surface) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  bool success = output_surface_->InitializeHwDraw(
-      surface,
-      g_factory.Get().GetOffscreenContextProviderForCompositorThread());
+
+  // Create contexts in this order so that the share group gets passed
+  // along correctly.
+  scoped_refptr<cc::ContextProvider> offscreen_context =
+      g_factory.Get().GetOffscreenContextProviderForCompositorThread();
+  scoped_refptr<cc::ContextProvider> onscreen_context =
+  g_factory.Get().CreateOnscreenContextProviderForCompositorThread(surface);
+
+  bool success =
+      output_surface_->InitializeHwDraw(onscreen_context, offscreen_context);
+
   if (success)
     g_factory.Get().CompositorInitializedHardwareDraw();
   return success;

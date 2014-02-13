@@ -173,7 +173,8 @@ ScopedAllowGL::~ScopedAllowGL() {
 
 bool ScopedAllowGL::allow_gl = false;
 
-base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager;
+base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager =
+    LAZY_INSTANCE_INITIALIZER;
 
 void RequestProcessGLOnUIThread() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -190,23 +191,94 @@ void RequestProcessGLOnUIThread() {
   }
 }
 
-}  // namespace
+class DeferredGpuCommandService
+    : public gpu::InProcessCommandBuffer::Service,
+      public base::RefCountedThreadSafe<DeferredGpuCommandService> {
+ public:
+  DeferredGpuCommandService();
+
+  virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
+  virtual void ScheduleIdleWork(const base::Closure& task) OVERRIDE;
+  virtual bool UseVirtualizedGLContexts() OVERRIDE;
+
+  void RunTasks();
+
+  virtual void AddRef() const OVERRIDE {
+    base::RefCountedThreadSafe<DeferredGpuCommandService>::AddRef();
+  }
+  virtual void Release() const OVERRIDE {
+    base::RefCountedThreadSafe<DeferredGpuCommandService>::Release();
+  }
+
+ protected:
+  virtual ~DeferredGpuCommandService();
+  friend class base::RefCountedThreadSafe<DeferredGpuCommandService>;
+
+ private:
+  base::Lock tasks_lock_;
+  std::queue<base::Closure> tasks_;
+  DISALLOW_COPY_AND_ASSIGN(DeferredGpuCommandService);
+};
+
+DeferredGpuCommandService::DeferredGpuCommandService() {}
+
+DeferredGpuCommandService::~DeferredGpuCommandService() {
+  base::AutoLock lock(tasks_lock_);
+  DCHECK(tasks_.empty());
+}
 
 // Called from different threads!
-static void ScheduleGpuWork() {
+void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
+  {
+    base::AutoLock lock(tasks_lock_);
+    tasks_.push(task);
+  }
   if (ScopedAllowGL::IsAllowed()) {
-    gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+    RunTasks();
   } else {
     RequestProcessGLOnUIThread();
   }
 }
 
+void DeferredGpuCommandService::ScheduleIdleWork(
+    const base::Closure& callback) {
+  // TODO(sievers): Should this do anything?
+}
+
+bool DeferredGpuCommandService::UseVirtualizedGLContexts() { return true; }
+
+void DeferredGpuCommandService::RunTasks() {
+  bool has_more_tasks;
+  {
+    base::AutoLock lock(tasks_lock_);
+    has_more_tasks = tasks_.size() > 0;
+  }
+
+  while (has_more_tasks) {
+    base::Closure task;
+    {
+      base::AutoLock lock(tasks_lock_);
+      task = tasks_.front();
+      tasks_.pop();
+    }
+    task.Run();
+    {
+      base::AutoLock lock(tasks_lock_);
+      has_more_tasks = tasks_.size() > 0;
+    }
+
+  }
+}
+
+base::LazyInstance<scoped_refptr<DeferredGpuCommandService> > g_service =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 // static
 void BrowserViewRenderer::SetAwDrawSWFunctionTable(
     AwDrawSWFunctionTable* table) {
   g_sw_draw_functions = table;
-  gpu::InProcessCommandBuffer::SetScheduleCallback(
-      base::Bind(&ScheduleGpuWork));
 }
 
 // static
@@ -351,7 +423,7 @@ void InProcessViewRenderer::TrimMemory(int level) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::TrimMemory");
   ScopedAppGLStateRestore state_restore(
       ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
-  gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+  g_service.Get()->RunTasks();
   ScopedAllowGL allow_gl;
 
   SetMemoryPolicy(policy);
@@ -391,7 +463,11 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
 bool InProcessViewRenderer::InitializeHwDraw() {
   TRACE_EVENT0("android_webview", "InitializeHwDraw");
   DCHECK(!gl_surface_);
-  gl_surface_  = new AwGLSurface;
+  gl_surface_ = new AwGLSurface;
+  if (!g_service.Get()) {
+    g_service.Get() = new DeferredGpuCommandService;
+    content::SynchronousCompositor::SetGpuService(g_service.Get());
+  }
   hardware_failed_ = !compositor_->InitializeHwDraw(gl_surface_);
   hardware_initialized_ = true;
 
@@ -416,7 +492,8 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW);
-  gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+  if (g_service.Get())
+    g_service.Get()->RunTasks();
   ScopedAllowGL allow_gl;
 
   if (!attached_to_window_) {
@@ -705,7 +782,7 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
 
     ScopedAppGLStateRestore state_restore(
         ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
-    gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+    g_service.Get()->RunTasks();
     ScopedAllowGL allow_gl;
     compositor_->ReleaseHwDraw();
     hardware_initialized_ = false;

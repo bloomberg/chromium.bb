@@ -64,7 +64,7 @@ class SynchronousCompositorOutputSurface
 
   // Partial SynchronousCompositor API implementation.
   bool InitializeHwDraw(
-      scoped_refptr<gfx::GLSurface> surface,
+      scoped_refptr<cc::ContextProvider> onscreen_context_provider,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider);
   void ReleaseHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,

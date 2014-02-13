@@ -51,7 +51,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   gpu::InProcessCommandBuffer::SetGpuMemoryBufferFactory(
       gpu_memory_buffer_factory_.get());
-  gpu::InProcessCommandBuffer::EnableVirtualizedContext();
 
   InProcessViewRenderer::CalculateTileMemoryPolicy();
 

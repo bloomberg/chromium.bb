@@ -8,6 +8,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "ui/gl/android/surface_texture.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_stub.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -17,14 +19,62 @@ namespace content {
 
 namespace {
 
+blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
+  blink::WebGraphicsContext3D::Attributes attributes;
+  attributes.antialias = false;
+  attributes.depth = false;
+  attributes.stencil = false;
+  attributes.shareResources = true;
+  attributes.noAutomaticFlushes = true;
+
+  return attributes;
+}
+
+using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+
+scoped_ptr<gpu::GLInProcessContext> CreateContext(
+    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+    gpu::GLInProcessContext* share_context) {
+  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
+  if (!surface)
+    surface = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
+
+  gpu::GLInProcessContextAttribs in_process_attribs;
+  WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
+      GetDefaultAttribs(), &in_process_attribs);
+  scoped_ptr<gpu::GLInProcessContext> context(
+      gpu::GLInProcessContext::CreateWithSurface(surface,
+                                                 service,
+                                                 share_context,
+                                                 in_process_attribs,
+                                                 gpu_preference));
+  return context.Pass();
+}
+
+scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> WrapContext(
+    scoped_ptr<gpu::GLInProcessContext> context) {
+  if (!context.get())
+    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
+
+  return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
+      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
+          context.Pass(), GetDefaultAttribs()));
+}
+
 class VideoContextProvider
     : public StreamTextureFactorySynchronousImpl::ContextProvider {
  public:
   VideoContextProvider(
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      gpu::GLInProcessContext* gl_in_process_context)
-      : context_provider_(context_provider),
-        gl_in_process_context_(gl_in_process_context) {}
+      scoped_ptr<gpu::GLInProcessContext> gl_in_process_context)
+      : gl_in_process_context_(gl_in_process_context.get()) {
+
+    context_provider_ = webkit::gpu::ContextProviderInProcess::Create(
+        WrapContext(gl_in_process_context.Pass()),
+        "Video-Offscreen-main-thread");
+    context_provider_->BindToCurrentThread();
+  }
 
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
       uint32 stream_id) OVERRIDE {
@@ -51,6 +101,7 @@ using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
     : wrapped_gl_context_for_main_thread_(NULL),
+      wrapped_gl_context_for_compositor_thread_(NULL),
       num_hardware_compositors_(0) {
   SynchronousCompositorFactory::SetInstance(this);
 }
@@ -76,17 +127,16 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
 
 scoped_refptr<ContextProviderWebContext>
 SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
-  // This check only guarantees the main thread context is created after
-  // a compositor did successfully initialize hardware draw in the past.
-  // In particular this does not guarantee that the main thread context
-  // will fail creation when all compositors release hardware draw.
   bool failed = false;
   if ((!offscreen_context_for_main_thread_.get() ||
        offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
+    scoped_ptr<gpu::GLInProcessContext> context =
+        CreateContext(NULL, NULL, NULL);
+    wrapped_gl_context_for_main_thread_ = context.get();
     offscreen_context_for_main_thread_ =
         webkit::gpu::ContextProviderInProcess::Create(
-            CreateOffscreenContext(),
-            "Compositor-Offscreen");
+            WrapContext(context.Pass()),
+            "Compositor-Offscreen-main-thread");
     failed = !offscreen_context_for_main_thread_.get() ||
              !offscreen_context_for_main_thread_->BindToCurrentThread();
   }
@@ -107,12 +157,38 @@ SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
 scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
     GetOffscreenContextProviderForCompositorThread() {
   base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
+  DCHECK(service_);
+  bool failed = false;
   if (!offscreen_context_for_compositor_thread_.get() ||
       offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
+    scoped_ptr<gpu::GLInProcessContext> context =
+        CreateContext(new gfx::GLSurfaceStub, service_, NULL);
+    wrapped_gl_context_for_compositor_thread_ = context.get();
     offscreen_context_for_compositor_thread_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+        webkit::gpu::ContextProviderInProcess::Create(
+            WrapContext(context.Pass()),
+            "Compositor-Offscreen-compositor-thread");
+    failed = !offscreen_context_for_compositor_thread_.get() ||
+             !offscreen_context_for_compositor_thread_->BindToCurrentThread();
+  }
+  if (failed) {
+    offscreen_context_for_compositor_thread_ = NULL;
+    wrapped_gl_context_for_compositor_thread_ = NULL;
   }
   return offscreen_context_for_compositor_thread_;
+}
+
+scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
+    CreateOnscreenContextProviderForCompositorThread(
+        scoped_refptr<gfx::GLSurface> surface) {
+  DCHECK(surface);
+  DCHECK(service_);
+  DCHECK(wrapped_gl_context_for_compositor_thread_);
+
+  return webkit::gpu::ContextProviderInProcess::Create(
+      WrapContext(CreateContext(
+          surface, service_, wrapped_gl_context_for_compositor_thread_)),
+      "Compositor-Onscreen");
 }
 
 scoped_ptr<StreamTextureFactory>
@@ -162,45 +238,26 @@ scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
 SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       context_provider;
-  if (CanCreateMainThreadContext() &&
-      GetOffscreenContextProviderForMainThread()) {
-    DCHECK(offscreen_context_for_main_thread_);
-    DCHECK(wrapped_gl_context_for_main_thread_);
-    context_provider =
-        new VideoContextProvider(offscreen_context_for_main_thread_,
-                                 wrapped_gl_context_for_main_thread_);
+  // This check only guarantees the main thread context is created after
+  // a compositor did successfully initialize hardware draw in the past.
+  // In particular this does not guarantee that the main thread context
+  // will fail creation when all compositors release hardware draw.
+  if (CanCreateMainThreadContext() && !video_context_provider_) {
+    DCHECK(service_);
+    DCHECK(wrapped_gl_context_for_compositor_thread_);
+
+    video_context_provider_ = new VideoContextProvider(
+        CreateContext(new gfx::GLSurfaceStub,
+                      service_,
+                      wrapped_gl_context_for_compositor_thread_));
   }
-  return context_provider;
+  return video_context_provider_;
 }
 
-// TODO(boliu): Deduplicate this with synchronous_compositor_output_surface.cc.
-scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-SynchronousCompositorFactoryImpl::CreateOffscreenContext() {
-  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  gpu::GLInProcessContextAttribs in_process_attribs;
-  WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-      attributes, &in_process_attribs);
-  scoped_ptr<gpu::GLInProcessContext> context(
-      gpu::GLInProcessContext::CreateContext(true,
-                                             NULL,
-                                             gfx::Size(1, 1),
-                                             attributes.shareResources,
-                                             in_process_attribs,
-                                             gpu_preference));
-
-  wrapped_gl_context_for_main_thread_ = context.get();
-  if (!context.get())
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
-  return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
-      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-          context.Pass(), attributes));
+void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
+  DCHECK(!service_);
+  service_ = service;
 }
 
 }  // namespace content
