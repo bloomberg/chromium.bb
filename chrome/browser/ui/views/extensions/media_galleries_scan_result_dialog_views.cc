@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -191,7 +192,9 @@ bool MediaGalleriesScanResultDialogViews::AddOrUpdateScanResult(
   views::ImageButton* folder_viewer_button = new views::ImageButton(this);
   folder_viewer_button->set_context_menu_controller(this);
   folder_viewer_button->SetImage(views::ImageButton::STATE_NORMAL,
-                                 rb.GetImageSkiaNamed(IDR_OAK));
+                                 rb.GetImageSkiaNamed(IDR_FILE_FOLDER));
+  folder_viewer_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                          views::ImageButton::ALIGN_MIDDLE);
   folder_viewer_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MEDIA_GALLERIES_SCAN_RESULT_OPEN_FOLDER_VIEW_ACCESSIBILITY_NAME));
   folder_viewer_button->SetFocusable(true);
