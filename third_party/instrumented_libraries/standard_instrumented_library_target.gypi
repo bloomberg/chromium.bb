@@ -12,7 +12,9 @@
     {
       'action_name': '<(_library_name)',
       'inputs': [
-        'download_build_install.py',
+        # TODO(earthdok): reintroduce some sort of dependency
+        # See http://crbug.com/343515
+        #'download_build_install.py',
       ],
       'outputs': [
         '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_library_name).txt',
