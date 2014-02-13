@@ -7,12 +7,22 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 using autofill::PasswordForm;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+namespace {
+
+const char kPSLMatchingDesktopFieldTrialName[] = "PSLMatchingDesktop";
+const char kPSLMatchingDesktopFieldTrialDisabledGroupName[] = "Disabled";
+
+}  // namespace
+#endif
 
 bool PSLMatchingHelper::psl_enabled_override_ = false;
 
@@ -58,6 +68,12 @@ bool PSLMatchingHelper::DeterminePSLEnabled() {
   // Default choice is "enabled", so we do not need to check for
   // kEnablePasswordAutofillPublicSuffixDomainMatching.
   bool enabled = true;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (base::FieldTrialList::FindFullName(kPSLMatchingDesktopFieldTrialName) ==
+      kPSLMatchingDesktopFieldTrialDisabledGroupName) {
+    enabled = false;
+  }
+#endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePasswordAutofillPublicSuffixDomainMatching)) {
     enabled = false;
