@@ -130,7 +130,6 @@ private:
     Timing m_specified;
     OwnPtr<EventDelegate> m_eventDelegate;
 
-    // FIXME: Should be versioned by monotonic value on player.
     mutable struct CalculatedTiming {
         Phase phase;
         double currentIteration;
@@ -144,8 +143,7 @@ private:
     mutable bool m_needsUpdate;
     mutable double m_lastUpdateTime;
 
-    // FIXME: Should check the version and reinherit time if inconsistent.
-    const CalculatedTiming& ensureCalculated() const { return m_calculated; }
+    const CalculatedTiming& ensureCalculated() const;
 };
 
 } // namespace WebCore

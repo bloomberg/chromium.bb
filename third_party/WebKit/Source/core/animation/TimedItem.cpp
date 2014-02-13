@@ -167,4 +167,14 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     return didTriggerStyleRecalc;
 }
 
+const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
+{
+    if (!m_player)
+        return m_calculated;
+    if (m_player->needsUpdate())
+        m_player->update();
+    ASSERT(!m_player->needsUpdate());
+    return m_calculated;
+}
+
 } // namespace WebCore
