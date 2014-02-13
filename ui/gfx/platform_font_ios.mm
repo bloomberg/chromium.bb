@@ -55,15 +55,6 @@ int PlatformFontIOS::GetCapHeight() const {
   return cap_height_;
 }
 
-int PlatformFontIOS::GetAverageCharacterWidth() const {
-  return average_width_;
-}
-
-int PlatformFontIOS::GetStringWidth(const base::string16& text) const {
-  NSString* ns_text = base::SysUTF16ToNSString(text);
-  return [ns_text sizeWithFont:GetNativeFont()].width;
-}
-
 int PlatformFontIOS::GetExpectedTextWidth(int length) const {
   return length * average_width_;
 }

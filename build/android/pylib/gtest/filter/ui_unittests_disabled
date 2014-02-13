@@ -21,12 +21,11 @@ FontListTest.Fonts_FromFontWithNonNormalStyle
 FontListTest.Fonts_GetHeight_GetBaseline
 FontListTest.Fonts_GetStyle
 FontTest.Ascent
-FontTest.AvgCharWidth
 FontTest.AvgWidths
 FontTest.CapHeight
 FontTest.GetActualFontNameForTesting
 FontTest.Height
 FontTest.LoadArial
 FontTest.LoadArialBold
-FontTest.Widths
 ResourceBundleTest.DelegateGetFontList
+TextUtilsTest.GetStringWidth

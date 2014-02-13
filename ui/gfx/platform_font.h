@@ -45,13 +45,6 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns the cap height of the font.
   virtual int GetCapHeight() const = 0;
 
-  // Returns the average character width for the font.
-  virtual int GetAverageCharacterWidth() const = 0;
-
-  // Returns the number of horizontal pixels needed to display the specified
-  // string.
-  virtual int GetStringWidth(const base::string16& text) const = 0;
-
   // Returns the expected number of horizontal pixels needed to display the
   // specified length of characters. Call GetStringWidth() to retrieve the
   // actual number.

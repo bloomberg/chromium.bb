@@ -20,15 +20,15 @@ gfx::Font AdjustFontSizeForHeight(const gfx::Font& base_font,
   Font expected_font = base_font;
   if (base_font.GetHeight() < target_height) {
     // Increase size while height is <= |target_height|.
-    Font larger_font = base_font.DeriveFont(1, 0);
+    Font larger_font = base_font.Derive(1, 0);
     while (larger_font.GetHeight() <= target_height) {
       expected_font = larger_font;
-      larger_font = larger_font.DeriveFont(1, 0);
+      larger_font = larger_font.Derive(1, 0);
     }
   } else if (expected_font.GetHeight() > target_height) {
     // Decrease size until height is <= |target_height|.
     do {
-      expected_font = expected_font.DeriveFont(-1, 0);
+      expected_font = expected_font.Derive(-1, 0);
     } while (expected_font.GetHeight() > target_height);
   }
   return expected_font;
@@ -60,7 +60,7 @@ TEST(PlatformFontWinTest, DeriveFontWithHeight) {
     EXPECT_EQ(Font::BOLD, derived_font.GetStyle());
 
     // Test that deriving from the new font has the expected result.
-    Font rederived_font = derived_font.DeriveFont(1, 0);
+    Font rederived_font = derived_font.Derive(1, 0);
     expected_font = Font(derived_font.GetFontName(),
                          derived_font.GetFontSize() + 1);
     EXPECT_EQ(expected_font.GetFontName(), rederived_font.GetFontName());

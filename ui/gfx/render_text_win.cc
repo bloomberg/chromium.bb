@@ -118,7 +118,7 @@ void DeriveFontIfNecessary(int font_size,
   const int current_style = (font->GetStyle() & kStyleMask);
   const int current_size = font->GetFontSize();
   if (current_style != target_style || current_size != font_size)
-    *font = font->DeriveFont(font_size - current_size, target_style);
+    *font = font->Derive(font_size - current_size, target_style);
 }
 
 // Returns true if |c| is a Unicode BiDi control character.

@@ -19,8 +19,10 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/pango_util.h"
+#include "ui/gfx/text_utils.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
@@ -186,16 +188,6 @@ int PlatformFontPango::GetBaseline() const {
 
 int PlatformFontPango::GetCapHeight() const {
   return cap_height_pixels_;
-}
-
-int PlatformFontPango::GetAverageCharacterWidth() const {
-  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
-  return SkScalarRoundToInt(average_width_pixels_);
-}
-
-int PlatformFontPango::GetStringWidth(const base::string16& text) const {
-  return Canvas::GetStringWidth(text,
-                                Font(const_cast<PlatformFontPango*>(this)));
 }
 
 int PlatformFontPango::GetExpectedTextWidth(int length) const {
@@ -392,8 +384,10 @@ void PlatformFontPango::InitPangoMetrics() {
 
     // Yes, this is how Microsoft recommends calculating the dialog unit
     // conversions.
-    const int text_width_pixels = GetStringWidth(base::ASCIIToUTF16(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+    const int text_width_pixels = GetStringWidth(
+        base::ASCIIToUTF16(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
+        FontList(Font(this)));
     const double dialog_units_pixels = (text_width_pixels / 26 + 1) / 2;
     average_width_pixels_ = std::min(pango_width_pixels, dialog_units_pixels);
   }

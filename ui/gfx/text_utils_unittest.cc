@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/font_list.h"
 
 namespace gfx {
 namespace {
@@ -57,6 +58,17 @@ TEST(TextUtilsTest, RemoveAcceleratorChar) {
     EXPECT_EQ(accelerated_char_pos, cases[i].accelerated_char_pos);
     EXPECT_EQ(accelerated_char_span, cases[i].accelerated_char_span);
   }
+}
+
+TEST(TextUtilsTest, GetStringWidth) {
+  FontList font_list;
+  EXPECT_EQ(GetStringWidth(base::string16(), font_list), 0);
+  EXPECT_GT(GetStringWidth(base::ASCIIToUTF16("a"), font_list),
+            GetStringWidth(base::string16(), font_list));
+  EXPECT_GT(GetStringWidth(base::ASCIIToUTF16("ab"), font_list),
+            GetStringWidth(base::ASCIIToUTF16("a"), font_list));
+  EXPECT_GT(GetStringWidth(base::ASCIIToUTF16("abc"), font_list),
+            GetStringWidth(base::ASCIIToUTF16("ab"), font_list));
 }
 
 }  // namespace

@@ -42,7 +42,7 @@ class GFX_EXPORT Font {
 
   // Creates a font that is a clone of another font object.
   Font(const Font& other);
-  gfx::Font& operator=(const Font& other);
+  Font& operator=(const Font& other);
 
   // Creates a font from the specified native font.
   explicit Font(NativeFont native_font);
@@ -57,16 +57,11 @@ class GFX_EXPORT Font {
   ~Font();
 
   // Returns a new Font derived from the existing font.
-  // |size_deta| is the size in pixels to add to the current font. For example,
+  // |size_delta| is the size in pixels to add to the current font. For example,
   // a value of 5 results in a font 5 pixels bigger than this font.
-  Font DeriveFont(int size_delta) const;
-
-  // Returns a new Font derived from the existing font.
-  // |size_delta| is the size in pixels to add to the current font. See the
-  // single argument version of this method for an example.
   // The style parameter specifies the new style for the font, and is a
   // bitmask of the values: BOLD, ITALIC and UNDERLINE.
-  Font DeriveFont(int size_delta, int style) const;
+  Font Derive(int size_delta, int style) const;
 
   // Returns the number of vertical pixels needed to display characters from
   // the specified font.  This may include some leading, i.e. height may be
@@ -81,15 +76,8 @@ class GFX_EXPORT Font {
   // Returns the cap height of the font.
   int GetCapHeight() const;
 
-  // Returns the average character width for the font.
-  int GetAverageCharacterWidth() const;
-
-  // Returns the number of horizontal pixels needed to display the specified
-  // string.
-  int GetStringWidth(const base::string16& text) const;
-
   // Returns the expected number of horizontal pixels needed to display the
-  // specified length of characters. Call GetStringWidth() to retrieve the
+  // specified length of characters. Call gfx::GetStringWidth() to retrieve the
   // actual number.
   int GetExpectedTextWidth(int length) const;
 

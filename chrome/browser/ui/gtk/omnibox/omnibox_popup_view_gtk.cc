@@ -32,12 +32,11 @@
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
@@ -84,7 +83,7 @@ const float kContentWidthPercentage = 0.7;
 const int kVerticalOffset = 3;
 
 // The size delta between the font used for the edit and the result rows. Passed
-// to gfx::Font::DeriveFont.
+// to gfx::Font::Derive.
 const int kEditFontAdjust = -1;
 
 // UTF-8 Left-to-right embedding.
@@ -169,7 +168,7 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
       theme_service_(NULL),
-      font_(font.DeriveFont(kEditFontAdjust)),
+      font_(font.Derive(kEditFontAdjust, font.GetStyle())),
       ignore_mouse_drag_(false),
       opened_(false) {
   // edit_model may be NULL in unit tests.

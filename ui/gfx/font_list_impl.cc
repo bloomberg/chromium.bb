@@ -125,7 +125,7 @@ FontListImpl* FontListImpl::Derive(int size_delta, int font_style) const {
   if (!fonts_.empty()) {
     std::vector<Font> fonts = fonts_;
     for (size_t i = 0; i < fonts.size(); ++i)
-      fonts[i] = fonts[i].DeriveFont(size_delta, font_style);
+      fonts[i] = fonts[i].Derive(size_delta, font_style);
     return new FontListImpl(fonts);
   }
 
@@ -209,7 +209,7 @@ const std::vector<Font>& FontListImpl::GetFonts() const {
       if (font_style_ == Font::NORMAL)
         fonts_.push_back(font);
       else
-        fonts_.push_back(font.DeriveFont(0, font_style_));
+        fonts_.push_back(font.Derive(0, font_style_));
     }
   }
   return fonts_;
