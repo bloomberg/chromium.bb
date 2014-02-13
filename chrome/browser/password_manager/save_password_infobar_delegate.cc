@@ -10,6 +10,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/common/profile_management_switches.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -30,11 +31,16 @@ void SavePasswordInfoBarDelegate::Create(
   GURL realm(form_to_save->realm());
   // TODO(mathp): Checking only against associated_username() causes a bug
   // referenced here: crbug.com/133275
+  // TODO(vabr): The check IsEnableWebBasedSignin is a hack for the time when
+  // OneClickSignin is disabled. http://crbug.com/339804
   if (((realm == GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
        (realm == GURL("https://www.google.com/"))) &&
+      switches::IsEnableWebBasedSignin() &&
       OneClickSigninHelper::CanOffer(
-          web_contents, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-          base::UTF16ToUTF8(form_to_save->associated_username()), NULL))
+          web_contents,
+          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+          base::UTF16ToUTF8(form_to_save->associated_username()),
+          NULL))
     return;
 #endif
 
