@@ -30,9 +30,7 @@ BaseShellDialogImpl::RunState BaseShellDialogImpl::BeginRun(HWND owner) {
   DCHECK(!IsRunningDialogForOwner(owner));
   // The owner must be a top level window, otherwise we could end up with two
   // entries in our map for the same top level window.
-  // TODO(scottmg): This should be re-enabled when Chrome Frame is removed.
-  // http://crbug.com/310264
-  // DCHECK(!owner || owner == GetAncestor(owner, GA_ROOT));
+  DCHECK(!owner || owner == GetAncestor(owner, GA_ROOT));
   RunState run_state;
   run_state.dialog_thread = CreateDialogThread();
   run_state.owner = owner;
