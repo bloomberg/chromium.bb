@@ -256,11 +256,11 @@ class IntegrationTest(unittest.TestCase):
 
   @DisableLogging('warning')
   def testFileNotFound(self):
-    response = Handler(Request.ForTest('/extensions/notfound')).Get()
+    response = LocalRenderer.Render('/extensions/notfound')
     self.assertEqual(404, response.status)
 
   def testSiteVerificationFile(self):
-    response = Handler(Request.ForTest('/' + SITE_VERIFICATION_FILE)).Get()
+    response = LocalRenderer.Render('/' + SITE_VERIFICATION_FILE)
     self.assertEqual(200, response.status)
 
 if __name__ == '__main__':

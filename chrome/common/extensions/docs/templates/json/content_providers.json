@@ -79,6 +79,7 @@
     "supportsTemplates": true
   },
   "devtools-docs": {
+    "defaultExtensions": [".html", ".md"],
     "gcs": {
       "bucket": "gs://chromedocs-devtools"
     },
@@ -86,6 +87,7 @@
     "supportsTemplates": true
   },
   "multidevice-docs": {
+    "defaultExtensions": [".html", ".md"],
     "gcs": {
       "bucket": "gs://chromedocs-multidevice"
     },
@@ -93,6 +95,7 @@
     "supportsTemplates": true
   },
   "webstore-docs": {
+    "defaultExtensions": [".html", ".md"],
     "gcs": {
       "bucket": "gs://chromedocs-webstore"
     },
