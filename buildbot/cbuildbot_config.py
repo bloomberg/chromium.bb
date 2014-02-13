@@ -1510,7 +1510,6 @@ internal_paladin.add_config('rambi-paladin',
 internal_paladin.add_config('samus-paladin',
   boards=['samus'],
   paladin_builder_name='samus paladin',
-  important=False,
 )
 
 internal_paladin.add_config('squawks-paladin',
@@ -1539,7 +1538,6 @@ internal_paladin.add_config('sonic-paladin',
 internal_paladin.add_config('monroe-paladin',
   boards=['monroe'],
   hw_tests=[],
-  important=False,
   paladin_builder_name='monroe paladin',
 )
 
