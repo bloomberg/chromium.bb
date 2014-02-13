@@ -2388,7 +2388,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// See crbug.com/131836.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // Show the task manager. This populates the model.
   chrome::OpenTaskManager(current_browser());
@@ -2533,9 +2532,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
   NavigateToDestURL();
 }
 
-// Flakily times out: http://crbug.com/171546
 // Checks that prerenderers will terminate when the RenderView crashes.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   scoped_ptr<TestPrerender> prerender =
       PrerenderTestURL("files/prerender/prerender_page.html",
                        FINAL_STATUS_RENDERER_CRASHED,
