@@ -174,9 +174,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
         RenderLayer* oldSquashedLayer = m_squashedLayers[i].renderLayer;
         if (oldSquashedLayer->groupedMapping() == this) {
             oldSquashedLayer->setGroupedMapping(0);
-            // At this point we do not yet know which backing the layer will be assigned to.
-            // So we just flag that the layer will need to invalidate when it is assigned.
-            oldSquashedLayer->setShouldInvalidateNextBacking(true);
+            oldSquashedLayer->setLostGroupedMapping(true);
         }
     }
 
@@ -1381,7 +1379,6 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
 
             m_squashingLayer = createGraphicsLayer(CompositingReasonOverlap);
             m_squashingLayer->setDrawsContent(true);
-            m_squashingLayer->setNeedsDisplay();
 
             // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
             m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonOverlap);
@@ -2044,7 +2041,7 @@ void CompositedLayerMapping::setCompositedBounds(const LayoutRect& bounds)
     m_compositedBounds = bounds;
 }
 
-void CompositedLayerMapping::addRenderLayerToSquashingGraphicsLayer(RenderLayer* layer, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex)
+bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* layer, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex)
 {
     ASSERT(compositor()->layerSquashingEnabled());
 
@@ -2058,18 +2055,18 @@ void CompositedLayerMapping::addRenderLayerToSquashingGraphicsLayer(RenderLayer*
 
     // Change tracking on squashing layers: at the first sign of something changed, just invalidate the layer.
     // FIXME: Perhaps we can find a tighter more clever mechanism later.
+    bool updatedAssignment = false;
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
-        if (m_squashedLayers[nextSquashedLayerIndex].renderLayer != layer) {
-            if (m_squashingLayer)
-                m_squashingLayer->setNeedsDisplay();
+        if (!paintInfo.isEquivalentForSquashing(m_squashedLayers[nextSquashedLayerIndex])) {
+            updatedAssignment = true;
         }
         m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
     } else {
         m_squashedLayers.append(paintInfo);
-        if (m_squashingLayer)
-            m_squashingLayer->setNeedsDisplay();
+        updatedAssignment = true;
     }
     layer->setGroupedMapping(this);
+    return updatedAssignment;
 }
 
 void CompositedLayerMapping::removeRenderLayerFromSquashingGraphicsLayer(const RenderLayer* layer)
@@ -2087,9 +2084,6 @@ void CompositedLayerMapping::removeRenderLayerFromSquashingGraphicsLayer(const R
         return;
 
     m_squashedLayers.remove(layerIndex);
-
-    if (m_squashingLayer)
-        m_squashingLayer->setNeedsDisplay();
 }
 
 void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex)
@@ -2097,11 +2091,8 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquash
     ASSERT(compositor()->layerSquashingEnabled());
 
     // Any additional squashed RenderLayers in the array no longer exist, and removing invalidates the squashingLayer contents.
-    if (nextSquashedLayerIndex < m_squashedLayers.size()) {
+    if (nextSquashedLayerIndex < m_squashedLayers.size())
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);
-        if (m_squashingLayer)
-            m_squashingLayer->setNeedsDisplay();
-    }
 }
 
 CompositingLayerType CompositedLayerMapping::compositingLayerType() const

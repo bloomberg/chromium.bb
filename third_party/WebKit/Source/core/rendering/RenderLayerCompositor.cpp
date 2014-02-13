@@ -568,6 +568,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
         // Need to create a test where a squashed layer pops into compositing. And also to cover all other
         // sorts of compositingState transitions.
+        layer->setLostGroupedMapping(false);
         layer->setGroupedMapping(0);
 
         // FIXME: it seems premature to compute this before all compositing state has been updated?
@@ -578,8 +579,8 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
         break;
     case RemoveOwnCompositedLayerMapping:
-    // AddToSquashingLayer means you might have to remove the composited layer mapping first.
-    case AddToSquashingLayer:
+    // PutInSquashingLayer means you might have to remove the composited layer mapping first.
+    case PutInSquashingLayer:
         if (layer->hasCompositedLayerMapping()) {
             // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
             // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
@@ -634,6 +635,69 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
+static IntPoint computeOffsetFromAbsolute(RenderLayer* layer)
+{
+    TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
+    layer->renderer()->mapLocalToContainer(0, transformState, ApplyContainerFlip);
+    transformState.flatten();
+    return roundedIntPoint(transformState.lastPlanarPoint());
+}
+
+bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState)
+{
+    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
+
+    // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
+    // the squashed RenderLayer's own primary contents. This would happen when we have a composited negative z-index element that needs
+    // to paint on top of the background, but below the layer's main contents. For now, because we always composite layers
+    // when they have a composited negative z-index child, such layers will never need squashing so it is not yet an issue.
+    if (compositedLayerUpdate == PutInSquashingLayer) {
+        // A layer that is squashed with other layers cannot have its own CompositedLayerMapping.
+        ASSERT(!layer->hasCompositedLayerMapping());
+        ASSERT(squashingState.hasMostRecentMapping);
+
+        IntPoint offsetFromAbsoluteForSquashedLayer = computeOffsetFromAbsolute(layer);
+
+        IntSize offsetFromSquashingCLM(offsetFromAbsoluteForSquashedLayer.x() - squashingState.offsetFromAbsoluteForSquashingCLM.x(),
+            offsetFromAbsoluteForSquashedLayer.y() - squashingState.offsetFromAbsoluteForSquashingCLM.y());
+
+        bool changedSquashingLayer =
+            squashingState.mostRecentMapping->updateSquashingLayerAssignment(layer, offsetFromSquashingCLM, squashingState.nextSquashedLayerIndex);
+        squashingState.nextSquashedLayerIndex++;
+
+        if (!changedSquashingLayer)
+            return true;
+
+        layer->clipper().clearClipRectsIncludingDescendants();
+
+        // If we need to repaint, do so before allocating the layer to the squashing layer.
+        repaintOnCompositingChange(layer);
+
+        // FIXME: it seems premature to compute this before all compositing state has been updated?
+        // This layer and all of its descendants have cached repaints rects that are relative to
+        // the repaint container, so change when compositing changes; we need to update them here.
+
+        // FIXME: what's up with parent()?
+        if (layer->parent())
+            layer->repainter().computeRepaintRectsIncludingDescendants();
+
+        return true;
+    } else if (compositedLayerUpdate == RemoveFromSquashingLayer) {
+        layer->setGroupedMapping(0);
+
+        // This layer and all of its descendants have cached repaints rects that are relative to
+        // the repaint container, so change when compositing changes; we need to update them here.
+        layer->repainter().computeRepaintRectsIncludingDescendants();
+
+        // If we need to repaint, do so now that we've removed it from a squashed layer
+        repaintOnCompositingChange(layer);
+
+        layer->setLostGroupedMapping(false);
+        return true;
+    }
+    return false;
+}
+
 bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 {
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
@@ -663,8 +727,8 @@ RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::com
             if (requiresSquashing(layer->compositingReasons())) {
                 // We can't compute at this time whether the squashing layer update is a no-op,
                 // since that requires walking the render layer tree.
-                update = AddToSquashingLayer;
-            } else if (layer->groupedMapping()) {
+                update = PutInSquashingLayer;
+            } else if (layer->groupedMapping() || layer->lostGroupedMapping()) {
                 update = RemoveFromSquashingLayer;
             }
         }
@@ -1116,14 +1180,6 @@ void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(Co
     offsetFromAbsoluteForSquashingCLM = newOffsetFromAbsoluteForSquashingCLM;
 }
 
-static IntPoint computeOffsetFromAbsolute(RenderLayer* layer)
-{
-    TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
-    layer->renderer()->mapLocalToContainer(0, transformState, ApplyContainerFlip);
-    transformState.flatten();
-    return roundedIntPoint(transformState.lastPlanarPoint());
-}
-
 void RenderLayerCompositor::assignLayersToBackings(RenderLayer* updateRoot, bool& layersChanged)
 {
     SquashingState squashingState;
@@ -1154,53 +1210,8 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
 
     // Add this layer to a squashing backing if needed.
     if (layerSquashingEnabled()) {
-        // FIXME: refactor to use computeLayerCompositingState().
-
-        // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
-        // the squashed RenderLayer's own primary contents. This would happen when we have a composited negative z-index element that needs
-        // to paint on top of the background, but below the layer's main contents. For now, because we always composite layers
-        // when they have a composited negative z-index child, such layers will never need squashing so it is not yet an issue.
-        if (requiresSquashing(layer->compositingReasons())) {
-            // A layer that is squashed with other layers cannot have its own CompositedLayerMapping.
-            ASSERT(!layer->hasCompositedLayerMapping());
-            ASSERT(squashingState.hasMostRecentMapping);
-
-            IntPoint offsetFromAbsoluteForSquashedLayer = computeOffsetFromAbsolute(layer);
-
-            IntSize offsetFromSquashingCLM(offsetFromAbsoluteForSquashedLayer.x() - squashingState.offsetFromAbsoluteForSquashingCLM.x(),
-                offsetFromAbsoluteForSquashedLayer.y() - squashingState.offsetFromAbsoluteForSquashingCLM.y());
-
-            squashingState.mostRecentMapping->addRenderLayerToSquashingGraphicsLayer(layer, offsetFromSquashingCLM, squashingState.nextSquashedLayerIndex);
-            squashingState.nextSquashedLayerIndex++;
-
-            // FIXME: this can be false sometimes depending on what happens in addRenderLayerToSquashingGraphicsLayer, which should return a bool.
+        if (updateSquashingAssignment(layer, squashingState))
             layersChanged = true;
-
-            // FIXME: this should be conditioned on whether this layer actually changed status
-            layer->clipper().clearClipRectsIncludingDescendants();
-        } else {
-            if (layer->compositingState() == PaintsIntoGroupedBacking) {
-                // This scenario is a layer transitioning from squashed to not-squashed.
-                ASSERT(layer->groupedMapping());
-                layer->setGroupedMapping(0);
-                layer->setShouldInvalidateNextBacking(true);
-            }
-        }
-    }
-
-    // At this point, the layer's compositingState() is correct and indicates where this layer would paint into. Issue
-    // an invalidation if we needed to.
-    if (layer->shouldInvalidateNextBacking()) {
-        // FIXME: these should invalidate only the rect that needs to be invalidated, i.e. the layer's rect in the squashingLayer's space.
-        if (layer->compositingState() == PaintsIntoGroupedBacking && squashingState.mostRecentMapping->squashingLayer()) {
-            squashingState.mostRecentMapping->squashingLayer()->setNeedsDisplay();
-        } else {
-            RenderLayer* enclosingLayer = layer->enclosingCompositingLayerForRepaint(ExcludeSelf);
-            if (enclosingLayer->hasCompositedLayerMapping())
-                enclosingLayer->compositedLayerMapping()->setContentsNeedDisplay();
-        }
-
-        layer->setShouldInvalidateNextBacking(false);
     }
 
     if (layer->stackingNode()->isStackingContainer()) {

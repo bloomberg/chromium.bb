@@ -202,8 +202,28 @@ private:
         NoCompositingStateChange,
         AllocateOwnCompositedLayerMapping,
         RemoveOwnCompositedLayerMapping,
-        AddToSquashingLayer,
+        PutInSquashingLayer,
         RemoveFromSquashingLayer
+    };
+
+    struct SquashingState {
+        SquashingState()
+            : mostRecentMapping(0)
+            , hasMostRecentMapping(false)
+            , nextSquashedLayerIndex(0) { }
+
+        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM);
+
+        // The most recent composited backing that the layer should squash onto if needed.
+        CompositedLayerMappingPtr mostRecentMapping;
+        bool hasMostRecentMapping;
+
+        // Absolute coordinates of the compositedLayerMapping's owning layer. This is used for computing the correct
+        // positions of renderlayers when they paint into the squashing layer.
+        IntPoint offsetFromAbsoluteForSquashingCLM;
+
+        // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
+        size_t nextSquashedLayerIndex;
     };
 
     CompositingStateTransitionType computeCompositedLayerUpdate(const RenderLayer*);
@@ -232,6 +252,7 @@ private:
 
     // Make or destroy the CompositedLayerMapping for this layer; returns true if the compositedLayerMapping changed.
     bool allocateOrClearCompositedLayerMapping(RenderLayer*);
+    bool updateSquashingAssignment(RenderLayer*, SquashingState&);
 
     void clearMappingForRenderLayerIncludingDescendants(RenderLayer*);
 
@@ -240,26 +261,6 @@ private:
 
     void addToOverlapMap(OverlapMap&, RenderLayer*, IntRect& layerBounds, bool& boundsComputed);
     void addToOverlapMapRecursive(OverlapMap&, RenderLayer*, RenderLayer* ancestorLayer = 0);
-
-    struct SquashingState {
-        SquashingState()
-            : mostRecentMapping(0)
-            , hasMostRecentMapping(false)
-            , nextSquashedLayerIndex(0) { }
-
-        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM);
-
-        // The most recent composited backing that the layer should squash onto if needed.
-        CompositedLayerMappingPtr mostRecentMapping;
-        bool hasMostRecentMapping;
-
-        // Absolute coordinates of the compositedLayerMapping's owning layer. This is used for computing the correct
-        // positions of renderlayers when they paint into the squashing layer.
-        IntPoint offsetFromAbsoluteForSquashingCLM;
-
-        // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
-        size_t nextSquashedLayerIndex;
-    };
 
     // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
     // finish all deferred work.

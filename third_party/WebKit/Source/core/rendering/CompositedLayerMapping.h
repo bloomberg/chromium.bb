@@ -63,6 +63,16 @@ struct GraphicsLayerPaintInfo {
     GraphicsLayerPaintingPhase paintingPhase;
 
     bool isBackgroundLayer;
+
+    bool isEquivalentForSquashing(const GraphicsLayerPaintInfo& other)
+    {
+        // FIXME: offsetFromRenderer and compositedBounds should not be checked here, because
+        // they are not yet fixed at the time this function is used.
+        return renderLayer == other.renderLayer
+            && offsetFromSquashingCLM == other.offsetFromSquashingCLM
+            && paintingPhase == other.paintingPhase
+            && isBackgroundLayer == other.isBackgroundLayer;
+    }
 };
 
 // CompositedLayerMapping keeps track of how RenderLayers of the render tree correspond to
@@ -159,8 +169,10 @@ public:
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
 
-    void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
+    // Returns true if the assignment actually changed the assigned squashing layer.
+    bool updateSquashingLayerAssignment(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
     void removeRenderLayerFromSquashingGraphicsLayer(const RenderLayer*);
+
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
     void updateRenderingContext();
     void updateShouldFlattenTransform();
