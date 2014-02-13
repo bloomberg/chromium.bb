@@ -381,9 +381,6 @@ ActiveAnimations* Element::ensureActiveAnimations()
 
 bool Element::hasActiveAnimations() const
 {
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return false;
-
     if (!hasRareData())
         return false;
 
@@ -1432,7 +1429,7 @@ void Element::attach(const AttachContext& context)
                 document().updateFocusAppearanceSoon(false /* don't restore selection */);
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !renderer()) {
+        if (!renderer()) {
             if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
                 activeAnimations->cssAnimations().cancel();
                 activeAnimations->setAnimationStyleChange(false);
@@ -1467,18 +1464,16 @@ void Element::detach(const AttachContext& context)
             data->resetDynamicRestyleObservations();
         }
 
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-            if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
-                if (context.performingReattach) {
-                    // FIXME: We call detach from withing style recalc, so compositingState is not up to date.
-                    DisableCompositingQueryAsserts disabler;
+        if (ActiveAnimations* activeAnimations = data->activeAnimations()) {
+            if (context.performingReattach) {
+                // FIXME: We call detach from withing style recalc, so compositingState is not up to date.
+                DisableCompositingQueryAsserts disabler;
 
-                    // FIXME: restart compositor animations rather than pull back to the main thread
-                    activeAnimations->cancelAnimationOnCompositor();
-                } else {
-                    activeAnimations->cssAnimations().cancel();
-                    activeAnimations->setAnimationStyleChange(false);
-                }
+                // FIXME: restart compositor animations rather than pull back to the main thread
+                activeAnimations->cancelAnimationOnCompositor();
+            } else {
+                activeAnimations->cssAnimations().cancel();
+                activeAnimations->setAnimationStyleChange(false);
             }
         }
 

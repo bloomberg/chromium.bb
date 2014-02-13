@@ -3749,7 +3749,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderSty
     if (!hasOrHadFilters(oldStyle, newStyle))
         return false;
 
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter)) {
+    if (hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter)) {
 
         // When the compositor is performing the filter animation, we shouldn't touch the compositing layers.
         // All of the layers above us should have been promoted to compositing layers already.
@@ -3795,7 +3795,7 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterClients();
     // During an accelerated animation, both WebKit and the compositor animate properties.
     // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
-    if (hasCompositedLayerMapping() && !(RuntimeEnabledFeatures::webAnimationsCSSEnabled() && hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter)))
+    if (hasCompositedLayerMapping() && !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitFilter))
         compositedLayerMapping()->updateFilters(renderer()->style());
     updateOrRemoveFilterEffectRenderer();
 }

@@ -71,18 +71,12 @@ void dispatchAnimationEventsAsync(Document& document)
 
 void DocumentAnimations::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
     updateAnimationTiming(document, monotonicAnimationStartTime);
     dispatchAnimationEvents(document);
 }
 
 void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID property)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
     if (node.isElementNode()) {
         const Element& element = toElement(node);
         if (const ActiveAnimations* activeAnimations = element.activeAnimations()) {
@@ -95,9 +89,6 @@ void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID
 
 void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
     if (document.cssPendingAnimations().startPendingAnimations() && document.view())
         document.view()->scheduleAnimation();
 

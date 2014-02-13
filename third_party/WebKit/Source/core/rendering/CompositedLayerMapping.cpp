@@ -618,11 +618,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform))
+    if (!hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform))
         updateTransform(renderer()->style());
 
     // Set opacity, if it is not animating.
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity))
+    if (!hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
     bool isSimpleContainer = isSimpleContainerCompositingLayer();
@@ -2031,8 +2031,7 @@ void CompositedLayerMapping::verifyNotPainting()
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime)
 {
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
+    renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
 }
 
 LayoutRect CompositedLayerMapping::compositedBounds() const

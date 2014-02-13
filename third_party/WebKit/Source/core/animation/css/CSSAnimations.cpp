@@ -96,7 +96,6 @@ static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeEffectMod
 static void resolveKeyframes(StyleResolver* resolver, Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
     Vector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     // When the element is null, use its parent for scoping purposes.
     const Element* elementForScoping = element ? element : &parentElement;
     const StyleRuleKeyframes* keyframesRule = CSSAnimations::matchScopedKeyframesRule(resolver, elementForScoping, name.impl());
@@ -348,7 +347,6 @@ const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver*
 
 PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
     calculateAnimationCompositableValues(update.get(), element);

@@ -92,7 +92,7 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 {
     // If any changes to CSS Animations were detected, stash the update away for application after the
     // render object is updated if we're in the appropriate scope.
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && state.animationUpdate())
+    if (state.animationUpdate())
         element.ensureActiveAnimations()->cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
 }
 
@@ -797,72 +797,10 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     return state.takeStyle();
 }
 
-void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& elementStyle, KeyframeList& list)
-{
-    ASSERT(!RuntimeEnabledFeatures::webAnimationsCSSEnabled());
-    list.clear();
-
-    // Get the keyframesRule for this name
-    if (!e || list.animationName().isEmpty())
-        return;
-
-    ASSERT(!hasPendingAuthorStyleSheets());
-    const StyleRuleKeyframes* keyframesRule = CSSAnimations::matchScopedKeyframesRule(this, e, list.animationName().impl());
-    if (!keyframesRule)
-        return;
-
-    // Construct and populate the style for each keyframe
-    const AtomicString& name = list.animationName();
-    const Vector<RefPtr<StyleKeyframe> >& keyframes = keyframesRule->keyframes();
-    for (unsigned i = 0; i < keyframes.size(); ++i) {
-        // Apply the declaration to the style. This is a simplified version of the logic in styleForElement
-        const StyleKeyframe* keyframe = keyframes[i].get();
-
-        KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, keyframe, name));
-        keyframeValue.addProperties(keyframe->properties());
-
-        // Add this keyframe style to all the indicated key times
-        const Vector<double>& keys = keyframe->keys();
-        for (size_t keyIndex = 0; keyIndex < keys.size(); ++keyIndex) {
-            keyframeValue.setKey(keys[keyIndex]);
-            list.insert(keyframeValue);
-        }
-    }
-
-    // If the 0% keyframe is missing, create it (but only if there is at least one other keyframe)
-    int initialListSize = list.size();
-    if (initialListSize > 0 && list[0].key()) {
-        static StyleKeyframe* zeroPercentKeyframe;
-        if (!zeroPercentKeyframe) {
-            zeroPercentKeyframe = StyleKeyframe::create().leakRef();
-            zeroPercentKeyframe->setKeyText("0%");
-        }
-        KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, zeroPercentKeyframe, name));
-        keyframeValue.addProperties(zeroPercentKeyframe->properties());
-        list.insert(keyframeValue);
-    }
-
-    // If the 100% keyframe is missing, create it (but only if there is at least one other keyframe)
-    if (initialListSize > 0 && (list[list.size() - 1].key() != 1)) {
-        static StyleKeyframe* hundredPercentKeyframe;
-        if (!hundredPercentKeyframe) {
-            hundredPercentKeyframe = StyleKeyframe::create().leakRef();
-            hundredPercentKeyframe->setKeyText("100%");
-        }
-        KeyframeValue keyframeValue(1, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, 0, hundredPercentKeyframe, name));
-        keyframeValue.addProperties(hundredPercentKeyframe->properties());
-        list.insert(keyframeValue);
-    }
-}
-
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
 PassRefPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const Vector<RefPtr<MutableStylePropertySet> >& propertySetVector, KeyframeEffectModel::KeyframeVector& keyframes)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     ASSERT(propertySetVector.size() == keyframes.size());
 
     StyleResolverState state(element.document(), &element);
@@ -1133,9 +1071,6 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
     const Element* element = state.element();
     ASSERT(element);
 
@@ -1171,7 +1106,6 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const AnimationEffect::CompositableValueMap& compositableValues)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(pass != AnimationProperties);
 
     for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues.begin(); iter != compositableValues.end(); ++iter) {

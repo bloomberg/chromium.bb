@@ -240,7 +240,8 @@ void WebRuntimeFeatures::enableTouchIconLoading(bool enable)
 
 void WebRuntimeFeatures::enableWebAnimationsCSS(bool enable)
 {
-    RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(enable);
+    // FIXME: Remove this method once the runtime flags are removed from Chromium.
+    ASSERT(enable);
 }
 
 void WebRuntimeFeatures::enableWebAnimationsSVG(bool enable)

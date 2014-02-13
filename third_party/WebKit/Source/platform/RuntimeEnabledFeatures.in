@@ -122,9 +122,8 @@ TouchIconLoading
 UserSelectAll status=experimental
 Vibration status=stable
 VideoTrack depends_on=Media, status=stable
-WebAnimationsCSS status=stable
-WebAnimationsSVG depends_on=WebAnimationsCSS
-WebAnimationsAPI depends_on=WebAnimationsCSS, status=experimental
+WebAnimationsSVG
+WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test

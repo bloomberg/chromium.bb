@@ -473,9 +473,7 @@ unsigned Internals::numberOfActiveAnimations() const
 {
     Frame* contextFrame = frame();
     Document* document = contextFrame->document();
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
-    return 0;
+    return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
 }
 
 void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState)
@@ -485,13 +483,11 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
         return;
     }
 
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        // FIXME: pauseAnimationsForTesting queries compositingState, which is not necessarily up to date.
-        DisableCompositingQueryAsserts disabler;
+    // FIXME: pauseAnimationsForTesting queries compositingState, which is not necessarily up to date.
+    DisableCompositingQueryAsserts disabler;
 
-        frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
-        frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
-    }
+    frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
+    frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& exceptionState) const
