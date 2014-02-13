@@ -125,7 +125,8 @@ def GetAverageRunInfo(json_data, name):
       if entry['ph'] == 'I':
         result['type'] = 'Instant'
         last_val = val
-  if result['count'] > 0: result['average'] = total_sum / result['count']
+  if result['count'] > 0:
+    result['average'] = total_sum / result['count']
 
   return result
 

@@ -6,9 +6,8 @@
 
 import os
 
+from pylib.instrumentation import test_jar
 from pylib.utils import apk_helper
-
-import test_jar
 
 
 class TestPackage(test_jar.TestJar):
