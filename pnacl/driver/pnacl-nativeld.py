@@ -25,6 +25,7 @@ EXTRA_ENV = {
 
   # the INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
+  'SPLIT_MODULE' : '0',
   'USE_STDLIB': '1',
 
   # Determine if we should build nexes compatible with the IRT.
@@ -129,6 +130,7 @@ LDPatterns = [
   # This is the file passed from llc during translation (used to be via shmem)
   ( ('--llc-translated-file=(.*)'), "env.append('INPUTS', $0)\n"
                                     "env.set('LLC_TRANSLATED_FILE', $0)"),
+  ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)"),
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
 
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
@@ -185,11 +187,22 @@ def RunLDSandboxed():
 
   outfile = env.getone('output')
 
+  modules = int(env.getone('SPLIT_MODULE'))
+  if modules > 1:
+    first_mainfile = all_inputs.index(main_input)
+    first_extra = all_inputs.index(main_input) + modules
+    # Just the split module files
+    llc_outputs = all_inputs[first_mainfile:first_extra]
+    # everything else
+    all_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
+  else:
+    llc_outputs = [main_input]
+
   files = LinkerFiles(all_inputs)
   ld_flags = env.get('LD_FLAGS')
 
   script = MakeSelUniversalScriptForLD(ld_flags,
-                                       main_input,
+                                       llc_outputs,
                                        files,
                                        outfile)
 
@@ -204,7 +217,7 @@ def RunLDSandboxed():
 
 
 def MakeSelUniversalScriptForLD(ld_flags,
-                                main_input,
+                                llc_outputs,
                                 files,
                                 outfile):
   """ Return sel_universal script text for invoking LD.nexe with the
@@ -229,13 +242,21 @@ def MakeSelUniversalScriptForLD(ld_flags,
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
-  if use_default:
+  modules = len(llc_outputs)
+  if modules > 1:
+    script.extend(['readonly_file objfile%d %s' % (i, f)
+                   for i, f in zip(range(modules), llc_outputs)])
+    script.append('rpc RunWithSplit i(%d) ' % modules +
+                  ' '.join(['h(objfile%s)' % m for m in range(modules)] +
+                           ['h(invalid)' for x in range(modules, 16)]) +
+                  ' h(nexefile) *')
+  elif use_default:
     # Assume static linking for now.
     soname = ''
     needed = ''
     is_shared_library = 0
 
-    script.append('readonly_file objfile %s' % main_input)
+    script.append('readonly_file objfile %s' % llc_outputs[0])
     script.append(('rpc RunWithDefaultCommandLine ' +
                    'h(objfile) h(nexefile) i(%d) s("%s") s("%s") *'
                    % (is_shared_library, soname, needed)))

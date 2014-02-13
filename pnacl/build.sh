@@ -2180,6 +2180,7 @@ binutils-gold-sb-make() {
 
 # binutils-gold-sb-install - Install gold
 binutils-gold-sb-install() {
+  local arch=$1
   local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
   local installbin="$(GetTranslatorInstallDir ${arch})/bin"
 

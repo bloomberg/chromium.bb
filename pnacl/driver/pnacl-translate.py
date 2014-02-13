@@ -275,16 +275,20 @@ def main(argv):
   elif int(env.getone('SPLIT_MODULE')) < 1:
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
-    env.getone('ARCH') == 'LINUX_X8632'):
+      env.getone('ARCH') == 'LINUX_X8632' or
+      RequiresNonStandardLDCommandline(inputs, output, 1)[1]):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
     # split it. For now also do not support threading non-SFI baremetal mode.
     # Non-ABI-stable pexes may have symbol naming and visibility issues that the
     # current splitting scheme doesn't account for.
+    # If the link would require a non-standard command line, do not split the
+    # modules because the sandboxed linker doesn't support that combination.
     env.set('SPLIT_MODULE', '1')
   else:
-    if env.getone('SPLIT_MODULE') != '1':
-      env.append('LLC_FLAGS_EXTRA', '-split-module=' +
-                 env.getone('SPLIT_MODULE'))
+    modules = env.getone('SPLIT_MODULE')
+    if modules != '1':
+      env.append('LLC_FLAGS_EXTRA', '-split-module=' + modules)
+      env.append('LD_FLAGS', '-split-module=' + modules)
     if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
       # Do not set -streaming-bitcode for sandboxed mode, because it is already
       # in the default command line.
@@ -346,11 +350,11 @@ def ListReplace(items, old, new):
       ret.append(k)
   return ret
 
-def RequiresNonStandardLDCommandline(inputs, infile):
+def RequiresNonStandardLDCommandline(inputs, infile, num_modules):
   ''' Determine when we must force USE_DEFAULT_CMD_LINE off for running
   the sandboxed LD (if link line is completely non-standard).
   '''
-  if len(inputs) > 1:
+  if len(inputs) != num_modules:
     # There must have been some native objects on the link line.
     # In that case, if we are using the sandboxed translator, we cannot
     # currently allow that with the default commandline (only one input).
@@ -370,7 +374,8 @@ def RequiresNonStandardLDCommandline(inputs, infile):
 
 def ToggleDefaultCommandlineLD(inputs, infile):
   if env.getbool('USE_DEFAULT_CMD_LINE'):
-    reason, non_standard = RequiresNonStandardLDCommandline(inputs, infile)
+    reason, non_standard = RequiresNonStandardLDCommandline(
+        inputs, infile, int(env.getone('SPLIT_MODULE')))
     if non_standard:
       Log.Info(reason + ' -- not using default SRPC commandline for LD!')
       inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
