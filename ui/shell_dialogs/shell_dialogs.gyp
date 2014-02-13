@@ -33,8 +33,6 @@
         'gtk/select_file_dialog_impl_kde.cc',
         'linux_shell_dialog.cc',
         'linux_shell_dialog.h',
-        'print_settings_dialog_win.cc',
-        'print_settings_dialog_win.h',
         'select_file_dialog.cc',
         'select_file_dialog.h',
         'select_file_dialog_android.cc',
