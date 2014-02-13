@@ -1619,10 +1619,15 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
         return;
     }
 
+    ShapeValue* shapeOutsideValue = style()->shapeOutside();
+    if (!frameView()->isInPerformLayout() && isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
+        ShapeOutsideInfo::ensureInfo(this)->dirtyShapeSize();
+        markShapeOutsideDependentsForLayout();
+    }
+
     bool didFullRepaint = repaintLayerRectsForImage(image, style()->backgroundLayers(), true);
     if (!didFullRepaint)
         repaintLayerRectsForImage(image, style()->maskLayers(), false);
-
 
     if (hasLayer() && layer()->hasCompositedMask() && layersUseImage(image, style()->maskLayers()))
         layer()->contentChanged(MaskImageChanged);
