@@ -192,14 +192,12 @@ For more information of cros build usage:
   def _IsPathWritable(self, device, path):
     """Returns True if |path| on |device| is writable."""
     tmp_file = os.path.join(path, 'tmp.cros_flash')
-    result = device.RunCommand(
-      ['echo', '"writable"', '>', tmp_file], error_code_ok=True)
+    result = device.RunCommand(['touch', tmp_file], error_code_ok=True)
 
     if result.returncode != 0:
       return False
 
-    device.RunCommand(
-        ['rm', tmp_file], error_code_ok=True)
+    device.RunCommand(['rm', tmp_file], error_code_ok=True)
 
     return True
 
