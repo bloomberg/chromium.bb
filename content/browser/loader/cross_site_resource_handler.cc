@@ -161,7 +161,10 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // navigation) will stick around until the next cross-site navigation, since
   // we are unable to tell when to destroy it.
   // See RenderFrameHostManager::RendererAbortedProvisionalLoad.
-  if (!swap_needed || info->IsDownload() ||
+  //
+  // TODO(davidben): Unify IsDownload() and is_stream(). Several places need to
+  // check for both and remembering about streams is error-prone.
+  if (!swap_needed || info->IsDownload() || info->is_stream() ||
       (response->head.headers.get() &&
        response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response, defer);

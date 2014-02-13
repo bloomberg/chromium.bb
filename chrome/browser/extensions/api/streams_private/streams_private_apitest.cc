@@ -22,6 +22,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -57,7 +58,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     return response.PassAs<HttpResponse>();
   }
 
-  // For relative path "/test_path_attch.txt", return success response with
+  // For relative path "/text_path_attch.txt", return success response with
   // MIME type "plain/text" and content "txt content". Also, set content
   // disposition to be attachment.
   if (request.relative_url == "/text_path_attch.txt") {
@@ -68,12 +69,27 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
                               "attachment; filename=test_path.txt");
     return response.PassAs<HttpResponse>();
   }
+
   // For relative path "/test_path_attch.txt", return success response with
   // MIME type "plain/text" and content "txt content".
   if (request.relative_url == "/text_path.txt") {
     response->set_code(net::HTTP_OK);
     response->set_content("txt content");
     response->set_content_type("plain/text");
+    return response.PassAs<HttpResponse>();
+  }
+
+  // A random HTML file to navigate to.
+  if (request.relative_url == "/index.html") {
+    response->set_code(net::HTTP_OK);
+    response->set_content("html content");
+    response->set_content_type("text/html");
+    return response.PassAs<HttpResponse>();
+  }
+
+  // Respond to /favicon.ico for navigating to the page.
+  if (request.relative_url == "/favicon.ico") {
+    response->set_code(net::HTTP_NOT_FOUND);
     return response.PassAs<HttpResponse>();
   }
 
@@ -228,6 +244,48 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
+// Tests that navigating cross-site to a resource with a MIME type handleable by
+// an installed, white-listed extension invokes the extension's
+// onExecuteContentHandler event (and does not start a download).
+// Regression test for http://crbug.com/342999.
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  ASSERT_TRUE(LoadTestExtension()) << message_;
+
+  ResultCatcher catcher;
+
+  // Navigate to a URL on a different hostname.
+  std::string initial_host = "www.example.com";
+  host_resolver()->AddRule(initial_host, "127.0.0.1");
+  GURL::Replacements replacements;
+  replacements.SetHostStr(initial_host);
+  GURL initial_url =
+      test_server_->GetURL("/index.html").ReplaceComponents(replacements);
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  // Now navigate to the doc file; the extension should pick it up normally.
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server_->GetURL("/doc_path.doc"));
+
+  // Wait for the response from the test server.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // There should be no downloads started by the navigation.
+  DownloadManager* download_manager = GetDownloadManager();
+  std::vector<DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  // The test extension should receive onExecuteContentHandler event with MIME
+  // type 'application/msword' (and call chrome.test.notifySuccess).
+  EXPECT_TRUE(catcher.GetNextResult());
+}
+
 // Tests that navigation to an attachment starts a download, even if there is an
 // extension with a file browser handler that can handle the attachment's MIME
 // type.
@@ -238,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateToAnAttachment) {
 
   ResultCatcher catcher;
 
-  // The test should start a downloadm.
+  // The test should start a download.
   DownloadManager* download_manager = GetDownloadManager();
   scoped_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverInProgress(download_manager, 1));
