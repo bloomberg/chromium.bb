@@ -1,23 +1,20 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
-#define WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#ifndef CONTENT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#define CONTENT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace ui {
 class FallbackTheme;
 }
 
-namespace webkit_glue {
+namespace content {
 
-class WEBKIT_CHILD_EXPORT WebFallbackThemeEngineImpl :
-    NON_EXPORTED_BASE(public blink::WebFallbackThemeEngine) {
+class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
  public:
   WebFallbackThemeEngineImpl();
   virtual ~WebFallbackThemeEngineImpl();
@@ -37,6 +34,6 @@ class WEBKIT_CHILD_EXPORT WebFallbackThemeEngineImpl :
   DISALLOW_COPY_AND_ASSIGN(WebFallbackThemeEngineImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#endif  // CONTENT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_

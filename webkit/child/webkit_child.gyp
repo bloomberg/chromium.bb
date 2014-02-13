@@ -68,8 +68,6 @@
         'resource_loader_bridge.h',
         'touch_fling_gesture_curve.cc',
         'touch_fling_gesture_curve.h',
-        'webfallbackthemeengine_impl.cc',
-        'webfallbackthemeengine_impl.h',
         'webkit_child_export.h',
         'webkit_child_helpers.cc',
         'webkit_child_helpers.h',

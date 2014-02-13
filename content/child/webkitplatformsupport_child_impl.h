@@ -6,8 +6,8 @@
 #define CONTENT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 
 #include "base/threading/thread_local_storage.h"
+#include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
-#include "webkit/child/webfallbackthemeengine_impl.h"
 #include "webkit/child/webkit_child_export.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
   static void DestroyCurrentThread(void*);
 
   WebThemeEngineImpl native_theme_engine_;
-  webkit_glue::WebFallbackThemeEngineImpl fallback_theme_engine_;
+  WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   scoped_ptr<webkit_glue::FlingCurveConfiguration> fling_curve_configuration_;
 };
