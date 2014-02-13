@@ -1766,11 +1766,11 @@ void Element::setAnimationStyleChange(bool animationStyleChange)
 
 void Element::setNeedsAnimationStyleRecalc()
 {
-    if (styleChangeType() != NoStyleChange)
-        return;
-
+    bool recalcPending = styleChangeType() != NoStyleChange;
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
-    setAnimationStyleChange(true);
+
+    if (!recalcPending)
+        setAnimationStyleChange(true);
 }
 
 PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
