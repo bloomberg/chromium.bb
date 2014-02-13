@@ -1721,12 +1721,33 @@ void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
 
 WebContents* ChromeLauncherController::GetLastActiveWebContents(
     const std::string& app_id) {
-  AppIDToWebContentsListMap::const_iterator i =
+  AppIDToWebContentsListMap::iterator i =
       app_id_to_web_contents_list_.find(app_id);
   if (i == app_id_to_web_contents_list_.end())
     return NULL;
-  DCHECK_GT(i->second.size(), 0u);
-  return *i->second.begin();
+
+  // There are many crash records (crbug.com/341250) which indicate that the
+  // app_id_to_web_contents_list_ contains deleted content entries - so there
+  // must be a way that the content does not get properly updated. To fix
+  // M33 and M34 we filter out the invalid items here, but this should be
+  // addressed by a later patch correctly. Looking at the code however, the
+  // real culprit is possibly BrowserStatusMonitor::UpdateAppItemState which
+  // does not call "UpdateAppState(.., APP_STATE_REMOVED)" because due to a
+  // Browser::SwapTabContent operation it isn't able to get the browser. I
+  // think that the real patch is to call anyway when APP_STATE_REMOVED is
+  // requested, but for a backport that seems risky.
+  WebContentsList* list = &i->second;
+  while (!list->empty()) {
+    WebContents* contents = *list->begin();
+    if (chrome::FindBrowserWithWebContents(contents))
+      return contents;
+    list->erase(list->begin());
+    // This might not be necessary, but since we do not know why the lists
+    // diverged we also erase it since it cannot be correct either.
+    web_contents_to_app_id_.erase(contents);
+  }
+  app_id_to_web_contents_list_.erase(app_id);
+  return NULL;
 }
 
 ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
