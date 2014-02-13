@@ -398,10 +398,10 @@ void StatusBubbleMac::Create() {
       [[StatusBubbleAnimationDelegate alloc] initWithStatusBubble:this];
   [animation_delegate autorelease];
   [animation setDelegate:animation_delegate];
-  base::scoped_nsobject<NSMutableDictionary> animation_dictionary(
-      [[window_ animations] mutableCopy]);
-  [animation_dictionary.get() setObject:animation forKey:kFadeAnimationKey];
-  [window_ setAnimations:animation_dictionary.get()];
+  NSMutableDictionary* animation_dictionary =
+      [NSMutableDictionary dictionaryWithDictionary:[window_ animations]];
+  [animation_dictionary setObject:animation forKey:kFadeAnimationKey];
+  [window_ setAnimations:animation_dictionary];
 
   [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved(gfx::Point(), false);
