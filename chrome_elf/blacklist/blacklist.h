@@ -61,6 +61,9 @@ bool ResetBeacon();
 // Return the size of the current blacklist.
 int BlacklistSize();
 
+// Returns if true if the blacklist has been initialized.
+extern "C" bool IsBlacklistInitialized();
+
 // Adds the given dll name to the blacklist. Returns true if the dll name is in
 // the blacklist when this returns, false on error. Note that this will copy
 // |dll_name| and will leak it on exit if the string is not subsequently removed

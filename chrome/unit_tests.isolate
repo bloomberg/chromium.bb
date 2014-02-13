@@ -108,7 +108,8 @@
     ['OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/chrome_elf.dll',
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',          
         ],
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',

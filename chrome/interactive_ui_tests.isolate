@@ -76,6 +76,7 @@
         'isolate_dependency_tracked': [
           '../net/data/ssl/certificates/foaf.me.chromium-test-cert.der',
           '../net/data/ssl/certificates/mit.davidben.der',
+          '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
