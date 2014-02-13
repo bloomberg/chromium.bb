@@ -712,6 +712,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ShadowRootApplyAuthorStyles:
         return "'ShadowRoot.applyAuthorStyles' is deprecated.";
 
+    case PrefixedSpeechAttribute:
+        return "The 'x-webkit-speech' input field attribute is deprecated. Please use the JavaScript API instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

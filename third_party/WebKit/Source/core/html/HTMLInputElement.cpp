@@ -734,7 +734,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_inputTypeView->createShadowSubtree();
             setFormControlValueMatchesRenderer(false);
         }
-        UseCounter::count(document(), UseCounter::PrefixedSpeechAttribute);
+        UseCounter::countDeprecation(document(), UseCounter::PrefixedSpeechAttribute);
     } else if (name == onwebkitspeechchangeAttr)
         setAttributeEventListener(EventTypeNames::webkitspeechchange, createAttributeEventListener(this, name, value));
 #endif
