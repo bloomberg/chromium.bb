@@ -10,17 +10,26 @@ jsTestIsAsync = true;
 var doc;
 var innerInput;
 window.onload = function() {
-    doc = window.frames['frame1'].document;
+    var iframe1 = document.getElementById('frame1');
+    var iframe2 = document.getElementById('frame2');
+    doc = iframe1.contentDocument;
     innerInput = doc.querySelector('input');
     innerInput.focus();
-    debug('===> Making a frame with a focused element inactive.');
-    window.frames['frame2'].focus();
-    // The following check is not important. activeElement is innerInput in IE,
-    // and is body in Firefox in this case.
+    debug('===> Making a frame with a focused element inactive by focus() for another frame.');
+    iframe2.contentWindow.focus();
+    // The following check is not important. activeElement is innerInput in Firefox,
+    // and is body in IE in this case.
     shouldBe('doc.activeElement', 'innerInput');
 
+    iframe1.contentWindow.focus();
+    innerInput.focus();
+    debug('===> Making a frame with a focused element inactive by mouse click for another frame.');
+    eventSender.mouseMoveTo(iframe2.offsetLeft + iframe2.offsetWidth / 2, iframe2.offsetTop + iframe2.offsetHeight / 2);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    shouldBe('doc.activeElement', 'doc.body');
+
     debug('===> Making the frame active again clicking by a non-focusable element.');
-    var iframe1 = document.getElementById('frame1');
     eventSender.mouseMoveTo(iframe1.offsetLeft + iframe1.offsetWidth / 2, iframe1.offsetTop + iframe1.offsetHeight / 2);
     eventSender.mouseDown();
     eventSender.mouseUp();

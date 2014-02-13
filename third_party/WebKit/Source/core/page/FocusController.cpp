@@ -644,7 +644,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     else if (newFocusedFrame)
         newDocument = newFocusedFrame->document();
 
-    if (newDocument && newDocument->focusedElement() == element)
+    if (newDocument && oldDocument == newDocument && newDocument->focusedElement() == element)
         return true;
 
     clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), element);
