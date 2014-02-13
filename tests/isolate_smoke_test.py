@@ -1097,6 +1097,23 @@ class IsolateOther(IsolateTempdir):
     self.assertEqual('Simply works.\n', stdout)
     self.assertEqual(0, proc.returncode)
 
+  def test_empty_and_renamed(self):
+    a_isolate = os.path.join(self.tempdir, 'a.isolate')
+    with open(a_isolate, 'wb') as f:
+      f.write('{}')
+
+    cmd = [
+        sys.executable, 'isolate.py', 'check',
+        '-s', os.path.join(self.tempdir, 'out.isolated'),
+    ]
+    subprocess.check_call(cmd + ['-i', a_isolate])
+
+    # Move the .isolate file aside and rerun the command with the new source but
+    # same destination.
+    b_isolate = os.path.join(self.tempdir, 'b.isolate')
+    os.rename(a_isolate, b_isolate)
+    subprocess.check_call(cmd + ['-i', b_isolate])
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

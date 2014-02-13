@@ -616,11 +616,17 @@ class SavedState(Flattenable):
       raise isolateserver.ConfigError(
           'Unsupported version \'%s\'' % out.version)
 
-    # The .isolate file must be valid. It could be absolute on Windows if the
-    # drive containing the .isolate and the drive containing the .isolated files
-    # differ.
-    assert not os.path.isabs(out.isolate_file) or sys.platform == 'win32'
-    assert os.path.isfile(out.isolate_filepath), out.isolate_filepath
+    # The .isolate file must be valid. If it is not present anymore, zap the
+    # value as if it was not noted, so .isolate_file can safely be overriden
+    # later.
+    if out.isolate_file and not os.path.isfile(out.isolate_filepath):
+      out.isolate_file = None
+    if out.isolate_file:
+      # It could be absolute on Windows if the drive containing the .isolate and
+      # the drive containing the .isolated files differ, .e.g .isolate is on
+      # C:\\ and .isolated is on D:\\   .
+      assert not os.path.isabs(out.isolate_file) or sys.platform == 'win32'
+      assert os.path.isfile(out.isolate_filepath), out.isolate_filepath
     return out
 
   def flatten(self):

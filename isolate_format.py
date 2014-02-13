@@ -786,13 +786,9 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   # variables.
   config = isolate.get_config(config_name)
   if not config:
-    # pylint: disable=W0212
-    raise isolateserver.ConfigError(
-        'Failed to load configuration for variable \'%s\' for config(s) \'%s\''
-        '\nAvailable configs: %s' %
-        (', '.join(isolate.config_variables),
-        ', '.join(config_name),
-        ', '.join(str(s) for s in isolate._by_config.keys())))
+    logging.debug('Loaded an empty .isolate file from %s', isolate_dir)
+    return [], [], [], None
+
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
   dependencies = [

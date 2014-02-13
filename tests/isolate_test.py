@@ -814,8 +814,7 @@ class IsolateCommand(IsolateBase):
 
     self.mock(sys, 'stdout', cStringIO.StringIO())
     cmd = ['-i', isolate_file, '-s', isolated_file]
-    with self.assertRaises(isolate.isolateserver.ConfigError):
-      isolate.CMDcheck(isolate.OptionParserIsolate(), cmd)
+    isolate.CMDcheck(isolate.OptionParserIsolate(), cmd)
 
   def test_CMDcheck_stale_version(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
