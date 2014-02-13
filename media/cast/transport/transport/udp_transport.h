@@ -12,7 +12,7 @@
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/udp/udp_socket.h"
 
 namespace net {
 class IOBuffer;
@@ -29,7 +29,8 @@ class UdpTransport : public PacketSender {
   // Construct a UDP transport.
   // All methods must be called on |io_thread_proxy|.
   // |local_end_point| specifies the address and port to bind and listen
-  // to incoming packets.
+  // to incoming packets. If the value is 0.0.0.0:0 then a bind is not
+  // performed.
   // |remote_end_point| specifies the address and port to send packets
   // to. If the value is 0.0.0.0:0 the the end point is set to the source
   // address of the first packet received.
@@ -54,7 +55,7 @@ class UdpTransport : public PacketSender {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
-  scoped_ptr<net::UDPServerSocket> udp_socket_;
+  scoped_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
   scoped_refptr<net::IOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;

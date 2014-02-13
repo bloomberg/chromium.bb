@@ -26,9 +26,8 @@
 namespace media {
 namespace cast {
 // Settings chosen to match default receiver settings.
-#define DEFAULT_SEND_PORT "2344"
-#define DEFAULT_RECEIVE_PORT "2346"
-#define DEFAULT_SEND_IP "127.0.0.1"
+#define DEFAULT_RECEIVER_PORT "2344"
+#define DEFAULT_RECEIVER_IP "127.0.0.1"
 #define DEFAULT_READ_FROM_FILE "0"
 #define DEFAULT_AUDIO_SENDER_SSRC "1"
 #define DEFAULT_AUDIO_RECEIVER_SSRC "2"
@@ -57,18 +56,14 @@ static const int kFrameTimerMs = 33;
 void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
 }  // namespace
 
-void GetPorts(int* tx_port, int* rx_port) {
-  test::InputBuilder tx_input(
-      "Enter send port.", DEFAULT_SEND_PORT, 1, INT_MAX);
-  *tx_port = tx_input.GetIntInput();
-
-  test::InputBuilder rx_input(
-      "Enter receive port.", DEFAULT_RECEIVE_PORT, 1, INT_MAX);
-  *rx_port = rx_input.GetIntInput();
+void GetPort(int* port) {
+  test::InputBuilder input(
+      "Enter receiver port.", DEFAULT_RECEIVER_PORT, 1, INT_MAX);
+  *port = input.GetIntInput();
 }
 
 std::string GetIpAddress(const std::string display_text) {
-  test::InputBuilder input(display_text, DEFAULT_SEND_IP, INT_MIN, INT_MAX);
+  test::InputBuilder input(display_text, DEFAULT_RECEIVER_IP, INT_MIN, INT_MAX);
   std::string ip_address = input.GetStringInput();
   // Verify correct form:
   while (std::count(ip_address.begin(), ip_address.end(), '.') != 3) {
@@ -327,12 +322,11 @@ int main(int argc, char** argv) {
   scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
   base::MessageLoopForIO io_message_loop;
 
-  int remote_port, local_port;
-  media::cast::GetPorts(&remote_port, &local_port);
+  int remote_port;
+  media::cast::GetPort(&remote_port);
 
   std::string remote_ip_address =
       media::cast::GetIpAddress("Enter receiver IP.");
-  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
 
   media::cast::AudioSenderConfig audio_config =
       media::cast::GetAudioSenderConfig();
@@ -342,7 +336,7 @@ int main(int argc, char** argv) {
   // Setting up transport config.
   media::cast::transport::CastTransportConfig config;
   config.receiver_endpoint = CreateUDPAddress(remote_ip_address, remote_port);
-  config.local_endpoint = CreateUDPAddress(local_ip_address, local_port);
+  config.local_endpoint = CreateUDPAddress("0.0.0.0", 0);
   config.audio_ssrc = audio_config.sender_ssrc;
   config.video_ssrc = video_config.sender_ssrc;
   config.audio_rtp_config = audio_config.rtp_config;

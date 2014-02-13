@@ -27,7 +27,8 @@ const int kMaxPacketSize = 1500;
 bool IsEmpty(const net::IPEndPoint& addr) {
   net::IPAddressNumber empty_addr(addr.address().size());
   return std::equal(
-      empty_addr.begin(), empty_addr.end(), addr.address().begin());
+             empty_addr.begin(), empty_addr.end(), addr.address().begin()) &&
+         !addr.port();
 }
 
 bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
@@ -45,11 +46,16 @@ UdpTransport::UdpTransport(
     : io_thread_proxy_(io_thread_proxy),
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
-      udp_socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
+      udp_socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
+                                     net::RandIntCallback(),
+                                     NULL,
+                                     net::NetLog::Source())),
       send_pending_(false),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
       status_callback_(status_callback),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
+}
 
 UdpTransport::~UdpTransport() {}
 
@@ -60,10 +66,20 @@ void UdpTransport::StartReceiving(
   packet_receiver_ = packet_receiver;
   udp_socket_->AllowAddressReuse();
   udp_socket_->SetMulticastLoopbackMode(true);
-  if (udp_socket_->Listen(local_addr_) < 0) {
-    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
-    LOG(ERROR) << "Failed to bind local address";
-    return;
+  if (!IsEmpty(local_addr_)) {
+    if (udp_socket_->Bind(local_addr_) < 0) {
+      status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+      LOG(ERROR) << "Failed to bind local address.";
+      return;
+    }
+  } else if (!IsEmpty(remote_addr_)) {
+    if (udp_socket_->Connect(remote_addr_) < 0) {
+      status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+      LOG(ERROR) << "Failed to connect to remote address.";
+      return;
+    }
+  } else {
+    NOTREACHED() << "Either local or remote address has to be defined.";
   }
   ReceiveOnePacket();
 }
