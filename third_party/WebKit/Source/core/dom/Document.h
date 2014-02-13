@@ -649,6 +649,8 @@ public:
 
     void registerNodeList(LiveNodeListBase*);
     void unregisterNodeList(LiveNodeListBase*);
+    void incrementNodeListWithIdNameCacheCount();
+    void decrementNodeListWithIdNameCacheCount();
     bool shouldInvalidateNodeListCaches(const QualifiedName* attrName = 0) const;
     void invalidateNodeListCaches(const QualifiedName* attrName);
 
@@ -1365,6 +1367,17 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
     // regardless of which order they appear in the DOM. The priority is given by the
     // ViewportDescription::Type enum.
     return origin >= m_legacyViewportDescription.type;
+}
+
+inline void Document::incrementNodeListWithIdNameCacheCount()
+{
+    m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
+}
+
+inline void Document::decrementNodeListWithIdNameCacheCount()
+{
+    ASSERT(m_nodeListCounts[InvalidateOnIdNameAttrChange] > 0);
+    m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
 }
 
 DEFINE_TYPE_CASTS(Document, ExecutionContextClient, client, client->isDocument(), client.isDocument());

@@ -66,6 +66,7 @@ public:
 
     ContainerNode& rootNode() const;
 
+    void didMoveToDocument(Document& oldDocument, Document& newDocument);
     ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
@@ -78,7 +79,7 @@ public:
         else if (hasIdNameCache() && (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr))
             invalidateIdNameCacheMaps();
     }
-    virtual void invalidateCache() const = 0;
+    virtual void invalidateCache(Document* oldDocument = 0) const = 0;
 
     static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType, const QualifiedName&);
 
@@ -136,7 +137,7 @@ public:
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual bool nodeMatches(const Element&) const = 0;
 
-    virtual void invalidateCache() const OVERRIDE FINAL;
+    virtual void invalidateCache(Document* oldDocument) const OVERRIDE FINAL;
     bool shouldOnlyIncludeDirectChildren() const { return false; }
 
     // Collection IndexCache API.

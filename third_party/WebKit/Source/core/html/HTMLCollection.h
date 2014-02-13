@@ -41,7 +41,7 @@ public:
 
     static PassRefPtr<HTMLCollection> create(ContainerNode* base, CollectionType);
     virtual ~HTMLCollection();
-    virtual void invalidateCache() const OVERRIDE;
+    virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
 
     // DOM API
     unsigned length() const { return m_collectionIndexCache.nodeCount(*this); }
@@ -69,9 +69,14 @@ protected:
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
     virtual void supportedPropertyNames(Vector<String>& names);
 
-    virtual void updateNameCache() const;
-    bool hasNameCache() const { return m_isNameCacheValid; }
-    void setHasNameCache() const { m_isNameCacheValid = true; }
+    virtual void updateIdNameCache() const;
+    bool hasValidIdNameCache() const { return m_hasValidIdNameCache; }
+    void setHasValidIdNameCache() const
+    {
+        ASSERT(!m_hasValidIdNameCache);
+        m_hasValidIdNameCache = true;
+        document().incrementNodeListWithIdNameCacheCount();
+    }
 
     typedef HashMap<StringImpl*, OwnPtr<Vector<Element*> > > NodeCacheMap;
     Vector<Element*>* idCache(const AtomicString& name) const { return m_idCache.get(name.impl()); }
@@ -83,16 +88,30 @@ private:
     Element* traverseNextElement(Element& previous, const ContainerNode& root) const;
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
-    void invalidateIdNameCacheMaps() const
+    void invalidateIdNameCacheMaps(Document* oldDocument = 0) const
     {
+        if (!m_hasValidIdNameCache)
+            return;
+
+        // Make sure we decrement the NodeListWithIdNameCache count from
+        // the old document instead of the new one in the case the collection
+        // is moved to a new document.
+        unregisterIdNameCacheFromDocument(oldDocument ? *oldDocument : document());
+
         m_idCache.clear();
         m_nameCache.clear();
-        m_isNameCacheValid = false;
+        m_hasValidIdNameCache = false;
+    }
+
+    void unregisterIdNameCacheFromDocument(Document& document) const
+    {
+        ASSERT(m_hasValidIdNameCache);
+        document.decrementNodeListWithIdNameCacheCount();
     }
 
     const unsigned m_overridesItemAfter : 1;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
-    mutable unsigned m_isNameCacheValid : 1;
+    mutable unsigned m_hasValidIdNameCache : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
     mutable CollectionIndexCache<HTMLCollection, Element> m_collectionIndexCache;

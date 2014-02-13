@@ -49,13 +49,13 @@ public:
 private:
     explicit HTMLFormControlsCollection(ContainerNode*);
 
-    virtual void updateNameCache() const OVERRIDE;
+    virtual void updateIdNameCache() const OVERRIDE;
     virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 
     const Vector<FormAssociatedElement*>& formControlElements() const;
     const Vector<HTMLImageElement*>& formImageElements() const;
     virtual Element* virtualItemAfter(Element*) const OVERRIDE;
-    virtual void invalidateCache() const OVERRIDE;
+    virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
 
     mutable Element* m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;

@@ -174,21 +174,18 @@ public:
     void adoptDocument(Document& oldDocument, Document& newDocument)
     {
         ASSERT(oldDocument != newDocument);
-        invalidateCaches();
 
         NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
         for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it) {
             LiveNodeListBase* list = it->value;
-            oldDocument.unregisterNodeList(list);
-            newDocument.registerNodeList(list);
+            list->didMoveToDocument(oldDocument, newDocument);
         }
 
         TagCollectionCacheNS::const_iterator tagEnd = m_tagCollectionCacheNS.end();
         for (TagCollectionCacheNS::const_iterator it = m_tagCollectionCacheNS.begin(); it != tagEnd; ++it) {
             LiveNodeListBase* list = it->value;
             ASSERT(!list->isRootedAtDocument());
-            oldDocument.unregisterNodeList(list);
-            newDocument.registerNodeList(list);
+            list->didMoveToDocument(oldDocument, newDocument);
         }
     }
 

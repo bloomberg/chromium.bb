@@ -164,7 +164,7 @@ HTMLCollection::HTMLCollection(ContainerNode* ownerNode, CollectionType type, It
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type), type)
     , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     , m_shouldOnlyIncludeDirectChildren(shouldTypeOnlyIncludeDirectChildren(type))
-    , m_isNameCacheValid(false)
+    , m_hasValidIdNameCache(false)
 {
     ScriptWrappable::init(this);
 }
@@ -176,6 +176,8 @@ PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode* base, Collectio
 
 HTMLCollection::~HTMLCollection()
 {
+    if (hasValidIdNameCache())
+        unregisterIdNameCacheFromDocument(document());
     // HTMLNameCollection, ClassCollection and TagCollection remove cache by themselves.
     if (type() != WindowNamedItems && type() != DocumentNamedItems && type() != ClassCollectionType
         && type() != HTMLTagCollectionType && type() != TagCollectionType) {
@@ -183,10 +185,10 @@ HTMLCollection::~HTMLCollection()
     }
 }
 
-void HTMLCollection::invalidateCache() const
+void HTMLCollection::invalidateCache(Document* oldDocument) const
 {
     m_collectionIndexCache.invalidate();
-    invalidateIdNameCacheMaps();
+    invalidateIdNameCacheMaps(oldDocument);
 }
 
 template <class NodeListType>
@@ -476,7 +478,7 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    updateNameCache();
+    updateIdNameCache();
 
     Vector<Element*>* idResults = idCache(name);
     if (idResults && !idResults->isEmpty())
@@ -529,9 +531,9 @@ void HTMLCollection::namedPropertyEnumerator(Vector<String>& names, ExceptionSta
     supportedPropertyNames(names);
 }
 
-void HTMLCollection::updateNameCache() const
+void HTMLCollection::updateIdNameCache() const
 {
-    if (hasNameCache())
+    if (hasValidIdNameCache())
         return;
 
     ContainerNode& root = rootNode();
@@ -546,7 +548,7 @@ void HTMLCollection::updateNameCache() const
             appendNameCache(nameAttrVal, element);
     }
 
-    setHasNameCache();
+    setHasValidIdNameCache();
 }
 
 void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element> >& result) const
@@ -555,7 +557,7 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
     if (name.isEmpty())
         return;
 
-    updateNameCache();
+    updateIdNameCache();
 
     Vector<Element*>* idResults = idCache(name);
     Vector<Element*>* nameResults = nameCache(name);

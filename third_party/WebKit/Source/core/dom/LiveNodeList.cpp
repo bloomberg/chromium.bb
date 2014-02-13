@@ -35,6 +35,13 @@ ContainerNode& LiveNodeListBase::rootNode() const
     return *m_ownerNode;
 }
 
+void LiveNodeListBase::didMoveToDocument(Document& oldDocument, Document& newDocument)
+{
+    invalidateCache(&oldDocument);
+    oldDocument.unregisterNodeList(this);
+    newDocument.registerNodeList(this);
+}
+
 void LiveNodeListBase::invalidateIdNameCacheMaps() const
 {
     ASSERT(hasIdNameCache());
@@ -46,7 +53,7 @@ Node* LiveNodeList::virtualOwnerNode() const
     return ownerNode();
 }
 
-void LiveNodeList::invalidateCache() const
+void LiveNodeList::invalidateCache(Document*) const
 {
     m_collectionIndexCache.invalidate();
 }

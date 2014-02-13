@@ -48,7 +48,7 @@ HTMLAllCollection::~HTMLAllCollection()
 
 Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigned index) const
 {
-    updateNameCache();
+    updateIdNameCache();
 
     if (Vector<Element*>* cache = idCache(name)) {
         if (index < cache->size())

@@ -104,9 +104,9 @@ Element* HTMLFormControlsCollection::virtualItemAfter(Element* previous) const
     return 0;
 }
 
-void HTMLFormControlsCollection::invalidateCache() const
+void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
 {
-    HTMLCollection::invalidateCache();
+    HTMLCollection::invalidateCache(oldDocument);
     m_cachedElement = 0;
     m_cachedElementOffsetInArray = 0;
 }
@@ -150,9 +150,9 @@ Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
     return firstNamedItem(formControlElements(), imagesElements, nameAttr, name);
 }
 
-void HTMLFormControlsCollection::updateNameCache() const
+void HTMLFormControlsCollection::updateIdNameCache() const
 {
-    if (hasNameCache())
+    if (hasValidIdNameCache())
         return;
 
     HashSet<StringImpl*> foundInputElements;
@@ -189,7 +189,7 @@ void HTMLFormControlsCollection::updateNameCache() const
         }
     }
 
-    setHasNameCache();
+    setHasValidIdNameCache();
 }
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
