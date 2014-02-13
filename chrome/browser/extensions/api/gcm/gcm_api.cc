@@ -10,6 +10,7 @@
 
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
@@ -22,10 +23,9 @@
 namespace {
 
 const size_t kMaximumMessageSize = 4096;  // in bytes.
+const char kCollapseKey[] = "collapse_key";
 const char kGoogDotRestrictedPrefix[] = "goog.";
-const size_t kGoogDotPrefixLength = arraysize(kGoogDotRestrictedPrefix) - 1;
 const char kGoogleRestrictedPrefix[] = "google";
-const size_t kGooglePrefixLength = arraysize(kGoogleRestrictedPrefix) - 1;
 
 // Error messages.
 const char kInvalidParameter[] =
@@ -33,10 +33,10 @@ const char kInvalidParameter[] =
 const char kNotSignedIn[] = "Profile was not signed in.";
 const char kAsyncOperationPending[] =
     "Asynchronous operation is pending.";
-const char kNetworkError[] = "Network error occured.";
-const char kServerError[] = "Server error occured.";
+const char kNetworkError[] = "Network error occurred.";
+const char kServerError[] = "Server error occurred.";
 const char kTtlExceeded[] = "Time-to-live exceeded.";
-const char kUnknownError[] = "Unknown error occured.";
+const char kUnknownError[] = "Unknown error occurred.";
 
 std::string SHA1HashHexString(const std::string& str) {
   std::string hash = base::SHA1HashString(str);
@@ -71,9 +71,15 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
 }
 
 bool IsMessageKeyValid(const std::string& key) {
+  std::string lower = StringToLowerASCII(key);
   return !key.empty() &&
-      key.compare(0, kGooglePrefixLength, kGoogleRestrictedPrefix) != 0 &&
-      key.compare(0, kGoogDotPrefixLength, kGoogDotRestrictedPrefix) != 0;
+         key.compare(0, arraysize(kCollapseKey) - 1, kCollapseKey) != 0 &&
+         lower.compare(0,
+                       arraysize(kGoogleRestrictedPrefix) - 1,
+                       kGoogleRestrictedPrefix) != 0 &&
+         lower.compare(0,
+                       arraysize(kGoogDotRestrictedPrefix),
+                       kGoogDotRestrictedPrefix) != 0;
 }
 
 }  // namespace

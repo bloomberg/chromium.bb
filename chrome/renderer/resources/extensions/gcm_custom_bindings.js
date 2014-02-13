@@ -19,9 +19,11 @@ binding.registerCustomHook(function(bindingsAPI) {
         if (property.length == 0)
           throw new Error("One of data keys is empty.");
 
+        var lowerCasedProperty = property.toLowerCase();
         // Issue an error for forbidden prefixes of property names.
-        if (property.indexOf("goog.") == 0 ||
-            property.indexOf("google") == 0) {
+        if (lowerCasedProperty.indexOf("goog.") == 0 ||
+            lowerCasedProperty.indexOf("google") == 0 ||
+            property.indexOf("collapse_key") == 0) {
           throw new Error("Invalid data key: " + property);
         }
 

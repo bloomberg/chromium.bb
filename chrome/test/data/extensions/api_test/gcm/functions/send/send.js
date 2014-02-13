@@ -97,6 +97,11 @@ chrome.test.runTests([
       message.data["goog.something"] = "value";
     });
   },
+  function failureWhenDataKeyIsGoogDotMixedCasedPrefixed() {
+    expectFailureWhen(function(message) {
+      message.data["GoOg.something"] = "value";
+    });
+  },
   function successWhenDataKeyHasGoogleInIt() {
     expectSuccessWhen(function(message) {
       message.data["somthing.google"] = "value";
@@ -107,9 +112,19 @@ chrome.test.runTests([
       message.data["google"] = "value";
     });
   },
+  function failureWhenDataKeyIsMixedCasedGoogle() {
+    expectFailureWhen(function(message) {
+      message.data["GoOgLe"] = "value";
+    });
+  },
   function failureWhenDataKeyIsGooglePrefixed() {
     expectFailureWhen(function(message) {
       message.data["googleSomething"] = "value";
+    });
+  },
+  function failureWhenDataKeyIsCollapeKey() {
+    expectFailureWhen(function(message) {
+      message.data["collapse_key"] = "value";
     });
   },
   function failureWhenMessageIsTooLarge() {

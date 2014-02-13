@@ -7,9 +7,9 @@ onload = function() {
     function onSendError() {
       var errorMessages = [
           'Asynchronous operation is pending.',
-          'Server error occured.',
-          'Network error occured.',
-          'Unknown error occured.',
+          'Server error occurred.',
+          'Network error occurred.',
+          'Unknown error occurred.',
           'Time-to-live exceeded.'
         ];
       var messageIds = [
