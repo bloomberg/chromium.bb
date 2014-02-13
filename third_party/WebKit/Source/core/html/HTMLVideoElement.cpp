@@ -113,6 +113,9 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
             if (renderer())
                 toRenderImage(renderer())->imageResource()->setImageResource(0);
         }
+        // Notify the player when the poster image URL changes.
+        if (player())
+            player()->setPoster(posterImageURL());
     } else
         HTMLMediaElement::parseAttribute(name, value);
 }
@@ -268,6 +271,11 @@ KURL HTMLVideoElement::posterImageURL() const
     if (url.isEmpty())
         return KURL();
     return document().completeURL(url);
+}
+
+KURL HTMLVideoElement::mediaPlayerPosterURL()
+{
+    return posterImageURL();
 }
 
 }

@@ -229,6 +229,8 @@ void WebMediaPlayerClientImpl::loadInternal()
     // FIXME: Remove this cast
     Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
 
+    WebURL poster = m_client->mediaPlayerPosterURL();
+
     // This does not actually check whether the hardware can support accelerated
     // compositing, but only if the flag is set. However, this is checked lazily
     // in WebViewImpl::setIsAcceleratedCompositingActive() and will fail there
@@ -241,6 +243,9 @@ void WebMediaPlayerClientImpl::loadInternal()
         // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
+
+        // Tell WebMediaPlayer about the poster image URL.
+        m_webMediaPlayer->setPoster(poster);
 
         // Tell WebMediaPlayer about any connected CDM (may be null).
         m_webMediaPlayer->setContentDecryptionModule(m_cdm);
@@ -405,6 +410,12 @@ void WebMediaPlayerClientImpl::setMuted(bool muted)
     m_muted = muted;
     if (m_webMediaPlayer)
         m_webMediaPlayer->setVolume(muted ? 0 : m_volume);
+}
+
+void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
+{
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setPoster(WebURL(poster));
 }
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const

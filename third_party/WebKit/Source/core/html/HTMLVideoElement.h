@@ -65,6 +65,9 @@ public:
 
     KURL posterImageURL() const;
 
+    // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
+    virtual KURL mediaPlayerPosterURL() OVERRIDE;
+
 private:
     HTMLVideoElement(Document&);
 

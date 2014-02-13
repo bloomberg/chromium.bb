@@ -154,6 +154,9 @@ public:
     virtual MediaKeyException cancelKeyRequest(const WebString& keySystem, const WebString& sessionId) { return MediaKeyExceptionKeySystemNotSupported; }
     virtual void setContentDecryptionModule(WebContentDecryptionModule* cdm) { }
 
+    // Sets the poster image URL.
+    virtual void setPoster(const WebURL& poster) { }
+
     // Instruct WebMediaPlayer to enter/exit fullscreen.
     virtual void enterFullscreen() { }
     virtual void exitFullscreen() { }

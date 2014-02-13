@@ -114,6 +114,7 @@ public:
     virtual bool paused() const OVERRIDE;
     virtual void setVolume(double) OVERRIDE;
     virtual void setMuted(bool) OVERRIDE;
+    virtual void setPoster(const WebCore::KURL&) OVERRIDE;
     virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
     virtual WebCore::MediaPlayer::ReadyState readyState() const OVERRIDE;
     virtual double maxTimeSeekable() const OVERRIDE;

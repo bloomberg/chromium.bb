@@ -81,6 +81,10 @@ public:
 
     virtual void mediaPlayerRequestSeek(double) = 0;
 
+    // The URL for video poster image.
+    // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
+    virtual KURL mediaPlayerPosterURL() = 0;
+
 // Presentation-related methods
     // a new frame of video is available
     virtual void mediaPlayerRepaint() = 0;
@@ -146,6 +150,8 @@ public:
 
     virtual void setVolume(double) = 0;
     virtual void setMuted(bool) = 0;
+
+    virtual void setPoster(const KURL&) = 0;
 
     enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
     virtual NetworkState networkState() const = 0;
