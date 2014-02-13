@@ -69,6 +69,7 @@
         '<(_sanitizer_type)-libcups2',
         '<(_sanitizer_type)-pango1.0',
         '<(_sanitizer_type)-libcap2',
+        '<(_sanitizer_type)-libudev0',
       ],
       'conditions': [
         ['asan==1', {
@@ -333,6 +334,17 @@
     {
       'library_name': 'libcap2',
       'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libudev0',
+      'dependencies=': [],
+      'custom_configure_flags': [
+          # Without this flag there's a linking step that doesn't honor LDFLAGS
+          # and fails.
+          # TODO(earthdok): find a better fix.
+          '--disable-gudev'
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
