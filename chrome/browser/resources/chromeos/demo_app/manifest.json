@@ -5,10 +5,11 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "ChromeOS Demo App",
-  "permissions": ["power"],
+  "permissions": ["power", "idle", "videoCapture"],
+  "default_locale": "en",
   "app": {
     "background": {
-      "scripts": ["js/launch.js"]
+      "scripts": ["js/background.js"]
     }
   }
 }
