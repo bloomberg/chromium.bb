@@ -24,6 +24,8 @@
 video:-webkit-full-screen, audio:-webkit-full-screen {
     background-color: transparent !important;
     position: relative !important;
+    left: 0 !important;
+    top: 0 ! important;
     margin: 0 !important;
     height: 100% !important;
     width: 100% !important;
