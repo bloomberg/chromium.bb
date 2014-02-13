@@ -18,6 +18,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size.h"
 #include "ui/views/corewm/window_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -77,6 +78,11 @@ void CenterWindow(aura::Window* window) {
   }
 }
 
+void AdjustBoundsSmallerThan(const gfx::Size& max_size, gfx::Rect* bounds) {
+  bounds->set_width(std::min(bounds->width(), max_size.width()));
+  bounds->set_height(std::min(bounds->height(), max_size.height()));
+}
+
 void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
                                                  gfx::Rect* bounds) {
   AdjustBoundsToEnsureWindowVisibility(
@@ -87,8 +93,7 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& visible_area,
                                           int min_width,
                                           int min_height,
                                           gfx::Rect* bounds) {
-  bounds->set_width(std::min(bounds->width(), visible_area.width()));
-  bounds->set_height(std::min(bounds->height(), visible_area.height()));
+  AdjustBoundsSmallerThan(visible_area.size(), bounds);
 
   min_width = std::min(min_width, visible_area.width());
   min_height = std::min(min_height, visible_area.height());

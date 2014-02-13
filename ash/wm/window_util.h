@@ -15,6 +15,7 @@ class Window;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace ui {
@@ -46,6 +47,10 @@ ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
 
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
+
+// Adjusts |bounds| so that the size does not exceed |max_size|.
+ASH_EXPORT void AdjustBoundsSmallerThan(const gfx::Size& max_size,
+                                        gfx::Rect* bounds);
 
 // Move the given bounds inside the given |visible_area| in parent coordinates,
 // including a safety margin given by |kMinimumOnScreenArea|.

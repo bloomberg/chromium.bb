@@ -323,6 +323,13 @@ TEST_F(SnapSizerTest, SingleSnapWindowWidth) {
   sizer2.SnapWindowToTargetBounds();
   expected.set_x(kWorkAreaBounds.x());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+
+  // Setting bounds should keep the window snapped.
+  expected = kWorkAreaBounds;
+  expected.set_width(500);
+  window->SetBounds(gfx::Rect(10, 10, 500, 300));
+  EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 }
 
 // Test that snapping left/right preserves the restore bounds.

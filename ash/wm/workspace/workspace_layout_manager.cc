@@ -116,23 +116,12 @@ void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
 // WorkspaceLayoutManager, aura::LayoutManager implementation:
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
-  AdjustWindowBoundsWhenAdded(wm::GetWindowState(child));
+  wm::WindowState* window_state = wm::GetWindowState(child);
+  AdjustWindowBoundsWhenAdded(window_state);
 
   windows_.insert(child);
   child->AddObserver(this);
-  wm::WindowState* window_state = wm::GetWindowState(child);
   window_state->AddObserver(this);
-
-  // Only update the bounds if the window has a show state that depends on the
-  // workspace area.
-  if (window_state->IsMaximized()) {
-    SetChildBoundsDirect(
-        child, ScreenUtil::GetMaximizedWindowBoundsInParent(child));
-  } else if (window_state->IsFullscreen()) {
-    SetChildBoundsDirect(
-        child, ScreenUtil::GetDisplayBoundsInParent(child));
-  }
-
   UpdateShelfVisibility();
   UpdateFullscreenState();
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
@@ -175,16 +164,17 @@ void WorkspaceLayoutManager::SetChildBounds(
   wm::WindowState* window_state = wm::GetWindowState(child);
   if (window_state->is_dragged()) {
     SetChildBoundsDirect(child, requested_bounds);
+  } else if (window_state->IsSnapped()) {
+    gfx::Rect child_bounds(requested_bounds);
+    wm::AdjustBoundsSmallerThan(work_area_in_parent_.size(), &child_bounds);
+    AdjustSnappedBounds(window_state, &child_bounds);
+    SetChildBoundsDirect(child, child_bounds);
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     // Some windows rely on this to set their initial bounds.
     // Non-maximized/full-screen windows have their size constrained to the
     // work-area.
     gfx::Rect child_bounds(requested_bounds);
-    child_bounds.set_width(std::min(work_area_in_parent_.width(),
-                                    child_bounds.width()));
-    child_bounds.set_height(std::min(work_area_in_parent_.height(),
-                                     child_bounds.height()));
-    AdjustSnappedBounds(window_state, &child_bounds);
+    wm::AdjustBoundsSmallerThan(work_area_in_parent_.size(), &child_bounds);
     SetChildBoundsDirect(child, child_bounds);
   }
   UpdateShelfVisibility();
