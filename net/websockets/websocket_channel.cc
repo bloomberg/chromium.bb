@@ -80,6 +80,38 @@ bool IsStrictlyValidCloseStatusCode(int code) {
 // This function avoids a bunch of boilerplate code.
 void AllowUnused(ChannelState ALLOW_UNUSED unused) {}
 
+// Sets |name| to the name of the frame type for the given |opcode|. Note that
+// for all of Text, Binary and Continuation opcode, this method returns
+// "Data frame".
+void GetFrameTypeForOpcode(WebSocketFrameHeader::OpCode opcode,
+                           std::string* name) {
+  switch (opcode) {
+    case WebSocketFrameHeader::kOpCodeText:    // fall-thru
+    case WebSocketFrameHeader::kOpCodeBinary:  // fall-thru
+    case WebSocketFrameHeader::kOpCodeContinuation:
+      *name = "Data frame";
+      break;
+
+    case WebSocketFrameHeader::kOpCodePing:
+      *name = "Ping";
+      break;
+
+    case WebSocketFrameHeader::kOpCodePong:
+      *name = "Pong";
+      break;
+
+    case WebSocketFrameHeader::kOpCodeClose:
+      *name = "Close";
+      break;
+
+    default:
+      *name = "Unknown frame type";
+      break;
+  }
+
+  return;
+}
+
 }  // namespace
 
 // A class to encapsulate a set of frames and information about the size of
@@ -225,7 +257,7 @@ WebSocketChannel::WebSocketChannel(
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
       timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
-      closing_code_(0),
+      received_close_code_(0),
       state_(FRESHLY_CONSTRUCTED),
       notification_sender_(new HandshakeNotificationSender(this)),
       sending_text_message_(false),
@@ -563,7 +595,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       for (size_t i = 0; i < read_frames_.size(); ++i) {
         scoped_ptr<WebSocketFrame> frame(read_frames_[i]);
         read_frames_[i] = NULL;
-        if (ProcessFrame(frame.Pass()) == CHANNEL_DELETED)
+        if (HandleFrame(frame.Pass()) == CHANNEL_DELETED)
           return CHANNEL_DELETED;
       }
       read_frames_.clear();
@@ -591,16 +623,17 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       uint16 code = kWebSocketErrorAbnormalClosure;
       std::string reason = "";
       bool was_clean = false;
-      if (closing_code_ != 0) {
-        code = closing_code_;
-        reason = closing_reason_;
+      if (received_close_code_ != 0) {
+        code = received_close_code_;
+        reason = received_close_reason_;
         was_clean = (result == ERR_CONNECTION_CLOSED);
       }
       return DoDropChannel(was_clean, code, reason);
   }
 }
 
-ChannelState WebSocketChannel::ProcessFrame(scoped_ptr<WebSocketFrame> frame) {
+ChannelState WebSocketChannel::HandleFrame(
+    scoped_ptr<WebSocketFrame> frame) {
   if (frame->header.masked) {
     // RFC6455 Section 5.1 "A client MUST close a connection if it detects a
     // masked frame."
@@ -621,11 +654,11 @@ ChannelState WebSocketChannel::ProcessFrame(scoped_ptr<WebSocketFrame> frame) {
   }
 
   // Respond to the frame appropriately to its type.
-  return HandleFrame(
+  return HandleFrameByState(
       opcode, frame->header.final, frame->data, frame->header.payload_length);
 }
 
-ChannelState WebSocketChannel::HandleFrame(
+ChannelState WebSocketChannel::HandleFrameByState(
     const WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
@@ -636,29 +669,8 @@ ChannelState WebSocketChannel::HandleFrame(
   DCHECK_NE(CLOSED, state_);
   if (state_ == CLOSE_WAIT) {
     std::string frame_name;
-    switch (opcode) {
-      case WebSocketFrameHeader::kOpCodeText:    // fall-thru
-      case WebSocketFrameHeader::kOpCodeBinary:  // fall-thru
-      case WebSocketFrameHeader::kOpCodeContinuation:
-        frame_name = "Data frame";
-        break;
+    GetFrameTypeForOpcode(opcode, &frame_name);
 
-      case WebSocketFrameHeader::kOpCodePing:
-        frame_name = "Ping";
-        break;
-
-      case WebSocketFrameHeader::kOpCodePong:
-        frame_name = "Pong";
-        break;
-
-      case WebSocketFrameHeader::kOpCodeClose:
-        frame_name = "Close";
-        break;
-
-      default:
-        frame_name = "Unknown frame type";
-        break;
-    }
     // FailChannel() won't send another Close frame.
     return FailChannel(
         frame_name + " received after close", kWebSocketErrorProtocolError, "");
@@ -731,8 +743,8 @@ ChannelState WebSocketChannel::HandleFrame(
             return CHANNEL_DELETED;
           if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
             return CHANNEL_DELETED;
-          closing_code_ = code;
-          closing_reason_ = reason;
+          received_close_code_ = code;
+          received_close_reason_ = reason;
           break;
 
         case SEND_CLOSED:
@@ -740,8 +752,8 @@ ChannelState WebSocketChannel::HandleFrame(
           // From RFC6455 section 7.1.5: "Each endpoint
           // will see the status code sent by the other end as _The WebSocket
           // Connection Close Code_."
-          closing_code_ = code;
-          closing_reason_ = reason;
+          received_close_code_ = code;
+          received_close_reason_ = reason;
           break;
 
         default:

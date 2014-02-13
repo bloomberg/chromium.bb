@@ -188,17 +188,23 @@ class NET_EXPORT WebSocketChannel {
   // within the ReadFrames() loop and does not need to call ReadFrames() itself.
   ChannelState OnReadDone(bool synchronous, int result) WARN_UNUSED_RESULT;
 
-  // Processes a single frame that has been read from the stream.
-  ChannelState ProcessFrame(
+  // Handles a single frame that the object has received enough of to process.
+  // May call |event_interface_| methods, send responses to the server, and
+  // change the value of |state_|.
+  //
+  // This method performs sanity checks on the frame that are needed regardless
+  // of the current state. Then, calls the HandleFrameByState() method below
+  // which performs the appropriate action(s) depending on the current state.
+  ChannelState HandleFrame(
       scoped_ptr<WebSocketFrame> frame) WARN_UNUSED_RESULT;
 
-  // Handles a frame that the object has received enough of to process. May call
-  // |event_interface_| methods, send responses to the server, and change the
-  // value of |state_|.
-  ChannelState HandleFrame(const WebSocketFrameHeader::OpCode opcode,
-                           bool final,
-                           const scoped_refptr<IOBuffer>& data_buffer,
-                           size_t size) WARN_UNUSED_RESULT;
+  // Handles a single frame depending on the current state. It's used by the
+  // HandleFrame() method.
+  ChannelState HandleFrameByState(
+      const WebSocketFrameHeader::OpCode opcode,
+      bool final,
+      const scoped_refptr<IOBuffer>& data_buffer,
+      size_t size) WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
@@ -301,8 +307,8 @@ class NET_EXPORT WebSocketChannel {
   // Storage for the status code and reason from the time the Close frame
   // arrives until the connection is closed and they are passed to
   // OnDropChannel().
-  uint16 closing_code_;
-  std::string closing_reason_;
+  uint16 received_close_code_;
+  std::string received_close_reason_;
 
   // The current state of the channel. Mainly used for sanity checking, but also
   // used to track the close state.
