@@ -170,10 +170,17 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
     // item for this app id (e.g. pinned), use that shelf item.
     if (app_shelf_id == app_id)
       shelf_id = owner_->GetShelfIDForAppID(app_id);
-    if (shelf_id == 0)
+    if (shelf_id == 0) {
       shelf_id = owner_->CreateAppLauncherItem(controller, app_id, status);
-    else
+      // Restore any existing app icon and flag as set.
+      const gfx::Image& app_icon = shell_window->app_icon();
+      if (!app_icon.IsEmpty()) {
+        owner_->SetLauncherItemImage(shelf_id, app_icon.AsImageSkia());
+        controller->set_image_set_by_controller(true);
+      }
+    } else {
       owner_->SetItemController(shelf_id, controller);
+    }
     const std::string app_shelf_id = GetAppShelfId(shell_window);
     app_controller_map_[app_shelf_id] = controller;
   }
