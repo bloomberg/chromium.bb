@@ -93,7 +93,6 @@ PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset,
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
     OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(renderer(), type(), m_frameRect, m_shouldPaint, m_isDescendant));
-    cloneObject->m_originatingLine = m_originatingLine;
     cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
