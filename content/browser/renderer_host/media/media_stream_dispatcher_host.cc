@@ -131,7 +131,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << security_origin.spec() << ")";
 
   media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_view_id, resource_context_,
+      this, render_process_id_, render_view_id,
+      resource_context_->GetMediaDeviceIDSalt(),
       page_request_id,
       components, security_origin);
 }
@@ -167,7 +168,8 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << security_origin.spec() << ")";
 
   media_stream_manager_->EnumerateDevices(
-      this, render_process_id_, render_view_id, resource_context_,
+      this, render_process_id_, render_view_id,
+      resource_context_->GetMediaDeviceIDSalt(),
       page_request_id, type, security_origin);
 }
 
@@ -195,7 +197,8 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << security_origin.spec() << ")";
 
   media_stream_manager_->OpenDevice(
-      this, render_process_id_, render_view_id, resource_context_,
+      this, render_process_id_, render_view_id,
+      resource_context_->GetMediaDeviceIDSalt(),
       page_request_id, device_id, type, security_origin);
 
 }

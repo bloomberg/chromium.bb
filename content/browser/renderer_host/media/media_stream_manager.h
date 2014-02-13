@@ -36,6 +36,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/media_request_state.h"
+#include "content/public/browser/resource_context.h"
 
 namespace media {
 class AudioManager;
@@ -48,7 +49,6 @@ class FakeMediaStreamUIProxy;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class MediaStreamUIProxy;
-class ResourceContext;
 class VideoCaptureManager;
 
 // MediaStreamManager is used to generate and close new media devices, not to
@@ -94,7 +94,7 @@ class CONTENT_EXPORT MediaStreamManager
   void GenerateStream(MediaStreamRequester* requester,
                       int render_process_id,
                       int render_view_id,
-                      ResourceContext* rc,
+                      const ResourceContext::SaltCallback& sc,
                       int page_request_id,
                       const StreamOptions& components,
                       const GURL& security_origin);
@@ -123,12 +123,12 @@ class CONTENT_EXPORT MediaStreamManager
   // plug/unplug. The new device lists will be delivered via media observer to
   // MediaCaptureDevicesDispatcher.
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
-                               int render_process_id,
-                               int render_view_id,
-                               ResourceContext* rc,
-                               int page_request_id,
-                               MediaStreamType type,
-                               const GURL& security_origin);
+                                       int render_process_id,
+                                       int render_view_id,
+                                       const ResourceContext::SaltCallback& sc,
+                                       int page_request_id,
+                                       MediaStreamType type,
+                                       const GURL& security_origin);
 
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaStreamManager
   void OpenDevice(MediaStreamRequester* requester,
                   int render_process_id,
                   int render_view_id,
-                  ResourceContext* rc,
+                  const ResourceContext::SaltCallback& sc,
                   int page_request_id,
                   const std::string& device_id,
                   MediaStreamType type,
@@ -328,7 +328,7 @@ class CONTENT_EXPORT MediaStreamManager
   // given |source_id|, false if nothing matched it.
   bool TranslateSourceIdToDeviceId(
       MediaStreamType stream_type,
-      ResourceContext* rc,
+      const ResourceContext::SaltCallback& rc,
       const GURL& security_origin,
       const std::string& source_id,
       std::string* device_id) const;

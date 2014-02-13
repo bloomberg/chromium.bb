@@ -30,7 +30,9 @@ DeviceRequestMessageFilter::DeviceRequestMessageFilter(
 }
 
 DeviceRequestMessageFilter::~DeviceRequestMessageFilter() {
-  DCHECK(requests_.empty());
+  // CHECK rather than DCHECK to make sure this never happens in the
+  // wild. We want to be sure due to http://crbug.com/341211
+  CHECK(requests_.empty());
 }
 
 struct DeviceRequestMessageFilter::DeviceRequest {
@@ -134,14 +136,14 @@ void DeviceRequestMessageFilter::OnGetSources(int request_id,
                                               const GURL& security_origin) {
   // Make request to get audio devices.
   const std::string& audio_label = media_stream_manager_->EnumerateDevices(
-      this, -1, -1, resource_context_, -1, MEDIA_DEVICE_AUDIO_CAPTURE,
-      security_origin);
+      this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
+      MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
   DCHECK(!audio_label.empty());
 
   // Make request for video devices.
   const std::string& video_label = media_stream_manager_->EnumerateDevices(
-      this, -1, -1, resource_context_, -1, MEDIA_DEVICE_VIDEO_CAPTURE,
-      security_origin);
+      this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
+      MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
   DCHECK(!video_label.empty());
 
   requests_.push_back(DeviceRequest(

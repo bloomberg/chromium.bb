@@ -37,6 +37,11 @@ class NonOwningZoomData : public base::SupportsUserData::Data {
   HostZoomMap* host_zoom_map_;
 };
 
+// Used by the default implementation of GetMediaDeviceIDSalt, below.
+std::string ReturnEmptySalt() {
+  return std::string();
+}
+
 }  // namespace
 
 
@@ -56,8 +61,8 @@ ResourceContext::~ResourceContext() {
   DetachUserDataThread();
 }
 
-std::string ResourceContext::GetMediaDeviceIDSalt() {
-  return std::string();
+ResourceContext::SaltCallback ResourceContext::GetMediaDeviceIDSalt() {
+  return base::Bind(&ReturnEmptySalt);
 }
 
 scoped_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {

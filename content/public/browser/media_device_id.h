@@ -13,23 +13,22 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/browser/resource_context.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class ResourceContext;
-
 // Generates a one-way hash of a device's unique ID usable by one
 // particular security origin.
 CONTENT_EXPORT std::string GetHMACForMediaDeviceID(
-    ResourceContext* rc,
+    const ResourceContext::SaltCallback& sc,
     const GURL& security_origin,
     const std::string& raw_unique_id);
 
 // Convenience method to check if |device_guid| is an HMAC of
 // |raw_device_id| for |security_origin|.
 CONTENT_EXPORT bool DoesMediaDeviceIDMatchHMAC(
-    ResourceContext* rc,
+    const ResourceContext::SaltCallback& sc,
     const GURL& security_origin,
     const std::string& device_guid,
     const std::string& raw_unique_id);

@@ -92,7 +92,6 @@ class FakeResourceContext : public ResourceContext {
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE { return NULL; }
   virtual bool AllowMicAccess(const GURL& origin) OVERRIDE { return false; }
   virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE { return false; }
-  virtual std::string GetMediaDeviceIDSalt() OVERRIDE { return std::string(); }
 };
 
 class FakeResourceMessageFilter : public ResourceMessageFilter {

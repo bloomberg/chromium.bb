@@ -146,7 +146,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
       enumeration_event_.Wait();
     } else {
       *id_in_origin = content::GetHMACForMediaDeviceID(
-          resource_context,
+          resource_context->GetMediaDeviceIDSalt(),
           origin,
           raw_device_id);
       enumeration_event_.Signal();

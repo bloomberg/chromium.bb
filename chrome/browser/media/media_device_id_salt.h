@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_member.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
@@ -15,11 +16,12 @@ class PrefService;
 // MediaDeviceIDSalt is responsible for creating and retrieving a salt string
 // that is used for creating MediaSource IDs that can be cached by a web
 // service. If the cache is cleared, the  MediaSourceIds are invalidated.
-class MediaDeviceIDSalt {
+//
+// The class is reference counted so that it can be used in the
+// callback returned by ResourceContext::GetMediaDeviceIDSalt.
+class MediaDeviceIDSalt : public base::RefCountedThreadSafe<MediaDeviceIDSalt> {
  public:
-  MediaDeviceIDSalt(PrefService* pref_service,
-                    bool incognito);
-  ~MediaDeviceIDSalt();
+  MediaDeviceIDSalt(PrefService* pref_service, bool incognito);
   void ShutdownOnUIThread();
 
   std::string GetSalt() const;
@@ -28,6 +30,9 @@ class MediaDeviceIDSalt {
   static void Reset(PrefService* pref_service);
 
  private:
+  friend class base::RefCountedThreadSafe<MediaDeviceIDSalt>;
+  ~MediaDeviceIDSalt();
+
   // |incognito_salt_| is initialized in ctor on UI thread but only read
   //  on the IO thread.
   std::string incognito_salt_;

@@ -186,9 +186,10 @@ std::string WebrtcAudioPrivateFunction::CalculateHMACImpl(
     return media::AudioManagerBase::kDefaultDeviceId;
 
   GURL security_origin(source_url().GetOrigin());
-  return content::GetHMACForMediaDeviceID(resource_context(),
-                                          security_origin,
-                                          raw_id);
+  return content::GetHMACForMediaDeviceID(
+      resource_context()->GetMediaDeviceIDSalt(),
+      security_origin,
+      raw_id);
 }
 
 void WebrtcAudioPrivateFunction::InitResourceContext() {
@@ -428,7 +429,7 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread() {
        ++it) {
     const std::string& id = it->unique_id;
     if (content::DoesMediaDeviceIDMatchHMAC(
-            resource_context(),
+            resource_context()->GetMediaDeviceIDSalt(),
             security_origin,
             source_id_in_origin,
             id)) {

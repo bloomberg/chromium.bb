@@ -302,7 +302,7 @@ class VideoCaptureHostTest : public testing::Test {
           &stream_requester_,
           render_process_id,
           render_view_id,
-          browser_context_.GetResourceContext(),
+          browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
           page_request_id,
           MEDIA_DEVICE_VIDEO_CAPTURE,
           security_origin);
@@ -328,7 +328,7 @@ class VideoCaptureHostTest : public testing::Test {
           &stream_requester_,
           render_process_id,
           render_view_id,
-          browser_context_.GetResourceContext(),
+          browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
           page_request_id,
           devices[0].device.id,
           MEDIA_DEVICE_VIDEO_CAPTURE,

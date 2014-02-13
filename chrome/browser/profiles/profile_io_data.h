@@ -175,7 +175,7 @@ class ProfileIOData {
     return &network_prediction_enabled_;
   }
 
-  std::string GetMediaDeviceIDSalt() const;
+  content::ResourceContext::SaltCallback GetMediaDeviceIDSalt() const;
 
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
@@ -374,7 +374,7 @@ class ProfileIOData {
         OVERRIDE;
     virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
     virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
-    virtual std::string GetMediaDeviceIDSalt() OVERRIDE;
+    virtual SaltCallback GetMediaDeviceIDSalt() OVERRIDE;
 
    private:
     friend class ProfileIOData;
@@ -476,7 +476,7 @@ class ProfileIOData {
 
   mutable StringListPrefMember one_click_signin_rejected_email_list_;
 
-  mutable scoped_ptr<MediaDeviceIDSalt> media_device_id_salt_;
+  mutable scoped_refptr<MediaDeviceIDSalt> media_device_id_salt_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
