@@ -206,6 +206,11 @@ def SetupEnvironment(options):
     env['BUILD_PLATFORM'] = 'win'
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_64')
     env['HOST_TRIPLE'] = 'i686_w64_mingw32'
+    # TODO(dschuff) unify this with toolchain_build_pnacl
+    msys_path = os.environ.get(
+        'MSYS',
+        os.path.join(os.getcwd(), 'mingw32', 'msys', 'bin'))
+    os.environ['PATH'] = os.pathsep.join([os.environ['PATH'], msys_path])
   else:
     Fatal("Unknown system " + sys.platform)
   if env['HOST_ARCH'] in ['i386', 'i686']:
@@ -278,6 +283,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
 
     maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
     cmd = [maker, testarg, '-v' if maker == 'ninja' else 'VERBOSE=1']
+    print 'Running lit test:', ' '.join(cmd)
     make_pipe = subprocess.Popen(cmd, env=sub_env, stdout=subprocess.PIPE)
 
     lines = []
