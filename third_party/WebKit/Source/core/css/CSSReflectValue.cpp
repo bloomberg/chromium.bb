@@ -48,6 +48,8 @@ bool CSSReflectValue::equals(const CSSReflectValue& other) const
 
 void CSSReflectValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_direction);
+    visitor->trace(m_offset);
     CSSValue::traceAfterDispatch(visitor);
 }
 

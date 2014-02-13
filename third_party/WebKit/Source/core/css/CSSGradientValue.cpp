@@ -43,6 +43,12 @@ using namespace std;
 
 namespace WebCore {
 
+void CSSGradientColorStop::trace(Visitor* visitor)
+{
+    visitor->trace(m_position);
+    visitor->trace(m_color);
+}
+
 PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize& size)
 {
     if (size.isEmpty())
@@ -461,6 +467,11 @@ bool CSSGradientValue::knownToBeOpaque(const RenderObject*) const
 
 void CSSGradientValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_firstX);
+    visitor->trace(m_firstY);
+    visitor->trace(m_secondX);
+    visitor->trace(m_secondY);
+    visitor->trace(m_stops);
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 
@@ -739,6 +750,7 @@ bool CSSLinearGradientValue::equals(const CSSLinearGradientValue& other) const
 
 void CSSLinearGradientValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_angle);
     CSSGradientValue::traceAfterDispatch(visitor);
 }
 
@@ -1172,6 +1184,12 @@ bool CSSRadialGradientValue::equals(const CSSRadialGradientValue& other) const
 
 void CSSRadialGradientValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_firstRadius);
+    visitor->trace(m_secondRadius);
+    visitor->trace(m_shape);
+    visitor->trace(m_sizingBehavior);
+    visitor->trace(m_endHorizontalSize);
+    visitor->trace(m_endVerticalSize);
     CSSGradientValue::traceAfterDispatch(visitor);
 }
 

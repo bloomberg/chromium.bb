@@ -55,7 +55,12 @@ public:
     T* get() const { return m_ptr; }
     void clear() { m_ptr = 0; }
     // FIXME: oilpan: Remove release and leakRef once we remove RefPtrWillBeRawPtr.
-    RawPtr<T> release() const { return m_ptr; }
+    RawPtr<T> release()
+    {
+        RawPtr<T> tmp = m_ptr;
+        m_ptr = 0;
+        return tmp;
+    }
     T* leakRef()
     {
         T* ptr = m_ptr;

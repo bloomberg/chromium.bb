@@ -61,7 +61,7 @@ public:
 
     void loadSubimages(ResourceFetcher*);
 
-    void setPercentage(PassRefPtr<CSSPrimitiveValue> percentageValue) { m_percentageValue = percentageValue; }
+    void setPercentage(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue) { m_percentageValue = percentageValue; }
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -96,7 +96,7 @@ private:
 
     RefPtr<CSSValue> m_fromValue;
     RefPtr<CSSValue> m_toValue;
-    RefPtr<CSSPrimitiveValue> m_percentageValue;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_percentageValue;
 
     ResourcePtr<ImageResource> m_cachedFromImage;
     ResourcePtr<ImageResource> m_cachedToImage;

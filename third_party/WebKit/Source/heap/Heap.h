@@ -1008,6 +1008,12 @@ T* adoptRefCountedGarbageCollected(T* ptr)
         void* operator new(size_t);
 #endif
 
+#define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
+    public:                                                                         \
+        void* operator new(size_t, NotNullTag, void* location) { return location; } \
+        void* operator new(size_t, void* location) { return location; }             \
+    DISALLOW_ALLOCATION()
+
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {

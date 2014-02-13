@@ -1104,9 +1104,9 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
     return text;
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
 {
-    RefPtr<CSSPrimitiveValue> result;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result;
 
     switch (m_primitiveUnitType) {
     case CSS_STRING:

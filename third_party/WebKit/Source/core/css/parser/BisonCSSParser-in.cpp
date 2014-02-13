@@ -133,7 +133,7 @@ static bool equalIgnoringCase(CSSParserValue* value, const char (&b)[N])
     return equalIgnoringCase(value->string, b);
 }
 
-static PassRefPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, Pair::IdenticalValuesPolicy identicalValuesPolicy = Pair::DropIdenticalValues)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second, Pair::IdenticalValuesPolicy identicalValuesPolicy = Pair::DropIdenticalValues)
 {
     return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
 }
@@ -1534,7 +1534,7 @@ bool BisonCSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParser
     return b;
 }
 
-inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveNumericValue(CSSParserValue* value)
+inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveNumericValue(CSSParserValue* value)
 {
     if (m_parsedCalculation) {
         ASSERT(isCalculation(value));
@@ -1548,7 +1548,7 @@ inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveNumericValue
     return cssValuePool().createValue(value->fValue, static_cast<CSSPrimitiveValue::UnitTypes>(value->unit));
 }
 
-inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveStringValue(CSSParserValue* value)
+inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveStringValue(CSSParserValue* value)
 {
     ASSERT(value->unit == CSSPrimitiveValue::CSS_STRING || value->unit == CSSPrimitiveValue::CSS_IDENT);
     return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_STRING);
@@ -1591,7 +1591,7 @@ bool BisonCSSParser::validWidthOrHeight(CSSParserValue* value)
     return !id && validUnit(value, FLength | FPercent | FNonNeg);
 }
 
-inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
+inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
 {
     if (identifier)
         return cssValuePool().createIdentifierValue(identifier);
@@ -2146,7 +2146,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset: {
-        RefPtr<CSSPrimitiveValue> result;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> result;
         if (parseBorderImageOutset(result)) {
             addProperty(propId, result, important);
             return true;
@@ -2173,7 +2173,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     }
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth: {
-        RefPtr<CSSPrimitiveValue> result;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> result;
         if (parseBorderImageWidth(result)) {
             addProperty(propId, result, important);
             return true;
@@ -2189,8 +2189,8 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         if (!validPrimitive)
             return false;
-        RefPtr<CSSPrimitiveValue> parsedValue1 = createPrimitiveNumericValue(value);
-        RefPtr<CSSPrimitiveValue> parsedValue2;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1 = createPrimitiveNumericValue(value);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2;
         if (num == 2) {
             value = m_valueList->next();
             validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
@@ -3638,7 +3638,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseFillPositionY(CSSParserValueList* valu
     return 0;
 }
 
-PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseFillPositionComponent(CSSParserValueList* valueList, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode parsingMode)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseFillPositionComponent(CSSParserValueList* valueList, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode parsingMode)
 {
     CSSValueID id = valueList->current()->id;
     if (id == CSSValueLeft || id == CSSValueTop || id == CSSValueRight || id == CSSValueBottom || id == CSSValueCenter) {
@@ -3703,7 +3703,7 @@ static bool isFillPositionKeyword(CSSValueID value)
     return value == CSSValueLeft || value == CSSValueTop || value == CSSValueBottom || value == CSSValueRight || value == CSSValueCenter;
 }
 
-void BisonCSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
+void BisonCSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2)
 {
     // [ left | right ] [ <percentage] | <length> ] && [ top | bottom ] [ <percentage> | <length> ]
     // In the case of 4 values <position> requires the second value to be a length or a percentage.
@@ -3712,7 +3712,7 @@ void BisonCSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, Ref
 
     unsigned cumulativeFlags = 0;
     FillPositionFlag value3Flag = InvalidFillPosition;
-    RefPtr<CSSPrimitiveValue> value3 = parseFillPositionComponent(valueList, cumulativeFlags, value3Flag, ResolveValuesAsKeyword);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value3 = parseFillPositionComponent(valueList, cumulativeFlags, value3Flag, ResolveValuesAsKeyword);
     if (!value3)
         return;
 
@@ -3735,7 +3735,7 @@ void BisonCSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, Ref
 
     cumulativeFlags = 0;
     FillPositionFlag value4Flag = InvalidFillPosition;
-    RefPtr<CSSPrimitiveValue> value4 = parseFillPositionComponent(valueList, cumulativeFlags, value4Flag, ResolveValuesAsKeyword);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value4 = parseFillPositionComponent(valueList, cumulativeFlags, value4Flag, ResolveValuesAsKeyword);
     if (!value4)
         return;
 
@@ -3751,11 +3751,11 @@ void BisonCSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, Ref
 
     valueList->next();
 }
-void BisonCSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
+void BisonCSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2)
 {
     unsigned cumulativeFlags = 0;
     FillPositionFlag value3Flag = InvalidFillPosition;
-    RefPtr<CSSPrimitiveValue> value3 = parseFillPositionComponent(valueList, cumulativeFlags, value3Flag, ResolveValuesAsKeyword);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value3 = parseFillPositionComponent(valueList, cumulativeFlags, value3Flag, ResolveValuesAsKeyword);
 
     // value3 is not an expected value, we return.
     if (!value3)
@@ -3799,8 +3799,8 @@ void BisonCSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, Ref
         value1 = createPrimitiveValuePair(parsedValue1, parsedValue2);
         value2 = createPrimitiveValuePair(cssValuePool().createIdentifierValue(secondPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::CSS_PERCENTAGE));
     } else {
-        RefPtr<CSSPrimitiveValue> firstPositionValue;
-        RefPtr<CSSPrimitiveValue> secondPositionValue;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> firstPositionValue;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> secondPositionValue;
 
         if (isFillPositionKeyword(ident2)) {
             // To match CSS grammar, we should only accept: [ center | left | right | bottom | top ] [ left | right | top | bottom ] [ <percentage> | <length> ].
@@ -3894,8 +3894,8 @@ void BisonCSSParser::parseFillPosition(CSSParserValueList* valueList, RefPtr<CSS
         return;
     }
 
-    RefPtr<CSSPrimitiveValue> parsedValue1 = toCSSPrimitiveValue(value1.get());
-    RefPtr<CSSPrimitiveValue> parsedValue2 = toCSSPrimitiveValue(value2.get());
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1 = toCSSPrimitiveValue(value1.get());
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2 = toCSSPrimitiveValue(value2.get());
 
     value1.clear();
     value2.clear();
@@ -4003,7 +4003,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseFillSize(CSSPropertyID propId, bool& a
     if (value->id == CSSValueContain || value->id == CSSValueCover)
         return cssValuePool().createIdentifierValue(value->id);
 
-    RefPtr<CSSPrimitiveValue> parsedValue1;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1;
 
     if (value->id == CSSValueAuto)
         parsedValue1 = cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -4013,7 +4013,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseFillSize(CSSPropertyID propId, bool& a
         parsedValue1 = createPrimitiveNumericValue(value);
     }
 
-    RefPtr<CSSPrimitiveValue> parsedValue2;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2;
     if ((value = m_valueList->next())) {
         if (value->unit == CSSParserValue::Operator && value->iValue == ',')
             allowComma = false;
@@ -4533,7 +4533,7 @@ bool BisonCSSParser::parseAnimationProperty(CSSPropertyID propId, RefPtr<CSSValu
 }
 
 // The function parses [ <integer> || <string> ] in <grid-line> (which can be stand alone or with 'span').
-bool BisonCSSParser::parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& numericValue, RefPtr<CSSPrimitiveValue>& gridLineName)
+bool BisonCSSParser::parseIntegerOrStringFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSPrimitiveValue>& gridLineName)
 {
     CSSParserValue* value = m_valueList->current();
     if (validUnit(value, FInteger) && value->fValue) {
@@ -4574,8 +4574,8 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridPosition()
         return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_STRING);
     }
 
-    RefPtr<CSSPrimitiveValue> numericValue;
-    RefPtr<CSSPrimitiveValue> gridLineName;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> numericValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> gridLineName;
     bool hasSeenSpanKeyword = false;
 
     if (parseIntegerOrStringFromGridPosition(numericValue, gridLineName)) {
@@ -4720,7 +4720,7 @@ void BisonCSSParser::parseGridLineNames(CSSParserValueList* parserValueList, CSS
     RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
     while (CSSParserValue* identValue = identList->current()) {
         ASSERT(identValue->unit == CSSPrimitiveValue::CSS_IDENT);
-        RefPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
         lineNames->append(lineName.release());
         identList->next();
     }
@@ -4831,11 +4831,11 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridTrackSize(CSSParserValueList& inpu
         if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0));
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0));
         if (!minTrackBreadth)
             return 0;
 
-        RefPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
         if (!maxTrackBreadth)
             return 0;
 
@@ -4848,7 +4848,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridTrackSize(CSSParserValueList& inpu
     return parseGridBreadth(currentValue);
 }
 
-PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseGridBreadth(CSSParserValue* currentValue)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseGridBreadth(CSSParserValue* currentValue)
 {
     if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent)
         return cssValuePool().createIdentifierValue(currentValue->id);
@@ -4953,9 +4953,9 @@ PassRefPtr<CSSValue> BisonCSSParser::parseCounterContent(CSSParserValueList* arg
     CSSParserValue* i = args->current();
     if (i->unit != CSSPrimitiveValue::CSS_IDENT)
         return 0;
-    RefPtr<CSSPrimitiveValue> identifier = createPrimitiveStringValue(i);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> identifier = createPrimitiveStringValue(i);
 
-    RefPtr<CSSPrimitiveValue> separator;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> separator;
     if (!counters)
         separator = cssValuePool().createValue(String(), CSSPrimitiveValue::CSS_STRING);
     else {
@@ -4970,7 +4970,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseCounterContent(CSSParserValueList* arg
         separator = createPrimitiveStringValue(i);
     }
 
-    RefPtr<CSSPrimitiveValue> listStyle;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle;
     i = args->next();
     if (!i) // Make the list style default decimal
         listStyle = cssValuePool().createIdentifierValue(CSSValueDecimal);
@@ -5013,7 +5013,7 @@ bool BisonCSSParser::parseClipShape(CSSPropertyID propId, bool important)
         valid = a->id == CSSValueAuto || validUnit(a, FLength);
         if (!valid)
             break;
-        RefPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
             cssValuePool().createIdentifierValue(CSSValueAuto) :
             createPrimitiveNumericValue(a);
         if (i == 0)
@@ -5043,7 +5043,7 @@ bool BisonCSSParser::parseClipShape(CSSPropertyID propId, bool important)
     return false;
 }
 
-static void completeBorderRadii(RefPtr<CSSPrimitiveValue> radii[4])
+static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
 {
     if (radii[3])
         return;
@@ -5075,7 +5075,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseInsetRoundedCorners(PassRefPtr<CS
         return 0;
 
     // FIXME: Refactor completeBorderRadii and the array
-    RefPtr<CSSPrimitiveValue> radii[2][4];
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[2][4];
 
     unsigned indexAfterSlash = 0;
     for (unsigned i = 0; i < num; ++i) {
@@ -5098,7 +5098,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseInsetRoundedCorners(PassRefPtr<CS
         if (!validUnit(value, FLength | FPercent | FNonNeg))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> radius = createPrimitiveNumericValue(value);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = createPrimitiveNumericValue(value);
 
         if (!indexAfterSlash)
             radii[0][i] = radius;
@@ -5128,7 +5128,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeInset(CSSParserValueLis
     RefPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
 
     CSSParserValue* argument = args->current();
-    Vector<RefPtr<CSSPrimitiveValue> > widthArguments;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > widthArguments;
     bool hasRoundedInset = false;
 
     while (argument) {
@@ -5194,8 +5194,8 @@ bool BisonCSSParser::parseItemPositionOverflowPosition(CSSPropertyID propId, boo
         return true;
     }
 
-    RefPtr<CSSPrimitiveValue> position = 0;
-    RefPtr<CSSPrimitiveValue> overflowAlignmentKeyword = 0;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> position = 0;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> overflowAlignmentKeyword = 0;
     if (isItemPositionKeyword(value->id)) {
         position = cssValuePool().createIdentifierValue(value->id);
         value = m_valueList->next();
@@ -5251,7 +5251,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeRectangle(CSSParserValu
         if (!validUnit(argument, unitFlags))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
         ASSERT(argumentNumber < 6);
         switch (argumentNumber) {
         case 0:
@@ -5305,7 +5305,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeInsetRectangle(CSSParse
         if (!validUnit(argument, unitFlags))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
         ASSERT(argumentNumber < 6);
         switch (argumentNumber) {
         case 0:
@@ -5342,7 +5342,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeInsetRectangle(CSSParse
     return shape;
 }
 
-PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseShapeRadius(CSSParserValue* value)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseShapeRadius(CSSParserValue* value)
 {
     if (value->id == CSSValueClosestSide || value->id == CSSValueFarthestSide)
         return cssValuePool().createIdentifierValue(value->id);
@@ -5371,7 +5371,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeCircle(CSSParserValueLi
             return 0;
 
         if (!args->currentIndex() && argument->id != CSSValueAt) {
-            if (RefPtr<CSSPrimitiveValue> radius = parseShapeRadius(argument)) {
+            if (RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = parseShapeRadius(argument)) {
                 shape->setRadius(radius);
                 continue;
             }
@@ -5422,7 +5422,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseDeprecatedBasicShapeCircle(CSSPar
         if (!validUnit(argument, unitFlags))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
         ASSERT(argumentNumber < 3);
         switch (argumentNumber) {
         case 0:
@@ -5470,7 +5470,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeEllipse(CSSParserValueL
             return 0;
 
         if (args->currentIndex() < 2 && argument->id != CSSValueAt) {
-            if (RefPtr<CSSPrimitiveValue> radius = parseShapeRadius(argument)) {
+            if (RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = parseShapeRadius(argument)) {
                 if (!shape->radiusX())
                     shape->setRadiusX(radius);
                 else
@@ -5519,7 +5519,7 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseDeprecatedBasicShapeEllipse(CSSPa
         if (!validUnit(argument, unitFlags))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
         ASSERT(argumentNumber < 4);
         switch (argumentNumber) {
         case 0:
@@ -5584,8 +5584,8 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapePolygon(CSSParserValueL
         if (!argumentY || !validUnit(argumentY, FLength | FPercent))
             return 0;
 
-        RefPtr<CSSPrimitiveValue> xLength = createPrimitiveNumericValue(argumentX);
-        RefPtr<CSSPrimitiveValue> yLength = createPrimitiveNumericValue(argumentY);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> xLength = createPrimitiveNumericValue(argumentX);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> yLength = createPrimitiveNumericValue(argumentY);
 
         shape->appendPoint(xLength.release(), yLength.release());
 
@@ -5637,12 +5637,12 @@ PassRefPtr<CSSValue> BisonCSSParser::parseShapeProperty(CSSPropertyID propId)
 
     CSSParserValue* value = m_valueList->current();
     CSSValueID valueId = value->id;
-    RefPtr<CSSPrimitiveValue> boxValue;
-    RefPtr<CSSPrimitiveValue> shapeValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> boxValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shapeValue;
 
     if (valueId == CSSValueNone
         || (valueId == CSSValueOutsideShape && propId == CSSPropertyShapeInside)) {
-        RefPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
         m_valueList->next();
         return keywordValue.release();
     }
@@ -5689,7 +5689,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseShapeProperty(CSSPropertyID propId)
     return boxValue.release();
 }
 
-PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseBasicShape()
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseBasicShape()
 {
     CSSParserValue* value = m_valueList->current();
     ASSERT(value->unit == CSSParserValue::Function);
@@ -5945,7 +5945,7 @@ bool BisonCSSParser::parseFontVariant(bool important)
     CSSParserValue* val;
     bool expectComma = false;
     while ((val = m_valueList->current())) {
-        RefPtr<CSSPrimitiveValue> parsedValue;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue;
         if (!expectComma) {
             expectComma = true;
             if (val->id == CSSValueNormal || val->id == CSSValueSmallCaps)
@@ -6601,7 +6601,7 @@ bool BisonCSSParser::parseHSLParameters(CSSParserValue* value, double* colorArra
     return true;
 }
 
-PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseColor(CSSParserValue* value)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> BisonCSSParser::parseColor(CSSParserValue* value)
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(value ? value : m_valueList->current(), c))
@@ -6712,7 +6712,7 @@ public:
 
     void commitLength(CSSParserValue* v)
     {
-        RefPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
 
         if (allowX) {
             x = val.release();
@@ -6738,7 +6738,7 @@ public:
         }
     }
 
-    void commitColor(PassRefPtr<CSSPrimitiveValue> val)
+    void commitColor(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
     {
         color = val;
         allowColor = false;
@@ -6769,12 +6769,12 @@ public:
     BisonCSSParser* m_parser;
 
     RefPtrWillBeRawPtr<CSSValueList> values;
-    RefPtr<CSSPrimitiveValue> x;
-    RefPtr<CSSPrimitiveValue> y;
-    RefPtr<CSSPrimitiveValue> blur;
-    RefPtr<CSSPrimitiveValue> spread;
-    RefPtr<CSSPrimitiveValue> style;
-    RefPtr<CSSPrimitiveValue> color;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> x;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> y;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blur;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spread;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> style;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> color;
 
     bool allowX;
     bool allowY;
@@ -6816,7 +6816,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseShadow(CSSParserValueL
             context.commitStyle(val);
         } else {
             // The only other type of value that's ok is a color value.
-            RefPtr<CSSPrimitiveValue> parsedColor;
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedColor;
             bool isColor = ((val->id >= CSSValueAqua && val->id <= CSSValueWindowtext) || val->id == CSSValueMenu
                             || (val->id >= CSSValueWebkitFocusRingColor && val->id <= CSSValueWebkitText && inQuirksMode())
                             || val->id == CSSValueCurrentcolor);
@@ -6855,7 +6855,7 @@ bool BisonCSSParser::parseReflect(CSSPropertyID propId, bool important)
 
     // Direction comes first.
     CSSParserValue* val = m_valueList->current();
-    RefPtr<CSSPrimitiveValue> direction;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> direction;
     switch (val->id) {
     case CSSValueAbove:
     case CSSValueBelow:
@@ -6869,7 +6869,7 @@ bool BisonCSSParser::parseReflect(CSSPropertyID propId, bool important)
 
     // The offset comes next.
     val = m_valueList->next();
-    RefPtr<CSSPrimitiveValue> offset;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> offset;
     if (!val)
         offset = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PX);
     else {
@@ -6900,7 +6900,7 @@ bool BisonCSSParser::parseFlex(CSSParserValueList* args, bool important)
     static const double unsetValue = -1;
     double flexGrow = unsetValue;
     double flexShrink = unsetValue;
-    RefPtr<CSSPrimitiveValue> flexBasis;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> flexBasis;
 
     while (CSSParserValue* arg = args->current()) {
         if (validUnit(arg, FNumber | FNonNeg)) {
@@ -7007,7 +7007,7 @@ public:
             m_requireWidth = false;
         }
     }
-    void commitBorderWidth(PassRefPtr<CSSPrimitiveValue> slice)
+    void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> slice)
     {
         m_borderSlice = slice;
         m_canAdvance = true;
@@ -7016,7 +7016,7 @@ public:
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
-    void commitBorderOutset(PassRefPtr<CSSPrimitiveValue> outset)
+    void commitBorderOutset(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> outset)
     {
         m_outset = outset;
         m_canAdvance = true;
@@ -7079,8 +7079,8 @@ public:
 
     RefPtr<CSSValue> m_image;
     RefPtrWillBeRawPtr<CSSBorderImageSliceValue> m_imageSlice;
-    RefPtr<CSSPrimitiveValue> m_borderSlice;
-    RefPtr<CSSPrimitiveValue> m_outset;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_borderSlice;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_outset;
 
     RefPtr<CSSValue> m_repeat;
 };
@@ -7126,13 +7126,13 @@ static bool buildBorderImageParseContext(BisonCSSParser& parser, CSSPropertyID p
         }
 
         if (!context.canAdvance() && context.requireWidth()) {
-            RefPtr<CSSPrimitiveValue> borderSlice;
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderSlice;
             if (parser.parseBorderImageWidth(borderSlice))
                 context.commitBorderWidth(borderSlice.release());
         }
 
         if (!context.canAdvance() && context.requireOutset()) {
-            RefPtr<CSSPrimitiveValue> borderOutset;
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderOutset;
             if (parser.parseBorderImageOutset(borderOutset))
                 context.commitBorderOutset(borderOutset.release());
         }
@@ -7181,8 +7181,8 @@ static bool isBorderImageRepeatKeyword(int id)
 
 bool BisonCSSParser::parseBorderImageRepeat(RefPtr<CSSValue>& result)
 {
-    RefPtr<CSSPrimitiveValue> firstValue;
-    RefPtr<CSSPrimitiveValue> secondValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> firstValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> secondValue;
     CSSParserValue* val = m_valueList->current();
     if (!val)
         return false;
@@ -7212,6 +7212,7 @@ bool BisonCSSParser::parseBorderImageRepeat(RefPtr<CSSValue>& result)
 }
 
 class BorderImageSliceParseContext {
+    DISALLOW_ALLOCATION();
 public:
     BorderImageSliceParseContext(BisonCSSParser* parser)
     : m_parser(parser)
@@ -7228,7 +7229,7 @@ public:
 
     void commitNumber(CSSParserValue* v)
     {
-        RefPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> val = m_parser->createPrimitiveNumericValue(v);
         if (!m_top)
             m_top = val;
         else if (!m_right)
@@ -7280,10 +7281,10 @@ private:
     bool m_allowFill;
     bool m_allowFinalCommit;
 
-    RefPtr<CSSPrimitiveValue> m_top;
-    RefPtr<CSSPrimitiveValue> m_right;
-    RefPtr<CSSPrimitiveValue> m_bottom;
-    RefPtr<CSSPrimitiveValue> m_left;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_top;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_right;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_left;
 
     bool m_fill;
 };
@@ -7339,7 +7340,7 @@ public:
 
     void commitNumber(CSSParserValue* v)
     {
-        RefPtr<CSSPrimitiveValue> val;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> val;
         if (v->id == CSSValueAuto)
             val = cssValuePool().createIdentifierValue(v->id);
         else
@@ -7361,9 +7362,9 @@ public:
     }
 
     void setAllowFinalCommit() { m_allowFinalCommit = true; }
-    void setTop(PassRefPtr<CSSPrimitiveValue> val) { m_top = val; }
+    void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_top = val; }
 
-    PassRefPtr<CSSPrimitiveValue> commitBorderImageQuad()
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> commitBorderImageQuad()
     {
         // We need to clone and repeat values for any omissions.
         ASSERT(m_top);
@@ -7396,13 +7397,13 @@ private:
     bool m_allowNumber;
     bool m_allowFinalCommit;
 
-    RefPtr<CSSPrimitiveValue> m_top;
-    RefPtr<CSSPrimitiveValue> m_right;
-    RefPtr<CSSPrimitiveValue> m_bottom;
-    RefPtr<CSSPrimitiveValue> m_left;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_top;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_right;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> m_left;
 };
 
-bool BisonCSSParser::parseBorderImageQuad(Units validUnits, RefPtr<CSSPrimitiveValue>& result)
+bool BisonCSSParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
 {
     BorderImageQuadParseContext context(this);
     CSSParserValue* val;
@@ -7428,12 +7429,12 @@ bool BisonCSSParser::parseBorderImageQuad(Units validUnits, RefPtr<CSSPrimitiveV
     return false;
 }
 
-bool BisonCSSParser::parseBorderImageWidth(RefPtr<CSSPrimitiveValue>& result)
+bool BisonCSSParser::parseBorderImageWidth(RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
 {
     return parseBorderImageQuad(FLength | FNumber | FNonNeg | FPercent, result);
 }
 
-bool BisonCSSParser::parseBorderImageOutset(RefPtr<CSSPrimitiveValue>& result)
+bool BisonCSSParser::parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
 {
     return parseBorderImageQuad(FLength | FNumber | FNonNeg, result);
 }
@@ -7445,7 +7446,7 @@ bool BisonCSSParser::parseBorderRadius(CSSPropertyID propId, bool important)
         return false;
 
     ShorthandScope scope(this, propId);
-    RefPtr<CSSPrimitiveValue> radii[2][4];
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[2][4];
 
     unsigned indexAfterSlash = 0;
     for (unsigned i = 0; i < num; ++i) {
@@ -7468,7 +7469,7 @@ bool BisonCSSParser::parseBorderRadius(CSSPropertyID propId, bool important)
         if (!validUnit(value, FLength | FPercent | FNonNeg))
             return false;
 
-        RefPtr<CSSPrimitiveValue> radius = createPrimitiveNumericValue(value);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> radius = createPrimitiveNumericValue(value);
 
         if (!indexAfterSlash) {
             radii[0][i] = radius;
@@ -7531,7 +7532,7 @@ bool BisonCSSParser::parseCounter(CSSPropertyID propId, int defaultValue, bool i
     enum { ID, VAL } state = ID;
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    RefPtr<CSSPrimitiveValue> counterName;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName;
 
     while (true) {
         CSSParserValue* val = m_valueList->current();
@@ -7569,9 +7570,9 @@ bool BisonCSSParser::parseCounter(CSSPropertyID propId, int defaultValue, bool i
 }
 
 // This should go away once we drop support for -webkit-gradient
-static PassRefPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CSSParserValue* a, bool horizontal)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CSSParserValue* a, bool horizontal)
 {
-    RefPtr<CSSPrimitiveValue> result;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> result;
     if (a->unit == CSSPrimitiveValue::CSS_IDENT) {
         if ((equalIgnoringCase(a, "left") && horizontal)
             || (equalIgnoringCase(a, "top") && !horizontal))
@@ -7693,7 +7694,7 @@ bool BisonCSSParser::parseDeprecatedGradient(CSSParserValueList* valueList, RefP
     a = args->next();
     if (!a)
         return false;
-    RefPtr<CSSPrimitiveValue> point = parseDeprecatedGradientPoint(a, true);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> point = parseDeprecatedGradientPoint(a, true);
     if (!point)
         return false;
     result->setFirstX(point.release());
@@ -7783,7 +7784,7 @@ bool BisonCSSParser::parseDeprecatedGradient(CSSParserValueList* valueList, RefP
     return true;
 }
 
-static PassRefPtr<CSSPrimitiveValue> valueFromSideKeyword(CSSParserValue* a, bool& isHorizontal)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueFromSideKeyword(CSSParserValue* a, bool& isHorizontal)
 {
     if (a->unit != CSSPrimitiveValue::CSS_IDENT)
         return 0;
@@ -7803,7 +7804,7 @@ static PassRefPtr<CSSPrimitiveValue> valueFromSideKeyword(CSSParserValue* a, boo
     return cssValuePool().createIdentifierValue(a->id);
 }
 
-static PassRefPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(BisonCSSParser* p, CSSParserValue* value)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(BisonCSSParser* p, CSSParserValue* value)
 {
     CSSValueID id = value->id;
     if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor)
@@ -7834,9 +7835,9 @@ bool BisonCSSParser::parseDeprecatedLinearGradient(CSSParserValueList* valueList
         expectComma = true;
     } else {
         // Look one or two optional keywords that indicate a side or corner.
-        RefPtr<CSSPrimitiveValue> startX, startY;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> startX, startY;
 
-        RefPtr<CSSPrimitiveValue> location;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> location;
         bool isHorizontal = false;
         if ((location = valueFromSideKeyword(a, isHorizontal))) {
             if (isHorizontal)
@@ -7920,8 +7921,8 @@ bool BisonCSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList
     result->setFirstY(toCSSPrimitiveValue(centerY.get()));
     result->setSecondY(toCSSPrimitiveValue(centerY.get()));
 
-    RefPtr<CSSPrimitiveValue> shapeValue;
-    RefPtr<CSSPrimitiveValue> sizeValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shapeValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> sizeValue;
 
     // Optional shape and/or size in any order.
     for (int i = 0; i < 2; ++i) {
@@ -7961,8 +7962,8 @@ bool BisonCSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList
     result->setSizingBehavior(sizeValue);
 
     // Or, two lengths or percentages
-    RefPtr<CSSPrimitiveValue> horizontalSize;
-    RefPtr<CSSPrimitiveValue> verticalSize;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalSize;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalSize;
 
     if (!shapeValue && !sizeValue) {
         if (validUnit(a, FLength | FPercent)) {
@@ -8023,8 +8024,8 @@ bool BisonCSSParser::parseLinearGradient(CSSParserValueList* valueList, RefPtr<C
         if (!a)
             return false;
 
-        RefPtr<CSSPrimitiveValue> endX, endY;
-        RefPtr<CSSPrimitiveValue> location;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> endX, endY;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> location;
         bool isHorizontal = false;
 
         location = valueFromSideKeyword(a, isHorizontal);
@@ -8084,10 +8085,10 @@ bool BisonCSSParser::parseRadialGradient(CSSParserValueList* valueList, RefPtr<C
 
     bool expectComma = false;
 
-    RefPtr<CSSPrimitiveValue> shapeValue;
-    RefPtr<CSSPrimitiveValue> sizeValue;
-    RefPtr<CSSPrimitiveValue> horizontalSize;
-    RefPtr<CSSPrimitiveValue> verticalSize;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shapeValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> sizeValue;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalSize;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalSize;
 
     // First part of grammar, the size/shape clause:
     // [ circle || <length> ] |
@@ -8324,7 +8325,7 @@ bool BisonCSSParser::parseCrossfade(CSSParserValueList* valueList, RefPtr<CSSVal
     a = args->next();
 
     // The third argument is the crossfade value. It is a percentage or a fractional number.
-    RefPtr<CSSPrimitiveValue> percentage;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> percentage;
     if (!a)
         return false;
 
@@ -9074,8 +9075,8 @@ bool BisonCSSParser::parseTextEmphasisStyle(bool important)
 {
     unsigned valueListSize = m_valueList->size();
 
-    RefPtr<CSSPrimitiveValue> fill;
-    RefPtr<CSSPrimitiveValue> shape;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> shape;
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         if (value->unit == CSSPrimitiveValue::CSS_STRING) {
@@ -9252,7 +9253,7 @@ bool BisonCSSParser::parseFontFeatureTag(CSSValueList* settings)
 bool BisonCSSParser::parseFontFeatureSettings(bool important)
 {
     if (m_valueList->size() == 1 && m_valueList->current()->id == CSSValueNormal) {
-        RefPtr<CSSPrimitiveValue> normalValue = cssValuePool().createIdentifierValue(CSSValueNormal);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> normalValue = cssValuePool().createIdentifierValue(CSSValueNormal);
         m_valueList->next();
         addProperty(CSSPropertyWebkitFontFeatureSettings, normalValue.release(), important);
         return true;

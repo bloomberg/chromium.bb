@@ -44,18 +44,18 @@ class CSSValuePool :  public NoBaseWillBeGarbageCollected<CSSValuePool> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     PassRefPtrWillBeRawPtr<CSSValueList> createFontFaceValue(const AtomicString&);
-    PassRefPtr<CSSPrimitiveValue> createFontFamilyValue(const String&);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createFontFamilyValue(const String&);
     PassRefPtrWillBeRawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
-    PassRefPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
-    PassRefPtr<CSSPrimitiveValue> createIdentifierValue(CSSPropertyID identifier);
-    PassRefPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
-    PassRefPtr<CSSPrimitiveValue> createValue(double value, CSSPrimitiveValue::UnitTypes);
-    PassRefPtr<CSSPrimitiveValue> createValue(const String& value, CSSPrimitiveValue::UnitTypes type) { return CSSPrimitiveValue::create(value, type); }
-    PassRefPtr<CSSPrimitiveValue> createValue(const Length& value, const RenderStyle&);
-    PassRefPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
-    template<typename T> static PassRefPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSPropertyID identifier);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(double value, CSSPrimitiveValue::UnitTypes);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const String& value, CSSPrimitiveValue::UnitTypes type) { return CSSPrimitiveValue::create(value, type); }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, const RenderStyle&);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(const Length& value, float zoom) { return CSSPrimitiveValue::create(value, zoom); }
+    template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createValue(T value) { return CSSPrimitiveValue::create(value); }
 
     void trace(Visitor*);
 
@@ -66,24 +66,24 @@ private:
     RefPtrWillBeMember<CSSInitialValue> m_implicitInitialValue;
     RefPtrWillBeMember<CSSInitialValue> m_explicitInitialValue;
 
-    RefPtr<CSSPrimitiveValue> m_identifierValueCache[numCSSValueKeywords];
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, numCSSValueKeywords> m_identifierValueCache;
 
-    typedef HashMap<unsigned, RefPtr<CSSPrimitiveValue> > ColorValueCache;
+    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSPrimitiveValue> > ColorValueCache;
     ColorValueCache m_colorValueCache;
-    RefPtr<CSSPrimitiveValue> m_colorTransparent;
-    RefPtr<CSSPrimitiveValue> m_colorWhite;
-    RefPtr<CSSPrimitiveValue> m_colorBlack;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_colorTransparent;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_colorWhite;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_colorBlack;
 
     static const int maximumCacheableIntegerValue = 255;
 
-    RefPtr<CSSPrimitiveValue> m_pixelValueCache[maximumCacheableIntegerValue + 1];
-    RefPtr<CSSPrimitiveValue> m_percentValueCache[maximumCacheableIntegerValue + 1];
-    RefPtr<CSSPrimitiveValue> m_numberValueCache[maximumCacheableIntegerValue + 1];
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1> m_pixelValueCache;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1> m_percentValueCache;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1> m_numberValueCache;
 
     typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> > FontFaceValueCache;
     FontFaceValueCache m_fontFaceValueCache;
 
-    typedef HashMap<String, RefPtr<CSSPrimitiveValue> > FontFamilyValueCache;
+    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<CSSPrimitiveValue> > FontFamilyValueCache;
     FontFamilyValueCache m_fontFamilyValueCache;
 
     friend CSSValuePool& cssValuePool();

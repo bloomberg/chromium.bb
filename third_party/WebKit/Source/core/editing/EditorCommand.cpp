@@ -1049,7 +1049,7 @@ static bool executeSetMark(Frame& frame, Event*, EditorCommandSource, const Stri
 
 static bool executeStrikethrough(Frame& frame, Event*, EditorCommandSource source, const String&)
 {
-    RefPtr<CSSPrimitiveValue> lineThrough = CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> lineThrough = CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
     return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, lineThrough.get());
 }
 
@@ -1104,7 +1104,7 @@ static bool executeTranspose(Frame& frame, Event*, EditorCommandSource, const St
 
 static bool executeUnderline(Frame& frame, Event*, EditorCommandSource source, const String&)
 {
-    RefPtr<CSSPrimitiveValue> underline = CSSPrimitiveValue::createIdentifier(CSSValueUnderline);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> underline = CSSPrimitiveValue::createIdentifier(CSSValueUnderline);
     return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, underline.get());
 }
 

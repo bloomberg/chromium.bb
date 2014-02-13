@@ -78,7 +78,7 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
     } else if (name == noshadeAttr) {
         addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle, CSSValueSolid);
 
-        RefPtr<CSSPrimitiveValue> darkGrayValue = cssValuePool().createColorValue(Color::darkGray);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> darkGrayValue = cssValuePool().createColorValue(Color::darkGray);
         style->setProperty(CSSPropertyBorderColor, darkGrayValue);
         style->setProperty(CSSPropertyBackgroundColor, darkGrayValue);
     } else if (name == sizeAttr) {

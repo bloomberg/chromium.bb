@@ -34,10 +34,10 @@ public:
     CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
     CSSPrimitiveValue* left() const { return m_left.get(); }
 
-    void setTop(PassRefPtr<CSSPrimitiveValue> top) { m_top = top; }
-    void setRight(PassRefPtr<CSSPrimitiveValue> right) { m_right = right; }
-    void setBottom(PassRefPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
-    void setLeft(PassRefPtr<CSSPrimitiveValue> left) { m_left = left; }
+    void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top) { m_top = top; }
+    void setRight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right) { m_right = right; }
+    void setBottom(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
+    void setLeft(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left) { m_left = left; }
 
     bool equals(const RectBase& other) const
     {
