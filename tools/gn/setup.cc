@@ -125,7 +125,8 @@ CommonSetup::CommonSetup()
     : build_settings_(),
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
-      check_for_bad_items_(true) {
+      check_for_bad_items_(true),
+      check_for_unused_overrides_(true) {
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
 }
 
@@ -133,7 +134,8 @@ CommonSetup::CommonSetup(const CommonSetup& other)
     : build_settings_(other.build_settings_),
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
-      check_for_bad_items_(other.check_for_bad_items_) {
+      check_for_bad_items_(other.check_for_bad_items_),
+      check_for_unused_overrides_(other.check_for_unused_overrides_) {
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
 }
 
@@ -157,9 +159,13 @@ bool CommonSetup::RunPostMessageLoop() {
     }
   }
 
-  if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
-    err.PrintToStdout();
-    return false;
+  if (check_for_unused_overrides_) {
+    if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
+      // TODO(brettw) implement a system of warnings. Until we have a better
+      // system, print the error but don't return failure.
+      err.PrintToStdout();
+      return true;
+    }
   }
 
   // Write out tracing and timing if requested.

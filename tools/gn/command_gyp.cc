@@ -317,6 +317,39 @@ std::pair<int, int> WriteGypFiles(Setups& setups, Err* err) {
                         static_cast<int>(grouped_targets.size()));
 }
 
+// Verifies that all build argument overrides are used by at least one of the
+// build types.
+void VerifyAllOverridesUsed(const Setups& setups) {
+  // Collect all declared args from all builds.
+  Scope::KeyValueMap declared;
+  setups.debug->build_settings().build_args().MergeDeclaredArguments(
+      &declared);
+  setups.release->build_settings().build_args().MergeDeclaredArguments(
+      &declared);
+  if (setups.debug64 && setups.release64) {
+    setups.debug64->build_settings().build_args().MergeDeclaredArguments(
+        &declared);
+    setups.release64->build_settings().build_args().MergeDeclaredArguments(
+        &declared);
+  }
+  if (setups.xcode_debug && setups.xcode_release) {
+    setups.xcode_debug->build_settings().build_args().MergeDeclaredArguments(
+        &declared);
+    setups.xcode_release->build_settings().build_args().MergeDeclaredArguments(
+        &declared);
+  }
+
+  Scope::KeyValueMap used =
+      setups.debug->build_settings().build_args().GetAllOverrides();
+
+  Err err;
+  if (!Args::VerifyAllOverridesUsed(used, declared, &err)) {
+    // TODO(brettw) implement a system of warnings. Until we have a better
+    // system, print the error but don't cause a failure.
+    err.PrintToStdout();
+  }
+}
+
 }  // namespace
 
 // Suppress output on success.
@@ -391,8 +424,13 @@ int RunGyp(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;
   Setups setups;
 
-  // Deliberately leaked to avoid expensive process teardown.
+  // Deliberately leaked to avoid expensive process teardown. We also turn off
+  // unused override checking since we want to merge all declared arguments and
+  // check those, rather than check each build individually. Otherwise, you
+  // couldn't have an arg that was used in only one build type. This comes up
+  // because some args are build-type specific.
   setups.debug = new Setup;
+  setups.debug->set_check_for_unused_overrides(false);
   if (!setups.debug->DoSetup())
     return 1;
   const char kIsDebug[] = "is_debug";
@@ -465,6 +503,8 @@ int RunGyp(const std::vector<std::string>& args) {
     return 1;
   if (setups.xcode_release && !setups.xcode_release->RunPostMessageLoop())
     return 1;
+
+  VerifyAllOverridesUsed(setups);
 
   Err err;
   std::pair<int, int> counts = WriteGypFiles(setups, &err);

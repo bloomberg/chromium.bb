@@ -39,6 +39,12 @@ class CommonSetup {
   // cycles upon completion. When false, such errors will be ignored.
   void set_check_for_bad_items(bool s) { check_for_bad_items_ = s; }
 
+  // When true (the default), RunPostMessageLoop will check for overrides that
+  // were specified but not used. When false, such errors will be ignored.
+  void set_check_for_unused_overrides(bool s) {
+    check_for_unused_overrides_ = s;
+  }
+
   BuildSettings& build_settings() { return build_settings_; }
   Builder* builder() { return builder_.get(); }
   LoaderImpl* loader() { return loader_.get(); }
@@ -57,6 +63,7 @@ class CommonSetup {
   scoped_refptr<Builder> builder_;
 
   bool check_for_bad_items_;
+  bool check_for_unused_overrides_;
 
  private:
   CommonSetup& operator=(const CommonSetup& other);  // Disallow.

@@ -35,6 +35,9 @@ class Args {
   // argument is set.
   const Value* GetArgOverride(const char* name) const;
 
+  // Gets all overrides set on the build.
+  Scope::KeyValueMap GetAllOverrides() const;
+
   // Sets up the root scope for a toolchain. This applies the default system
   // flags, then any overrides stored in this object, then applies any
   // toolchain overrides specified in the argument.
@@ -58,11 +61,17 @@ class Args {
   // arguments. If there are, this returns false and sets the error.
   bool VerifyAllOverridesUsed(Err* err) const;
 
-  // This function is not threadsafe, it must only be used when
-  // single-threaded. It's used to implement the "args" command.
-  const Scope::KeyValueMap& declared_arguments() const {
-    return declared_arguments_;
-  }
+  // Like VerifyAllOverridesUsed but takes the lists of overrides specified and
+  // parameters declared.
+  static bool VerifyAllOverridesUsed(
+      const Scope::KeyValueMap& overrides,
+      const Scope::KeyValueMap& declared_arguments,
+      Err* err);
+
+  // Adds all declared arguments to the given output list. If the values exist
+  // in the list already, their values will be overwriten, but other values
+  // already in the list will remain.
+  void MergeDeclaredArguments(Scope::KeyValueMap* dest) const;
 
  private:
   // Sets the default config based on the current system.

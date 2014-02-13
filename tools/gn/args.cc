@@ -93,6 +93,11 @@ const Value* Args::GetArgOverride(const char* name) const {
   return &found->second;
 }
 
+Scope::KeyValueMap Args::GetAllOverrides() const {
+  base::AutoLock lock(lock_);
+  return all_overrides_;
+}
+
 void Args::SetupRootScope(Scope* dest,
                           const Scope::KeyValueMap& toolchain_overrides) const {
   base::AutoLock lock(lock_);
@@ -164,19 +169,25 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
 
 bool Args::VerifyAllOverridesUsed(Err* err) const {
   base::AutoLock lock(lock_);
+  return VerifyAllOverridesUsed(all_overrides_, declared_arguments_, err);
+}
 
-  for (Scope::KeyValueMap::const_iterator i = all_overrides_.begin();
-       i != all_overrides_.end(); ++i) {
-    if (declared_arguments_.find(i->first) == declared_arguments_.end()) {
+bool Args::VerifyAllOverridesUsed(
+    const Scope::KeyValueMap& overrides,
+    const Scope::KeyValueMap& declared_arguments,
+    Err* err) {
+  for (Scope::KeyValueMap::const_iterator i = overrides.begin();
+       i != overrides.end(); ++i) {
+    if (declared_arguments.find(i->first) == declared_arguments.end()) {
       // Get a list of all possible overrides for help with error finding.
       //
       // It might be nice to do edit distance checks to see if we can find one
       // close to what you typed.
       std::string all_declared_str;
       for (Scope::KeyValueMap::const_iterator cur_str =
-               declared_arguments_.begin();
-           cur_str != declared_arguments_.end(); ++cur_str) {
-        if (cur_str != declared_arguments_.begin())
+               declared_arguments.begin();
+           cur_str != declared_arguments.end(); ++cur_str) {
+        if (cur_str != declared_arguments.begin())
           all_declared_str += ", ";
         all_declared_str += cur_str->first.as_string();
       }
@@ -191,7 +202,17 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
   return true;
 }
 
+void Args::MergeDeclaredArguments(Scope::KeyValueMap* dest) const {
+  base::AutoLock lock(lock_);
+
+  for (Scope::KeyValueMap::const_iterator i = declared_arguments_.begin();
+       i != declared_arguments_.end(); ++i)
+    (*dest)[i->first] = i->second;
+}
+
 void Args::SetSystemVarsLocked(Scope* dest) const {
+  lock_.AssertAcquired();
+
   // Host OS.
   const char* os = NULL;
 #if defined(OS_WIN)
@@ -264,12 +285,14 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
 
 void Args::ApplyOverridesLocked(const Scope::KeyValueMap& values,
                                 Scope* scope) const {
+  lock_.AssertAcquired();
   for (Scope::KeyValueMap::const_iterator i = values.begin();
        i != values.end(); ++i)
     scope->SetValue(i->first, i->second, i->second.origin());
 }
 
 void Args::SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const {
+  lock_.AssertAcquired();
   for (Scope::KeyValueMap::const_iterator i = values.begin();
        i != values.end(); ++i)
     all_overrides_[i->first] = i->second;

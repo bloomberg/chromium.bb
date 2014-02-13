@@ -123,8 +123,8 @@ int RunArgs(const std::vector<std::string>& args) {
   if (!setup->DoSetup() || !setup->Run())
     return 1;
 
-  const Scope::KeyValueMap& build_args =
-      setup->build_settings().build_args().declared_arguments();
+  Scope::KeyValueMap build_args;
+  setup->build_settings().build_args().MergeDeclaredArguments(&build_args);
 
   if (args.size() == 1) {
     // Get help on a specific command.
