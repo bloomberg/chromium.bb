@@ -385,7 +385,8 @@ TEST_F(FieldTrialTest, Restore) {
   ASSERT_FALSE(FieldTrialList::TrialExists("xxx"));
 
   FieldTrialList::CreateTrialsFromString("Some_name/Winner/xxx/yyyy/",
-                                         FieldTrialList::DONT_ACTIVATE_TRIALS);
+                                         FieldTrialList::DONT_ACTIVATE_TRIALS,
+                                         std::set<std::string>());
 
   FieldTrial* trial = FieldTrialList::Find("Some_name");
   ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
@@ -400,13 +401,17 @@ TEST_F(FieldTrialTest, Restore) {
 
 TEST_F(FieldTrialTest, BogusRestore) {
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "MissingSlash", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "MissingSlash", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "MissingGroupName/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "MissingGroupName/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "MissingFinalSlash/gname", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "MissingFinalSlash/gname", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "noname, only group/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "noname, only group/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
 }
 
 TEST_F(FieldTrialTest, DuplicateRestore) {
@@ -420,18 +425,21 @@ TEST_F(FieldTrialTest, DuplicateRestore) {
 
   // It is OK if we redundantly specify a winner.
   EXPECT_TRUE(FieldTrialList::CreateTrialsFromString(
-      save_string, FieldTrialList::DONT_ACTIVATE_TRIALS));
+      save_string, FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
 
   // But it is an error to try to change to a different winner.
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "Some name/Loser/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "Some name/Loser/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
 }
 
 TEST_F(FieldTrialTest, CreateTrialsFromStringActive) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
   ASSERT_FALSE(FieldTrialList::TrialExists("Xyz"));
   ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
-      "Abc/def/Xyz/zyx/", FieldTrialList::ACTIVATE_TRIALS));
+      "Abc/def/Xyz/zyx/", FieldTrialList::ACTIVATE_TRIALS,
+      std::set<std::string>()));
 
   FieldTrial::ActiveGroups active_groups;
   FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
@@ -446,7 +454,8 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringNotActive) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
   ASSERT_FALSE(FieldTrialList::TrialExists("Xyz"));
   ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
-      "Abc/def/Xyz/zyx/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "Abc/def/Xyz/zyx/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
 
   FieldTrial::ActiveGroups active_groups;
   FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
@@ -469,7 +478,7 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringActiveObserver) {
 
   TestFieldTrialObserver observer;
   ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
-      "Abc/def/", FieldTrialList::ACTIVATE_TRIALS));
+      "Abc/def/", FieldTrialList::ACTIVATE_TRIALS, std::set<std::string>()));
 
   RunLoop().RunUntilIdle();
   EXPECT_EQ("Abc", observer.trial_name());
@@ -481,7 +490,8 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringNotActiveObserver) {
 
   TestFieldTrialObserver observer;
   ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
-      "Abc/def/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+      "Abc/def/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
   RunLoop().RunUntilIdle();
   // Observer shouldn't be notified.
   EXPECT_TRUE(observer.trial_name().empty());
@@ -492,6 +502,48 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringNotActiveObserver) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ("Abc", observer.trial_name());
   EXPECT_EQ("def", observer.group_name());
+}
+
+TEST_F(FieldTrialTest, CreateTrialsFromStringWithIgnoredFieldTrials) {
+  ASSERT_FALSE(FieldTrialList::TrialExists("Unaccepted1"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Foo"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Unaccepted2"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Bar"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Unaccepted3"));
+
+  std::set<std::string> ignored_trial_names;
+  ignored_trial_names.insert("Unaccepted1");
+  ignored_trial_names.insert("Unaccepted2");
+  ignored_trial_names.insert("Unaccepted3");
+
+  FieldTrialList::CreateTrialsFromString(
+      "Unaccepted1/Unaccepted1_name/"
+      "Foo/Foo_name/"
+      "Unaccepted2/Unaccepted2_name/"
+      "Bar/Bar_name/"
+      "Unaccepted3/Unaccepted3_name/",
+      FieldTrialList::DONT_ACTIVATE_TRIALS,
+      ignored_trial_names);
+
+  EXPECT_FALSE(FieldTrialList::TrialExists("Unaccepted1"));
+  EXPECT_TRUE(FieldTrialList::TrialExists("Foo"));
+  EXPECT_FALSE(FieldTrialList::TrialExists("Unaccepted2"));
+  EXPECT_TRUE(FieldTrialList::TrialExists("Bar"));
+  EXPECT_FALSE(FieldTrialList::TrialExists("Unaccepted3"));
+
+  FieldTrial::ActiveGroups active_groups;
+  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  EXPECT_TRUE(active_groups.empty());
+
+  FieldTrial* trial = FieldTrialList::Find("Foo");
+  ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
+  EXPECT_EQ("Foo", trial->trial_name());
+  EXPECT_EQ("Foo_name", trial->group_name());
+
+  trial = FieldTrialList::Find("Bar");
+  ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
+  EXPECT_EQ("Bar", trial->trial_name());
+  EXPECT_EQ("Bar_name", trial->group_name());
 }
 
 TEST_F(FieldTrialTest, CreateFieldTrial) {

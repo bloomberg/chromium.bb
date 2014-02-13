@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #endif
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -518,6 +519,7 @@ void InitializeAllPrefHashStores() {
     chrome_prefs::InitializePrefHashStoreIfRequired(profile_path);
   }
 }
+
 }  // namespace
 
 namespace chrome_browser {
@@ -602,11 +604,17 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
+    std::set<std::string> unforceable_field_trials;
+#if defined(OFFICIAL_BUILD)
+    unforceable_field_trials.insert("SettingsEnforcement");
+#endif  // defined(OFFICIAL_BUILD)
+
     // Create field trials without activating them, so that this behaves in a
     // consistent manner with field trials created from the server.
     bool result = base::FieldTrialList::CreateTrialsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
-        base::FieldTrialList::DONT_ACTIVATE_TRIALS);
+        base::FieldTrialList::DONT_ACTIVATE_TRIALS,
+        unforceable_field_trials);
     CHECK(result) << "Invalid --" << switches::kForceFieldTrials
                   << " list specified.";
   }

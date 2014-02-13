@@ -399,8 +399,10 @@ void FieldTrialList::GetActiveFieldTrialGroups(
 }
 
 // static
-bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string,
-                                            FieldTrialActivationMode mode) {
+bool FieldTrialList::CreateTrialsFromString(
+    const std::string& trials_string,
+    FieldTrialActivationMode mode,
+    const std::set<std::string>& ignored_trial_names) {
   DCHECK(global_);
   if (trials_string.empty() || !global_)
     return true;
@@ -418,6 +420,9 @@ bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string,
     std::string group_name(trials_string, name_end + 1,
                            group_name_end - name_end - 1);
     next_item = group_name_end + 1;
+
+    if (ignored_trial_names.find(name) != ignored_trial_names.end())
+      continue;
 
     FieldTrial* trial = CreateFieldTrial(name, group_name);
     if (!trial)

@@ -193,7 +193,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     // reported in crash reports.
     bool result = base::FieldTrialList::CreateTrialsFromString(
         parsed_command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-        base::FieldTrialList::ACTIVATE_TRIALS);
+        base::FieldTrialList::ACTIVATE_TRIALS,
+        std::set<std::string>());
     DCHECK(result);
   }
 
