@@ -20,13 +20,11 @@ class AudioLog {
   virtual ~AudioLog() {}
 
   // Called when an audio component is created.  |params| are the parameters of
-  // the created stream.  |input_device_id| and |output_device_id| are the
-  // respective device ids for input and output.  Either one or both may be
-  // specified.
+  // the created stream.  |device_id| is the id of the audio device opened by
+  // the created stream.
   virtual void OnCreated(int component_id,
                          const media::AudioParameters& params,
-                         const std::string& input_device_id,
-                         const std::string& output_device_id) = 0;
+                         const std::string& device_id) = 0;
 
   // Called when an audio component is started, generally this is synonymous
   // with "playing."

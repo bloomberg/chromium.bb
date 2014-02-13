@@ -39,8 +39,7 @@ class AudioLogImpl : public media::AudioLog {
 
   virtual void OnCreated(int component_id,
                          const media::AudioParameters& params,
-                         const std::string& input_device_id,
-                         const std::string& output_device_id) OVERRIDE;
+                         const std::string& device_id) OVERRIDE;
   virtual void OnStarted(int component_id) OVERRIDE;
   virtual void OnStopped(int component_id) OVERRIDE;
   virtual void OnClosed(int component_id) OVERRIDE;
@@ -72,17 +71,15 @@ AudioLogImpl::~AudioLogImpl() {}
 
 void AudioLogImpl::OnCreated(int component_id,
                              const media::AudioParameters& params,
-                             const std::string& input_device_id,
-                             const std::string& output_device_id) {
+                             const std::string& device_id) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
 
   dict.SetString(kAudioLogStatusKey, "created");
-  dict.SetString("input_device_id", input_device_id);
+  dict.SetString("device_id", device_id);
   dict.SetInteger("input_channels", params.input_channels());
   dict.SetInteger("frames_per_buffer", params.frames_per_buffer());
   dict.SetInteger("sample_rate", params.sample_rate());
-  dict.SetString("output_device_id", output_device_id);
   dict.SetInteger("channels", params.channels());
   dict.SetString("channel_layout",
                  ChannelLayoutToString(params.channel_layout()));

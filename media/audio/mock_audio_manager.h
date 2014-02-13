@@ -40,13 +40,11 @@ class MockAudioManager : public media::AudioManager {
 
   virtual media::AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id) OVERRIDE;
+      const std::string& device_id) OVERRIDE;
 
   virtual media::AudioOutputStream* MakeAudioOutputStreamProxy(
       const media::AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id) OVERRIDE;
+      const std::string& device_id) OVERRIDE;
 
   virtual media::AudioInputStream* MakeAudioInputStream(
       const media::AudioParameters& params,

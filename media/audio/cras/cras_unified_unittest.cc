@@ -37,10 +37,9 @@ class MockAudioManagerCras : public AudioManagerCras {
   MOCK_METHOD0(HasAudioInputDevices, bool());
   MOCK_METHOD1(MakeLinearOutputStream, AudioOutputStream*(
       const AudioParameters& params));
-  MOCK_METHOD3(MakeLowLatencyOutputStream,
+  MOCK_METHOD2(MakeLowLatencyOutputStream,
                AudioOutputStream*(const AudioParameters& params,
-                                  const std::string& device_id,
-                                  const std::string& input_device_id));
+                                  const std::string& device_id));
   MOCK_METHOD2(MakeLinearOutputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD2(MakeLowLatencyInputStream, AudioInputStream*(

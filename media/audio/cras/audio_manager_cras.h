@@ -35,8 +35,7 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       const AudioParameters& params) OVERRIDE;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id) OVERRIDE;
+      const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(

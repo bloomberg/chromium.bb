@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/mac/aggregate_device_manager.h"
 #include "media/audio/mac/audio_device_listener_mac.h"
 
 namespace media {
@@ -40,8 +39,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
       const AudioParameters& params) OVERRIDE;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id,
-      const std::string& input_device_id) OVERRIDE;
+      const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
@@ -80,8 +78,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
       const AudioParameters& input_params) OVERRIDE;
 
  private:
-  bool HasUnifiedDefaultIO();
-
   // Helper methods for constructing AudioDeviceListenerMac on the audio thread.
   void CreateDeviceListener();
   void DestroyDeviceListener();
@@ -98,8 +94,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // so we can intelligently handle device notifications only when necessary.
   int current_sample_rate_;
   AudioDeviceID current_output_device_;
-
-  AggregateDeviceManager aggregate_device_manager_;
 
   // Helper class which monitors power events to determine if output streams
   // should defer Start() calls.  Required to workaround an OSX bug.  See
