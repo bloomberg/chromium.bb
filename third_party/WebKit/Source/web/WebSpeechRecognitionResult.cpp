@@ -34,7 +34,10 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-// Move them into WebCore for the benefit of template aliases.
+// FIXME: oilpan: If the WebCore-qualified Oilpan transition types
+// used below map to CPP #defines, move the type names they expand to
+// into the WebCore namespace. When Oilpan is always enabled, this
+// block can be removed.
 namespace WebCore {
 using WTF::RawPtr;
 using WTF::RefPtr;
