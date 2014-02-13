@@ -616,9 +616,6 @@
           'native_memory_pressure_signals%': 1,
           'enable_printing%': 2,
           'enable_task_manager%':0,
-           # Set to 1 once we have a notification system for Android.
-           # http://crbug.com/115320
-          'notifications%': 0,
         }],
 
         # Android OS includes support for proprietary codecs regardless of
@@ -1466,6 +1463,10 @@
         # Sessions are store separately in the Java side.
         'enable_session_service%': 0,
 
+        # Set to 1 once we have a notification system for Android.
+        # http://crbug.com/115320
+        'notifications%': 0,
+
         'p2p_apis%' : 0,
 
         'gtest_target_type%': 'shared_library',
@@ -1769,9 +1770,6 @@
       }],
       ['enable_task_manager==1', {
         'grit_defines': ['-D', 'enable_task_manager'],
-      }],
-      ['notifications==1', {
-        'grit_defines': ['-D', 'enable_notifications'],
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [
