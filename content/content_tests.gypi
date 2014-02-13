@@ -1019,6 +1019,7 @@
             'renderer/browser_plugin/mock_browser_plugin.h',
             'renderer/browser_plugin/mock_browser_plugin_manager.cc',
             'renderer/browser_plugin/mock_browser_plugin_manager.h',
+	    'renderer/browser_render_view_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/gin_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',
@@ -1168,6 +1169,7 @@
               'sources!': [
                 # These tests depend on single process mode, which is disabled
                 # in official builds.
+		'renderer/browser_render_view_browsertest.cc',
                 'renderer/dom_serializer_browsertest.cc',
                 'renderer/resource_fetcher_browsertest.cc',
                 'renderer/savable_resources_browsertest.cc',
