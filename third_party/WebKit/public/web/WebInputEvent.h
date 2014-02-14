@@ -93,6 +93,7 @@ public:
 
     enum Type {
         Undefined = -1,
+        TypeFirst = Undefined,
 
         // WebMouseEvent
         MouseDown,
@@ -136,6 +137,7 @@ public:
         TouchMove,
         TouchEnd,
         TouchCancel,
+        TypeLast = TouchCancel
     };
 
     enum Modifiers {
