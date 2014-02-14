@@ -378,6 +378,8 @@ private:
     explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue>);
     explicit CSSPrimitiveValue(Pair*);
     explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair>);
+    explicit CSSPrimitiveValue(Counter*);
+    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter>);
 
     static void create(int); // compile-time guard
     static void create(unsigned); // compile-time guard
@@ -385,7 +387,7 @@ private:
 
     void init(const Length&);
     void init(const LengthSize&);
-    void init(PassRefPtr<Counter>);
+    void init(PassRefPtrWillBeRawPtr<Counter>);
     void init(PassRefPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);
     void init(PassRefPtr<Quad>);
@@ -401,14 +403,14 @@ private:
         int parserOperator;
         double num;
         StringImpl* string;
-        Counter* counter;
         Rect* rect;
         Quad* quad;
         unsigned rgbcolor;
         CSSBasicShape* shape;
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
-        Pair* pair;
         CSSCalcValue* calc;
+        Counter* counter;
+        Pair* pair;
     } m_value;
 };
 

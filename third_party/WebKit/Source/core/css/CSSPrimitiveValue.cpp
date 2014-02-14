@@ -325,6 +325,16 @@ CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair> value)
 {
     init(value);
 }
+CSSPrimitiveValue::CSSPrimitiveValue(Counter* value)
+    : CSSValue(PrimitiveClass)
+{
+    init(PassRefPtrWillBeRawPtr<Counter>(value));
+}
+CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter> value)
+    : CSSValue(PrimitiveClass)
+{
+    init(value);
+}
 
 void CSSPrimitiveValue::init(const Length& length)
 {
@@ -386,7 +396,7 @@ void CSSPrimitiveValue::init(const LengthSize& lengthSize)
     m_value.pair = Pair::create(create(lengthSize.width()), create(lengthSize.height()), Pair::KeepIdenticalValues).leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<Counter> c)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Counter> c)
 {
     m_primitiveUnitType = CSS_COUNTER;
     m_hasCachedCSSText = false;
@@ -445,7 +455,10 @@ void CSSPrimitiveValue::cleanup()
             m_value.string->deref();
         break;
     case CSS_COUNTER:
+        // We must not call deref() when oilpan is enabled because m_value.counter is traced.
+#if !ENABLE(OILPAN)
         m_value.counter->deref();
+#endif
         break;
     case CSS_RECT:
         m_value.rect->deref();
@@ -1274,6 +1287,9 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
 void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
 {
     switch (m_primitiveUnitType) {
+    case CSS_COUNTER:
+        visitor->trace(m_value.counter);
+        break;
     case CSS_PAIR:
         visitor->trace(m_value.pair);
         break;

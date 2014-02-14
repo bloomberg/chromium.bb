@@ -756,6 +756,7 @@
             'css/CSSValuePool.h',
             'css/CSSViewportRule.cpp',
             'css/CSSViewportRule.h',
+            'css/Counter.cpp',
             'css/Counter.h',
             'css/DOMWindowCSS.cpp',
             'css/DOMWindowCSS.h',

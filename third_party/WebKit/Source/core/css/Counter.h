@@ -26,11 +26,12 @@
 
 namespace WebCore {
 
-class Counter : public RefCounted<Counter> {
+class Counter : public RefCountedWillBeGarbageCollected<Counter> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Counter> create(PassRefPtr<CSSPrimitiveValue> identifier, PassRefPtr<CSSPrimitiveValue> listStyle, PassRefPtr<CSSPrimitiveValue> separator)
+    static PassRefPtrWillBeRawPtr<Counter> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
     {
-        return adoptRef(new Counter(identifier, listStyle, separator));
+        return adoptRefWillBeNoop(new Counter(identifier, listStyle, separator));
     }
 
     String identifier() const { return m_identifier ? m_identifier->getStringValue() : String(); }
@@ -39,9 +40,9 @@ public:
 
     CSSValueID listStyleIdent() const { return m_listStyle ? m_listStyle->getValueID() : CSSValueInvalid; }
 
-    void setIdentifier(PassRefPtr<CSSPrimitiveValue> identifier) { m_identifier = identifier; }
-    void setListStyle(PassRefPtr<CSSPrimitiveValue> listStyle) { m_listStyle = listStyle; }
-    void setSeparator(PassRefPtr<CSSPrimitiveValue> separator) { m_separator = separator; }
+    void setIdentifier(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier) { m_identifier = identifier; }
+    void setListStyle(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle) { m_listStyle = listStyle; }
+    void setSeparator(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator) { m_separator = separator; }
 
     bool equals(const Counter& other) const
     {
@@ -50,24 +51,26 @@ public:
             && separator() == other.separator();
     }
 
-    PassRefPtr<Counter> cloneForCSSOM() const
+    PassRefPtrWillBeRawPtr<Counter> cloneForCSSOM() const
     {
         return create(m_identifier ? m_identifier->cloneForCSSOM() : 0
             , m_listStyle ? m_listStyle->cloneForCSSOM() : 0
             , m_separator ? m_separator->cloneForCSSOM() : 0);
     }
 
+    void trace(Visitor*);
+
 private:
-    Counter(PassRefPtr<CSSPrimitiveValue> identifier, PassRefPtr<CSSPrimitiveValue> listStyle, PassRefPtr<CSSPrimitiveValue> separator)
+    Counter(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
         : m_identifier(identifier)
         , m_listStyle(listStyle)
         , m_separator(separator)
     {
     }
 
-    RefPtr<CSSPrimitiveValue> m_identifier; // string
-    RefPtr<CSSPrimitiveValue> m_listStyle; // ident
-    RefPtr<CSSPrimitiveValue> m_separator; // string
+    RefPtrWillBeMember<CSSPrimitiveValue> m_identifier; // string
+    RefPtrWillBeMember<CSSPrimitiveValue> m_listStyle; // ident
+    RefPtrWillBeMember<CSSPrimitiveValue> m_separator; // string
 };
 
 } // namespace WebCore
