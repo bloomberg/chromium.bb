@@ -416,6 +416,7 @@ void StickyKeysHandler::DispatchEventAndReleaseModifier(ui::Event* event) {
 }
 
 void StickyKeysHandler::AppendNativeEventMask(unsigned int* state) {
+#if defined(USE_X11)
   unsigned int& state_ref = *state;
   switch (modifier_flag_) {
     case ui::EF_CONTROL_DOWN:
@@ -430,6 +431,7 @@ void StickyKeysHandler::AppendNativeEventMask(unsigned int* state) {
     default:
       NOTREACHED();
   }
+#endif
 }
 
 void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
