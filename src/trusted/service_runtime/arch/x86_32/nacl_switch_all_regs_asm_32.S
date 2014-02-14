@@ -20,7 +20,7 @@
          * because, if the trap flag is set, the exception handler
          * will have to single-step through them.
          */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsViaECX):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSwitchRemainingRegsViaECX):
         /* Restore segment registers to values for untrusted code. */
         movw 0x16(%ecx), %gs
         movw 0x14(%ecx), %fs
@@ -28,5 +28,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsViaECX):
 
         /* Jump to springboard, restoring %cs. */
         ljmp *8(%ecx)
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsAsmEnd):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSwitchRemainingRegsAsmEnd):
 #endif

@@ -60,7 +60,7 @@
  * scons-out//gen/native_client/src/trusted/service_runtime).
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_code):
   /*
    * Save first 4 syscall arguments below the stack pointer.  Any
    * further arguments are already on the stack.
@@ -78,8 +78,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
 
   /* NORETURN */
   .word NACL_HALT_WORD
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_syscall_seg_addr):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_syscall_seg_addr):
   /* a DATA item will be patched in here */
   .word   0
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_end):

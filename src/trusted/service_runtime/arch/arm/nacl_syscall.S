@@ -19,7 +19,7 @@
  * untrusted to trusted.
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSyscallSeg):
   /* Set r0 to the start of the NaClThreadContext struct. */
   sub r0, r9, #NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
 
@@ -40,7 +40,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* store thread state to the nacl_user entry */
   stmia r0, NACL_CALLEE_SAVE_LIST
   /* if r0 is NULL, we would have faulted here */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):
 
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.
@@ -64,9 +64,9 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
    */
   b NaClSwitch
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegEnd):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegEnd):
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallThreadCaptureFault):
   .word NACL_HALT_WORD
 
 .L.offset.nacl_guard_token:

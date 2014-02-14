@@ -30,13 +30,13 @@
 #if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_FUNCTION($0):
 # define MACROARG1      $0
 # define MACROARG2      $1
 #else
 # define MACRO(name)    .macro name arg1, arg2=0
 # define ENDMACRO       .endm
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_FUNCTION(\arg1):
 # define MACROARG1      \arg1
 # define MACROARG2      \arg2
 #endif

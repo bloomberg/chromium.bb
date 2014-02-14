@@ -23,7 +23,7 @@
  * a0 -- address of thread context (struct NaClThreadContext)
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClStartSwitch):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClStartSwitch):
 
   .set noreorder
 
@@ -41,7 +41,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClStartSwitch):
   mov.d $f28,  $f0
   mov.d $f30,  $f0
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSwitch):
 
   /*
    * We clear the following registers to avoid information leaks. The

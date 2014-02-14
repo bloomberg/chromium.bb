@@ -101,7 +101,7 @@ MACROENTRY
         stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%edx)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%edx)
 .endif
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3): /* NaClSyscallSegRegsSaved */
+DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG3): /* NaClSyscallSegRegsSaved */
 
         /*
          * We do not save segment registers, which untrusted code is
@@ -142,7 +142,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3): /* NaClSyscallSegRegsSaved */
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
          */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG4): /* NaClSyscallThreadCaptureFault */
+DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG4): /* NaClSyscallThreadCaptureFault */
 1:      hlt
         /* noret */
 ENDMACRO
@@ -160,5 +160,5 @@ ENDMACRO
          * symbol is defined in the same file.
          */
         .data
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSwitch):
         .long 0

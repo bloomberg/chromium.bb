@@ -18,15 +18,15 @@
          */
         NACL_RODATA
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_code):
         /*
          * Write a value onto the stack which is used to calculate the
          * syscall number.
          */
         movl $0xdeadbeef, -8(%rsp)
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_tramp_addr):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_tramp_addr):
         mov $0xdeadbeefcafebabe, %rax
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_call_target):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_call_target):
         /*
          * Fetch the address of NaClSyscallSeg (or other syscall
          * routine) and jump to it.  We store the address in a
@@ -35,4 +35,4 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_call_target):
          */
         jmp *(%rax)
         hlt
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code_end):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_code_end):

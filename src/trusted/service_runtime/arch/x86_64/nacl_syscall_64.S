@@ -125,7 +125,7 @@ ENDMACRO
  * using MS Studio (NACL_WINDOWS).
  */
         .text
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSyscallSeg):
         cld
 
         /* Save system call arguments on the untrusted stack. */
@@ -145,7 +145,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
          */
 
         /* only save the callee saved registers */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallThreadCaptureFault):
         movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RBX(%rdx)
         movq    %rbp, NACL_THREAD_CONTEXT_OFFSET_RBP(%rdx)
         /*
@@ -173,7 +173,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
          */
         stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rdx)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%rdx)
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):
 
         movq    NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR(%rdx), %rsp
 #if NACL_LINUX || NACL_OSX
@@ -234,12 +234,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
          */
 
 MACRO(tls_syscall)
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG1):  /* Entry */
+DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG1):  /* Entry */
         get_tls
         movl    MACROARG4(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         pop     %rcx
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
+DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG2):  /* RspRestored */
         addl    DOLLAR 31, %ecx
         andl    DOLLAR 0xffffffe0, %ecx
         leaq    (%r15, %rcx), %r11
@@ -252,7 +252,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
          */
         xorl    %edx, %edx
         jmp     *%r11
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3):  /* End */
+DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG3):  /* End */
 ENDMACRO
 
         /*

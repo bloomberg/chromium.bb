@@ -1,9 +1,10 @@
-/* Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2010 Google Inc.
- *
- *
+/*
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/*
  * Store instruction written in raw assembly so we know they get implemented
  * with a single instruction
  */
@@ -19,7 +20,7 @@
  * src = 0x8(%esp)
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(onestore_memmove4):
   /*
    * gcc generates a single store for this, but it would be scary
    * to rely on that
@@ -31,7 +32,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
   ret
   .align 8
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(onestore_memmove8):
   /* gcc generates two stores for this, use SSE registers instead */
   movl   0x8(%esp),%eax
   movl   0x4(%esp),%edx
@@ -58,7 +59,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
 # define SRC %rsi
 #endif
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(onestore_memmove4):
   /*
    * gcc generates a single store for this, but it would be terrifying
    * to rely on that
@@ -68,7 +69,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove4):
   retq
   .align 8
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(onestore_memmove8):
   /*
    * gcc generates a single store for this, but it would be frightful
    * to rely on that

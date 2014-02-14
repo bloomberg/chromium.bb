@@ -26,7 +26,7 @@
  * registers have ambient values from trusted code, which must not leak
  * into untrusted code.  So clear them.
  */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClStartSwitch):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClStartSwitch):
   veor q4, q4, q4
   veor q5, q5, q5
   veor q6, q6, q6
@@ -39,7 +39,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClStartSwitch):
  * to NaClSyscallCSegHook and its callees will save and restore their
  * incoming (i.e. the untrusted) values of those registers.
  */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
+DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSwitch):
 
 /*
  * Load the untrusted code's value of the fpscr into a scratch register.

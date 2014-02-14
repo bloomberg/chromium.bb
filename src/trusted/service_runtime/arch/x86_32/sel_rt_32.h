@@ -271,7 +271,7 @@ EXTERN_C_END
 #if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_LOCATION($0):
 # define MACROARG1      $0
 # define MACROARG2      $1
 # define MACROARG3      $2
@@ -280,7 +280,7 @@ EXTERN_C_END
 #else
 # define MACRO(name)    .macro name arg1, arg2=0, arg3=, arg4=
 # define ENDMACRO       .endm
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):
 # define MACROARG1      \arg1
 # define MACROARG2      \arg2
 # define MACROARG3      \arg3

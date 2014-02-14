@@ -30,7 +30,7 @@
  * to do an upcall into NaCl application.
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_springboard):
         hlt  /* one byte */
         /* Restore state from struct NaClThreadContext. */
         /* syscall return value, if any, from trusted stack */
@@ -40,14 +40,14 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard):
         /* Set %ecx to zero to avoid leaking the NaClThreadContext address. */
         xorl    %ecx, %ecx
         jmp     *%edx
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_springboard_end):
 
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_springboard_all_regs):
         hlt  /* one byte */
         /* Restore state from struct NaClSwitchRemainingRegsState. */
         lss     0(%ecx), %esp /* stack_ptr */
         movw    0x10(%ecx), %ds /* ds */
         movl    %gs:0xc, %ecx /* new_ecx from NaClGsSegment */
         jmp     *%gs:8 /* new_prog_ctr from NaClGsSegment */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs_end):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_springboard_all_regs_end):

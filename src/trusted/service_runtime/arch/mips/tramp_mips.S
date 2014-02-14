@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
@@ -29,7 +29,7 @@
  * is call the function NaClSyscallSeg where the push is actually done.
  */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_code):
 
   .set noreorder
 
@@ -46,5 +46,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   .word NACL_HALT_WORD
   .set reorder
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_end):
 
