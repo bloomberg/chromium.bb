@@ -362,6 +362,7 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
             case ExtensionError::MANIFEST_ERROR:
               info->manifest_errors.push_back(
                   make_linked_ptr((*iter)->ToValue().release()));
+              break;
             case ExtensionError::RUNTIME_ERROR: {
               const RuntimeError* error =
                   static_cast<const RuntimeError*>(*iter);
@@ -371,6 +372,7 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
                                      error->render_view_id()) != NULL;
               value->SetBoolean("canInspect", can_inspect);
               info->runtime_errors.push_back(make_linked_ptr(value.release()));
+              break;
             }
           }
         }
