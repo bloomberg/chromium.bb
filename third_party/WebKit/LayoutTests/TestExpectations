@@ -636,6 +636,14 @@ crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 
 crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 
+
+Bug(mkwst) svg/dom/SVGLengthList-appendItem.xhtml [ NeedsRebaseline ]
+Bug(mkwst) svg/dom/SVGLengthList-getItem.xhtml [ NeedsRebaseline ]
+Bug(mkwst) svg/dom/SVGLengthList-initialize.xhtml [ NeedsRebaseline ]
+Bug(mkwst) svg/dom/SVGLengthList-insertItemBefore.xhtml [ NeedsRebaseline ]
+Bug(mkwst) svg/dom/SVGLengthList-removeItem.xhtml [ NeedsRebaseline ]
+Bug(mkwst) svg/dom/SVGLengthList-replaceItem.xhtml [ NeedsRebaseline ]
+
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]

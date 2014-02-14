@@ -282,7 +282,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::replac
 
     if (m_values.isEmpty()) {
         // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("Failed to replace the provided item at index %zu.", index));
         return 0;
     }
 
@@ -300,7 +300,7 @@ template<typename Derived, typename ItemProperty>
 bool NewSVGListPropertyHelper<Derived, ItemProperty>::checkIndexBound(size_t index, ExceptionState& exceptionState)
 {
     if (index >= m_values.size()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
         return false;
     }
 
