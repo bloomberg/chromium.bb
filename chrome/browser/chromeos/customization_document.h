@@ -97,6 +97,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, VPD);
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, BadManifest);
   FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, MultiLanguage);
+  friend class OobeLocalizationTest;
   friend void ::Test__InitStartupCustomizationDocument(
       const std::string& manifest);
   friend struct DefaultSingletonTraits<StartupCustomizationDocument>;
