@@ -9,6 +9,7 @@ window.jsTestIsAsync = true;
 var latin1Loaded = false;
 var cyrillicLoaded = false;
 var arabicLoaded = false;
+var iconLoaded = false;
 
 function runTests() {
     document.fonts.addEventListener('loadingdone', onloadingdone);
@@ -23,11 +24,14 @@ function onloadingdone(e) {
             cyrillicLoaded = true;
         if (range == 'U+600-6FF')
             arabicLoaded = true;
+        if (range == 'U+E000')
+            iconLoaded = true;
     }
 
     shouldBeTrue('latin1Loaded'); // Latin-1 font is loaded for basic font metrics.
     shouldBeTrue('cyrillicLoaded');
     shouldBeFalse('arabicLoaded');
+    shouldBeFalse('iconLoaded');
     finishJSTest();
 }
 
@@ -57,9 +61,19 @@ else {
 #test {
     font-family: TestFont;
 }
+
+@font-face {
+    font-family: SingleCharacterOverride;
+    src: url('../../resources/Ahem.woff');
+    unicode-range: U+E000;
+}
+#test2 {
+    font-family: SingleCharacterOverride;
+}
 </style>
 </head>
 <body>
   <p id="test">&#x41F;&#x440;&#x43E;&#x432;&#x435;&#x440;&#x43A;&#x430;</p>
+  <p id="test2">hello</p>
 </body>
 </html>

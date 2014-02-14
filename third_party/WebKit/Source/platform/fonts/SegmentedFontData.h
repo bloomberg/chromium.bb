@@ -62,6 +62,7 @@ public:
     void appendRange(const FontDataRange& range) { m_ranges.append(range); }
     unsigned numRanges() const { return m_ranges.size(); }
     const FontDataRange& rangeAt(unsigned i) const { return m_ranges[i]; }
+    bool containsCharacter(UChar32) const;
 
 #ifndef NDEBUG
     virtual String description() const OVERRIDE;
@@ -77,8 +78,6 @@ private:
     virtual bool isLoading() const OVERRIDE;
     virtual bool isLoadingFallback() const OVERRIDE;
     virtual bool isSegmented() const OVERRIDE;
-
-    bool containsCharacter(UChar32) const;
 
     Vector<FontDataRange, 1> m_ranges;
 };
