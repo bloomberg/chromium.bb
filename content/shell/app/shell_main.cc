@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "content/public/app/content_main.h"
-
 #include "content/shell/app/shell_main_delegate.h"
-#include "sandbox/win/src/sandbox_types.h"
 
 #if defined(OS_WIN)
 #include "content/public/app/startup_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"
 #endif
 
 #if defined(OS_MACOSX)
