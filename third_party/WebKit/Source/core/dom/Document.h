@@ -1247,7 +1247,6 @@ private:
     LoadEventProgress m_loadEventProgress;
 
     double m_startTime;
-    bool m_overMinimumLayoutThreshold;
 
     OwnPtr<ScriptRunner> m_scriptRunner;
 
