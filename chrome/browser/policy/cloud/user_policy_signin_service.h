@@ -12,9 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
+class ProfileOAuth2TokenService;
 
 namespace net {
 class URLRequestContextGetter;

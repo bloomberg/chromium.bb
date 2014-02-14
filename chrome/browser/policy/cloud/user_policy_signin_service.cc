@@ -43,7 +43,7 @@ UserPolicySigninService::UserPolicySigninService(
   // happens in the background after PKS initialization - so this service
   // should always be created before the oauth token is available.
   DCHECK(!oauth2_token_service_->RefreshTokenIsAvailable(
-              oauth2_token_service_->GetPrimaryAccountId()));
+             signin_manager->GetAuthenticatedAccountId()));
 
   // Listen for an OAuth token to become available so we can register a client
   // if for some reason the client is not already registered (for example, if
@@ -116,7 +116,7 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
   }
 
   // Ignore OAuth tokens for any account but the primary one.
-  if (account_id != oauth2_token_service_->GetPrimaryAccountId())
+  if (account_id != signin_manager()->GetAuthenticatedAccountId())
     return;
 
   // ProfileOAuth2TokenService now has a refresh token so initialize the
@@ -153,7 +153,7 @@ void UserPolicySigninService::OnInitializationCompleted(
       << "Client already registered - not fetching DMToken";
   if (!manager->IsClientRegistered()) {
     if (!oauth2_token_service_->RefreshTokenIsAvailable(
-             oauth2_token_service_->GetPrimaryAccountId())) {
+             signin_manager()->GetAuthenticatedAccountId())) {
       // No token yet - this class listens for OnRefreshTokenAvailable()
       // and will re-attempt registration once the token is available.
       DLOG(WARNING) << "No OAuth Refresh Token - delaying policy download";
@@ -180,7 +180,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistration(
       oauth2_token_service_,
-      oauth2_token_service_->GetPrimaryAccountId(),
+      signin_manager()->GetAuthenticatedAccountId(),
       base::Bind(&UserPolicySigninService::OnRegistrationComplete,
                  base::Unretained(this)));
 }
