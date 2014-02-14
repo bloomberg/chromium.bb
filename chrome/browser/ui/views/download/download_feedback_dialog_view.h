@@ -21,26 +21,23 @@ class Profile;
 // or UNCOMMON_DOWNLOAD. The user should only see this dialog once.
 class DownloadFeedbackDialogView : public views::DialogDelegate {
  public:
-  // Possible values for prefs::kSafeBrowsingDownloadReportingEnabled pref.
-  enum DownloadReportingStatus {
-    kDialogNotYetShown,
-    kDownloadReportingDisabled,  // Set by Cancel().
-    kDownloadReportingEnabled,   // Set by Accept().
-    kMaxValue
-  };
+  // Callback with the user's decision. |accepted| is true if the user clicked
+  // Accept(). Otherwise, assume the user cancelled.
+  typedef base::Callback<void(bool accepted)> UserDecisionCallback;
 
   static void Show(
       gfx::NativeWindow parent_window,
       Profile* profile,
-      const base::Callback<void(DownloadReportingStatus)>& callback);
+      const UserDecisionCallback& callback);
 
  private:
   DownloadFeedbackDialogView(
       Profile* profile,
-      const base::Callback<void(DownloadReportingStatus)>& callback);
+      const UserDecisionCallback& callback);
   virtual ~DownloadFeedbackDialogView();
 
-  void ReleaseDialogStatusHold();
+  // Handles the user's decision.
+  bool OnButtonClicked(bool accepted);
 
   // views::DialogDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
@@ -56,7 +53,7 @@ class DownloadFeedbackDialogView : public views::DialogDelegate {
   virtual bool Accept() OVERRIDE;
 
   Profile* profile_;
-  const base::Callback<void(DownloadReportingStatus)> callback_;
+  const UserDecisionCallback callback_;
   views::MessageBoxView* explanation_box_view_;
   base::string16 title_text_;
   base::string16 ok_button_text_;

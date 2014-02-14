@@ -299,6 +299,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE },
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
+    { "safeBrowsingEnableDownloadFeedback",
+      IDS_OPTIONS_SAFEBROWSING_ENABLEDOWNLOADFEEDBACK },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
     { "sectionTitleDefaultBrowser", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
     { "sectionTitleUsers", IDS_PROFILES_OPTIONS_GROUP_NAME },

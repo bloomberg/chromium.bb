@@ -557,27 +557,19 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
   if (model_.ShouldAllowDownloadFeedback() &&
       !shelf_->browser()->profile()->IsOffTheRecord()) {
-    DownloadFeedbackDialogView::DownloadReportingStatus pref_value =
-        static_cast<DownloadFeedbackDialogView::DownloadReportingStatus>(
-            shelf_->browser()->profile()->GetPrefs()->GetInteger(
-                prefs::kSafeBrowsingDownloadReportingEnabled));
-    switch (pref_value) {
-      case DownloadFeedbackDialogView::kDialogNotYetShown:
-        DownloadFeedbackDialogView::Show(
-            shelf_->get_parent()->GetNativeWindow(),
-            shelf_->browser()->profile(),
-            base::Bind(
-                &DownloadItemView::PossiblySubmitDownloadToFeedbackService,
-                weak_ptr_factory_.GetWeakPtr()));
-        break;
-
-      case DownloadFeedbackDialogView::kDownloadReportingEnabled:
-      case DownloadFeedbackDialogView::kDownloadReportingDisabled:
-        PossiblySubmitDownloadToFeedbackService(pref_value);
-        break;
-
-      case DownloadFeedbackDialogView::kMaxValue:
-        NOTREACHED();
+    if (!shelf_->browser()->profile()->GetPrefs()->HasPrefPath(
+        prefs::kSafeBrowsingDownloadFeedbackEnabled)) {
+      // Show dialog, because the dialog hasn't been shown before.
+      DownloadFeedbackDialogView::Show(
+          shelf_->get_parent()->GetNativeWindow(),
+          shelf_->browser()->profile(),
+          base::Bind(
+              &DownloadItemView::PossiblySubmitDownloadToFeedbackService,
+              weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      PossiblySubmitDownloadToFeedbackService(
+          shelf_->browser()->profile()->GetPrefs()->GetBoolean(
+               prefs::kSafeBrowsingDownloadFeedbackEnabled));
     }
     return;
   }
@@ -937,12 +929,9 @@ bool DownloadItemView::SubmitDownloadToFeedbackService() {
 #endif
 }
 
-void DownloadItemView::PossiblySubmitDownloadToFeedbackService(
-    DownloadFeedbackDialogView::DownloadReportingStatus status) {
-  if (status != DownloadFeedbackDialogView::kDownloadReportingEnabled ||
-      !SubmitDownloadToFeedbackService()) {
+void DownloadItemView::PossiblySubmitDownloadToFeedbackService(bool enabled) {
+  if (!enabled || !SubmitDownloadToFeedbackService())
     download()->Remove();
-  }
   // WARNING: 'this' is deleted at this point. Don't access 'this'.
 }
 

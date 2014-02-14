@@ -10464,6 +10464,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
           Enable phishing and malware protection
         </message>
+        <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEDOWNLOADFEEDBACK" desc="Checkbox label: should Chrome upload suspicious downloads to Safe Browsing">
+          Send suspicious downloaded files to Google
+        </message>
         <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
           Check for server certificate revocation
         </message>

@@ -327,12 +327,9 @@ const char kReverseAutologinRejectedEmailList[] =
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
-// Enum that tell us whether malicious download reporting is:
-// 0 - Not enabled because the user has not been prompted
-// 1 - Disabled because the user does not want to participate
-// 2 - Enabled
-const char kSafeBrowsingDownloadReportingEnabled[] =
-    "safebrowsing.download_reporting_enabled";
+// Boolean that tell us whether malicious download feedback is enabled.
+const char kSafeBrowsingDownloadFeedbackEnabled[] =
+    "safebrowsing.download_feedback_enabled";
 
 // Boolean that is true when SafeBrowsing Malware Report is enabled.
 const char kSafeBrowsingReportingEnabled[] =

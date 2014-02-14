@@ -33,10 +33,10 @@ class DialogStatusData : public base::SupportsUserData::Data {
 void DownloadFeedbackDialogView::Show(
     gfx::NativeWindow parent_window,
     Profile* profile,
-    const base::Callback<void(DownloadReportingStatus)>& callback) {
+    const UserDecisionCallback& callback) {
   // This dialog should only be shown if it hasn't been shown before.
-  DCHECK(profile->GetPrefs()->GetInteger(
-      prefs::kSafeBrowsingDownloadReportingEnabled) == kDialogNotYetShown);
+  DCHECK(!profile->GetPrefs()->HasPrefPath(
+      prefs::kSafeBrowsingDownloadFeedbackEnabled));
 
   // Only one dialog should be shown at a time, so check to see if another one
   // is open. If another one is open, treat this parallel call as if reporting
@@ -53,20 +53,13 @@ void DownloadFeedbackDialogView::Show(
         new DownloadFeedbackDialogView(profile, callback);
     CreateBrowserModalDialogViews(window, parent_window)->Show();
   } else {
-    callback.Run(kDownloadReportingDisabled);
+    callback.Run(false);
   }
-}
-
-void DownloadFeedbackDialogView::ReleaseDialogStatusHold() {
-  DialogStatusData* data =
-      static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
-  DCHECK(data);
-  data->set_currently_shown(false);
 }
 
 DownloadFeedbackDialogView::DownloadFeedbackDialogView(
     Profile* profile,
-    const base::Callback<void(DownloadReportingStatus)>& callback)
+    const UserDecisionCallback& callback)
     : profile_(profile),
       callback_(callback),
       explanation_box_view_(new views::MessageBoxView(
@@ -91,20 +84,24 @@ base::string16 DownloadFeedbackDialogView::GetDialogButtonLabel(
       ok_button_text_ : cancel_button_text_;
 }
 
-bool DownloadFeedbackDialogView::Cancel() {
-  profile_->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingDownloadReportingEnabled, kDownloadReportingDisabled);
-  ReleaseDialogStatusHold();
-  callback_.Run(kDownloadReportingDisabled);
+bool DownloadFeedbackDialogView::OnButtonClicked(bool accepted) {
+  profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingDownloadFeedbackEnabled,
+                                   accepted);
+  DialogStatusData* data =
+     static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
+  DCHECK(data);
+  data->set_currently_shown(false);
+
+  callback_.Run(accepted);
   return true;
 }
 
+bool DownloadFeedbackDialogView::Cancel() {
+  return OnButtonClicked(false);
+}
+
 bool DownloadFeedbackDialogView::Accept() {
-  profile_->GetPrefs()->SetInteger(
-      prefs::kSafeBrowsingDownloadReportingEnabled, kDownloadReportingEnabled);
-  ReleaseDialogStatusHold();
-  callback_.Run(kDownloadReportingEnabled);
-  return true;
+  return OnButtonClicked(true);
 }
 
 ui::ModalType DownloadFeedbackDialogView::GetModalType() const {
