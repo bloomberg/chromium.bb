@@ -11,7 +11,7 @@
 namespace gfx {
 
 struct GLVersionInfo {
-  explicit GLVersionInfo(const char* version_str);
+  GLVersionInfo(const char* version_str, const char* renderer_str);
 
   // New flags, such as is_gl4_4 could be introduced as needed.
   // For now, this level of granularity is enough.
@@ -24,6 +24,8 @@ struct GLVersionInfo {
   bool is_gl2;
   bool is_gl3;
   bool is_gl4;
+
+  bool is_angle;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(GLVersionInfo);

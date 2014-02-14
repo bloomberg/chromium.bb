@@ -618,6 +618,20 @@ typedef GLuint (GL_APIENTRYP PFNGLINSERTSYNCPOINTCHROMIUMPROC) ();
 typedef void (GL_APIENTRYP PFNGLWAITSYNCPOINTCHROMIUMPROC) (GLuint sync_point);
 #endif  /* GL_CHROMIUM_sync_point */
 
+#ifndef GL_CHROMIUM_color_buffer_float_rgba
+#define GL_CHROMIUM_color_buffer_float_rgba 1
+#ifndef GL_RGBA32F
+#define GL_RGBA32F 0x8814
+#endif
+#endif /* GL_CHROMIUM_color_buffer_float_rgba */
+
+#ifndef GL_CHROMIUM_color_buffer_float_rgb
+#define GL_CHROMIUM_color_buffer_float_rgb 1
+#ifndef GL_RGB32F
+#define GL_RGB32F 0x8815
+#endif
+#endif /* GL_CHROMIUM_color_buffer_float_rgb */
+
 #ifdef __cplusplus
 }
 #endif

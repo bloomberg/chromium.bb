@@ -244,6 +244,12 @@ class GLES2DecoderTestBase : public testing::Test {
       GLsizei width, GLsizei height, GLint border,
       GLenum format, GLenum type,
       uint32 shared_memory_id, uint32 shared_memory_offset);
+  void DoTexImage2DConvertInternalFormat(
+      GLenum target, GLint level, GLenum requested_internal_format,
+      GLsizei width, GLsizei height, GLint border,
+      GLenum format, GLenum type,
+      uint32 shared_memory_id, uint32 shared_memory_offset,
+      GLenum expected_internal_format);
   void DoRenderbufferStorage(
       GLenum target, GLenum internal_format, GLenum actual_format,
       GLsizei width, GLsizei height, GLenum error);

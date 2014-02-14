@@ -66,6 +66,13 @@ std::string GLContext::GetGLVersion() {
   return std::string(version ? version : "");
 }
 
+std::string GLContext::GetGLRenderer() {
+  DCHECK(IsCurrent(NULL));
+  const char *renderer =
+      reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+  return std::string(renderer ? renderer : "");
+}
+
 bool GLContext::HasExtension(const char* name) {
   std::string extensions = GetExtensions();
   extensions += " ";
@@ -79,8 +86,9 @@ bool GLContext::HasExtension(const char* name) {
 const GLVersionInfo* GLContext::GetVersionInfo() {
   if(!version_info_) {
     std::string version = GetGLVersion();
+    std::string renderer = GetGLRenderer();
     version_info_ = scoped_ptr<GLVersionInfo>(
-        new GLVersionInfo(version.c_str()));
+        new GLVersionInfo(version.c_str(), renderer.c_str()));
   }
   return version_info_.get();
 }

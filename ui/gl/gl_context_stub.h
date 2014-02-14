@@ -24,6 +24,7 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
+  virtual std::string GetGLRenderer() OVERRIDE;
 
  protected:
   virtual ~GLContextStub();

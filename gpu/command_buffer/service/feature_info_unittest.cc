@@ -280,6 +280,10 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
       GL_DEPTH24_STENCIL8));
   EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
       GL_DEPTH_STENCIL));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGBA32F));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGB32F));
   EXPECT_FALSE(info_->validators()->texture_format.IsValid(
       GL_DEPTH_STENCIL));
   EXPECT_FALSE(info_->validators()->pixel_type.IsValid(
@@ -405,6 +409,19 @@ TEST_F(FeatureInfoTest, InitializeEXT_read_format_bgra) {
       GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
+}
+
+TEST_F(FeatureInfoTest, InitializeARB_texture_float) {
+  SetupInitExpectations("GL_ARB_texture_float");
+  EXPECT_TRUE(info_->feature_flags().chromium_color_buffer_float_rgba);
+  EXPECT_TRUE(info_->feature_flags().chromium_color_buffer_float_rgb);
+  std::string extensions = info_->extensions() + " ";
+  EXPECT_THAT(extensions, HasSubstr("GL_CHROMIUM_color_buffer_float_rgb "));
+  EXPECT_THAT(extensions, HasSubstr("GL_CHROMIUM_color_buffer_float_rgba"));
+  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGBA32F));
+  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
+      GL_RGB32F));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_floatGLES2) {

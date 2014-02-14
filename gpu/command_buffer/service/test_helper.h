@@ -65,7 +65,8 @@ class TestHelper {
   static void SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
       const DisallowedFeatures& disallowed_features,
-      const char* extensions);
+      const char* extensions,
+      const char* gl_version);
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupFeatureInfoInitExpectationsWithGLVersion(

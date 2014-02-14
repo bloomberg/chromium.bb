@@ -8903,6 +8903,78 @@ TEST_F(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
   }
 }
 
+TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
+  InitDecoder("GL_OES_texture_float",        // extensions
+              "opengl es 2.0",               // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 16, 17, 0, GL_RGB, GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 16, 17, 0, GL_LUMINANCE,
+               GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 17, 0, GL_ALPHA, GL_FLOAT,
+               0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 16, 17, 0,
+               GL_LUMINANCE_ALPHA, GL_FLOAT, 0, 0);
+}
+
+TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
+  InitDecoder("GL_OES_texture_float GL_EXT_color_buffer_float", // extensions
+              "opengl es 3.0",               // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 16, 17, 0, GL_RGB, GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 16, 17, 0, GL_RGBA, GL_FLOAT, 0,
+               0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 16, 17, 0, GL_LUMINANCE,
+               GL_FLOAT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 17, 0, GL_ALPHA, GL_FLOAT,
+               0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 16, 17, 0,
+               GL_LUMINANCE_ALPHA, GL_FLOAT, 0, 0);
+}
+
+TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
+  InitDecoder("GL_ARB_texture_float",        // extensions
+              "2.1",                         // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 16, 17, 0, GL_RGBA, GL_FLOAT, 0,
+               0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 16, 17, 0, GL_RGB, GL_FLOAT, 0, 0);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0,
+                                    GL_RGBA, GL_FLOAT, 0, 0, GL_RGBA32F_ARB);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_RGB, 16, 17, 0,
+                                    GL_RGB, GL_FLOAT, 0, 0, GL_RGB32F_ARB);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_LUMINANCE, 16, 17, 0,
+                                    GL_LUMINANCE, GL_FLOAT, 0, 0,
+                                    GL_LUMINANCE32F_ARB);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 17, 0,
+                                    GL_ALPHA, GL_FLOAT, 0, 0, GL_ALPHA32F_ARB);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 16,
+                                    17, 0, GL_LUMINANCE_ALPHA, GL_FLOAT, 0, 0,
+                                    GL_LUMINANCE_ALPHA32F_ARB);
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

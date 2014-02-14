@@ -39,6 +39,10 @@ std::string GLContextStub::GetExtensions() {
   return std::string();
 }
 
+std::string GLContextStub::GetGLRenderer() {
+  return std::string("CHROMIUM");
+}
+
 GLContextStub::~GLContextStub() {}
 
 }  // namespace gfx

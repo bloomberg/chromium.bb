@@ -141,8 +141,21 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   InSequence sequence;
 
+  surface_ = new gfx::GLSurfaceStub;
+  surface_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
+
+  // Context needs to be created before initializing ContextGroup, which will
+  // in turn initialize FeatureInfo, which needs a context to determine
+  // extension support.
+  context_ = new gfx::GLContextStubWithExtensions;
+  context_->AddExtensionsString(extensions);
+  context_->SetGLVersionString(gl_version);
+
+  context_->MakeCurrent(surface_.get());
+  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_);
+
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
-      DisallowedFeatures(), extensions);
+      DisallowedFeatures(), extensions, gl_version);
 
   // We initialize the ContextGroup with a MockGLES2Decoder so that
   // we can use the ContextGroup to figure out how the real GLES2Decoder
@@ -280,16 +293,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       shared_memory_offset_;
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer.ptr;
-
-  surface_ = new gfx::GLSurfaceStub;
-  surface_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
-
-  context_ = new gfx::GLContextStubWithExtensions;
-  context_->AddExtensionsString(extensions);
-  context_->SetGLVersionString(gl_version);
-
-  context_->MakeCurrent(surface_.get());
-  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_);
 
   int32 attributes[] = {
     EGL_ALPHA_SIZE, request_alpha ? 8 : 0,
@@ -831,6 +834,28 @@ void GLES2DecoderTestBase::DoTexImage2D(
   cmds::TexImage2D cmd;
   cmd.Init(target, level, internal_format, width, height, border, format,
            type, shared_memory_id, shared_memory_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoTexImage2DConvertInternalFormat(
+    GLenum target, GLint level, GLenum requested_internal_format,
+    GLsizei width, GLsizei height, GLint border,
+    GLenum format, GLenum type,
+    uint32 shared_memory_id, uint32 shared_memory_offset,
+    GLenum expected_internal_format) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexImage2D(target, level, expected_internal_format,
+                               width, height, border, format, type, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  cmds::TexImage2D cmd;
+  cmd.Init(target, level, requested_internal_format, width, height, border,
+           format, type, shared_memory_id, shared_memory_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 

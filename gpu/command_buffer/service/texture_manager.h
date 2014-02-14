@@ -116,7 +116,7 @@ class GPU_EXPORT Texture {
   }
 
   // Returns true of the given dimensions are inside the dimensions of the
-  // level and if the format and type match the level.
+  // level and if the type matches the level.
   bool ValidForTexture(
       GLint target,
       GLint level,
@@ -124,7 +124,6 @@ class GPU_EXPORT Texture {
       GLint yoffset,
       GLsizei width,
       GLsizei height,
-      GLenum format,
       GLenum type) const;
 
   bool IsValid() const {
@@ -707,9 +706,15 @@ class GPU_EXPORT TextureManager {
   TextureRef* GetTextureInfoForTargetUnlessDefault(
       ContextState* state, GLenum target);
 
+  bool ValidateFormatAndTypeCombination(
+    ErrorState* error_state, const char* function_name,
+    GLenum format, GLenum type);
+
+  // Note that internal_format is only checked in relation to the format
+  // parameter, so that this function may be used to validate texSubImage2D.
   bool ValidateTextureParameters(
     ErrorState* error_state, const char* function_name,
-    GLenum target, GLenum format, GLenum type, GLint level);
+    GLenum format, GLenum type, GLenum internal_format, GLint level);
 
  private:
   friend class Texture;

@@ -1042,43 +1042,40 @@ TEST_F(TextureTest, ValidForTexture) {
   Texture* texture = texture_ref_->texture();
   EXPECT_FALSE(texture->ValidForTexture(
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-      1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      1, 0, 0, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad level.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 0, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 0, 0, 0, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad xoffset.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, -1, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, -1, 0, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad xoffset + width > width.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 1, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 1, 0, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad yoffset.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, -1, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, -1, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad yoffset + height > height.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 1, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, 1, 4, 5, GL_UNSIGNED_BYTE));
   // Check bad width.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 5, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, 0, 5, 5, GL_UNSIGNED_BYTE));
   // Check bad height.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 4, 6, GL_RGBA, GL_UNSIGNED_BYTE));
-  // Check bad format.
-  EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGB, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, 0, 4, 6, GL_UNSIGNED_BYTE));
   // Check bad type.
   EXPECT_FALSE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4));
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_UNSIGNED_SHORT_4_4_4_4));
   // Check valid full size
   EXPECT_TRUE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_UNSIGNED_BYTE));
   // Check valid particial size.
   EXPECT_TRUE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 1, 1, 2, 3, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 1, 1, 2, 3, GL_UNSIGNED_BYTE));
   manager_->RemoveTexture(kClient1Id);
   EXPECT_TRUE(texture->ValidForTexture(
-      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_UNSIGNED_BYTE));
 }
 
 TEST_F(TextureTest, FloatNotLinear) {

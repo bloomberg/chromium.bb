@@ -108,6 +108,12 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // being released or destroyed.
   void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
 
+  // Returns the GL version string. The context must be current.
+  virtual std::string GetGLVersion();
+
+  // Returns the GL renderer string. The context must be current.
+  virtual std::string GetGLRenderer();
+
  protected:
   virtual ~GLContext();
 
@@ -122,9 +128,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   // Returns the last real (non-virtual) GLContext made current.
   static GLContext* GetRealCurrent();
-
-  // Returns the GL version string. The context must be current.
-  virtual std::string GetGLVersion();
 
  private:
   friend class base::RefCounted<GLContext>;

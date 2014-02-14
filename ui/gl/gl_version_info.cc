@@ -8,7 +8,7 @@
 
 namespace gfx {
 
-GLVersionInfo::GLVersionInfo(const char* version_str)
+GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str)
     : is_es(false),
       is_es1(false),
       is_es2(false),
@@ -16,7 +16,8 @@ GLVersionInfo::GLVersionInfo(const char* version_str)
       is_gl1(false),
       is_gl2(false),
       is_gl3(false),
-      is_gl4(false) {
+      is_gl4(false),
+      is_angle(false) {
   if (version_str) {
     std::string lstr(StringToLowerASCII(std::string(version_str)));
     is_es = (lstr.substr(0, 9) == "opengl es");
@@ -32,6 +33,9 @@ GLVersionInfo::GLVersionInfo(const char* version_str)
       // dependent.
       is_gl1 = !is_gl2 && !is_gl3 && !is_gl4;
     }
+  }
+  if (renderer_str) {
+    is_angle = StartsWithASCII(renderer_str, "ANGLE", true);
   }
 }
 

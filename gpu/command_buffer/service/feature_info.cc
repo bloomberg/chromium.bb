@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -99,7 +100,9 @@ void StringToWorkarounds(
 }  // anonymous namespace.
 
 FeatureInfo::FeatureFlags::FeatureFlags()
-    : chromium_framebuffer_multisample(false),
+    : chromium_color_buffer_float_rgba(false),
+      chromium_color_buffer_float_rgb(false),
+      chromium_framebuffer_multisample(false),
       use_core_framebuffer_multisample(false),
       multisampled_render_to_texture(false),
       use_img_for_multisampled_render_to_texture(false),
@@ -437,26 +440,28 @@ void FeatureInfo::InitializeFeatures() {
   bool enable_texture_half_float = false;
   bool enable_texture_half_float_linear = false;
 
-  bool have_arb_texture_float = extensions.Contains("GL_ARB_texture_float");
+  bool may_enable_chromium_color_buffer_float = false;
 
-  if (have_arb_texture_float) {
+  if (extensions.Contains("GL_ARB_texture_float")) {
     enable_texture_float = true;
     enable_texture_float_linear = true;
     enable_texture_half_float = true;
     enable_texture_half_float_linear = true;
+    may_enable_chromium_color_buffer_float = true;
   } else {
-    if (extensions.Contains("GL_OES_texture_float") || have_arb_texture_float) {
+    if (extensions.Contains("GL_OES_texture_float")) {
       enable_texture_float = true;
-      if (extensions.Contains("GL_OES_texture_float_linear") ||
-          have_arb_texture_float) {
+      if (extensions.Contains("GL_OES_texture_float_linear")) {
         enable_texture_float_linear = true;
       }
+      if ((is_es3 && extensions.Contains("GL_EXT_color_buffer_float")) ||
+          feature_flags_.is_angle) {
+        may_enable_chromium_color_buffer_float = true;
+      }
     }
-    if (extensions.Contains("GL_OES_texture_half_float") ||
-        have_arb_texture_float) {
+    if (extensions.Contains("GL_OES_texture_half_float")) {
       enable_texture_half_float = true;
-      if (extensions.Contains("GL_OES_texture_half_float_linear") ||
-          have_arb_texture_float) {
+      if (extensions.Contains("GL_OES_texture_half_float_linear")) {
         enable_texture_half_float_linear = true;
       }
     }
@@ -487,6 +492,62 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_OES_texture_half_float");
     if (enable_texture_half_float_linear) {
       AddExtensionString("GL_OES_texture_half_float_linear");
+    }
+  }
+
+  if (may_enable_chromium_color_buffer_float) {
+    COMPILE_ASSERT(GL_RGBA32F_ARB == GL_RGBA32F &&
+                   GL_RGBA32F_EXT == GL_RGBA32F &&
+                   GL_RGB32F_ARB == GL_RGB32F &&
+                   GL_RGB32F_EXT == GL_RGB32F,
+                   sized_float_internal_format_variations_must_match);
+    // We don't check extension support beyond ARB_texture_float on desktop GL,
+    // and format support varies between GL configurations. For example, spec
+    // prior to OpenGL 3.0 mandates framebuffer support only for one
+    // implementation-chosen format, and ES3.0 EXT_color_buffer_float does not
+    // support rendering to RGB32F. Check for framebuffer completeness with
+    // formats that the extensions expose, and only enable an extension when a
+    // framebuffer created with its texture format is reported as complete.
+    GLint fb_binding = 0;
+    GLint tex_binding = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fb_binding);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex_binding);
+
+    GLuint tex_id = 0;
+    GLuint fb_id = 0;
+    GLsizei width = 16;
+
+    glGenTextures(1, &tex_id);
+    glGenFramebuffersEXT(1, &fb_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    // Nearest filter needed for framebuffer completeness on some drivers.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, width, 0, GL_RGBA,
+                 GL_FLOAT, NULL);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, fb_id);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, tex_id, 0);
+    GLenum statusRGBA = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB,
+                 GL_FLOAT, NULL);
+    GLenum statusRGB = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    glDeleteFramebuffersEXT(1, &fb_id);
+    glDeleteTextures(1, &tex_id);
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER, static_cast<GLuint>(fb_binding));
+    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(tex_binding));
+
+    DCHECK(glGetError() == GL_NO_ERROR);
+
+    if (statusRGBA == GL_FRAMEBUFFER_COMPLETE) {
+      validators_.texture_internal_format.AddValue(GL_RGBA32F);
+      feature_flags_.chromium_color_buffer_float_rgba = true;
+      AddExtensionString("GL_CHROMIUM_color_buffer_float_rgba");
+    }
+    if (statusRGB == GL_FRAMEBUFFER_COMPLETE) {
+      validators_.texture_internal_format.AddValue(GL_RGB32F);
+      feature_flags_.chromium_color_buffer_float_rgb = true;
+      AddExtensionString("GL_CHROMIUM_color_buffer_float_rgb");
     }
   }
 
@@ -719,7 +780,14 @@ void FeatureInfo::InitializeFeatures() {
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {
-  if (extensions_.find(str) == std::string::npos) {
+  size_t pos = extensions_.find(str);
+  while (pos != std::string::npos &&
+         pos + str.length() < extensions_.length() &&
+         extensions_.substr(pos + str.length(), 1) != " ") {
+    // This extension name is a substring of another.
+    pos = extensions_.find(str, pos + str.length());
+  }
+  if (pos == std::string::npos) {
     extensions_ += (extensions_.empty() ? "" : " ") + str;
   }
 }

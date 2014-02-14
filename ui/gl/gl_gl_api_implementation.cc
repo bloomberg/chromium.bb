@@ -14,6 +14,7 @@
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gfx {
 
@@ -23,6 +24,8 @@ static GLApi* g_gl;
 static RealGLApi* g_real_gl;
 // A GL Api that calls TRACE and then calls another GL api.
 static TraceGLApi* g_trace_gl;
+// GL version used when initializing dynamic bindings.
+static GLVersionInfo* g_version_info = NULL;
 
 namespace {
 
@@ -40,7 +43,28 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
                                           GLenum type) {
   GLenum gl_internal_format = GetInternalFormat(internal_format);
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+  // g_version_info must be initialized when this function is bound.
+  DCHECK(gfx::g_version_info);
+  if (type == GL_FLOAT && gfx::g_version_info->is_angle &&
+      gfx::g_version_info->is_es2) {
+    // It's possible that the texture is using a sized internal format, and
+    // ANGLE exposing GLES2 API doesn't support those.
+    // TODO(oetuaho@nvidia.com): Remove these conversions once ANGLE has the
+    // support.
+    // http://code.google.com/p/angleproject/issues/detail?id=556
+    switch (format) {
+      case GL_RGBA:
+        gl_internal_format = GL_RGBA;
+        break;
+      case GL_RGB:
+        gl_internal_format = GL_RGB;
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (gfx::g_version_info->is_es)
     return gl_internal_format;
 
   if (type == GL_FLOAT) {
@@ -208,6 +232,9 @@ void SetGLToRealGLApi() {
 
 void InitializeDynamicGLBindingsGL(GLContext* context) {
   g_driver_gl.InitializeCustomDynamicBindings(context);
+  DCHECK(context && context->IsCurrent(NULL) && !g_version_info);
+  g_version_info = new GLVersionInfo(context->GetGLVersion().c_str(),
+      context->GetGLRenderer().c_str());
 }
 
 void InitializeDebugGLBindingsGL() {
@@ -232,6 +259,10 @@ void ClearGLBindingsGL() {
   if (g_current_gl_context_tls) {
     delete g_current_gl_context_tls;
     g_current_gl_context_tls = NULL;
+  }
+  if (g_version_info) {
+    delete g_version_info;
+    g_version_info = NULL;
   }
 }
 

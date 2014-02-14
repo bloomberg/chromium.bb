@@ -8159,7 +8159,7 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     return;
   }
   if (!texture->ValidForTexture(
-      target, level, xoffset, yoffset, width, height, format, type)) {
+      target, level, xoffset, yoffset, width, height, type)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCompressedTexSubImage2D", "bad dimensions.");
     return;
@@ -8228,9 +8228,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         GL_INVALID_VALUE, "glCopyTexImage2D", "dimensions out of range");
     return;
   }
-  if (!texture_manager()->ValidateTextureParameters(
-      state_.GetErrorState(), "glCopyTexImage2D", target, internal_format,
-      GL_UNSIGNED_BYTE, level)) {
+  if (!texture_manager()->ValidateFormatAndTypeCombination(
+      state_.GetErrorState(), "glCopyTexImage2D", internal_format,
+      GL_UNSIGNED_BYTE)) {
     return;
   }
 
@@ -8343,7 +8343,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   GLenum format = 0;
   if (!texture->GetLevelType(target, level, &type, &format) ||
       !texture->ValidForTexture(
-          target, level, xoffset, yoffset, width, height, format, type)) {
+          target, level, xoffset, yoffset, width, height, type)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCopyTexSubImage2D", "bad dimensions.");
     return;
@@ -8449,14 +8449,6 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "height < 0");
     return false;
   }
-  if (!validators_->texture_format.IsValid(format)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, format, "format");
-    return false;
-  }
-  if (!validators_->pixel_type.IsValid(type)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, type, "type");
-    return false;
-  }
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
@@ -8473,10 +8465,8 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
         GL_INVALID_OPERATION, function_name, "level does not exist.");
     return false;
   }
-  if (format != internal_format) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        function_name, "format does not match internal format.");
+  if (!texture_manager()->ValidateTextureParameters(state_.GetErrorState(),
+      function_name, format, type, internal_format, level)) {
     return false;
   }
   if (type != current_type) {
@@ -8492,7 +8482,7 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
     return false;
   }
   if (!texture->ValidForTexture(
-          target, level, xoffset, yoffset, width, height, format, type)) {
+          target, level, xoffset, yoffset, width, height, type)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "bad dimensions.");
     return false;
   }
