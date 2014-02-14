@@ -5,8 +5,10 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Vibrator;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -16,9 +18,11 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("content")
 class VibrationProvider {
+    private static final String TAG = "VibrationProvider";
 
     private final AudioManager mAudioManager;
     private final Vibrator mVibrator;
+    private final boolean mHasVibratePermission;
 
     @CalledByNative
     private static VibrationProvider create(Context context) {
@@ -27,17 +31,24 @@ class VibrationProvider {
 
     @CalledByNative
     private void vibrate(long milliseconds) {
-        if (mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT)
+        if (mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
+                mHasVibratePermission) {
             mVibrator.vibrate(milliseconds);
+        }
     }
 
     @CalledByNative
     private void cancelVibration() {
-        mVibrator.cancel();
+        if (mHasVibratePermission) mVibrator.cancel();
     }
 
     private VibrationProvider(Context context) {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        mHasVibratePermission = context.checkCallingOrSelfPermission(
+                android.Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED;
+        if (!mHasVibratePermission) {
+            Log.w(TAG, "Failed to use vibrate API, requires VIBRATE permission.");
+        }
     }
 }
