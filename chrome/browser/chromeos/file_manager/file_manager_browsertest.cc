@@ -13,6 +13,8 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -22,6 +24,7 @@
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -858,6 +861,21 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
       AddUser(kTestAccounts[i], i >= SECONDARY_ACCOUNT_INDEX_START);
   }
 
+  // Add as many as users
+  void AddExtraUsersForStressTesting() {
+    ash::Shell* const shell = ash::Shell::GetInstance();
+    const size_t maxLogin =
+        shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers();
+
+    for (int i = 0; i + arraysize(kTestAccounts) < maxLogin; ++i) {
+      const std::string email = base::StringPrintf("user%d@invalid.domain", i);
+      const std::string hash = base::StringPrintf("hashuser%d", i);
+      const std::string name = base::StringPrintf("Additional User %d", i);
+      const TestAccountInfo info = {email.c_str(), hash.c_str(), name.c_str()};
+      AddUser(info, true);
+    }
+  }
+
   // Returns primary profile (if it is already created.)
   virtual Profile* profile() OVERRIDE {
     Profile* const profile = chromeos::ProfileHelper::GetProfileByUserIdHash(
@@ -943,6 +961,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_Badge) {
 }
 
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, Badge) {
+  // Test the profile badge to be correctly shown and hidden.
   set_test_case_name("multiProfileBadge");
   StartTest();
 }
@@ -953,11 +972,27 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, VisitDesktopMenu) {
+  // Test for the menu item for visiting other profile's desktop.
   set_test_case_name("multiProfileVisitDesktopMenu");
   StartTest();
 }
 
-// TODO(kinaba) write more tests.
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_MaxUser) {
+  AddAllUsers();
+  AddExtraUsersForStressTesting();
+}
+
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MaxUser) {
+  // Run the same test as VisitDesktopMenu with maximum number of users logged
+  // in and checks that nothing goes wrong. Here, the primary user (alice) logs
+  // in first, then the "extra" users follow, and then lastly the other users
+  // (bob and charlie) are added in the test. Thus the existing test verifies
+  // that the feature is effectively working with lastly logged in users.
+  AddExtraUsersForStressTesting();
+
+  set_test_case_name("multiProfileVisitDesktopMenu");
+  StartTest();
+}
 
 }  // namespace
 }  // namespace file_manager
