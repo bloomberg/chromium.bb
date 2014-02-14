@@ -164,9 +164,18 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    std::string request_id =
-        extensions::InputImeEventRouter::GetInstance()->AddRequest(engine_id,
-                                                                   key_data);
+    extensions::InputImeEventRouter* ime_event_router =
+        extensions::InputImeEventRouter::GetInstance();
+
+    const std::string request_id =
+        ime_event_router->AddRequest(engine_id, key_data);
+
+    // If there is no listener for the event, no need to dispatch the event to
+    // extension. Instead, releases the key event for default system behavior.
+    if (!HasKeyEventListener()) {
+      ime_event_router->OnKeyEventHandled(extension_id_, request_id, false);
+      return;
+    }
 
     input_ime::KeyboardEvent key_data_value;
     key_data_value.type = input_ime::KeyboardEvent::ParseType(event.type);
@@ -268,6 +277,13 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
  private:
+  bool HasKeyEventListener() const {
+    return extensions::ExtensionSystem::Get(profile_)
+        ->event_router()
+        ->ExtensionHasEventListener(extension_id_,
+                                    input_ime::OnKeyEvent::kEventName);
+  }
+
   Profile* profile_;
   std::string extension_id_;
   std::string engine_id_;
