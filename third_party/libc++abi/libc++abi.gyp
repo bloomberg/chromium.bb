@@ -61,16 +61,14 @@
           ['_type!="none"', {
             'include_dirs': [
               'trunk/include',
+              # TODO(earthdok): remove when http://crbug.com/337426 is fixed
+              '../llvm-build/Release+Asserts/lib/clang/3.5/include/'
             ],
             'cflags_cc': [
               '-nostdinc++',
             ],
             'ldflags': [
               '-L<(PRODUCT_DIR)/lib/',
-            ],
-            'include_dirs': [
-              # TODO(earthdok): remove when http://crbug.com/337426 is fixed
-              '../llvm-build/Release+Asserts/lib/clang/3.5/include/'
             ],
           }],
         ],
