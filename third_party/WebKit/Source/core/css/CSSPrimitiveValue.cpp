@@ -315,6 +315,16 @@ CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue> value)
 {
     init(value);
 }
+CSSPrimitiveValue::CSSPrimitiveValue(Pair* value)
+    : CSSValue(PrimitiveClass)
+{
+    init(PassRefPtrWillBeRawPtr<Pair>(value));
+}
+CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair> value)
+    : CSSValue(PrimitiveClass)
+{
+    init(value);
+}
 
 void CSSPrimitiveValue::init(const Length& length)
 {
@@ -397,7 +407,7 @@ void CSSPrimitiveValue::init(PassRefPtr<Quad> quad)
     m_value.quad = quad.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<Pair> p)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Pair> p)
 {
     m_primitiveUnitType = CSS_PAIR;
     m_hasCachedCSSText = false;
@@ -444,11 +454,13 @@ void CSSPrimitiveValue::cleanup()
         m_value.quad->deref();
         break;
     case CSS_PAIR:
+        // We must not call deref() when oilpan is enabled because m_value.pair is traced.
+#if !ENABLE(OILPAN)
         m_value.pair->deref();
+#endif
         break;
     case CSS_CALC:
-        // We should only deref when using refcounting. When oilpan
-        // is enabled it is a raw pointer that is passed into init().
+        // We must not call deref() when oilpan is enabled because m_value.calc is traced.
 #if !ENABLE(OILPAN)
         m_value.calc->deref();
 #endif
@@ -1262,6 +1274,9 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
 void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
 {
     switch (m_primitiveUnitType) {
+    case CSS_PAIR:
+        visitor->trace(m_value.pair);
+        break;
     case CSS_CALC:
         visitor->trace(m_value.calc);
         break;

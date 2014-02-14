@@ -32,25 +32,23 @@ namespace WebCore {
 // and border-spacing (all of which are space-separated sets of two values).  At the moment we are only using it for
 // border-radius and background-size, but (FIXME) border-spacing and background-position could be converted over to use
 // it (eliminating some extra -webkit- internal properties).
-class Pair FINAL : public RefCounted<Pair> {
+class Pair FINAL : public RefCountedWillBeGarbageCollected<Pair> {
+    DECLARE_GC_INFO;
 public:
     enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
 
-    static PassRefPtr<Pair> create()
+    static PassRefPtrWillBeRawPtr<Pair> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second,
+        IdenticalValuesPolicy identicalValuesPolicy)
     {
-        return adoptRef(new Pair);
-    }
-    static PassRefPtr<Pair> create(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
-    {
-        return adoptRef(new Pair(first, second, identicalValuesPolicy));
+        return adoptRefWillBeNoop(new Pair(first, second, identicalValuesPolicy));
     }
 
     CSSPrimitiveValue* first() const { return m_first.get(); }
     CSSPrimitiveValue* second() const { return m_second.get(); }
     IdenticalValuesPolicy identicalValuesPolicy() const { return m_identicalValuesPolicy; }
 
-    void setFirst(PassRefPtr<CSSPrimitiveValue> first) { m_first = first; }
-    void setSecond(PassRefPtr<CSSPrimitiveValue> second) { m_second = second; }
+    void setFirst(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first) { m_first = first; }
+    void setSecond(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second) { m_second = second; }
     void setIdenticalValuesPolicy(IdenticalValuesPolicy identicalValuesPolicy) { m_identicalValuesPolicy = identicalValuesPolicy; }
 
     String cssText() const
@@ -65,13 +63,15 @@ public:
             && m_identicalValuesPolicy == other.m_identicalValuesPolicy;
     }
 
+    void trace(Visitor*);
+
 private:
     Pair()
         : m_first(0)
         , m_second(0)
         , m_identicalValuesPolicy(DropIdenticalValues) { }
 
-    Pair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
+    Pair(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)
         : m_first(first)
         , m_second(second)
         , m_identicalValuesPolicy(identicalValuesPolicy) { }
@@ -83,8 +83,8 @@ private:
         return first + ' ' + second;
     }
 
-    RefPtr<CSSPrimitiveValue> m_first;
-    RefPtr<CSSPrimitiveValue> m_second;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_first;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_second;
     IdenticalValuesPolicy m_identicalValuesPolicy;
 };
 

@@ -791,6 +791,8 @@
             'css/MediaQueryMatcher.h',
             'css/PageRuleCollector.cpp',
             'css/PageRuleCollector.h',
+            'css/Pair.cpp',
+            'css/Pair.h',
             'css/PropertySetCSSStyleDeclaration.cpp',
             'css/PropertySetCSSStyleDeclaration.h',
             'css/PseudoStyleRequest.h',
