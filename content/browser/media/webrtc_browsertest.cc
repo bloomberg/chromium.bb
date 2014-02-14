@@ -135,10 +135,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 // Disabled for Ozone, see http://crbug.com/315392#c15
 #define MAYBE_NegotiateUnsupportedVideoCodec\
     DISABLED_NegotiateUnsupportedVideoCodec
-#elif defined(OS_LINUX) && defined(USE_AURA)
-// http://crbug.com/335916
-#define MAYBE_NegotiateUnsupportedVideoCodec\
-    DISABLED_NegotiateUnsupportedVideoCodec
 #else
 #define MAYBE_NegotiateUnsupportedVideoCodec NegotiateUnsupportedVideoCodec
 #endif
@@ -152,9 +148,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 // cause SetLocalDescription to fail.
 #if defined(USE_OZONE)
 // Disabled for Ozone, see http://crbug.com/315392#c15
-#define MAYBE_NegotiateNonCryptoCall DISABLED_NegotiateNonCryptoCall
-#elif defined(OS_LINUX) && defined(USE_AURA)
-// http:://crbug.com/335916
 #define MAYBE_NegotiateNonCryptoCall DISABLED_NegotiateNonCryptoCall
 #else
 #define MAYBE_NegotiateNonCryptoCall NegotiateNonCryptoCall
