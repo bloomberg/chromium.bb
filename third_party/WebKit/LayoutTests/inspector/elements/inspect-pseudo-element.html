@@ -21,7 +21,7 @@ function test()
 
     function inspectModeEnabled()
     {
-        WebInspector.notifications.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
+        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, selectedNodeChanged, this);
         InspectorTest.evaluateInPage("clickPseudo()");
     }
 
