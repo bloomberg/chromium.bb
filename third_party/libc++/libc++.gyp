@@ -42,6 +42,8 @@
       'include_dirs': [
         'trunk/include',
         '../libc++abi/trunk/include',
+        # TODO(earthdok): remove when http://crbug.com/337426 is fixed
+        '../llvm-build/Release+Asserts/lib/clang/3.5/include/'
       ],
       'cflags': [
         '-g', '-Os', '-fPIC',
@@ -70,6 +72,10 @@
             'ldflags': [
               '-stdlib=libc++',
               '-L<(PRODUCT_DIR)/lib/',
+            ],
+            'include_dirs': [
+              # TODO(earthdok): remove when http://crbug.com/337426 is fixed
+              '../llvm-build/Release+Asserts/lib/clang/3.5/include/'
             ],
           }],
         ],
