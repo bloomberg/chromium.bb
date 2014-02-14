@@ -41,6 +41,7 @@ class NativeViewportImpl
         services::NativeViewport::Create(context(), this);
     native_viewport_->Init(bounds);
     client()->OnCreated();
+    OnBoundsChanged(bounds);
   }
 
   virtual void Show() MOJO_OVERRIDE {
