@@ -203,13 +203,17 @@ TrayIME::~TrayIME() {
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
   if (tray_label_) {
+    bool visible = count > 1;
+    tray_label_->SetVisible(visible);
+    // Do not change label before hiding because this change is noticeable.
+    if (!visible)
+      return;
     if (current.third_party) {
       tray_label_->label()->SetText(
           current.short_name + base::UTF8ToUTF16("*"));
     } else {
       tray_label_->label()->SetText(current.short_name);
     }
-    tray_label_->SetVisible(count > 1);
     SetTrayLabelItemBorder(tray_label_, system_tray()->shelf_alignment());
     tray_label_->Layout();
   }
