@@ -140,7 +140,8 @@ void invokeMethodOnAllTargetProperties(const SVGElementAnimatedPropertyList& lis
     SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
         RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
-        (animatedProperty.get()->*method)();
+        if (animatedProperty)
+            (animatedProperty.get()->*method)();
     }
 }
 
@@ -152,7 +153,8 @@ void setAnimatedValueOnAllTargetProperties(const SVGElementAnimatedPropertyList&
     SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
         RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
-        animatedProperty->setAnimatedValue(value);
+        if (animatedProperty)
+            animatedProperty->setAnimatedValue(value);
     }
 }
 
