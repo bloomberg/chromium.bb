@@ -105,8 +105,7 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)
 
 IPC_STRUCT_TRAITS_BEGIN(content::LeakDetectionResult)
 IPC_STRUCT_TRAITS_MEMBER(leaked)
-IPC_STRUCT_TRAITS_MEMBER(number_of_live_documents)
-IPC_STRUCT_TRAITS_MEMBER(number_of_live_nodes)
+IPC_STRUCT_TRAITS_MEMBER(detail)
 IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LeakDetectionDone,

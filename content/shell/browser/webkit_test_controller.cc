@@ -670,13 +670,9 @@ void WebKitTestController::OnLeakDetectionDone(
     return;
   }
 
-  printer_->AddErrorMessage("#LEAK");
   printer_->AddErrorMessage(
-      base::StringPrintf("  Number of live documents: %d",
-                         result.number_of_live_documents));
-  printer_->AddErrorMessage(
-      base::StringPrintf("  Number of live nodes: %d",
-                         result.number_of_live_nodes));
+      base::StringPrintf("#LEAK - renderer pid %d (%s)", current_pid_,
+                         result.detail.c_str()));
   DiscardMainWindow();
 }
 

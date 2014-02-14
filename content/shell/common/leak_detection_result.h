@@ -5,12 +5,13 @@
 #ifndef CONTENT_SHELL_COMMON_LEAK_DETECTION_RESULT_H_
 #define CONTENT_SHELL_COMMON_LEAK_DETECTION_RESULT_H_
 
+#include <string>
+
 namespace content {
 
 struct LeakDetectionResult {
   bool leaked;
-  unsigned number_of_live_documents;
-  unsigned number_of_live_nodes;
+  std::string detail;
 };
 
 }  // namespace content

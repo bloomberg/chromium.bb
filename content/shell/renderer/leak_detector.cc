@@ -4,7 +4,9 @@
 
 #include "content/shell/renderer/leak_detector.h"
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 using blink::WebLeakDetector;
@@ -18,20 +20,37 @@ LeakDetector::LeakDetector()
 
 LeakDetectionResult LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
   LeakDetectionResult result;
-  result.number_of_live_documents = 0;
-  result.number_of_live_nodes = 0;
+  unsigned number_of_live_documents = 0;
+  unsigned number_of_live_nodes = 0;
 
   WebLeakDetector::collectGarbargeAndGetDOMCounts(
-      frame, &result.number_of_live_documents, &result.number_of_live_nodes);
+      frame, &number_of_live_documents, &number_of_live_nodes);
 
   result.leaked =
       previous_number_of_live_documents_ > 0 &&
       previous_number_of_live_nodes_ > 0 &&
-      (previous_number_of_live_documents_ < result.number_of_live_documents ||
-       previous_number_of_live_nodes_ < result.number_of_live_nodes);
+      (previous_number_of_live_documents_ < number_of_live_documents ||
+       previous_number_of_live_nodes_ < number_of_live_nodes);
 
-  previous_number_of_live_documents_ = result.number_of_live_documents;
-  previous_number_of_live_nodes_ = result.number_of_live_nodes;
+  if (result.leaked) {
+    base::DictionaryValue detail;
+    base::ListValue* list = new base::ListValue();
+    list->AppendInteger(previous_number_of_live_documents_);
+    list->AppendInteger(number_of_live_documents);
+    detail.Set("numberOfLiveDocuments", list);
+
+    list = new base::ListValue();
+    list->AppendInteger(previous_number_of_live_nodes_);
+    list->AppendInteger(number_of_live_nodes);
+    detail.Set("numberOfLiveNodes", list);
+
+    std::string detail_str;
+    base::JSONWriter::Write(&detail, &detail_str);
+    result.detail = detail_str;
+  }
+
+  previous_number_of_live_documents_ = number_of_live_documents;
+  previous_number_of_live_nodes_ = number_of_live_nodes;
 
   return result;
 }
