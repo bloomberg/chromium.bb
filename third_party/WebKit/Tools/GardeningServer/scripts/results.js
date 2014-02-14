@@ -238,7 +238,7 @@ results.ResultAnalyzer = base.extends(Object, {
     {
         return this._isUnexpected;
     }
-})
+});
 
 function isExpectedFailure(resultNode)
 {
@@ -332,7 +332,7 @@ function historicalResultsLocations(builderName, callback)
         var nextMarker = $(prefixListingDocument).find('NextMarker').get();
         if (nextMarker.length) {
             var nextListingURL = resultsPrefixListingURL(builderName, nextMarker[0].textContent);
-            net.get(nextListingURL, parseListingDocument);
+            net.xml(nextListingURL, parseListingDocument);
         } else {
             callback(historicalResultsData);
         }
@@ -341,7 +341,7 @@ function historicalResultsLocations(builderName, callback)
     builders.mostRecentBuildForBuilder(builderName, function (mostRecentBuildNumber) {
         var marker = config.resultsDirectoryNameFromBuilderName(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
         var listingURL = resultsPrefixListingURL(builderName, marker);
-        net.get(listingURL, parseListingDocument);
+        net.xml(listingURL, parseListingDocument);
     });
 }
 

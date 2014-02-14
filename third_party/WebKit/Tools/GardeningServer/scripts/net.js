@@ -27,12 +27,34 @@ var net = net || {};
 
 (function () {
 
-// FIXME: Excise this last bit of jquery ajax code.
-// There are callers that depend on automatically parsing the content as JSON or XML
-// based off the content-type. Instead we should add net.json and net.xml for those cases.
 net.get = function(url, success)
 {
-    $.get(url, success);
+    net.ajax({
+        url: url,
+        success: success
+    });
+};
+
+net.json = function(url, success)
+{
+    net.ajax({
+        url: url,
+        success: success,
+        parse: function(xhr) {
+            return JSON.parse(xhr.responseText);
+        }
+    });
+};
+
+net.xml = function(url, success)
+{
+    net.ajax({
+        url: url,
+        success: success,
+        parse: function(xhr) {
+            return xhr.responseXML;
+        }
+    });
 };
 
 net.ajax = function(options)
@@ -42,8 +64,12 @@ net.ajax = function(options)
     var async = true;
     xhr.open(method, options.url, async);
     xhr.onload = function() {
-        if (xhr.status == 200 && options.success)
-            options.success(xhr.responseText);
+        if (xhr.status == 200 && options.success) {
+            if (options.parse)
+                options.success(options.parse(xhr));
+            else
+                options.success(xhr.responseText);
+        }
         else if (xhr.status != 200 && options.error)
             options.error();
     };

@@ -39,7 +39,7 @@ var issueSearchURL = config.kRietveldURL + "/search?" + $.param({
 var rollSubjectRegexp = /Blink roll (\d+):(\d+)/;
 
 function findRollIssue(results) {
-    var results = results['results'];
+    results = results['results'];
     for (var i = 0; i < results.length; i++) {
         var result = results[i];
         if (result['subject'].match(rollSubjectRegexp))
@@ -54,7 +54,7 @@ function isRollbotStopped(issue) {
 }
 
 rollbot.fetchCurrentRoll = function(callback) {
-    net.get(issueSearchURL, function(searchJSON) {
+    net.json(issueSearchURL, function(searchJSON) {
         var issue = findRollIssue(searchJSON);
         if (!issue) {
             callback(null);

@@ -36,7 +36,7 @@ treestatus.urlByName = function(name) {
 }
 
 treestatus.fetchTreeStatus = function(statusURL, resultSpan) {
-    net.get(statusURL, function(statusJSON) {
+    net.json(statusURL, function(statusJSON) {
         if (statusJSON.can_commit_freely)
             resultSpan.textContent = "OPEN";
         else
