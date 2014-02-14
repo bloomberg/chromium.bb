@@ -37,8 +37,11 @@ class CONTENT_EXPORT TouchEventQueueClient {
 class CONTENT_EXPORT TouchEventQueue {
  public:
 
-  // The |client| must outlive the TouchEventQueue.
-  explicit TouchEventQueue(TouchEventQueueClient* client);
+  // The |client| must outlive the TouchEventQueue. If
+  // |touchmove_suppression_length_dips| <= 0, touch move suppression is
+  // disabled.
+  TouchEventQueue(TouchEventQueueClient* client,
+                  double touchmove_suppression_length_dips);
   ~TouchEventQueue();
 
   // Adds an event to the queue. The event may be coalesced with previously
@@ -69,11 +72,6 @@ class CONTENT_EXPORT TouchEventQueue {
   // Sets whether a delayed touch ack will cancel and flush the current
   // touch sequence.
   void SetAckTimeoutEnabled(bool enabled, size_t ack_timeout_delay_ms);
-
-  // Sets whether touchmove's within a slop region will be suppressed if the
-  // preceding touchstart was not preventDefault'ed.
-  void SetTouchMoveSlopSuppressionEnabled(bool enabled,
-                                          double slop_length_dips);
 
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
@@ -161,8 +159,8 @@ class CONTENT_EXPORT TouchEventQueue {
   bool ack_timeout_enabled_;
   scoped_ptr<TouchTimeoutHandler> timeout_handler_;
 
-  // Optional suppression of TouchMove's within a slop region when a sequence
-  // has not yet been preventDefaulted, disabled by default.
+  // Suppression of TouchMove's within a slop region when a sequence has not yet
+  // been preventDefaulted.
   scoped_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);

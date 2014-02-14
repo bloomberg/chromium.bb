@@ -176,8 +176,9 @@ class TouchEventQueue::TouchTimeoutHandler {
 // a given slop region, unless the touchstart is preventDefault'ed.
 class TouchEventQueue::TouchMoveSlopSuppressor {
  public:
-  TouchMoveSlopSuppressor()
-      : slop_suppression_length_dips_squared_(0),
+  TouchMoveSlopSuppressor(double slop_suppression_length_dips)
+      : slop_suppression_length_dips_squared_(slop_suppression_length_dips *
+                                              slop_suppression_length_dips),
         suppressing_touch_moves_(false) {}
 
   bool FilterEvent(const WebTouchEvent& event) {
@@ -208,12 +209,6 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
   void ConfirmTouchEvent(InputEventAckState ack_result) {
     if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
       suppressing_touch_moves_ = false;
-  }
-
-  // Note: If a touch sequence is in-progress, suppression may not take effect
-  // until the subsequent sequence.
-  void set_slop_length_dips(double length_dips) {
-    slop_suppression_length_dips_squared_ = length_dips * length_dips;
   }
 
  private:
@@ -292,12 +287,15 @@ class CoalescedWebTouchEvent {
   DISALLOW_COPY_AND_ASSIGN(CoalescedWebTouchEvent);
 };
 
-TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client)
+TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
+                                 double touchmove_suppression_length_dips)
     : client_(client),
       dispatching_touch_ack_(NULL),
       dispatching_touch_(false),
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
-      ack_timeout_enabled_(false) {
+      ack_timeout_enabled_(false),
+      touchmove_slop_suppressor_(
+          new TouchMoveSlopSuppressor(touchmove_suppression_length_dips)) {
   DCHECK(client);
 }
 
@@ -348,8 +346,7 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
   if (timeout_handler_ && timeout_handler_->ConfirmTouchEvent(ack_result))
     return;
 
-  if (touchmove_slop_suppressor_)
-    touchmove_slop_suppressor_->ConfirmTouchEvent(ack_result);
+  touchmove_slop_suppressor_->ConfirmTouchEvent(ack_result);
 
   if (touch_queue_.empty())
     return;
@@ -491,20 +488,6 @@ void TouchEventQueue::SetAckTimeoutEnabled(bool enabled,
     timeout_handler_.reset(new TouchTimeoutHandler(this, ack_timeout_delay_ms));
 }
 
-void TouchEventQueue::SetTouchMoveSlopSuppressionEnabled(
-    bool enabled,
-    double slop_length_dips) {
-  if (!enabled) {
-    touchmove_slop_suppressor_.reset();
-    return;
-  }
-
-  if (!touchmove_slop_suppressor_)
-    touchmove_slop_suppressor_.reset(new TouchMoveSlopSuppressor());
-
-  touchmove_slop_suppressor_->set_slop_length_dips(slop_length_dips);
-}
-
 bool TouchEventQueue::IsTimeoutRunningForTesting() const {
   return timeout_handler_ && timeout_handler_->IsTimeoutTimerRunning();
 }
@@ -553,10 +536,8 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
   if (timeout_handler_ && timeout_handler_->FilterEvent(event))
     return ACK_WITH_NO_CONSUMER_EXISTS;
 
-  if (touchmove_slop_suppressor_ &&
-      touchmove_slop_suppressor_->FilterEvent(event)) {
+  if (touchmove_slop_suppressor_->FilterEvent(event))
     return ACK_WITH_NOT_CONSUMED;
-  }
 
   if (touch_filtering_state_ == DROP_ALL_TOUCHES)
     return ACK_WITH_NO_CONSUMER_EXISTS;

@@ -620,12 +620,12 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
 
   // Move the finger.
   timestamp += base::TimeDelta::FromSeconds(10);
-  MoveTouchPoint(0, 5, 5);
+  MoveTouchPoint(0, 500, 500);
   SetTouchTimestamp(timestamp);
   SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(5, 5), 0, timestamp));
+      gfx::Point(500, 500), 0, timestamp));
 
   // Now press a second finger.
   timestamp += base::TimeDelta::FromSeconds(10);

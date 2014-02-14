@@ -34,7 +34,7 @@ class TouchEventQueueTest : public testing::Test,
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    queue_.reset(new TouchEventQueue(this));
+    queue_.reset(new TouchEventQueue(this, 0));
     queue_->OnHasTouchEventHandlers(true);
   }
 
@@ -77,8 +77,9 @@ class TouchEventQueueTest : public testing::Test,
     queue_->SetAckTimeoutEnabled(true, timeout_delay_ms);
   }
 
-  void SetUpForTouchMoveSlopTesting(double slop_length) {
-    queue_->SetTouchMoveSlopSuppressionEnabled(true, slop_length);
+  void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
+    queue_.reset(new TouchEventQueue(this, slop_length_dips));
+    queue_->OnHasTouchEventHandlers(true);
   }
 
   void SendTouchEvent(const WebTouchEvent& event) {
