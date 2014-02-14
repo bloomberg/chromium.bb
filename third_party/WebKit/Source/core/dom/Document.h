@@ -722,8 +722,9 @@ public:
      *
      * @param equiv The http header name (value of the meta tag's "equiv" attribute)
      * @param content The header value (value of the meta tag's "content" attribute)
+     * @param inDocumentHeadElement Is the element in the document's <head> element?
      */
-    void processHttpEquiv(const AtomicString& equiv, const AtomicString& content);
+    void processHttpEquiv(const AtomicString& equiv, const AtomicString& content, bool inDocumentHeadElement);
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
 

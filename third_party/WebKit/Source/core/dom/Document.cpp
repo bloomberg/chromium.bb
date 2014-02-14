@@ -131,6 +131,7 @@
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -2937,24 +2938,28 @@ CSSStyleSheet* Document::elementSheet()
     return m_elemSheet.get();
 }
 
-void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& content)
+void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& content, bool inDocumentHeadElement)
 {
     ASSERT(!equiv.isNull() && !content.isNull());
 
-    if (equalIgnoringCase(equiv, "default-style"))
+    if (equalIgnoringCase(equiv, "default-style")) {
         processHttpEquivDefaultStyle(content);
-    else if (equalIgnoringCase(equiv, "refresh"))
+    } else if (equalIgnoringCase(equiv, "refresh")) {
         processHttpEquivRefresh(content);
-    else if (equalIgnoringCase(equiv, "set-cookie"))
+    } else if (equalIgnoringCase(equiv, "set-cookie")) {
         processHttpEquivSetCookie(content);
-    else if (equalIgnoringCase(equiv, "content-language"))
+    } else if (equalIgnoringCase(equiv, "content-language")) {
         setContentLanguage(content);
-    else if (equalIgnoringCase(equiv, "x-dns-prefetch-control"))
+    } else if (equalIgnoringCase(equiv, "x-dns-prefetch-control")) {
         parseDNSPrefetchControlHeader(content);
-    else if (equalIgnoringCase(equiv, "x-frame-options"))
+    } else if (equalIgnoringCase(equiv, "x-frame-options")) {
         processHttpEquivXFrameOptions(content);
-    else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only"))
-        processHttpEquivContentSecurityPolicy(equiv, content);
+    } else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only")) {
+        if (inDocumentHeadElement)
+            processHttpEquivContentSecurityPolicy(equiv, content);
+        else
+            contentSecurityPolicy()->reportMetaOutsideHead(content);
+    }
 }
 
 void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)

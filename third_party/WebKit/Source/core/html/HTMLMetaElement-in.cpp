@@ -443,6 +443,18 @@ Node::InsertionNotificationRequest HTMLMetaElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
+static bool inDocumentHead(HTMLMetaElement* element)
+{
+    if (!element->inDocument())
+        return false;
+
+    for (Element* current = element; current; current = current->parentElement()) {
+        if (current->hasTagName(HTMLNames::headTag))
+            return true;
+    }
+    return false;
+}
+
 void HTMLMetaElement::process()
 {
     if (!inDocument())
@@ -468,9 +480,10 @@ void HTMLMetaElement::process()
     // Get the document to process the tag, but only if we're actually part of DOM
     // tree (changing a meta tag while it's not in the tree shouldn't have any effect
     // on the document).
+
     const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
     if (!httpEquivValue.isEmpty())
-        document().processHttpEquiv(httpEquivValue, contentValue);
+        document().processHttpEquiv(httpEquivValue, contentValue, inDocumentHead(this));
 }
 
 const AtomicString& HTMLMetaElement::content() const

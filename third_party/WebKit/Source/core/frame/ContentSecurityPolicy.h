@@ -148,6 +148,7 @@ public:
     void reportInvalidInReportOnly(const String&) const;
     void reportInvalidReferrer(const String&) const;
     void reportReportOnlyInMeta(const String&) const;
+    void reportMetaOutsideHead(const String&) const;
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;

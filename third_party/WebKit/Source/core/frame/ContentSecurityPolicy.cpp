@@ -2189,6 +2189,11 @@ void ContentSecurityPolicy::reportReportOnlyInMeta(const String& header) const
     logToConsole("The report-only Content Security Policy '" + header + "' was delivered via a <meta> element, which is disallowed. The policy has been ignored.");
 }
 
+void ContentSecurityPolicy::reportMetaOutsideHead(const String& header) const
+{
+    logToConsole("The Content Security Policy '" + header + "' was delivered via a <meta> element outside the document's <head>, which is disallowed. The policy has been ignored.");
+}
+
 void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name) const
 {
     logToConsole("The Content Security Policy directive '" + name + "' is ignored when delivered in a report-only policy.");
