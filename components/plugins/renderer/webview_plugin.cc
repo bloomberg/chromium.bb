@@ -46,7 +46,8 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
       container_(NULL),
       web_view_(WebView::create(this)),
       web_frame_(WebFrame::create(this)),
-      finished_loading_(false) {
+      finished_loading_(false),
+      focused_(false) {
   web_view_->setMainFrame(web_frame_);
 }
 
@@ -83,6 +84,10 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
     UMA_HISTOGRAM_COUNTS(
         "PluginDocument.NumChunks",
         (base::checked_cast<int, size_t>(data_.size())));
+  }
+  // We need to transfer the |focused_| to new plugin after it loaded.
+  if (focused_) {
+    plugin->updateFocus(true);
   }
   if (finished_loading_) {
     plugin->didFinishLoading();
@@ -148,6 +153,10 @@ void WebViewPlugin::updateGeometry(const WebRect& frame_rect,
     web_view_->setFixedLayoutSize(newSize);
     web_view_->resize(newSize);
   }
+}
+
+void WebViewPlugin::updateFocus(bool focused) {
+  focused_ = focused;
 }
 
 bool WebViewPlugin::acceptsInputEvents() { return true; }

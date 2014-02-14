@@ -85,7 +85,7 @@ class WebViewPlugin : public blink::WebPlugin,
       const blink::WebVector<blink::WebRect>& cut_out_rects,
       bool is_visible);
 
-  virtual void updateFocus(bool) {}
+  virtual void updateFocus(bool);
   virtual void updateVisibility(bool) {}
 
   virtual bool acceptsInputEvents();
@@ -155,6 +155,7 @@ class WebViewPlugin : public blink::WebPlugin,
   bool finished_loading_;
   scoped_ptr<blink::WebURLError> error_;
   blink::WebString old_title_;
+  bool focused_;
 };
 
 #endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
