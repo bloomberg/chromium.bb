@@ -29,6 +29,9 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 
+// Assumes |url_| of type GURL is available in the current scope.
+#define VLOG_WITH_URL(level) VLOG(level) << "[" + url_.spec() + "] "
+
 namespace {
 
 // Allowed schemes for Cast device URLs.
@@ -74,6 +77,7 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
     delegate_(delegate),
     auth_required_(false),
     current_message_size_(0),
+    current_message_(new CastMessage()),
     net_log_(net_log),
     connect_state_(CONN_STATE_NONE),
     write_state_(WRITE_STATE_NONE),
@@ -145,8 +149,7 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
   bool result = net::X509Certificate::GetDEREncoded(
      ssl_info.cert->os_cert_handle(), cert);
   if (result)
-    VLOG(1) << "[URL: " << url_.spec()
-            << "] Successfully extracted peer certificate: " << *cert;
+    VLOG_WITH_URL(1) << "Successfully extracted peer certificate: " << *cert;
   return result;
 }
 
@@ -156,7 +159,7 @@ bool CastSocket::VerifyChallengeReply() {
 
 void CastSocket::Connect(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  VLOG(1) << "Connect readyState = " << ready_state_;
+  VLOG_WITH_URL(1) << "Connect readyState = " << ready_state_;
   if (ready_state_ != READY_STATE_NONE) {
     callback.Run(net::ERR_CONNECTION_FAILED);
     return;
@@ -232,7 +235,7 @@ void CastSocket::DoConnectLoop(int result) {
 }
 
 int CastSocket::DoTcpConnect() {
-  VLOG(1) << "DoTcpConnect";
+  VLOG_WITH_URL(1) << "DoTcpConnect";
   connect_state_ = CONN_STATE_TCP_CONNECT_COMPLETE;
   tcp_socket_ = CreateTcpSocket();
   return tcp_socket_->Connect(
@@ -240,7 +243,7 @@ int CastSocket::DoTcpConnect() {
 }
 
 int CastSocket::DoTcpConnectComplete(int result) {
-  VLOG(1) << "DoTcpConnectComplete: " << result;
+  VLOG_WITH_URL(1) << "DoTcpConnectComplete: " << result;
   if (result == net::OK) {
     // Enable TCP protocol-level keep-alive.
     bool result = tcp_socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
@@ -251,7 +254,7 @@ int CastSocket::DoTcpConnectComplete(int result) {
 }
 
 int CastSocket::DoSslConnect() {
-  VLOG(1) << "DoSslConnect";
+  VLOG_WITH_URL(1) << "DoSslConnect";
   connect_state_ = CONN_STATE_SSL_CONNECT_COMPLETE;
   socket_ = CreateSslSocket(tcp_socket_.PassAs<net::StreamSocket>());
   return socket_->Connect(
@@ -259,7 +262,7 @@ int CastSocket::DoSslConnect() {
 }
 
 int CastSocket::DoSslConnectComplete(int result) {
-  VLOG(1) << "DoSslConnectComplete: " << result;
+  VLOG_WITH_URL(1) << "DoSslConnectComplete: " << result;
   if (result == net::ERR_CERT_AUTHORITY_INVALID &&
              peer_cert_.empty() &&
              ExtractPeerCert(&peer_cert_)) {
@@ -271,11 +274,12 @@ int CastSocket::DoSslConnectComplete(int result) {
 }
 
 int CastSocket::DoAuthChallengeSend() {
-  VLOG(1) << "DoAuthChallengeSend";
+  VLOG_WITH_URL(1) << "DoAuthChallengeSend";
   connect_state_ = CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE;
   CastMessage challenge_message;
   CreateAuthChallengeMessage(&challenge_message);
-  VLOG(1) << "Sending challenge: " << CastMessageToString(challenge_message);
+  VLOG_WITH_URL(1) << "Sending challenge: "
+                   << CastMessageToString(challenge_message);
   // Post a task to send auth challenge so that DoWriteLoop is not nested inside
   // DoConnectLoop. This is not strictly necessary but keeps the write loop
   // code decoupled from connect loop code.
@@ -289,7 +293,7 @@ int CastSocket::DoAuthChallengeSend() {
 }
 
 int CastSocket::DoAuthChallengeSendComplete(int result) {
-  VLOG(1) << "DoAuthChallengeSendComplete: " << result;
+  VLOG_WITH_URL(1) << "DoAuthChallengeSendComplete: " << result;
   if (result < 0)
     return result;
   connect_state_ = CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE;
@@ -302,12 +306,12 @@ int CastSocket::DoAuthChallengeSendComplete(int result) {
 }
 
 int CastSocket::DoAuthChallengeReplyComplete(int result) {
-  VLOG(1) << "DoAuthChallengeReplyComplete: " << result;
+  VLOG_WITH_URL(1) << "DoAuthChallengeReplyComplete: " << result;
   if (result < 0)
     return result;
   if (!VerifyChallengeReply())
     return net::ERR_FAILED;
-  VLOG(1) << "Auth challenge verification succeeded";
+  VLOG_WITH_URL(1) << "Auth challenge verification succeeded";
   return net::OK;
 }
 
@@ -322,7 +326,7 @@ void CastSocket::DoConnectCallback(int result) {
 
 void CastSocket::Close(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  VLOG(1) << "Close ReadyState = " << ready_state_;
+  VLOG_WITH_URL(1) << "Close ReadyState = " << ready_state_;
   tcp_socket_.reset();
   socket_.reset();
   cert_verifier_.reset();
@@ -366,7 +370,7 @@ void CastSocket::SendCastMessageInternal(
 
 void CastSocket::DoWriteLoop(int result) {
   DCHECK(CalledOnValidThread());
-  VLOG(1) << "WriteData q = " << write_queue_.size();
+  VLOG_WITH_URL(1) << "DoWriteLoop queue size: " << write_queue_.size();
 
   if (write_queue_.empty()) {
     write_state_ = WRITE_STATE_NONE;
@@ -416,8 +420,8 @@ int CastSocket::DoWrite() {
   DCHECK(!write_queue_.empty());
   WriteRequest& request = write_queue_.front();
 
-  VLOG(1) << "WriteData byte_count = " << request.io_buffer->size()
-           << " bytes_written " << request.io_buffer->BytesConsumed();
+  VLOG_WITH_URL(2) << "WriteData byte_count = " << request.io_buffer->size()
+                   << " bytes_written " << request.io_buffer->BytesConsumed();
 
   write_state_ = WRITE_STATE_WRITE_COMPLETE;
 
@@ -564,10 +568,11 @@ int CastSocket::DoRead() {
 }
 
 int CastSocket::DoReadComplete(int result) {
-  VLOG(1) << "DoReadDataComplete result = " << result
-          << " header offset = " << header_read_buffer_->offset()
-          << " body offset = " << body_read_buffer_->offset();
+  VLOG_WITH_URL(2) << "DoReadComplete result = " << result
+                   << " header offset = " << header_read_buffer_->offset()
+                   << " body offset = " << body_read_buffer_->offset();
   if (result <= 0) {  // 0 means EOF: the peer closed the socket
+    VLOG_WITH_URL(1) << "Read error, peer closed the socket";
     error_state_ = CHANNEL_ERROR_SOCKET_ERROR;
     read_state_ = READ_STATE_ERROR;
     return result == 0 ? net::ERR_FAILED : result;
@@ -603,22 +608,23 @@ int CastSocket::DoReadComplete(int result) {
 
 int CastSocket::DoReadCallback() {
   read_state_ = READ_STATE_READ;
-  if (IsAuthMessage(current_message_)) {
+  const CastMessage& message = *(current_message_.get());
+  if (IsAuthMessage(message)) {
     // An auth message is received, check that connect flow is running.
     if (ready_state_ == READY_STATE_CONNECTING) {
-      challenge_reply_.reset(new CastMessage(current_message_));
+      challenge_reply_.reset(new CastMessage(message));
       PostTaskToStartConnectLoop(net::OK);
     } else {
       read_state_ = READ_STATE_ERROR;
     }
   } else if (delegate_) {
-    MessageInfo message;
-    if (CastMessageToMessageInfo(current_message_, &message))
-      delegate_->OnMessage(this, message);
+    MessageInfo message_info;
+    if (CastMessageToMessageInfo(message, &message_info))
+      delegate_->OnMessage(this, message_info);
     else
       read_state_ = READ_STATE_ERROR;
   }
-  current_message_.Clear();
+  current_message_->Clear();
   return net::OK;
 }
 
@@ -641,7 +647,8 @@ bool CastSocket::ProcessHeader() {
   if (header.message_size > kMaxMessageSize)
     return false;
 
-  VLOG(1) << "Parsed header { message_size: " << header.message_size << " }";
+  VLOG_WITH_URL(2) << "Parsed header { message_size: "
+                   << header.message_size << " }";
   current_message_size_ = header.message_size;
   return true;
 }
@@ -649,7 +656,7 @@ bool CastSocket::ProcessHeader() {
 bool CastSocket::ProcessBody() {
   DCHECK_EQ(static_cast<uint32>(body_read_buffer_->offset()),
             current_message_size_);
-  if (!current_message_.ParseFromArray(
+  if (!current_message_->ParseFromArray(
       body_read_buffer_->StartOfBuffer(), current_message_size_)) {
     return false;
   }
@@ -686,7 +693,7 @@ void CastSocket::CloseWithError(ChannelError error) {
 }
 
 bool CastSocket::ParseChannelUrl(const GURL& url) {
-  VLOG(1) << "url = " + url.spec();
+  VLOG_WITH_URL(2) << "ParseChannelUrl";
   if (url.SchemeIs(kCastInsecureScheme)) {
     auth_required_ = false;
   } else if (url.SchemeIs(kCastSecureScheme)) {
@@ -696,8 +703,8 @@ bool CastSocket::ParseChannelUrl(const GURL& url) {
   }
   // TODO(mfoltz): Manual parsing, yech. Register cast[s] as standard schemes?
   // TODO(mfoltz): Test for IPv6 addresses.  Brackets or no brackets?
-  // TODO(mfoltz): Maybe enforce restriction to IPv4 private and IPv6 link-local
-  // networks
+  // TODO(mfoltz): Maybe enforce restriction to IPv4 private and IPv6
+  // link-local networks
   const std::string& path = url.path();
   // Shortest possible: //A:B
   if (path.size() < 5) {
@@ -712,7 +719,7 @@ bool CastSocket::ParseChannelUrl(const GURL& url) {
   }
   const std::string& ip_address_str = path.substr(2, colon - 2);
   const std::string& port_str = path.substr(colon + 1);
-  VLOG(1) << "addr " << ip_address_str << " port " << port_str;
+  VLOG_WITH_URL(2) << "IP: " << ip_address_str << " Port: " << port_str;
   int port;
   if (!base::StringToInt(port_str, &port))
     return false;
@@ -779,3 +786,5 @@ CastSocket::WriteRequest::~WriteRequest() { }
 }  // namespace cast_channel
 }  // namespace api
 }  // namespace extensions
+
+#undef VLOG_WITH_URL

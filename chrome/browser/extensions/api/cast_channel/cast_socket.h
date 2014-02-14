@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -36,6 +35,8 @@ class TransportSecurityState;
 namespace extensions {
 namespace api {
 namespace cast_channel {
+
+class CastMessage;
 
 // Size (in bytes) of the largest allowed message payload on the wire (without
 // the header).
@@ -277,7 +278,7 @@ class CastSocket : public ApiResource,
   // The number of bytes in the current message body.
   uint32 current_message_size_;
   // Last message received on the socket.
-  CastMessage current_message_;
+  scoped_ptr<CastMessage> current_message_;
 
   // The NetLog for this service.
   net::NetLog* net_log_;
