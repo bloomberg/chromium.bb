@@ -472,11 +472,16 @@ gfx::Size CustomFrameViewAsh::GetMaximumSize() {
 }
 
 void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
-  // The HeaderView is not a child of CustomFrameViewAsh. Redirect the paint to
-  // HeaderView instead.
-  gfx::RectF to_paint(r);
-  views::View::ConvertRectToTarget(this, header_view_, &to_paint);
-  header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
+  // We may end up here before |header_view_| has been added to the Widget.
+  if (header_view_->GetWidget()) {
+    // The HeaderView is not a child of CustomFrameViewAsh. Redirect the paint
+    // to HeaderView instead.
+    gfx::RectF to_paint(r);
+    views::View::ConvertRectToTarget(this, header_view_, &to_paint);
+    header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
+  } else {
+    views::NonClientFrameView::SchedulePaintInRect(r);
+  }
 }
 
 bool CustomFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {

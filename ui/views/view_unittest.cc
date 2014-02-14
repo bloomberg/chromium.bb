@@ -2294,6 +2294,39 @@ TEST_F(ViewTest, SetBoundsSameBoundsDoesntSchedulePaint) {
   EXPECT_TRUE(view.scheduled_paint_rects_.empty());
 }
 
+// Verifies AddChildView() and RemoveChildView() schedule appropriate paints.
+TEST_F(ViewTest, AddAndRemoveSchedulePaints) {
+  gfx::Rect viewport_bounds(0, 0, 100, 100);
+
+  // We have to put the View hierarchy into a Widget or no paints will be
+  // scheduled.
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = viewport_bounds;
+  widget->Init(params);
+  widget->GetRootView()->SetBoundsRect(viewport_bounds);
+
+  TestView* parent_view = new TestView;
+  widget->SetContentsView(parent_view);
+  parent_view->SetBoundsRect(viewport_bounds);
+  parent_view->scheduled_paint_rects_.clear();
+
+  View* child_view = new View;
+  child_view->SetBoundsRect(gfx::Rect(0, 0, 20, 20));
+  parent_view->AddChildView(child_view);
+  ASSERT_EQ(1U, parent_view->scheduled_paint_rects_.size());
+  EXPECT_EQ(child_view->bounds(), parent_view->scheduled_paint_rects_.front());
+
+  parent_view->scheduled_paint_rects_.clear();
+  parent_view->RemoveChildView(child_view);
+  scoped_ptr<View> child_deleter(child_view);
+  ASSERT_EQ(1U, parent_view->scheduled_paint_rects_.size());
+  EXPECT_EQ(child_view->bounds(), parent_view->scheduled_paint_rects_.front());
+
+  widget->CloseNow();
+}
+
 // Tests conversion methods with a transform.
 TEST_F(ViewTest, ConversionsWithTransform) {
   TestView top_view;

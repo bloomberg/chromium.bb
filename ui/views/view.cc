@@ -246,6 +246,8 @@ void View::AddChildViewAt(View* view, int index) {
     const ui::NativeTheme* new_theme = widget->GetNativeTheme();
     if (new_theme != old_theme)
       PropagateNativeThemeChanged(new_theme);
+    if (view->visible())
+      view->SchedulePaint();
   }
 
   if (layout_manager_.get())
@@ -1818,6 +1820,7 @@ void View::DoRemoveChildView(View* view,
                              bool delete_removed_view,
                              View* new_parent) {
   DCHECK(view);
+
   const Views::iterator i(std::find(children_.begin(), children_.end(), view));
   scoped_ptr<View> view_to_be_deleted;
   if (i != children_.end()) {
@@ -1831,8 +1834,11 @@ void View::DoRemoveChildView(View* view,
         next_focusable->previous_focusable_view_ = prev_focusable;
     }
 
-    if (GetWidget())
+    if (GetWidget()) {
       UnregisterChildrenForVisibleBoundsNotification(view);
+      if (view->visible())
+        view->SchedulePaint();
+    }
     view->PropagateRemoveNotifications(this, new_parent);
     view->parent_ = NULL;
     view->UpdateLayerVisibility();
