@@ -50,7 +50,7 @@ namespace WTF {
 
         ALWAYS_INLINE ~RefPtr() { derefIfNotNull(m_ptr); }
 
-        T* get() const { return m_ptr; }
+        ALWAYS_INLINE T* get() const { return m_ptr; }
 
         void clear();
         PassRefPtr<T> release() { PassRefPtr<T> tmp = adoptRef(m_ptr); m_ptr = 0; return tmp; }
