@@ -30,6 +30,7 @@
 #include "core/html/HTMLTableRowsCollection.h"
 
 #include "HTMLNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
 
@@ -54,12 +55,12 @@ static bool isInFoot(Element* row)
 
 HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, HTMLTableRowElement* previous)
 {
-    Node* child = 0;
+    Element* child = 0;
 
     // Start by looking for the next row in this section.
     // Continue only if there is none.
     if (previous && previous->parentNode() != table) {
-        for (child = previous->nextSibling(); child; child = child->nextSibling()) {
+        for (child = ElementTraversal::nextSibling(*previous); child; child = ElementTraversal::nextSibling(*child)) {
             if (child->hasTagName(trTag))
                 return toHTMLTableRowElement(child);
         }
@@ -67,12 +68,12 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // If still looking at head sections, find the first row in the next head section.
     if (!previous)
-        child = table->firstChild();
+        child = ElementTraversal::firstWithin(*table);
     else if (isInHead(previous))
-        child = previous->parentNode()->nextSibling();
-    for (; child; child = child->nextSibling()) {
+        child = ElementTraversal::nextSibling(*previous->parentNode());
+    for (; child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(theadTag)) {
-            for (Node* grandchild = child->firstChild(); grandchild; grandchild = grandchild->nextSibling()) {
+            for (Element* grandchild = ElementTraversal::firstWithin(*child); grandchild; grandchild = ElementTraversal::nextSibling(*grandchild)) {
                 if (grandchild->hasTagName(trTag))
                     return toHTMLTableRowElement(grandchild);
             }
@@ -81,16 +82,16 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // If still looking at top level and bodies, find the next row in top level or the first in the next body section.
     if (!previous || isInHead(previous))
-        child = table->firstChild();
+        child = ElementTraversal::firstWithin(*table);
     else if (previous->parentNode() == table)
-        child = previous->nextSibling();
+        child = ElementTraversal::nextSibling(*previous);
     else if (isInBody(previous))
-        child = previous->parentNode()->nextSibling();
-    for (; child; child = child->nextSibling()) {
+        child = ElementTraversal::nextSibling(*previous->parentNode());
+    for (; child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(trTag))
             return toHTMLTableRowElement(child);
         if (child->hasTagName(tbodyTag)) {
-            for (Node* grandchild = child->firstChild(); grandchild; grandchild = grandchild->nextSibling()) {
+            for (Element* grandchild = ElementTraversal::firstWithin(*child); grandchild; grandchild = ElementTraversal::nextSibling(*grandchild)) {
                 if (grandchild->hasTagName(trTag))
                     return toHTMLTableRowElement(grandchild);
             }
@@ -99,12 +100,12 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // Find the first row in the next foot section.
     if (!previous || !isInFoot(previous))
-        child = table->firstChild();
+        child = ElementTraversal::firstWithin(*table);
     else
-        child = previous->parentNode()->nextSibling();
-    for (; child; child = child->nextSibling()) {
+        child = ElementTraversal::nextSibling(*previous->parentNode());
+    for (; child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(tfootTag)) {
-            for (Node* grandchild = child->firstChild(); grandchild; grandchild = grandchild->nextSibling()) {
+            for (Element* grandchild = ElementTraversal::firstWithin(*child); grandchild; grandchild = ElementTraversal::nextSibling(*grandchild)) {
                 if (grandchild->hasTagName(trTag))
                     return toHTMLTableRowElement(grandchild);
             }
