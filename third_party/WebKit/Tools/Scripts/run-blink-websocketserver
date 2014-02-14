@@ -43,29 +43,6 @@ def main():
     option_parser.add_option('--server', type='choice',
                              choices=['start', 'stop'], default='start',
                              help='Server action (start|stop).')
-    option_parser.add_option('-p', '--port', dest='port',
-                             default=None, help='Port to listen on.')
-    option_parser.add_option('-r', '--root',
-                             help='Absolute path to DocumentRoot '
-                                  '(overrides layout test roots).')
-    option_parser.add_option('-t', '--tls', dest='use_tls',
-                             action='store_true',
-                             default=False, help='use TLS (wss://).')
-    option_parser.add_option('-k', '--private_key', dest='private_key',
-                             default='', help='TLS private key file.')
-    option_parser.add_option('-c', '--certificate', dest='certificate',
-                             default='', help='TLS certificate file.')
-    option_parser.add_option('--ca-certificate', dest='ca_certificate',
-                             default='', help='TLS CA certificate file for '
-                                              'client authentication.')
-    option_parser.add_option('--chromium', action='store_true',
-                             dest='chromium',
-                             default=False,
-                             help='Use the Chromium port.')
-    option_parser.add_option('--register_cygwin', action="store_true",
-                             dest="register_cygwin",
-                             help='Register Cygwin paths (on Win try bots).')
-    option_parser.add_option('--pidfile', help='path to pid file.')
     option_parser.add_option('--output-dir', dest='output_dir',
                              default=None, help='output directory.')
     option_parser.add_option('-v', '--verbose', action='store_true',
@@ -73,33 +50,12 @@ def main():
                              help='Include debug-level logging.')
     options, args = option_parser.parse_args()
 
-    if not options.port:
-        if options.use_tls:
-            # FIXME: We shouldn't grab at this private variable.
-            options.port = websocket_server._DEFAULT_WSS_PORT
-        else:
-            # FIXME: We shouldn't grab at this private variable.
-            options.port = websocket_server._DEFAULT_WS_PORT
-
     if not options.output_dir:
         options.output_dir = tempfile.gettempdir()
 
-    kwds = {'port': options.port, 'use_tls': options.use_tls}
-    if options.root:
-        kwds['root'] = options.root
-    if options.private_key:
-        kwds['private_key'] = options.private_key
-    if options.certificate:
-        kwds['certificate'] = options.certificate
-    if options.ca_certificate:
-        kwds['ca_certificate'] = options.ca_certificate
-    if options.pidfile:
-        kwds['pidfile'] = options.pidfile
-
     host = Host()
-    # FIXME: Make this work with other ports as well.
-    port_obj = host.port_factory.get(port_name='chromium', options=options)
-    pywebsocket = websocket_server.PyWebSocket(port_obj, options.output_dir, **kwds)
+    port_obj = host.port_factory.get()
+    pywebsocket = websocket_server.PyWebSocket(port_obj, options.output_dir)
 
     log_level = logging.WARN
     if options.verbose:
