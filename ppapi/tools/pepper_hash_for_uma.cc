@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     // Strip off the signed bit because UMA doesn't support negative values,
     // but takes a signed int as input.
     int hash = static_cast<int>(data & 0x7fffffff);
-    printf("<int value=\"%d\" label=\"%s\">\n", hash, argv[i]);
+    printf("<int value=\"%d\" label=\"%s\"/>\n", hash, argv[i]);
   }
   return 0;
 }
