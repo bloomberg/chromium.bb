@@ -1465,11 +1465,12 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
   # Get basic version without R*.
   basic_version = re.search('R[0-9]+-([0-9][\w.]+)', version).group(1)
 
-  # TODO(sosa): Temporary hack to bootstrap devserver dependency.
-  cmd = ['site_utils/autoupdate/full_release_test.py', '--help']
-  cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True,
-                            print_cmd=False, capture_output=True)
+  # Pass in the python paths to the libs full release test needs.
+  env_dict = dict(
+      chromite_path=buildroot,
+      devserver_path=os.path.join(buildroot, 'src', 'platform', 'dev'))
 
+  python_path = '%(chromite_path)s:%(devserver_path)s' % env_dict
   cmd = ['site_utils/autoupdate/full_release_test.py',
          '--npo', '--nmo', '--dump',
          '--dump_dir', autotest_dir, '--archive_url', archive_url,
@@ -1482,6 +1483,9 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
     run_env['PATH'] += ':%s' % gs_context_dir
   else:
     run_env = os.environ
+
+  run_env.setdefault('PYTHONPATH', '')
+  run_env['PYTHONPATH'] += ':%s' % python_path
 
   cros_build_lib.RunCommand(cmd, env=run_env, cwd=cwd)
   BuildTarball(buildroot, [control_files_subdir], au_test_tarball, cwd=work_dir)
