@@ -72,7 +72,6 @@ private:
     SegmentedFontData() { }
 
     virtual const SimpleFontData* fontDataForCharacter(UChar32) const OVERRIDE;
-    virtual bool containsCharacters(const UChar*, int length) const OVERRIDE;
 
     virtual bool isCustomFont() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;

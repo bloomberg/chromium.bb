@@ -57,17 +57,6 @@ bool SegmentedFontData::containsCharacter(UChar32 c) const
     return false;
 }
 
-bool SegmentedFontData::containsCharacters(const UChar* characters, int length) const
-{
-    UChar32 c;
-    for (int i = 0; i < length; ) {
-        U16_NEXT(characters, i, length, c)
-        if (!containsCharacter(c))
-            return false;
-    }
-    return true;
-}
-
 bool SegmentedFontData::isCustomFont() const
 {
     // All segmented fonts are custom fonts.

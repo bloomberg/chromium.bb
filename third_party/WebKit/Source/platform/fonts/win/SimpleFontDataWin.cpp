@@ -117,13 +117,6 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
     return SimpleFontData::create(FontPlatformData(hfont, scaledSize, m_platformData.orientation()), isCustomFont() ? CustomFontData::create(false) : 0);
 }
 
-bool SimpleFontData::containsCharacters(const UChar* characters, int length) const
-{
-  // This used to be implemented with IMLangFontLink2, but since that code has
-  // been disabled, this would always return false anyway.
-  return false;
-}
-
 void SimpleFontData::determinePitch()
 {
     m_treatAsFixedPitch = platformData().isFixedPitch();

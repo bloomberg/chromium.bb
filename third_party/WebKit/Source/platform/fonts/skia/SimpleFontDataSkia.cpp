@@ -201,32 +201,6 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
     return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont() ? CustomFontData::create(false) : 0);
 }
 
-bool SimpleFontData::containsCharacters(const UChar* characters, int length) const
-{
-    SkPaint paint;
-    static const unsigned maxBufferCount = 64;
-    uint16_t glyphs[maxBufferCount];
-
-    m_platformData.setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-
-    while (length > 0) {
-        int n = SkMin32(length, SK_ARRAY_COUNT(glyphs));
-
-        // textToGlyphs takes a byte count so we double the character count.
-        int count = paint.textToGlyphs(characters, n * 2, glyphs);
-        for (int i = 0; i < count; i++) {
-            if (!glyphs[i])
-                return false; // missing glyph
-        }
-
-        characters += n;
-        length -= n;
-    }
-
-    return true;
-}
-
 void SimpleFontData::determinePitch()
 {
     m_treatAsFixedPitch = platformData().isFixedPitch();
