@@ -513,6 +513,7 @@
       'data_reduction_proxy_probe_url%' : '',
       'enable_mdns%' : 0,
       'enable_enhanced_bookmarks%': 0,
+      'enable_hangout_services_extension%': 0,
 
       'conditions': [
         # A flag for POSIX platforms
@@ -983,6 +984,7 @@
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
+    'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
     'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
     'use_goma%': '<(use_goma)',
@@ -1789,6 +1791,9 @@
       ['enable_enhanced_bookmarks==1', {
         'grit_defines': ['-D', 'enable_enhanced_bookmarks'],
       }],
+      ['enable_hangout_services_extension==1', {
+        'grit_defines': ['-D', 'enable_hangout_services_extension'],
+      }],
       ['enable_task_manager==1', {
         'grit_defines': ['-D', 'enable_task_manager'],
       }],
@@ -2483,6 +2488,9 @@
       }],
       ['enable_enhanced_bookmarks==1', {
         'defines': ['ENABLE_ENHANCED_BOOKMARKS=1'],
+      }],
+      ['enable_hangout_services_extension==1', {
+        'defines': ['ENABLE_HANGOUT_SERVICES_EXTENSION=1'],
       }],
       ['enable_ipc_fuzzer==1', {
         'defines': ['ENABLE_IPC_FUZZER=1'],
