@@ -33,6 +33,7 @@
 #define PingLoader_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Noncopyable.h"
@@ -53,7 +54,7 @@ class ResourceResponse;
 // to allow the load to live long enough to ensure the message was actually sent.
 // Therefore, as soon as a callback is received from the ResourceHandle, this class
 // will cancel the load and delete itself.
-class PingLoader FINAL : private blink::WebURLLoaderClient {
+class PingLoader FINAL : public PageLifecycleObserver, private blink::WebURLLoaderClient {
     WTF_MAKE_NONCOPYABLE(PingLoader); WTF_MAKE_FAST_ALLOCATED;
 public:
     enum ViolationReportType {
@@ -68,16 +69,21 @@ public:
     virtual ~PingLoader();
 
 private:
-    PingLoader(Frame*, ResourceRequest&, StoredCredentials = AllowStoredCredentials);
+    PingLoader(Frame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
 
-    virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE { delete this; }
-    virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) OVERRIDE { delete this; }
-    virtual void didFinishLoading(blink::WebURLLoader*, double, int64_t) OVERRIDE { delete this; }
-    virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) OVERRIDE { delete this; }
-    void timeout(Timer<PingLoader>*) { delete this; }
+    static void start(Frame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials = AllowStoredCredentials);
+
+    virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE;
+    virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) OVERRIDE;
+    virtual void didFinishLoading(blink::WebURLLoader*, double, int64_t) OVERRIDE;
+    virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) OVERRIDE;
+
+    void timeout(Timer<PingLoader>*);
 
     OwnPtr<blink::WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;
+    String m_url;
+    unsigned long m_identifier;
 };
 
 }

@@ -284,7 +284,7 @@ void InspectorConsoleAgent::didReceiveResourceResponse(Frame*, unsigned long req
     }
 }
 
-void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, DocumentLoader*, const ResourceError& error)
+void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)
 {
     if (error.isCancellation()) // Report failures only.
         return;

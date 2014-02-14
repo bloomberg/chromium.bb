@@ -192,7 +192,7 @@ void FrameFetchContext::dispatchDidFail(DocumentLoader* loader, unsigned long id
 {
     if (Page* page = m_frame->page())
         page->progress().completeProgress(identifier);
-    InspectorInstrumentation::didFailLoading(m_frame, identifier, ensureLoader(loader), error);
+    InspectorInstrumentation::didFailLoading(m_frame, identifier, error);
 }
 
 void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, int dataLength)

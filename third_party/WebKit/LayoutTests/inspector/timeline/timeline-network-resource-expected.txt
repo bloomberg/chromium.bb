@@ -25,7 +25,6 @@ ResourceReceiveResponse Properties:
         requestId : <string>
         statusCode : 0
     }
-    frameId : <string>
     startTime : <number>
     type : "ResourceReceiveResponse"
 }
@@ -38,7 +37,6 @@ ResourceFinish Properties:
         networkTime : <number>
         requestId : <string>
     }
-    frameId : <string>
     startTime : <number>
     type : "ResourceFinish"
 }

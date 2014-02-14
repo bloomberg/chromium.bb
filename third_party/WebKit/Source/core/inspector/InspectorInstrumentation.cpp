@@ -95,11 +95,6 @@ bool isDebuggerPausedImpl(InstrumentingAgents* instrumentingAgents)
     return false;
 }
 
-void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& response)
-{
-    willSendRequestImpl(instrumentingAgents, identifier, loader, request, response, FetchInitiatorInfo());
-}
-
 void didReceiveResourceResponseButCanceledImpl(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
     didReceiveResourceResponse(frame, identifier, loader, r, 0);

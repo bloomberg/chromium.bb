@@ -210,7 +210,7 @@ public:
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
     void didReceiveResourceResponse(Frame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime, int64_t);
-    void didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error);
+    void didFailLoading(unsigned long identifier, const ResourceError&);
     bool willReceiveResourceData(Frame*, unsigned long identifier, int length);
     void didReceiveResourceData();
 
@@ -261,7 +261,7 @@ private:
     void onDrawFrame(const TraceEventDispatcher::TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent&);
 
-    void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
+    void didFinishLoadingResource(unsigned long, bool didFail, double finishTime);
 
     void sendEvent(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
     void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);

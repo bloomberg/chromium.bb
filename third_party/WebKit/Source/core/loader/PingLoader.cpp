@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/loader/PingLoader.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
 #include "core/frame/Frame.h"
@@ -39,14 +40,17 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/page/Page.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/network/FormData.h"
+#include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLResponse.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -62,10 +66,10 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     request.setTargetType(ResourceRequest::TargetIsPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
-    // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
+    FetchInitiatorInfo initiatorInfo;
+    initiatorInfo.name = FetchInitiatorTypeNames::ping;
+    PingLoader::start(frame, request, initiatorInfo);
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
@@ -91,10 +95,10 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     // FIXME: Should Ping-From obey ReferrerPolicy?
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().string()))
         request.setHTTPHeaderField("Ping-From", AtomicString(frame->document()->url().string()));
-    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
-    // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
+    FetchInitiatorInfo initiatorInfo;
+    initiatorInfo.name = FetchInitiatorTypeNames::ping;
+    PingLoader::start(frame, request, initiatorInfo);
 }
 
 void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
@@ -105,25 +109,35 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
-    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials));
+
+    FetchInitiatorInfo initiatorInfo;
+    initiatorInfo.name = FetchInitiatorTypeNames::violationreport;
+    PingLoader::start(frame, request, initiatorInfo, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials);
+}
+
+void PingLoader::start(Frame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
+{
+    OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
     PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
 }
 
-PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials credentialsAllowed)
-    : m_timeout(this, &PingLoader::timeout)
+PingLoader::PingLoader(Frame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
+    : PageLifecycleObserver(frame->page())
+    , m_timeout(this, &PingLoader::timeout)
+    , m_url(request.url())
+    , m_identifier(createUniqueIdentifier())
 {
     frame->loader().client()->didDispatchPingLoader(request.url());
 
-    unsigned long identifier = createUniqueIdentifier();
     m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
     ASSERT(m_loader);
     blink::WrappedResourceRequest wrappedRequest(request);
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 
-    InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader().documentLoader(), request, ResourceResponse());
+    InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
     // If the server never responds, FrameLoader won't be able to cancel this load and
     // we'll sit here waiting forever. Set a very generous timeout, just in case.
@@ -134,6 +148,41 @@ PingLoader::~PingLoader()
 {
     if (m_loader)
         m_loader->cancel();
+}
+
+void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&)
+{
+    if (Page* page = this->page())
+        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    delete this;
+}
+
+void PingLoader::didReceiveData(blink::WebURLLoader*, const char* data, int dataLength, int encodedDataLength)
+{
+    if (Page* page = this->page())
+        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    delete this;
+}
+
+void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
+{
+    if (Page* page = this->page())
+        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    delete this;
+}
+
+void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourceError)
+{
+    if (Page* page = this->page())
+        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError(resourceError));
+    delete this;
+}
+
+void PingLoader::timeout(Timer<PingLoader>*)
+{
+    if (Page* page = this->page())
+        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    delete this;
 }
 
 }

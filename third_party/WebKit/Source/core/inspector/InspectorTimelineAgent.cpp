@@ -749,12 +749,12 @@ void InspectorTimelineAgent::didReceiveResourceData()
 void InspectorTimelineAgent::didReceiveResourceResponse(Frame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-    appendRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, frame);
+    appendRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, 0);
 }
 
-void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, bool didFail, double finishTime, Frame* frame)
+void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, bool didFail, double finishTime)
 {
-    appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime * 1000), TimelineRecordType::ResourceFinish, false, frame);
+    appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime * 1000), TimelineRecordType::ResourceFinish, false, 0);
 }
 
 void InspectorTimelineAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime, int64_t)
@@ -764,12 +764,12 @@ void InspectorTimelineAgent::didFinishLoading(unsigned long identifier, Document
     if (monotonicFinishTime)
         finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
 
-    didFinishLoadingResource(identifier, false, finishTime, loader->frame());
+    didFinishLoadingResource(identifier, false, finishTime);
 }
 
-void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
+void InspectorTimelineAgent::didFailLoading(unsigned long identifier, const ResourceError& error)
 {
-    didFinishLoadingResource(identifier, true, 0, loader->frame());
+    didFinishLoadingResource(identifier, true, 0);
 }
 
 void InspectorTimelineAgent::consoleTimeStamp(ExecutionContext* context, const String& title)
