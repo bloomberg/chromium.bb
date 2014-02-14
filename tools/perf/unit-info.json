@@ -68,6 +68,10 @@
   "milliseconds-per-frame": {
     "improvement_direction": "down"
   },
+  "minutes": {
+    "improvement_direction": "down",
+    "why": "Used for NaCl build time."
+  },
   "mWh": {
     "improvement_direction": "down",
     "why": "Fewer milliwatt-hours means less energy consumed."
