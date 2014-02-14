@@ -285,13 +285,23 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
       static_cast<MediaStreamAudioSource*>(source.extraData());
 
   scoped_refptr<WebAudioCapturerSource> webaudio_source;
-  if (!source_data) {
+  scoped_refptr<WebRtcAudioCapturer> capturer;
+  if (source_data) {
+    capturer = source_data->GetAudioCapturer();
+  } else {
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
       webaudio_source = CreateWebAudioSource(&source);
       source_data =
           static_cast<MediaStreamAudioSource*>(source.extraData());
+
+      // Use the current default capturer for the WebAudio track so that the
+      // WebAudio track can pass a valid delay value and |need_audio_processing|
+      // flag to PeerConnection.
+      // TODO(xians): Remove this after moving APM to Chrome.
+      if (GetWebRtcAudioDevice())
+        capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
     } else {
       // TODO(perkj): Implement support for sources from
       // remote MediaStreams.
@@ -301,7 +311,7 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
   }
 
   return CreateLocalAudioTrack(track,
-                               source_data->GetAudioCapturer(),
+                               capturer,
                                webaudio_source.get(),
                                source_data->local_audio_source());
 }

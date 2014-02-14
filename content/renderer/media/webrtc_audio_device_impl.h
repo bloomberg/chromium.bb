@@ -305,6 +305,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   void AddAudioCapturer(const scoped_refptr<WebRtcAudioCapturer>& capturer);
   void RemoveAudioCapturer(const scoped_refptr<WebRtcAudioCapturer>& capturer);
 
+  // Gets the default capturer, which is the last capturer in |capturers_|.
+  scoped_refptr<WebRtcAudioCapturer> GetDefaultCapturer() const;
+
   // Gets paired device information of the capture device for the audio
   // renderer. This is used to pass on a session id, sample rate and buffer
   // size to a webrtc audio renderer (either local or remote), so that audio
@@ -361,10 +364,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Called on the main render thread.
   virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE;
   virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
-
-  // Helper to get the default capturer, which is the last capturer in
-  // |capturers_|.
-  scoped_refptr<WebRtcAudioCapturer> GetDefaultCapturer() const;
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
