@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/caption_buttons/caption_button_types.h"
 #include "ash/wm/caption_buttons/frame_caption_button.h"
+#include "ash/wm/window_state_observer.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -32,7 +33,8 @@ class MaximizeBubbleController;
 // Button used for the maximize control on the frame. Handles snapping logic.
 class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
                                        public views::WidgetObserver,
-                                       public aura::WindowObserver {
+                                       public aura::WindowObserver,
+                                       public wm::WindowStateObserver {
  public:
   FrameMaximizeButton(views::ButtonListener* listener,
                       views::Widget* frame);
@@ -66,6 +68,10 @@ class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // wm::WindowStateObserver override:
+  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                       wm::WindowShowType old_type) OVERRIDE;
 
   // WidgetObserver overrides:
   virtual void OnWidgetActivationChanged(views::Widget* widget,
