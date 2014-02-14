@@ -43,7 +43,7 @@ class MockInputMethodManager : public InputMethodManager {
   virtual bool EnableInputMethod(
       const std::string& new_active_input_method_id) OVERRIDE;
   virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE;
-  virtual void ActivateInputMethodMenuItem(const std::string& key) OVERRIDE;
+  virtual void ActivateInputMethodProperty(const std::string& key) OVERRIDE;
   virtual void AddInputMethodExtension(
       const std::string& id,
       InputMethodEngineInterface* instance) OVERRIDE;
@@ -57,6 +57,10 @@ class MockInputMethodManager : public InputMethodManager {
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
+  virtual InputMethodPropertyList
+      GetCurrentInputMethodProperties() const OVERRIDE;
+  virtual void SetCurrentInputMethodProperties(
+      const InputMethodPropertyList& property_list) OVERRIDE;
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*

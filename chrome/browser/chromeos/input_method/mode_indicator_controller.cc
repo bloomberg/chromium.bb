@@ -92,6 +92,11 @@ void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
   ShowModeIndicator();
 }
 
+void ModeIndicatorController::InputMethodPropertyChanged(
+    InputMethodManager* manager) {
+  // Do nothing.
+}
+
 void ModeIndicatorController::ShowModeIndicator() {
   // TODO(komatsu): When this is permanently enabled by defalut,
   // delete command_line.h and chromeos_switches.h from the header

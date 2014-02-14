@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -802,9 +800,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), set_menu_item_test_script));
 
-    const ash::ime::InputMethodMenuItemList& props =
-        ash::ime::InputMethodMenuManager::GetInstance()->
-        GetCurrentInputMethodMenuItemList();
+    const InputMethodPropertyList& props =
+        InputMethodManager::Get()->GetCurrentInputMethodProperties();
     ASSERT_EQ(5U, props.size());
 
     EXPECT_EQ("ID0", props[0].key);

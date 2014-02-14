@@ -17,17 +17,12 @@ class CandidateWindow;
 class KeyEvent;
 }  // namespace ui
 
-namespace ash {
-namespace ime {
-struct InputMethodMenuItem;
-}  // namespace ime
-}  // namespace ash
-
 namespace chromeos {
 
 class CompositionText;
 
 namespace input_method {
+struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 
@@ -100,9 +95,9 @@ class InputMethodEngine : public InputMethodEngineInterface {
   virtual void HideInputView() OVERRIDE;
 
  private:
-  // Converts MenuItem to InputMethodMenuItem.
+  // Converts MenuItem to InputMethodProperty.
   void MenuItemToProperty(const MenuItem& item,
-                          ash::ime::InputMethodMenuItem* property);
+                          input_method::InputMethodProperty* property);
 
   // Descriptor of this input method.
   input_method::InputMethodDescriptor descriptor_;

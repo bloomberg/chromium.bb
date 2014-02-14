@@ -11,8 +11,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session_state_delegate.h"
 #include "ash/session_state_observer.h"
@@ -299,7 +297,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
-  ash::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
   UpdateClockType();
 
   if (SystemKeyEventListener::GetInstance())
@@ -360,7 +357,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
-  ash::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
   if (SystemKeyEventListener::GetInstance())
     SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
   bluetooth_adapter_->RemoveObserver(this);
@@ -770,14 +766,15 @@ void SystemTrayDelegateChromeOS::GetAvailableIMEList(ash::IMEInfoList* list) {
 
 void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
     ash::IMEPropertyInfoList* list) {
-  ash::ime::InputMethodMenuItemList menu_list =
-      ash::ime::InputMethodMenuManager::GetInstance()->
-      GetCurrentInputMethodMenuItemList();
-  for (size_t i = 0; i < menu_list.size(); ++i) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  input_method::InputMethodPropertyList properties =
+      manager->GetCurrentInputMethodProperties();
+  for (size_t i = 0; i < properties.size(); ++i) {
     ash::IMEPropertyInfo property;
-    property.key = menu_list[i].key;
-    property.name = base::UTF8ToUTF16(menu_list[i].label);
-    property.selected = menu_list[i].is_selection_item_checked;
+    property.key = properties[i].key;
+    property.name = base::UTF8ToUTF16(properties[i].label);
+    property.selected = properties[i].is_selection_item_checked;
     list->push_back(property);
   }
 }
@@ -787,7 +784,7 @@ void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
 }
 
 void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
-  input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
+  input_method::InputMethodManager::Get()->ActivateInputMethodProperty(key);
 }
 
 void SystemTrayDelegateChromeOS::CancelDriveOperation(int32 operation_id) {
@@ -1204,9 +1201,8 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
   GetSystemTrayNotifier()->NotifyRefreshIME(show_message);
 }
 
-// Overridden from InputMethodMenuManager::Observer.
-void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
-    ash::ime::InputMethodMenuManager* manager) {
+void SystemTrayDelegateChromeOS::InputMethodPropertyChanged(
+    input_method::InputMethodManager* manager) {
   GetSystemTrayNotifier()->NotifyRefreshIME(false);
 }
 

@@ -14,8 +14,6 @@
 #undef RootWindow
 #include <map>
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -377,17 +375,19 @@ bool InputMethodEngine::UpdateMenuItems(
   if (!active_)
     return false;
 
-  ash::ime::InputMethodMenuItemList menu_item_list;
+  input_method::InputMethodPropertyList property_list;
   for (std::vector<MenuItem>::const_iterator item = items.begin();
        item != items.end(); ++item) {
-    ash::ime::InputMethodMenuItem property;
+    input_method::InputMethodProperty property;
     MenuItemToProperty(*item, &property);
-    menu_item_list.push_back(property);
+    property_list.push_back(property);
   }
 
-  ash::ime::InputMethodMenuManager::GetInstance()->
-      SetCurrentInputMethodMenuItemList(
-          menu_item_list);
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  if (manager)
+    manager->SetCurrentInputMethodProperties(property_list);
+
   return true;
 }
 
@@ -595,10 +595,9 @@ void InputMethodEngine::SetSurroundingText(const std::string& text,
                                       static_cast<int>(anchor_pos));
 }
 
-// TODO(uekawa): rename this method to a more reasonable name.
 void InputMethodEngine::MenuItemToProperty(
     const MenuItem& item,
-    ash::ime::InputMethodMenuItem* property) {
+    input_method::InputMethodProperty* property) {
   property->key = item.id;
 
   if (item.modified & MENU_ITEM_MODIFIED_LABEL) {

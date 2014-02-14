@@ -21,6 +21,8 @@ class Accessibility
   // InputMethodManager::Observer implementation.
   virtual void InputMethodChanged(InputMethodManager* imm,
                                   bool show_message) OVERRIDE;
+  virtual void InputMethodPropertyChanged(InputMethodManager* imm) OVERRIDE;
+
   InputMethodManager* imm_;
 
   DISALLOW_COPY_AND_ASSIGN(Accessibility);
