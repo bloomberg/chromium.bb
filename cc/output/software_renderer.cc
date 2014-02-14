@@ -151,6 +151,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 }
 
 void SoftwareRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
+  TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = metadata;
   compositor_frame.software_frame_data = current_frame_data_.Pass();

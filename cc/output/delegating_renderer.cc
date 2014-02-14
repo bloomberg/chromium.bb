@@ -124,7 +124,7 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 }
 
 void DelegatingRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
-  TRACE_EVENT0("cc", "DelegatingRenderer::SwapBuffers");
+  TRACE_EVENT0("cc,benchmark", "DelegatingRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = metadata;
   compositor_frame.delegated_frame_data = delegated_frame_data_.Pass();

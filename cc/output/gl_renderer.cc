@@ -2140,7 +2140,7 @@ void GLRenderer::Finish() {
 void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   DCHECK(!is_backbuffer_discarded_);
 
-  TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
+  TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
   gfx::Size surface_size = output_surface_->SurfaceSize();
