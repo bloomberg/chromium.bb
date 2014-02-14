@@ -1013,10 +1013,14 @@ void RenderFrameHostManager::CommitPending() {
   // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
   // leave |web_ui_| as is if reusing it.
   DCHECK(!(pending_web_ui_.get() && pending_and_current_web_ui_.get()));
-  if (pending_web_ui_)
+  if (pending_web_ui_) {
     web_ui_.reset(pending_web_ui_.release());
-  else if (!pending_and_current_web_ui_.get())
+  } else if (!pending_and_current_web_ui_.get()) {
     web_ui_.reset();
+  } else {
+    DCHECK_EQ(pending_and_current_web_ui_.get(), web_ui_.get());
+    pending_and_current_web_ui_.reset();
+  }
 
   // It's possible for the pending_render_frame_host_ to be NULL when we aren't
   // crossing process boundaries. If so, we just needed to handle the Web UI

@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1418,6 +1419,30 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   NavigateToURL(shell2, GURL(kChromeUIKillURL));
   crash_observer2.Wait();
+}
+
+// Ensure that pending_and_current_web_ui_ is cleared when a URL commits.
+// Otherwise it might get picked up by InitRenderView when granting bindings
+// to other RenderViewHosts.  See http://crbug.com/330811.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
+  // Visit a WebUI page with bindings.
+  GURL webui_url(GURL(std::string(kChromeUIScheme) + "://" +
+                      std::string(kChromeUIGpuHost)));
+  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  WebUIImpl* webui = web_contents->GetRenderManagerForTesting()->web_ui();
+  EXPECT_TRUE(webui);
+  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->pending_web_ui());
+
+  // Navigate to another WebUI URL that reuses the WebUI object.  Make sure we
+  // clear pending_web_ui() when it commits.
+  GURL webui_url2(webui_url.spec() + "#foo");
+  NavigateToURL(shell(), webui_url2);
+  EXPECT_EQ(webui, web_contents->GetRenderManagerForTesting()->web_ui());
+  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->pending_web_ui());
 }
 
 }  // namespace content
