@@ -1389,7 +1389,7 @@
              'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
              'android_host_arch%': '<!(uname -m)',
              # Android API-level of the SDK used for compilation.
-             'android_sdk_version%': '<!(/bin/echo -n ${ANDROID_SDK_VERSION})',
+             'android_sdk_version%': '19',
              # Android SDK build tools (e.g. dx, aapt, aidl)
              'android_sdk_tools%': '<!(/bin/echo -n ${ANDROID_SDK_TOOLS})',
              'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",

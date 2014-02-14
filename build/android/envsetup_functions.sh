@@ -108,11 +108,6 @@ sdk_build_init() {
   if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
     export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
   fi
-  if [[ -z "${ANDROID_SDK_VERSION}" ]]; then
-    export ANDROID_SDK_VERSION=19
-  else
-    sdk_defines+=" android_sdk_version=${ANDROID_SDK_VERSION}"
-  fi
   if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
     export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
   else
@@ -148,12 +143,12 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}"
 #############################################################################
 webview_build_init() {
   # Use the latest API in the AOSP prebuilts directory (change with AOSP roll).
-  export ANDROID_SDK_VERSION=18
+  android_sdk_version=18
 
   # For the WebView build we always use the NDK and SDK in the Android tree.
   export ANDROID_NDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/ndk/8
   export ANDROID_SDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/sdk/\
-${ANDROID_SDK_VERSION}
+${android_sdk_version}
 
   common_vars_defines
 
@@ -173,7 +168,7 @@ ${ANDROID_SDK_VERSION}
   DEFINES+=" android_sdk=\$(PWD)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_root=\$(PWD)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_tools=\$(PWD)/${ANDROID_SDK_TOOLS}"
-  DEFINES+=" android_sdk_version=${ANDROID_SDK_VERSION}"
+  DEFINES+=" android_sdk_version=${android_sdk_version}"
   DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
   if [[ -n "$CHROME_ANDROID_WEBVIEW_OFFICIAL_BUILD" ]]; then
     DEFINES+=" logging_like_official_build=1"
