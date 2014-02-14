@@ -48,7 +48,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -56,7 +55,6 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using content::WebContents;
-using blink::WebFormElement;
 using testing::_;
 
 namespace autofill {
@@ -418,12 +416,6 @@ class TestAutofillManager : public AutofillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
-  const std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >&
-      request_autocomplete_results() const {
-    return request_autocomplete_results_;
-  }
-
-
   void set_expected_submitted_field_types(
       const std::vector<ServerFieldTypeSet>& expected_types) {
     expected_submitted_field_types_ = expected_types;
@@ -519,8 +511,6 @@ class TestAutofillManager : public AutofillManager {
   TestPersonalDataManager* personal_data_;
 
   bool autofill_enabled_;
-  std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >
-      request_autocomplete_results_;
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

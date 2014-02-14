@@ -33,7 +33,6 @@ specific_include_rules = {
     "!content/public/browser/browser_context.h",
     "!content/public/browser/browser_thread.h",
     "!content/public/test",
-    "!third_party/WebKit/public/web/WebFormElement.h",
 
     # TODO(joi): Bring this list to zero.
     #
