@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -276,6 +277,16 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
             ret += "'" + QuicUtils::TagToString(tag) + "'";
           }
           done = true;
+        }
+        break;
+      case kCADR:
+        // IP address and port
+        if (!it->second.empty()) {
+          QuicSocketAddressCoder decoder;
+          if (decoder.Decode(it->second.data(), it->second.size())) {
+            ret += IPAddressToStringWithPort(decoder.ip(), decoder.port());
+            done = true;
+          }
         }
         break;
       case kSCFG:

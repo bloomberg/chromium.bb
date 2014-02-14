@@ -8,6 +8,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/delayed_verify_strike_register_client.h"
@@ -126,6 +127,23 @@ class CryptoServerTest : public ::testing::Test {
     const char* error_substr_;
     bool* called_;
   };
+
+  void CheckServerHello(const CryptoHandshakeMessage& server_hello) {
+    const QuicTag* versions;
+    size_t num_versions;
+    server_hello.GetTaglist(kVER, &versions, &num_versions);
+    ASSERT_EQ(QuicSupportedVersions().size(), num_versions);
+    for (size_t i = 0; i < num_versions; ++i) {
+      EXPECT_EQ(QuicVersionToQuicTag(QuicSupportedVersions()[i]), versions[i]);
+    }
+
+    StringPiece address;
+    ASSERT_TRUE(server_hello.GetStringPiece(kCADR, &address));
+    QuicSocketAddressCoder decoder;
+    ASSERT_TRUE(decoder.Decode(address.data(), address.size()));
+    EXPECT_EQ(client_address_.address(), decoder.ip());
+    EXPECT_EQ(client_address_.port(), decoder.port());
+  }
 
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
     bool called = false;
@@ -333,17 +351,12 @@ TEST_F(CryptoServerTest, ReplayProtection) {
   ShouldSucceed(msg);
   // The message should be accepted now.
   ASSERT_EQ(kSHLO, out_.tag());
+  CheckServerHello(out_);
 
   ShouldSucceed(msg);
   // The message should accepted twice when replay protection is off.
   ASSERT_EQ(kSHLO, out_.tag());
-  const QuicTag* versions;
-  size_t num_versions;
-  out_.GetTaglist(kVER, &versions, &num_versions);
-  ASSERT_EQ(QuicSupportedVersions().size(), num_versions);
-  for (size_t i = 0; i < num_versions; ++i) {
-    EXPECT_EQ(QuicVersionToQuicTag(QuicSupportedVersions()[i]), versions[i]);
-  }
+  CheckServerHello(out_);
 }
 
 TEST(CryptoServerConfigGenerationTest, Determinism) {

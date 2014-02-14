@@ -12,7 +12,10 @@
 #include "base/values.h"
 #include "net/base/net_log.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
+#include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_socket_address_coder.h"
 
+using base::StringPiece;
 using std::string;
 
 namespace net {
@@ -193,6 +196,65 @@ base::Value* NetLogQuicOnConnectionClosedCallback(
 void UpdatePacketGapSentHistogram(size_t num_consecutive_missing_packets) {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapSent",
                        num_consecutive_missing_packets);
+}
+
+void UpdatePublicResetAddressMismatchHistogram(
+    const IPEndPoint& server_hello_address,
+    const IPEndPoint& public_reset_address) {
+  enum {
+    // The addresses don't match.
+    kAddressMismatch_base = 0,
+    kAddressMismatch_v4_v4 = 0,
+    kAddressMismatch_v6_v6 = 1,
+    kAddressMismatch_v4_v6 = 2,
+    kAddressMismatch_v6_v4 = 3,
+
+    // The addresses match, but the ports don't match.
+    kPortMismatch_base = 4,
+    kPortMismatch_v4_v4 = 4,
+    kPortMismatch_v6_v6 = 5,
+
+    kAddressAndPortMatch_base = 6,
+    kAddressAndPortMatch_v4_v4 = 6,
+    kAddressAndPortMatch_v6_v6 = 7,
+
+    kBoundaryValue,
+  };
+
+  // We are seemingly talking to an older server that does not support the
+  // feature, so we can't report the results in the histogram.
+  if (server_hello_address.address().empty() ||
+      public_reset_address.address().empty()) {
+    return;
+  }
+
+  int sample;
+  if (server_hello_address.address() != public_reset_address.address()) {
+    sample = kAddressMismatch_base;
+  } else if (server_hello_address.port() != public_reset_address.port()) {
+    sample = kPortMismatch_base;
+  } else {
+    sample = kAddressAndPortMatch_base;
+  }
+
+  // Add an offset to |sample|:
+  //   v4_v4: add 0
+  //   v6_v6: add 1
+  //   v4_v6: add 2
+  //   v6_v4: add 3
+  bool first_ipv4 =
+    (server_hello_address.address().size() == kIPv4AddressSize);
+  bool second_ipv4 =
+    (public_reset_address.address().size() == kIPv4AddressSize);
+  if (first_ipv4 != second_ipv4) {
+    CHECK_EQ(sample, kAddressMismatch_base);
+    sample += 2;
+  }
+  if (!first_ipv4) {
+    sample += 1;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PublicResetAddressMismatch",
+                            sample, kBoundaryValue);
 }
 
 }  // namespace
@@ -393,6 +455,8 @@ void QuicConnectionLogger::OnConnectionCloseFrame(
 void QuicConnectionLogger::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED);
+  UpdatePublicResetAddressMismatchHistogram(client_address_,
+                                            packet.client_address);
 }
 
 void QuicConnectionLogger::OnVersionNegotiationPacket(
@@ -415,6 +479,15 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED,
       base::Bind(&NetLogQuicCryptoHandshakeMessageCallback, &message));
+
+  if (message.tag() == kSHLO) {
+    StringPiece address;
+    QuicSocketAddressCoder decoder;
+    if (message.GetStringPiece(kCADR, &address) &&
+        decoder.Decode(address.data(), address.size())) {
+      client_address_ = IPEndPoint(decoder.ip(), decoder.port());
+    }
+  }
 }
 
 void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
