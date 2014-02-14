@@ -376,6 +376,9 @@ public:
     // process. See http://crbug.com/339659.
     virtual void forwardInputEvent(const WebInputEvent*) { }
 
+    // Send initial drawing parameters to a child frame that is being rendered out of process.
+    virtual void initializeChildFrame(const WebRect& frameRect, float scaleFactor) { }
+
 protected:
     ~WebFrameClient() { }
 };

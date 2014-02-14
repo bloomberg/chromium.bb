@@ -81,6 +81,7 @@ public:
     virtual void setName(const WebString&) OVERRIDE;
     virtual long long embedderIdentifier() const OVERRIDE;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const OVERRIDE;
+    virtual void setIsRemote(bool) OVERRIDE;
     virtual void setRemoteWebLayer(WebLayer*) OVERRIDE;
     virtual void setPermissionClient(WebPermissionClient*) OVERRIDE;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) OVERRIDE;
@@ -441,6 +442,10 @@ private:
     // The embedder retains a reference to the WebCore Frame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     RefPtr<WebCore::Frame> m_frame;
+
+    // Indicate whether the current Frame is local or remote. Remote frames are
+    // rendered in a different process from their parent frames.
+    bool m_isRemote;
 
     WebFrameClient* m_client;
     WebPermissionClient* m_permissionClient;
