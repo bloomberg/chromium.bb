@@ -269,6 +269,12 @@ void AppListFolderView::DispatchEndDragEventForReparent(
       EndDragFromReparentItemInRootLevel(events_forwarded_to_drag_drop_host);
 }
 
+
+void AppListFolderView::HideViewImmediately() {
+  SetVisible(false);
+  hide_for_reparent_ = false;
+}
+
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
                                      const ui::Event& event_flags) {
   container_view_->ShowApps(item);

@@ -81,6 +81,9 @@ class AppListFolderView : public views::View,
   // to the drag_drop_host, eg. dropped on shelf.
   void DispatchEndDragEventForReparent(bool events_forwarded_to_drag_drop_host);
 
+  // Hides the view immediately without animation.
+  void HideViewImmediately();
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -93,7 +96,6 @@ class AppListFolderView : public views::View,
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   AppsGridView* items_grid_view() { return items_grid_view_; }
-  bool hide_for_reparent() const { return hide_for_reparent_; }
 
  private:
   void CalculateIdealBounds();

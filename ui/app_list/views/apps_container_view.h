@@ -74,7 +74,7 @@ class AppsContainerView : public views::View,
     SHOW_ITEM_REPARENT,
   };
 
-  void SetShowState(ShowState show_state);
+  void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
   // Calculates the top item icon bounds in the active folder icon. The bounds
   // is relative to AppsContainerView.

@@ -44,6 +44,8 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
 
   apps_grid_view_->SetModel(model_);
   apps_grid_view_->SetItemList(model_->item_list());
+  SetShowState(SHOW_APPS,
+               false);  /* show apps without animation */
 }
 
 AppsContainerView::~AppsContainerView() {
@@ -51,14 +53,15 @@ AppsContainerView::~AppsContainerView() {
 
 void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
   app_list_folder_view_->SetAppListFolderItem(folder_item);
-  SetShowState(SHOW_ACTIVE_FOLDER);
+  SetShowState(SHOW_ACTIVE_FOLDER, false);
 
   CreateViewsForFolderTopItemsAnimation(folder_item, true);
 }
 
 void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
   PrepareToShowApps(folder_item);
-  SetShowState(SHOW_APPS);
+  SetShowState(SHOW_APPS,
+               true);  /* show apps with animation */
 }
 
 void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
@@ -71,7 +74,7 @@ void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
 void AppsContainerView::ReparentFolderItemTransit(
     AppListFolderItem* folder_item) {
   PrepareToShowApps(folder_item);
-  SetShowState(SHOW_ITEM_REPARENT);
+  SetShowState(SHOW_ITEM_REPARENT, false);
 }
 
 gfx::Size AppsContainerView::GetPreferredSize() {
@@ -90,24 +93,13 @@ void AppsContainerView::Layout() {
 
   switch (show_state_) {
     case SHOW_APPS:
-      folder_background_view_->SetVisible(false);
-      app_list_folder_view_->ScheduleShowHideAnimation(false, false);
       apps_grid_view_->SetBoundsRect(rect);
-      apps_grid_view_->ScheduleShowHideAnimation(true);
       break;
     case SHOW_ACTIVE_FOLDER:
       folder_background_view_->SetBoundsRect(rect);
-      folder_background_view_->SetVisible(true);
-      apps_grid_view_->ScheduleShowHideAnimation(false);
       app_list_folder_view_->SetBoundsRect(rect);
-      app_list_folder_view_->ScheduleShowHideAnimation(true, false);
       break;
     case SHOW_ITEM_REPARENT:
-      folder_background_view_->SetVisible(false);
-      folder_background_view_->UpdateFolderContainerBubble(
-          FolderBackgroundView::NO_BUBBLE);
-      app_list_folder_view_->ScheduleShowHideAnimation(false, true);
-      apps_grid_view_->ScheduleShowHideAnimation(true);
       break;
     default:
       NOTREACHED();
@@ -136,11 +128,40 @@ void AppsContainerView::OnTopIconAnimationsComplete() {
   }
 }
 
-void AppsContainerView::SetShowState(ShowState show_state) {
+void AppsContainerView::SetShowState(ShowState show_state,
+                                     bool show_apps_with_animation) {
   if (show_state_ == show_state)
     return;
 
   show_state_ = show_state;
+
+  switch (show_state_) {
+    case SHOW_APPS:
+      folder_background_view_->SetVisible(false);
+      if (show_apps_with_animation) {
+        app_list_folder_view_->ScheduleShowHideAnimation(false, false);
+        apps_grid_view_->ScheduleShowHideAnimation(true);
+      } else {
+        app_list_folder_view_->HideViewImmediately();
+        apps_grid_view_->SetVisible(true);
+      }
+      break;
+    case SHOW_ACTIVE_FOLDER:
+      folder_background_view_->SetVisible(true);
+      apps_grid_view_->ScheduleShowHideAnimation(false);
+      app_list_folder_view_->ScheduleShowHideAnimation(true, false);
+      break;
+    case SHOW_ITEM_REPARENT:
+      folder_background_view_->SetVisible(false);
+      folder_background_view_->UpdateFolderContainerBubble(
+          FolderBackgroundView::NO_BUBBLE);
+      app_list_folder_view_->ScheduleShowHideAnimation(false, true);
+      apps_grid_view_->ScheduleShowHideAnimation(true);
+      break;
+    default:
+      NOTREACHED();
+  }
+
   Layout();
 }
 
