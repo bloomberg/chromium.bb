@@ -97,7 +97,7 @@ def generate_method(interface, method):
             any(argument for argument in arguments
                 if argument.idl_type == 'SerializedScriptValue' or
                    v8_types.is_integer_type(argument.idl_type)) or
-            name in ['addEventListener', 'removeEventListener'],
+            name in ['addEventListener', 'removeEventListener', 'dispatchEvent'],
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,

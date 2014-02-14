@@ -375,6 +375,7 @@ interface TestObjectPython {
     void removeEventListener(DOMString type,
                              EventListener listener,
                              optional boolean useCapture);
+    [RaisesException] boolean dispatchEvent(Event event);
 
     // Extended attributes for arguments
     // [Clamp]

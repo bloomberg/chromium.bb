@@ -6,8 +6,12 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if method.name in ['addEventListener', 'removeEventListener',
+                          'dispatchEvent'] %}
+    {{add_event_listener_remove_event_listener_dispatch_event() | indent}}
+    {% endif %}
     {% if method.name in ['addEventListener', 'removeEventListener'] %}
-    {{add_remove_event_listener_method(method.name) | indent}}
+    {{add_event_listener_remove_event_listener_method(method.name) | indent}}
     {% else %}
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
@@ -51,13 +55,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
 
 {######################################}
-{% macro add_remove_event_listener_method(method_name) %}
-{# Set template values for addEventListener vs. removeEventListener #}
-{% set listener_lookup_type, listener, hidden_dependency_action =
-    ('ListenerFindOrCreate', 'listener', 'addHiddenValueToArray')
-    if method_name == 'addEventListener' else
-    ('ListenerFindOnly', 'listener.get()', 'removeHiddenValueFromArray')
-%}
+{% macro add_event_listener_remove_event_listener_dispatch_event() %}
+{# FIXME: Clean up: use the normal |imp| above,
+          use the existing shouldAllowAccessToFrame check if possible. #}
 EventTarget* impl = {{v8_class}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
@@ -67,6 +67,17 @@ if (DOMWindow* window = impl->toDOMWindow()) {
     if (!window->document())
         return;
 }
+{% endmacro %}
+
+
+{######################################}
+{% macro add_event_listener_remove_event_listener_method(method_name) %}
+{# Set template values for addEventListener vs. removeEventListener #}
+{% set listener_lookup_type, listener, hidden_dependency_action =
+    ('ListenerFindOrCreate', 'listener', 'addHiddenValueToArray')
+    if method_name == 'addEventListener' else
+    ('ListenerFindOnly', 'listener.get()', 'removeHiddenValueFromArray')
+%}
 RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, {{listener_lookup_type}});
 if (listener) {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
