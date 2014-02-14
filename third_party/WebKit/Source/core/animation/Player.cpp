@@ -237,7 +237,7 @@ bool Player::maybeStartAnimationOnCompositor()
     // FIXME: Support starting compositor animations that have a fixed
     // start time.
     ASSERT(!hasStartTime());
-    if (!m_content || !m_content->isAnimation())
+    if (!m_content || !m_content->isAnimation() || paused())
         return false;
 
     return toAnimation(m_content.get())->maybeStartAnimationOnCompositor();
