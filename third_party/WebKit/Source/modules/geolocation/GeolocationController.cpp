@@ -129,7 +129,7 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
         return;
     }
     m_lastPosition = position;
-    Vector<RefPtr<Geolocation> > observersVector;
+    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->positionChanged();
@@ -137,7 +137,7 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
 
 void GeolocationController::errorOccurred(GeolocationError* error)
 {
-    Vector<RefPtr<Geolocation> > observersVector;
+    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->setError(error);

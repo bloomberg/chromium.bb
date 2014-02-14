@@ -28,24 +28,27 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/Event.h"
+#include "heap/Handle.h"
 #include "modules/geolocation/Coordinates.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Geoposition : public RefCounted<Geoposition>, public ScriptWrappable {
+class Geoposition : public RefCountedWillBeGarbageCollectedFinalized<Geoposition>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Geoposition> create(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
+    static PassRefPtrWillBeRawPtr<Geoposition> create(PassRefPtrWillBeRawPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
     {
-        return adoptRef(new Geoposition(coordinates, timestamp));
+        return adoptRefWillBeNoop(new Geoposition(coordinates, timestamp));
     }
+    void trace(Visitor*);
 
     DOMTimeStamp timestamp() const { return m_timestamp; }
     Coordinates* coords() const { return m_coordinates.get(); }
 
 private:
-    Geoposition(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
+    Geoposition(PassRefPtrWillBeRawPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
         : m_coordinates(coordinates)
         , m_timestamp(timestamp)
     {
@@ -53,7 +56,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    RefPtr<Coordinates> m_coordinates;
+    RefPtrWillBeMember<Coordinates> m_coordinates;
     DOMTimeStamp m_timestamp;
 };
 

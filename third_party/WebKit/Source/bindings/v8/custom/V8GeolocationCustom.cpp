@@ -38,12 +38,12 @@ using namespace WTF;
 
 namespace WebCore {
 
-static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded)
+static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded)
 {
     succeeded = true;
 
     // Create default options.
-    RefPtr<PositionOptions> options = PositionOptions::create();
+    RefPtrWillBeRawPtr<PositionOptions> options = PositionOptions::create();
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
     if (isUndefinedOrNull(value)) {
@@ -139,7 +139,7 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
     if (!succeeded)
         return;
 
-    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
+    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
@@ -162,7 +162,7 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
     if (!succeeded)
         return;
 
-    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
+    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
     if (!succeeded)
         return;
     ASSERT(positionOptions);

@@ -28,6 +28,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(Coordinates);
+
 double Coordinates::altitude(bool& isNull) const
 {
     if (m_canProvideAltitude)

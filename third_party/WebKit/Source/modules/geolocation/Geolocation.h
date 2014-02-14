@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "heap/Handle.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
@@ -46,11 +47,13 @@ class GeolocationPosition;
 class Page;
 class ExecutionContext;
 
-class Geolocation FINAL : public ScriptWrappable, public RefCounted<Geolocation>, public ActiveDOMObject
+class Geolocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<Geolocation>, public ScriptWrappable, public ActiveDOMObject
 {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Geolocation> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<Geolocation> create(ExecutionContext*);
     virtual ~Geolocation();
+    void trace(Visitor*);
 
     virtual void stop() OVERRIDE;
     Document* document() const;
@@ -58,11 +61,11 @@ public:
 
     // Creates a oneshot and attempts to obtain a position that meets the
     // constraints of the options.
-    void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+    void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtrWillBeRawPtr<PositionOptions>);
 
     // Creates a watcher that will be notified whenever a new position is
     // available that meets the constraints of the options.
-    int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+    int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtrWillBeRawPtr<PositionOptions>);
 
     // Removes all references to the watcher, it will not be updated again.
     void clearWatch(int watchID);
@@ -92,15 +95,20 @@ private:
     // when a oneshot or watcher were created. Also, if specified in the
     // options, manages a timer to limit the time to wait for the system to
     // obtain a position.
-    class GeoNotifier : public RefCounted<GeoNotifier> {
+    class GeoNotifier : public RefCountedWillBeGarbageCollectedFinalized<GeoNotifier> {
+        DECLARE_GC_INFO;
     public:
-        static PassRefPtr<GeoNotifier> create(Geolocation* geolocation, PassOwnPtr<PositionCallback> positionCallback, PassOwnPtr<PositionErrorCallback> positionErrorCallback, PassRefPtr<PositionOptions> options) { return adoptRef(new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options)); }
+        static PassRefPtrWillBeRawPtr<GeoNotifier> create(Geolocation* geolocation, PassOwnPtr<PositionCallback> positionCallback, PassOwnPtr<PositionErrorCallback> positionErrorCallback, PassRefPtrWillBeRawPtr<PositionOptions> options)
+        {
+            return adoptRefWillBeNoop(new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options));
+        }
+        void trace(Visitor*);
 
         PositionOptions* options() const { return m_options.get(); };
 
         // Sets the given error as the fatal error if there isn't one yet.
         // Starts the timer with an interval of 0.
-        void setFatalError(PassRefPtr<PositionError>);
+        void setFatalError(PassRefPtrWillBeRawPtr<PositionError>);
 
         bool useCachedPosition() const { return m_useCachedPosition; }
 
@@ -124,23 +132,24 @@ private:
         bool hasZeroTimeout() const;
 
     private:
-        GeoNotifier(Geolocation*, PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+        GeoNotifier(Geolocation*, PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtrWillBeRawPtr<PositionOptions>);
 
-        RefPtr<Geolocation> m_geolocation;
+        RefPtrWillBeMember<Geolocation> m_geolocation;
         OwnPtr<PositionCallback> m_successCallback;
         OwnPtr<PositionErrorCallback> m_errorCallback;
-        RefPtr<PositionOptions> m_options;
+        RefPtrWillBeMember<PositionOptions> m_options;
         Timer<GeoNotifier> m_timer;
-        RefPtr<PositionError> m_fatalError;
+        RefPtrWillBeMember<PositionError> m_fatalError;
         bool m_useCachedPosition;
     };
 
-    typedef Vector<RefPtr<GeoNotifier> > GeoNotifierVector;
-    typedef HashSet<RefPtr<GeoNotifier> > GeoNotifierSet;
+    typedef WillBeHeapVector<RefPtrWillBeMember<GeoNotifier> > GeoNotifierVector;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<GeoNotifier> > GeoNotifierSet;
 
     class Watchers {
     public:
-        bool add(int id, PassRefPtr<GeoNotifier>);
+        void trace(Visitor*);
+        bool add(int id, PassRefPtrWillBeRawPtr<GeoNotifier>);
         GeoNotifier* find(int id);
         void remove(int id);
         void remove(GeoNotifier*);
@@ -149,8 +158,8 @@ private:
         bool isEmpty() const;
         void getNotifiersVector(GeoNotifierVector&) const;
     private:
-        typedef HashMap<int, RefPtr<GeoNotifier> > IdToNotifierMap;
-        typedef HashMap<RefPtr<GeoNotifier>, int> NotifierToIdMap;
+        typedef WillBeHeapHashMap<int, RefPtrWillBeMember<GeoNotifier> > IdToNotifierMap;
+        typedef WillBeHeapHashMap<RefPtrWillBeMember<GeoNotifier>, int> NotifierToIdMap;
         IdToNotifierMap m_idToNotifierMap;
         NotifierToIdMap m_notifierToIdMap;
     };
@@ -226,7 +235,7 @@ private:
     GeoNotifierSet m_oneShots;
     Watchers m_watchers;
     GeoNotifierSet m_pendingForPermissionNotifiers;
-    RefPtr<Geoposition> m_lastPosition;
+    RefPtrWillBeMember<Geoposition> m_lastPosition;
 
     enum {
         Unknown,

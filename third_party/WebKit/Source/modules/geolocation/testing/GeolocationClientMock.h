@@ -32,6 +32,7 @@
 #ifndef GeolocationClientMock_h
 #define GeolocationClientMock_h
 
+#include "heap/Handle.h"
 #include "modules/geolocation/GeolocationClient.h"
 #include "platform/Timer.h"
 #include "wtf/HashSet.h"
@@ -90,7 +91,7 @@ private:
     };
 
     PermissionState m_permissionState;
-    typedef WTF::HashSet<RefPtr<Geolocation> > GeolocationSet;
+    typedef WillBePersistentHeapHashSet<RefPtrWillBeMember<Geolocation> > GeolocationSet;
     GeolocationSet m_pendingPermissions;
 };
 

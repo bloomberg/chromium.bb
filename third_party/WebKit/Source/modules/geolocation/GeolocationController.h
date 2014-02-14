@@ -28,6 +28,7 @@
 
 #include "core/page/Page.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "heap/Handle.h"
 #include "modules/geolocation/Geolocation.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -79,7 +80,7 @@ private:
     bool m_hasClientForTest;
 
     RefPtr<GeolocationPosition> m_lastPosition;
-    typedef HashSet<RefPtr<Geolocation> > ObserversSet;
+    typedef WillBePersistentHeapHashSet<RefPtrWillBeMember<Geolocation> > ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;
