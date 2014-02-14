@@ -58,7 +58,7 @@ class DeviceMotionAndOrientation implements SensorEventListener {
 
     /**
      * constants for using in JNI calls, also see
-     * content/browser/device_orientation/data_fetcher_impl_android.cc
+     * content/browser/device_orientation/sensor_manager_android.cc
      */
     static final int DEVICE_ORIENTATION = 0;
     static final int DEVICE_MOTION = 1;
@@ -439,35 +439,35 @@ class DeviceMotionAndOrientation implements SensorEventListener {
 
     /**
      * Native JNI calls,
-     * see content/browser/device_orientation/data_fetcher_impl_android.cc
+     * see content/browser/device_orientation/sensor_manager_android.cc
      */
 
     /**
      * Orientation of the device with respect to its reference frame.
      */
     private native void nativeGotOrientation(
-            long nativeDataFetcherImplAndroid,
+            long nativeSensorManagerAndroid,
             double alpha, double beta, double gamma);
 
     /**
      * Linear acceleration without gravity of the device with respect to its body frame.
      */
     private native void nativeGotAcceleration(
-            long nativeDataFetcherImplAndroid,
+            long nativeSensorManagerAndroid,
             double x, double y, double z);
 
     /**
      * Acceleration including gravity of the device with respect to its body frame.
      */
     private native void nativeGotAccelerationIncludingGravity(
-            long nativeDataFetcherImplAndroid,
+            long nativeSensorManagerAndroid,
             double x, double y, double z);
 
     /**
      * Rotation rate of the device with respect to its body frame.
      */
     private native void nativeGotRotationRate(
-            long nativeDataFetcherImplAndroid,
+            long nativeSensorManagerAndroid,
             double alpha, double beta, double gamma);
 
     /**

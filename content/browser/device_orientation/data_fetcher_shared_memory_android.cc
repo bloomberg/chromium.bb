@@ -5,7 +5,7 @@
 #include "content/browser/device_orientation/data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
-#include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#include "content/browser/device_orientation/sensor_manager_android.h"
 #include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
@@ -22,11 +22,11 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      return DataFetcherImplAndroid::GetInstance()->
+      return SensorManagerAndroid::GetInstance()->
           StartFetchingDeviceMotionData(
               static_cast<DeviceMotionHardwareBuffer*>(buffer));
     case CONSUMER_TYPE_ORIENTATION:
-      return DataFetcherImplAndroid::GetInstance()->
+      return SensorManagerAndroid::GetInstance()->
           StartFetchingDeviceOrientationData(
               static_cast<DeviceOrientationHardwareBuffer*>(buffer));
     default:
@@ -38,11 +38,10 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      DataFetcherImplAndroid::GetInstance()->StopFetchingDeviceMotionData();
+      SensorManagerAndroid::GetInstance()->StopFetchingDeviceMotionData();
       return true;
     case CONSUMER_TYPE_ORIENTATION:
-      DataFetcherImplAndroid::GetInstance()->
-          StopFetchingDeviceOrientationData();
+      SensorManagerAndroid::GetInstance()->StopFetchingDeviceOrientationData();
       return true;
     default:
       NOTREACHED();

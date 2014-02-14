@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#include "content/browser/device_orientation/sensor_manager_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,10 +14,10 @@ namespace content {
 
 namespace {
 
-class FakeDataFetcherImplAndroid : public DataFetcherImplAndroid {
+class FakeSensorManagerAndroid : public SensorManagerAndroid {
  public:
-  FakeDataFetcherImplAndroid() { }
-  virtual ~FakeDataFetcherImplAndroid() { }
+  FakeSensorManagerAndroid() { }
+  virtual ~FakeSensorManagerAndroid() { }
 
   virtual int GetNumberActiveDeviceMotionSensors() OVERRIDE {
     return number_active_sensors_;
@@ -39,9 +39,9 @@ class FakeDataFetcherImplAndroid : public DataFetcherImplAndroid {
   int number_active_sensors_;
 };
 
-class AndroidDataFetcherTest : public testing::Test {
+class AndroidSensorManagerTest : public testing::Test {
  protected:
-  AndroidDataFetcherTest() {
+  AndroidSensorManagerTest() {
     motion_buffer_.reset(new DeviceMotionHardwareBuffer);
     orientation_buffer_.reset(new DeviceOrientationHardwareBuffer);
   }
@@ -50,15 +50,15 @@ class AndroidDataFetcherTest : public testing::Test {
   scoped_ptr<DeviceOrientationHardwareBuffer> orientation_buffer_;
 };
 
-TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
-  FakeDataFetcherImplAndroid fetcher;
-  fetcher.SetNumberActiveDeviceMotionSensors(3);
+TEST_F(AndroidSensorManagerTest, ThreeDeviceMotionSensorsActive) {
+  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
+  FakeSensorManagerAndroid sensorManager;
+  sensorManager.SetNumberActiveDeviceMotionSensors(3);
 
-  fetcher.StartFetchingDeviceMotionData(motion_buffer_.get());
+  sensorManager.StartFetchingDeviceMotionData(motion_buffer_.get());
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 
-  fetcher.GotAcceleration(0, 0, 1, 2, 3);
+  sensorManager.GotAcceleration(0, 0, 1, 2, 3);
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(1, motion_buffer_->data.accelerationX);
   ASSERT_TRUE(motion_buffer_->data.hasAccelerationX);
@@ -67,7 +67,7 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
   ASSERT_EQ(3, motion_buffer_->data.accelerationZ);
   ASSERT_TRUE(motion_buffer_->data.hasAccelerationZ);
 
-  fetcher.GotAccelerationIncludingGravity(0, 0, 4, 5, 6);
+  sensorManager.GotAccelerationIncludingGravity(0, 0, 4, 5, 6);
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(4, motion_buffer_->data.accelerationIncludingGravityX);
   ASSERT_TRUE(motion_buffer_->data.hasAccelerationIncludingGravityX);
@@ -76,7 +76,7 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
   ASSERT_EQ(6, motion_buffer_->data.accelerationIncludingGravityZ);
   ASSERT_TRUE(motion_buffer_->data.hasAccelerationIncludingGravityZ);
 
-  fetcher.GotRotationRate(0, 0, 7, 8, 9);
+  sensorManager.GotRotationRate(0, 0, 7, 8, 9);
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(7, motion_buffer_->data.rotationRateAlpha);
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateAlpha);
@@ -86,50 +86,50 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateGamma);
   ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
-  fetcher.StopFetchingDeviceMotionData();
+  sensorManager.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 }
 
-TEST_F(AndroidDataFetcherTest, TwoDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
-  FakeDataFetcherImplAndroid fetcher;
-  fetcher.SetNumberActiveDeviceMotionSensors(2);
+TEST_F(AndroidSensorManagerTest, TwoDeviceMotionSensorsActive) {
+  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
+  FakeSensorManagerAndroid sensorManager;
+  sensorManager.SetNumberActiveDeviceMotionSensors(2);
 
-  fetcher.StartFetchingDeviceMotionData(motion_buffer_.get());
+  sensorManager.StartFetchingDeviceMotionData(motion_buffer_.get());
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 
-  fetcher.GotAcceleration(0, 0, 1, 2, 3);
+  sensorManager.GotAcceleration(0, 0, 1, 2, 3);
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 
-  fetcher.GotAccelerationIncludingGravity(0, 0, 1, 2, 3);
+  sensorManager.GotAccelerationIncludingGravity(0, 0, 1, 2, 3);
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
-  fetcher.StopFetchingDeviceMotionData();
+  sensorManager.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 }
 
-TEST_F(AndroidDataFetcherTest, ZeroDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
-  FakeDataFetcherImplAndroid fetcher;
-  fetcher.SetNumberActiveDeviceMotionSensors(0);
+TEST_F(AndroidSensorManagerTest, ZeroDeviceMotionSensorsActive) {
+  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
+  FakeSensorManagerAndroid sensorManager;
+  sensorManager.SetNumberActiveDeviceMotionSensors(0);
 
-  fetcher.StartFetchingDeviceMotionData(motion_buffer_.get());
+  sensorManager.StartFetchingDeviceMotionData(motion_buffer_.get());
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
-  fetcher.StopFetchingDeviceMotionData();
+  sensorManager.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
 }
 
-TEST_F(AndroidDataFetcherTest, DeviceOrientationSensorsActive) {
-  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
-  FakeDataFetcherImplAndroid fetcher;
+TEST_F(AndroidSensorManagerTest, DeviceOrientationSensorsActive) {
+  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
+  FakeSensorManagerAndroid sensorManager;
 
-  fetcher.StartFetchingDeviceOrientationData(orientation_buffer_.get());
+  sensorManager.StartFetchingDeviceOrientationData(orientation_buffer_.get());
   ASSERT_FALSE(orientation_buffer_->data.allAvailableSensorsAreActive);
 
-  fetcher.GotOrientation(0, 0, 1, 2, 3);
+  sensorManager.GotOrientation(0, 0, 1, 2, 3);
   ASSERT_TRUE(orientation_buffer_->data.allAvailableSensorsAreActive);
   ASSERT_EQ(1, orientation_buffer_->data.alpha);
   ASSERT_TRUE(orientation_buffer_->data.hasAlpha);
@@ -138,7 +138,7 @@ TEST_F(AndroidDataFetcherTest, DeviceOrientationSensorsActive) {
   ASSERT_EQ(3, orientation_buffer_->data.gamma);
   ASSERT_TRUE(orientation_buffer_->data.hasGamma);
 
-  fetcher.StopFetchingDeviceOrientationData();
+  sensorManager.StopFetchingDeviceOrientationData();
   ASSERT_FALSE(orientation_buffer_->data.allAvailableSensorsAreActive);
 }
 

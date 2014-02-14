@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_
-#define CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_
+#ifndef CHROME_BROWSER_DEVICE_ORIENTATION_SENSOR_MANAGER_ANDROID_H_
+#define CHROME_BROWSER_DEVICE_ORIENTATION_SENSOR_MANAGER_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,16 +21,13 @@ namespace content {
 // Android's SensorManager has a push API, so when Got*() methods are called
 // by the system the browser process puts the received data into a shared
 // memory buffer, which is read by the renderer processes.
-//
-
-// TODO(timvolodine): rename this class to SensorManagerAndroid.
-class CONTENT_EXPORT DataFetcherImplAndroid {
+class CONTENT_EXPORT SensorManagerAndroid {
  public:
   // Must be called at startup, before GetInstance().
   static bool Register(JNIEnv* env);
 
   // Needs to be thread-safe, because accessed from different threads.
-  static DataFetcherImplAndroid* GetInstance();
+  static SensorManagerAndroid* GetInstance();
 
   // Called from Java via JNI.
   void GotOrientation(JNIEnv*, jobject,
@@ -59,15 +56,15 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
     kTypeMotion = 1
   };
 
-  DataFetcherImplAndroid();
-  virtual ~DataFetcherImplAndroid();
+  SensorManagerAndroid();
+  virtual ~SensorManagerAndroid();
 
   virtual bool Start(EventType event_type);
   virtual void Stop(EventType event_type);
   virtual int GetNumberActiveDeviceMotionSensors();
 
  private:
-  friend struct DefaultSingletonTraits<DataFetcherImplAndroid>;
+  friend struct DefaultSingletonTraits<SensorManagerAndroid>;
 
   enum {
     RECEIVED_MOTION_DATA_ACCELERATION = 0,
@@ -94,9 +91,9 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
   base::Lock motion_buffer_lock_;
   base::Lock orientation_buffer_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataFetcherImplAndroid);
+  DISALLOW_COPY_AND_ASSIGN(SensorManagerAndroid);
 };
 
 }  // namespace content
 
-#endif  // CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_
+#endif  // CHROME_BROWSER_DEVICE_ORIENTATION_SENSOR_MANAGER_ANDROID_H_

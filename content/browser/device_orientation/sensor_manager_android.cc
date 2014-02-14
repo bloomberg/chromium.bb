@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#include "content/browser/device_orientation/sensor_manager_android.h"
 
 #include <string.h>
 
@@ -24,7 +24,7 @@ static void updateRotationVectorHistogram(bool value) {
 
 namespace content {
 
-DataFetcherImplAndroid::DataFetcherImplAndroid()
+SensorManagerAndroid::SensorManagerAndroid()
     : number_active_device_motion_sensors_(0),
       device_motion_buffer_(NULL),
       device_orientation_buffer_(NULL),
@@ -35,19 +35,19 @@ DataFetcherImplAndroid::DataFetcherImplAndroid()
       Java_DeviceMotionAndOrientation_getInstance(AttachCurrentThread()));
 }
 
-DataFetcherImplAndroid::~DataFetcherImplAndroid() {
+SensorManagerAndroid::~SensorManagerAndroid() {
 }
 
-bool DataFetcherImplAndroid::Register(JNIEnv* env) {
+bool SensorManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-DataFetcherImplAndroid* DataFetcherImplAndroid::GetInstance() {
-  return Singleton<DataFetcherImplAndroid,
-                   LeakySingletonTraits<DataFetcherImplAndroid> >::get();
+SensorManagerAndroid* SensorManagerAndroid::GetInstance() {
+  return Singleton<SensorManagerAndroid,
+                   LeakySingletonTraits<SensorManagerAndroid> >::get();
 }
 
-void DataFetcherImplAndroid::GotOrientation(
+void SensorManagerAndroid::GotOrientation(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
   base::AutoLock autolock(orientation_buffer_lock_);
 
@@ -69,7 +69,7 @@ void DataFetcherImplAndroid::GotOrientation(
   }
 }
 
-void DataFetcherImplAndroid::GotAcceleration(
+void SensorManagerAndroid::GotAcceleration(
     JNIEnv*, jobject, double x, double y, double z) {
   base::AutoLock autolock(motion_buffer_lock_);
 
@@ -91,7 +91,7 @@ void DataFetcherImplAndroid::GotAcceleration(
   }
 }
 
-void DataFetcherImplAndroid::GotAccelerationIncludingGravity(
+void SensorManagerAndroid::GotAccelerationIncludingGravity(
     JNIEnv*, jobject, double x, double y, double z) {
   base::AutoLock autolock(motion_buffer_lock_);
 
@@ -113,7 +113,7 @@ void DataFetcherImplAndroid::GotAccelerationIncludingGravity(
   }
 }
 
-void DataFetcherImplAndroid::GotRotationRate(
+void SensorManagerAndroid::GotRotationRate(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
   base::AutoLock autolock(motion_buffer_lock_);
 
@@ -135,7 +135,7 @@ void DataFetcherImplAndroid::GotRotationRate(
   }
 }
 
-bool DataFetcherImplAndroid::Start(EventType event_type) {
+bool SensorManagerAndroid::Start(EventType event_type) {
   DCHECK(!device_orientation_.is_null());
   return Java_DeviceMotionAndOrientation_start(
       AttachCurrentThread(), device_orientation_.obj(),
@@ -143,14 +143,14 @@ bool DataFetcherImplAndroid::Start(EventType event_type) {
       kInertialSensorIntervalMillis);
 }
 
-void DataFetcherImplAndroid::Stop(EventType event_type) {
+void SensorManagerAndroid::Stop(EventType event_type) {
   DCHECK(!device_orientation_.is_null());
   Java_DeviceMotionAndOrientation_stop(
       AttachCurrentThread(), device_orientation_.obj(),
       static_cast<jint>(event_type));
 }
 
-int DataFetcherImplAndroid::GetNumberActiveDeviceMotionSensors() {
+int SensorManagerAndroid::GetNumberActiveDeviceMotionSensors() {
   DCHECK(!device_orientation_.is_null());
   return Java_DeviceMotionAndOrientation_getNumberActiveDeviceMotionSensors(
       AttachCurrentThread(), device_orientation_.obj());
@@ -161,7 +161,7 @@ int DataFetcherImplAndroid::GetNumberActiveDeviceMotionSensors() {
 
 // --- Device Motion
 
-bool DataFetcherImplAndroid::StartFetchingDeviceMotionData(
+bool SensorManagerAndroid::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {
   DCHECK(buffer);
   {
@@ -182,7 +182,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceMotionData(
   return success;
 }
 
-void DataFetcherImplAndroid::StopFetchingDeviceMotionData() {
+void SensorManagerAndroid::StopFetchingDeviceMotionData() {
   Stop(kTypeMotion);
   {
     base::AutoLock autolock(motion_buffer_lock_);
@@ -193,7 +193,7 @@ void DataFetcherImplAndroid::StopFetchingDeviceMotionData() {
   }
 }
 
-void DataFetcherImplAndroid::CheckMotionBufferReadyToRead() {
+void SensorManagerAndroid::CheckMotionBufferReadyToRead() {
   if (received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION] +
       received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY] +
       received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
@@ -214,14 +214,14 @@ void DataFetcherImplAndroid::CheckMotionBufferReadyToRead() {
   }
 }
 
-void DataFetcherImplAndroid::SetMotionBufferReadyStatus(bool ready) {
+void SensorManagerAndroid::SetMotionBufferReadyStatus(bool ready) {
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.allAvailableSensorsAreActive = ready;
   device_motion_buffer_->seqlock.WriteEnd();
   is_motion_buffer_ready_ = ready;
 }
 
-void DataFetcherImplAndroid::ClearInternalMotionBuffers() {
+void SensorManagerAndroid::ClearInternalMotionBuffers() {
   memset(received_motion_data_, 0, sizeof(received_motion_data_));
   number_active_device_motion_sensors_ = 0;
   SetMotionBufferReadyStatus(false);
@@ -229,7 +229,7 @@ void DataFetcherImplAndroid::ClearInternalMotionBuffers() {
 
 // --- Device Orientation
 
-void DataFetcherImplAndroid::SetOrientationBufferReadyStatus(bool ready) {
+void SensorManagerAndroid::SetOrientationBufferReadyStatus(bool ready) {
   device_orientation_buffer_->seqlock.WriteBegin();
   device_orientation_buffer_->data.absolute = ready;
   device_orientation_buffer_->data.hasAbsolute = ready;
@@ -238,7 +238,7 @@ void DataFetcherImplAndroid::SetOrientationBufferReadyStatus(bool ready) {
   is_orientation_buffer_ready_ = ready;
 }
 
-bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
+bool SensorManagerAndroid::StartFetchingDeviceOrientationData(
     DeviceOrientationHardwareBuffer* buffer) {
   DCHECK(buffer);
   {
@@ -260,7 +260,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
   return success;
 }
 
-void DataFetcherImplAndroid::StopFetchingDeviceOrientationData() {
+void SensorManagerAndroid::StopFetchingDeviceOrientationData() {
   Stop(kTypeOrientation);
   {
     base::AutoLock autolock(orientation_buffer_lock_);
