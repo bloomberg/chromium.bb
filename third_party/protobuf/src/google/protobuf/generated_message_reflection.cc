@@ -56,7 +56,7 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
 
 const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
-  return (d == NULL ? kEmptyString : d->name());
+  return (d == NULL ? GetEmptyString() : d->name());
 }
 
 // ===================================================================
@@ -759,7 +759,7 @@ string GeneratedMessageReflection::GetString(
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
-    return kEmptyString;  // Make compiler happy.
+    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -778,7 +778,7 @@ const string& GeneratedMessageReflection::GetStringReference(
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
-    return kEmptyString;  // Make compiler happy.
+    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -820,7 +820,7 @@ string GeneratedMessageReflection::GetRepeatedString(
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
-    return kEmptyString;  // Make compiler happy.
+    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -838,7 +838,7 @@ const string& GeneratedMessageReflection::GetRepeatedStringReference(
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
-    return kEmptyString;  // Make compiler happy.
+    return GetEmptyString();  // Make compiler happy.
   }
 }
 
