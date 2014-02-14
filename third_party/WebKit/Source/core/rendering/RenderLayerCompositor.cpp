@@ -1444,18 +1444,6 @@ void RenderLayerCompositor::frameViewDidScroll()
     blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         ScrolledMainFrameBucket,
         AcceleratedFixedRootBackgroundHistogramMax);
-
-    if (!m_renderView->rootBackgroundIsEntirelyFixed())
-        return;
-
-    // https://code.google.com/p/chromium/issues/detail?id=343179
-    DisableCompositingQueryAsserts disabler;
-
-    blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
-        !!fixedRootBackgroundLayer()
-            ? ScrolledMainFrameWithAcceleratedFixedRootBackground
-            : ScrolledMainFrameWithUnacceleratedFixedRootBackground,
-        AcceleratedFixedRootBackgroundHistogramMax);
 }
 
 void RenderLayerCompositor::frameViewDidLayout()
