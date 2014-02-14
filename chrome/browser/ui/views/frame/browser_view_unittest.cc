@@ -103,6 +103,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
       toolbar->y());
   EXPECT_EQ(0, contents_container->x());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
+  EXPECT_EQ(top_container->bounds().bottom(), contents_container->y());
   EXPECT_EQ(0, devtools_web_view->x());
   EXPECT_EQ(0, devtools_web_view->y());
   EXPECT_EQ(0, contents_web_view->x());
@@ -162,6 +163,54 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
             browser_view()->GetIndexOf(top_container));
 
   BookmarkBarView::DisableAnimationsForTesting(false);
+}
+
+class BrowserViewHostedAppTest : public TestWithBrowserView {
+ public:
+  BrowserViewHostedAppTest()
+      : TestWithBrowserView(Browser::TYPE_POPUP,
+                            chrome::HOST_DESKTOP_TYPE_NATIVE,
+                            true) {
+  }
+  virtual ~BrowserViewHostedAppTest() {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewHostedAppTest);
+};
+
+// Test basic layout for hosted apps.
+TEST_F(BrowserViewHostedAppTest, Layout) {
+  // Add a tab because the browser starts out without any tabs at all.
+  AddTab(browser(), GURL("about:blank"));
+
+  views::View* contents_container =
+      browser_view()->GetContentsContainerForTest();
+
+  // The tabstrip, toolbar and bookmark bar should not be visible for hosted
+  // apps.
+  EXPECT_FALSE(browser_view()->tabstrip()->visible());
+  EXPECT_FALSE(browser_view()->toolbar()->visible());
+  EXPECT_FALSE(browser_view()->IsBookmarkBarVisible());
+
+  gfx::Point header_offset;
+  views::View::ConvertPointToTarget(
+      browser_view(),
+      browser_view()->frame()->non_client_view()->frame_view(),
+      &header_offset);
+
+  // The position of the bottom of the header (the bar with the window
+  // controls) in the coordinates of BrowserView.
+  int bottom_of_header = browser_view()->frame()->GetTopInset() -
+      header_offset.y();
+
+  // The web contents should be flush with the bottom of the header.
+  EXPECT_EQ(bottom_of_header, contents_container->y());
+
+  // The find bar should overlap the 1px header/web-contents separator at the
+  // bottom of the header.
+  EXPECT_EQ(browser_view()->frame()->GetTopInset() - 1,
+            browser_view()->GetFindBarBoundingBox().y());
 }
 
 #if defined(OS_WIN)

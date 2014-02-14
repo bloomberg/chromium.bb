@@ -523,13 +523,32 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
 }
 
 void BrowserViewLayout::UpdateTopContainerBounds() {
-  gfx::Rect top_container_bounds(top_container_->GetPreferredSize());
+  // Set the bounds of the top container view such that it is tall enough to
+  // fully show all of its children. In particular, the bottom of the bookmark
+  // bar can be above the bottom of the toolbar while the bookmark bar is
+  // animating. The top container view is positioned relative to the top of the
+  // client view instead of relative to GetTopInsetInBrowserView() because the
+  // top container view paints parts of the frame (title, window controls)
+  // during an immersive fullscreen reveal.
+  int height = 0;
+  for (int i = 0; i < top_container_->child_count(); ++i) {
+    views::View* child = top_container_->child_at(i);
+    if (!child->visible())
+      continue;
+    int child_bottom = child->bounds().bottom();
+    if (child_bottom > height)
+      height = child_bottom;
+  }
+
+  // Ensure that the top container view reaches the topmost view in the
+  // ClientView because the bounds of the top container view are used in
+  // layout and we assume that this is the case.
+  height = std::max(height, delegate_->GetTopInsetInBrowserView());
+
+  gfx::Rect top_container_bounds(vertical_layout_rect_.width(), height);
 
   // If the immersive mode controller is animating the top container, it may be
-  // partly offscreen. The top container is positioned relative to the top of
-  // the client view instead of relative to GetTopInsetInBrowserView() because
-  // the top container paints parts of the frame (title, window controls) during
-  // an immersive reveal.
+  // partly offscreen.
   top_container_bounds.set_y(
       immersive_mode_controller_->GetTopContainerVerticalOffset(
           top_container_bounds.size()));

@@ -15,28 +15,6 @@ TopContainerView::TopContainerView(BrowserView* browser_view)
 TopContainerView::~TopContainerView() {
 }
 
-gfx::Size TopContainerView::GetPreferredSize() {
-  // The view wants to be as wide as its parent and tall enough to fully show
-  // all its children. In particular, the bottom of the bookmark bar can be
-  // be above the bottom of the toolbar while the bookmark bar is animating.
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    if (!child->visible())
-      continue;
-    int child_bottom = child->bounds().bottom();
-    if (child_bottom > height)
-      height = child_bottom;
-  }
-  if (browser_view_->immersive_mode_controller()->IsRevealed()) {
-    // In immersive fullscreen, the TopContainerView paints the window header
-    // (themes, window title, window controls). The TopContainerView must still
-    // paint these even if it does not have any visible children.
-    height = std::max(height, browser_view_->frame()->GetTopInset());
-  }
-  return gfx::Size(browser_view_->width(), height);
-}
-
 const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }

@@ -13,15 +13,13 @@ class BrowserView;
 
 // Container for the BrowserView's tab strip, toolbar, and sometimes bookmark
 // bar. In Chrome OS immersive fullscreen it stacks on top of other views in
-// order to slide in and out over the web contents. It informs the immersive
-// mode controller when its children lose focus to trigger a slide out.
+// order to slide in and out over the web contents.
 class TopContainerView : public views::View {
  public:
   explicit TopContainerView(BrowserView* browser_view);
   virtual ~TopContainerView();
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
