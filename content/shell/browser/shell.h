@@ -69,6 +69,7 @@ class Shell : public WebContentsDelegate,
   void Close();
   void ShowDevTools();
   void ShowDevToolsForElementAt(int x, int y);
+  void ShowDevToolsForTest(const std::string& settings);
   void CloseDevTools();
 #if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   // Resizes the main window to the given dimensions.
@@ -212,6 +213,7 @@ class Shell : public WebContentsDelegate,
   // WebContentsObserver
   virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) OVERRIDE;
 
+  void InnerShowDevTools(const std::string& settings);
   void OnDevToolsWebContentsDestroyed();
 
 #if defined(TOOLKIT_GTK)

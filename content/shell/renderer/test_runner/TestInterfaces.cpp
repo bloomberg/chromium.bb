@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "content/shell/renderer/test_runner/AccessibilityController.h"
 #include "content/shell/renderer/test_runner/EventSender.h"
 #include "content/shell/renderer/test_runner/TestRunner.h"
@@ -118,8 +119,18 @@ void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generat
     if (spec.find("/inspector/") != string::npos
         || spec.find("/inspector-enabled/") != string::npos)
         m_testRunner->clearDevToolsLocalStorage();
-    if (spec.find("/inspector/") != string::npos)
-        m_testRunner->showDevTools();
+    if (spec.find("/inspector/") != string::npos) {
+        // Subfolder name determines default panel to open.
+        string settings = "";
+        string test_path = spec.substr(spec.find("/inspector/") + 11);
+        size_t slash_index = test_path.find("/");
+        if (slash_index != string::npos) {
+            settings = base::StringPrintf(
+                "{\"lastActivePanel\":\"\\\"%s\\\"\"}",
+                test_path.substr(0, slash_index).c_str());
+        }
+        m_testRunner->showDevTools(settings);
+    }
     if (spec.find("/viewsource/") != string::npos) {
         m_testRunner->setShouldEnableViewSource(true);
         m_testRunner->setShouldGeneratePixelResults(false);

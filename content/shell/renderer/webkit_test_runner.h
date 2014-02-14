@@ -81,7 +81,7 @@ class WebKitTestRunner : public RenderViewObserver,
                                     const blink::WebSize& max_size) OVERRIDE;
   virtual void disableAutoResizeMode(const blink::WebSize& new_size) OVERRIDE;
   virtual void clearDevToolsLocalStorage() OVERRIDE;
-  virtual void showDevTools() OVERRIDE;
+  virtual void showDevTools(const std::string& settings) OVERRIDE;
   virtual void closeDevTools() OVERRIDE;
   virtual void evaluateInWebInspector(long call_id,
                                       const std::string& script) OVERRIDE;

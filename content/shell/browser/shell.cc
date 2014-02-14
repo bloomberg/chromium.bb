@@ -215,19 +215,16 @@ void Shell::UpdateNavigationControls() {
 }
 
 void Shell::ShowDevTools() {
-  if (!devtools_frontend_) {
-    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
-    devtools_observer_.reset(new DevToolsWebContentsObserver(
-        this, devtools_frontend_->frontend_shell()->web_contents()));
-  }
-
-  devtools_frontend_->Activate();
-  devtools_frontend_->Focus();
+  InnerShowDevTools("");
 }
 
 void Shell::ShowDevToolsForElementAt(int x, int y) {
-  ShowDevTools();
+  InnerShowDevTools("");
   devtools_frontend_->InspectElementAt(x, y);
+}
+
+void Shell::ShowDevToolsForTest(const std::string& settings) {
+  InnerShowDevTools(settings);
 }
 
 void Shell::CloseDevTools() {
@@ -364,6 +361,17 @@ void Shell::WebContentsFocused(WebContents* contents) {
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   if (entry)
     PlatformSetTitle(entry->GetTitle());
+}
+
+void Shell::InnerShowDevTools(const std::string& settings) {
+  if (!devtools_frontend_) {
+    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents(), settings);
+    devtools_observer_.reset(new DevToolsWebContentsObserver(
+        this, devtools_frontend_->frontend_shell()->web_contents()));
+  }
+
+  devtools_frontend_->Activate();
+  devtools_frontend_->Focus();
 }
 
 void Shell::OnDevToolsWebContentsDestroyed() {

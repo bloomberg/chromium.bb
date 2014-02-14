@@ -803,9 +803,9 @@ void TestRunner::clearDevToolsLocalStorage()
     m_delegate->clearDevToolsLocalStorage();
 }
 
-void TestRunner::showDevTools()
+void TestRunner::showDevTools(const std::string& settings)
 {
-    m_delegate->showDevTools();
+    m_delegate->showDevTools(settings);
 }
 
 void TestRunner::waitUntilDone(const CppArgumentList&, CppVariant* result)
@@ -1714,9 +1714,12 @@ void TestRunner::setPluginsEnabled(const CppArgumentList& arguments, CppVariant*
     result->setNull();
 }
 
-void TestRunner::showWebInspector(const CppArgumentList&, CppVariant* result)
+void TestRunner::showWebInspector(const CppArgumentList& args, CppVariant* result)
 {
-    showDevTools();
+    if (args.size() == 1 && args[0].isString())
+        showDevTools(args[0].toString());
+    else
+        showDevTools("");
     result->setNull();
 }
 

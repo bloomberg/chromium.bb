@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_manager.h"
@@ -24,7 +25,7 @@
 namespace content {
 
 // DevTools frontend path for inspector LayoutTests.
-GURL GetDevToolsPathAsURL() {
+GURL GetDevToolsPathAsURL(const std::string& settings) {
   base::FilePath dir_exe;
   if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
     NOTREACHED();
@@ -38,12 +39,25 @@ GURL GetDevToolsPathAsURL() {
 #endif
   base::FilePath dev_tools_path = dir_exe.AppendASCII(
       "resources/inspector/devtools.html");
-  return net::FilePathToFileURL(dev_tools_path);
+
+  GURL result = net::FilePathToFileURL(dev_tools_path);
+  if (!settings.empty())
+      result = GURL(base::StringPrintf("%s?settings=%s",
+                                       result.spec().c_str(),
+                                       settings.c_str()));
+  return result;
 }
 
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents) {
+  return ShellDevToolsFrontend::Show(inspected_contents, "");
+}
+
+// static
+ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
+    WebContents* inspected_contents,
+    const std::string& settings) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(
           inspected_contents->GetRenderViewHost()));
@@ -59,7 +73,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
       shell_browser_main_parts()->devtools_delegate();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    shell->LoadURL(GetDevToolsPathAsURL());
+    shell->LoadURL(GetDevToolsPathAsURL(settings));
   else
     shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
 

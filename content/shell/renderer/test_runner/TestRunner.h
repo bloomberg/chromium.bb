@@ -103,7 +103,7 @@ public:
     bool shouldDumpAsMarkup();
     bool shouldDumpChildFrameScrollPositions() const;
     bool shouldDumpChildFramesAsText() const;
-    void showDevTools();
+    void showDevTools(const std::string& settings);
     void clearDevToolsLocalStorage();
     void setShouldDumpAsText(bool);
     void setShouldDumpAsMarkup(bool);

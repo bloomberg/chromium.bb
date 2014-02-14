@@ -16,7 +16,7 @@
 
 namespace content {
 
-GURL GetDevToolsPathAsURL();
+GURL GetDevToolsPathAsURL(const std::string& settings);
 
 class RenderViewHost;
 class Shell;
@@ -26,6 +26,8 @@ class ShellDevToolsFrontend : public WebContentsObserver,
                               public DevToolsFrontendHostDelegate {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
+  static ShellDevToolsFrontend* Show(WebContents* inspected_contents,
+                                     const std::string& settings);
   void Activate();
   void Focus();
   void InspectElementAt(int x, int y);

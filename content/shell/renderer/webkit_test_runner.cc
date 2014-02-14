@@ -387,8 +387,8 @@ void WebKitTestRunner::clearDevToolsLocalStorage() {
   Send(new ShellViewHostMsg_ClearDevToolsLocalStorage(routing_id()));
 }
 
-void WebKitTestRunner::showDevTools() {
-  Send(new ShellViewHostMsg_ShowDevTools(routing_id()));
+void WebKitTestRunner::showDevTools(const std::string& settings) {
+  Send(new ShellViewHostMsg_ShowDevTools(routing_id(), settings));
 }
 
 void WebKitTestRunner::closeDevTools() {
