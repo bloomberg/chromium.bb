@@ -135,4 +135,9 @@ String ExceptionMessages::indexExceedsMaximumBound(const char* name, unsigned gi
     return String::format("The %s provided (%u) is greater than %sthe maximum bound (%u).", name, given, eq ? "or equal to " : "", bound);
 }
 
+String ExceptionMessages::indexOutsideRange(const char* name, double given, double lowerBound, BoundType lowerInclusive, double upperBound, BoundType upperInclusive)
+{
+    return String::format("The %s provided (%f) is outside the range %c%f, %f%c.", name, given, lowerBound == ExclusiveBound ? '(' : '[', lowerBound, upperBound, upperBound == ExclusiveBound ? ')' : ']');
+}
+
 } // namespace WebCore

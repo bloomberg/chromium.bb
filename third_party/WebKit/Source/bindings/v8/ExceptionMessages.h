@@ -39,6 +39,11 @@ class Decimal;
 
 class ExceptionMessages {
 public:
+    enum BoundType {
+        InclusiveBound,
+        ExclusiveBound,
+    };
+
     static String failedToConstruct(const String& type, const String& detail = String());
     static String failedToExecute(const String& method, const String& type, const String& detail = String());
     static String failedToGet(const String& property, const String& type, const String& detail);
@@ -60,6 +65,7 @@ public:
     static String readOnly(const char* detail = 0);
 
     static String indexExceedsMaximumBound(const char* name, unsigned given, unsigned bound);
+    static String indexOutsideRange(const char* name, double given, double lowerBound, BoundType lowerType, double upperBound, BoundType upperType);
 
 private:
     static String ordinalNumber(int number);

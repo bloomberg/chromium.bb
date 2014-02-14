@@ -1850,7 +1850,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
     // 1 - If the media element's readyState is HAVE_NOTHING, then raise an InvalidStateError exception.
     if (m_readyState == HAVE_NOTHING || !m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The element's readyState is HAVE_NOTHING.");
         return;
     }
 
@@ -2019,7 +2019,7 @@ double HTMLMediaElement::currentTime() const
 void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionState)
 {
     if (m_mediaController) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No media controller is available.");
         return;
     }
     seek(time, exceptionState);
@@ -2204,12 +2204,12 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRef
         return;
 
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
         return;
     }
 
@@ -2237,22 +2237,22 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
         return;
 
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
         return;
     }
 
     if (!key) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The key provided is invalid.");
         return;
     }
 
     if (!key->length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The key provided is invalid.");
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
         return;
     }
 
@@ -2280,12 +2280,12 @@ void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const Str
         return;
 
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
         return;
     }
 
     if (!m_player) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
         return;
     }
 
@@ -2335,7 +2335,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
     WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
     if (vol < 0.0f || vol > 1.0f) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0f, ExceptionMessages::ExclusiveBound, 1.0f, ExceptionMessages::ExclusiveBound));
         return;
     }
 
@@ -2554,7 +2554,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, c
 
     // 1. If kind is not one of the following strings, then throw a SyntaxError exception and abort these steps
     if (!TextTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The 'kind' provided ('" + kind + "') is invalid.");
         return 0;
     }
 
