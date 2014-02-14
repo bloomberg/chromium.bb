@@ -37,8 +37,6 @@ class View;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class TextButtonBorder;
-
 class VIEWS_EXPORT Border {
  public:
   Border();
@@ -85,10 +83,6 @@ class VIEWS_EXPORT Border {
   // insets may be larger or smaller, depending on how the view wanted its
   // content laid out relative to these images.
   virtual gfx::Size GetMinimumSize() const = 0;
-
-  // Manual RTTI for text buttons.
-  virtual TextButtonBorder* AsTextButtonBorder();
-  virtual const TextButtonBorder* AsTextButtonBorder() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Border);

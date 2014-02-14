@@ -35,10 +35,6 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
-  // Border:
-  virtual TextButtonBorder* AsTextButtonBorder() OVERRIDE;
-  virtual const TextButtonBorder* AsTextButtonBorder() const OVERRIDE;
-
   gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButtonBorder);

@@ -166,12 +166,4 @@ scoped_ptr<Border> Border::CreateBorderPainter(Painter* painter,
   return scoped_ptr<Border>(new BorderPainter(painter, insets));
 }
 
-TextButtonBorder* Border::AsTextButtonBorder() {
-  return NULL;
-}
-
-const TextButtonBorder* Border::AsTextButtonBorder() const {
-  return NULL;
-}
-
 }  // namespace views

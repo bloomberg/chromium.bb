@@ -88,14 +88,6 @@ void TextButtonBorder::SetInsets(const gfx::Insets& insets) {
   insets_ = insets;
 }
 
-TextButtonBorder* TextButtonBorder::AsTextButtonBorder() {
-  return this;
-}
-
-const TextButtonBorder* TextButtonBorder::AsTextButtonBorder() const {
-  return this;
-}
-
 
 // TextButtonDefaultBorder ----------------------------------------------------
 
