@@ -47,8 +47,8 @@
         '-fvisibility=hidden',
       ],
       'sources': [
-        '<(proto_in_dir)/key_enums.proto',
-        '<(proto_in_dir)/key_parameters.proto',
+        '<(proto_in_dir)/key.proto',
+        '<(proto_in_dir)/rpc.proto',
       ],
       'includes': ['../common-mk/protoc.gypi'],
     },
