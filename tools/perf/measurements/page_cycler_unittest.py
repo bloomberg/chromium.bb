@@ -38,7 +38,8 @@ class FakePage(object):
 class FakeTab(object):
   def __init__(self):
     self.clear_cache_calls = 0
-  def ClearCache(self):
+  def ClearCache(self, force=False):
+    assert force
     self.clear_cache_calls += 1
   def EvaluateJavaScript(self, _):
     return 1

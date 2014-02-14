@@ -80,7 +80,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = self._page_cycler_js
     if self.ShouldRunCold(page.url):
-      tab.ClearCache()
+      tab.ClearCache(force=True)
     if self._report_speed_index:
       self._speedindex_metric.Start(page, tab)
 
