@@ -64,9 +64,9 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
   EXPECT_EQ(
-      "id=1 ROOT_WEB_AREA FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
-      "  id=2 BUTTON (20, 20)-(200, 30)\n"
-      "  id=3 CHECKBOX (20, 50)-(200, 30)\n",
+      "id=1 root_web_area FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
+      "  id=2 button (20, 20)-(200, 30)\n"
+      "  id=3 check_box (20, 50)-(200, 30)\n",
       dst_tree.ToString());
 }
 
