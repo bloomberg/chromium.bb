@@ -445,6 +445,19 @@ message AccessibilitySettingsProto {
   // enable or disable the screen magnifier anytime and its status on the login
   // screen is persisted between users.
   optional ScreenMagnifierType login_screen_default_screen_magnifier_type = 4;
+
+  // Sets the default state of the on-screen keyboard accessibility feature on
+  // the login screen. If this policy is set to true, the on-screen keyboard
+  // will be enabled when the login screen is shown. If this policy is set to
+  // false, the on-screen keyboard will be disabled when the login screen is
+  // shown. Users can temporarily override this setting by enabling or disabling
+  // the on-screen keyboard. However, the user's choice is not persistent and
+  // the default is restored whenever the login screen is shown anew or the user
+  // remains idle on the login screen for a minute. If this policy is left
+  // unset, the on-screen keyboard is disabled when the login screen is first
+  // shown. Users can enable or disable the on-screen keyboard anytime and its
+  // status on the login screen is persisted between users.
+  optional bool login_screen_default_virtual_keyboard_enabled = 5;
 }
 
 message SupervisedUsersSettingsProto {

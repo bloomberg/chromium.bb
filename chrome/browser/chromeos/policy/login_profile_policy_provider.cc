@@ -131,6 +131,10 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
       key::kDeviceLoginScreenDefaultScreenMagnifierType,
       key::kScreenMagnifierType,
       device_policy_map, &user_policy_map);
+  ApplyDevicePolicyAsRecommendedPolicy(
+      key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
+      key::kVirtualKeyboardEnabled,
+      device_policy_map, &user_policy_map);
 
   // TODO(bartfab): Consolidate power management user policies into a single
   // JSON policy, allowing the value of the device policy to be simply forwarded

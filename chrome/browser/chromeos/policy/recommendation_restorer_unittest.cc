@@ -115,6 +115,7 @@ void RecommendationRestorerTest::SetRecommendedValues() {
   recommended_prefs_->SetBoolean(prefs::kHighContrastEnabled, false);
   recommended_prefs_->SetBoolean(prefs::kScreenMagnifierEnabled, false);
   recommended_prefs_->SetInteger(prefs::kScreenMagnifierType, 0);
+  recommended_prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, false);
 }
 
 void RecommendationRestorerTest::SetUserSettings() {
@@ -123,6 +124,7 @@ void RecommendationRestorerTest::SetUserSettings() {
   prefs_->SetBoolean(prefs::kHighContrastEnabled, true);
   prefs_->SetBoolean(prefs::kScreenMagnifierEnabled, true);
   prefs_->SetInteger(prefs::kScreenMagnifierType, ash::MAGNIFIER_FULL);
+  prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, true);
 }
 
 void RecommendationRestorerTest::CreateLoginProfile() {
@@ -179,6 +181,8 @@ void RecommendationRestorerTest::VerifyPrefsFollowUser() const {
                         base::FundamentalValue(true));
   VerifyPrefFollowsUser(prefs::kScreenMagnifierType,
                         base::FundamentalValue(ash::MAGNIFIER_FULL));
+  VerifyPrefFollowsUser(prefs::kVirtualKeyboardEnabled,
+                        base::FundamentalValue(true));
 }
 
 void RecommendationRestorerTest::VerifyPrefFollowsRecommendation(
@@ -205,6 +209,8 @@ void RecommendationRestorerTest::VerifyPrefsFollowRecommendations() const {
                                   base::FundamentalValue(false));
   VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierType,
                                   base::FundamentalValue(0));
+  VerifyPrefFollowsRecommendation(prefs::kVirtualKeyboardEnabled,
+                                  base::FundamentalValue(false));
 }
 
 void RecommendationRestorerTest::VerifyNotListeningForNotifications() const {
@@ -314,7 +320,14 @@ TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeOnLoginScreen) {
                                   base::FundamentalValue(false));
   VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierType,
                                   base::FundamentalValue(0));
-
+  VerifyTimerIsStopped();
+  recommended_prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, false);
+  VerifyPrefFollowsUser(prefs::kVirtualKeyboardEnabled,
+                        base::FundamentalValue(true));
+  VerifyTimerIsRunning();
+  runner_->RunUntilIdle();
+  VerifyPrefFollowsRecommendation(prefs::kVirtualKeyboardEnabled,
+                                  base::FundamentalValue(false));
   VerifyTimerIsStopped();
 }
 
@@ -359,6 +372,13 @@ TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeInUserSession) {
                                   base::FundamentalValue(false));
   VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierType,
                                   base::FundamentalValue(0));
+
+  VerifyPrefFollowsUser(prefs::kVirtualKeyboardEnabled,
+                        base::FundamentalValue(true));
+  recommended_prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, false);
+  VerifyTimerIsStopped();
+  VerifyPrefFollowsRecommendation(prefs::kVirtualKeyboardEnabled,
+                                  base::FundamentalValue(false));
 }
 
 TEST_F(RecommendationRestorerTest, DoNothingOnUserChange) {
@@ -394,6 +414,11 @@ TEST_F(RecommendationRestorerTest, DoNothingOnUserChange) {
                         base::FundamentalValue(true));
   VerifyPrefFollowsUser(prefs::kScreenMagnifierType,
                         base::FundamentalValue(ash::MAGNIFIER_FULL));
+  VerifyTimerIsStopped();
+
+  prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, true);
+  VerifyPrefFollowsUser(prefs::kVirtualKeyboardEnabled,
+                        base::FundamentalValue(true));
   VerifyTimerIsStopped();
 }
 
@@ -446,6 +471,15 @@ TEST_F(RecommendationRestorerTest, RestoreOnUserChange) {
                                   base::FundamentalValue(false));
   VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierType,
                                   base::FundamentalValue(0));
+
+  VerifyTimerIsStopped();
+  prefs_->SetBoolean(prefs::kVirtualKeyboardEnabled, true);
+  VerifyPrefFollowsUser(prefs::kVirtualKeyboardEnabled,
+                        base::FundamentalValue(true));
+  VerifyTimerIsRunning();
+  runner_->RunUntilIdle();
+  VerifyPrefFollowsRecommendation(prefs::kVirtualKeyboardEnabled,
+                                  base::FundamentalValue(false));
 
   VerifyTimerIsStopped();
 }

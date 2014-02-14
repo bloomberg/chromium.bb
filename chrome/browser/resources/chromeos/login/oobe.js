@@ -227,6 +227,7 @@ cr.define('cr.ui.Oobe', function() {
       $('spoken-feedback').checked = data.spokenFeedbackEnabled;
       $('screen-magnifier').checked = data.screenMagnifierEnabled;
       $('large-cursor').checked = data.largeCursorEnabled;
+      $('virtual-keyboard').checked = data.virtualKeyboardEnabled;
     },
 
     /**

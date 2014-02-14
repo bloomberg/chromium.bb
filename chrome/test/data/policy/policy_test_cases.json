@@ -1922,6 +1922,18 @@
     ]
   },
 
+  "VirtualKeyboardEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "VirtualKeyboardEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.virtual_keyboard",
+        "indicator_tests": [
+          { "policy": { "VirtualKeyboardEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "AttestationEnabledForUser": {
     "os": ["chromeos"],
     "test_policy": { "AttestationEnabledForUser": true },
@@ -2142,6 +2154,9 @@
   },
 
   "DeviceLoginScreenDefaultScreenMagnifierType" : {
+  },
+
+  "DeviceLoginScreenDefaultVirtualKeyboardEnabled" : {
   },
 
   "UptimeLimit": {

@@ -551,6 +551,15 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
               container.login_screen_default_screen_magnifier_type()),
           NULL);
     }
+    if (container.has_login_screen_default_virtual_keyboard_enabled()) {
+      policies->Set(
+          key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          base::Value::CreateBooleanValue(
+              container.login_screen_default_virtual_keyboard_enabled()),
+          NULL);
+    }
   }
 }
 

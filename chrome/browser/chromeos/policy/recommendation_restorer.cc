@@ -49,6 +49,9 @@ RecommendationRestorer::RecommendationRestorer(Profile* profile)
   pref_change_registrar_.Add(prefs::kScreenMagnifierType,
                              base::Bind(&RecommendationRestorer::Restore,
                                         base::Unretained(this), true));
+  pref_change_registrar_.Add(prefs::kVirtualKeyboardEnabled,
+                             base::Bind(&RecommendationRestorer::Restore,
+                                        base::Unretained(this), true));
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -117,6 +120,7 @@ void RecommendationRestorer::RestoreAll() {
   Restore(false, prefs::kHighContrastEnabled);
   Restore(false, prefs::kScreenMagnifierEnabled);
   Restore(false, prefs::kScreenMagnifierType);
+  Restore(false, prefs::kVirtualKeyboardEnabled);
 }
 
 void RecommendationRestorer::StartTimer() {

@@ -2424,6 +2424,29 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
+  // Verifies that the on-screen keyboard accessibility feature can be
+  // controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Manually enable the on-screen keyboard.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_TRUE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false), NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Verify that the on-screen keyboard cannot be enabled manually anymore.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+}
+
 #endif
 
 namespace {

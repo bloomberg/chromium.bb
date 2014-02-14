@@ -285,6 +285,8 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
                        MagnificationManager::Get()->IsMagnifierEnabled());
+  a11y_info.SetBoolean("virtualKeyboardEnabled",
+                       AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   CallJS("refreshA11yInfo", a11y_info);
 }
 
