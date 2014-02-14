@@ -57,10 +57,13 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationEGLGLES2: {
       base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so");
-      if (!gles_library)
+      if (!gles_library) {
+        LOG(ERROR) << "Failed to load libGLESv2.so.";
         return false;
+      }
       base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
       if (!egl_library) {
+        LOG(ERROR) << "Failed to load libEGL.so.";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }
@@ -120,6 +123,7 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
         InitializeDynamicGLBindingsGL(context);
       break;
     default:
+      NOTREACHED() << "InitializeDynamicGLBindings on Android";
       return false;
   }
 
