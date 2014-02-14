@@ -80,10 +80,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   blink::WebRuntimeFeatures::enableMediaPlayer(enable_media);
   LOG_IF(WARNING, !enable_media) << "Failed to initialize the media library.\n";
 
-  // TODO(joth): Make a dummy geolocation service implemenation for
-  // test_shell, and set this to true. http://crbug.com/36451
-  blink::WebRuntimeFeatures::enableGeolocation(false);
-
   file_utilities_.set_sandbox_enabled(false);
 
   if (!file_system_root_.CreateUniqueTempDir()) {

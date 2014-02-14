@@ -200,9 +200,6 @@ const char kDisableForceCompositingMode[]   = "disable-force-compositing-mode";
 // Disable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";
 
-// Suppresses support for the Geolocation javascript API.
-const char kDisableGeolocation[]            = "disable-geolocation";
-
 // Disable deferral of scroll-ending gesture events when a scroll is active.
 const char kDisableGestureDebounce[]        = "disable-gesture-debounce";
 

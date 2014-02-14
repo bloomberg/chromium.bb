@@ -75,9 +75,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableSessionStorage))
     WebRuntimeFeatures::enableSessionStorage(false);
 
-  if (command_line.HasSwitch(switches::kDisableGeolocation))
-    WebRuntimeFeatures::enableGeolocation(false);
-
   if (command_line.HasSwitch(switches::kDisableWebKitMediaSource))
     WebRuntimeFeatures::enableWebKitMediaSource(false);
 
