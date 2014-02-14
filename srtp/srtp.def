@@ -57,6 +57,7 @@ rdbx_init
 rdbx_estimate_index
 rdbx_check
 rdbx_add_index
+rdbx_get_packet_index
 index_init
 index_advance
 index_guess
