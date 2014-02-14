@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 #endif
 
 namespace chrome {

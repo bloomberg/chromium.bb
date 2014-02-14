@@ -14,7 +14,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/ime/input_method.h"
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
 namespace {

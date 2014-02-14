@@ -8,7 +8,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
-#include "ash/host/root_window_host_factory.h"
+#include "ash/host/window_tree_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -42,7 +42,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
   if (!root_window_controller_.get()) {
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
     aura::RootWindow::CreateParams params(bounds_in_native);
-    params.host = Shell::GetInstance()->root_window_host_factory()->
+    params.host = Shell::GetInstance()->window_tree_host_factory()->
         CreateWindowTreeHost(bounds_in_native);
     aura::RootWindow* root_window = new aura::RootWindow(params);
 

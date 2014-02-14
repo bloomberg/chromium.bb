@@ -7,7 +7,7 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "ash/content_support/gpu_support_impl.h"
-#include "ash/host/root_window_host_factory.h"
+#include "ash/host/window_tree_host_factory.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

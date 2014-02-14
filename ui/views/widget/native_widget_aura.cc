@@ -45,15 +45,15 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #endif
 
 namespace views {

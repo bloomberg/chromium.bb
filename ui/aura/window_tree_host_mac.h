@@ -1,32 +1,34 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_HOST_OZONE_H_
-#define UI_AURA_ROOT_WINDOW_HOST_OZONE_H_
+#ifndef UI_AURA_WINDOW_TREE_HOST_MAC_H_
+#define UI_AURA_WINDOW_TREE_HOST_MAC_H_
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/mac/scoped_nsobject.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_source.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
+namespace ui {
+class MouseEvent;
+}
+
 namespace aura {
 
-class WindowTreeHostOzone : public WindowTreeHost,
-                            public ui::EventSource,
-                            public base::MessagePumpDispatcher {
+namespace internal {
+class TouchEventCalibrate;
+}
+
+class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
  public:
-  explicit WindowTreeHostOzone(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostOzone();
+  explicit WindowTreeHostMac(const gfx::Rect& bounds);
+  virtual ~WindowTreeHostMac();
 
  private:
-  // Overridden from Dispatcher overrides:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
-
   // WindowTreeHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
@@ -36,7 +38,7 @@ class WindowTreeHostOzone : public WindowTreeHost,
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual void SetInsets(const gfx::Insets& bounds) OVERRIDE;
+  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
@@ -50,15 +52,12 @@ class WindowTreeHostOzone : public WindowTreeHost,
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  // ui::EventSource overrides.
-  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+ private:
+  base::scoped_nsobject<NSWindow> window_;
 
-  gfx::AcceleratedWidget widget_;
-  gfx::Rect bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostOzone);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMac);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_ROOT_WINDOW_HOST_OZONE_H_
+#endif  // UI_AURA_WINDOW_TREE_HOST_MAC_H_

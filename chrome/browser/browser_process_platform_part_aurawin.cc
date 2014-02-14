@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {

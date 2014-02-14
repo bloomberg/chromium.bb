@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_HOST_X11_H_
-#define UI_AURA_ROOT_WINDOW_HOST_X11_H_
+#ifndef UI_AURA_WINDOW_TREE_HOST_X11_H_
+#define UI_AURA_WINDOW_TREE_HOST_X11_H_
 
 #include <X11/Xlib.h>
 
@@ -147,4 +147,4 @@ AURA_EXPORT void SetUseOverrideRedirectWindowByDefault(bool override_redirect);
 }  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_ROOT_WINDOW_HOST_X11_H_
+#endif  // UI_AURA_WINDOW_TREE_HOST_X11_H_

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/aura/window_tree_host.h"
-#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/desktop_aura/desktop_factory_ozone.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
 namespace views {
 

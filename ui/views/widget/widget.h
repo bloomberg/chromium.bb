@@ -209,7 +209,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // of the default one.
     // TODO(beng): Figure out if there's a better way to expose this, e.g. get
     // rid of NW subclasses and do this all via message handling.
-    DesktopWindowTreeHost* desktop_root_window_host;
+    DesktopWindowTreeHost* desktop_window_tree_host;
     // Whether this window is intended to be a toplevel window with no
     // attachment to any other window. (This may be a transient window if
     // |parent| is set.)

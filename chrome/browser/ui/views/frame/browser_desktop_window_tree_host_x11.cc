@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_x11.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostX11, public:

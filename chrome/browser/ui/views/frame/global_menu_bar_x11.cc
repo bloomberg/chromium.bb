@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_x11.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_registrar_x11.h"
 #include "chrome/common/pref_names.h"

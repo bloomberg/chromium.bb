@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_HOST_ROOT_WINDOW_HOST_FACTORY_H_
-#define ASH_HOST_ROOT_WINDOW_HOST_FACTORY_H_
+#ifndef ASH_HOST_WINDOW_TREE_HOST_FACTORY_H_
+#define ASH_HOST_WINDOW_TREE_HOST_FACTORY_H_
 
 #include "ash/ash_export.h"
 #include "ui/gfx/rect.h"
@@ -30,4 +30,4 @@ class ASH_EXPORT WindowTreeHostFactory {
 
 }  // namespace ash
 
-#endif  // ASH_HOST_ROOT_WINDOW_HOST_FACTORY_H_
+#endif  // ASH_HOST_WINDOW_TREE_HOST_FACTORY_H_

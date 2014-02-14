@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
-#include "mojo/examples/aura_demo/root_window_host_mojo.h"
+#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2_cpp.h"
@@ -205,7 +205,7 @@ class LauncherImpl : public Application,
     shell()->Connect("mojo:mojo_native_viewport_service",
                      pipe.handle_to_peer.Pass());
 
-    root_window_host_.reset(new WindowTreeHostMojo(
+    window_tree_host_.reset(new WindowTreeHostMojo(
         pipe.handle_to_self.Pass(), gfx::Rect(50, 50, 450, 60),
         base::Bind(&LauncherImpl::HostContextCreated, base::Unretained(this))));
   }
@@ -239,9 +239,9 @@ class LauncherImpl : public Application,
 
   void HostContextCreated() {
     aura::RootWindow::CreateParams params(gfx::Rect(450, 60));
-    params.host = root_window_host_.get();
+    params.host = window_tree_host_.get();
     root_window_.reset(new aura::RootWindow(params));
-    root_window_host_->set_delegate(root_window_.get());
+    window_tree_host_->set_delegate(root_window_.get());
     root_window_->Init();
     root_window_->window()->SetBounds(gfx::Rect(450, 60));
 
@@ -274,7 +274,7 @@ class LauncherImpl : public Application,
   LauncherController launcher_controller_;
 
   RemotePtr<LauncherClient> launcher_client_;
-  scoped_ptr<WindowTreeHostMojo> root_window_host_;
+  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
   scoped_ptr<aura::RootWindow> root_window_;
 
   bool pending_show_;

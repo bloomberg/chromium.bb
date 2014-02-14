@@ -11,7 +11,7 @@
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "extensions/common/extension.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 NativeAppWindowViewsWin::NativeAppWindowViewsWin() {

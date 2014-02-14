@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 
 #include <windows.h>
 
@@ -20,9 +20,9 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/remote_input_method_win.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/view_prop.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
-#include "ui/base/view_prop.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
@@ -31,7 +31,7 @@ namespace aura {
 
 namespace {
 
-const char* kWindowTreeHostWinKey = "__AURA_REMOTE_ROOT_WINDOW_HOST_WIN__";
+const char* kWindowTreeHostWinKey = "__AURA_REMOTE_WINDOW_TREE_HOST_WIN__";
 
 // Sets the keystate for the virtual key passed in to down or up.
 void SetKeyState(uint8* key_states, bool key_down, uint32 virtual_key_code) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_AURA_DEMO_ROOT_WINDOW_HOST_MOJO_H_
-#define MOJO_EXAMPLES_AURA_DEMO_ROOT_WINDOW_HOST_MOJO_H_
+#ifndef MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_MOJO_H_
+#define MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_MOJO_H_
 
 #include "base/bind.h"
 #include "mojo/public/bindings/remote_ptr.h"
@@ -78,4 +78,4 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 }  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_AURA_DEMO_ROOT_WINDOW_HOST_MOJO_H_
+#endif  // MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_MOJO_H_

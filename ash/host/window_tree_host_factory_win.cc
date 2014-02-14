@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/host/root_window_host_factory.h"
+#include "ash/host/window_tree_host_factory.h"
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
+#include "base/win/windows_version.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace {
@@ -15,6 +19,11 @@ class WindowTreeHostFactoryImpl : public ash::WindowTreeHostFactory {
   // Overridden from WindowTreeHostFactory:
   virtual aura::WindowTreeHost* CreateWindowTreeHost(
       const gfx::Rect& initial_bounds) OVERRIDE {
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kForceAshToDesktop))
+      return aura::RemoteWindowTreeHostWin::Create(initial_bounds);
+
     return aura::WindowTreeHost::Create(initial_bounds);
   }
 };

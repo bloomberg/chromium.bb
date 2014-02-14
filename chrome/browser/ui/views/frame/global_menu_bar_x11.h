@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/glib/glib_signal.h"
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_observer_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 
 typedef struct _DbusmenuMenuitem DbusmenuMenuitem;
 typedef struct _DbusmenuServer   DbusmenuServer;

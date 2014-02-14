@@ -258,7 +258,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool can_activate_;
 
   // Ownership passed to RootWindow on Init.
-  DesktopWindowTreeHost* desktop_root_window_host_;
+  DesktopWindowTreeHost* desktop_window_tree_host_;
 
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;

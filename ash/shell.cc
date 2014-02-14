@@ -29,7 +29,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/host/root_window_host_factory.h"
+#include "ash/host/window_tree_host_factory.h"
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -811,7 +811,7 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
-  root_window_host_factory_.reset(delegate_->CreateWindowTreeHostFactory());
+  window_tree_host_factory_.reset(delegate_->CreateWindowTreeHostFactory());
 
   display_controller_->Start();
   display_controller_->InitPrimaryDisplay();

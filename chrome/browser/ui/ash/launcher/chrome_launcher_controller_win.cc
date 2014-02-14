@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/constants.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 
 bool ChromeLauncherController::LaunchedInNativeDesktop(
     const std::string& app_id) {

@@ -6,9 +6,9 @@
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/root_window_host_x11.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window_tree_host_delegate.h"
+#include "ui/aura/window_tree_host_x11.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
@@ -99,11 +99,11 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<WindowTreeHostX11> root_window_host(
+  scoped_ptr<WindowTreeHostX11> window_tree_host(
       new WindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   scoped_ptr<TestWindowTreeHostDelegate> delegate(
       new TestWindowTreeHostDelegate());
-  root_window_host->set_delegate(delegate.get());
+  window_tree_host->set_delegate(delegate.get());
 
   std::vector<unsigned int> devices;
   devices.push_back(0);
@@ -118,7 +118,7 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
   // This touch is out of bounds.
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  window_tree_host->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate->last_touch_type());
   EXPECT_EQ(-1, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate->last_touch_location());
@@ -127,21 +127,21 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
   // Following touchs are within bounds and are passed to delegate.
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(1500, 1500), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  window_tree_host->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1500), delegate->last_touch_location());
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchUpdate, 5, gfx::Point(1500, 1600), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  window_tree_host->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1600), delegate->last_touch_location());
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 5, gfx::Point(1500, 1600), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  window_tree_host->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1600), delegate->last_touch_location());
@@ -164,18 +164,18 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 
-  scoped_ptr<WindowTreeHostX11> root_window_host1(
+  scoped_ptr<WindowTreeHostX11> window_tree_host1(
       new WindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   scoped_ptr<TestWindowTreeHostDelegate> delegate1(
       new TestWindowTreeHostDelegate());
-  root_window_host1->set_delegate(delegate1.get());
+  window_tree_host1->set_delegate(delegate1.get());
 
   int host2_y_offset = 1700;
-  scoped_ptr<WindowTreeHostX11> root_window_host2(
+  scoped_ptr<WindowTreeHostX11> window_tree_host2(
       new WindowTreeHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
   scoped_ptr<TestWindowTreeHostDelegate> delegate2(
       new TestWindowTreeHostDelegate());
-  root_window_host2->set_delegate(delegate2.get());
+  window_tree_host2->set_delegate(delegate2.get());
 
   std::vector<unsigned int> devices;
   devices.push_back(0);
@@ -191,8 +191,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   ui::ScopedXI2Event scoped_xevent;
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -203,8 +203,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchBegin, 6, gfx::Point(1600, 2600), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -215,8 +215,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchUpdate, 5, gfx::Point(1500, 2550), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -227,8 +227,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchUpdate, 6, gfx::Point(1600, 2650), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -239,8 +239,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 5, gfx::Point(1500, 2550), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -251,8 +251,8 @@ TEST_F(WindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   scoped_xevent.InitTouchEvent(
       0, XI_TouchEnd, 6, gfx::Point(1600, 2650), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  window_tree_host1->Dispatch(scoped_xevent);
+  window_tree_host2->Dispatch(scoped_xevent);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());

@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 
 BrowserFrameAshWin::BrowserFrameAshWin(BrowserFrame* browser_frame,
                                        BrowserView* browser_view)

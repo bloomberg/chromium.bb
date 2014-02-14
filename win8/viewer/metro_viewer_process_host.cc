@@ -17,7 +17,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/viewer/metro_viewer_constants.h"
 

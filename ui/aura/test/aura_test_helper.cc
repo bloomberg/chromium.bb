@@ -26,7 +26,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
-#include "ui/aura/root_window_host_x11.h"
+#include "ui/aura/window_tree_host_x11.h"
 #include "ui/base/x/x11_util.h"
 #endif
 

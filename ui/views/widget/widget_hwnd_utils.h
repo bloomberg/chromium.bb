@@ -9,7 +9,7 @@
 
 #include "ui/views/widget/widget.h"
 
-// Functions shared by native_widget_win.cc and desktop_root_window_host_win.cc:
+// Functions shared by native_widget_win.cc and desktop_window_tree_host_win.cc:
 
 namespace views {
 class HWNDMessageHandler;

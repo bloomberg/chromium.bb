@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 
 #include <windows.h>
 #include <uxtheme.h>
 
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
-#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
 class BrowserFrame;
 class BrowserView;
@@ -76,4 +76,4 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
 };
 
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_

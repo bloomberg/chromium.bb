@@ -158,9 +158,9 @@
         'gpu_support_stub.h',
         'high_contrast/high_contrast_controller.cc',
         'high_contrast/high_contrast_controller.h',
-        'host/root_window_host_factory.cc',
-        'host/root_window_host_factory.h',
-        'host/root_window_host_factory_win.cc',
+        'host/window_tree_host_factory.cc',
+        'host/window_tree_host_factory.h',
+        'host/window_tree_host_factory_win.cc',
         'ime/candidate_view.cc',
         'ime/candidate_view.h',
         'ime/candidate_window_view.cc',
@@ -629,7 +629,7 @@
       'conditions': [
         ['OS=="win"', {
           'sources/': [
-            ['exclude', 'host/root_window_host_factory.cc'],
+            ['exclude', 'host/window_tree_host_factory.cc'],
             ['exclude', 'sticky_keys/sticky_keys_controller.cc'],
             ['exclude', 'sticky_keys/sticky_keys_controller.h'],
           ],

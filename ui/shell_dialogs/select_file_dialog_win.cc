@@ -32,7 +32,7 @@
 #include "ui/shell_dialogs/shell_dialogs_delegate.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif

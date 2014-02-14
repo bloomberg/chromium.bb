@@ -509,8 +509,8 @@ class ASH_EXPORT Shell
   }
 #endif  // defined(OS_CHROMEOS)
 
-  WindowTreeHostFactory* root_window_host_factory() {
-    return root_window_host_factory_.get();
+  WindowTreeHostFactory* window_tree_host_factory() {
+    return window_tree_host_factory_.get();
   }
 
   ShelfModel* shelf_model() {
@@ -657,7 +657,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::EventTransformationHandler>
       event_transformation_handler_;
-  scoped_ptr<WindowTreeHostFactory> root_window_host_factory_;
+  scoped_ptr<WindowTreeHostFactory> window_tree_host_factory_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;

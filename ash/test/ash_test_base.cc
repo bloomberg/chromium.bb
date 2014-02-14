@@ -43,8 +43,8 @@
 #include "base/test/test_process_killer_win.h"
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
-#include "ui/aura/remote_root_window_host_win.h"
-#include "ui/aura/root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/aura/window_tree_host_win.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
 
@@ -143,9 +143,9 @@ void AshTestBase::SetUp() {
           new TestMetroViewerProcessHost(ipc_thread_->message_loop_proxy()));
       CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
           win8::test::kDefaultTestAppUserModelId));
-      aura::RemoteWindowTreeHostWin* root_window_host =
+      aura::RemoteWindowTreeHostWin* window_tree_host =
           aura::RemoteWindowTreeHostWin::Instance();
-      CHECK(root_window_host != NULL);
+      CHECK(window_tree_host != NULL);
     }
     ash::WindowPositioner::SetMaximizeFirstWindow(true);
   }

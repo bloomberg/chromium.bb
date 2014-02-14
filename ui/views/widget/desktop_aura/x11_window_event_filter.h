@@ -33,7 +33,7 @@ class NativeWidgetAura;
 class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
  public:
   X11WindowEventFilter(aura::RootWindow* root_window,
-                       DesktopWindowTreeHost* root_window_host);
+                       DesktopWindowTreeHost* window_tree_host);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -57,7 +57,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
 
   ui::X11AtomCache atom_cache_;
 
-  DesktopWindowTreeHost* root_window_host_;
+  DesktopWindowTreeHost* window_tree_host_;
 
   // True if |xwindow_| is the current _NET_ACTIVE_WINDOW.
   bool is_active_;

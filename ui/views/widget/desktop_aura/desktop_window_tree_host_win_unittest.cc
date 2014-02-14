@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
 #include "ui/aura/root_window.h"
 #include "ui/views/test/views_test_base.h"
@@ -47,7 +47,7 @@ TEST_F(DesktopWindowTreeHostWinTest, SaveFocusOnDeactivateFromHandleCreate) {
   DesktopNativeWidgetAura* desktop_native_widget_aura =
       new DesktopNativeWidgetAura(&widget);
   params.native_widget = desktop_native_widget_aura;
-  params.desktop_root_window_host = new TestDesktopWindowTreeHostWin(
+  params.desktop_window_tree_host = new TestDesktopWindowTreeHostWin(
       &widget, desktop_native_widget_aura);
   widget.Init(params);
 }

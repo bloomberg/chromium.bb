@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
-#include "mojo/examples/aura_demo/root_window_host_mojo.h"
+#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/gles2/gles2_cpp.h"
 #include "mojo/public/shell/application.h"
@@ -126,7 +126,7 @@ class AuraDemo : public Application {
     mojo::AllocationScope scope;
     shell()->Connect("mojo:mojo_native_viewport_service",
                      pipe.handle_to_peer.Pass());
-    root_window_host_.reset(new WindowTreeHostMojo(
+    window_tree_host_.reset(new WindowTreeHostMojo(
         pipe.handle_to_self.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
@@ -135,10 +135,10 @@ class AuraDemo : public Application {
  private:
   void HostContextCreated() {
     aura::RootWindow::CreateParams params(
-        gfx::Rect(root_window_host_->bounds().size()));
-    params.host = root_window_host_.get();
+        gfx::Rect(window_tree_host_->bounds().size()));
+    params.host = window_tree_host_.get();
     root_window_.reset(new aura::RootWindow(params));
-    root_window_host_->set_delegate(root_window_.get());
+    window_tree_host_->set_delegate(root_window_.get());
     root_window_->Init();
 
     window_tree_client_.reset(new DemoWindowTreeClient(root_window_->window()));
@@ -179,7 +179,7 @@ class AuraDemo : public Application {
   aura::Window* window2_;
   aura::Window* window21_;
 
-  scoped_ptr<WindowTreeHostMojo> root_window_host_;
+  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
   scoped_ptr<aura::RootWindow> root_window_;
 };
 

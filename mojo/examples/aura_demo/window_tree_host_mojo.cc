@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/aura_demo/root_window_host_mojo.h"
+#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
 
 #include "mojo/examples/aura_demo/demo_context_factory.h"
 #include "mojo/public/bindings/allocation_scope.h"

@@ -49,7 +49,7 @@ EVENTS_EXPORT base::TimeDelta EventTimeForNow();
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of
 // this "root window" and how it maps to platform-specific drawing surfaces is
-// defined in ui/aura/root_window.* and ui/aura/root_window_host*.
+// defined in ui/aura/root_window.* and ui/aura/window_tree_host*.
 // TODO(tdresser): Return gfx::PointF here. See crbug.com/337827.
 EVENTS_EXPORT gfx::Point EventLocationFromNative(
     const base::NativeEvent& native_event);

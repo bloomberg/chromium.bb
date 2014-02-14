@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/aura/root_window_host_x11.h"
+#include "ui/aura/window_tree_host_x11.h"
 #endif
 
 namespace ash {

@@ -7,7 +7,7 @@
 #include <windef.h>
 
 #include "base/logging.h"
-#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/remote_window_tree_host_win.h"
 
 namespace ash {
 namespace test {

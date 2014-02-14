@@ -8,9 +8,9 @@
 #include "ui/aura/root_window.h"
 
 #if defined(USE_X11)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #elif defined(OS_WIN)
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
 // static

@@ -103,8 +103,8 @@
             'examples/aura_demo/demo_context_factory.h',
             'examples/aura_demo/demo_screen.cc',
             'examples/aura_demo/demo_screen.h',
-            'examples/aura_demo/root_window_host_mojo.cc',
-            'examples/aura_demo/root_window_host_mojo.h',
+            'examples/aura_demo/window_tree_host_mojo.cc',
+            'examples/aura_demo/window_tree_host_mojo.h',
           ],
         },
         {

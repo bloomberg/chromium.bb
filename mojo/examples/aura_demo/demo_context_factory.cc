@@ -5,7 +5,7 @@
 #include "mojo/examples/aura_demo/demo_context_factory.h"
 
 #include "cc/output/output_surface.h"
-#include "mojo/examples/aura_demo/root_window_host_mojo.h"
+#include "mojo/examples/aura_demo/window_tree_host_mojo.h"
 #include "mojo/examples/compositor_app/mojo_context_provider.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_implementation.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/root_window_host_ozone.h"
+#include "ui/aura/window_tree_host_ozone.h"
 
 #include "ui/aura/root_window.h"
 #include "ui/events/ozone/event_factory_ozone.h"

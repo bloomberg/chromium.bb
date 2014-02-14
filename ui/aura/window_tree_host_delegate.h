@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
-#define UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
+#ifndef UI_AURA_WINDOW_TREE_HOST_DELEGATE_H_
+#define UI_AURA_WINDOW_TREE_HOST_DELEGATE_H_
 
 #include "ui/aura/aura_export.h"
 
@@ -56,4 +56,4 @@ class AURA_EXPORT WindowTreeHostDelegate {
 
 }  // namespace aura
 
-#endif  // UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
+#endif  // UI_AURA_WINDOW_TREE_HOST_DELEGATE_H_

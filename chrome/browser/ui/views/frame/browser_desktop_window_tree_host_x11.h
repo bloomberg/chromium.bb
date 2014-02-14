@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_X11_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_X11_H_
 
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
-#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"
 
 class BrowserFrame;
@@ -49,4 +49,4 @@ class BrowserDesktopWindowTreeHostX11
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostX11);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_X11_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_X11_H_
