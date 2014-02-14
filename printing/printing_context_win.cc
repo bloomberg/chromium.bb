@@ -343,61 +343,55 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
   // Make printer changes local to Chrome.
   // See MSDN documentation regarding DocumentProperties.
-  scoped_ptr<uint8[]> buffer;
-  DEVMODE* dev_mode = NULL;
-  LONG buffer_size = DocumentProperties(NULL, printer, device_name_wide,
-                                        NULL, NULL, 0);
-  if (buffer_size > 0) {
-    buffer.reset(new uint8[buffer_size]);
-    memset(buffer.get(), 0, buffer_size);
-    if (DocumentProperties(NULL, printer, device_name_wide,
-                           reinterpret_cast<PDEVMODE>(buffer.get()), NULL,
-                           DM_OUT_BUFFER) == IDOK) {
-      dev_mode = reinterpret_cast<PDEVMODE>(buffer.get());
-    }
-  }
-  if (dev_mode == NULL) {
-    buffer.reset();
+  scoped_ptr<DEVMODE[]> scoped_dev_mode =
+      CreateDevModeWithColor(printer, device_name_wide,
+                             settings_.color() != GRAY);
+  if (!scoped_dev_mode)
     return OnError();
-  }
 
-  if (settings_.color() == GRAY)
-    dev_mode->dmColor = DMCOLOR_MONOCHROME;
-  else
-    dev_mode->dmColor = DMCOLOR_COLOR;
+  {
+    DEVMODE* dev_mode = scoped_dev_mode.get();
+    dev_mode->dmCopies = std::max(settings_.copies(), 1);
+    if (dev_mode->dmCopies > 1) { // do not change unless multiple copies
+      dev_mode->dmFields |= DM_COPIES;
+      dev_mode->dmCollate = settings_.collate() ? DMCOLLATE_TRUE :
+                                                  DMCOLLATE_FALSE;
+    }
 
-  dev_mode->dmCopies = std::max(settings_.copies(), 1);
-  if (dev_mode->dmCopies > 1) { // do not change collate unless multiple copies
-    dev_mode->dmCollate = settings_.collate() ? DMCOLLATE_TRUE :
-                                                DMCOLLATE_FALSE;
+    switch (settings_.duplex_mode()) {
+      case LONG_EDGE:
+        dev_mode->dmFields |= DM_DUPLEX;
+        dev_mode->dmDuplex = DMDUP_VERTICAL;
+        break;
+      case SHORT_EDGE:
+        dev_mode->dmFields |= DM_DUPLEX;
+        dev_mode->dmDuplex = DMDUP_HORIZONTAL;
+        break;
+      case SIMPLEX:
+        dev_mode->dmFields |= DM_DUPLEX;
+        dev_mode->dmDuplex = DMDUP_SIMPLEX;
+        break;
+      default:  // UNKNOWN_DUPLEX_MODE
+        break;
+    }
+
+    dev_mode->dmFields |= DM_ORIENTATION;
+    dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
+                                                      DMORIENT_PORTRAIT;
   }
-  switch (settings_.duplex_mode()) {
-    case LONG_EDGE:
-      dev_mode->dmDuplex = DMDUP_VERTICAL;
-      break;
-    case SHORT_EDGE:
-      dev_mode->dmDuplex = DMDUP_HORIZONTAL;
-      break;
-    case SIMPLEX:
-      dev_mode->dmDuplex = DMDUP_SIMPLEX;
-      break;
-    default:  // UNKNOWN_DUPLEX_MODE
-      break;
-  }
-  dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
-                                                    DMORIENT_PORTRAIT;
 
   // Update data using DocumentProperties.
-  if (DocumentProperties(NULL, printer, device_name_wide, dev_mode, dev_mode,
-                         DM_IN_BUFFER | DM_OUT_BUFFER) != IDOK) {
+  scoped_dev_mode = CreateDevMode(printer, scoped_dev_mode.get());
+  if (!scoped_dev_mode)
     return OnError();
-  }
 
   // Set printer then refresh printer settings.
-  if (!AllocateContext(settings_.device_name(), dev_mode, &context_)) {
+  if (!AllocateContext(settings_.device_name(), scoped_dev_mode.get(),
+                       &context_)) {
     return OnError();
   }
-  PrintSettingsInitializerWin::InitPrintSettings(context_, *dev_mode,
+  PrintSettingsInitializerWin::InitPrintSettings(context_,
+                                                 *scoped_dev_mode.get(),
                                                  &settings_);
   return OK;
 }

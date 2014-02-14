@@ -27,73 +27,6 @@ namespace cloud_print {
 
 namespace {
 
-HRESULT StreamFromPrintTicket(const std::string& print_ticket,
-                              IStream** stream) {
-  DCHECK(stream);
-  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, stream);
-  if (FAILED(hr)) {
-    return hr;
-  }
-  ULONG bytes_written = 0;
-  (*stream)->Write(print_ticket.c_str(), print_ticket.length(), &bytes_written);
-  DCHECK(bytes_written == print_ticket.length());
-  LARGE_INTEGER pos = {0};
-  ULARGE_INTEGER new_pos = {0};
-  (*stream)->Seek(pos, STREAM_SEEK_SET, &new_pos);
-  return S_OK;
-}
-
-scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
-                                         const std::string& print_ticket) {
-  scoped_ptr<DEVMODE[]> scoped_dev_mode;
-  printing::ScopedXPSInitializer xps_initializer;
-  if (!xps_initializer.initialized()) {
-    // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-    return scoped_dev_mode.Pass();
-  }
-
-  printing::ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(printer_name.c_str()))
-    return scoped_dev_mode.Pass();
-
-  base::win::ScopedComPtr<IStream> pt_stream;
-  HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
-  if (FAILED(hr))
-    return scoped_dev_mode.Pass();
-
-  HPTPROVIDER provider = NULL;
-  hr = printing::XPSModule::OpenProvider(printer_name, 1, &provider);
-  if (SUCCEEDED(hr)) {
-    ULONG size = 0;
-    DEVMODE* dm = NULL;
-    // Use kPTJobScope, because kPTDocumentScope breaks duplex.
-    hr = printing::XPSModule::ConvertPrintTicketToDevMode(provider,
-                                                          pt_stream,
-                                                          kUserDefaultDevmode,
-                                                          kPTJobScope,
-                                                          &size,
-                                                          &dm,
-                                                          NULL);
-    if (SUCCEEDED(hr)) {
-      // Correct DEVMODE using DocumentProperties. See documentation for
-      // PTConvertPrintTicketToDevMode.
-      wchar_t* mutable_name = const_cast<wchar_t*>(printer_name.c_str());
-      LONG buffer_size = DocumentProperties(NULL, printer, mutable_name, NULL,
-                                            dm, DM_IN_BUFFER);
-      if (buffer_size <= 0)
-        return scoped_ptr<DEVMODE[]>();
-      scoped_dev_mode.reset(reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
-      if (DocumentProperties(NULL, printer, mutable_name, scoped_dev_mode.get(),
-                             dm, DM_OUT_BUFFER | DM_IN_BUFFER) != IDOK) {
-        scoped_dev_mode.reset();
-      }
-      printing::XPSModule::ReleaseMemory(dm);
-    }
-    printing::XPSModule::CloseProvider(provider);
-  }
-  return scoped_dev_mode.Pass();
-}
-
 class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
@@ -331,16 +264,16 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         NOTREACHED();
         return false;
       }
+      base::string16 printer_wide = base::UTF8ToWide(printer_name);
       last_page_printed_ = -1;
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
         scoped_ptr<DEVMODE[]> dev_mode;
         if (print_ticket_mime_type == kContentTypeJSON) {
-          dev_mode = CjtToDevMode(base::UTF8ToWide(printer_name), print_ticket);
+          dev_mode = CjtToDevMode(printer_wide, print_ticket);
         } else {
           DCHECK(print_ticket_mime_type == kContentTypeXML);
-          dev_mode = XpsTicketToDevMode(base::UTF8ToWide(printer_name),
-                                        print_ticket);
+          dev_mode = printing::XpsTicketToDevMode(printer_wide, print_ticket);
         }
 
         if (!dev_mode) {
@@ -348,8 +281,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
           return false;
         }
 
-        HDC dc = CreateDC(L"WINSPOOL", base::UTF8ToWide(printer_name).c_str(),
-                          NULL, dev_mode.get());
+        HDC dc = CreateDC(L"WINSPOOL", printer_wide.c_str(), NULL,
+                          dev_mode.get());
         if (!dc) {
           NOTREACHED();
           return false;

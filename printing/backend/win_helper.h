@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "printing/printing_export.h"
@@ -168,6 +169,21 @@ PRINTING_EXPORT bool InitBasicPrinterInfo(HANDLE printer,
                                           PrinterBasicInfo* printer_info);
 
 PRINTING_EXPORT std::string GetDriverInfo(HANDLE printer);
+
+PRINTING_EXPORT scoped_ptr<DEVMODE[]> XpsTicketToDevMode(
+    const base::string16& printer_name,
+    const std::string& print_ticket);
+
+// Creates default DEVMODE and sets color option. Some devices need special
+// workaround for color.
+PRINTING_EXPORT scoped_ptr<DEVMODE[]> CreateDevModeWithColor(
+    HANDLE printer,
+    const base::string16& printer_name,
+    bool color);
+
+// Creates new DEVMODE. If |in| is not NULL copy settings from there.
+PRINTING_EXPORT scoped_ptr<DEVMODE[]> CreateDevMode(HANDLE printer,
+                                                    DEVMODE* in);
 
 }  // namespace printing
 

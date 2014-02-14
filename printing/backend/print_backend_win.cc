@@ -314,27 +314,18 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
     }
     ScopedPrinterHandle printer_handle;
     if (printer_handle.OpenPrinter(printer_name_wide.c_str())) {
-      LONG devmode_size = DocumentProperties(
-          NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
-          NULL, NULL, 0);
-      if (devmode_size <= 0)
+      scoped_ptr<DEVMODE[]> devmode_out(CreateDevMode(printer_handle, NULL));
+      if (!devmode_out)
         return false;
-      scoped_ptr<BYTE[]> devmode_out_buffer(new BYTE[devmode_size]);
-      DEVMODE* devmode_out =
-          reinterpret_cast<DEVMODE*>(devmode_out_buffer.get());
-      DocumentProperties(
-          NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
-          devmode_out, NULL, DM_OUT_BUFFER);
       base::win::ScopedComPtr<IStream> printer_defaults_stream;
       hr = CreateStreamOnHGlobal(NULL, TRUE,
                                  printer_defaults_stream.Receive());
       DCHECK(SUCCEEDED(hr));
       if (printer_defaults_stream) {
-        hr = XPSModule::ConvertDevModeToPrintTicket(provider,
-                                                    devmode_size,
-                                                    devmode_out,
-                                                    kPTJobScope,
-                                                    printer_defaults_stream);
+        DWORD dm_size = devmode_out.get()->dmSize +
+                        devmode_out.get()->dmDriverExtra;
+        hr = XPSModule::ConvertDevModeToPrintTicket(provider, dm_size,
+            devmode_out.get(), kPTJobScope, printer_defaults_stream);
         DCHECK(SUCCEEDED(hr));
         if (SUCCEEDED(hr)) {
           hr = StreamOnHGlobalToString(printer_defaults_stream.get(),

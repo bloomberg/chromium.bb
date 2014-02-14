@@ -17,6 +17,7 @@ bool IsValidCjt(const std::string& print_ticket_data) {
 
 scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
                                    const std::string& print_ticket) {
+  using namespace cloud_devices::printer;
   cloud_devices::CloudDeviceDescription description;
   if (!description.InitFromString(print_ticket))
     return scoped_ptr<DEVMODE[]>();
@@ -25,21 +26,22 @@ scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
   if (!printer.OpenPrinter(printer_name.c_str()))
     return scoped_ptr<DEVMODE[]>();
 
-  wchar_t* mutable_name = const_cast<wchar_t*>(printer_name.c_str());
-  LONG buffer_size =
-      DocumentProperties(NULL, printer, mutable_name, NULL, NULL, 0);
-  if (buffer_size <= 0)
-    return scoped_ptr<DEVMODE[]>();
-
-  scoped_ptr<DEVMODE[]> scoped_dev_mode(
-      reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
-  DEVMODE* dev_mode = scoped_dev_mode.get();
-  if (DocumentProperties(NULL, printer, mutable_name, dev_mode, NULL,
-                         DM_OUT_BUFFER) != IDOK) {
-    return scoped_ptr<DEVMODE[]>();
+  scoped_ptr<DEVMODE[]> scoped_dev_mode;
+  {
+    ColorTicketItem color;
+    if (color.LoadFrom(description)) {
+      bool is_color = color.value().type == STANDARD_COLOR;
+      scoped_dev_mode = CreateDevModeWithColor(printer, printer_name, is_color);
+    } else {
+      scoped_dev_mode = printing::CreateDevMode(printer, NULL);
+    }
   }
 
-  using namespace cloud_devices::printer;
+  if (!scoped_dev_mode)
+    return scoped_ptr<DEVMODE[]>();
+
+  DEVMODE* dev_mode = scoped_dev_mode.get();
+
   ColorTicketItem color;
   DuplexTicketItem duplex;
   OrientationTicketItem orientation;
@@ -120,12 +122,7 @@ scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
     }
   }
 
-  if (DocumentProperties(NULL, printer, mutable_name, dev_mode, dev_mode,
-                         DM_OUT_BUFFER | DM_IN_BUFFER) != IDOK) {
-    return scoped_ptr<DEVMODE[]>();
-  }
-
-  return scoped_dev_mode.Pass();
+  return printing::CreateDevMode(printer, dev_mode);
 }
 
 std::string CapabilitiesToCdd(

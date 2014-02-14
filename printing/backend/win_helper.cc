@@ -10,7 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_info_win.h"
@@ -74,6 +78,42 @@ PTMergeAndValidatePrintTicketProc g_merge_and_validate_print_ticket_proc = NULL;
 PTReleaseMemoryProc g_release_memory_proc = NULL;
 PTCloseProviderProc g_close_provider_proc = NULL;
 StartXpsPrintJobProc g_start_xps_print_job_proc = NULL;
+
+HRESULT StreamFromPrintTicket(const std::string& print_ticket,
+                              IStream** stream) {
+  DCHECK(stream);
+  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, stream);
+  if (FAILED(hr)) {
+    return hr;
+  }
+  ULONG bytes_written = 0;
+  (*stream)->Write(print_ticket.c_str(),
+                   base::checked_cast<ULONG>(print_ticket.length()),
+                   &bytes_written);
+  DCHECK(bytes_written == print_ticket.length());
+  LARGE_INTEGER pos = {0};
+  ULARGE_INTEGER new_pos = {0};
+  (*stream)->Seek(pos, STREAM_SEEK_SET, &new_pos);
+  return S_OK;
+}
+
+const char kXpsTicketTemplate[] =
+  "<?xml version='1.0' encoding='UTF-8'?>"
+  "<psf:PrintTicket "
+  "xmlns:psf='"
+  "http://schemas.microsoft.com/windows/2003/08/printing/printschemaframework' "
+  "xmlns:psk="
+  "'http://schemas.microsoft.com/windows/2003/08/printing/printschemakeywords' "
+  "version='1'>"
+  "<psf:Feature name='psk:PageOutputColor'>"
+  "<psf:Option name='psk:%s'>"
+  "</psf:Option>"
+  "</psf:Feature>"
+  "</psf:PrintTicket>";
+
+const char kXpsTicketColor[] = "Color";
+const char kXpsTicketMonochrome[] = "Monochrome";
+
 
 }  // namespace
 
@@ -343,6 +383,100 @@ std::string GetDriverInfo(HANDLE printer) {
       driver_info.append(";");
   }
   return driver_info;
+}
+
+scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
+                                         const std::string& print_ticket) {
+  scoped_ptr<DEVMODE[]> scoped_dev_mode;
+  printing::ScopedXPSInitializer xps_initializer;
+  if (!xps_initializer.initialized()) {
+    // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
+    return scoped_dev_mode.Pass();
+  }
+
+  printing::ScopedPrinterHandle printer;
+  if (!printer.OpenPrinter(printer_name.c_str()))
+    return scoped_dev_mode.Pass();
+
+  base::win::ScopedComPtr<IStream> pt_stream;
+  HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
+  if (FAILED(hr))
+    return scoped_dev_mode.Pass();
+
+  HPTPROVIDER provider = NULL;
+  hr = printing::XPSModule::OpenProvider(printer_name, 1, &provider);
+  if (SUCCEEDED(hr)) {
+    ULONG size = 0;
+    DEVMODE* dm = NULL;
+    // Use kPTJobScope, because kPTDocumentScope breaks duplex.
+    hr = printing::XPSModule::ConvertPrintTicketToDevMode(provider,
+                                                          pt_stream,
+                                                          kUserDefaultDevmode,
+                                                          kPTJobScope,
+                                                          &size,
+                                                          &dm,
+                                                          NULL);
+    if (SUCCEEDED(hr)) {
+      // Correct DEVMODE using DocumentProperties. See documentation for
+      // PTConvertPrintTicketToDevMode.
+      scoped_dev_mode = CreateDevMode(printer, dm);
+      printing::XPSModule::ReleaseMemory(dm);
+    }
+    printing::XPSModule::CloseProvider(provider);
+  }
+  return scoped_dev_mode.Pass();
+}
+
+scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
+                                             const base::string16& printer_name,
+                                             bool color) {
+  scoped_ptr<DEVMODE[]> default = CreateDevMode(printer, NULL);
+  if (default && (default.get()->dmFields & DM_COLOR) &&
+      (default.get()->dmColor == DMCOLOR_COLOR) == color) {
+    return default.Pass();
+  }
+
+  default.get()->dmFields |= DM_COLOR;
+  default.get()->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+
+  DriverInfo6 info_6;
+  if (!info_6.Init(printer))
+    return default.Pass();
+
+  const DRIVER_INFO_6* p = info_6.get();
+
+  // Only HP known to have issues.
+  if (wcscmp(p->pszMfgName, L"HP") != 0)
+    return default.Pass();
+
+  // Need XPS for this workaround.
+  printing::ScopedXPSInitializer xps_initializer;
+  if (!xps_initializer.initialized())
+    return default.Pass();
+
+  const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
+  std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
+  scoped_ptr<DEVMODE[]> ticket = printing::XpsTicketToDevMode(printer_name,
+                                                              xps_ticket);
+  if (!ticket)
+    return default.Pass();
+
+  return ticket.Pass();
+}
+
+PRINTING_EXPORT scoped_ptr<DEVMODE[]> CreateDevMode(HANDLE printer,
+                                                    DEVMODE* in) {
+  DWORD flags = in ? (DM_IN_BUFFER) : 0;
+  LONG buffer_size = DocumentProperties(NULL, printer, L"", NULL, in, flags);
+  if (buffer_size <= 0)
+    return scoped_ptr<DEVMODE[]>();
+  scoped_ptr<DEVMODE[]> out(
+      reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
+  flags |= DM_OUT_BUFFER;
+  if (DocumentProperties(NULL, printer, L"", out.get(), in, flags) != IDOK)
+    return scoped_ptr<DEVMODE[]>();
+  DCHECK_EQ(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
+  return out.Pass();
 }
 
 }  // namespace printing
