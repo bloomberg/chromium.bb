@@ -22,8 +22,19 @@
 
 namespace chromeos {
 
+namespace {
+
+// JS functions that define new and old kiosk UI API.
+const char kKioskSetAppsNewAPI[] = "login.AccountPickerScreen.setApps";
+const char kKioskSetAppsOldAPI[] = "login.AppsMenuButton.setApps";
+const char kKioskShowErrorNewAPI[] = "login.AccountPickerScreen.showAppError";
+const char kKioskShowErrorOldAPI[] = "login.AppsMenuButton.showError";
+
+}  // namespace
+
 KioskAppMenuHandler::KioskAppMenuHandler()
-    : weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this),
+      is_webui_initialized_(false) {
   KioskAppManager::Get()->AddObserver(this);
 }
 
@@ -60,6 +71,9 @@ void KioskAppMenuHandler::RegisterMessages() {
 }
 
 void KioskAppMenuHandler::SendKioskApps() {
+  if (!is_webui_initialized_)
+    return;
+
   KioskAppManager::Apps apps;
   KioskAppManager::Get()->GetApps(&apps);
 
@@ -68,6 +82,7 @@ void KioskAppMenuHandler::SendKioskApps() {
     const KioskAppManager::App& app_data = apps[i];
 
     scoped_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
+    app_info->SetBoolean("isApp", true);
     app_info->SetString("id", app_data.app_id);
     app_info->SetString("label", app_data.name);
 
@@ -80,12 +95,16 @@ void KioskAppMenuHandler::SendKioskApps() {
     apps_list.Append(app_info.release());
   }
 
-  web_ui()->CallJavascriptFunction("login.AppsMenuButton.setApps",
-                                   apps_list);
+  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewKioskUI);
+  web_ui()->CallJavascriptFunction(new_kiosk_ui ?
+      kKioskSetAppsNewAPI : kKioskSetAppsOldAPI,
+      apps_list);
 }
 
 void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
+  is_webui_initialized_ = true;
   SendKioskApps();
 }
 
@@ -105,8 +124,11 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
   KioskAppLaunchError::Clear();
 
   const std::string error_message = KioskAppLaunchError::GetErrorMessage(error);
-  web_ui()->CallJavascriptFunction("login.AppsMenuButton.showError",
-                                   base::StringValue(error_message));
+  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewKioskUI);
+  web_ui()->CallJavascriptFunction(new_kiosk_ui ?
+      kKioskShowErrorNewAPI : kKioskShowErrorOldAPI,
+      base::StringValue(error_message));
 }
 
 void KioskAppMenuHandler::OnKioskAppsSettingsChanged() {

@@ -446,6 +446,7 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_GUEST" file="common/login_guest.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_ICON" file="cros/managed_mode_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MANAGED_USER_ICON" file="common/limited_user.png" />
       <structure type="chrome_scaled_image" name="IDR_MANAGED_USER_LABEL_BOTTOM" file="common/managed_user_theme/label_bg_bottom.png" />

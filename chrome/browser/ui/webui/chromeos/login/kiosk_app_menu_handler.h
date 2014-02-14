@@ -45,6 +45,9 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
 
   base::WeakPtrFactory<KioskAppMenuHandler> weak_ptr_factory_;
 
+  // True when WebUI is initialized. Otherwise don't allow calling JS functions.
+  bool is_webui_initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuHandler);
 };
 

@@ -56,6 +56,9 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disable new channel switcher UI.
 const char kDisableNewChannelSwitcherUI[]   = "disable-new-channel-switcher-ui";
 
+// Disables new Kiosk UI when kiosk apps are represented as user pods.
+const char kDisableNewKioskUI[]             = "disable-new-kiosk-ui";
+
 // Disable Quickoffice component app thus handlers won't be registered so
 // it will be possible to install another version as normal app for testing.
 const char kDisableQuickofficeComponentApp[] =

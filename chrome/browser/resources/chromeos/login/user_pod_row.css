@@ -174,7 +174,8 @@ button.custom-button:focus:hover {
   display: -webkit-box;
 }
 
-.pod .signin-button {
+.pod .signin-button,
+.pod .launch-app-button {
   box-sizing: border-box;
   display: inline-block;
   height: 26px;
@@ -184,7 +185,8 @@ button.custom-button:focus:hover {
   padding: 4px 8px;
 }
 
-.pod:not(.focused) .signin-button {
+.pod:not(.focused) .signin-button,
+.pod:not(.focused) .launch-app-button  {
   display: none;
 }
 
@@ -278,6 +280,10 @@ html[dir=rtl] .user-type-icon-area {
 
 .user-type-icon-area.policy .user-type-icon-image {
   background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+}
+
+.user-type-icon-area.app .user-type-icon-image {
+  background-image: url('chrome://theme/IDR_KIOSK_APP_USER_POD_ICON');
 }
 
 .user-type-icon-area.policy:hover ~ .user-type-bubble {

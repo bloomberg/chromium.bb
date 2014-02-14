@@ -46,8 +46,12 @@ cr.define('login', function() {
       $('cancel-multiple-sign-in-button').addEventListener('click',
           this.handleCancelMultipleSignInClick_);
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
-          Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
-        login.AppsMenuButton.decorate($('show-apps-button'));
+          Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
+        if (Oobe.getInstance().newKioskUI)
+          chrome.send('initializeKioskApps');
+        else
+          login.AppsMenuButton.decorate($('show-apps-button'));
+      }
       this.updateUI_();
     },
 
@@ -230,8 +234,10 @@ cr.define('login', function() {
           (!gaiaIsActive && !accountPickerIsActive);
       $('cancel-multiple-sign-in-item').hidden = !isMultiProfilesUI;
 
-      if (!$('apps-header-bar-item').hidden)
-        $('show-apps-button').didShow();
+      if (!Oobe.getInstance().newKioskUI) {
+        if (!$('apps-header-bar-item').hidden)
+          $('show-apps-button').didShow();
+      }
     },
 
     /**

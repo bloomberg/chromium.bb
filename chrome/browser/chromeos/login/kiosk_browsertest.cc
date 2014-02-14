@@ -82,6 +82,16 @@ const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] =
     "https://www.googleapis.com/auth/userinfo.profile";
 
+// Test JS API.
+const char kLaunchAppForTestNewAPI[] =
+    "login.AccountPickerScreen.runAppForTesting";
+const char kLaunchAppForTestOldAPI[] =
+    "login.AppsMenuButton.runAppForTesting";
+const char kCheckDiagnosticModeNewAPI[] =
+    "$('oobe').confirmDiagnosticMode_";
+const char kCheckDiagnosticModeOldAPI[] =
+    "$('show-apps-button').confirmDiagnosticMode_";
+
 // Helper function for GetConsumerKioskAutoLaunchStatusCallback.
 void ConsumerKioskAutoLaunchStatusCheck(
     KioskAppManager::ConsumerKioskAutoLaunchStatus* out_status,
@@ -299,6 +309,15 @@ class KioskTest : public OobeBaseTest {
     return server_url.ReplaceComponents(replace_webstore_host);
   }
 
+  void LaunchApp(const std::string& app_id, bool diagnostic_mode) {
+    bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kDisableNewKioskUI);
+    GetLoginUI()->CallJavascriptFunction(new_kiosk_ui ?
+        kLaunchAppForTestNewAPI : kLaunchAppForTestOldAPI,
+        base::StringValue(app_id),
+        base::FundamentalValue(diagnostic_mode));
+  }
+
   void ReloadKioskApps() {
     KioskAppManager::Get()->AddApp(test_app_id_);
   }
@@ -336,9 +355,7 @@ class KioskTest : public OobeBaseTest {
     if (!network_setup_cb.is_null())
       network_setup_cb.Run();
 
-    GetLoginUI()->CallJavascriptFunction(
-        "login.AppsMenuButton.runAppForTesting",
-        base::StringValue(test_app_id_));
+    LaunchApp(test_app_id(), false);
   }
 
   const extensions::Extension* GetInstalledApp() {
@@ -583,21 +600,22 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
   PrepareAppLaunch();
   SimulateNetworkOnline();
 
-  GetLoginUI()->CallJavascriptFunction(
-      "login.AppsMenuButton.runAppForTesting",
-      base::StringValue(kTestKioskApp),
-      base::FundamentalValue(true));
+  LaunchApp(kTestKioskApp, true);
 
   content::WebContents* login_contents = GetLoginUI()->GetWebContents();
 
-  JsConditionWaiter(login_contents,
-                    "$('show-apps-button').confirmDiagnosticMode_").Wait();
+  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewKioskUI);
+  JsConditionWaiter(login_contents, new_kiosk_ui ?
+      kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI).Wait();
 
+  std::string diagnosticMode(new_kiosk_ui ?
+      kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI);
   ASSERT_TRUE(content::ExecuteScript(
       login_contents,
       "(function() {"
-         "var e = new Event('click');"
-         "$('show-apps-button').confirmDiagnosticMode_."
+         "var e = new Event('click');" +
+         diagnosticMode + "."
              "okButton_.dispatchEvent(e);"
       "})();"));
 
@@ -611,9 +629,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoNetwork) {
   PrepareAppLaunch();
   SimulateNetworkOffline();
 
-  GetLoginUI()->CallJavascriptFunction(
-      "login.AppsMenuButton.runAppForTesting",
-      base::StringValue(test_app_id()));
+  LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 }
 
@@ -630,9 +646,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoUpdate) {
   PrepareAppLaunch();
   SimulateNetworkOnline();
 
-  GetLoginUI()->CallJavascriptFunction(
-      "login.AppsMenuButton.runAppForTesting",
-      base::StringValue(test_app_id()));
+  LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -651,9 +665,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppHasUpdate) {
   PrepareAppLaunch();
   SimulateNetworkOnline();
 
-  GetLoginUI()->CallJavascriptFunction(
-      "login.AppsMenuButton.runAppForTesting",
-      base::StringValue(test_app_id()));
+  LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -977,9 +989,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
                  base::Unretained(KioskAppManager::Get()),
                  kTestEnterpriseKioskApp, &app)).Wait();
 
-  GetLoginUI()->CallJavascriptFunction(
-      "login.AppsMenuButton.runAppForTesting",
-      base::StringValue(kTestEnterpriseKioskApp));
+  LaunchApp(kTestEnterpriseKioskApp, false);
 
   // Wait for the Kiosk App to launch.
   content::WindowedNotificationObserver(

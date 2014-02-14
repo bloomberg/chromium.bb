@@ -378,6 +378,10 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       system::keyboard_settings::ForceKeyboardDrivenUINavigation();
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
+
+  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewKioskUI);
+  localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
 }
 
 void OobeUI::InitializeScreenMaps() {

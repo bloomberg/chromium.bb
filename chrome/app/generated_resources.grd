@@ -14173,6 +14173,9 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add User
         </message>
+        <message name="IDS_LAUNCH_APP_BUTTON" desc="Test shown on the button that launches kiosk app from Chrome OS login UI">
+          Launch App
+        </message>
         <message name="IDS_SCREEN_LOCK_SIGN_OUT">
           Sign out
         </message>
@@ -14186,6 +14189,9 @@ After you create a new supervised user, you can manage their settings at any tim
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add user
+        </message>
+        <message name="IDS_LAUNCH_APP_BUTTON" desc="Test shown on the button that launches kiosk app from Chrome OS login UI">
+          Launch app
         </message>
         <message name="IDS_SCREEN_LOCK_SIGN_OUT">
           Sign out

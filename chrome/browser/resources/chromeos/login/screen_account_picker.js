@@ -23,6 +23,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
   return {
     EXTERNAL_API: [
       'loadUsers',
+      'runAppForTesting',
+      'setApps',
+      'showAppError',
       'updateUserImage',
       'forceOnlineSignin',
       'setCapsLockState',
@@ -179,6 +182,39 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         if (podIndex)
           $('pod-row').focusPodByIndex(podIndex, false);
       }
+    },
+
+    /**
+     * Runs app with a given id from the list of loaded apps.
+     * @param {!string} app_id of an app to run.
+     * @param {boolean=} opt_diagnostic_mode Whether to run the app in
+     *     diagnostic mode.  Default is false.
+     */
+    runAppForTesting: function(app_id, opt_diagnostic_mode) {
+      $('pod-row').findAndRunAppForTesting(app_id, opt_diagnostic_mode);
+    },
+
+    /**
+     * Adds given apps to the pod row.
+     * @param {array} apps Array of apps.
+     */
+    setApps: function(apps) {
+      $('pod-row').setApps(apps);
+    },
+
+    /**
+     * Shows the given kiosk app error message.
+     * @param {!string} message Error message to show.
+     */
+    showAppError: function(message) {
+      // TODO(nkostylev): Figure out a way to show kiosk app launch error
+      // pointing to the kiosk app pod.
+      /** @const */ var BUBBLE_PADDING = 12;
+      $('bubble').showTextForElement($('pod-row'),
+                                     message,
+                                     cr.ui.Bubble.Attachment.BOTTOM,
+                                     $('pod-row').offsetWidth / 2,
+                                     BUBBLE_PADDING);
     },
 
     /**

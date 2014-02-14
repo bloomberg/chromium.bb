@@ -35,6 +35,7 @@ CHROMEOS_EXPORT extern const char kDisableIMEModeIndicator[];
 CHROMEOS_EXPORT extern const char kDisableLocalAccounts[];
 CHROMEOS_EXPORT extern const char kDisableLoginAnimations[];
 CHROMEOS_EXPORT extern const char kDisableNewChannelSwitcherUI[];
+CHROMEOS_EXPORT extern const char kDisableNewKioskUI[];
 CHROMEOS_EXPORT extern const char kDisableOOBEBlockingUpdate[];
 CHROMEOS_EXPORT extern const char kDisableOnlineEULA[];
 CHROMEOS_EXPORT extern const char kDisableOobeAnimation[];

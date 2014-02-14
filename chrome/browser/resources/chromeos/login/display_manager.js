@@ -139,6 +139,10 @@ cr.define('cr.ui.login', function() {
       document.documentElement.setAttribute('screen', displayType);
     },
 
+    get newKioskUI() {
+      return loadTimeData.getString('newKioskUI') == 'on';
+    },
+
     /**
      * Returns dimensions of screen exluding header bar.
      * @type {Object}
