@@ -721,16 +721,8 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn)
             return RuntimeEnabledFeatures::cssGridLayoutEnabled();
         break;
-    case CSSPropertyWebkitLineAlign:
-        if (valueID == CSSValueNone || valueID == CSSValueEdges)
-            return true;
-        break;
     case CSSPropertyWebkitLineBreak: // auto | loose | normal | strict | after-white-space
         if (valueID == CSSValueAuto || valueID == CSSValueLoose || valueID == CSSValueNormal || valueID == CSSValueStrict || valueID == CSSValueAfterWhiteSpace)
-            return true;
-        break;
-    case CSSPropertyWebkitLineSnap:
-        if (valueID == CSSValueNone || valueID == CSSValueBaseline || valueID == CSSValueContain)
             return true;
         break;
     case CSSPropertyWebkitMarginAfterCollapse:
@@ -910,9 +902,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyGridAutoFlow:
-    case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
-    case CSSPropertyWebkitLineSnap:
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
@@ -2523,17 +2513,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-    case CSSPropertyWebkitLineGrid:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else if (value->unit == CSSPrimitiveValue::CSS_IDENT) {
-            String lineGridValue = String(value->string);
-            if (!lineGridValue.isEmpty()) {
-                addProperty(propId, cssValuePool().createValue(lineGridValue, CSSPrimitiveValue::CSS_STRING), important);
-                return true;
-            }
-        }
-        break;
     case CSSPropertyWebkitLocale:
         if (id == CSSValueAuto || value->unit == CSSPrimitiveValue::CSS_STRING)
             validPrimitive = true;
@@ -2787,9 +2766,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyGridAutoFlow:
-    case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
-    case CSSPropertyWebkitLineSnap:
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:

@@ -1888,11 +1888,8 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineClamp:
-    case CSSPropertyWebkitLineGrid:
-    case CSSPropertyWebkitLineSnap:
     case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyInternalMarqueeIncrement:
     case CSSPropertyInternalMarqueeRepetition:

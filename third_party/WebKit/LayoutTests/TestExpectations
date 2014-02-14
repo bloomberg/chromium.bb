@@ -301,10 +301,6 @@ crbug.com/314947 [ Mavericks ] printing/return-from-printing-mode.html [ ImageOn
 
 # Mavericks bots seem to fail lots of tests on occasion.
 crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/line-grid/line-align-left-edges.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/line-grid/line-align-right-edges.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/line-grid/line-grid-contains-value.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/line-grid/line-grid-into-columns.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/float-overflow-right.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/float-overflow.html [ Pass ImageOnlyFailure ]
@@ -856,6 +852,12 @@ crbug.com/339238 inspector/layer-tree-model.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
+
+crbug.com/343808 fast/css/getComputedStyle/computed-style-without-renderer.html [ NeedsRebaseline ]
+crbug.com/343808 svg/css/getComputedStyle-basic.xhtml [ NeedsRebaseline ]
+crbug.com/343808 fast/css/getComputedStyle/computed-style.html [ NeedsRebaseline ]
+crbug.com/343808 virtual/stable/webexposed/css-properties-as-js-properties.html [ NeedsRebaseline ]
+crbug.com/343808 webexposed/css-properties-as-js-properties.html [ NeedsRebaseline ]
 
 # Disable failing tests for the new WebSocket implementation
 crbug.com/339373 http/tests/security/contentSecurityPolicy/connect-src-websocket-allowed.html [ Skip ]

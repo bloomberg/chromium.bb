@@ -306,11 +306,11 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitHighlight: return 251;
     case CSSPropertyWebkitHyphenateCharacter: return 252;
     case CSSPropertyWebkitLineBoxContain: return 257;
-    case CSSPropertyWebkitLineAlign: return 258;
+    // case CSSPropertyWebkitLineAlign: return 258;
     case CSSPropertyWebkitLineBreak: return 259;
     case CSSPropertyWebkitLineClamp: return 260;
-    case CSSPropertyWebkitLineGrid: return 261;
-    case CSSPropertyWebkitLineSnap: return 262;
+    // case CSSPropertyWebkitLineGrid: return 261;
+    // case CSSPropertyWebkitLineSnap: return 262;
     case CSSPropertyWebkitLogicalWidth: return 263;
     case CSSPropertyWebkitLogicalHeight: return 264;
     case CSSPropertyWebkitMarginAfterCollapse: return 265;

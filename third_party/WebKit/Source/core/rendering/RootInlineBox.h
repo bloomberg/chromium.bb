@@ -192,8 +192,6 @@ public:
     virtual const char* boxName() const OVERRIDE;
 #endif
 private:
-    LayoutUnit lineSnapAdjustment(LayoutUnit delta = 0) const;
-
     LayoutUnit beforeAnnotationsAdjustment() const;
 
     struct LineFragmentationData;

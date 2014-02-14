@@ -503,10 +503,6 @@ enum ColumnAxis { HorizontalColumnAxis, VerticalColumnAxis, AutoColumnAxis };
 
 enum ColumnProgression { NormalColumnProgression, ReverseColumnProgression };
 
-enum LineSnap { LineSnapNone, LineSnapBaseline, LineSnapContain };
-
-enum LineAlign { LineAlignNone, LineAlignEdges };
-
 enum WrapFlow { WrapFlowAuto, WrapFlowBoth, WrapFlowStart, WrapFlowEnd, WrapFlowMaximum, WrapFlowClear };
 
 enum WrapThrough { WrapThroughWrap, WrapThroughNone };

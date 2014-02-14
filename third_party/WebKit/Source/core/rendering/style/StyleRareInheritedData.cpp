@@ -37,7 +37,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     float firstFloat;
     StyleColor colors[5];
     void* ownPtrs[1];
-    AtomicString atomicStrings[5];
+    AtomicString atomicStrings[4];
     void* refPtrs[2];
     Length lengths[1];
     float secondFloat;
@@ -84,15 +84,12 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_textIndentLine(RenderStyle::initialTextIndentLine())
     , m_lineBoxContain(RenderStyle::initialLineBoxContain())
     , m_imageRendering(RenderStyle::initialImageRendering())
-    , m_lineSnap(RenderStyle::initialLineSnap())
-    , m_lineAlign(RenderStyle::initialLineAlign())
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
     , m_rubyPosition(RenderStyle::initialRubyPosition())
     , m_touchActionDelay(RenderStyle::initialTouchActionDelay())
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
-    , m_lineGrid(RenderStyle::initialLineGrid())
     , m_tabSize(RenderStyle::initialTabSize())
     , tapHighlightColor(RenderStyle::initialTapHighlightColor())
 {
@@ -135,8 +132,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_textIndentLine(o.m_textIndentLine)
     , m_lineBoxContain(o.m_lineBoxContain)
     , m_imageRendering(o.m_imageRendering)
-    , m_lineSnap(o.m_lineSnap)
-    , m_lineAlign(o.m_lineAlign)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
     , m_rubyPosition(o.m_rubyPosition)
     , m_touchActionDelay(o.m_touchActionDelay)
@@ -146,7 +141,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , hyphenationLimitLines(o.hyphenationLimitLines)
     , locale(o.locale)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
-    , m_lineGrid(o.m_lineGrid)
     , m_tabSize(o.m_tabSize)
     , tapHighlightColor(o.tapHighlightColor)
 {
@@ -210,12 +204,9 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && textEmphasisCustomMark == o.textEmphasisCustomMark
         && QuotesData::equals(quotes.get(), o.quotes.get())
         && m_tabSize == o.m_tabSize
-        && m_lineGrid == o.m_lineGrid
         && m_imageRendering == o.m_imageRendering
         && m_textUnderlinePosition == o.m_textUnderlinePosition
         && m_rubyPosition == o.m_rubyPosition
-        && m_lineSnap == o.m_lineSnap
-        && m_lineAlign == o.m_lineAlign
         && StyleImage::imagesEquivalent(listStyleImage.get(), o.listStyleImage.get());
 }
 

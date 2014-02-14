@@ -218,16 +218,6 @@ public:
     static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-    RootInlineBox* lineGridBox() const { return m_rareData ? m_rareData->m_lineGridBox : 0; }
-    void setLineGridBox(RootInlineBox* box)
-    {
-        RenderBlockFlow::RenderBlockFlowRareData& rareData = ensureRareData();
-        if (rareData.m_lineGridBox)
-            rareData.m_lineGridBox->destroy();
-        rareData.m_lineGridBox = box;
-    }
-    void layoutLineGridBox();
-
     void addOverflowFromInlineChildren();
 
     GapRects inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
@@ -375,7 +365,6 @@ public:
     public:
         RenderBlockFlowRareData(const RenderBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
-            , m_lineGridBox(0)
             , m_discardMarginBefore(false)
             , m_discardMarginAfter(false)
             , m_renderNamedFlowFragment(0)
@@ -400,8 +389,6 @@ public:
         }
 
         MarginValues m_margins;
-
-        RootInlineBox* m_lineGridBox;
 
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
