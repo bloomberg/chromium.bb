@@ -64,7 +64,8 @@ InputMethodEngine::InputMethodEngine()
       composition_text_(new CompositionText()),
       composition_cursor_(0),
       candidate_window_(new ui::CandidateWindow()),
-      window_visible_(false) {}
+      window_visible_(false),
+      sent_key_event_(NULL) {}
 
 InputMethodEngine::~InputMethodEngine() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(imm_id_);
@@ -84,6 +85,7 @@ void InputMethodEngine::Initialize(
   // TODO(komatsu): It is probably better to set observer out of Initialize.
   observer_ = observer;
   engine_id_ = engine_id;
+  extension_id_ = extension_id;
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -244,6 +246,8 @@ bool InputMethodEngine::SendKeyEvents(
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
     ui::KeyEvent ui_event(type, key_code, code, flags, false /* is_char */);
+    base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
+                                                        &ui_event);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&ui_event);
     if (details.dispatcher_destroyed)
       break;
@@ -558,6 +562,14 @@ void InputMethodEngine::ProcessKeyEvent(
 
   KeyboardEvent ext_event;
   GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
+
+  // If the given key event is equal to the key event sent by
+  // SendKeyEvents, this engine ID is propagated to the extension IME.
+  // Note, this check relies on that ui::KeyEvent is propagated as
+  // reference without copying.
+  if (&key_event == sent_key_event_)
+    ext_event.extension_id = extension_id_;
+
   observer_->OnKeyEvent(
       engine_id_,
       ext_event,

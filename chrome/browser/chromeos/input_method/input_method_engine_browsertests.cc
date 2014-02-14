@@ -30,6 +30,7 @@ const char kToUpperIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpToUpperIME";
 const char kAPIArgumentIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpAPIArgumentIME";
+const char kExtensionID[] = "iafoklpfplgfnoimmaejoeondnjnlcfp";
 
 // InputMethod extension should work on 1)normal extension, 2)normal extension
 // in incognito mode 3)component extension.
@@ -262,7 +263,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:false:false:false:false";
+        "onKeyEvent::keydown:a:KeyA:false:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(
@@ -278,7 +279,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:Yes, alt:No, Shift:No, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:true:false:false:false";
+        "onKeyEvent::keydown:a:KeyA:true:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -297,7 +298,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:Yes, Shift:No, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:false:true:false:false";
+        "onKeyEvent::keydown:a:KeyA:false:true:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -316,7 +317,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:A:KeyA:false:false:true:false";
+        "onKeyEvent::keydown:A:KeyA:false:false:true:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -335,7 +336,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:Yes");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:false:false:false:true";
+        "onKeyEvent::keydown:a:KeyA:false:false:false:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -354,7 +355,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:Yes, alt:Yes, Shift:No, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:true:true:false:false";
+        "onKeyEvent::keydown:a:KeyA:true:true:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -373,7 +374,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:Yes");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:A:KeyA:false:false:true:true";
+        "onKeyEvent::keydown:A:KeyA:false:false:true:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -427,9 +428,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "});";
 
     ExtensionTestMessageListener keyevent_listener_down(
-        "onKeyEvent:keydown:z:KeyZ:false:false:false:false", false);
+        std::string("onKeyEvent:") + kExtensionID +
+        ":keydown:z:KeyZ:false:false:false:false",
+        false);
     ExtensionTestMessageListener keyevent_listener_up(
-        "onKeyEvent:keyup:z:KeyZ:false:false:false:false", false);
+        std::string("onKeyEvent:") + kExtensionID +
+        ":keyup:z:KeyZ:false:false:false:false",
+        false);
 
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));

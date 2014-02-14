@@ -67,6 +67,7 @@ APIArgumentIME.prototype = new IMEBase();
  **/
 APIArgumentIME.prototype.onKeyEvent = function(context, engine, keyData) {
   chrome.test.sendMessage('onKeyEvent:' +
+                          (keyData.extensionId || '') + ':' +
                           keyData.type + ':' +
                           keyData.key + ':' +
                           keyData.code + ':' +

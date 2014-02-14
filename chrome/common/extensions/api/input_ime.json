@@ -15,6 +15,7 @@
         "properties": {
           "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
           "requestId": {"type": "string", "description": "The ID of the request."},
+          "extensionId": {"type": "string", "optional": true, "description": "The extension ID of the sender of this keyevent."},
           "key": {"type": "string", "description": "Value of the key being pressed"},
           "code": {"type": "string", "description": "Value of the physical key being pressed. The value is not affected by current keyboard layout or modifier state."},
           "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},

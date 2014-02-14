@@ -180,6 +180,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     input_ime::KeyboardEvent key_data_value;
     key_data_value.type = input_ime::KeyboardEvent::ParseType(event.type);
     key_data_value.request_id = request_id;
+    if (!event.extension_id.empty())
+      key_data_value.extension_id.reset(new std::string(event.extension_id));
     key_data_value.key = event.key;
     key_data_value.code = event.code;
     key_data_value.alt_key.reset(new bool(event.alt_key));

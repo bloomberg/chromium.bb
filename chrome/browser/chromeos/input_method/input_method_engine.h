@@ -122,6 +122,9 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // This IME ID in Chrome Extension.
   std::string engine_id_;
 
+  // This IME's Chrome Extension ID.
+  std::string extension_id_;
+
   // This IME ID in InputMethodManager.
   std::string imm_id_;
 
@@ -149,6 +152,10 @@ class InputMethodEngine : public InputMethodEngineInterface {
 
   // Used for input view window.
   GURL input_view_url_;
+
+  // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
+  // sent to ProcessKeyEvent is sent by SendKeyEvents.
+  const ui::KeyEvent* sent_key_event_;
 };
 
 }  // namespace chromeos

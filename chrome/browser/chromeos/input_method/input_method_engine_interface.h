@@ -30,6 +30,7 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
     std::string type;
     std::string key;
     std::string code;
+    std::string extension_id;
     bool alt_key;
     bool ctrl_key;
     bool shift_key;
