@@ -7,7 +7,9 @@
 
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
+#include "base/strings/string16.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -30,8 +32,8 @@ class CHROMEOS_EXPORT CompositionText {
   virtual ~CompositionText();
 
   // Accessors
-  const std::string& text() const { return text_; }
-  void set_text(const std::string& text) { text_ = text; }
+  const base::string16& text() const { return text_; }
+  void set_text(const base::string16& text) { text_ = text; }
 
   const std::vector<UnderlineAttribute>& underline_attributes() const {
     return underline_attributes_;
@@ -54,7 +56,7 @@ class CHROMEOS_EXPORT CompositionText {
   void CopyFrom(const CompositionText& obj);
 
  private:
-  std::string text_;
+  base::string16 text_;
   std::vector<UnderlineAttribute> underline_attributes_;
   uint32 selection_start_;
   uint32 selection_end_;

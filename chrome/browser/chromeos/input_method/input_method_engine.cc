@@ -142,7 +142,7 @@ bool InputMethodEngine::SetComposition(
 
   composition_cursor_ = cursor;
   composition_text_.reset(new CompositionText());
-  composition_text_->set_text(text);
+  composition_text_->set_text(base::UTF8ToUTF16(text));
 
   composition_text_->set_selection_start(selection_start);
   composition_text_->set_selection_end(selection_end);

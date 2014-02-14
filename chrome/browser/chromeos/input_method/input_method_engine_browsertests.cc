@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
     const CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
-    EXPECT_EQ("COMPOSITION_TEXT", composition_text.text());
+    EXPECT_EQ(base::UTF8ToUTF16("COMPOSITION_TEXT"), composition_text.text());
     const std::vector<CompositionText::UnderlineAttribute>& underlines =
         composition_text.underline_attributes();
 

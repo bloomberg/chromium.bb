@@ -496,8 +496,7 @@ void InputMethodChromeOS::UpdateCompositionText(
     chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
         chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
     if (candidate_window)
-      candidate_window->UpdatePreeditText(
-          base::UTF8ToUTF16(text.text()), cursor_pos, visible);
+      candidate_window->UpdatePreeditText(text.text(), cursor_pos, visible);
   }
 
   // |visible| argument is very confusing. For example, what's the correct
@@ -560,8 +559,7 @@ bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
 
   // CharacterComposer consumed the key event.  Update the composition text.
   chromeos::CompositionText preedit;
-  preedit.set_text(
-      base::UTF16ToUTF8(character_composer_.preedit_string()));
+  preedit.set_text(character_composer_.preedit_string());
   UpdateCompositionText(preedit, preedit.text().size(),
                         !preedit.text().empty());
   std::string commit_text =
@@ -577,7 +575,7 @@ void InputMethodChromeOS::ExtractCompositionText(
     uint32 cursor_position,
     CompositionText* out_composition) const {
   out_composition->Clear();
-  out_composition->text = base::UTF8ToUTF16(text.text());
+  out_composition->text = text.text();
 
   if (out_composition->text.empty())
     return;

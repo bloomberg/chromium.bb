@@ -35,8 +35,8 @@ namespace {
 typedef chromeos::IMEEngineHandlerInterface::KeyEventDoneCallback
     KeyEventCallback;
 
-uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
-  base::string16 utf16_string = UTF8ToUTF16(utf8_string);
+uint32 GetOffsetInUTF16(
+    const base::string16& utf16_string, uint32 utf8_offset) {
   DCHECK_LT(utf8_offset, utf16_string.size());
   base::i18n::UTF16CharIterator char_iterator(&utf16_string);
   for (size_t i = 0; i < utf8_offset; ++i)
@@ -575,17 +575,16 @@ TEST_F(InputMethodChromeOSTest, OnCaretBoundsChanged) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
-  const char kSampleText[] = "Sample Text";
+  const base::string16 kSampleText = base::UTF8ToUTF16("Sample Text");
   const uint32 kCursorPos = 2UL;
 
-  const base::string16 utf16_string = UTF8ToUTF16(kSampleText);
   chromeos::CompositionText chromeos_composition_text;
   chromeos_composition_text.set_text(kSampleText);
 
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
@@ -593,13 +592,13 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
   // whole text underline.
   ASSERT_EQ(1UL, composition_text.underlines.size());
   EXPECT_EQ(0UL, composition_text.underlines[0].start_offset);
-  EXPECT_EQ(utf16_string.size(), composition_text.underlines[0].end_offset);
+  EXPECT_EQ(kSampleText.size(), composition_text.underlines[0].end_offset);
   EXPECT_FALSE(composition_text.underlines[0].thick);
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -615,7 +614,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
@@ -630,8 +629,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -647,7 +646,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
@@ -662,8 +661,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -679,7 +678,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
@@ -693,8 +692,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -706,7 +705,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
@@ -722,8 +721,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
 
 TEST_F(InputMethodChromeOSTest,
        ExtractCompositionTextTest_SelectionStartWithCursor) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 1UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -735,7 +734,7 @@ TEST_F(InputMethodChromeOSTest,
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
   EXPECT_EQ(GetOffsetInUTF16(kSampleText,
@@ -756,8 +755,8 @@ TEST_F(InputMethodChromeOSTest,
 
 TEST_F(InputMethodChromeOSTest,
        ExtractCompositionTextTest_SelectionEndWithCursor) {
-  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
-                             "\xE3\x81\x88\xE3\x81\x8A";
+  const base::string16 kSampleText = base::UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   const uint32 kCursorPos = 4UL;
 
   // Set up chromeos composition text with one underline attribute.
@@ -769,7 +768,7 @@ TEST_F(InputMethodChromeOSTest,
   CompositionText composition_text;
   ime_->ExtractCompositionText(
       chromeos_composition_text, kCursorPos, &composition_text);
-  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kSampleText, composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
   EXPECT_EQ(GetOffsetInUTF16(kSampleText,
@@ -850,7 +849,7 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_PartialText) {
   ime_->OnTextInputTypeChanged(this);
 
   // Set the TextInputClient behaviors.
-  surrounding_text_ = UTF8ToUTF16("abcdefghij");
+  surrounding_text_ = base::UTF8ToUTF16("abcdefghij");
   text_range_ = gfx::Range(5, 10);
   selection_range_ = gfx::Range(7, 9);
 
@@ -878,7 +877,7 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_BecomeEmptyText) {
   // Set the TextInputClient behaviors.
   // If the surrounding text becomes empty, text_range become (0, 0) and
   // selection range become invalid.
-  surrounding_text_ = UTF8ToUTF16("");
+  surrounding_text_ = base::UTF8ToUTF16("");
   text_range_ = gfx::Range(0, 0);
   selection_range_ = gfx::Range::InvalidRange();
 

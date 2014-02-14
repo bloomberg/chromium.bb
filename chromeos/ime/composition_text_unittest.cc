@@ -5,12 +5,13 @@
 
 #include "chromeos/ime/composition_text.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
 TEST(CompositionTextTest, CopyTest) {
-  const char kSampleText[] = "Sample Text";
+  const base::string16 kSampleText = base::UTF8ToUTF16("Sample Text");
   const CompositionText::UnderlineAttribute kSampleUnderlineAttribute1 = {
     CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE, 10, 20};
 
