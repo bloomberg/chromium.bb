@@ -259,9 +259,15 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
       // OpenVPN generally requires a passphrase and we don't know whether or
       // not one is required, so always return false here.
       return false;
-    case CONFIG_TYPE_IPSEC:
-      // IPSec may require a passphrase, so return false here also.
-      return false;
+    case CONFIG_TYPE_IPSEC: {
+      if (!provider_properties)
+        return false;
+
+      std::string client_cert_id;
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
+      return !client_cert_id.empty();
+    }
     case CONFIG_TYPE_EAP: {
       std::string cert_id = GetStringFromDictionary(
           service_properties, shill::kEapCertIdProperty);

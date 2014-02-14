@@ -70,11 +70,16 @@ bool VPNRequiresCredentials(const std::string& service_path,
     NET_LOG_EVENT("OpenVPN Is Configured", service_path);
   } else {
     bool passphrase_required = false;
-    std::string passphrase;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG_EVENT("VPN: PSK Required", service_path);
+      return true;
+    }
+    provider_properties.GetBooleanWithoutPathExpansion(
+        shill::kPassphraseRequiredProperty, &passphrase_required);
+    if (passphrase_required) {
+      NET_LOG_EVENT("VPN: Passphrase Required", service_path);
       return true;
     }
     NET_LOG_EVENT("VPN Is Configured", service_path);
