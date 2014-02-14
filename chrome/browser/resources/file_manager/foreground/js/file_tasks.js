@@ -379,8 +379,10 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
         break;
       case 'message_sent':
         util.isTeleported(window).then(function(teleported) {
-          if (teleported)
-            this.fileManager_.ui.showOpenInOtherDesktopAlert(entries);
+          if (teleported) {
+            util.showOpenInOtherDesktopAlert(
+                this.fileManager_.ui.alertDialog, entries);
+          }
         }.bind(this));
         callback(success, entries);
         break;
@@ -434,8 +436,10 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
         if (result !== 'message_sent')
           return;
         util.isTeleported(window).then(function(teleported) {
-          if (teleported)
-            this.fileManager_.ui.showOpenInOtherDesktopAlert(entries);
+          if (teleported) {
+            util.showOpenInOtherDesktopAlert(
+                this.fileManager_.ui.alertDialog, entries);
+          }
         }.bind(this));
       }.bind(this));
     }
@@ -725,7 +729,7 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
       onClose: onClose,
       onMaximize: onMaximize,
       onAppRegionChanged: onAppRegionChanged,
-      displayStringFunction: strf
+      loadTimeData: fm.backgroundPage.background.stringData
     };
     galleryFrame.contentWindow.Gallery.open(
         context, fm.volumeManager, allEntries, entries);

@@ -47,7 +47,7 @@ function Gallery(context, volumeManager) {
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
-  this.displayStringFunction_ = context.displayStringFunction;
+  loadTimeData.data = context.loadTimeData;
 
   this.initDom_();
   this.initListeners_();
@@ -165,6 +165,10 @@ Gallery.prototype.onUnload = function(exiting) {
  * @private
  */
 Gallery.prototype.initDom_ = function() {
+  // Initialize the dialog label.
+  cr.ui.dialogs.BaseDialog.OK_LABEL = str('GALLERY_OK_LABEL');
+  cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('GALLERY_CANCEL_LABEL');
+
   var content = util.createChild(this.container_, 'content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
@@ -208,8 +212,7 @@ Gallery.prototype.initDom_ = function() {
 
   util.createChild(this.toolbar_, 'button-spacer');
 
-  this.prompt_ = new ImageEditor.Prompt(
-      this.container_, this.displayStringFunction_);
+  this.prompt_ = new ImageEditor.Prompt(this.container_, str);
 
   this.modeButton_ = util.createChild(this.toolbar_, 'button mode', 'button');
   this.modeButton_.addEventListener('click',
@@ -230,7 +233,7 @@ Gallery.prototype.initDom_ = function() {
                                   this.selectionModel_,
                                   this.context_,
                                   this.toggleMode_.bind(this),
-                                  this.displayStringFunction_);
+                                  str);
 
   this.slideMode_.addEventListener('image-displayed', function() {
     cr.dispatchSimpleEvent(this, 'image-displayed');
@@ -267,7 +270,7 @@ Gallery.prototype.initDom_ = function() {
  */
 Gallery.prototype.createToolbarButton_ = function(className, title) {
   var button = util.createChild(this.toolbar_, className, 'button');
-  button.title = this.displayStringFunction_(title);
+  button.title = str(title);
   return button;
 };
 
@@ -509,14 +512,10 @@ Gallery.prototype.delete_ = function() {
     this.document_.body.addEventListener('keydown', this.keyDownBound_);
   }.bind(this);
 
-  cr.ui.dialogs.BaseDialog.OK_LABEL = this.displayStringFunction_(
-      'GALLERY_OK_LABEL');
-  cr.ui.dialogs.BaseDialog.CANCEL_LABEL =
-      this.displayStringFunction_('GALLERY_CANCEL_LABEL');
+
   var confirm = new cr.ui.dialogs.ConfirmDialog(this.container_);
-  confirm.show(
-      this.displayStringFunction_(plural ? 'GALLERY_CONFIRM_DELETE_SOME' :
-          'GALLERY_CONFIRM_DELETE_ONE', param),
+  confirm.show(str(plural ?
+      'GALLERY_CONFIRM_DELETE_SOME' : 'GALLERY_CONFIRM_DELETE_ONE', param),
       function() {
         restoreListener();
         this.selectionModel_.unselectAll();
@@ -656,9 +655,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
       // be recorded in the app state and the relaunch will just open the
       // gallery in the curDirEntry directory.
       window.top.document.title = this.context_.curDirEntry.name;
-      displayName =
-          this.displayStringFunction_('GALLERY_ITEMS_SELECTED',
-                                      numSelectedItems);
+      displayName = str('GALLERY_ITEMS_SELECTED', numSelectedItems);
     }
   }
 
@@ -825,7 +822,18 @@ Gallery.prototype.updateShareMenu_ = function() {
         this.toggleShare_();  // Hide the menu.
         // TODO(hirono): Use entries instead of URLs.
         this.executeWhenReady(
-            api.executeTask.bind(api, taskId, util.entriesToURLs(entries)));
+            api.executeTask.bind(
+                api,
+                taskId,
+                util.entriesToURLs(entries),
+                function(result) {
+                  var alertDialog =
+                      new cr.ui.dialogs.AlertDialog(this.container_);
+                  util.isTeleported(window).then(function(teleported) {
+                    if (teleported)
+                      util.showOpenInOtherDesktopAlert(alertDialog, entries);
+                  }.bind(this));
+                }.bind(this)));
       }.bind(this, task.taskId));
     }
 
@@ -867,7 +875,6 @@ Gallery.prototype.updateButtons_ = function() {
     var oppositeMode =
         this.currentMode_ === this.slideMode_ ? this.mosaicMode_ :
                                                 this.slideMode_;
-    this.modeButton_.title =
-        this.displayStringFunction_(oppositeMode.getTitle());
+    this.modeButton_.title = str(oppositeMode.getTitle());
   }
 };

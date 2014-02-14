@@ -216,38 +216,3 @@ FileManagerUI.prototype.updateProfileBadge = function() {
       profileBadge.removeAttribute('src');
   }.bind(this));
 };
-
-/**
- * Show the alert if the current window is in the other profile's desktop and
- * the task is opened in the original desktop.
- *
- * @param {Array.<Entry>} entries List of opened entries.
- */
-FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
-  if (!entries.length)
-    return;
-  chrome.fileBrowserPrivate.getProfiles(function(profiles,
-                                                 currentId,
-                                                 displayedId) {
-    // Find strings.
-    var displayName;
-    for (var i = 0; i < profiles.length; i++) {
-      if (profiles[i].profileId === currentId) {
-        displayName = profiles[i].displayName;
-        break;
-      }
-    }
-    if (!displayName)
-      throw new Error('Display name is not found.');
-    var title = entries.size > 1 ?
-        entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
-    var message = strf(entries.size > 1 ?
-                       'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
-                       'OPEN_IN_OTHER_DESKTOP_MESSAGE',
-                       displayName,
-                       currentId);
-
-    // Show the dialog.
-    this.alertDialog.showWithTitle(title, message);
-  }.bind(this));
-};
