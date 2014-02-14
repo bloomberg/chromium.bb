@@ -123,6 +123,7 @@ def nss_make_and_copy(parsed_arguments, environment, install_prefix):
   make_args.append('ZDEFS_FLAG="-Wl,-z,nodefs %s"' % environment['LDFLAGS'])
   make_args.append('NSPR_INCLUDE_DIR=/usr/include/nspr')
   make_args.append('NSPR_LIB_DIR=%s/lib' % install_prefix)
+  make_args.append('NSS_ENABLE_ECC=1')
   with ScopedChangeDirectory('nss') as cd_nss:
     # -j is not supported
     shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
