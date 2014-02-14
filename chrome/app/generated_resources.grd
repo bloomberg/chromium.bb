@@ -14456,12 +14456,12 @@ Do you accept?
         Not now
       </message>
       <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
-               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
-        Relaunching in Windows 8 mode will close your Chrome apps.
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+        Relaunching in Windows 8 mode will close and relaunch your Chrome apps.
       </message>
       <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
-               desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
-        Relaunching in Desktop mode will close your Chrome apps.
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+        Relaunching in Desktop mode will close and relaunch your Chrome apps.
       </message>
     </if>
 
