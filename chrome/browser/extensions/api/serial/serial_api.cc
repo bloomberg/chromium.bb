@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/serial/serial_event_dispatcher.h"
-#include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/serial/serial_device_enumerator.h"
 #include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
@@ -84,18 +84,27 @@ bool SerialGetDevicesFunction::Prepare() {
 void SerialGetDevicesFunction::Work() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::vector<linked_ptr<serial::DeviceInfo> > devices;
-  SerialPortEnumerator::StringSet port_names =
-      SerialPortEnumerator::GenerateValidSerialPortNames();
-  for (SerialPortEnumerator::StringSet::const_iterator iter =
-          port_names.begin();
-       iter != port_names.end();
+  device::SerialDeviceInfoList devices;
+  scoped_ptr<device::SerialDeviceEnumerator> enumerator =
+      device::SerialDeviceEnumerator::Create();
+  enumerator->GetDevices(&devices);
+
+  std::vector<linked_ptr<serial::DeviceInfo> > out_devices;
+  for (device::SerialDeviceInfoList::const_iterator iter = devices.begin();
+       iter != devices.end();
        ++iter) {
+    linked_ptr<device::SerialDeviceInfo> device = *iter;
     linked_ptr<serial::DeviceInfo> info(new serial::DeviceInfo);
-    info->path = *iter;
-    devices.push_back(info);
+    info->path = device->path;
+    if (device->vendor_id)
+      info->vendor_id.reset(new int(static_cast<int>(*device->vendor_id)));
+    if (device->product_id)
+      info->product_id.reset(new int(static_cast<int>(*device->product_id)));
+    info->display_name.reset(device->display_name.release());
+    out_devices.push_back(info);
   }
-  results_ = serial::GetDevices::Results::Create(devices);
+
+  results_ = serial::GetDevices::Results::Create(out_devices);
 }
 
 SerialConnectFunction::SerialConnectFunction() {}

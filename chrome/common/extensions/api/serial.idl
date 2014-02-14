@@ -11,6 +11,17 @@ namespace serial {
     // argument to <code>chrome.serial.connect</code> in order to connect to
     // this device.
     DOMString path;
+
+    // A PCI or USB vendor ID if one can be determined for the underlying
+    // device.
+    long? vendorId;
+
+    // A USB product ID if one can be determined for the underlying device.
+    long? productId;
+
+    // A human-readable display name for the underlying device if one can be
+    // queried from the host driver.
+    DOMString? displayName;
   };
 
   callback GetDevicesCallback = void (DeviceInfo[] ports);

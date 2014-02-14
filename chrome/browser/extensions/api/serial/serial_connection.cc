@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "chrome/common/extensions/api/serial.h"
 
 namespace extensions {
@@ -166,25 +165,18 @@ void SerialConnection::StartOpen() {
   DCHECK(!open_complete_.is_null());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK_EQ(file_, base::kInvalidPlatformFileValue);
-  const SerialPortEnumerator::StringSet name_set(
-    SerialPortEnumerator::GenerateValidSerialPortNames());
   base::PlatformFile file = base::kInvalidPlatformFileValue;
-  if (SerialPortEnumerator::DoesPortExist(name_set, port_)) {
-    // It's the responsibility of the API wrapper around SerialConnection to
-    // validate the supplied path against the set of valid port names, and
-    // it is a reasonable assumption that serial port names are ASCII.
-    DCHECK(IsStringASCII(port_));
-    base::FilePath path(
-        base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
-    int flags = base::PLATFORM_FILE_OPEN |
-                base::PLATFORM_FILE_READ |
-                base::PLATFORM_FILE_EXCLUSIVE_READ |
-                base::PLATFORM_FILE_WRITE |
-                base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-                base::PLATFORM_FILE_ASYNC |
-                base::PLATFORM_FILE_TERMINAL_DEVICE;
-    file = base::CreatePlatformFile(path, flags, NULL, NULL);
-  }
+  // It's the responsibility of the API wrapper around SerialConnection to
+  // validate the supplied path against the set of valid port names, and
+  // it is a reasonable assumption that serial port names are ASCII.
+  DCHECK(IsStringASCII(port_));
+  base::FilePath path(
+      base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
+              base::PLATFORM_FILE_EXCLUSIVE_READ | base::PLATFORM_FILE_WRITE |
+              base::PLATFORM_FILE_EXCLUSIVE_WRITE | base::PLATFORM_FILE_ASYNC |
+              base::PLATFORM_FILE_TERMINAL_DEVICE;
+  file = base::CreatePlatformFile(path, flags, NULL, NULL);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SerialConnection::FinishOpen, base::Unretained(this), file));
