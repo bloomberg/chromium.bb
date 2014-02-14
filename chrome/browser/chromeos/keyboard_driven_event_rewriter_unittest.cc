@@ -42,8 +42,8 @@ class KeyboardDrivenEventRewriterTest : public testing::Test {
     XEvent* xevent = xev;
     xevent->xkey.keycode = x_keycode;
     xevent->xkey.state = x_state;
+    bool changed = rewriter_.RewriteForTesting(xevent);
     ui::KeyEvent keyevent(xev, false /* is_char */);
-    bool changed = rewriter_.RewriteForTesting(&keyevent);
     return base::StringPrintf("ui_flags=%d x_state=%u changed=%d",
                               keyevent.flags(),
                               xevent->xkey.state,
