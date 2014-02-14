@@ -42,7 +42,7 @@ function generateExponentialOscillatorSweep(oscillatorType) {
     }
 
     // Scale by 1/2 to better visualize the waveform and to avoid clipping past full scale.
-    var gainNode = context.createGainNode();
+    var gainNode = context.createGain();
     gainNode.gain.value = 0.5;
     osc.connect(gainNode);
     gainNode.connect(context.destination);

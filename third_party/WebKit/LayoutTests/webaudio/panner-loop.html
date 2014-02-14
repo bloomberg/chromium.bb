@@ -33,13 +33,13 @@
           // Create nodes in graph. This is based on the test given in crbug.com/331446.
           var source = context.createBufferSource();
           source.buffer = createImpulseBuffer(context, sampleRate * renderLengthSeconds);
-          var activateNode = context.createGainNode();
-          var dry = context.createGainNode();
-          var wet = context.createGainNode();
+          var activateNode = context.createGain();
+          var dry = context.createGain();
+          var wet = context.createGain();
           var filter = context.createBiquadFilter();
-          var delay = context.createDelayNode();
-          var feedbackNode = context.createGainNode();
-          var output = context.createGainNode();
+          var delay = context.createDelay();
+          var feedbackNode = context.createGain();
+          var output = context.createGain();
 
           delay.delayTime.value = 0.1;
           wet.gain.value = 0.5;

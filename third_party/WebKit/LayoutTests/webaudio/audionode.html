@@ -28,10 +28,6 @@ function runTest() {
     context = new webkitAudioContext();
     window.audioNode = context.createBufferSource();
 
-    shouldThrow("audioNode.noteOn()");
-    shouldThrow("audioNode.noteGrainOn()");
-    shouldThrow("audioNode.noteOff()");
-
     // Check input and output numbers of AudioSourceNode.
     if (audioNode.numberOfInputs === 0)
         testPassed("Source AudioNode has no inputs.");

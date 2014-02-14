@@ -450,7 +450,7 @@ function createTestAndRun(context, filterType, filterParameters) {
         signal[k].connect(filter[k]);
         filter[k].connect(context.destination);
 
-        signal[k].noteOn(timeStep * k);
+        signal[k].start(timeStep * k);
     }
 
     context.oncomplete = checkFilterResponse(filterType, filterParameters);

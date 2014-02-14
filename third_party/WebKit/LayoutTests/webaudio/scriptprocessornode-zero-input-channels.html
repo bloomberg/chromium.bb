@@ -10,7 +10,7 @@
 <div id="console"></div>
 
 <script>
-description("Tests that JavaScriptAudioNode accepts 0 input channels.");
+description("Tests that ScriptProcessorNode accepts 0 input channels.");
 
 var sampleRate = 44100.0;
 var renderLengthInFrames = 512;
@@ -18,7 +18,7 @@ var bufferSize = 512;
 
 function checkResult(e)
 {
-    testPassed("JavaScriptAudioNode accepts 0 input channels.");
+    testPassed("ScriptProcessorNode accepts 0 input channels.");
 
     finishJSTest();
 }
@@ -37,10 +37,10 @@ function runTest()
     var node;
 
     try {  
-        node = context.createJavaScriptNode(bufferSize, 0, 1);
-        testPassed("Successfully created JavaScriptAudioNode.");
+        node = context.createScriptProcessor(bufferSize, 0, 1);
+        testPassed("Successfully created ScriptProcessorNode.");
     } catch (e) {
-        testFailed("Failed to create JavaScriptAudioNode.");
+        testFailed("Failed to create ScriptProcessorNode.");
     }
 
     var source = context.createBufferSource();
@@ -53,7 +53,7 @@ function runTest()
     node.onaudioprocess = function(e) { };
     source.connect(node);
     node.connect(context.destination);
-    source.noteOn(0);
+    source.start(0);
 
     context.oncomplete = checkResult;
     context.startRendering();

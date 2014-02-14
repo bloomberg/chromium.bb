@@ -22,7 +22,7 @@ function processAudioData(event) {
         testFailed("length of buffer doesn't match!");
 
     buffer = event.inputBuffer;
-    
+
     var success = checkStereoOnlyData(buffer, inputChannels, buffer.length);
 
     if (success) {
@@ -72,13 +72,13 @@ function runJSNodeTest()
     var bufferSource = context.createBufferSource();
     bufferSource.buffer = sourceBuffer;
 
-    var jsnode = context.createJavaScriptNode(bufferSize, inputChannels, outputChannels);
+    var scriptNode = context.createScriptProcessor(bufferSize, inputChannels, outputChannels);
 
-    bufferSource.connect(jsnode);
-    jsnode.connect(context.destination);
-    jsnode.onaudioprocess = processAudioData;
+    bufferSource.connect(scriptNode);
+    scriptNode.connect(context.destination);
+    scriptNode.onaudioprocess = processAudioData;
 
-    bufferSource.noteOn(0);
+    bufferSource.start(0);
     context.oncomplete = finishJSTest;
     context.startRendering();
 }

@@ -95,7 +95,7 @@ function createGraph(context, distanceModel, nodeCount) {
         panner[k].connect(context.destination);
 
         time[k] = k * timeStep;
-        bufferSource[k].noteOn(time[k]);
+        bufferSource[k].start(time[k]);
     }
 }
 
