@@ -36,6 +36,7 @@ const char kPrivetContentTypeAny[] = "*/*";
 const char kPrivetContentTypeCJT[] = "application/json";
 
 const char kPrivetStorageListPath[] = "/privet/storage/list";
+const char kPrivetStorageContentPath[] = "/privet/storage/content";
 const char kPrivetStorageParamPathFormat[] = "path=%s";
 
 const char kPrivetCDDKeySupportedContentTypes[] =
@@ -378,6 +379,77 @@ void PrivetJSONOperationImpl::OnNeedPrivetToken(
     PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   privet_client_->RefreshPrivetToken(callback);
+}
+
+PrivetDataReadOperationImpl::PrivetDataReadOperationImpl(
+    PrivetHTTPClientImpl* privet_client,
+    const std::string& path,
+    const std::string& query_params,
+    const PrivetDataReadOperation::ResultCallback& callback)
+    : privet_client_(privet_client), path_(path), query_params_(query_params),
+      callback_(callback), has_range_(false), save_to_file_(false) {
+}
+
+PrivetDataReadOperationImpl::~PrivetDataReadOperationImpl() {
+}
+
+
+void PrivetDataReadOperationImpl::Start() {
+  url_fetcher_ = privet_client_->CreateURLFetcher(
+      CreatePrivetParamURL(path_, query_params_), net::URLFetcher::GET, this);
+  url_fetcher_->DoNotRetryOnTransientError();
+
+  if (has_range_) {
+    url_fetcher_->SetByteRange(range_start_, range_end_);
+  }
+
+  if (save_to_file_) {
+    url_fetcher_->SaveResponseToFile();
+  }
+
+  url_fetcher_->Start();
+}
+
+void PrivetDataReadOperationImpl::SetDataRange(int range_start, int range_end) {
+  has_range_ = true;
+  range_start_ = range_start;
+  range_end_ = range_end;
+}
+
+void PrivetDataReadOperationImpl::SaveDataToFile() {
+  save_to_file_ = false;
+}
+
+PrivetHTTPClient* PrivetDataReadOperationImpl::GetHTTPClient() {
+  return privet_client_;
+}
+
+void PrivetDataReadOperationImpl::OnError(
+    PrivetURLFetcher* fetcher,
+    PrivetURLFetcher::ErrorType error) {
+  callback_.Run(RESPONSE_TYPE_ERROR, std::string(), base::FilePath());
+}
+
+void PrivetDataReadOperationImpl::OnParsedJson(
+    PrivetURLFetcher* fetcher,
+    const base::DictionaryValue* value,
+    bool has_error) {
+  NOTREACHED();
+}
+
+void PrivetDataReadOperationImpl::OnNeedPrivetToken(
+    PrivetURLFetcher* fetcher,
+    const PrivetURLFetcher::TokenCallback& callback) {
+  privet_client_->RefreshPrivetToken(callback);
+}
+
+bool PrivetDataReadOperationImpl::OnRawData(PrivetURLFetcher* fetcher,
+                                            bool is_file,
+                                            const std::string& data_str,
+                                            const base::FilePath& file_path) {
+  ResponseType type = (is_file) ? RESPONSE_TYPE_FILE : RESPONSE_TYPE_STRING;
+  callback_.Run(type, data_str, file_path);
+  return true;
 }
 
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
@@ -759,6 +831,18 @@ PrivetHTTPClientImpl::CreateStorageListOperation(
   return scoped_ptr<PrivetJSONOperation>(
       new PrivetJSONOperationImpl(this, kPrivetStorageListPath, url_param,
                                   callback));
+}
+
+
+scoped_ptr<PrivetDataReadOperation>
+PrivetHTTPClientImpl::CreateStorageReadOperation(
+    const std::string& path,
+    const PrivetDataReadOperation::ResultCallback& callback) {
+  std::string url_param = base::StringPrintf(kPrivetStorageParamPathFormat,
+                                             path.c_str());
+  return scoped_ptr<PrivetDataReadOperation>(
+      new PrivetDataReadOperationImpl(this, kPrivetStorageContentPath,
+                                      url_param, callback));
 }
 
 const std::string& PrivetHTTPClientImpl::GetName() {

@@ -146,6 +146,51 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
 };
 
+class PrivetDataReadOperationImpl : public PrivetDataReadOperation,
+                                    public PrivetURLFetcher::Delegate {
+ public:
+  PrivetDataReadOperationImpl(
+      PrivetHTTPClientImpl* privet_client,
+      const std::string& path,
+      const std::string& query_params,
+      const PrivetDataReadOperation::ResultCallback& callback);
+  virtual ~PrivetDataReadOperationImpl();
+
+  virtual void Start() OVERRIDE;
+
+  virtual void SetDataRange(int range_start, int range_end) OVERRIDE;
+
+  virtual void SaveDataToFile() OVERRIDE;
+
+  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
+
+  virtual void OnError(PrivetURLFetcher* fetcher,
+                       PrivetURLFetcher::ErrorType error) OVERRIDE;
+  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
+                            const base::DictionaryValue* value,
+                            bool has_error) OVERRIDE;
+  virtual void OnNeedPrivetToken(
+      PrivetURLFetcher* fetcher,
+      const PrivetURLFetcher::TokenCallback& callback) OVERRIDE;
+  virtual bool OnRawData(PrivetURLFetcher* fetcher,
+                         bool is_file,
+                         const std::string& data_str,
+                         const base::FilePath& file_path) OVERRIDE;
+
+ private:
+  PrivetHTTPClientImpl* privet_client_;
+  std::string path_;
+  std::string query_params_;
+  int range_start_;
+  int range_end_;
+  PrivetDataReadOperation::ResultCallback callback_;
+
+  bool has_range_;
+  bool save_to_file_;
+
+  scoped_ptr<PrivetURLFetcher> url_fetcher_;
+};
+
 class PrivetLocalPrintOperationImpl
     : public PrivetLocalPrintOperation,
       public PrivetURLFetcher::Delegate {
@@ -261,6 +306,10 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
       const std::string& path,
       const PrivetJSONOperation::ResultCallback& callback) OVERRIDE;
+
+  virtual scoped_ptr<PrivetDataReadOperation> CreateStorageReadOperation(
+      const std::string& path,
+      const PrivetDataReadOperation::ResultCallback& callback) OVERRIDE;
 
   virtual const std::string& GetName() OVERRIDE;
 
