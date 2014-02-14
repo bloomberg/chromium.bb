@@ -64,7 +64,7 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     return 0;
 }
 
-void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
     Vector<RefPtr<Element> > namedItems;
     this->namedItems(name, namedItems);

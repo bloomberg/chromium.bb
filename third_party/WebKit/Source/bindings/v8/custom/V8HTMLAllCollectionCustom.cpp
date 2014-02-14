@@ -81,21 +81,6 @@ void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValue(info, getItem(imp, info[0], info));
 }
 
-void V8HTMLAllCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
-
-    HTMLAllCollection* imp = V8HTMLAllCollection::toNative(info.Holder());
-    v8::Handle<v8::Value> result = getNamedItems(imp, name, info);
-
-    if (result.IsEmpty()) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-
-    v8SetReturnValue(info, result);
-}
-
 void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)

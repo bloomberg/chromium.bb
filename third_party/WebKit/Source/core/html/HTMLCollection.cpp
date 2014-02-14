@@ -389,11 +389,17 @@ Element* HTMLCollection::virtualItemAfter(Element*) const
 
 static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
 {
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#dom-htmlallcollection-nameditem:
     // The document.all collection returns only certain types of elements by name,
     // although it returns any type of element by id.
-    return element.hasLocalName(appletTag)
+    return element.hasLocalName(aTag)
+        || element.hasLocalName(appletTag)
+        || element.hasLocalName(areaTag)
         || element.hasLocalName(embedTag)
         || element.hasLocalName(formTag)
+        || element.hasLocalName(frameTag)
+        || element.hasLocalName(framesetTag)
+        || element.hasLocalName(iframeTag)
         || element.hasLocalName(imgTag)
         || element.hasLocalName(inputTag)
         || element.hasLocalName(objectTag)
@@ -518,7 +524,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names)
         if (!element->isHTMLElement())
             continue;
         const AtomicString& nameAttribute = element->getNameAttribute();
-        if (!nameAttribute.isEmpty()) {
+        if (!nameAttribute.isEmpty() && (type() != DocAll || nameShouldBeVisibleInDocumentAll(toHTMLElement(*element)))) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
             if (addResult.isNewEntry)
                 names.append(nameAttribute);
