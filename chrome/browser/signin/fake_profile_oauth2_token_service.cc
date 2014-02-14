@@ -44,6 +44,12 @@ bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
   return !GetRefreshToken(account_id).empty();
 }
 
+void FakeProfileOAuth2TokenService::LoadCredentials(
+    const std::string& primary_account_id) {
+  // Empty implementation as FakeProfileOAuth2TokenService does not have any
+  // credentials to load.
+}
+
 std::vector<std::string> FakeProfileOAuth2TokenService::GetAccounts() {
   std::vector<std::string> account_ids;
   for (std::map<std::string, std::string>::const_iterator iter =
@@ -150,6 +156,11 @@ std::string FakeProfileOAuth2TokenService::GetRefreshToken(
     const std::string& account_id) {
   return refresh_tokens_.count(account_id) > 0 ? refresh_tokens_[account_id] :
       std::string();
+}
+
+net::URLRequestContextGetter*
+FakeProfileOAuth2TokenService::GetRequestContext() {
+  return NULL;
 }
 
 std::vector<FakeProfileOAuth2TokenService::PendingRequest>
