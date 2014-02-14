@@ -292,7 +292,8 @@ void SyncEngine::DownloadRemoteVersion(
 }
 
 void SyncEngine::PromoteDemotedChanges() {
-  metadata_database_->PromoteLowerPriorityTrackersToNormal();
+  if (metadata_database_)
+    metadata_database_->PromoteLowerPriorityTrackersToNormal();
 }
 
 void SyncEngine::ApplyLocalChange(
@@ -430,12 +431,18 @@ SyncEngine::SyncEngine(
 
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
-  metadata_database_->DisableApp(app_id, callback);
+  if (metadata_database_)
+    metadata_database_->DisableApp(app_id, callback);
+  else
+    callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncEngine::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
-  metadata_database_->EnableApp(app_id, callback);
+  if (metadata_database_)
+    metadata_database_->EnableApp(app_id, callback);
+  else
+    callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncEngine::PostInitializeTask() {
