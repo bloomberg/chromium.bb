@@ -75,10 +75,13 @@ void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   DVLOG(2) << __FUNCTION__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
+  DCHECK(state_ != kStopped) << state_;
   DCHECK(reset_cb_.is_null());
 
   reset_cb_ = BindToCurrentLoop(closure);
 
+  // TODO(xhwang): This should not happen. Remove it, DCHECK against the
+  // condition and clean up related tests.
   if (state_ == kDecryptorRequested) {
     DCHECK(!init_cb_.is_null());
     set_decryptor_ready_cb_.Run(DecryptorReadyCB());
@@ -106,6 +109,38 @@ void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
 
   DCHECK(read_cb_.is_null());
   DoReset();
+}
+
+void DecryptingDemuxerStream::Stop(const base::Closure& closure) {
+  DVLOG(2) << __FUNCTION__ << " - state: " << state_;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ != kUninitialized) << state_;
+
+  // Invalidate all weak pointers so that pending callbacks won't fire.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // At this point the render thread is likely paused (in WebMediaPlayerImpl's
+  // Destroy()), so running |closure| can't wait for anything that requires the
+  // render thread to process messages to complete (such as PPAPI methods).
+  if (decryptor_) {
+    // Clear the callback.
+    decryptor_->RegisterNewKeyCB(GetDecryptorStreamType(),
+                                 Decryptor::NewKeyCB());
+    decryptor_->CancelDecrypt(GetDecryptorStreamType());
+    decryptor_ = NULL;
+  }
+  if (!set_decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+  if (!reset_cb_.is_null())
+    base::ResetAndReturn(&reset_cb_).Run();
+  pending_buffer_to_decrypt_ = NULL;
+
+  state_ = kStopped;
+  BindToCurrentLoop(closure).Run();
 }
 
 AudioDecoderConfig DecryptingDemuxerStream::audio_decoder_config() {
