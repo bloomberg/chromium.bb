@@ -3,6 +3,8 @@ Tests that InspectorCSSAgent API methods work as expected.
 H1
 
 
+Running: test_styles
+
 === Computed style property count for body ===
 OK
 
@@ -80,6 +82,8 @@ html: [regular, 4:0-4:4] {
 ['font-weight':'normal'] @[0:0-0:20] active
 ['width':'85%'] @[0:21-0:32] active
 ['background-image':'url(bar.png)'] @[0:33-0:63] active
+
+Running: test_forcedState
 === BODY with forced :hover ===
 body: [user-agent] {
     ['display':'block'] @[undefined-undefined] style
@@ -137,8 +141,12 @@ body:hover: [regular, 13:0-13:10] {
     ['color':'#CDE'] @[14:2-14:14] active
 }
 
+Running: test_textNodeComputedStyles
+
 === Computed style property count for TextNode ===
 OK
+
+Running: test_tableStyles
 
 === Attributes style for table ===
 ['width':'50%'] @[undefined-undefined] style
@@ -148,6 +156,8 @@ OK
 
 === Stylesheet-for-inline-style modification result ===
 null
+
+Running: test_styleSheets
 
 === All stylesheets ===
 
@@ -389,6 +399,8 @@ body: [regular, 2:1-2:5] {
     ['text-align':'justify'] @[2:11-2:31] active
 }
 
+Running: test_addRule
+
 === Matched rules after rule added ===
 body: [user-agent] {
     ['display':'block'] @[undefined-undefined] style
@@ -451,6 +463,8 @@ body.main2: [regular, 23:0-23:10] {
     ['background-color':'green' is-important] @[undefined-undefined] style
     ['background-size':'initial' is-important] @[undefined-undefined] style
 }
+
+Running: test_disableProperty
 
 === After property manipulations ===
 [text='/* height : 100% ; */'] disabled
