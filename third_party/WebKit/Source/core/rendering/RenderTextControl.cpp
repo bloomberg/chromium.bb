@@ -58,14 +58,14 @@ void RenderTextControl::addChild(RenderObject* newChild, RenderObject* beforeChi
     // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
     Node* node = newChild->node();
     if (node && node->isElementNode() && toElement(node)->shadowPseudoId() == "-webkit-input-placeholder")
-        RenderBlock::addChild(newChild, firstChild());
+        RenderBlockFlow::addChild(newChild, firstChild());
     else
-        RenderBlock::addChild(newChild, beforeChild);
+        RenderBlockFlow::addChild(newChild, beforeChild);
 }
 
 void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(diff, oldStyle);
+    RenderBlockFlow::styleDidChange(diff, oldStyle);
     Element* innerText = innerTextElement();
     if (!innerText)
         return;

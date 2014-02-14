@@ -386,7 +386,7 @@ void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& 
     if (style()->visibility() != VISIBLE)
         return;
 
-    RenderBlock::paintObject(paintInfo, paintOffset);
+    RenderBlockFlow::paintObject(paintInfo, paintOffset);
 
     // FIXME: Right now we're only painting in the foreground phase.
     // Columns should technically respect phases and allow for background/float/foreground overlap etc., just like

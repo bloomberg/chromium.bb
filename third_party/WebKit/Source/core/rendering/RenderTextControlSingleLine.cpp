@@ -201,7 +201,7 @@ void RenderTextControlSingleLine::layout()
 
         if (!placeholderBoxHadLayout && placeholderBox->checkForRepaintDuringLayout()) {
             // This assumes a shadow tree without floats. If floats are added, the
-            // logic should be shared with RenderBlock::layoutBlockChild.
+            // logic should be shared with RenderBlockFlow::layoutBlockChild.
             placeholderBox->repaint();
         }
         // The placeholder gets layout last, after the parent text control and its other children,
@@ -400,28 +400,28 @@ int RenderTextControlSingleLine::scrollWidth() const
 {
     if (innerTextElement())
         return innerTextElement()->scrollWidth();
-    return RenderBlock::scrollWidth();
+    return RenderBlockFlow::scrollWidth();
 }
 
 int RenderTextControlSingleLine::scrollHeight() const
 {
     if (innerTextElement())
         return innerTextElement()->scrollHeight();
-    return RenderBlock::scrollHeight();
+    return RenderBlockFlow::scrollHeight();
 }
 
 int RenderTextControlSingleLine::scrollLeft() const
 {
     if (innerTextElement())
         return innerTextElement()->scrollLeft();
-    return RenderBlock::scrollLeft();
+    return RenderBlockFlow::scrollLeft();
 }
 
 int RenderTextControlSingleLine::scrollTop() const
 {
     if (innerTextElement())
         return innerTextElement()->scrollTop();
-    return RenderBlock::scrollTop();
+    return RenderBlockFlow::scrollTop();
 }
 
 void RenderTextControlSingleLine::setScrollLeft(int newLeft)

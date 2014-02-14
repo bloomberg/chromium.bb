@@ -216,7 +216,7 @@ const char* RenderMarquee::renderName() const
 
 void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle* oldStyle)
 {
-    RenderBlock::styleDidChange(difference, oldStyle);
+    RenderBlockFlow::styleDidChange(difference, oldStyle);
 
     RenderStyle* s = style();
 

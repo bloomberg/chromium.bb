@@ -306,7 +306,7 @@ void RenderListBox::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOf
     }
 
     // Paint the children.
-    RenderBlock::paintObject(paintInfo, paintOffset);
+    RenderBlockFlow::paintObject(paintInfo, paintOffset);
 
     switch (paintInfo.phase) {
     // Depending on whether we have overlay scrollbars they
@@ -336,7 +336,7 @@ void RenderListBox::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOf
 void RenderListBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
 {
     if (!isSpatialNavigationEnabled(frame()))
-        return RenderBlock::addFocusRingRects(rects, additionalOffset, paintContainer);
+        return RenderBlockFlow::addFocusRingRects(rects, additionalOffset, paintContainer);
 
     HTMLSelectElement* select = selectElement();
 
@@ -718,7 +718,7 @@ void RenderListBox::setScrollTop(int newTop)
 
 bool RenderListBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    if (!RenderBlock::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
+    if (!RenderBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
         return false;
     const Vector<HTMLElement*>& listItems = selectElement()->listItems();
     int size = numItems();

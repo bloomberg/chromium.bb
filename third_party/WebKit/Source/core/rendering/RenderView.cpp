@@ -109,7 +109,7 @@ LayoutUnit RenderView::availableLogicalHeight(AvailableLogicalHeightType heightT
     // If we have columns, then the available logical height is reduced to the column height.
     if (hasColumns())
         return columnInfo()->columnHeight();
-    return RenderBlock::availableLogicalHeight(heightType);
+    return RenderBlockFlow::availableLogicalHeight(heightType);
 }
 
 bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
@@ -167,7 +167,7 @@ void RenderView::layoutContent(const LayoutState& state)
     ASSERT(needsLayout());
 
     LayoutRectRecorder recorder(*this);
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
 
     if (RuntimeEnabledFeatures::dialogElementEnabled())
         positionDialogs();

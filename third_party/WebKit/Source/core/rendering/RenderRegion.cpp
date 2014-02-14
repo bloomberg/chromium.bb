@@ -530,14 +530,14 @@ void RenderRegion::restoreRegionObjectsOriginalStyle()
 
 void RenderRegion::insertedIntoTree()
 {
-    RenderBlock::insertedIntoTree();
+    RenderBlockFlow::insertedIntoTree();
 
     attachRegion();
 }
 
 void RenderRegion::willBeRemovedFromTree()
 {
-    RenderBlock::willBeRemovedFromTree();
+    RenderBlockFlow::willBeRemovedFromTree();
 
     detachRegion();
 }
@@ -617,7 +617,7 @@ void RenderRegion::clearObjectStyleInRegion(const RenderObject* object)
 void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     if (!isValid()) {
-        RenderBlock::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
+        RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
         return;
     }
 

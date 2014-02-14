@@ -55,7 +55,7 @@ void RenderProgress::updateFromElement()
 
     updateAnimationState();
     repaint();
-    RenderBlock::updateFromElement();
+    RenderBlockFlow::updateFromElement();
 }
 
 double RenderProgress::animationProgress() const

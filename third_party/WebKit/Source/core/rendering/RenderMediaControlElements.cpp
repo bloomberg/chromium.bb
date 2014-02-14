@@ -43,7 +43,7 @@ RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* elemen
 void RenderTextTrackContainerElement::layout()
 {
     LayoutRectRecorder recorder(*this);
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
     if (style()->display() == NONE)
         return;
 

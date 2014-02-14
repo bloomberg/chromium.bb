@@ -91,7 +91,7 @@ RenderRubyBase* RenderRubyRun::rubyBaseSafe()
     RenderRubyBase* base = rubyBase();
     if (!base) {
         base = createRubyBase();
-        RenderBlock::addChild(base);
+        RenderBlockFlow::addChild(base);
     }
     return base;
 }
@@ -119,7 +119,7 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
             // RenderRuby has already ascertained that we can add the child here.
             ASSERT(!hasRubyText());
             // prepend ruby texts as first child
-            RenderBlock::addChild(child, firstChild());
+            RenderBlockFlow::addChild(child, firstChild());
         }  else if (beforeChild->isRubyText()) {
             // New text is inserted just before another.
             // In this case the new text takes the place of the old one, and
@@ -133,8 +133,8 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
             // Note: Doing it in this order and not using RenderRubyRun's methods,
             // in order to avoid automatic removal of the ruby run in case there is no
             // other child besides the old ruby text.
-            RenderBlock::addChild(child, beforeChild);
-            RenderBlock::removeChild(beforeChild);
+            RenderBlockFlow::addChild(child, beforeChild);
+            RenderBlockFlow::removeChild(beforeChild);
             newRun->addChild(beforeChild);
         } else if (hasRubyBase()) {
             // Insertion before a ruby base object.
@@ -176,13 +176,13 @@ void RenderRubyRun::removeChild(RenderObject* child)
         }
     }
 
-    RenderBlock::removeChild(child);
+    RenderBlockFlow::removeChild(child);
 
     if (!beingDestroyed() && !documentBeingDestroyed()) {
         // Check if our base (if any) is now empty. If so, destroy it.
         RenderBlock* base = rubyBase();
         if (base && !base->firstChild()) {
-            RenderBlock::removeChild(base);
+            RenderBlockFlow::removeChild(base);
             base->deleteLineBoxTree();
             base->destroy();
         }
@@ -230,7 +230,7 @@ RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, S
 void RenderRubyRun::layout()
 {
     LayoutRectRecorder recorder(*this);
-    RenderBlock::layout();
+    RenderBlockFlow::layout();
 
     RenderRubyText* rt = rubyText();
     if (!rt)
