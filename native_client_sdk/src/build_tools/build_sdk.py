@@ -275,32 +275,32 @@ def BuildStepUntarToolchains(pepperdir, toolchains):
 
 
 # List of toolchain headers to install.
-# Source is relative to native_client tree, destination is relative
+# Source is relative to top of Chromium tree, destination is relative
 # to the toolchain header directory.
 NACL_HEADER_MAP = {
   'newlib': [
-      ('src/include/nacl/nacl_exception.h', 'nacl/'),
-      ('src/include/nacl/nacl_minidump.h', 'nacl/'),
-      ('src/untrusted/irt/irt.h', ''),
-      ('src/untrusted/irt/irt_dev.h', ''),
-      ('src/untrusted/irt/irt_ppapi.h', ''),
-      ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
-      ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
-      ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
-      ('src/untrusted/pthread/pthread.h', ''),
-      ('src/untrusted/pthread/semaphore.h', ''),
-      ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+      ('native_client/src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('native_client/src/include/nacl/nacl_minidump.h', 'nacl/'),
+      ('native_client/src/untrusted/irt/irt.h', ''),
+      ('native_client/src/untrusted/irt/irt_dev.h', ''),
+      ('native_client/src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
+      ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
+      ('native_client/src/untrusted/nacl/nacl_thread.h', 'nacl/'),
+      ('native_client/src/untrusted/pthread/pthread.h', ''),
+      ('native_client/src/untrusted/pthread/semaphore.h', ''),
+      ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+      ('ppapi/nacl_irt/irt_ppapi.h', ''),
   ],
   'glibc': [
-      ('src/include/nacl/nacl_exception.h', 'nacl/'),
-      ('src/include/nacl/nacl_minidump.h', 'nacl/'),
-      ('src/untrusted/irt/irt.h', ''),
-      ('src/untrusted/irt/irt_dev.h', ''),
-      ('src/untrusted/irt/irt_ppapi.h', ''),
-      ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
-      ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
-      ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
-      ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+      ('native_client/src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('native_client/src/include/nacl/nacl_minidump.h', 'nacl/'),
+      ('native_client/src/untrusted/irt/irt.h', ''),
+      ('native_client/src/untrusted/irt/irt_dev.h', ''),
+      ('native_client/src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
+      ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
+      ('native_client/src/untrusted/nacl/nacl_thread.h', 'nacl/'),
+      ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
+      ('ppapi/nacl_irt/irt_ppapi.h', ''),
   ],
   'host': []
 }
@@ -355,7 +355,7 @@ def InstallNaClHeaders(tc_dst_inc, tc_name):
     # ones
     tc_name = 'newlib'
 
-  InstallFiles(NACL_DIR, tc_dst_inc, NACL_HEADER_MAP[tc_name])
+  InstallFiles(SRC_DIR, tc_dst_inc, NACL_HEADER_MAP[tc_name])
 
 
 def MakeNinjaRelPath(path):
