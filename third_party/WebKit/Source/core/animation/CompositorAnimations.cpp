@@ -463,7 +463,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
         }
         case blink::WebAnimationCurve::AnimationCurveTypeTransform: {
             OwnPtr<blink::WebTransformOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createTransformOperations());
-            toWebTransformOperations(toAnimatableTransform(value.get())->transformOperations(), FloatSize(), ops.get());
+            toWebTransformOperations(toAnimatableTransform(value.get())->transformOperations(), ops.get());
 
             blink::WebTransformKeyframe transformKeyframe(keyframes[i]->offset(), ops.release());
             blink::WebTransformAnimationCurve* transformCurve = static_cast<blink::WebTransformAnimationCurve*>(&curve);

@@ -59,7 +59,6 @@ public:
 
     virtual bool isIdentity() const = 0;
 
-    // Return true if the borderBoxSize was used in the computation, false otherwise.
     virtual void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const = 0;
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) = 0;

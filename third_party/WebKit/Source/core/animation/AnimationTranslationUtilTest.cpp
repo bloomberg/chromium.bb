@@ -37,6 +37,7 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/WebAnimation.h"
 #include "public/platform/WebFilterOperations.h"
+#include "public/platform/WebTransformOperations.h"
 #include "wtf/RefPtr.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -78,257 +79,19 @@ public:
     MOCK_METHOD0(clear, void());
 };
 
-bool animationCanBeTranslated(const KeyframeValueList& values, CSSAnimationData* animation)
-{
-    IntSize boxSize;
-    return createWebAnimation(values, animation, 0, 0, boxSize);
-}
-
-TEST(AnimationTranslationUtilTest, createOpacityAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyOpacity);
-    values.insert(adoptPtr(new FloatAnimationValue(0, 0)));
-    values.insert(adoptPtr(new FloatAnimationValue(duration, 1)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createFilterAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitFilter);
-
-    FilterOperations operations1;
-    operations1.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
-    values.insert(adoptPtr(new FilterAnimationValue(0, &operations1)));
-
-    FilterOperations operations2;
-    operations2.operations().append(BasicColorMatrixFilterOperation::create(1.0, FilterOperation::SATURATE));
-    values.insert(adoptPtr(new FilterAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(RotateTransformOperation::create(0, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotationAndEmptyTransformOperationList)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithRotationInvolvingNegativeAngles)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(RotateTransformOperation::create(-330, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(RotateTransformOperation::create(-320, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithSmallRotationInvolvingLargeAngles)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(RotateTransformOperation::create(270, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(RotateTransformOperation::create(360, TransformOperation::Rotate));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonDecomposableMatrix)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformationMatrix matrix1;
-    TransformOperations operations1;
-    operations1.operations().append(Matrix3DTransformOperation::create(matrix1));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformationMatrix matrix2;
-    matrix2.setM11(0);
-    TransformOperations operations2;
-    operations2.operations().append(Matrix3DTransformOperation::create(matrix2));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_FALSE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonInvertibleTransform)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(ScaleTransformOperation::create(1, 0, 1, TransformOperation::Scale3D));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createReversedAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-    animation->setDirection(CSSAnimationData::AnimationDirectionReverse);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createAlternatingAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-    animation->setDirection(CSSAnimationData::AnimationDirectionAlternate);
-    animation->setIterationCount(2);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
-TEST(AnimationTranslationUtilTest, createReversedAlternatingAnimation)
-{
-    const double duration = 1;
-    WebCore::KeyframeValueList values(AnimatedPropertyWebkitTransform);
-
-    TransformOperations operations1;
-    operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(0, &operations1)));
-
-    TransformOperations operations2;
-    operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    values.insert(adoptPtr(new TransformAnimationValue(duration, &operations2)));
-
-    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
-    animation->setDuration(duration);
-    animation->setDirection(CSSAnimationData::AnimationDirectionAlternateReverse);
-    animation->setIterationCount(2);
-
-    EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
-}
-
 TEST(AnimationTranslationUtilTest, transformsWork)
 {
     TransformOperations ops;
-    FloatSize box(100, 200);
     WebTransformOperationsMock outOps;
 
     EXPECT_CALL(outOps, appendTranslate(2, 0, 0));
-    EXPECT_CALL(outOps, appendTranslate(2, 60, 0));
     EXPECT_CALL(outOps, appendRotate(0.1, 0.2, 0.3, 200000.4));
     EXPECT_CALL(outOps, appendScale(50.2, 100, -4));
 
     ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Percent), Length(30, WebCore::Percent), TransformOperation::Translate));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
-    toWebTransformOperations(ops, box, &outOps);
+    toWebTransformOperations(ops, &outOps);
 }
 
 TEST(AnimationTranslationUtilTest, filtersWork)

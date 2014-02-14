@@ -31,33 +31,19 @@
 #ifndef AnimationTranslationUtil_h
 #define AnimationTranslationUtil_h
 
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebTransformOperations.h"
-#include "wtf/PassOwnPtr.h"
-
 namespace blink {
-class WebAnimation;
+class WebTransformOperations;
 class WebFilterOperations;
 }
 
 namespace WebCore {
 
-class KeyframeValueList;
-class CSSAnimationData;
-class FloatSize;
+class FilterOperations;
+class TransformOperations;
 
-
-// Translates WebCore animation data into a WebAnimation. If we are unable
-// to perform this translation, we return nullptr. This can happen if
-//   - a steps timing function is used,
-//   - a property other than AnimatedPropertyWebkitTransform, or AnimatedPropertyOpacity is animated, or
-//   - a transform animation involves a non-invertable transform.
-PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList&, const CSSAnimationData*, int animationId, double timeOffset, const FloatSize& boxSize);
-
-void toWebTransformOperations(const TransformOperations& inOperations, const FloatSize& boxSize, blink::WebTransformOperations* outOperations);
-
+void toWebTransformOperations(const TransformOperations& inOperations, blink::WebTransformOperations* outOperations);
 bool toWebFilterOperations(const FilterOperations& inOperations, blink::WebFilterOperations* outOperations);
+
 } // namespace WebCore
 
 #endif // AnimationTranslationUtil_h

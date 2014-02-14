@@ -64,11 +64,6 @@ public:
                 && !m_delaySet && !m_timingFunctionSet && !m_propertySet);
     }
 
-    bool isEmptyOrZeroDuration() const
-    {
-        return isEmpty() || (m_duration == 0 && m_delay <= 0);
-    }
-
     void clearDelay() { m_delaySet = false; }
     void clearDirection() { m_directionSet = false; }
     void clearDuration() { m_durationSet = false; }
@@ -107,7 +102,6 @@ public:
         AnimationDirectionAlternateReverse
     };
     AnimationDirection direction() const { return static_cast<AnimationDirection>(m_direction); }
-    bool directionIsForwards() const { return m_direction == AnimationDirectionNormal || m_direction == AnimationDirectionAlternate; }
 
     unsigned fillMode() const { return m_fillMode; }
 
@@ -139,9 +133,6 @@ public:
     // return true every CSSAnimationData in the chain (defined by m_next) match
     bool operator==(const CSSAnimationData& o) const { return animationsMatchForStyleRecalc(&o); }
     bool operator!=(const CSSAnimationData& o) const { return !(*this == o); }
-
-    bool fillsBackwards() const { return m_fillModeSet && (m_fillMode == AnimationFillModeBackwards || m_fillMode == AnimationFillModeBoth); }
-    bool fillsForwards() const { return m_fillModeSet && (m_fillMode == AnimationFillModeForwards || m_fillMode == AnimationFillModeBoth); }
 
 private:
     CSSAnimationData();
