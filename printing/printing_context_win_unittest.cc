@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/printing_test.h"
 #include "printing/printing_context.h"
@@ -159,6 +160,7 @@ TEST_F(PrintingContextTest, Base) {
 }
 
 TEST_F(PrintingContextTest, PrintAll) {
+  base::MessageLoop message_loop;
   if (IsTestCaseDisabled())
     return;
 

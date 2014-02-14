@@ -175,7 +175,6 @@ PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
 }
 
-// TODO(vitalybuka): Implement as ui::BaseShellDialog crbug.com/180997.
 void PrintingContextWin::AskUserForSettings(
     gfx::NativeView view, int max_pages, bool has_selection,
     const PrintSettingsCallback& callback) {
@@ -238,6 +237,14 @@ void PrintingContextWin::AskUserForSettings(
     dialog_options.Flags |= PD_NOPAGENUMS;
   }
 
+  // Note that this cannot use ui::BaseShellDialog as the print dialog is
+  // system modal: opening it from a background thread can cause Windows to
+  // get the wrong Z-order which will make the print dialog appear behind the
+  // browser frame (but still being modal) so neither the browser frame nor
+  // the print dialog will get any input. See http://crbug.com/342697
+  // http://crbug.com/180997 for details.
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
   HRESULT hr = (*print_dialog_func_)(&dialog_options);
   if (hr != S_OK) {
     ResetSettings();
