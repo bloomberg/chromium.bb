@@ -44,6 +44,9 @@ cr.define('speech', function() {
    * @private
    */
   SpeechManager.prototype.setState_ = function(newState) {
+    if (this.state == newState)
+      return;
+
     this.state = newState;
     chrome.send('setSpeechRecognitionState', [this.state]);
   };
