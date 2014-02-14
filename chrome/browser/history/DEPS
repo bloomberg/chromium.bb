@@ -40,6 +40,8 @@ include_rules = [
   "!chrome/browser/signin/oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
+  "!chrome/browser/signin/signin_manager.h",
+  "!chrome/browser/signin/signin_manager_factory.h",
   "!chrome/browser/signin/token_service_factory.h",
   "!chrome/browser/sync/profile_sync_service.h",
   "!chrome/browser/sync/profile_sync_service_factory.h",

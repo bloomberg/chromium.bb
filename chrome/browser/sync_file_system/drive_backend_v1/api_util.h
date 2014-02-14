@@ -18,6 +18,7 @@
 class GURL;
 class Profile;
 class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 namespace drive { class DriveUploaderInterface; }
 
@@ -242,6 +243,7 @@ class APIUtil : public APIUtilInterface,
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
 
   ProfileOAuth2TokenService* oauth_service_;
+  SigninManagerBase* signin_manager_;
 
   UploadCallbackMap upload_callback_map_;
   UploadKey upload_next_key_;

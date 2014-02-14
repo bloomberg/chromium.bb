@@ -17,6 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
@@ -65,9 +67,11 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           worker_pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
+  Profile* profile = Profile::FromBrowserContext(context);
   ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(context));
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
   scoped_ptr<drive::DriveServiceInterface> drive_service(
       new drive::DriveAPIService(
           token_service,
@@ -75,7 +79,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           drive_task_runner.get(),
           base_drive_url, base_download_url, wapi_base_url,
           std::string() /* custom_user_agent */));
-  drive_service->Initialize(token_service->GetPrimaryAccountId());
+  drive_service->Initialize(signin_manager->GetAuthenticatedAccountId());
 
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner.get()));
@@ -351,7 +355,9 @@ void SyncEngine::OnReadyToSendRequests() {
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
   if (!metadata_database_ && auth_token_service_) {
-    drive_service_->Initialize(auth_token_service_->GetPrimaryAccountId());
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(auth_token_service_->profile());
+    drive_service_->Initialize(signin_manager->GetAuthenticatedAccountId());
     PostInitializeTask();
     return;
   }
