@@ -12,7 +12,7 @@ namespace chromeos {
 namespace system {
 
 // Observes changes in device hierarchy. When a new touchpad/mouse is attached,
-// applies the last used profile's touchpad/mouse settings to the system.
+// applies the last used touchpad/mouse settings to the system.
 class DeviceChangeHandler : public PointerDeviceObserver::Observer {
  public:
   DeviceChangeHandler();
@@ -27,7 +27,7 @@ class DeviceChangeHandler : public PointerDeviceObserver::Observer {
 };
 
 }  // namespace system
-}  // namesspace chromeos
+}  // namespace chromeos
 
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_DEVICE_CHANGE_HANDLER_H_

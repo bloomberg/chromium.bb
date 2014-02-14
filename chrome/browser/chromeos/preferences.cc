@@ -407,6 +407,8 @@ void Preferences::OnPreferenceChanged(const std::string& pref_name) {
 }
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {
+  system::TouchpadSettings touchpad_settings;
+  system::MouseSettings mouse_settings;
   if (!pref_name || *pref_name == prefs::kPerformanceTracingEnabled) {
     const bool enabled = performance_tracing_enabled_.GetValue();
     if (enabled)
@@ -417,7 +419,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kTapToClickEnabled)) {
     const bool enabled = tap_to_click_enabled_.GetValue();
-    system::touchpad_settings::SetTapToClick(enabled);
+    touchpad_settings.SetTapToClick(enabled);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
     else
@@ -433,7 +435,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kTapDraggingEnabled)) {
     const bool enabled = tap_dragging_enabled_.GetValue();
-    system::touchpad_settings::SetTapDragging(enabled);
+    touchpad_settings.SetTapDragging(enabled);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Changed", enabled);
     else
@@ -442,7 +444,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kEnableTouchpadThreeFingerClick)) {
     const bool enabled = three_finger_click_enabled_.GetValue();
-    system::touchpad_settings::SetThreeFingerClick(enabled);
+    touchpad_settings.SetThreeFingerClick(enabled);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Changed", enabled);
     else
@@ -465,7 +467,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kMouseSensitivity)) {
     const int sensitivity = mouse_sensitivity_.GetValue();
-    system::mouse_settings::SetSensitivity(sensitivity);
+    mouse_settings.SetSensitivity(sensitivity);
     if (pref_name) {
       UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Changed",
                                 sensitivity,
@@ -479,7 +481,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kTouchpadSensitivity)) {
     const int sensitivity = touchpad_sensitivity_.GetValue();
-    system::touchpad_settings::SetSensitivity(sensitivity);
+    touchpad_settings.SetSensitivity(sensitivity);
     if (pref_name) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Changed",
                                 sensitivity,
@@ -493,7 +495,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name && is_primary_user_prefs_) ||
       (pref_name && *pref_name == prefs::kPrimaryMouseButtonRight)) {
     const bool right = primary_mouse_button_right_.GetValue();
-    system::mouse_settings::SetPrimaryButtonRight(right);
+    mouse_settings.SetPrimaryButtonRight(right);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Changed", right);
     else
@@ -556,6 +558,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
     input_method_manager_->SetEnabledExtensionImes(&split_values);
   }
+  system::InputDeviceSettings::Get()->UpdateTouchpadSettings(touchpad_settings);
+  system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
 }
 
 void Preferences::OnIsSyncingChanged() {

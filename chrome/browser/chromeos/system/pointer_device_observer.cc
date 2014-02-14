@@ -48,13 +48,13 @@ void PointerDeviceObserver::DeviceHierarchyChanged() {
 }
 
 void PointerDeviceObserver::CheckTouchpadExists() {
-  touchpad_settings::TouchpadExists(
+  InputDeviceSettings::Get()->TouchpadExists(
       base::Bind(&PointerDeviceObserver::OnTouchpadExists,
                  weak_factory_.GetWeakPtr()));
 }
 
 void PointerDeviceObserver::CheckMouseExists() {
-  mouse_settings::MouseExists(
+  InputDeviceSettings::Get()->MouseExists(
       base::Bind(&PointerDeviceObserver::OnMouseExists,
                  weak_factory_.GetWeakPtr()));
 }

@@ -958,7 +958,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_window_)
     return;
 
-  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
 
     focus_ring_controller_.reset(new FocusRingController);
@@ -1083,10 +1083,10 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     PrefService* prefs = g_browser_process->local_state();
     // Apply owner preferences for tap-to-click and mouse buttons swap for
     // login screen.
-    system::mouse_settings::SetPrimaryButtonRight(
+    system::InputDeviceSettings::Get()->SetPrimaryButtonRight(
         prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight));
-    system::touchpad_settings::SetTapToClick(
-      prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
+    system::InputDeviceSettings::Get()->SetTapToClick(
+        prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
 
   ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(

@@ -375,7 +375,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   }
 
   bool keyboard_driven_oobe =
-      system::keyboard_settings::ForceKeyboardDrivenUINavigation();
+      system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 

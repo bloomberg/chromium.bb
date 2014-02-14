@@ -300,7 +300,7 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
   }
   CallJS("showVersion", should_show_version);
   CallJS("showOobeUI", show_oobe_ui_);
-  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
     CallJS("enableKeyboardFlow", true);
 }
 

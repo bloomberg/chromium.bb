@@ -110,6 +110,8 @@
         'browser/chromeos/settings/device_settings_test_helper.h',
         'browser/chromeos/settings/mock_owner_key_util.cc',
         'browser/chromeos/settings/mock_owner_key_util.h',
+        'browser/chromeos/system/fake_input_device_settings.cc',
+        'browser/chromeos/system/fake_input_device_settings.h',
         # The only thing used from browser is Browser::Type.
         'browser/download/download_test_file_activity_observer.cc',
         'browser/download/download_test_file_activity_observer.h',

@@ -61,10 +61,12 @@ void LoadGaiaAuthExtension(Profile* profile) {
   }
 
   int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
-  if (chromeos::system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+  if (chromeos::system::InputDeviceSettings::Get()
+          ->ForceKeyboardDrivenUINavigation()) {
     manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
-  else if (!command_line->HasSwitch(chromeos::switches::kDisableSamlSignin))
+  } else if (!command_line->HasSwitch(chromeos::switches::kDisableSamlSignin)) {
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
+  }
 #else
   int manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
 #endif

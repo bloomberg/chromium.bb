@@ -127,7 +127,7 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
 
 void NetworkScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
-  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
     builder->Add("networkScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
   else
     builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);

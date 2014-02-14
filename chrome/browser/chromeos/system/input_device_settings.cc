@@ -4,10 +4,6 @@
 
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
-#include <stdarg.h>
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -33,6 +29,9 @@ namespace chromeos {
 namespace system {
 
 namespace {
+
+InputDeviceSettings* g_instance_;
+InputDeviceSettings* g_test_instance_;
 
 const char kTpControl[] = "/opt/google/touchpad/tpcontrol";
 const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
@@ -63,15 +62,14 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
   base::EnsureProcessGetsReaped(handle);
 }
 
-void ExecuteScript(int argc, ...) {
+void ExecuteScript(const std::vector<std::string>& argv) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::vector<std::string> argv;
-  va_list vl;
-  va_start(vl, argc);
-  for (int i = 0; i < argc; ++i) {
-    argv.push_back(va_arg(vl, const char*));
-  }
-  va_end(vl);
+
+  if (argv.size() == 1)
+    return;
+
+  VLOG(1) << "About to launch: \""
+          << CommandLine(argv).GetCommandLineString() << "\"";
 
   // Control scripts can take long enough to cause SIGART during shutdown
   // (http://crbug.com/261426). Run the blocking pool task with
@@ -83,15 +81,17 @@ void ExecuteScript(int argc, ...) {
   runner->PostTask(FROM_HERE, base::Bind(&ExecuteScriptOnFileThread, argv));
 }
 
-void SetPointerSensitivity(const char* script, int value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void AddSensitivityArguments(int value, std::vector<std::string>* argv) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
-  ExecuteScript(
-      3, script, "sensitivity", base::StringPrintf("%d", value).c_str());
+  argv->push_back("sensitivity");
+  argv->push_back(base::StringPrintf("%d", value));
 }
 
-void SetTPControl(const char* control, bool enabled) {
-  ExecuteScript(3, kTpControl, control, enabled ? "on" : "off");
+void AddTPControlArguments(const char* control,
+                           bool enabled,
+                           std::vector<std::string>* argv) {
+  argv->push_back(control);
+  argv->push_back(enabled ? "on" : "off");
 }
 
 void DeviceExistsBlockingPool(const char* script,
@@ -111,14 +111,16 @@ void DeviceExistsBlockingPool(const char* script,
   DVLOG(1) << "DeviceExistsBlockingPool:" << script << "=" << exists->data;
 }
 
-void RunCallbackUIThread(scoped_refptr<RefCountedBool> exists,
-                         const DeviceExistsCallback& callback) {
+void RunCallbackUIThread(
+    scoped_refptr<RefCountedBool> exists,
+    const InputDeviceSettings::DeviceExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DVLOG(1) << "RunCallbackUIThread " << exists->data;
   callback.Run(exists->data);
 }
 
-void DeviceExists(const char* script, const DeviceExistsCallback& callback) {
+void DeviceExists(const char* script,
+                  const InputDeviceSettings::DeviceExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // One or both of the control scripts can apparently hang during shutdown
@@ -134,62 +136,98 @@ void DeviceExists(const char* script, const DeviceExistsCallback& callback) {
       base::Bind(&RunCallbackUIThread, exists, callback));
 }
 
-}  // namespace
+class InputDeviceSettingsImpl : public InputDeviceSettings {
+ public:
+  InputDeviceSettingsImpl();
 
-namespace touchpad_settings {
+ private:
+  // Overridden from InputDeviceSettings.
+  virtual void TouchpadExists(const DeviceExistsCallback& callback) OVERRIDE;
+  virtual void UpdateTouchpadSettings(const TouchpadSettings& settings)
+      OVERRIDE;
+  virtual void SetTouchpadSensitivity(int value) OVERRIDE;
+  virtual void SetTapToClick(bool enabled) OVERRIDE;
+  virtual void SetThreeFingerClick(bool enabled) OVERRIDE;
+  virtual void SetTapDragging(bool enabled) OVERRIDE;
+  virtual void MouseExists(const DeviceExistsCallback& callback) OVERRIDE;
+  virtual void UpdateMouseSettings(const MouseSettings& update) OVERRIDE;
+  virtual void SetMouseSensitivity(int value) OVERRIDE;
+  virtual void SetPrimaryButtonRight(bool right) OVERRIDE;
+  virtual bool ForceKeyboardDrivenUINavigation() OVERRIDE;
+  virtual void ReapplyTouchpadSettings() OVERRIDE;
+  virtual void ReapplyMouseSettings() OVERRIDE;
 
-void TouchpadExists(const DeviceExistsCallback& callback) {
+ private:
+  TouchpadSettings current_touchpad_settings_;
+  MouseSettings current_mouse_settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputDeviceSettingsImpl);
+};
+
+InputDeviceSettingsImpl::InputDeviceSettingsImpl() {}
+
+void InputDeviceSettingsImpl::TouchpadExists(
+    const DeviceExistsCallback& callback) {
   DeviceExists(kTpControl, callback);
 }
 
-// Sets the touchpad sensitivity in the range [1, 5].
-void SetSensitivity(int value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  SetPointerSensitivity(kTpControl, value);
+void InputDeviceSettingsImpl::UpdateTouchpadSettings(
+    const TouchpadSettings& settings) {
+  std::vector<std::string> argv;
+  if (current_touchpad_settings_.Update(settings, &argv))
+    ExecuteScript(argv);
 }
 
-void SetTapToClick(bool enabled) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  SetTPControl("taptoclick", enabled);
+void InputDeviceSettingsImpl::SetTouchpadSensitivity(int value) {
+  TouchpadSettings settings;
+  settings.SetSensitivity(value);
+  UpdateTouchpadSettings(settings);
 }
 
-void SetThreeFingerClick(bool enabled) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void InputDeviceSettingsImpl::SetTapToClick(bool enabled) {
+  TouchpadSettings settings;
+  settings.SetTapToClick(enabled);
+  UpdateTouchpadSettings(settings);
+}
 
+void InputDeviceSettingsImpl::SetThreeFingerClick(bool enabled) {
   // For Alex/ZGB.
-  SetTPControl("t5r2_three_finger_click", enabled);
+  TouchpadSettings settings;
+  settings.SetThreeFingerClick(enabled);
+  UpdateTouchpadSettings(settings);
 }
 
-void SetTapDragging(bool enabled) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  SetTPControl("tap_dragging", enabled);
+void InputDeviceSettingsImpl::SetTapDragging(bool enabled) {
+  TouchpadSettings settings;
+  settings.SetTapDragging(enabled);
+  UpdateTouchpadSettings(settings);
 }
 
-}  // namespace touchpad_settings
-
-namespace mouse_settings {
-
-void MouseExists(const DeviceExistsCallback& callback) {
+void InputDeviceSettingsImpl::MouseExists(
+    const DeviceExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DeviceExists(kMouseControl, callback);
 }
 
-// Sets the touchpad sensitivity in the range [1, 5].
-void SetSensitivity(int value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  SetPointerSensitivity(kMouseControl, value);
+void InputDeviceSettingsImpl::UpdateMouseSettings(const MouseSettings& update) {
+  std::vector<std::string> argv;
+  if (current_mouse_settings_.Update(update, &argv))
+    ExecuteScript(argv);
 }
 
-void SetPrimaryButtonRight(bool right) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  ExecuteScript(3, kMouseControl, "swap_left_right", right ? "1" : "0");
+void InputDeviceSettingsImpl::SetMouseSensitivity(int value) {
+  MouseSettings settings;
+  settings.SetSensitivity(value);
+  UpdateMouseSettings(settings);
 }
 
-}  // namespace mouse_settings
+void InputDeviceSettingsImpl::SetPrimaryButtonRight(bool right) {
+  MouseSettings settings;
+  settings.SetPrimaryButtonRight(right);
+  UpdateMouseSettings(settings);
+}
 
-namespace keyboard_settings {
-
-bool ForceKeyboardDrivenUINavigation() {
+bool InputDeviceSettingsImpl::ForceKeyboardDrivenUINavigation() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector)
@@ -207,14 +245,164 @@ bool ForceKeyboardDrivenUINavigation() {
 
   bool keyboard_driven = false;
   if (chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      kOemKeyboardDrivenOobeKey, &keyboard_driven)) {
+          kOemKeyboardDrivenOobeKey, &keyboard_driven)) {
     return keyboard_driven;
   }
 
   return false;
 }
 
-}  // namespace keyboard_settings
+void InputDeviceSettingsImpl::ReapplyTouchpadSettings() {
+  TouchpadSettings settings = current_touchpad_settings_;
+  current_touchpad_settings_ = TouchpadSettings();
+  UpdateTouchpadSettings(settings);
+}
+
+void InputDeviceSettingsImpl::ReapplyMouseSettings() {
+  MouseSettings settings = current_mouse_settings_;
+  current_mouse_settings_ = MouseSettings();
+  UpdateMouseSettings(settings);
+}
+
+}  // namespace
+
+TouchpadSettings::TouchpadSettings() {}
+
+TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
+  if (&other != this) {
+    sensitivity_ = other.sensitivity_;
+    tap_to_click_ = other.tap_to_click_;
+    three_finger_click_ = other.three_finger_click_;
+    tap_dragging_ = other.tap_dragging_;
+  }
+  return *this;
+}
+
+void TouchpadSettings::SetSensitivity(int value) {
+  sensitivity_.Set(value);
+}
+
+int TouchpadSettings::GetSensitivity() const {
+  return sensitivity_.value();
+}
+
+void TouchpadSettings::SetTapToClick(bool enabled) {
+  tap_to_click_.Set(enabled);
+}
+
+bool TouchpadSettings::GetTapToClick() const {
+  return tap_to_click_.value();
+}
+
+void TouchpadSettings::SetThreeFingerClick(bool enabled) {
+  three_finger_click_.Set(enabled);
+}
+
+bool TouchpadSettings::GetThreeFingerClick() const {
+  return three_finger_click_.value();
+}
+
+void TouchpadSettings::SetTapDragging(bool enabled) {
+  tap_dragging_.Set(enabled);
+}
+
+bool TouchpadSettings::GetTapDragging() const {
+  return tap_dragging_.value();
+}
+
+bool TouchpadSettings::Update(const TouchpadSettings& settings,
+                              std::vector<std::string>* argv) {
+  if (argv)
+    argv->push_back(kTpControl);
+  bool updated = false;
+  if (sensitivity_.Update(settings.sensitivity_)) {
+    updated = true;
+    if (argv)
+      AddSensitivityArguments(sensitivity_.value(), argv);
+  }
+  if (tap_to_click_.Update(settings.tap_to_click_)) {
+    updated = true;
+    if (argv)
+      AddTPControlArguments("taptoclick", tap_to_click_.value(), argv);
+  }
+  if (three_finger_click_.Update(settings.three_finger_click_)) {
+    updated = true;
+    if (argv)
+      AddTPControlArguments("t5r2_three_finger_click",
+                            three_finger_click_.value(),
+                            argv);
+  }
+  if (tap_dragging_.Update(settings.tap_dragging_)) {
+    updated = true;
+    if (argv)
+      AddTPControlArguments("tap_dragging", tap_dragging_.value(), argv);
+  }
+  return updated;
+}
+
+MouseSettings::MouseSettings() {}
+
+MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
+  if (&other != this) {
+    sensitivity_ = other.sensitivity_;
+    primary_button_right_ = other.primary_button_right_;
+  }
+  return *this;
+}
+
+void MouseSettings::SetSensitivity(int value) {
+  sensitivity_.Set(value);
+}
+
+int MouseSettings::GetSensitivity() const {
+  return sensitivity_.value();
+}
+
+void MouseSettings::SetPrimaryButtonRight(bool right) {
+  primary_button_right_.Set(right);
+}
+
+bool MouseSettings::GetPrimaryButtonRight() const {
+  return primary_button_right_.value();
+}
+
+bool MouseSettings::Update(const MouseSettings& settings,
+                           std::vector<std::string>* argv) {
+  if (argv)
+    argv->push_back(kMouseControl);
+  bool updated = false;
+  if (sensitivity_.Update(settings.sensitivity_)) {
+    updated = true;
+    if (argv)
+      AddSensitivityArguments(sensitivity_.value(), argv);
+  }
+  if (primary_button_right_.Update(settings.primary_button_right_)) {
+    updated = true;
+    if (argv) {
+      argv->push_back("swap_left_right");
+      argv->push_back(settings.GetPrimaryButtonRight() ? "1" : "0");
+    }
+  }
+  return updated;
+}
+
+// static
+InputDeviceSettings* InputDeviceSettings::Get() {
+  if (g_test_instance_)
+    return g_test_instance_;
+  if (!g_instance_)
+    g_instance_ = new InputDeviceSettingsImpl;
+  return g_instance_;
+}
+
+// static
+void InputDeviceSettings::SetSettingsForTesting(
+    InputDeviceSettings* test_settings) {
+  if (g_test_instance_ == test_settings)
+    return;
+  delete g_test_instance_;
+  g_test_instance_ = test_settings;
+}
 
 }  // namespace system
 }  // namespace chromeos

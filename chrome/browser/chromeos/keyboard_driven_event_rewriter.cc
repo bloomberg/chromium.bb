@@ -21,7 +21,8 @@ const int kModifierMask = ui::EF_SHIFT_DOWN;
 bool ShouldStripModifiersForArrowKeysAndEnter() {
   if (UserManager::IsInitialized() &&
       !UserManager::Get()->IsUserLoggedIn()) {
-    return system::keyboard_settings::ForceKeyboardDrivenUINavigation();
+    return system::InputDeviceSettings::Get()
+        ->ForceKeyboardDrivenUINavigation();
   }
 
   return false;
