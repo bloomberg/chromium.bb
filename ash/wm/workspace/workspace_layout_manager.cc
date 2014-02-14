@@ -77,6 +77,11 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
   window_state->AddObserver(this);
+  // TODO(oshima): This is necessary as the call in
+  // AdjustWindowBoundsWhenAdded is skipped when the bounds is
+  // empty. Investigate if we can eliminate this dup.
+  if (!window_state->is_dragged())
+    SetMaximizedOrFullscreenBounds(window_state);
   UpdateShelfVisibility();
   UpdateFullscreenState();
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
