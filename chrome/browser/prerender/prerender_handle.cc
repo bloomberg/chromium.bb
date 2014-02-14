@@ -77,27 +77,6 @@ PrerenderHandle::PrerenderHandle(
   }
 }
 
-void PrerenderHandle::AdoptPrerenderDataFrom(PrerenderHandle* other_handle) {
-  DCHECK_EQ(static_cast<PrerenderManager::PrerenderData*>(NULL),
-            prerender_data_.get());
-  if (other_handle->prerender_data_.get() &&
-      other_handle->prerender_data_->contents()) {
-    other_handle->prerender_data_->contents()->RemoveObserver(other_handle);
-  }
-
-  prerender_data_ = other_handle->prerender_data_;
-  other_handle->prerender_data_.reset();
-
-  if (prerender_data_.get()) {
-    DCHECK_NE(static_cast<PrerenderContents*>(NULL),
-              prerender_data_->contents());
-    prerender_data_->contents()->AddObserver(this);
-    // We are joining a prerender that has already started so we fire off an
-    // extra start event at ourselves.
-    OnPrerenderStart(prerender_data_->contents());
-  }
-}
-
 void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
   DCHECK(CalledOnValidThread());
   DCHECK(prerender_data_.get());

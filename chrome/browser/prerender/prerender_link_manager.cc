@@ -476,9 +476,7 @@ void PrerenderLinkManager::Shutdown() {
   has_shutdown_ = true;
 }
 
-// In practice, this is always called from either
-// PrerenderLinkManager::OnAddPrerender in the regular case, or in the pending
-// prerender case, from PrerenderHandle::AdoptPrerenderDataFrom.
+// In practice, this is always called from PrerenderLinkManager::OnAddPrerender.
 void PrerenderLinkManager::OnPrerenderStart(
     PrerenderHandle* prerender_handle) {
   LinkPrerender* prerender = FindByPrerenderHandle(prerender_handle);

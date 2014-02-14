@@ -99,8 +99,6 @@ class PrerenderHandle : public base::NonThreadSafe,
 
   explicit PrerenderHandle(PrerenderManager::PrerenderData* prerender_data);
 
-  void AdoptPrerenderDataFrom(PrerenderHandle* other_handle);
-
   // From PrerenderContents::Observer:
   virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
   virtual void OnPrerenderStopLoading(PrerenderContents* prerender_contents)
