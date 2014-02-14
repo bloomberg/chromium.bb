@@ -608,7 +608,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     pending_events_.push_back(pending_event);
   } else {
     ui::EventDispatchDetails details = current_root_window_->OnEventFromSource(
-        static_cast<ui::KeyEvent*>(event));
+        event);
     CHECK(!details.dispatcher_destroyed);
   }
 }

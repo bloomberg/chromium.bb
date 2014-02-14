@@ -398,6 +398,11 @@ void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
 ui::EventDispatchDetails RootWindow::DispatchMouseEnterOrExit(
     const ui::MouseEvent& event,
     ui::EventType type) {
+  if (event.type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
+      !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
+    SetLastMouseLocation(window(), event.root_location());
+  }
+
   if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate())
     return DispatchDetails();
 
@@ -793,7 +798,6 @@ ui::EventDispatchDetails RootWindow::SynthesizeMouseMoveEvent() {
     return details;
   gfx::Point host_mouse_location = root_mouse_location;
   host()->ConvertPointToHost(&host_mouse_location);
-
   ui::MouseEvent event(ui::ET_MOUSE_MOVED,
                        host_mouse_location,
                        host_mouse_location,
@@ -810,11 +814,11 @@ void RootWindow::PreDispatchLocatedEvent(Window* target,
   event->set_flags(flags);
 
   if (!dispatching_held_event_ &&
-      (event->IsMouseEvent() || event->IsScrollEvent())) {
+      (event->IsMouseEvent() || event->IsScrollEvent()) &&
+      !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
       SetLastMouseLocation(window(), event->root_location());
-    if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
-      synthesize_mouse_move_ = false;
+    synthesize_mouse_move_ = false;
   }
 }
 

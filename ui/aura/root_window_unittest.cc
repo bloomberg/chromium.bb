@@ -1731,4 +1731,54 @@ TEST_F(RootWindowTestInHighDPI, TouchMovesHeldOnScroll) {
             filter->touch_locations()[1].ToString());
 }
 
+class SelfDestructDelegate : public test::TestWindowDelegate {
+ public:
+  SelfDestructDelegate() {}
+  virtual ~SelfDestructDelegate() {}
+
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    window_.reset();
+  }
+
+  void set_window(scoped_ptr<aura::Window> window) {
+    window_ = window.Pass();
+  }
+  bool has_window() const { return !!window_.get(); }
+
+ private:
+  scoped_ptr<aura::Window> window_;
+  DISALLOW_COPY_AND_ASSIGN(SelfDestructDelegate);
+};
+
+TEST_F(RootWindowTest, SynthesizedLocatedEvent) {
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseTo(10, 10);
+  EXPECT_EQ("10,10",
+            Env::GetInstance()->last_mouse_location().ToString());
+
+  // Synthesized event should not update the mouse location.
+  ui::MouseEvent mouseev(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                         ui::EF_IS_SYNTHESIZED, 0);
+  generator.Dispatch(&mouseev);
+  EXPECT_EQ("10,10",
+            Env::GetInstance()->last_mouse_location().ToString());
+
+  generator.MoveMouseTo(0, 0);
+  EXPECT_EQ("0,0",
+            Env::GetInstance()->last_mouse_location().ToString());
+
+  // Make sure the location gets updated when a syntheiszed enter
+  // event destroyed the window.
+  SelfDestructDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
+  delegate.set_window(window.Pass());
+  EXPECT_TRUE(delegate.has_window());
+
+  generator.MoveMouseTo(100, 100);
+  EXPECT_FALSE(delegate.has_window());
+  EXPECT_EQ("100,100",
+            Env::GetInstance()->last_mouse_location().ToString());
+}
+
 }  // namespace aura
