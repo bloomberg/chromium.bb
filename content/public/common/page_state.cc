@@ -151,6 +151,9 @@ PageState PageState::RemoveScrollOffset() const {
 }
 
 PageState PageState::RemoveReferrer() const {
+  if (data_.empty())
+    return *this;
+
   ExplodedPageState state;
   if (!DecodePageState(data_, &state))
     return PageState();  // Oops!

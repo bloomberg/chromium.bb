@@ -325,6 +325,9 @@ TEST(SerializedNavigationEntryTest, Sanitize) {
   EXPECT_EQ(kSearchTerms, navigation.search_terms());
   EXPECT_EQ(kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
+
+  content::PageState empty_state;
+  EXPECT_TRUE(empty_state.Equals(empty_state.RemoveReferrer()));
 }
 
 }  // namespace
