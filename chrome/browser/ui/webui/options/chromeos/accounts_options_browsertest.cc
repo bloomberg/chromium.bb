@@ -59,7 +59,6 @@ class AccountsOptionsTest : public LoginManagerTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kMultiProfiles);
-    command_line->AppendSwitch(switches::kForceMultiProfileInTests);
   }
 
  protected:
