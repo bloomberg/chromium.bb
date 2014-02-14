@@ -211,7 +211,7 @@ void SyncedNotification::QueueBitmapFetchJobs(
 
 void SyncedNotification::StartBitmapFetch() {
   // Now that we have queued and counted them all, start the fetching.
-  ScopedVector<NotificationBitmapFetcher>::iterator iter;
+  ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
     (*iter)->Start(profile_);
   }
@@ -219,14 +219,14 @@ void SyncedNotification::StartBitmapFetch() {
 
 void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
   // Check for dups, ignore any request for a dup.
-  ScopedVector<NotificationBitmapFetcher>::iterator iter;
+  ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
     if ((*iter)->url() == url)
       return;
   }
 
   if (url.is_valid()) {
-    fetchers_.push_back(new NotificationBitmapFetcher(url, this));
+    fetchers_.push_back(new chrome::BitmapFetcher(url, this));
     DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
   }
 }

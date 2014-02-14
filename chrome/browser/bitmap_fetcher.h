@@ -1,11 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_NOTIFICATION_BITMAP_FETCHER_H_
-#define CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_NOTIFICATION_BITMAP_FETCHER_H_
+#ifndef CHROME_BROWSER_BITMAP_FETCHER_H_
+#define CHROME_BROWSER_BITMAP_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -17,33 +18,20 @@ class URLFetcher;
 
 class Profile;
 
-namespace notifier {
+namespace chrome {
 
-// A delegate interface for users of NotificationBitmapFetcher.
-class NotificationBitmapFetcherDelegate {
+// Asynchrounously fetches an image from the given URL and returns the
+// decoded Bitmap to the provided BitmapFetcherDelegate.
+class BitmapFetcher : public net::URLFetcherDelegate,
+                      public ImageDecoder::Delegate {
  public:
-  // This will be called when the bitmap has been requested, whether or not the
-  // request succeeds.  |url| is the URL that was originally fetched so we can
-  // match up the bitmap with a specific request.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) = 0;
+  BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate);
+  virtual ~BitmapFetcher();
 
- protected:
-  virtual ~NotificationBitmapFetcherDelegate() {}
-};
+  const GURL& url() const { return url_; }
 
-class NotificationBitmapFetcher
-    : public net::URLFetcherDelegate,
-      public ImageDecoder::Delegate {
- public:
-  NotificationBitmapFetcher(
-      const GURL& url,
-      NotificationBitmapFetcherDelegate* delegate);
-  virtual ~NotificationBitmapFetcher();
-
-  GURL url() const { return url_; }
-
-  // Start fetching the URL with the fetcher.  The operation will be continued
-  // in the OnURLFetchComplete callback.
+  // Start fetching the URL with the fetcher. The delegate is notified
+  // asynchronously when done.
   void Start(Profile* profile);
 
   // Methods inherited from URLFetcherDelegate
@@ -56,7 +44,8 @@ class NotificationBitmapFetcher
   // denotes the number of bytes received up to the call, and |total| is the
   // expected total size of the response (or -1 if not determined).
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current, int64 total) OVERRIDE;
+                                          int64 current,
+                                          int64 total) OVERRIDE;
 
   // Methods inherited from ImageDecoder::Delegate
 
@@ -70,15 +59,17 @@ class NotificationBitmapFetcher
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
  private:
+  // Alerts the delegate that a failure occurred.
+  void ReportFailure();
+
   scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<ImageDecoder> image_decoder_;
   const GURL url_;
-  scoped_ptr<SkBitmap> bitmap_;
-  NotificationBitmapFetcherDelegate* const delegate_;
+  BitmapFetcherDelegate* const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationBitmapFetcher);
+  DISALLOW_COPY_AND_ASSIGN(BitmapFetcher);
 };
 
-}  // namespace notifier
+}  // namespace chrome
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_NOTIFICATION_BITMAP_FETCHER_H_
+#endif  // CHROME_BROWSER_BITMAP_FETCHER_H_

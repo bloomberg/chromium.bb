@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/sync_notifier/notification_bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher.h"
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,20 +23,17 @@ const bool kAsyncCall = true;
 const bool kSyncCall = false;
 }  // namespace
 
-namespace notifier {
+namespace chrome {
 
-// Class to catch events from the NotificationBitmapFetcher for testing.
-class NotificationBitmapFetcherTestDelegate
-    : public NotificationBitmapFetcherDelegate {
+// Class to catch events from the BitmapFetcher for testing.
+class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
  public:
-  explicit NotificationBitmapFetcherTestDelegate(bool async)
+  explicit BitmapFetcherTestDelegate(bool async)
       : called_(false), success_(false), async_(async) {}
 
-  virtual ~NotificationBitmapFetcherTestDelegate() {
-    EXPECT_TRUE(called_);
-  }
+  virtual ~BitmapFetcherTestDelegate() { EXPECT_TRUE(called_); }
 
-  // Method inherited from NotificationBitmapFetcherDelegate.
+  // Method inherited from BitmapFetcherDelegate.
   virtual void OnFetchComplete(const GURL url,
                                const SkBitmap* bitmap) OVERRIDE {
     called_ = true;
@@ -63,10 +60,10 @@ class NotificationBitmapFetcherTestDelegate
   bool async_;
   SkBitmap bitmap_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationBitmapFetcherTestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(BitmapFetcherTestDelegate);
 };
 
-class NotificationBitmapFetcherBrowserTest : public InProcessBrowserTest {
+class BitmapFetcherBrowserTest : public InProcessBrowserTest {
  public:
   virtual void SetUp() OVERRIDE {
     url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(NULL));
@@ -87,8 +84,7 @@ class NotificationBitmapFetcherBrowserTest : public InProcessBrowserTest {
 // --single-process.  The reason is that the sandbox does not get created
 // for us by the test process if --single-process is used.
 
-IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       MAYBE_StartTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_StartTest) {
   GURL url("http://example.com/this-should-work");
 
   // Put some realistic looking bitmap data into the url_fetcher.
@@ -107,12 +103,12 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   std::string image_string(compressed.begin(), compressed.end());
 
   // Set up a delegate to wait for the callback.
-  NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
+  BitmapFetcherTestDelegate delegate(kAsyncCall);
 
-  NotificationBitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate);
 
-  url_fetcher_factory_->SetFakeResponse(url, image_string, net::HTTP_OK,
-                                        net::URLRequestStatus::SUCCESS);
+  url_fetcher_factory_->SetFakeResponse(
+      url, image_string, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
@@ -128,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   EXPECT_TRUE(gfx::BitmapsAreEqual(image, found_image));
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       OnImageDecodedTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnImageDecodedTest) {
   GURL url("http://example.com/this-should-work-as-well");
   SkBitmap image;
 
@@ -138,9 +133,9 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   image.allocPixels();
   image.eraseColor(SK_ColorGREEN);
 
-  NotificationBitmapFetcherTestDelegate delegate(kSyncCall);
+  BitmapFetcherTestDelegate delegate(kSyncCall);
 
-  NotificationBitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate);
 
   fetcher.OnImageDecoded(NULL, image);
 
@@ -151,16 +146,15 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   EXPECT_TRUE(gfx::BitmapsAreEqual(image, delegate.bitmap()));
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       OnURLFetchFailureTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
   GURL url("http://example.com/this-should-be-fetch-failure");
 
   // We intentionally put no data into the bitmap to simulate a failure.
 
   // Set up a delegate to wait for the callback.
-  NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
+  BitmapFetcherTestDelegate delegate(kAsyncCall);
 
-  NotificationBitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate);
 
   url_fetcher_factory_->SetFakeResponse(url,
                                         std::string(),
@@ -182,14 +176,14 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
 #define MAYBE_HandleImageFailedTest HandleImageFailedTest
 #endif
 
-IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       MAYBE_HandleImageFailedTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_HandleImageFailedTest) {
   GURL url("http://example.com/this-should-be-a-decode-failure");
-  NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
-  NotificationBitmapFetcher fetcher(url, &delegate);
-  url_fetcher_factory_->SetFakeResponse(
-      url, std::string("Not a real bitmap"),
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  BitmapFetcherTestDelegate delegate(kAsyncCall);
+  BitmapFetcher fetcher(url, &delegate);
+  url_fetcher_factory_->SetFakeResponse(url,
+                                        std::string("Not a real bitmap"),
+                                        net::HTTP_OK,
+                                        net::URLRequestStatus::SUCCESS);
 
   fetcher.Start(browser()->profile());
 
@@ -199,4 +193,4 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   EXPECT_FALSE(delegate.success());
 }
 
-}  // namespace notifier
+}  // namespace chrome

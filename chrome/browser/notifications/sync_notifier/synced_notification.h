@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/notifications/sync_notifier/notification_bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
 #include "ui/gfx/image/image.h"
@@ -31,7 +31,7 @@ namespace notifier {
 
 class ChromeNotifierService;
 
-class SyncedNotification : public NotificationBitmapFetcherDelegate {
+class SyncedNotification : public chrome::BitmapFetcherDelegate {
  public:
   explicit SyncedNotification(const syncer::SyncData& sync_data);
 
@@ -110,7 +110,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   // Helper function to mark a notification as read or dismissed.
   void SetReadState(const ReadState& read_state);
 
-  // Method inherited from NotificationBitmapFetcher delegate.
+  // Method inherited from BitmapFetcher delegate.
   virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
 
   // If this bitmap has a valid GURL, create a fetcher for it.
@@ -124,7 +124,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   ChromeNotifierService* notifier_service_;
   Profile* profile_;
   bool toast_state_;
-  ScopedVector<NotificationBitmapFetcher> fetchers_;
+  ScopedVector<chrome::BitmapFetcher> fetchers_;
   gfx::Image app_icon_bitmap_;
   gfx::Image sender_bitmap_;
   gfx::Image image_bitmap_;
