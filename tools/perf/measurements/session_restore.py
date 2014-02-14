@@ -50,11 +50,8 @@ class SessionRestore(startup.Startup):
     self._cpu_metric.Start(None, None)
 
   def MeasurePage(self, page, tab, results):
-    # Wait for all tabs to finish loading.
-    for i in xrange(len(tab.browser.tabs)):
-      t = tab.browser.tabs[i]
-      t.WaitForDocumentReadyStateToBeComplete()
 
+    tab.browser.foreground_tab.WaitForDocumentReadyStateToBeComplete()
     # Record CPU usage from browser start to when all pages have loaded.
     self._cpu_metric.Stop(None, None)
     self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
