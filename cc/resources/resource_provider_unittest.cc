@@ -105,7 +105,7 @@ class ContextSharedData {
   uint32 InsertSyncPoint() { return next_sync_point_++; }
 
   void GenMailbox(GLbyte* mailbox) {
-    memset(mailbox, 0, GL_MAILBOX_SIZE_CHROMIUM);
+    memset(mailbox, 0, sizeof(GLbyte[64]));
     memcpy(mailbox, &next_mailbox_, sizeof(next_mailbox_));
     ++next_mailbox_;
   }
@@ -322,7 +322,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   }
 
   struct PendingProduceTexture {
-    GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
+    GLbyte mailbox[64];
     scoped_refptr<TestTexture> texture;
   };
   typedef ScopedPtrDeque<PendingProduceTexture> PendingProduceTextureList;
@@ -346,7 +346,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
       OVERRIDE {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory);
     memory->CreateAndMapAnonymous(size.GetArea() * 4);
-    int8 name[GL_MAILBOX_SIZE_CHROMIUM] = {0};
+    int8 name[64] = { 0 };
     name[0] = count_++;
     SharedBitmapId id;
     id.SetName(name);
@@ -366,7 +366,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
 
   virtual scoped_ptr<SharedBitmap> GetBitmapForSharedMemory(
       base::SharedMemory* memory) OVERRIDE {
-    int8 name[GL_MAILBOX_SIZE_CHROMIUM] = {0};
+    int8 name[64] = { 0 };
     name[0] = count_++;
     SharedBitmapId id;
     id.SetName(name);

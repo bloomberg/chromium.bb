@@ -841,9 +841,7 @@ scoped_ptr<cc::CompositorFrame> MakeGLFrame(float scale_factor,
   frame->metadata.device_scale_factor = scale_factor;
   frame->gl_frame_data.reset(new cc::GLFrameData);
   frame->gl_frame_data->sync_point = 1;
-  memset(frame->gl_frame_data->mailbox.name,
-         '1',
-         sizeof(frame->gl_frame_data->mailbox.name));
+  memset(frame->gl_frame_data->mailbox.name, '1', 64);
   frame->gl_frame_data->size = size;
   frame->gl_frame_data->sub_buffer_rect = damage;
   return frame.Pass();

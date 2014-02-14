@@ -22,6 +22,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gl/gl_switches.h"
 
+// From gl2/gl2ext.h.
+#ifndef GL_MAILBOX_SIZE_CHROMIUM
+#define GL_MAILBOX_SIZE_CHROMIUM 64
+#endif
+
 namespace content {
 
 namespace {
