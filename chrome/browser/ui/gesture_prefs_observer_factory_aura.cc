@@ -140,10 +140,6 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
   // Clear for migration.
   prefs->ClearPref(kMinScrollSuccessiveVelocityEvents);
 
-  // Clear temporary pref gesture.config_is_trustworthy, so that in M33, we can
-  // remove it completely: crbug.com/269292.
-  prefs->ClearPref(prefs::kGestureConfigIsTrustworthy);
-
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -449,12 +445,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
 
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);
-
-  // Register pref for a one-time wipe of all gesture preferences.
-  registry->RegisterBooleanPref(
-      prefs::kGestureConfigIsTrustworthy,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool
