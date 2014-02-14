@@ -222,7 +222,8 @@ PrerenderContents::PrerenderContents(
       experiment_id_(experiment_id),
       creator_child_id_(-1),
       main_frame_id_(0),
-      cookie_status_(0) {
+      cookie_status_(0),
+      network_bytes_(0) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -396,6 +397,10 @@ PrerenderContents::~PrerenderContents() {
   }
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
+
+  bool used = final_status() == FINAL_STATUS_USED ||
+              final_status() == FINAL_STATUS_WOULD_HAVE_BEEN_USED;
+  prerender_manager_->RecordNetworkBytes(used, network_bytes_);
 
   // Broadcast the removal of aliases.
   for (content::RenderProcessHost::iterator host_iterator =
@@ -839,6 +844,10 @@ void PrerenderContents::RecordCookieEvent(CookieEvent event,
  void PrerenderContents::AddResourceThrottle(
      const base::WeakPtr<PrerenderResourceThrottle>& throttle) {
    resource_throttles_.push_back(throttle);
+ }
+
+ void PrerenderContents::AddNetworkBytes(int64 bytes) {
+   network_bytes_ += bytes;
  }
 
 }  // namespace prerender

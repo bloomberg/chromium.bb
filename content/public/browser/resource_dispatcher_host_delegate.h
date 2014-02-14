@@ -134,6 +134,9 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       ResourceContext* resource_context,
       ResourceResponse* response);
 
+  // Notification that a request has completed.
+  virtual void RequestComplete(net::URLRequest* url_request);
+
  protected:
   ResourceDispatcherHostDelegate();
   virtual ~ResourceDispatcherHostDelegate();

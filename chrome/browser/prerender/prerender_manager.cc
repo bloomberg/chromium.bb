@@ -242,7 +242,9 @@ PrerenderManager::PrerenderManager(Profile* profile,
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
-      histograms_(new PrerenderHistograms()) {
+      histograms_(new PrerenderHistograms()),
+      profile_network_bytes_(0),
+      last_recorded_profile_network_bytes_(0) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
@@ -1771,6 +1773,22 @@ void PrerenderManager::OnHistoryServiceDidQueryURL(
 // static
 void PrerenderManager::HangSessionStorageMergesForTesting() {
   g_hang_session_storage_merges_for_testing = true;
+}
+
+void PrerenderManager::RecordNetworkBytes(bool used, int64 prerender_bytes) {
+  if (!ActuallyPrerendering())
+    return;
+  int64 recent_profile_bytes =
+      profile_network_bytes_ - last_recorded_profile_network_bytes_;
+  last_recorded_profile_network_bytes_ = profile_network_bytes_;
+  DCHECK_GE(recent_profile_bytes, 0);
+  histograms_->RecordNetworkBytes(used, prerender_bytes, recent_profile_bytes);
+}
+
+void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {
+  DCHECK_GE(bytes, 0);
+  if (IsEnabled() && ActuallyPrerendering())
+    profile_network_bytes_ += bytes;
 }
 
 }  // namespace prerender

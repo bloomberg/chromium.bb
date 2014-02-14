@@ -785,6 +785,9 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
         -loader->request()->status().error());
   }
 
+  if (delegate_)
+    delegate_->RequestComplete(loader->request());
+
   // Destroy the ResourceLoader.
   RemovePendingRequest(info->GetChildID(), info->GetRequestID());
 }

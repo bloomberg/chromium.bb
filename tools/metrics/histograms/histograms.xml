@@ -15166,6 +15166,32 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.NetworkBytes.TotalForProfile" units="bytes">
+  <summary>
+    Number of bytes transferred on the network for URLRequests (not including
+    HTTP/TLS/TCP/IP overhead).  Reported on event of a PrerenderContents
+    deletion.  Includes prerender bytes.  Bytes are only counted when
+    prerendering is enabled and not in a control group.  The sum of the
+    distribution for a single user represents all of that user's network
+    transfers for resource for that time period while prerendering was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.NetworkBytes.Used" units="bytes">
+  <summary>
+    Number of bytes transferred on the network for URLRequests (not including
+    HTTP/TLS/TCP/IP overhead) for a prerender that was used (or would have been
+    used).
+  </summary>
+</histogram>
+
+<histogram name="Prerender.NetworkBytes.Wasted" units="bytes">
+  <summary>
+    Number of bytes transferred on the network for URLRequests (not including
+    HTTP/TLS/TCP/IP overhead) for a prerender that was not used.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.OmniboxNavigationsCouldPrerender">
   <summary>
     A boolean that indicates whether the Omnibox navigation being committed

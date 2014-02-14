@@ -346,6 +346,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // to reliably test various swap abort cases.
   static void HangSessionStorageMergesForTesting();
 
+  // Notification that a prerender has completed and its bytes should be
+  // recorded.
+  void RecordNetworkBytes(bool used, int64 prerender_bytes);
+
+  // Add to the running tally of bytes transferred over the network for this
+  // profile if prerendering is currently enabled.
+  void AddProfileNetworkBytesIfEnabled(int64 bytes);
+
  protected:
   class PendingSwap;
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -693,6 +701,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   content::NotificationRegistrar notification_registrar_;
 
   CancelableRequestConsumer query_url_consumer_;
+
+  // The number of bytes transferred over the network for the profile this
+  // PrerenderManager is attached to.
+  int64 profile_network_bytes_;
+
+  // The value of profile_network_bytes_ that was last recorded.
+  int64 last_recorded_profile_network_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

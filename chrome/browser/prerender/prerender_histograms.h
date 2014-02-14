@@ -109,6 +109,13 @@ class PrerenderHistograms {
                                         uint8 experiment_id,
                                         bool visited_before) const;
 
+  // Record the bytes in the prerender, whether it was used or not, and the
+  // total number of bytes fetched for this profile since the last call to
+  // RecordBytes.
+  void RecordNetworkBytes(bool used,
+                          int64 prerender_bytes,
+                          int64 profile_bytes);
+
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
 

@@ -90,6 +90,10 @@ void ResourceDispatcherHostDelegate::OnRequestRedirected(
     ResourceResponse* response) {
 }
 
+void ResourceDispatcherHostDelegate::RequestComplete(
+    net::URLRequest* url_request) {
+}
+
 ResourceDispatcherHostDelegate::ResourceDispatcherHostDelegate() {
 }
 

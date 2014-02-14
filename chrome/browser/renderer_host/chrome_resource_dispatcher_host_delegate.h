@@ -91,6 +91,7 @@ class ChromeResourceDispatcherHostDelegate
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceResponse* response) OVERRIDE;
+  virtual void RequestComplete(net::URLRequest* url_request) OVERRIDE;
 
   // Called on the UI thread. Allows switching out the
   // ExternalProtocolHandler::Delegate for testing code.

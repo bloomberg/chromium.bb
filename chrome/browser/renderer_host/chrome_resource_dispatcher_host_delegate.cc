@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -111,6 +112,36 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       content::NotificationService::NoDetails());
 }
 
+prerender::PrerenderContents* FindPrerenderContents(int render_process_id,
+                                                    int render_view_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh)
+    return NULL;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return NULL;
+
+  return prerender::PrerenderContents::FromWebContents(web_contents);
+}
+
+void UpdatePrerenderNetworkBytesCallback(int render_process_id,
+                                         int render_view_id,
+                                         int64 bytes) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  prerender::PrerenderContents* prerender_contents =
+      FindPrerenderContents(render_process_id, render_view_id);
+
+  if (!prerender_contents)
+    return;
+  prerender_contents->AddNetworkBytes(bytes);
+  prerender_contents->prerender_manager()->AddProfileNetworkBytesIfEnabled(
+      bytes);
+}
+
 #if !defined(OS_ANDROID)
 // Goes through the extension's file browser handlers and checks if there is one
 // that can handle the |mime_type|.
@@ -159,19 +190,9 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
 void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
-  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!rvh)
-    return;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return;
 
-  // If the request was for a prerender, abort the prerender and do not
-  // continue.
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
+      FindPrerenderContents(render_process_id, render_view_id);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     prerender::ReportPrerenderExternalURL();
@@ -619,6 +640,22 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // management UI is built on top of it.
   signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
       info->GetChildID(), info->GetRouteID());
+}
+
+// Notification that a request has completed.
+void ChromeResourceDispatcherHostDelegate::RequestComplete(
+    net::URLRequest* url_request) {
+  // Jump on the UI thread and inform the prerender about the bytes.
+  const ResourceRequestInfo* info =
+      ResourceRequestInfo::ForRequest(url_request);
+  if (url_request && !url_request->was_cached()) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&UpdatePrerenderNetworkBytesCallback,
+                                       info->GetChildID(),
+                                       info->GetRouteID(),
+                                       url_request->GetTotalReceivedBytes()));
+  }
 }
 
 // static
