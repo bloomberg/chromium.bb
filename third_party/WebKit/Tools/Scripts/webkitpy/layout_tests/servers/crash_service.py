@@ -26,16 +26,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A class to help start/stop the crash service used by layout tests."""
-
-import logging
-import os
-import time
+"""Start and stop the crash service as it is used by the layout tests."""
 
 from webkitpy.layout_tests.servers import server_base
-
-
-_log = logging.getLogger(__name__)
 
 
 class CrashService(server_base.ServerBase):
@@ -48,6 +41,7 @@ class CrashService(server_base.ServerBase):
         super(CrashService, self).__init__(port_obj, port_obj.default_results_directory())
         self._name = 'CrashService'
         self._crash_dumps_dir = crash_dumps_dir
+        self._env = None
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
         self._start_cmd = [self._port_obj._path_to_crash_service(),
