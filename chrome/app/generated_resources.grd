@@ -10923,19 +10923,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Get themes
       </message>
 
-      <!-- Android welcome page strings -->
-      <if expr="is_android">
-        <message name="IDS_WELCOME_PAGE_SEARCH_BUBBLE" desc="The message displayed on the search bubble on the welcome page">
-          Search the web directly
-        </message>
-        <message name="IDS_WELCOME_PAGE_TABS_BUBBLE" desc="The message displayed on tabs bubble on the welcome page">
-          Switch between open tabs
-        </message>
-        <message name="IDS_WELCOME_PAGE_LEARN_MORE" desc="The text for the info hyperlink on the welcome page">
-          Learn more
-        </message>
-      </if>
-
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
         Predict network actions to improve page load performance
