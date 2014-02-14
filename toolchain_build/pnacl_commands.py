@@ -21,7 +21,7 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 # User-facing tools
 DRIVER_TOOLS = ['pnacl-' + tool + '.py' for tool in
-                    ('abicheck', 'ar', 'as', 'clang', 'clang++', 'dis',
+                    ('abicheck', 'ar', 'as', 'clang', 'clang++', 'compress', 'dis',
                      'driver', 'finalize', 'ld', 'nativeld', 'nm', 'opt',
                      'ranlib', 'readelf', 'strip', 'translate')]
 # Utilities used by the driver

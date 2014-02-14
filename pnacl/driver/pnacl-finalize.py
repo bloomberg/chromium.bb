@@ -22,11 +22,13 @@ EXTRA_ENV = {
   'INPUTS'             : '',
   'OUTPUT'             : '',
   'DISABLE_FINALIZE'   : '0',
+  'COMPRESS'           : '0',
 }
 
 PrepPatterns = [
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
     ( '--no-finalize',   "env.set('DISABLE_FINALIZE', '1')"),
+    ( '--compress',      "env.set('COMPRESS', '1')"),
     ( '(-.*)',           driver_tools.UnrecognizedOption),
     ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
@@ -58,6 +60,9 @@ def main(argv):
                '--bitcode-format=pnacl', f_input, '-o', f_output]
   # Transform the file, and convert it to a PNaCl bitcode file.
   driver_tools.RunDriver('opt', opt_flags)
+  # Compress the result if requested.
+  if env.getbool('COMPRESS'):
+    driver_tools.RunDriver('compress', [f_output])
   return 0
 
 
@@ -71,4 +76,6 @@ def get_help(unused_argv):
   -o <file>                 Place the output into <file>. Otherwise, the
                             input file is modified in-place.
   --no-finalize             Don't run preparation steps (just copy in -> out).
+  --compress                Run pnacl-compress on the generated pexe to minimize
+                            pexe size.
 """ % script
