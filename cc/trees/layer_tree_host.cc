@@ -887,12 +887,8 @@ void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
 
 void LayerTreeHost::SetPrioritiesForLayers(
     const RenderSurfaceLayerList& update_list) {
-  typedef LayerIterator<Layer,
-                        RenderSurfaceLayerList,
-                        RenderSurface,
-                        LayerIteratorActions::FrontToBack> LayerIteratorType;
-
   PriorityCalculator calculator;
+  typedef LayerIterator<Layer> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&update_list);
   for (LayerIteratorType it = LayerIteratorType::Begin(&update_list);
        it != end;
@@ -989,13 +985,6 @@ void LayerTreeHost::PaintLayerContents(
     ResourceUpdateQueue* queue,
     bool* did_paint_content,
     bool* need_more_updates) {
-  // Use FrontToBack to allow for testing occlusion and performing culling
-  // during the tree walk.
-  typedef LayerIterator<Layer,
-                        RenderSurfaceLayerList,
-                        RenderSurface,
-                        LayerIteratorActions::FrontToBack> LayerIteratorType;
-
   bool record_metrics_for_frame =
       settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
@@ -1010,6 +999,9 @@ void LayerTreeHost::PaintLayerContents(
 
   in_paint_layer_contents_ = true;
 
+  // Iterates front-to-back to allow for testing occlusion and performing
+  // culling during the tree walk.
+  typedef LayerIterator<Layer> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
   for (LayerIteratorType it =
            LayerIteratorType::Begin(&render_surface_layer_list);
