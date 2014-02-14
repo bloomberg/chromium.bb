@@ -437,7 +437,7 @@ void BrowserPlugin::OnBuffersSwapped(
   EnableCompositing(true);
 
   compositing_helper_->OnBuffersSwapped(params.size,
-                                        params.mailbox,
+                                        params.mailbox_name,
                                         params.gpu_route_id,
                                         params.gpu_host_id,
                                         GetDeviceScaleFactor());

@@ -67,7 +67,7 @@ void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
 
   FrameMsg_BuffersSwapped_Params params;
   params.size = gpu_params.size;
-  params.mailbox = gpu_params.mailbox;
+  params.mailbox_name = gpu_params.mailbox_name;
   params.gpu_route_id = gpu_params.route_id;
   params.gpu_host_id = gpu_host_id;
 
@@ -94,7 +94,7 @@ void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
 void CrossProcessFrameConnector::OnBuffersSwappedACK(
     const FrameHostMsg_BuffersSwappedACK_Params& params) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox = params.mailbox;
+  ack_params.mailbox_name = params.mailbox_name;
   ack_params.sync_point = params.sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(params.gpu_route_id,
                                                  params.gpu_host_id,

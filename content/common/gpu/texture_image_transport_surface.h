@@ -74,7 +74,7 @@ class TextureImageTransportSurface
   void AttachBackTextureToFBO();
   void ReleaseBackTexture();
   void ReleaseFrontTexture();
-  void BufferPresentedImpl(const gpu::Mailbox& mailbox_name);
+  void BufferPresentedImpl(const std::string& mailbox_name);
 
   // The framebuffer that represents this surface (service id). Allocated lazily
   // in OnMakeCurrent.

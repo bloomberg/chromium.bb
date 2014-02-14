@@ -170,7 +170,7 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   guest_->clear_damage_buffer();
   FrameMsg_BuffersSwapped_Params guest_params;
   guest_params.size = params.size;
-  guest_params.mailbox = params.mailbox;
+  guest_params.mailbox_name = params.mailbox_name;
   guest_params.gpu_route_id = params.route_id;
   guest_params.gpu_host_id = gpu_host_id;
   guest_->SendMessageToEmbedder(

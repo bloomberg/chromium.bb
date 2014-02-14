@@ -949,7 +949,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_id = widget_host_->surface_id();
   params.route_id = widget_host_->GetRoutingID();
-  memset(params.mailbox.name, '1', sizeof(params.mailbox.name));
+  params.mailbox_name = std::string(64, '1');
   params.size = view_size;
   params.scale_factor = 1.f;
 
@@ -968,7 +968,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params post_params;
   post_params.surface_id = widget_host_->surface_id();
   post_params.route_id = widget_host_->GetRoutingID();
-  memset(post_params.mailbox.name, '1', sizeof(post_params.mailbox.name));
+  post_params.mailbox_name = std::string(64, '1');
   post_params.surface_size = gfx::Size(200, 200);
   post_params.surface_scale_factor = 2.f;
   post_params.x = 40;

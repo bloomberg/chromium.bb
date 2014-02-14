@@ -24,7 +24,7 @@
 IPC_STRUCT_BEGIN(FrameMsg_BuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int, gpu_host_id)
   IPC_STRUCT_MEMBER(int, gpu_route_id)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(gfx::Size, size)
 IPC_STRUCT_END()
 
@@ -40,7 +40,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(FrameHostMsg_BuffersSwappedACK_Params)
   IPC_STRUCT_MEMBER(int, gpu_host_id)
   IPC_STRUCT_MEMBER(int, gpu_route_id)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(uint32, sync_point)
 IPC_STRUCT_END()
 

@@ -487,7 +487,7 @@ void RenderFrameImpl::OnBuffersSwapped(
   }
   compositing_helper_->OnBuffersSwapped(
       params.size,
-      params.mailbox,
+      params.mailbox_name,
       params.gpu_route_id,
       params.gpu_host_id,
       render_view_->GetWebView()->deviceScaleFactor());

@@ -92,8 +92,8 @@ Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
 Texture::~Texture() {
 }
 
-gpu::Mailbox Texture::Produce() {
-  return gpu::Mailbox();
+std::string Texture::Produce() {
+  return std::string();
 }
 
 CompositorLock::CompositorLock(Compositor* compositor)

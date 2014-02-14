@@ -60,10 +60,6 @@ class Canvas;
 class Display;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace ui {
 class CompositorLock;
 class CompositorVSyncManager;
@@ -534,14 +530,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void BuffersSwapped(const gfx::Size& surface_size,
                       const gfx::Rect& damage_rect,
                       float surface_scale_factor,
-                      const gpu::Mailbox& mailbox,
+                      const std::string& mailbox_name,
                       const std::vector<ui::LatencyInfo>& latency_info,
                       const BufferPresentedCallback& ack_callback);
 
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
                           float surface_scale_factor,
                           const gfx::Rect& damage_rect,
-                          const gpu::Mailbox& mailbox,
+                          const std::string& mailbox_name,
                           const BufferPresentedCallback& ack_callback);
 
   void SwapBuffersCompleted(

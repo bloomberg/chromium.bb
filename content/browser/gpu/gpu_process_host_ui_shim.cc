@@ -288,12 +288,16 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
                                "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
     return;
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox = params.mailbox;
+  ack_params.mailbox_name = params.mailbox_name;
   ack_params.sync_point = 0;
   ScopedSendOnIOThread delayed_send(
       host_id_,
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
+
+  if (!params.mailbox_name.empty() &&
+      params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
+    return;
 
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
@@ -334,12 +338,16 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
                                "GpuHostMsg_AcceleratedSurfacePostSubBuffer"))
     return;
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox = params.mailbox;
+  ack_params.mailbox_name = params.mailbox_name;
   ack_params.sync_point = 0;
   ScopedSendOnIOThread delayed_send(
       host_id_,
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
+
+  if (!params.mailbox_name.empty() &&
+      params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
+    return;
 
   RenderWidgetHostViewPort* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);

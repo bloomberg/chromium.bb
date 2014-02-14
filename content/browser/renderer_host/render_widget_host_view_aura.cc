@@ -327,7 +327,10 @@ void SendCompositorFrameAck(
   DCHECK(!texture_to_produce.get() || !skip_frame);
   if (texture_to_produce.get()) {
     GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    ack.gl_frame_data->mailbox = texture_to_produce->Produce();
+    std::string mailbox_name = texture_to_produce->Produce();
+    std::copy(mailbox_name.data(),
+              mailbox_name.data() + mailbox_name.length(),
+              reinterpret_cast<char*>(ack.gl_frame_data->mailbox.name));
     ack.gl_frame_data->size = texture_to_produce->size();
     ack.gl_frame_data->sync_point =
         gl_helper ? gl_helper->InsertSyncPoint() : 0;
@@ -345,7 +348,7 @@ void SendCompositorFrameAck(
 void AcknowledgeBufferForGpu(
     int32 route_id,
     int gpu_host_id,
-    const gpu::Mailbox& received_mailbox,
+    const std::string& received_mailbox,
     bool skip_frame,
     const scoped_refptr<ui::Texture>& texture_to_produce) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack;
@@ -353,10 +356,10 @@ void AcknowledgeBufferForGpu(
   DCHECK(!texture_to_produce.get() || !skip_frame);
   if (texture_to_produce.get()) {
     GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    ack.mailbox = texture_to_produce->Produce();
+    ack.mailbox_name = texture_to_produce->Produce();
     sync_point = gl_helper ? gl_helper->InsertSyncPoint() : 0;
   } else if (skip_frame) {
-    ack.mailbox = received_mailbox;
+    ack.mailbox_name = received_mailbox;
     ack.sync_point = 0;
   }
 
@@ -1299,7 +1302,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     const gfx::Rect& surface_rect,
     float surface_scale_factor,
     const gfx::Rect& damage_rect,
-    const gpu::Mailbox& mailbox,
+    const std::string& mailbox_name,
     const BufferPresentedCallback& ack_callback) {
   if (last_swapped_surface_size_ != surface_rect.size()) {
     // The surface could have shrunk since we skipped an update, in which
@@ -1312,7 +1315,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
 
   if (ShouldSkipFrame(ConvertSizeToDIP(surface_scale_factor,
                                        surface_rect.size())) ||
-      mailbox.IsZero()) {
+      mailbox_name.empty()) {
     skipped_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return false;
@@ -1327,7 +1330,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     return false;
   }
 
-  current_surface_->Consume(mailbox, surface_rect.size());
+  current_surface_->Consume(mailbox_name, surface_rect.size());
   released_front_lock_ = NULL;
   UpdateExternalTexture();
 
@@ -1393,11 +1396,11 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       &AcknowledgeBufferForGpu,
       params_in_pixel.route_id,
       gpu_host_id,
-      params_in_pixel.mailbox);
+      params_in_pixel.mailbox_name);
   BuffersSwapped(params_in_pixel.size,
                  gfx::Rect(params_in_pixel.size),
                  params_in_pixel.scale_factor,
-                 params_in_pixel.mailbox,
+                 params_in_pixel.mailbox_name,
                  params_in_pixel.latency_info,
                  ack_callback);
 }
@@ -1688,10 +1691,13 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
   gl_helper->WaitSyncPoint(frame->gl_frame_data->sync_point);
 
+  std::string mailbox_name(
+      reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
+      sizeof(frame->gl_frame_data->mailbox.name));
   BuffersSwapped(frame->gl_frame_data->size,
                  frame->gl_frame_data->sub_buffer_rect,
                  frame->metadata.device_scale_factor,
-                 frame->gl_frame_data->mailbox,
+                 mailbox_name,
                  frame->metadata.latency_info,
                  ack_callback);
 }
@@ -1719,7 +1725,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const gfx::Size& surface_size,
     const gfx::Rect& damage_rect,
     float surface_scale_factor,
-    const gpu::Mailbox& mailbox,
+    const std::string& mailbox_name,
     const std::vector<ui::LatencyInfo>& latency_info,
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
@@ -1729,7 +1735,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
   if (!SwapBuffersPrepare(surface_rect,
                           surface_scale_factor,
                           damage_rect,
-                          mailbox,
+                          mailbox_name,
                           ack_callback)) {
     return;
   }
@@ -1796,11 +1802,11 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
       base::Bind(&AcknowledgeBufferForGpu,
                  params_in_pixel.route_id,
                  gpu_host_id,
-                 params_in_pixel.mailbox);
+                 params_in_pixel.mailbox_name);
   BuffersSwapped(params_in_pixel.surface_size,
                  damage_rect,
                  params_in_pixel.surface_scale_factor,
-                 params_in_pixel.mailbox,
+                 params_in_pixel.mailbox_name,
                  params_in_pixel.latency_info,
                  ack_callback);
 }

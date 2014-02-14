@@ -69,7 +69,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void EnableCompositing(bool);
   void OnContainerDestroy();
   void OnBuffersSwapped(const gfx::Size& size,
-                        const gpu::Mailbox& mailbox,
+                        const std::string& mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id,
                         float device_scale_factor);

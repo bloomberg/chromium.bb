@@ -40,10 +40,6 @@ class Rect;
 class Size;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace ui {
 
 class Compositor;
@@ -116,12 +112,12 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   virtual unsigned int PrepareTexture() = 0;
 
   // Replaces the texture with the texture from the specified mailbox.
-  virtual void Consume(const gpu::Mailbox& mailbox,
+  virtual void Consume(const std::string& mailbox_name,
                        const gfx::Size& new_size) {}
 
   // Moves the texture into the mailbox and returns the mailbox name.
   // The texture must have been previously consumed from a mailbox.
-  virtual gpu::Mailbox Produce();
+  virtual std::string Produce();
 
  protected:
   virtual ~Texture();
