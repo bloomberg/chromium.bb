@@ -1128,6 +1128,8 @@
     'browser/service_worker/service_worker_storage.h',
     'browser/service_worker/service_worker_version.cc',
     'browser/service_worker/service_worker_version.h',
+    'browser/shared_worker/shared_worker_message_filter.cc',
+    'browser/shared_worker/shared_worker_message_filter.h',
     'browser/shared_worker/shared_worker_service_impl.cc',
     'browser/shared_worker/shared_worker_service_impl.h',
     'browser/signed_certificate_timestamp_store_impl.cc',
