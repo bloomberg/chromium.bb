@@ -21,7 +21,7 @@ class GoogleServiceAuthError;
 class Profile;
 class SigninGlobalError;
 
-// ProfileOAuth2TokenService is a BrowserContextKeyedService that retrieves
+// ProfileOAuth2TokenService is a class that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
 // refresh tokens.
 //
@@ -35,14 +35,14 @@ class SigninGlobalError;
 //
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
-class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public BrowserContextKeyedService {
+class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
+  virtual ~ProfileOAuth2TokenService();
+
   // Initializes this token service with the profile.
   virtual void Initialize(Profile* profile);
 
-  // BrowserContextKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown();
 
   // Gets an account id of the primary account related to the profile.
   // DEPRECATED: Use SigninManagerBase::GetAuthenticatedAccountId() instead.
@@ -82,7 +82,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
  protected:
   ProfileOAuth2TokenService();
-  virtual ~ProfileOAuth2TokenService();
 
   // OAuth2TokenService overrides.
   // Note: These methods are overriden so that ProfileOAuth2TokenService is a

@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -53,7 +54,7 @@ class SigninTrackerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeProfileOAuth2TokenService::Build);
+                              FakeProfileOAuth2TokenServiceWrapper::Build);
 
     profile_ = builder.Build();
 

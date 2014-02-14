@@ -68,7 +68,7 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   virtual void FireRefreshTokensLoadedFromJava(JNIEnv* env, jobject obj);
 
  protected:
-  friend class ProfileOAuth2TokenServiceFactory;
+  friend class ProfileOAuth2TokenServiceWrapperImpl;
   AndroidProfileOAuth2TokenService();
   virtual ~AndroidProfileOAuth2TokenService();
 

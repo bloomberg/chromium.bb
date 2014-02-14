@@ -16,6 +16,40 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #endif
 
+class ProfileOAuth2TokenServiceWrapperImpl
+    : public ProfileOAuth2TokenServiceWrapper {
+ public:
+  explicit ProfileOAuth2TokenServiceWrapperImpl(Profile* profile);
+  virtual ~ProfileOAuth2TokenServiceWrapperImpl();
+
+  // ProfileOAuth2TokenServiceWrapper:
+  virtual ProfileOAuth2TokenService* GetProfileOAuth2TokenService() OVERRIDE;
+
+  // BrowserContextKeyedService:
+  virtual void Shutdown() OVERRIDE;
+
+ private:
+  scoped_ptr<ProfileOAuth2TokenService> profile_oauth2_token_service_;
+};
+
+ProfileOAuth2TokenServiceWrapperImpl::ProfileOAuth2TokenServiceWrapperImpl(
+    Profile* profile) {
+  profile_oauth2_token_service_.reset(new ProfileOAuth2TokenServiceFactory::
+                                          PlatformSpecificOAuth2TokenService());
+  profile_oauth2_token_service_->Initialize(profile);
+}
+
+ProfileOAuth2TokenServiceWrapperImpl::~ProfileOAuth2TokenServiceWrapperImpl() {}
+
+void ProfileOAuth2TokenServiceWrapperImpl::Shutdown() {
+  profile_oauth2_token_service_->Shutdown();
+}
+
+ProfileOAuth2TokenService*
+ProfileOAuth2TokenServiceWrapperImpl::GetProfileOAuth2TokenService() {
+  return profile_oauth2_token_service_.get();
+}
+
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ProfileOAuth2TokenService",
@@ -27,18 +61,24 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
 }
 
+// static
 ProfileOAuth2TokenService*
 ProfileOAuth2TokenServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<ProfileOAuth2TokenService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+  ProfileOAuth2TokenServiceWrapper* wrapper =
+      static_cast<ProfileOAuth2TokenServiceWrapper*>(
+          GetInstance()->GetServiceForBrowserContext(profile, true));
+  if (!wrapper)
+    return NULL;
+  return wrapper->GetProfileOAuth2TokenService();
 }
 
 // static
 ProfileOAuth2TokenServiceFactory::PlatformSpecificOAuth2TokenService*
 ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
     Profile* profile) {
-  return static_cast<PlatformSpecificOAuth2TokenService*>(
-      GetForProfile(profile));
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  return static_cast<PlatformSpecificOAuth2TokenService*>(service);
 }
 
 // static
@@ -51,8 +91,5 @@ BrowserContextKeyedService*
 ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  PlatformSpecificOAuth2TokenService* service =
-      new PlatformSpecificOAuth2TokenService();
-  service->Initialize(profile);
-  return service;
+  return new ProfileOAuth2TokenServiceWrapperImpl(profile);
 }

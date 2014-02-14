@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -107,7 +108,7 @@ class SigninManagerTest : public testing::Test {
         prefs_.get());
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeProfileOAuth2TokenService::Build);
+                              FakeProfileOAuth2TokenServiceWrapper::Build);
     profile_ = builder.Build();
   }
 

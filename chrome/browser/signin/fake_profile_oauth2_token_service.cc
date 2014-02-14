@@ -13,23 +13,6 @@ FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 
-// static
-BrowserContextKeyedService* FakeProfileOAuth2TokenService::Build(
-    content::BrowserContext* profile) {
-  FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
-  service->Initialize(reinterpret_cast<Profile*>(profile));
-  return service;
-}
-
-BrowserContextKeyedService*
-FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService(
-    content::BrowserContext* profile) {
-  FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
-  service->set_auto_post_fetch_response_on_message_loop(true);
-  service->Initialize(reinterpret_cast<Profile*>(profile));
-  return service;
-}
-
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
     : auto_post_fetch_response_on_message_loop_(false) {
   SigninAccountIdHelper::SetDisableForTest(true);

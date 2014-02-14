@@ -20,6 +20,7 @@
 #include "chrome/browser/password_manager/null_password_store_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -160,7 +161,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
+        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);

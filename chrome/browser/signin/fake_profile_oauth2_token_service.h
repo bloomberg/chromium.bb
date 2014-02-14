@@ -17,10 +17,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #endif
 
-namespace content {
-class BrowserContext;
-}
-
 // Helper class to simplify writing unittests that depend on an instance of
 // ProfileOAuth2TokenService.
 //
@@ -110,17 +106,6 @@ class FakeProfileOAuth2TokenService
   void set_auto_post_fetch_response_on_message_loop(bool auto_post_response) {
     auto_post_fetch_response_on_message_loop_ = auto_post_response;
   }
-
-  // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory().
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile);
-
-  // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory() that creates a
-  // FakeProfileOAuth2TokenService object that posts fetch responses on the
-  // current message loop.
-  static BrowserContextKeyedService* BuildAutoIssuingTokenService(
-      content::BrowserContext* profile);
 
  protected:
   // OAuth2TokenService overrides.

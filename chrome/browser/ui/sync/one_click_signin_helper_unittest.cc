@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -318,7 +319,7 @@ void OneClickSigninHelperTest::SubmitGAIAPassword(
 content::BrowserContext* OneClickSigninHelperTest::CreateBrowserContext() {
   TestingProfile::Builder builder;
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                            FakeProfileOAuth2TokenService::Build);
+                            FakeProfileOAuth2TokenServiceWrapper::Build);
   scoped_ptr<TestingProfile> profile = builder.Build();
 
   fake_oauth2_token_service_ =

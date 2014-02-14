@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -513,7 +514,7 @@ class ProfileSyncServiceAutofillTest
     TestingProfile::Builder builder;
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
+        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     MockWebDataServiceWrapper* wrapper =

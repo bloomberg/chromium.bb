@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/account_reconcilor.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -100,7 +101,7 @@ AccountReconcilorTest::AccountReconcilorTest()
 void AccountReconcilorTest::SetUp() {
   TestingProfile::Builder builder;
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                            FakeProfileOAuth2TokenService::Build);
+                            FakeProfileOAuth2TokenServiceWrapper::Build);
   builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                             FakeSigninManagerBase::Build);
   builder.AddTestingFactory(AccountReconcilorFactory::GetInstance(),

@@ -7,6 +7,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,7 +28,7 @@ class GCMNetworkChannelDelegateImplTest : public ::testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
+        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build();
 
     FakeProfileOAuth2TokenService* token_service =

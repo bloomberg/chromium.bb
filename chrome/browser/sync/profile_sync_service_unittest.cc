@@ -10,6 +10,7 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -95,7 +96,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
+        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
 

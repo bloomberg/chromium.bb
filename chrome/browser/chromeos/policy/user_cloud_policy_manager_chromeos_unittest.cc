@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -92,7 +93,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     TestingProfile::TestingFactories factories;
     factories.push_back(
         std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                       FakeProfileOAuth2TokenService::Build));
+                       FakeProfileOAuth2TokenServiceWrapper::Build));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
         base::UTF8ToUTF16("testing_profile"), 0, std::string(), factories);

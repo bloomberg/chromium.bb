@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -188,7 +189,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
-        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
+        FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
