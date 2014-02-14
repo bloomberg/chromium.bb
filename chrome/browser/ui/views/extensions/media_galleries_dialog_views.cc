@@ -78,21 +78,27 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       accepted_(false) {
   InitChildViews();
 
-  // Ownership of |contents_| is handed off by this call. |window_| will take
-  // care of deleting itself after calling DeleteDelegate().
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(
-          controller->web_contents());
-  DCHECK(web_contents_modal_dialog_manager);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  DCHECK(modal_delegate);
-  window_ = views::Widget::CreateWindowAsFramelessChild(
-      this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
+  // May be NULL during tests.
+  if (controller->web_contents()) {
+    // Ownership of |contents_| is handed off by this call. |window_| will take
+    // care of deleting itself after calling DeleteDelegate().
+    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(
+            controller->web_contents());
+    DCHECK(web_contents_modal_dialog_manager);
+    WebContentsModalDialogManagerDelegate* modal_delegate =
+        web_contents_modal_dialog_manager->delegate();
+    DCHECK(modal_delegate);
+    window_ = views::Widget::CreateWindowAsFramelessChild(
+        this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+    web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
+  }
 }
 
-MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
+MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {
+  if (!controller_->web_contents())
+    delete contents_;
+}
 
 void MediaGalleriesDialogViews::InitChildViews() {
   // Outer dialog layout.
@@ -318,8 +324,13 @@ bool MediaGalleriesDialogViews::Accept() {
 
 void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  confirm_available_ = true;
   GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
+
+  ButtonPressedAction(sender);
+}
+
+void MediaGalleriesDialogViews::ButtonPressedAction(views::Button* sender) {
+  confirm_available_ = true;
 
   if (sender == add_gallery_button_) {
     controller_->OnAddFolderClicked();
