@@ -547,7 +547,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoFirstChild:
             // first-child matches the first child that is an element
             if (Element* parent = element.parentElement()) {
-                bool result = siblingTraversalStrategy.isFirstChild(&element);
+                bool result = siblingTraversalStrategy.isFirstChild(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                     parent->setChildrenAffectedByFirstChildRules();
@@ -560,7 +560,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoFirstOfType:
             // first-of-type matches the first element of its type
             if (Element* parent = element.parentElement()) {
-                bool result = siblingTraversalStrategy.isFirstOfType(&element, element.tagQName());
+                bool result = siblingTraversalStrategy.isFirstOfType(element, element.tagQName());
                 if (m_mode == ResolvingStyle)
                     parent->setChildrenAffectedByForwardPositionalRules();
                 return result;
@@ -569,7 +569,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoLastChild:
             // last-child matches the last child that is an element
             if (Element* parent = element.parentElement()) {
-                bool result = parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(&element);
+                bool result = parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                     parent->setChildrenAffectedByLastChildRules();
@@ -586,13 +586,13 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     parent->setChildrenAffectedByBackwardPositionalRules();
                 if (!parent->isFinishedParsingChildren())
                     return false;
-                return siblingTraversalStrategy.isLastOfType(&element, element.tagQName());
+                return siblingTraversalStrategy.isLastOfType(element, element.tagQName());
             }
             break;
         case CSSSelector::PseudoOnlyChild:
             if (Element* parent = element.parentElement()) {
-                bool firstChild = siblingTraversalStrategy.isFirstChild(&element);
-                bool onlyChild = firstChild && parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(&element);
+                bool firstChild = siblingTraversalStrategy.isFirstChild(element);
+                bool onlyChild = firstChild && parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                     parent->setChildrenAffectedByFirstChildRules();
@@ -614,14 +614,14 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 }
                 if (!parent->isFinishedParsingChildren())
                     return false;
-                return siblingTraversalStrategy.isFirstOfType(&element, element.tagQName()) && siblingTraversalStrategy.isLastOfType(&element, element.tagQName());
+                return siblingTraversalStrategy.isFirstOfType(element, element.tagQName()) && siblingTraversalStrategy.isLastOfType(element, element.tagQName());
             }
             break;
         case CSSSelector::PseudoNthChild:
             if (!selector.parseNth())
                 break;
             if (Element* parent = element.parentElement()) {
-                int count = 1 + siblingTraversalStrategy.countElementsBefore(&element);
+                int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                     element.setChildIndex(count);
@@ -638,7 +638,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             if (!selector.parseNth())
                 break;
             if (Element* parent = element.parentElement()) {
-                int count = 1 + siblingTraversalStrategy.countElementsOfTypeBefore(&element, element.tagQName());
+                int count = 1 + siblingTraversalStrategy.countElementsOfTypeBefore(element, element.tagQName());
                 if (m_mode == ResolvingStyle)
                     parent->setChildrenAffectedByForwardPositionalRules();
 
@@ -654,7 +654,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     parent->setChildrenAffectedByBackwardPositionalRules();
                 if (!parent->isFinishedParsingChildren())
                     return false;
-                int count = 1 + siblingTraversalStrategy.countElementsAfter(&element);
+                int count = 1 + siblingTraversalStrategy.countElementsAfter(element);
                 if (selector.matchNth(count))
                     return true;
             }
@@ -668,7 +668,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 if (!parent->isFinishedParsingChildren())
                     return false;
 
-                int count = 1 + siblingTraversalStrategy.countElementsOfTypeAfter(&element, element.tagQName());
+                int count = 1 + siblingTraversalStrategy.countElementsOfTypeAfter(element, element.tagQName());
                 if (selector.matchNth(count))
                     return true;
             }

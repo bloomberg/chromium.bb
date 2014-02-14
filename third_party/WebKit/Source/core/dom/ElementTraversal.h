@@ -56,7 +56,8 @@ Element* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin
 // Utility function to traverse only the element and pseudo-element siblings of a node.
 Element* pseudoAwarePreviousSibling(const Node&);
 
-// Next sibling.
+// Previous / Next sibling.
+Element* previousSibling(const Node&);
 Element* nextSibling(const Node&);
 
 template <class NodeType>
@@ -144,6 +145,14 @@ inline Element* pseudoAwarePreviousSibling(const Node& current)
     Node* node = current.pseudoAwarePreviousSibling();
     while (node && !node->isElementNode())
         node = node->pseudoAwarePreviousSibling();
+    return toElement(node);
+}
+
+inline Element* previousSibling(const Node& current)
+{
+    Node* node = current.previousSibling();
+    while (node && !node->isElementNode())
+        node = node->previousSibling();
     return toElement(node);
 }
 
