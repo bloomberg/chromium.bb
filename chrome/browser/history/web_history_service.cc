@@ -13,8 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -84,10 +82,8 @@ class RequestImpl : public WebHistoryService::Request,
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile_);
     token_request_ = token_service->StartRequest(
-        signin_manager->GetAuthenticatedAccountId(), oauth_scopes, this);
+        token_service->GetPrimaryAccountId(), oauth_scopes, this);
     is_pending_ = true;
   }
 
@@ -107,12 +103,9 @@ class RequestImpl : public WebHistoryService::Request,
       oauth_scopes.insert(kHistoryOAuthScope);
       ProfileOAuth2TokenService* token_service =
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      SigninManagerBase* signin_manager =
-          SigninManagerFactory::GetForProfile(profile_);
-      token_service->InvalidateToken(
-          signin_manager->GetAuthenticatedAccountId(),
-          oauth_scopes,
-          access_token_);
+      token_service->InvalidateToken(token_service->GetPrimaryAccountId(),
+                                     oauth_scopes,
+                                     access_token_);
 
       access_token_.clear();
       Start();

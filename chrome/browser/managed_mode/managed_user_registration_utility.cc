@@ -20,8 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -143,12 +141,10 @@ ManagedUserRegistrationUtility::Create(Profile* profile) {
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher =
       ManagedUserRefreshTokenFetcher::Create(
           token_service,
-          signin_manager->GetAuthenticatedAccountId(),
+          token_service->GetPrimaryAccountId(),
           profile->GetRequestContext());
   ManagedUserSyncService* managed_user_sync_service =
       ManagedUserSyncServiceFactory::GetForProfile(profile);

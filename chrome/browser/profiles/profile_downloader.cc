@@ -19,8 +19,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -235,11 +233,8 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
     return;
   }
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(delegate_->GetBrowserProfile());
   account_id_ =
-      account_id.empty() ?
-          signin_manager->GetAuthenticatedAccountId() : account_id;
+      account_id.empty() ? service->GetPrimaryAccountId() : account_id;
   if (service->RefreshTokenIsAvailable(account_id_)) {
     StartFetchingOAuth2AccessToken();
   } else {

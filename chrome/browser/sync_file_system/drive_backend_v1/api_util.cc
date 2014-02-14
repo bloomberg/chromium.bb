@@ -22,8 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -159,7 +157,6 @@ bool CreateTemporaryFile(const base::FilePath& dir_path,
 APIUtil::APIUtil(Profile* profile,
                  const base::FilePath& temp_dir_path)
     : oauth_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
-      signin_manager_(SigninManagerFactory::GetForProfile(profile)),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path),
       has_initialized_token_(false) {
@@ -186,7 +183,7 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   }
 
-  drive_service_->Initialize(signin_manager_->GetAuthenticatedAccountId());
+  drive_service_->Initialize(oauth_service_->GetPrimaryAccountId());
   drive_service_->AddObserver(this);
   has_initialized_token_ = drive_service_->HasRefreshToken();
 
@@ -666,7 +663,7 @@ GURL APIUtil::DirectoryTitleToOrigin(const std::string& title) {
 void APIUtil::OnReadyToSendRequests() {
   DCHECK(CalledOnValidThread());
   if (!has_initialized_token_) {
-    drive_service_->Initialize(signin_manager_->GetAuthenticatedAccountId());
+    drive_service_->Initialize(oauth_service_->GetPrimaryAccountId());
     has_initialized_token_ = true;
   }
   FOR_EACH_OBSERVER(APIUtilObserver, observers_, OnAuthenticated());

@@ -179,7 +179,7 @@ void TiclInvalidationService::RequestAccessToken() {
     oauth2_scopes.insert(kOAuth2Scopes[i]);
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  const std::string& account_id = signin_manager_->GetAuthenticatedAccountId();
+  const std::string& account_id = oauth2_token_service_->GetPrimaryAccountId();
   oauth2_token_service_->InvalidateToken(account_id,
                                          oauth2_scopes,
                                          access_token_);
@@ -237,7 +237,7 @@ void TiclInvalidationService::OnGetTokenFailure(
 
 void TiclInvalidationService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  if (signin_manager_->GetAuthenticatedAccountId() == account_id) {
+  if (oauth2_token_service_->GetPrimaryAccountId() == account_id) {
     if (!IsStarted() && IsReadyToStart()) {
       StartInvalidator(PUSH_CLIENT_CHANNEL);
     }
@@ -246,7 +246,7 @@ void TiclInvalidationService::OnRefreshTokenAvailable(
 
 void TiclInvalidationService::OnRefreshTokenRevoked(
     const std::string& account_id) {
-  if (signin_manager_->GetAuthenticatedAccountId() == account_id) {
+  if (oauth2_token_service_->GetPrimaryAccountId() == account_id) {
     access_token_.clear();
     if (IsStarted()) {
       UpdateInvalidatorCredentials();
@@ -312,7 +312,7 @@ bool TiclInvalidationService::IsReadyToStart() {
   }
 
   if (!oauth2_token_service_->RefreshTokenIsAvailable(
-          signin_manager_->GetAuthenticatedAccountId())) {
+          oauth2_token_service_->GetPrimaryAccountId())) {
     DVLOG(2)
         << "Not starting TiclInvalidationServce: Waiting for refresh token.";
     return false;
