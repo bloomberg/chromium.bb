@@ -37,6 +37,22 @@
       'includes': ['../common-mk/protoc.gypi'],
     },
     {
+      'target_name': 'system_api-cryptohome-protos',
+      'type': 'static_library',
+      'variables': {
+        'proto_in_dir': 'dbus/cryptohome',
+        'proto_out_dir': 'include/cryptohome/proto_bindings',
+      },
+      'cflags': [
+        '-fvisibility=hidden',
+      ],
+      'sources': [
+        '<(proto_in_dir)/key_enums.proto',
+        '<(proto_in_dir)/key_parameters.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
       'target_name': 'system_api-headers',
       'type': 'none',
       'copies': [
