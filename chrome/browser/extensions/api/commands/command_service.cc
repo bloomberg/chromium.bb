@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -27,6 +29,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -78,22 +81,59 @@ bool InitialBindingsHaveBeenAssigned(
   return assigned;
 }
 
-bool IsWhitelistedGlobalShortcut(const extensions::Command& command) {
-  // Non-global shortcuts are always allowed.
-  if (!command.global())
+// Checks if |extension| is permitted to automatically assign the |accelerator|
+// key.
+bool CanAutoAssign(const ui::Accelerator& accelerator,
+                   const Extension* extension,
+                   Profile* profile,
+                   bool is_named_command,
+                   bool is_global) {
+  // Media Keys are non-exclusive, so allow auto-assigning them.
+  if (extensions::CommandService::IsMediaKey(accelerator))
     return true;
-  // Global shortcuts must be (Ctrl|Command)-Shift-[0-9].
+
+  if (is_global) {
+    if (!is_named_command)
+      return false;  // Browser and page actions are not global in nature.
+
+    // Global shortcuts are restricted to (Ctrl|Command)+Shift+[0-9].
 #if defined OS_MACOSX
-  if (!command.accelerator().IsCmdDown())
-    return false;
+    if (!accelerator.IsCmdDown())
+      return false;
 #else
-  if (!command.accelerator().IsCtrlDown())
-    return false;
+    if (!accelerator.IsCtrlDown())
+      return false;
 #endif
-  if (!command.accelerator().IsShiftDown())
-    return false;
-  return (command.accelerator().key_code() >= ui::VKEY_0 &&
-          command.accelerator().key_code() <= ui::VKEY_9);
+    if (!accelerator.IsShiftDown())
+      return false;
+    return (accelerator.key_code() >= ui::VKEY_0 &&
+            accelerator.key_code() <= ui::VKEY_9);
+  } else {
+    // Not a global command, check if Chrome shortcut and whether
+    // we can override it.
+    if (accelerator ==
+        chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE)) {
+      using extensions::SettingsOverrides;
+      using extensions::FeatureSwitch;
+      const SettingsOverrides* settings_overrides =
+          SettingsOverrides::Get(extension);
+      if (settings_overrides &&
+          SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides) &&
+          (extensions::PermissionsData::HasAPIPermission(
+              extension,
+              extensions::APIPermission::kBookmarkManagerPrivate) ||
+           FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())) {
+        // If this check fails it either means we have an API to override a
+        // key that isn't a ChromeAccelerator (and the API can therefore be
+        // deprecated) or the IsChromeAccelerator isn't consistently
+        // returning true for all accelerators.
+        DCHECK(chrome::IsChromeAccelerator(accelerator, profile));
+        return true;
+      }
+    }
+
+    return !chrome::IsChromeAccelerator(accelerator, profile);
+  }
 }
 
 }  // namespace
@@ -362,43 +402,48 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
 
   extensions::CommandMap::const_iterator iter = commands->begin();
   for (; iter != commands->end(); ++iter) {
-    // Make sure registered Chrome shortcuts cannot be automatically assigned
-    // (overwritten) by extension developers. Media keys are an exception here.
-    if ((!chrome::IsChromeAccelerator(iter->second.accelerator(), profile_) &&
-        IsWhitelistedGlobalShortcut(iter->second)) ||
-        extensions::CommandService::IsMediaKey(iter->second.accelerator())) {
-      AddKeybindingPref(iter->second.accelerator(),
+    const extensions::Command command = iter->second;
+    if (CanAutoAssign(command.accelerator(),
+                      extension,
+                      profile_,
+                      true,  // Is a named command.
+                      command.global())) {
+      AddKeybindingPref(command.accelerator(),
                         extension->id(),
-                        iter->second.command_name(),
+                        command.command_name(),
                         false,  // Overwriting not allowed.
-                        iter->second.global());
+                        command.global());
     }
   }
 
   const extensions::Command* browser_action_command =
       CommandsInfo::GetBrowserActionCommand(extension);
-  if (browser_action_command) {
-    if (!chrome::IsChromeAccelerator(
-        browser_action_command->accelerator(), profile_)) {
-      AddKeybindingPref(browser_action_command->accelerator(),
-                        extension->id(),
-                        browser_action_command->command_name(),
-                        false,   // Overwriting not allowed.
-                        false);  // Browser actions can't be global.
-    }
+  if (browser_action_command &&
+      CanAutoAssign(browser_action_command->accelerator(),
+                    extension,
+                    profile_,
+                    false,     // Not a named command.
+                    false)) {  // Not global.
+    AddKeybindingPref(browser_action_command->accelerator(),
+                      extension->id(),
+                      browser_action_command->command_name(),
+                      false,   // Overwriting not allowed.
+                      false);  // Not global.
   }
 
   const extensions::Command* page_action_command =
       CommandsInfo::GetPageActionCommand(extension);
-  if (page_action_command) {
-    if (!chrome::IsChromeAccelerator(
-        page_action_command->accelerator(), profile_)) {
-      AddKeybindingPref(page_action_command->accelerator(),
-                        extension->id(),
-                        page_action_command->command_name(),
-                        false,   // Overwriting not allowed.
-                        false);  // Page actions can't be global.
-    }
+  if (page_action_command &&
+      CanAutoAssign(page_action_command->accelerator(),
+                    extension,
+                    profile_,
+                    false,     // Not a named command.
+                    false)) {  // Not global.
+    AddKeybindingPref(page_action_command->accelerator(),
+                      extension->id(),
+                      page_action_command->command_name(),
+                      false,   // Overwriting not allowed.
+                      false);  // Not global.
   }
 }
 

@@ -21,6 +21,10 @@
     "example": {},
     "level": "only_one"
   },
+  "chrome_settings_overrides": {
+    "documentation": "settings_override.html",
+    "example": {}
+  },
   "chrome_url_overrides": {
     "documentation": "override.html",
     "example": {}

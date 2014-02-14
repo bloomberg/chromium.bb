@@ -1,0 +1,20 @@
+{
+  "name": "An extension that overwrites permitted system keybindings",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["activeTab"],
+  "chrome_settings_overrides": {
+    "bookmarks_ui": {
+      "remove_bookmark_shortcut": true
+    }
+  },
+  "commands": {
+    "green": {
+      "suggested_key": "Ctrl+D",
+      "description": "Make the page green"
+    }
+  }
+}

@@ -20,4 +20,12 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
   return false;
 }
 
+ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id) {
+  AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
+  const ui::Accelerator* accelerator =
+      accelerators->GetPrimaryAcceleratorForCommand(command_id);
+
+  return accelerator ? *accelerator : ui::Accelerator();
+}
+
 }  // namespace chrome

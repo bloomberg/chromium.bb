@@ -68,14 +68,15 @@ bool Accelerator::operator <(const Accelerator& rhs) const {
 }
 
 bool Accelerator::operator ==(const Accelerator& rhs) const {
-  if (platform_accelerator_.get() != rhs.platform_accelerator_.get() &&
-      ((!platform_accelerator_.get() || !rhs.platform_accelerator_.get()) ||
-       !platform_accelerator_->Equals(*rhs.platform_accelerator_))) {
-    return false;
-  }
+  if ((key_code_ == rhs.key_code_) && (type_ == rhs.type_) &&
+      (modifiers_ == rhs.modifiers_))
+    return true;
 
-  return (key_code_ == rhs.key_code_) && (type_ == rhs.type_) &&
-      (modifiers_ == rhs.modifiers_);
+  bool platform_equal =
+      platform_accelerator_.get() && rhs.platform_accelerator_.get() &&
+      platform_accelerator_.get() == rhs.platform_accelerator_.get();
+
+  return platform_equal;
 }
 
 bool Accelerator::operator !=(const Accelerator& rhs) const {

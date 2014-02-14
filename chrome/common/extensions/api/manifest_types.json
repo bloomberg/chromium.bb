@@ -53,6 +53,11 @@
                 "description": "If <code>true</code>, the built-in bookmark button will be removed from the user interface.",
                 "optional": true
               },
+              "remove_bookmark_shortcut": {
+                "type": "boolean",
+                "description": "If <code>true</code>, the built-in \"Bookmark this page...\" shortcut key is removed and the extension is permitted to override the shortcut by binding it in the commands section of the manifest.",
+                "optional": true
+              },
               // TODO(wittman): Remove for M36.
               "hide_bookmark_button": {
                 "type": "boolean",

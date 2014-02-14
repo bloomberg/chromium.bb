@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -188,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  // Activate the shortcut (Alt+Shift+F) to make page blue.
+  // Activate the shortcut (Alt+Shift+F) to make the page blue.
   {
     ResultCatcher catcher;
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -205,7 +206,27 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
       &result));
   ASSERT_TRUE(result);
 
-  // Activate the shortcut (Ctrl+F) to make page red (should not work).
+  // Activate the bookmark shortcut (Ctrl+D) to make the page green (should not
+  // work without requesting via chrome_settings_overrides).
+#if defined(OS_MACOSX)
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_D, false, false, false, true));
+#else
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_D, true, false, false, false));
+#endif
+
+  // The page should still be blue.
+  result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'blue') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+
+  // Activate the shortcut (Ctrl+F) to make the page red (should not work).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F, true, false, false, false));
 
@@ -215,6 +236,50 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
       tab,
       "setInterval(function() {"
       "  if (document.body.bgColor == 'blue') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+}
+
+// This test validates that an extension can override the Chrome bookmark
+// shortcut if it has requested to do so.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // This functionality requires a feature flag.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui",
+      "1");
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
+      << message_;
+
+  ui_test_utils::NavigateToURL(browser(),
+      test_server()->GetURL("files/extensions/test_file.txt"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Activate the shortcut (Ctrl+D) to make the page green.
+  {
+    ResultCatcher catcher;
+#if defined(OS_MACOSX)
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_D, false, false, false, true));
+#else
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_D, true, false, false, false));
+#endif
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'green') {"
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);

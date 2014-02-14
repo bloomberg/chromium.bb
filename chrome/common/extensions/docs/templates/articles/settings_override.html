@@ -1,0 +1,53 @@
+<h1>Settings Overrides</h1>
+
+<p>
+Settings overrides are a way for extensions to override selected Chrome settings
+and user interface properties.
+</p>
+
+<p>
+An extension can override one or more of the following properties:
+</p>
+
+<p>
+<b>Bookmarks User Interface:</b>
+<ul>
+  <li>
+    Bookmark button: the "star" button that is used to bookmark
+    pages. Extensions may remove this button using the settings overrides, and
+    optionally replace it with a browser action or page action.
+  </li>
+
+  <li>
+    Bookmark shortcut: the shortcut key that is used to bookmark a page (Ctrl-D
+    on Windows). Extensions may remove this shortcut via the settings overrides,
+    and optionally bind their own command to it using the <code>commands</code>
+    section of the manifest.
+  </li>
+</ul>
+</p>
+
+<p class="note">
+<b>Note:</b> Settings overrides are only enabled in the Chrome Dev release, and
+Chrome must be started with the <code>--enable-override-bookmarks-ui=1</code>
+command line flag to enable bookmarks user interface overrides.</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+Register settings overrides in the
+<a href="manifest.html">extension manifest</a> like this:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+<b>
+  "chrome_settings_overrides" : {
+    "bookmarks_ui": {
+      "remove_button": "true",
+      "remove_bookmark_shortcut": "true"
+    }
+  }</b>,
+  ...
+}</pre>

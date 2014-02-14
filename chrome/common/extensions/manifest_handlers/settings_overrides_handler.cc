@@ -220,9 +220,18 @@ const SettingsOverrides* SettingsOverrides::Get(
       extension->GetManifestData(manifest_keys::kSettingsOverride));
 }
 
-bool SettingsOverrides::RemovesBookmarkButton() const {
-  return bookmarks_ui && bookmarks_ui->remove_button &&
-      *bookmarks_ui->remove_button;
+bool SettingsOverrides::RemovesBookmarkButton(
+    const SettingsOverrides& settings_overrides) {
+  return settings_overrides.bookmarks_ui &&
+      settings_overrides.bookmarks_ui->remove_button &&
+      *settings_overrides.bookmarks_ui->remove_button;
+}
+
+bool SettingsOverrides::RemovesBookmarkShortcut(
+    const SettingsOverrides& settings_overrides) {
+  return settings_overrides.bookmarks_ui &&
+      settings_overrides.bookmarks_ui->remove_bookmark_shortcut &&
+      *settings_overrides.bookmarks_ui->remove_bookmark_shortcut;
 }
 
 SettingsOverridesHandler::SettingsOverridesHandler() {}
@@ -257,7 +266,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
     return false;
   }
   info->manifest_permission.reset(new ManifestPermissionImpl(
-      info->RemovesBookmarkButton()));
+      SettingsOverrides::RemovesBookmarkButton(*info)));
 
   APIPermissionSet* permission_set =
       PermissionsData::GetInitialAPIPermissions(extension);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -33,6 +34,30 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
   }
 
   return false;
+}
+
+ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id) {
+  ui::Accelerator accelerator;
+  // GetAshAcceleratorForCommandId with HOST_DESKTOP_TYPE_ASH is used so we can
+  // find Ash accelerators if Ash is supported on this platform, even if it's
+  // not currently in use.
+  if (GetStandardAcceleratorForCommandId(command_id, &accelerator) ||
+      GetAshAcceleratorForCommandId(command_id,
+                                    HOST_DESKTOP_TYPE_ASH,
+                                    &accelerator)) {
+    return accelerator;
+  }
+
+  std::vector<chrome::AcceleratorMapping> accelerators =
+      chrome::GetAcceleratorList();
+  for (size_t i = 0; i < accelerators.size(); ++i) {
+    if (accelerators[i].command_id == command_id) {
+      return ui::Accelerator(accelerators[i].keycode,
+                             accelerators[i].modifiers);
+    }
+  }
+
+  return ui::Accelerator();
 }
 
 }  // namespace chrome

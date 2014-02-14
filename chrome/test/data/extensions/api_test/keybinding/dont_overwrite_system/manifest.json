@@ -11,6 +11,10 @@
       "suggested_key": "Ctrl+F",
       "description": "Make the page red"
     },
+    "green": {
+      "suggested_key": "Ctrl+D",
+      "description": "Make the page green"
+    },
     "blue": {
       "suggested_key": "Alt+Shift+F",
       "description": "Make the page blue"

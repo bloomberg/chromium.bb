@@ -18,6 +18,8 @@ namespace chrome {
 bool IsChromeAccelerator(const ui::Accelerator& accelerator,
                          Profile* profile);
 
+ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ACCELERATOR_UTILS_H_
