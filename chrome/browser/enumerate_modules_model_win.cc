@@ -906,7 +906,7 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
       base::string16 actions;
       base::string16 separator = base::ASCIIToWide(" ") +
           l10n_util::GetStringUTF16(
-              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR) +
+              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR) +
           base::ASCIIToWide(" ");
 
       if (module->recommended_action & ModuleEnumerator::NONE) {
