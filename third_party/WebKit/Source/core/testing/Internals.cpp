@@ -360,7 +360,8 @@ String Internals::styleResolverStatsTotalsReport(ExceptionState& exceptionState)
 bool Internals::isSharingStyle(Element* element1, Element* element2, ExceptionState& exceptionState) const
 {
     if (!element1 || !element2) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, String::format("The %s element provided is invalid.", element1 ? "second" : "first"));
+        return false;
     }
     return element1->renderStyle() == element2->renderStyle();
 }
@@ -2343,7 +2344,7 @@ void Internals::setZoomFactor(float factor)
 void Internals::setShouldRevealPassword(Element* element, bool reveal, ExceptionState& exceptionState)
 {
     if (!element || !element->hasTagName(inputTag)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
         return;
     }
 
