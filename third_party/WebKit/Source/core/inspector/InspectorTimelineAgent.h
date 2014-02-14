@@ -87,15 +87,6 @@ class XMLHttpRequest;
 
 typedef String ErrorString;
 
-namespace TimelineRecordType {
-extern const char ActivateLayerTree[];
-extern const char BeginFrame[];
-extern const char DecodeImage[];
-extern const char GPUTask[];
-extern const char PaintSetup[];
-extern const char Rasterize[];
-};
-
 class TimelineTimeConverter {
 public:
     TimelineTimeConverter()
@@ -265,7 +256,9 @@ private:
     void onDrawLazyPixelRef(const TraceEventDispatcher::TraceEvent&);
     void onDecodeLazyPixelRefBegin(const TraceEventDispatcher::TraceEvent&);
     void onDecodeLazyPixelRefEnd(const TraceEventDispatcher::TraceEvent&);
+    void onRequestMainThreadFrame(const TraceEventDispatcher::TraceEvent&);
     void onActivateLayerTree(const TraceEventDispatcher::TraceEvent&);
+    void onDrawFrame(const TraceEventDispatcher::TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent&);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);

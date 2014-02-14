@@ -240,8 +240,10 @@ const char PaintSetup[] = "PaintSetup";
 const char RasterTask[] = "RasterTask";
 const char Paint[] = "Paint";
 const char Layer[] = "Layer";
+const char RequestMainThreadFrame[] = "RequestMainThreadFrame";
 const char BeginFrame[] = "BeginFrame";
 const char ActivateLayerTree[] = "ActivateLayerTree";
+const char DrawFrame[] = "DrawFrame";
 };
 
 namespace InstrumentationEventArguments {

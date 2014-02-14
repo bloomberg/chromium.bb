@@ -124,13 +124,14 @@ static const char WebSocketSendHandshakeRequest[] = "WebSocketSendHandshakeReque
 static const char WebSocketReceiveHandshakeResponse[] = "WebSocketReceiveHandshakeResponse";
 static const char WebSocketDestroy[] = "WebSocketDestroy";
 
-// Event names visible to other modules.
-const char ActivateLayerTree[] = "ActivateLayerTree";
-const char BeginFrame[] = "BeginFrame";
-const char DecodeImage[] = "DecodeImage";
-const char GPUTask[] = "GPUTask";
-const char Rasterize[] = "Rasterize";
-const char PaintSetup[] = "PaintSetup";
+static const char RequestMainThreadFrame[] = "RequestMainThreadFrame";
+static const char ActivateLayerTree[] = "ActivateLayerTree";
+static const char DrawFrame[] = "DrawFrame";
+static const char BeginFrame[] = "BeginFrame";
+static const char DecodeImage[] = "DecodeImage";
+static const char GPUTask[] = "GPUTask";
+static const char Rasterize[] = "Rasterize";
+static const char PaintSetup[] = "PaintSetup";
 }
 
 namespace {
@@ -365,7 +366,9 @@ void InspectorTimelineAgent::innerStart()
         dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onRasterTaskBegin, m_client);
         dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onRasterTaskEnd, m_client);
         dispatcher->addListener(InstrumentationEvents::Layer, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLayerDeleted, m_client);
+        dispatcher->addListener(InstrumentationEvents::RequestMainThreadFrame, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onRequestMainThreadFrame, m_client);
         dispatcher->addListener(InstrumentationEvents::ActivateLayerTree, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onActivateLayerTree, m_client);
+        dispatcher->addListener(InstrumentationEvents::DrawFrame, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onDrawFrame, m_client);
         dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onImageDecodeBegin, m_client);
         dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onImageDecodeEnd, m_client);
         dispatcher->addListener(PlatformInstrumentation::DrawLazyPixelRefEvent, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onDrawLazyPixelRef, m_client);
@@ -966,6 +969,15 @@ void InspectorTimelineAgent::onImageDecodeEnd(const TraceEventDispatcher::TraceE
     state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
 }
 
+void InspectorTimelineAgent::onRequestMainThreadFrame(const TraceEventDispatcher::TraceEvent& event)
+{
+    unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
+    if (layerTreeId != m_layerTreeId)
+        return;
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    state.recordStack.addInstantRecord(createRecordForEvent(event, TimelineRecordType::RequestMainThreadFrame, JSONObject::create()));
+}
+
 void InspectorTimelineAgent::onActivateLayerTree(const TraceEventDispatcher::TraceEvent& event)
 {
     unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
@@ -974,6 +986,15 @@ void InspectorTimelineAgent::onActivateLayerTree(const TraceEventDispatcher::Tra
     unsigned long long frameId = event.asUInt(InstrumentationEventArguments::FrameId);
     TimelineThreadState& state = threadState(event.threadIdentifier());
     state.recordStack.addInstantRecord(createRecordForEvent(event, TimelineRecordType::ActivateLayerTree, TimelineRecordFactory::createFrameData(frameId)));
+}
+
+void InspectorTimelineAgent::onDrawFrame(const TraceEventDispatcher::TraceEvent& event)
+{
+    unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
+    if (layerTreeId != m_layerTreeId)
+        return;
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    state.recordStack.addInstantRecord(createRecordForEvent(event, TimelineRecordType::DrawFrame, JSONObject::create()));
 }
 
 void InspectorTimelineAgent::onLayerDeleted(const TraceEventDispatcher::TraceEvent& event)
@@ -1040,6 +1061,7 @@ void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<TimelineEvent> recor
 void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<TimelineEvent> record)
 {
     if (m_recordStack.isEmpty()) {
+        TraceEventDispatcher::instance()->processBackgroundEvents();
         sendEvent(record);
     } else {
         setCounters(record.get());

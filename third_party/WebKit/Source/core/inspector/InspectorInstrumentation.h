@@ -125,7 +125,9 @@ extern const char PaintSetup[];
 extern const char RasterTask[];
 extern const char Paint[];
 extern const char Layer[];
+extern const char RequestMainThreadFrame[];
 extern const char BeginFrame[];
+extern const char DrawFrame[];
 extern const char ActivateLayerTree[];
 };
 
