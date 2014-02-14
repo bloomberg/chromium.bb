@@ -63,13 +63,6 @@ public:
 
     void invalidate();
 
-    ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index)
-    {
-        ASSERT(node);
-        m_currentNode = node;
-        m_cachedNodeIndex = index;
-    }
-
 private:
     NodeType* nodeBeforeOrAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
     bool isLastNodeCloserThanLastOrCachedNode(unsigned index) const;
@@ -77,6 +70,12 @@ private:
 
     ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
     ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
+    ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index)
+    {
+        ASSERT(node);
+        m_currentNode = node;
+        m_cachedNodeIndex = index;
+    }
 
     ALWAYS_INLINE bool isCachedNodeCountValid() const { return m_isLengthCacheValid; }
     ALWAYS_INLINE unsigned cachedNodeCount() const { return m_cachedNodeCount; }
