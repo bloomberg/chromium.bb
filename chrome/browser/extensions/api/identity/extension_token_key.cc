@@ -8,7 +8,7 @@ namespace extensions {
 
 ExtensionTokenKey::ExtensionTokenKey(const std::string& extension_id,
                                      const std::string& account_id,
-                                     const std::set<std::string> scopes)
+                                     const std::set<std::string>& scopes)
     : extension_id(extension_id), account_id(account_id), scopes(scopes) {}
 
 ExtensionTokenKey::~ExtensionTokenKey() {}
