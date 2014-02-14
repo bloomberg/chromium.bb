@@ -39,70 +39,107 @@
   ],
 
   'variables': {
-    # Generate individual bindings (include testing, exclude dependencies)
+    # For details, see: http://www.chromium.org/developers/web-idl-interfaces
+    #
+    # Interface IDL files / Dependency IDL files
+    # Interface IDL files: generate individual bindings (includes testing)
     'interface_idl_files': [
-      '<@(core_idl_files)',
-      '<@(webcore_testing_idl_files)',
-      '<@(modules_idl_files)',
+      '<@(static_interface_idl_files)',
+      '<@(generated_interface_idl_files)',
     ],
-    # Dependencies
+    # Dependency IDL files: don't generate individual bindings, but do process
+    # in IDL dependency computation, and count as build dependencies
     'dependency_idl_files': [
-      '<@(core_dependency_idl_files)',
-      '<@(modules_dependency_idl_files)',
-      '<@(modules_testing_dependency_idl_files)',
+      '<@(static_dependency_idl_files)',
+      '<@(generated_dependency_idl_files)',
     ],
-    # Include in aggregate bindings (exclude testing and dependencies)
+    # Include in aggregate bindings (exclude testing)
+    # The only differences for testing files are:
+    # * They are not included in aggregate bindings (excluded from below list)
+    # * They do not appear as a property on the global object (Window):
+    #   specify [NoInterfaceObject] on the interface in the .idl file
     'main_interface_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
     ],
 
-    # Generated IDL files
-    # Dependencies need to be computed separately, as not present at GYP time
-    # Generated interfaces need individual bindings generated
-    'generated_interface_idl_files': [
-      '<@(generated_webcore_testing_idl_files)',
+    # Static IDL files / Generated IDL files
+    # Paths need to be passed separately for static and generated files, as
+    # static files are listed in a temporary file (b/c too long for command
+    # line), but generated files must be passed at the command line, as they are
+    # not present at GYP time, when the temporary file is generated
+    'static_idl_files': [
+      '<@(static_interface_idl_files)',
+      '<@(static_dependency_idl_files)',
     ],
-    # Generated global constructors are partial interfaces, so no bindings
+    'generated_idl_files': [
+      '<@(generated_interface_idl_files)',
+      # FIXME: generate global constructors *before* computing dependencies
+      # '<@(generated_dependency_idl_files)',
+    ],
+
+    # Static IDL files
+    'static_interface_idl_files': [
+      '<@(core_idl_files)',
+      '<@(webcore_testing_idl_files)',
+      '<@(modules_idl_files)',
+    ],
+    'static_dependency_idl_files': [
+      '<@(core_dependency_idl_files)',
+      '<@(modules_dependency_idl_files)',
+      '<@(modules_testing_dependency_idl_files)',
+    ],
+
+    # Generated IDL files
+    'generated_interface_idl_files': [
+      '<@(generated_webcore_testing_idl_files)',  # interfaces
+    ],
+    'generated_dependency_idl_files': [
+      '<@(generated_global_constructors_idl_files)',  # partial interfaces
+    ],
+
     'generated_global_constructors_idl_files': [
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
+       '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+       '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+       '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+       '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+       '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
     'compiler_module_files': [
-        'scripts/idl_compiler.py',
-        '<(DEPTH)/third_party/ply/lex.py',
-        '<(DEPTH)/third_party/ply/yacc.py',
-        # jinja2/__init__.py contains version string, so sufficient for package
-        '<(DEPTH)/third_party/jinja2/__init__.py',
-        '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
-        '<(DEPTH)/tools/idl_parser/idl_lexer.py',
-        '<(DEPTH)/tools/idl_parser/idl_node.py',
-        '<(DEPTH)/tools/idl_parser/idl_parser.py',
-        'scripts/blink_idl_lexer.py',
-        'scripts/blink_idl_parser.py',
-        'scripts/code_generator_v8.py',
-        'scripts/idl_definitions.py',
-        'scripts/idl_definitions_builder.py',
-        'scripts/idl_reader.py',
-        'scripts/idl_validator.py',
-        'scripts/interface_dependency_resolver.py',
-        'scripts/v8_attributes.py',
-        'scripts/v8_callback_interface.py',
-        'scripts/v8_interface.py',
-        'scripts/v8_types.py',
-        'scripts/v8_utilities.py',
+      'scripts/unstable/idl_compiler.py',
+      '<(DEPTH)/third_party/ply/lex.py',
+      '<(DEPTH)/third_party/ply/yacc.py',
+      # jinja2/__init__.py contains version string, so sufficient for package
+      '<(DEPTH)/third_party/jinja2/__init__.py',
+      '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
+      '<(DEPTH)/tools/idl_parser/idl_lexer.py',
+      '<(DEPTH)/tools/idl_parser/idl_node.py',
+      '<(DEPTH)/tools/idl_parser/idl_parser.py',
+      'scripts/unstable/blink_idl_lexer.py',
+      'scripts/unstable/blink_idl_parser.py',
+      'scripts/unstable/code_generator_v8.py',
+      'scripts/unstable/idl_definitions.py',
+      'scripts/unstable/idl_definitions_builder.py',
+      'scripts/unstable/idl_reader.py',
+      'scripts/unstable/idl_validator.py',
+      'scripts/unstable/interface_dependency_resolver.py',
+      'scripts/unstable/v8_attributes.py',
+      'scripts/unstable/v8_callback_interface.py',
+      'scripts/unstable/v8_globals.py',
+      'scripts/unstable/v8_interface.py',
+      'scripts/unstable/v8_methods.py',
+      'scripts/unstable/v8_types.py',
+      'scripts/unstable/v8_utilities.py',
     ],
     'code_generator_template_files': [
-        'templates/attributes.cpp',
-        'templates/callback_interface.cpp',
-        'templates/callback_interface.h',
-        'templates/interface_base.cpp',
-        'templates/interface.cpp',
-        'templates/interface.h',
+      'templates/attributes.cpp',
+      'templates/callback_interface.cpp',
+      'templates/callback_interface.h',
+      'templates/interface_base.cpp',
+      'templates/interface.cpp',
+      'templates/interface.h',
+      'templates/methods.cpp',
     ],
 
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
@@ -132,27 +169,26 @@
     ],
   },
 
-  'target_defaults': {
-    'variables': {
-      'optimize': 'max',
-    },
-  },
-
   'targets': [{
     'target_name': 'interface_dependencies',
     'type': 'none',
+    'dependencies': [
+      '../core/core_generated.gyp:generated_testing_idls',
+    ],
     'actions': [{
       'action_name': 'compute_interface_dependencies',
       'variables': {
-        # Write list of IDL files to a file, so that the command line doesn't
-        # exceed OS length limits.
-        'idl_files_list': '<|(idl_files_list.tmp <@(interface_idl_files) <@(dependency_idl_files))',
+        # Write list of static IDL files to a file, so that the command line
+        # doesn't exceed OS length limits.
+        # Generated IDL files cannot be included, as their path depends on the
+        # build directory, and must instead be passed as command line arguments.
+        'idl_files_list': '<|(idl_files_list.tmp <@(static_idl_files))',
       },
       'inputs': [
         'scripts/compute_dependencies.py',
         '<(idl_files_list)',
-        '<@(interface_idl_files)',
-        '<@(dependency_idl_files)',
+        '<@(static_idl_files)',
+        '<@(generated_idl_files)',
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
@@ -182,6 +218,8 @@
          '--event-names-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
          '<@(write_file_only_if_changed)',
+         '--',
+         '<@(generated_idl_files)',
        ],
        'message': 'Computing dependencies between IDL files, and generating global scope constructor IDLs files and list of Event interfaces',
       }]
@@ -194,12 +232,10 @@
       'hard_dependency': 1,
       'dependencies': [
         'interface_dependencies',
-        '../config.gyp:config',
         '../core/core_generated.gyp:generated_testing_idls',
       ],
       'sources': [
         '<@(interface_idl_files)',
-        '<@(generated_interface_idl_files)',
       ],
       'rules': [{
         'rule_name': 'binding',
@@ -225,9 +261,6 @@
           # FIXME: This is too conservative, and causes excess rebuilds:
           # compute this file-by-file.
           '<@(dependency_idl_files)',
-          # Generated global constructors IDLs are all partial interfaces,
-          # hence everything potentially depends on them.
-          '<@(generated_global_constructors_idl_files)',
         ],
         'outputs': [
           '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',

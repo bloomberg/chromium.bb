@@ -1,7 +1,9 @@
 {% from "macros.tmpl" import license -%}
 {{ license() }}
 
-interface InternalSettingsGenerated {
+[
+    NoInterfaceObject, // testing interfaces do not appear on global objects
+] interface InternalSettingsGenerated {
 {%- for setting in settings if setting.type|to_idl_type %}
     void set{{setting.name|upper_first}}({{setting.type|to_idl_type}} {{setting.name}});
 {%- endfor %}

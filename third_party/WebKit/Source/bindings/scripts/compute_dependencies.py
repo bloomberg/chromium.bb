@@ -70,7 +70,8 @@ class IdlInterfaceFileNotFoundError(Exception):
 
 
 def parse_options():
-    parser = optparse.OptionParser()
+    usage = 'Usage: %prog [options] [generated1.idl]...'
+    parser = optparse.OptionParser(usage=usage)
     parser.add_option('--event-names-file', help='output file')
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interface-dependencies-file', help='output file')
@@ -103,9 +104,7 @@ def parse_options():
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
-    if args:
-        parser.error('No arguments taken, but "%s" given.' % ' '.join(args))
-    return options
+    return options, args
 
 
 ################################################################################
@@ -540,9 +539,17 @@ def parse_idl_files(idl_files, global_constructors_filenames):
 ################################################################################
 
 def main():
-    options = parse_options()
+    options, args = parse_options()
+
+    # Static IDL files are passed in a file (generated at GYP time), due to OS
+    # command line length limits
     with open(options.idl_files_list) as idl_files_list:
         idl_files = [line.rstrip('\n') for line in idl_files_list]
+    # Generated IDL files are passed at the command line, since these are in the
+    # build directory, which is determined at build time, not GYP time, so these
+    # cannot be included in the file listing static files
+    idl_files.extend(args)
+
     only_if_changed = options.write_file_only_if_changed
     global_constructors_filenames = {
         'Window': options.window_constructors_file,
