@@ -79,6 +79,7 @@ public:
     double timeToEffectChange() const { return ensureCalculated().timeToEffectChange; }
 
     double currentIteration() const { return ensureCalculated().currentIteration; }
+    double duration() const { return iterationDuration(); }
     double activeDuration() const;
     double timeFraction() const { return ensureCalculated().timeFraction; }
     double startTime() const { return m_startTime; }
@@ -88,6 +89,9 @@ public:
     Player* player() { return m_player; }
     Player* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specified() const { return m_specified; }
+
+    double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime; }
+    double currentIteration(bool& isNull) const { isNull = !ensureCalculated().isInEffect; return ensureCalculated().currentIteration; }
 
 protected:
     TimedItem(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
@@ -138,6 +142,7 @@ private:
         bool isInEffect;
         bool isInPlay;
         double timeToEffectChange;
+        double localTime;
     } m_calculated;
     mutable bool m_isFirstSample;
     mutable bool m_needsUpdate;

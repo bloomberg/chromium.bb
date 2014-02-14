@@ -146,6 +146,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         m_calculated.isInEffect = !isNull(activeTime);
         m_calculated.isInPlay = phase() == PhaseActive && (!m_parent || m_parent->isInPlay());
         m_calculated.isCurrent = phase() == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
+        m_calculated.localTime = m_lastUpdateTime - m_startTime;
     }
 
     // Test for events even if timing didn't need an update as the player may have gained a start time.

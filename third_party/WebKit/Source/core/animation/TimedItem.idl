@@ -31,5 +31,15 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
 ] interface TimedItem {
+    // Playback state
+    readonly attribute double? localTime;
+    readonly attribute unsigned long? currentIteration;
+
+    // Calculated timing
+    readonly attribute double startTime;
+    readonly attribute double duration;
+    readonly attribute double activeDuration;
+    readonly attribute double endTime;
+
     readonly attribute Player? player;
 };
