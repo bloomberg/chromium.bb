@@ -516,7 +516,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 443; }
+static int maximumCSSSampleId() { return 444; }
 
 UseCounter::UseCounter()
 {
