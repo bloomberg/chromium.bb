@@ -373,9 +373,10 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (newRequest.cachePolicy() == UseProtocolCachePolicy && isRedirectAfterPost(newRequest, redirectResponse))
         newRequest.setCachePolicy(ReloadIgnoringCacheData);
 
-    Frame* parent = m_frame->tree().parent();
-    if (parent) {
-        if (!parent->loader().mixedContentChecker()->canRunInsecureContent(parent->document()->securityOrigin(), newRequest.url())) {
+    // If this is a sub-frame, check for mixed content blocking against the top frame.
+    if (m_frame->tree().parent()) {
+        Frame* top = m_frame->tree().top();
+        if (!top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
         }
