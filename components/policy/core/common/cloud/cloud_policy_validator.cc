@@ -113,22 +113,34 @@ void CloudPolicyValidatorBase::ValidatePayload() {
   validation_flags_ |= VALIDATE_PAYLOAD;
 }
 
+
+void CloudPolicyValidatorBase::ValidateCachedKey(
+    const std::string& cached_key,
+    const std::string& cached_key_signature,
+    const std::string& verification_key,
+    const std::string& owning_domain) {
+  validation_flags_ |= VALIDATE_CACHED_KEY;
+  set_verification_key_and_domain(verification_key, owning_domain);
+  cached_key_ = cached_key;
+  cached_key_signature_ = cached_key_signature;
+}
+
 void CloudPolicyValidatorBase::ValidateSignature(
     const std::string& key,
     const std::string& verification_key,
-    const std::string& key_signature,
+    const std::string& owning_domain,
     bool allow_key_rotation) {
   validation_flags_ |= VALIDATE_SIGNATURE;
-  set_verification_key(verification_key);
+  set_verification_key_and_domain(verification_key, owning_domain);
   key_ = key;
-  key_signature_ = key_signature;
   allow_key_rotation_ = allow_key_rotation;
 }
 
 void CloudPolicyValidatorBase::ValidateInitialKey(
-    const std::string& verification_key) {
+    const std::string& verification_key,
+    const std::string& owning_domain) {
   validation_flags_ |= VALIDATE_INITIAL_KEY;
-  set_verification_key(verification_key);
+  set_verification_key_and_domain(verification_key, owning_domain);
 }
 
 void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
@@ -228,6 +240,7 @@ void CloudPolicyValidatorBase::RunChecks() {
   } kCheckFunctions[] = {
     { VALIDATE_SIGNATURE,   &CloudPolicyValidatorBase::CheckSignature },
     { VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey },
+    { VALIDATE_CACHED_KEY,  &CloudPolicyValidatorBase::CheckCachedKey },
     { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
     { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
     { VALIDATE_TOKEN,       &CloudPolicyValidatorBase::CheckToken },
@@ -292,16 +305,46 @@ bool CloudPolicyValidatorBase::CheckVerificationKeySignature(
     const std::string& key,
     const std::string& verification_key,
     const std::string& signature) {
-  // TODO(atwilson): Update this routine to include the domain name in the
-  // signed data.
-  return VerifySignature(key, verification_key, signature, SHA256);
+  DCHECK(!verification_key.empty());
+  em::PolicyPublicKeyAndDomain signed_data;
+  signed_data.set_new_public_key(key);
+
+  // If no owning_domain_ supplied, try extracting the domain from the policy
+  // itself (this happens on certain platforms during startup, when we validate
+  // cached policy before prefs are loaded).
+  std::string domain = owning_domain_.empty() ?
+      ExtractDomainFromPolicy() : owning_domain_;
+  if (domain.empty()) {
+    LOG(ERROR) << "Policy does not contain a domain";
+    return false;
+  }
+  signed_data.set_domain(domain);
+  std::string signed_data_as_string;
+  if (!signed_data.SerializeToString(&signed_data_as_string)) {
+    DLOG(ERROR) << "Could not serialize verification key to string";
+    return false;
+  }
+  return VerifySignature(signed_data_as_string, verification_key, signature,
+                         SHA256);
 }
 
-void CloudPolicyValidatorBase::set_verification_key(
-    const std::string& verification_key) {
+std::string CloudPolicyValidatorBase::ExtractDomainFromPolicy() {
+  std::string domain;
+  if (policy_data_->has_username()) {
+    domain = gaia::ExtractDomainName(
+        gaia::CanonicalizeEmail(
+            gaia::SanitizeEmail(policy_data_->username())));
+  }
+  return domain;
+}
+
+void CloudPolicyValidatorBase::set_verification_key_and_domain(
+    const std::string& verification_key, const std::string& owning_domain) {
   // Make sure we aren't overwriting the verification key with a different key.
   DCHECK(verification_key_.empty() || verification_key_ == verification_key);
+  DCHECK(owning_domain_.empty() || owning_domain_ == owning_domain);
   verification_key_ = verification_key;
+  owning_domain_ = owning_domain;
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
@@ -328,16 +371,6 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
     return VALIDATION_BAD_SIGNATURE;
   }
 
-  // If a key verification signature is available, then verify the base signing
-  // key as well.
-  if (!key_signature_.empty() && !verification_key_.empty() &&
-      !CheckVerificationKeySignature(key_, verification_key_, key_signature_)) {
-    LOG(ERROR) << "Verification key signature verification failed";
-    return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
-  } else {
-    DVLOG(1) << "Verification key signature verification succeeded";
-  }
-
   return VALIDATION_OK;
 }
 
@@ -353,6 +386,18 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
   if (!CheckNewPublicKeyVerificationSignature()) {
     LOG(ERROR) << "Initial policy root signature validation failed";
     return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+  }
+  return VALIDATION_OK;
+}
+
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckCachedKey() {
+  if (!cached_key_signature_.empty() && !verification_key_.empty() &&
+      !CheckVerificationKeySignature(cached_key_, verification_key_,
+                                     cached_key_signature_)) {
+    LOG(ERROR) << "Cached key signature verification failed";
+    return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+  } else {
+    DVLOG(1) << "Cached key signature verification succeeded";
   }
   return VALIDATION_OK;
 }
@@ -440,17 +485,12 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUsername() {
   return VALIDATION_OK;
 }
 
-
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDomain() {
-  if (!policy_data_->has_username()) {
+  std::string policy_domain = ExtractDomainFromPolicy();
+  if (policy_domain.empty()) {
     LOG(ERROR) << "Policy is missing user name";
     return VALIDATION_BAD_USERNAME;
   }
-
-  std::string policy_domain =
-      gaia::ExtractDomainName(
-          gaia::CanonicalizeEmail(
-              gaia::SanitizeEmail(policy_data_->username())));
 
   if (domain_ != policy_domain) {
     LOG(ERROR) << "Invalid user name " << policy_data_->username();

@@ -16,6 +16,7 @@
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "crypto/rsa_private_key.h"
+#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,7 +42,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
         ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
-        existing_dm_token_(PolicyBuilder::kFakeToken) {
+        existing_dm_token_(PolicyBuilder::kFakeToken),
+        owning_domain_(PolicyBuilder::kFakeDomain){
     policy_.SetDefaultNewSigningKey();
   }
 
@@ -51,8 +53,16 @@ class CloudPolicyValidatorTest : public testing::Test {
   }
 
   void Validate(testing::Action<void(UserCloudPolicyValidator*)> check_action) {
+    policy_.Build();
+    ValidatePolicy(check_action, policy_.GetCopy());
+  }
+
+  void ValidatePolicy(
+      testing::Action<void(UserCloudPolicyValidator*)> check_action,
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
     // Create a validator.
-    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator();
+    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+        policy_response.Pass());
 
     // Run validation and check the result.
     EXPECT_CALL(*this, ValidationCompletion(validator.get())).WillOnce(
@@ -64,12 +74,12 @@ class CloudPolicyValidatorTest : public testing::Test {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  scoped_ptr<UserCloudPolicyValidator> CreateValidator() {
+  scoped_ptr<UserCloudPolicyValidator> CreateValidator(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
     std::vector<uint8> public_key_bytes;
     EXPECT_TRUE(
         PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(
             &public_key_bytes));
-    policy_.Build();
 
     // Convert from bytes to string format (which is what ValidateSignature()
     // takes).
@@ -78,20 +88,25 @@ class CloudPolicyValidatorTest : public testing::Test {
         public_key_bytes.size());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
-        policy_.GetCopy(), base::MessageLoopProxy::current());
+        policy_response.Pass(), base::MessageLoopProxy::current());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
-    validator->ValidateDomain(PolicyBuilder::kFakeDomain);
+    if (!owning_domain_.empty())
+      validator->ValidateDomain(owning_domain_);
     validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
+    validator->ValidateCachedKey(public_key,
+                                 PolicyBuilder::GetTestSigningKeySignature(),
+                                 GetPolicyVerificationKey(),
+                                 owning_domain_);
     validator->ValidateSignature(public_key,
                                  GetPolicyVerificationKey(),
-                                 PolicyBuilder::GetTestSigningKeySignature(),
+                                 owning_domain_,
                                  allow_key_rotation_);
     if (allow_key_rotation_)
-      validator->ValidateInitialKey(GetPolicyVerificationKey());
+      validator->ValidateInitialKey(GetPolicyVerificationKey(), owning_domain_);
     return make_scoped_ptr(validator);
   }
 
@@ -113,6 +128,7 @@ class CloudPolicyValidatorTest : public testing::Test {
   std::string signing_key_;
   bool allow_key_rotation_;
   std::string existing_dm_token_;
+  std::string owning_domain_;
 
   UserPolicyBuilder policy_;
 
@@ -127,7 +143,9 @@ TEST_F(CloudPolicyValidatorTest, SuccessfulValidation) {
 }
 
 TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidation) {
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator();
+  policy_.Build();
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      policy_.GetCopy());
   // Run validation immediately (no background tasks).
   validator->RunValidation();
   CheckSuccessfulValidation(validator.get());
@@ -240,7 +258,7 @@ TEST_F(CloudPolicyValidatorTest, ErrorNoUsername) {
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidUsername) {
-  policy_.policy_data().set_username("invalid");
+  policy_.policy_data().set_username("invalid@example.com");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_USERNAME));
 }
 
@@ -302,11 +320,41 @@ TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeySignature) {
 // Validation key is not currently checked on Chrome OS
 // (http://crbug.com/328038).
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeyVerificationSignature) {
+  policy_.Build();
   policy_.policy().set_new_public_key_verification_signature("invalid");
-  Validate(CheckStatus(
-      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE));
+  ValidatePolicy(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE),
+                 policy_.GetCopy());
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorDomainMismatchForKeyVerification) {
+  policy_.Build();
+  // Generate a non-matching owning_domain, which should cause a validation
+  // failure.
+  owning_domain_ = "invalid.com";
+  ValidatePolicy(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE),
+                 policy_.GetCopy());
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorDomainExtractedFromUsernameMismatch) {
+  // Generate a non-matching username domain, which should cause a validation
+  // failure when we try to verify the signing key with it.
+  policy_.policy_data().set_username("wonky@invalid.com");
+  policy_.Build();
+  owning_domain_ = "";
+  ValidatePolicy(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE),
+                 policy_.GetCopy());
 }
 #endif
+
+TEST_F(CloudPolicyValidatorTest, SuccessfulNoDomainValidation) {
+  // Don't pass in a domain - this tells the validation code to instead
+  // extract the domain from the username.
+  owning_domain_ = "";
+  Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
+}
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoRotationAllowed) {
   allow_key_rotation_ = false;

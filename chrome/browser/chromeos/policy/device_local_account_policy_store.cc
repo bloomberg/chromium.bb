@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -190,9 +192,11 @@ void DeviceLocalAccountPolicyStore::Validate(
           : CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   validator->ValidateSignature(key->public_key_as_string(),
                                GetPolicyVerificationKey(),
-                               std::string(),
+                               connector->GetEnterpriseDomain(),
                                false);
   validator.release()->StartValidation(callback);
 }

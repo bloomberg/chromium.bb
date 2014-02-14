@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "policy/proto/policy_signing_key.pb.h"
@@ -295,10 +296,22 @@ void UserCloudPolicyStore::Validate(
       policy.Pass(),
       CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
 
-  // Validate the username if the user is signed in.
+  // Extract the owning domain from the signed-in user (if any is set yet).
+  // If there's no owning domain, then the code just ensures that the policy
+  // is self-consistent (that the keys are signed with the same domain that the
+  // username field in the policy contains). UserPolicySigninServerBase will
+  // verify that the username matches the signed in user once profile
+  // initialization is complete (http://crbug.com/342327).
+  std::string owning_domain;
+
+  // Validate the username if the user is signed in. The signin_username_ can
+  // be empty during initial policy load because this happens before the
+  // Prefs subsystem is initialized.
   if (!signin_username_.empty()) {
     DVLOG(1) << "Validating username: " << signin_username_;
     validator->ValidateUsername(signin_username_);
+    owning_domain = gaia::ExtractDomainName(
+        gaia::CanonicalizeEmail(gaia::SanitizeEmail(signin_username_)));
   }
 
   // There are 4 cases:
@@ -325,13 +338,17 @@ void UserCloudPolicyStore::Validate(
       // kMetricPolicyHasVerifiedCachedKey rises to a high enough level.
       DLOG(WARNING) << "Allowing unsigned cached blob for migration";
     } else {
-      // Case #2 - loading from cache with a cached key - just do normal
-      // signature validation using this key. We're loading from cache so don't
-      // allow key rotation.
+      // Case #2 - loading from cache with a cached key - validate the cached
+      // key, then do normal policy data signature validation using the cached
+      // key. We're loading from cache so don't allow key rotation.
+      validator->ValidateCachedKey(cached_key->signing_key(),
+                                   cached_key->signing_key_signature(),
+                                   verification_key_,
+                                   owning_domain);
       const bool no_rotation = false;
       validator->ValidateSignature(cached_key->signing_key(),
                                    verification_key_,
-                                   cached_key->signing_key_signature(),
+                                   owning_domain,
                                    no_rotation);
     }
   } else {
@@ -340,15 +357,15 @@ void UserCloudPolicyStore::Validate(
     if (policy_key_.empty()) {
       // Case #3 - no valid existing policy key, so this new policy fetch should
       // include an initial key provision.
-      validator->ValidateInitialKey(verification_key_);
+      validator->ValidateInitialKey(verification_key_, owning_domain);
     } else {
       // Case #4 - verify new policy with existing key. We always allow key
       // rotation - the verification key will prevent invalid policy from being
-      // injected. |policy_key_| is already known to be valid, so no
-      // verification signature is passed in.
+      // injected. |policy_key_| is already known to be valid, so no need to
+      // verify via ValidateCachedKey().
       const bool allow_rotation = true;
       validator->ValidateSignature(
-          policy_key_, verification_key_, std::string(), allow_rotation);
+          policy_key_, verification_key_, owning_domain, allow_rotation);
     }
   }
 

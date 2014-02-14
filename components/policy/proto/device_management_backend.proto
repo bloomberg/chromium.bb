@@ -297,13 +297,13 @@ message PolicyFetchResponse {
   optional bytes new_public_key_signature = 6;
 
   // If new_public_key is specified, this field contains a signature
-  // of that key, signed using a key only available to DMServer.  
-  // The public key portion of this well-known key is embedded into the
-  // Chrome binary. The hash of that embedded key is passed to DMServer
-  // as verification_key_hash field in PolicyFetchRequest. DMServer will
-  // pick a private key on the server which matches the hash (matches public
-  // key on the client). If DMServer is unable to find matching key, it will
-  // return an error instead of policy data.
+  // of a PolicyPublicKeyAndDomain protobuf, signed using a key only
+  // available to DMServer. The public key portion of this well-known key is
+  // embedded into the Chrome binary. The hash of that embedded key is passed
+  // to DMServer as verification_key_hash field in PolicyFetchRequest. DMServer
+  // will pick a private key on the server which matches the hash (matches
+  // public key on the client). If DMServer is unable to find matching key, it
+  // will return an error instead of policy data.
   // In case hash was not specified, DMServer will leave verification signature
   // field empty (legacy behavior).  
   // In addition to the checks between new_public_key
@@ -311,6 +311,17 @@ message PolicyFetchResponse {
   // new_public_key with the embedded public key and 
   // new_public_key_verification_signature.
   optional bytes new_public_key_verification_signature = 7;
+}
+
+// Protobuf used to generate the new_public_key_verification_signature field.
+message PolicyPublicKeyAndDomain {
+  // The public key to sign (taken from the |new_public_key| field in
+  // PolicyFetchResponse).
+  optional bytes new_public_key = 1;
+
+  // The domain associated with this key (should match the domain portion of
+  // the username field of the policy).
+  optional string domain = 2;
 }
 
 // Request from device to server for reading policies.

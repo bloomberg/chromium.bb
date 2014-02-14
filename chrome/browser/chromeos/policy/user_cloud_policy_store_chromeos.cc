@@ -49,6 +49,11 @@ void SampleValidationFailure(ValidationFailure sample) {
                             VALIDATION_FAILURE_SIZE);
 }
 
+// Extracts the domain name from the passed username.
+std::string ExtractDomain(const std::string& username) {
+  return gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
+}
+
 }  // namespace
 
 // Helper class for loading legacy policy caches.
@@ -259,7 +264,7 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   validator->ValidateSignature(
       policy_key_,
       GetPolicyVerificationKey(),
-      std::string(), // No signature verification needed.
+      ExtractDomain(sanitized_username),
       allow_rotation);
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
@@ -273,12 +278,13 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
                       CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(username_);
   if (policy_key_.empty()) {
-    validator->ValidateInitialKey(GetPolicyVerificationKey());
+    validator->ValidateInitialKey(GetPolicyVerificationKey(),
+                                  ExtractDomain(username_));
   } else {
     const bool allow_rotation = true;
     validator->ValidateSignature(policy_key_,
                                  GetPolicyVerificationKey(),
-                                 std::string(),
+                                 ExtractDomain(username_),
                                  allow_rotation);
   }
 
@@ -377,7 +383,7 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
   const bool allow_rotation = false;
   validator->ValidateSignature(policy_key_,
                                GetPolicyVerificationKey(),
-                               std::string(),
+                               ExtractDomain(username_),
                                allow_rotation);
   // Start validation. The Validator will delete itself once validation is
   // complete.

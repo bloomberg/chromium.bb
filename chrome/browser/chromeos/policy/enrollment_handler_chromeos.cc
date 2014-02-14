@@ -109,13 +109,24 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
 
   validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
                                CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
-  if (install_attributes_->IsEnterpriseDevice())
-    validator->ValidateDomain(install_attributes_->GetDomain());
+
+  // If this is re-enrollment, make sure that the new policy matches the
+  // previously-enrolled domain.
+  std::string domain;
+  if (install_attributes_->IsEnterpriseDevice()) {
+    domain = install_attributes_->GetDomain();
+    validator->ValidateDomain(domain);
+  }
   validator->ValidateDMToken(client->dm_token(),
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
-  validator->ValidateInitialKey(GetPolicyVerificationKey());
+  // If |domain| is empty here, the policy validation code will just use the
+  // domain from the username field in the policy itself to do key validation.
+  // TODO(mnissler): Plumb the enrolling user's username into this object so
+  // we can validate the username on the resulting policy, and use the domain
+  // from that username to validate the key below (http://crbug.com/343074).
+  validator->ValidateInitialKey(GetPolicyVerificationKey(), domain);
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
                  weak_ptr_factory_.GetWeakPtr()));

@@ -271,7 +271,7 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   validator->ValidateSignature(
       public_key_as_string,
       policy::GetPolicyVerificationKey(),
-      policy::PolicyBuilder::GetTestSigningKeySignature(),
+      policy::PolicyBuilder::kFakeDomain,
       false);
   validator->StartValidation(
       base::Bind(&SessionManagerOperationTest::CheckSuccessfulValidation,

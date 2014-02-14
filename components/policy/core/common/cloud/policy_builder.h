@@ -89,6 +89,9 @@ class PolicyBuilder {
   static std::string GetTestSigningKeySignature();
   static std::string GetTestOtherSigningKeySignature();
 
+  std::vector<uint8> raw_signing_key() { return raw_signing_key_; }
+  std::vector<uint8> raw_new_signing_key() { return raw_new_signing_key_; }
+
  private:
   // Produces |key|'s signature over |data| and stores it in |signature|.
   void SignData(const std::string& data,
@@ -107,6 +110,7 @@ class PolicyBuilder {
   // temporary RSAPrivateKey is created.
   std::vector<uint8> raw_signing_key_;
   std::vector<uint8> raw_new_signing_key_;
+  std::string raw_new_signing_key_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBuilder);
 };

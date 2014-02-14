@@ -48,7 +48,7 @@ void DeviceCloudPolicyStoreChromeOS::Store(
   scoped_ptr<DeviceCloudPolicyValidator> validator(CreateValidator(policy));
   validator->ValidateSignature(owner_key->public_key_as_string(),
                                GetPolicyVerificationKey(),
-                               std::string(),
+                               install_attributes_->GetDomain(),
                                true);
   validator->ValidateAgainstCurrentPolicy(
       device_settings_service_->policy_data(),
@@ -77,7 +77,8 @@ void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
   }
 
   scoped_ptr<DeviceCloudPolicyValidator> validator(CreateValidator(policy));
-  validator->ValidateInitialKey(GetPolicyVerificationKey());
+  validator->ValidateInitialKey(GetPolicyVerificationKey(),
+                                install_attributes_->GetDomain());
   validator.release()->StartValidation(
       base::Bind(&DeviceCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
                  weak_factory_.GetWeakPtr()));

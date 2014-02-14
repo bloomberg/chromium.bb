@@ -41,7 +41,8 @@ namespace {
 
 const char kLegacyDeviceId[] = "legacy-device-id";
 const char kLegacyToken[] = "legacy-token";
-const char kSanitizedUsername[] = "0123456789ABCDEF0123456789ABCDEF012345678";
+const char kSanitizedUsername[] =
+    "0123456789ABCDEF0123456789ABCDEF012345678@example.com";
 const char kDefaultHomepage[] = "http://chromium.org";
 
 ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
@@ -599,7 +600,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyNoUserPolicyKey) {
       .WillOnce(Return(policy_.GetBlob()));
   EXPECT_CALL(cryptohome_client_,
               BlockingGetSanitizedUsername(PolicyBuilder::kFakeUsername))
-      .WillOnce(Return("wrong"));
+      .WillOnce(Return("wrong@example.com"));
 
   EXPECT_FALSE(store_->policy());
   store_->LoadImmediately();

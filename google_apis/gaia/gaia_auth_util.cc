@@ -22,10 +22,12 @@ std::string CanonicalizeEmail(const std::string& email_address) {
   std::vector<std::string> parts;
   char at = '@';
   base::SplitString(email_address, at, &parts);
-  if (parts.size() != 2U)
-    NOTREACHED() << "expecting exactly one @, but got " << parts.size();
-  else if (parts[1] == kGmailDomain)  // only strip '.' for gmail accounts.
+  if (parts.size() != 2U) {
+    NOTREACHED() << "expecting exactly one @, but got " << parts.size()-1 <<
+        " : " << email_address;
+  } else if (parts[1] == kGmailDomain) {  // only strip '.' for gmail accounts.
     base::RemoveChars(parts[0], ".", &parts[0]);
+  }
   std::string new_email = StringToLowerASCII(JoinString(parts, at));
   VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
