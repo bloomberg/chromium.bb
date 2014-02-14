@@ -1078,6 +1078,8 @@ private:
     void updateStyleInvalidationIfNeeded();
     void updateUseShadowTreesIfNeeded();
 
+    void updateStyle(StyleRecalcChange);
+
     void detachParser();
 
     virtual bool isDocument() const OVERRIDE FINAL { return true; }

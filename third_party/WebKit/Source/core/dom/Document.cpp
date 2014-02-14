@@ -1717,9 +1717,14 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
+void Document::updateStyleIfNeeded()
+{
+    updateStyle(NoChange);
+}
+
 // FIXME: We need a better name than updateStyleIfNeeded. It's performing style invalidation,
 // style recalc, distribution and <use> shadow tree creation.
-void Document::updateStyleIfNeeded()
+void Document::updateStyle(StyleRecalcChange change)
 {
     ASSERT(isMainThread());
 
@@ -1767,7 +1772,6 @@ void Document::updateStyleIfNeeded()
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
-        StyleRecalcChange change = NoChange;
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
@@ -1919,8 +1923,7 @@ void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
         // If new nodes have been added or style recalc has been done with style sheets still
         // pending, some nodes may not have had their real style calculated yet. Normally this
         // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
-        setNeedsStyleRecalc(SubtreeStyleChange);
-        updateStyleIfNeeded();
+        updateStyle(Force);
     }
 }
 
