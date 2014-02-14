@@ -1115,6 +1115,54 @@ TEST_F(WorkspaceWindowResizerTestSticky, NoStickToEdgeWhenOutside) {
   EXPECT_EQ("-15,112 320x160", window_->bounds().ToString());
 }
 
+// Verifies window sticks to both window and work area.
+TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
+  window_->SetBounds(gfx::Rect(10, 10, 20, 50));
+  window_->Show();
+  window2_->SetBounds(gfx::Rect(150, 160, 25, 1000));
+  window2_->Show();
+
+  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+      window_.get(), gfx::Point(10, 10), HTCAPTION));
+  ASSERT_TRUE(resizer.get());
+
+  // Move |window| one pixel to the left of |window2|. Should snap to right.
+  resizer->Drag(CalculateDragPoint(*resizer, 119, 145), 0);
+  gfx::Rect expected(130, 160, 20, 50);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+                          window_.get()));
+
+  // The initial y position of |window_|.
+  int initial_y = 10;
+  // The drag position where the window is exactly attached to the bottom.
+  int attach_y = work_area.bottom() - window_->bounds().height() - initial_y;
+
+  // Dragging 10px above should not attach to the bottom.
+  resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y - 10), 0);
+  expected.set_y(attach_y + initial_y - 10);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+
+  // Stick to the work area.
+  resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y - 1), 0);
+  expected.set_y(attach_y + initial_y);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+
+  resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y), 0);
+  expected.set_y(attach_y + initial_y);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+
+  resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y + 1), 0);
+  expected.set_y(attach_y + initial_y);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+
+  // Moving down further should move the window.
+  resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y + 18), 0);
+  expected.set_y(attach_y + initial_y + 18);
+  EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
+}
+
 // Verifies a resize sticks when dragging TOPLEFT.
 TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));

@@ -789,10 +789,9 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     if (sticky_size > 0) {
       // Possibly stick to edge except when a mouse pointer is outside the
       // work area.
-      if (!(display.work_area().Contains(last_mouse_location_in_screen) &&
-            StickToWorkAreaOnMove(work_area, sticky_size, bounds))) {
-        MagneticallySnapToOtherWindows(bounds);
-      }
+      if (display.work_area().Contains(last_mouse_location_in_screen))
+        StickToWorkAreaOnMove(work_area, sticky_size, bounds);
+      MagneticallySnapToOtherWindows(bounds);
     }
   } else if (sticky_size > 0) {
     MagneticallySnapResizeToOtherWindows(bounds);
