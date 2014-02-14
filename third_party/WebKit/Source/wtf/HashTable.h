@@ -85,13 +85,13 @@ namespace WTF {
                 ++m_position;
         }
 
-        HashTableConstIterator(const HashTableType* table, PointerType position, PointerType endPosition)
+        HashTableConstIterator(PointerType position, PointerType endPosition)
             : m_position(position), m_endPosition(endPosition)
         {
             skipEmptyBuckets();
         }
 
-        HashTableConstIterator(const HashTableType* table, PointerType position, PointerType endPosition, HashItemKnownGoodTag)
+        HashTableConstIterator(PointerType position, PointerType endPosition, HashItemKnownGoodTag)
             : m_position(position), m_endPosition(endPosition)
         {
         }
@@ -144,7 +144,6 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableIterator {
     private:
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
         typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Value ValueType;
@@ -153,8 +152,8 @@ namespace WTF {
 
         friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
 
-        HashTableIterator(HashTableType* table, PointerType pos, PointerType end) : m_iterator(table, pos, end) { }
-        HashTableIterator(HashTableType* table, PointerType pos, PointerType end, HashItemKnownGoodTag tag) : m_iterator(table, pos, end, tag) { }
+        HashTableIterator(PointerType pos, PointerType end) : m_iterator(pos, end) { }
+        HashTableIterator(PointerType pos, PointerType end, HashItemKnownGoodTag tag) : m_iterator(pos, end, tag) { }
 
     public:
         HashTableIterator() { }
@@ -364,10 +363,10 @@ namespace WTF {
         FullLookupType makeLookupResult(ValueType* position, bool found, unsigned hash)
             { return FullLookupType(LookupType(position, found), hash); }
 
-        iterator makeIterator(ValueType* pos) { return iterator(this, pos, m_table + m_tableSize); }
-        const_iterator makeConstIterator(ValueType* pos) const { return const_iterator(this, pos, m_table + m_tableSize); }
-        iterator makeKnownGoodIterator(ValueType* pos) { return iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
-        const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
+        iterator makeIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize); }
+        const_iterator makeConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize); }
+        iterator makeKnownGoodIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize, HashItemKnownGood); }
+        const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize, HashItemKnownGood); }
 
         static const unsigned m_maxLoad = 2;
         static const unsigned m_minLoad = 6;
