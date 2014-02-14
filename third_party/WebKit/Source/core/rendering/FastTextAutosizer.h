@@ -170,7 +170,7 @@ private:
     void endLayout(RenderBlock*);
     void inflate(RenderBlock*);
     bool enabled();
-    void prepareRenderViewInfo(RenderView*);
+    void prepareRenderViewInfo();
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock*);
@@ -186,6 +186,7 @@ private:
     bool mightBeWiderOrNarrowerDescendant(const RenderBlock*);
     bool isWiderDescendant(Cluster*);
     bool isNarrowerDescendant(Cluster*);
+    bool isLayoutRoot(const RenderBlock*) const;
 
     Cluster* currentCluster() const;
 
