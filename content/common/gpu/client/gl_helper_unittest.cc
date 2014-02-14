@@ -842,6 +842,55 @@ class GLHelperTest : public testing::Test {
     }
   }
 
+  void DrawGridToBitmap(int w, int h,
+                        SkColor background_color,
+                        SkColor grid_color,
+                        int grid_pitch,
+                        int grid_width,
+                        SkBitmap& bmp) {
+    ASSERT_GT(grid_pitch, 0);
+    ASSERT_GT(grid_width, 0);
+    ASSERT_NE(background_color, grid_color);
+
+    for (int y = 0; y < h; ++y) {
+      bool y_on_grid = ((y % grid_pitch) < grid_width);
+
+      for (int x = 0; x < w; ++x) {
+        bool on_grid = (y_on_grid || ((x % grid_pitch) < grid_width));
+
+        if (bmp.getConfig() == SkBitmap::kARGB_8888_Config) {
+          *bmp.getAddr32(x, y) = (on_grid ? grid_color : background_color);
+        } else if (bmp.getConfig() == SkBitmap::kRGB_565_Config) {
+          *bmp.getAddr16(x, y) = (on_grid ? grid_color : background_color);
+        }
+      }
+    }
+  }
+
+  void DrawCheckerToBitmap(int w, int h,
+                           SkColor color1, SkColor color2,
+                           int rect_w, int rect_h,
+                           SkBitmap& bmp) {
+    ASSERT_GT(rect_w, 0);
+    ASSERT_GT(rect_h, 0);
+    ASSERT_NE(color1, color2);
+
+    for (int y = 0; y < h; ++y) {
+      bool y_bit = (((y / rect_h) & 0x1) == 0);
+
+      for (int x = 0; x < w; ++x) {
+        bool x_bit = (((x / rect_w) & 0x1) == 0);
+
+        bool use_color2 = (x_bit != y_bit);  // xor
+        if (bmp.getConfig() == SkBitmap::kARGB_8888_Config) {
+          *bmp.getAddr32(x, y) = (use_color2 ? color2 : color1);
+        } else if (bmp.getConfig() == SkBitmap::kRGB_565_Config) {
+          *bmp.getAddr16(x, y) = (use_color2 ? color2 : color1);
+        }
+      }
+    }
+  }
+
   bool ColorComponentsClose(SkColor component1,
                             SkColor component2,
                             SkBitmap::Config config) {
@@ -906,26 +955,10 @@ class GLHelperTest : public testing::Test {
     return true;
   }
 
-  // Test basic format readback.
-  bool TestTextureFormatReadback(const gfx::Size& src_size,
-                         SkBitmap::Config bitmap_config,
-                         bool readback_async) {
-    DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
-           (bitmap_config == SkBitmap::kARGB_8888_Config));
-    bool rgb565_format = (bitmap_config == SkBitmap::kRGB_565_Config);
-    if (rgb565_format && !helper_->CanUseRgb565Readback()) {
-      LOG(INFO) << "RGB565 Format Not supported on this platform";
-      LOG(INFO) << "Skipping RGB565ReadBackTest";
-      return true;
-    }
-    WebGLId src_texture = context_->createTexture();
-    SkBitmap input_pixels;
-    input_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    input_pixels.allocPixels();
-    SkAutoLockPixels lock1(input_pixels);
-    // Erase the input bitmap with red color.
-    input_pixels.eraseColor(SK_ColorRED);
+  void BindAndAttachTextureWithPixels(GLuint src_texture,
+                                      SkBitmap::Config bitmap_config,
+                                      const gfx::Size& src_size,
+                                      const SkBitmap& input_pixels) {
     context_->bindTexture(GL_TEXTURE_2D, src_texture);
     GLenum format = (bitmap_config == SkBitmap::kRGB_565_Config) ?
                     GL_RGB : GL_RGBA;
@@ -940,16 +973,14 @@ class GLHelperTest : public testing::Test {
                          format,
                          type,
                          input_pixels.getPixels());
-    SkBitmap output_pixels;
-    output_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    output_pixels.allocPixels();
-    SkAutoLockPixels lock2(output_pixels);
-    // Initialize the output bitmap with Green color.
-    // When the readback is over output bitmap should have the red color.
-    output_pixels.eraseColor(SK_ColorGREEN);
-    uint8* pixels = static_cast<uint8*>(output_pixels.getPixels());
-    if (readback_async) {
+  }
+
+  void ReadBackTexture(GLuint src_texture,
+                       const gfx::Size& src_size,
+                       unsigned char* pixels,
+                       SkBitmap::Config bitmap_config,
+                       bool async) {
+    if (async) {
       base::RunLoop run_loop;
       helper_->ReadbackTextureAsync(src_texture,
                                     src_size,
@@ -964,9 +995,78 @@ class GLHelperTest : public testing::Test {
                                    pixels,
                                    bitmap_config);
     }
+  }
+
+  // Test basic format readback.
+  bool TestTextureFormatReadback(const gfx::Size& src_size,
+                         SkBitmap::Config bitmap_config,
+                         bool async) {
+    DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
+           (bitmap_config == SkBitmap::kARGB_8888_Config));
+    bool rgb565_format = (bitmap_config == SkBitmap::kRGB_565_Config);
+    if (rgb565_format && !helper_->CanUseRgb565Readback()) {
+      LOG(INFO) << "RGB565 Format Not supported on this platform";
+      LOG(INFO) << "Skipping RGB565ReadBackTest";
+      return true;
+    }
+    WebGLId src_texture = context_->createTexture();
+    SkBitmap input_pixels;
+    input_pixels.setConfig(bitmap_config, src_size.width(),
+                           src_size.height());
+    input_pixels.allocPixels();
+    SkAutoLockPixels lock1(input_pixels);
+    // Test Pattern-1, Fill with Plain color pattern.
+    // Erase the input bitmap with red color.
+    input_pixels.eraseColor(SK_ColorRED);
+    BindAndAttachTextureWithPixels(src_texture,
+                                   bitmap_config,
+                                   src_size,
+                                   input_pixels);
+    SkBitmap output_pixels;
+    output_pixels.setConfig(bitmap_config, src_size.width(),
+                           src_size.height());
+    output_pixels.allocPixels();
+    SkAutoLockPixels lock2(output_pixels);
+    // Initialize the output bitmap with Green color.
+    // When the readback is over output bitmap should have the red color.
+    output_pixels.eraseColor(SK_ColorGREEN);
+    uint8* pixels = static_cast<uint8*>(output_pixels.getPixels());
+    ReadBackTexture(src_texture, src_size, pixels, bitmap_config, async);
     bool result = IsEqual(input_pixels, output_pixels);
     if (!result) {
-      LOG(ERROR) << "Bitmap comparision failure";
+      LOG(ERROR) << "Bitmap comparision failure Pattern-1";
+      return false;
+    }
+    const int rect_w = 10, rect_h = 4, src_grid_pitch = 10, src_grid_width = 4;
+    const SkColor color1 = SK_ColorRED, color2 = SK_ColorBLUE;
+    // Test Pattern-2, Fill with Grid Pattern.
+    DrawGridToBitmap(src_size.width(), src_size.height(),
+                   color2, color1,
+                   src_grid_pitch, src_grid_width,
+                   input_pixels);
+    BindAndAttachTextureWithPixels(src_texture,
+                                   bitmap_config,
+                                   src_size,
+                                   input_pixels);
+    ReadBackTexture(src_texture, src_size, pixels, bitmap_config, async);
+    result = IsEqual(input_pixels, output_pixels);
+    if (!result) {
+      LOG(ERROR) << "Bitmap comparision failure Pattern-2";
+      return false;
+    }
+    // Test Pattern-3, Fill with CheckerBoard Pattern.
+    DrawCheckerToBitmap(src_size.width(),
+                    src_size.height(),
+                    color1,
+                    color2, rect_w, rect_h, input_pixels);
+    BindAndAttachTextureWithPixels(src_texture,
+                                   bitmap_config,
+                                   src_size,
+                                   input_pixels);
+    ReadBackTexture(src_texture, src_size, pixels, bitmap_config, async);
+    result = IsEqual(input_pixels, output_pixels);
+    if (!result) {
+      LOG(ERROR) << "Bitmap comparision failure Pattern-3";
       return false;
     }
     context_->deleteTexture(src_texture);
