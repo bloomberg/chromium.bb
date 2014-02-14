@@ -18,7 +18,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"

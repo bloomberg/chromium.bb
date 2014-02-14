@@ -760,7 +760,7 @@ void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
 
 template <>
 void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 

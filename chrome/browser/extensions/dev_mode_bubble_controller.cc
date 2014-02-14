@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -123,7 +124,7 @@ void DevModeBubbleController::ClearProfileListForTesting() {
 // static
 bool DevModeBubbleController::IsDevModeExtension(
     const Extension* extension) {
-  if (!extensions::FeatureSwitch::force_dev_mode_highlighting()->IsEnabled()) {
+  if (!FeatureSwitch::force_dev_mode_highlighting()->IsEnabled()) {
     if (chrome::VersionInfo::GetChannel() <
             chrome::VersionInfo::CHANNEL_BETA)
       return false;
@@ -135,10 +136,9 @@ bool DevModeBubbleController::IsDevModeExtension(
 DevModeBubbleController::DevModeBubbleController(Profile* profile)
     : ExtensionMessageBubbleController(
           new DevModeBubbleDelegate(
-              extensions::ExtensionSystem::Get(profile)->extension_service()),
+              ExtensionSystem::Get(profile)->extension_service()),
           profile),
-      profile_(profile) {
-}
+      profile_(profile) {}
 
 DevModeBubbleController::~DevModeBubbleController() {
 }

@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 namespace chromedirectsetting {
@@ -151,4 +152,3 @@ void ChromeDirectSettingAPI::OnPrefChanged(
 
 }  // namespace chromedirectsetting
 }  // namespace extensions
-

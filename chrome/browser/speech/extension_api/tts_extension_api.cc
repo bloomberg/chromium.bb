@@ -15,6 +15,7 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace constants = tts_extension_api_constants;

@@ -24,6 +24,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/image/image.h"
 
@@ -278,7 +280,7 @@ void OmniboxAPI::OnTemplateURLsLoaded() {
 
 template <>
 void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 

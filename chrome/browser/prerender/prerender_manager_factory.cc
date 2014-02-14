@@ -10,7 +10,6 @@
 
 #include "base/debug/trace_event.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -18,6 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/prerender_condition_network.h"
@@ -49,7 +50,8 @@ PrerenderManagerFactory::PrerenderManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "PrerenderManager",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   // PrerenderLocalPredictor observers the history visit DB.
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(predictors::PredictorDatabaseFactory::GetInstance());

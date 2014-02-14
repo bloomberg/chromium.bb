@@ -9,13 +9,13 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_api.h"
 
 using extensions::api::events::Rule;

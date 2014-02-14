@@ -11,8 +11,7 @@ namespace extensions {
 ExtensionSystemProvider::ExtensionSystemProvider(
     const char* name,
     BrowserContextDependencyManager* manager)
-    : BrowserContextKeyedServiceFactory(name, manager) {
-}
+    : BrowserContextKeyedServiceFactory(name, manager) {}
 
 ExtensionSystemProvider::~ExtensionSystemProvider() {}
 

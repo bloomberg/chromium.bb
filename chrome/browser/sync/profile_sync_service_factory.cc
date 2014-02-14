@@ -10,7 +10,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
@@ -32,6 +31,8 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
@@ -59,7 +60,8 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(AboutSigninInternalsFactory::GetInstance());
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
-  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(invalidation::InvalidationServiceFactory::GetInstance());

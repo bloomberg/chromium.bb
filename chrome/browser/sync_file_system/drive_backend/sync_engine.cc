@@ -14,8 +14,6 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -33,6 +31,9 @@
 #include "chrome/browser/sync_file_system/sync_task.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
@@ -110,7 +111,8 @@ void SyncEngine::AppendDependsOnFactories(
   DCHECK(factories);
   factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
   factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
-  factories->insert(extensions::ExtensionSystemFactory::GetInstance());
+  factories->insert(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
 SyncEngine::~SyncEngine() {

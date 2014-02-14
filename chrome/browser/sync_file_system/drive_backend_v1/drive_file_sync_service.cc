@@ -34,6 +34,8 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -103,7 +105,8 @@ void DriveFileSyncService::AppendDependsOnFactories(
   DCHECK(factories);
   factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
   factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
-  factories->insert(extensions::ExtensionSystemFactory::GetInstance());
+  factories->insert(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(

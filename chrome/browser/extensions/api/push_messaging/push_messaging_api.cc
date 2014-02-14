@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
@@ -31,6 +30,8 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -363,7 +364,7 @@ void PushMessagingAPI::SetMapperForTest(
 
 template <>
 void ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
 }
 

@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "net/base/net_log.h"
 #include "net/cookies/cookie_util.h"

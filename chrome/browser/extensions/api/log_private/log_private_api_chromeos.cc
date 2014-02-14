@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
 

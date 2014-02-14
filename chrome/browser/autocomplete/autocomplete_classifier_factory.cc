@@ -5,13 +5,13 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 // static
 AutocompleteClassifier* AutocompleteClassifierFactory::GetForProfile(
@@ -35,7 +35,8 @@ AutocompleteClassifierFactory::AutocompleteClassifierFactory()
     : BrowserContextKeyedServiceFactory(
         "AutocompleteClassifier",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(TemplateURLServiceFactory::GetInstance());
   // TODO(pkasting): Uncomment these once they exist.
   //   DependsOn(PrefServiceFactory::GetInstance());

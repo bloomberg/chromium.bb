@@ -64,6 +64,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"

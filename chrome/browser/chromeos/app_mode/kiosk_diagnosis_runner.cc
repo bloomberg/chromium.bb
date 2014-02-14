@@ -13,6 +13,8 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace chromeos {
 
@@ -34,7 +36,8 @@ class KioskDiagnosisRunner::Factory : public BrowserContextKeyedServiceFactory {
       : BrowserContextKeyedServiceFactory(
             "KioskDiagnosisRunner",
             BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+    DependsOn(extensions::ExtensionsBrowserClient::Get()
+                  ->GetExtensionSystemFactory());
     DependsOn(extensions::FeedbackPrivateAPI::GetFactoryInstance());
   }
 

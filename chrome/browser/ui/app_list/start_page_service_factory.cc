@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
@@ -13,6 +12,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
@@ -38,7 +39,8 @@ StartPageServiceFactory::StartPageServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AppListStartPageService",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(extensions::InstallTrackerFactory::GetInstance());
 }
 

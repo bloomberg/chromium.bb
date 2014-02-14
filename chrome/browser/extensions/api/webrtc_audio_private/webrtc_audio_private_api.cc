@@ -13,6 +13,7 @@
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"

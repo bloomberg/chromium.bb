@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "third_party/re2/re2/re2.h"
@@ -338,7 +338,7 @@ ActivityLogFactory::ActivityLogFactory()
     : BrowserContextKeyedServiceFactory(
         "ActivityLog",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(InstallTrackerFactory::GetInstance());
 }
 

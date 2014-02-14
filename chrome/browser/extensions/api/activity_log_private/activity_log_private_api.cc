@@ -15,6 +15,8 @@
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 
@@ -36,7 +38,7 @@ ProfileKeyedAPIFactory<ActivityLogAPI>* ActivityLogAPI::GetFactoryInstance() {
 
 template<>
 void ProfileKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ActivityLogFactory::GetInstance());
 }
 

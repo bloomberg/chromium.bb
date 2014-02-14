@@ -11,6 +11,7 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 

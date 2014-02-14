@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/menu_manager_factory.h"
 
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
@@ -29,7 +29,7 @@ MenuManagerFactory::MenuManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "MenuManager",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
 MenuManagerFactory::~MenuManagerFactory() {}

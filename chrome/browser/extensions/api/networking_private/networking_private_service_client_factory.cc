@@ -5,10 +5,11 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -29,7 +30,7 @@ NetworkingPrivateServiceClientFactory::NetworkingPrivateServiceClientFactory()
     : BrowserContextKeyedServiceFactory(
         "NetworkingPrivateServiceClient",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
 NetworkingPrivateServiceClientFactory

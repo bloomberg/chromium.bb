@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -72,11 +73,11 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
   // Then in the cc file (or inline in the header), define it, e.g.:
   //   template <>
   //   ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
-  //     DependsOn(ExtensionSystemFactory::GetInstance());
+  //     DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   //     DependsOn(ProfileSyncServiceFactory::GetInstance());
   // }
   void DeclareFactoryDependencies() {
-    DependsOn(ExtensionSystemFactory::GetInstance());
+    DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   }
 
   ProfileKeyedAPIFactory()
