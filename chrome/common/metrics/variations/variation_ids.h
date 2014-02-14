@@ -269,6 +269,7 @@ enum ReservedVariationID {
 
   // iOS Phone New NTP trial.
   // Range: 3312047 - 3312050 (Beta); 3312100 - 3312103 (Stable)
+  //        3312112 - 3312113 (Stable)
   IOS_PHONE_NEW_NTP_OMNIBOX_HINT_BETA = 3312047,
   IOS_PHONE_NEW_NTP_CONTROL_1_BETA = 3312048,
   IOS_PHONE_NEW_NTP_FAKEBOX_HINT_BETA = 3312049,
@@ -277,6 +278,8 @@ enum ReservedVariationID {
   IOS_PHONE_NEW_NTP_CONTROL_1_STABLE = 3312101,
   IOS_PHONE_NEW_NTP_FAKEBOX_HINT_STABLE = 3312102,
   IOS_PHONE_NEW_NTP_CONTROL_2_STABLE = 3312103,
+  IOS_PHONE_NEW_NTP_OMNIBOX_HINT_V3_STABLE = 3312112,
+  IOS_PHONE_NEW_NTP_CONTROL_3_STABLE = 3312113,
 
   // iOS Tablet New NTP trial.
   // Range: 3312104 - 3312107 (Beta); 3312108 - 3312111 (Stable)
@@ -296,7 +299,7 @@ enum ReservedVariationID {
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312112,
+  NEXT_ID = 3312114,
 
   // USABLE IDs END HERE.
   //
