@@ -225,6 +225,13 @@ std::string CapabilitiesToCdd(
       NOTREACHED();
     }
   }
+
+  OrientationCapability orientation;
+  orientation.AddDefaultOption(PORTRAIT, true);
+  orientation.AddOption(LANDSCAPE);
+  orientation.AddOption(AUTO_ORIENTATION);
+  orientation.SaveTo(&description);
+
   return description.ToString();
 }
 
