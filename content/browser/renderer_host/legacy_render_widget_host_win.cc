@@ -171,12 +171,14 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
                                                  WPARAM w_param,
                                                  LPARAM l_param) {
   mouse_tracking_enabled_ = false;
-  // We should send a WM_MOUSELEAVE to the parent window only if the mouse has
-  // moved outside the bounds of the parent.
-  POINT cursor_pos;
-  ::GetCursorPos(&cursor_pos);
-  if (::WindowFromPoint(cursor_pos) != GetParent())
-    return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetCapture() != GetParent()) {
+    // We should send a WM_MOUSELEAVE to the parent window only if the mouse
+    // has moved outside the bounds of the parent.
+    POINT cursor_pos;
+    ::GetCursorPos(&cursor_pos);
+    if (::WindowFromPoint(cursor_pos) != GetParent())
+      return ::SendMessage(GetParent(), message, w_param, l_param);
+  }
   return 0;
 }
 
