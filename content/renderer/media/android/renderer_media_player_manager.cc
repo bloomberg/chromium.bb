@@ -106,6 +106,10 @@ void RendererMediaPlayerManager::SetVolume(int player_id, double volume) {
   Send(new MediaPlayerHostMsg_SetVolume(routing_id(), player_id, volume));
 }
 
+void RendererMediaPlayerManager::SetPoster(int player_id, const GURL& poster) {
+  Send(new MediaPlayerHostMsg_SetPoster(routing_id(), player_id, poster));
+}
+
 void RendererMediaPlayerManager::ReleaseResources(int player_id) {
   Send(new MediaPlayerHostMsg_Release(routing_id(), player_id));
 }

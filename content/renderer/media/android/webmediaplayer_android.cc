@@ -36,6 +36,7 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -1055,6 +1056,10 @@ void WebMediaPlayerAndroid::DoCreateStreamTexture() {
 
 void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
   needs_establish_peer_ = needs_establish_peer;
+}
+
+void WebMediaPlayerAndroid::setPoster(const blink::WebURL& poster) {
+  manager_->SetPoster(player_id_, poster);
 }
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {

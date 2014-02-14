@@ -37,6 +37,7 @@ class MessageLoopProxy;
 
 namespace blink {
 class WebFrame;
+class WebURL;
 }
 
 namespace gpu {
@@ -99,6 +100,9 @@ class WebMediaPlayerAndroid
   virtual void setVolume(double volume);
   virtual const blink::WebTimeRanges& buffered();
   virtual double maxTimeSeekable() const;
+
+  // Poster image, as defined in the <video> element.
+  virtual void setPoster(const blink::WebURL& poster) OVERRIDE;
 
   // Methods for painting.
   virtual void paint(blink::WebCanvas* canvas,

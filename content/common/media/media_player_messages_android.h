@@ -237,10 +237,15 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Seek,
 // Start the player for playback.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Start, int /* player_id */)
 
-// Start the player for playback.
+// Set the volume.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetVolume,
                     int /* player_id */,
                     double /* volume */)
+
+// Set the poster image.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetPoster,
+                    int /* player_id */,
+                    GURL /* poster url */)
 
 // Requests the player to enter fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)

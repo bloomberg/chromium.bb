@@ -132,6 +132,7 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Seek, OnSeek)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Pause, OnPause)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetVolume, OnSetVolume)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetPoster, OnSetPoster)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Release, OnReleaseResources)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
@@ -565,6 +566,10 @@ void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SetVolume(volume);
+}
+
+void BrowserMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
+  // To be overridden by subclasses.
 }
 
 void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {

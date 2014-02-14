@@ -64,6 +64,9 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // Sets the player volume.
   void SetVolume(int player_id, double volume);
 
+  // Sets the poster image.
+  void SetPoster(int player_id, const GURL& poster);
+
   // Releases resources for the player.
   void ReleaseResources(int player_id);
 
