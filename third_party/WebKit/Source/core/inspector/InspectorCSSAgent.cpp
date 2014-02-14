@@ -46,8 +46,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/NamedFlow.h"
-#include "core/dom/NamedFlowCollection.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -65,7 +63,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "platform/fonts/Font.h"
@@ -119,115 +116,6 @@ static unsigned computePseudoClassMask(JSONArray* pseudoClassArray)
     }
 
     return result;
-}
-
-class UpdateRegionLayoutTask {
-public:
-    UpdateRegionLayoutTask(InspectorCSSAgent*);
-    void scheduleFor(NamedFlow*, int documentNodeId);
-    void unschedule(NamedFlow*);
-    void reset();
-    void onTimer(Timer<UpdateRegionLayoutTask>*);
-
-private:
-    InspectorCSSAgent* m_cssAgent;
-    Timer<UpdateRegionLayoutTask> m_timer;
-    HashMap<NamedFlow*, int> m_namedFlows;
-};
-
-UpdateRegionLayoutTask::UpdateRegionLayoutTask(InspectorCSSAgent* cssAgent)
-    : m_cssAgent(cssAgent)
-    , m_timer(this, &UpdateRegionLayoutTask::onTimer)
-{
-}
-
-void UpdateRegionLayoutTask::scheduleFor(NamedFlow* namedFlow, int documentNodeId)
-{
-    m_namedFlows.add(namedFlow, documentNodeId);
-
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
-}
-
-void UpdateRegionLayoutTask::unschedule(NamedFlow* namedFlow)
-{
-    m_namedFlows.remove(namedFlow);
-}
-
-void UpdateRegionLayoutTask::reset()
-{
-    m_timer.stop();
-    m_namedFlows.clear();
-}
-
-void UpdateRegionLayoutTask::onTimer(Timer<UpdateRegionLayoutTask>*)
-{
-    // The timer is stopped on m_cssAgent destruction, so this method will never be called after m_cssAgent has been destroyed.
-    Vector<std::pair<NamedFlow*, int> > namedFlows;
-
-    for (HashMap<NamedFlow*, int>::iterator it = m_namedFlows.begin(), end = m_namedFlows.end(); it != end; ++it)
-        namedFlows.append(std::make_pair(it->key, it->value));
-
-    for (unsigned i = 0, size = namedFlows.size(); i < size; ++i) {
-        NamedFlow* namedFlow = namedFlows.at(i).first;
-        int documentNodeId = namedFlows.at(i).second;
-
-        if (m_namedFlows.contains(namedFlow)) {
-            m_cssAgent->regionLayoutUpdated(namedFlow, documentNodeId);
-            m_namedFlows.remove(namedFlow);
-        }
-    }
-
-    if (!m_namedFlows.isEmpty() && !m_timer.isActive())
-        m_timer.startOneShot(0);
-}
-
-class ChangeRegionOversetTask {
-public:
-    ChangeRegionOversetTask(InspectorCSSAgent*);
-    void scheduleFor(NamedFlow*, int documentNodeId);
-    void unschedule(NamedFlow*);
-    void reset();
-    void onTimer(Timer<ChangeRegionOversetTask>*);
-
-private:
-    InspectorCSSAgent* m_cssAgent;
-    Timer<ChangeRegionOversetTask> m_timer;
-    HashMap<NamedFlow*, int> m_namedFlows;
-};
-
-ChangeRegionOversetTask::ChangeRegionOversetTask(InspectorCSSAgent* cssAgent)
-    : m_cssAgent(cssAgent)
-    , m_timer(this, &ChangeRegionOversetTask::onTimer)
-{
-}
-
-void ChangeRegionOversetTask::scheduleFor(NamedFlow* namedFlow, int documentNodeId)
-{
-    m_namedFlows.add(namedFlow, documentNodeId);
-
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0);
-}
-
-void ChangeRegionOversetTask::unschedule(NamedFlow* namedFlow)
-{
-    m_namedFlows.remove(namedFlow);
-}
-
-void ChangeRegionOversetTask::reset()
-{
-    m_timer.stop();
-    m_namedFlows.clear();
-}
-
-void ChangeRegionOversetTask::onTimer(Timer<ChangeRegionOversetTask>*)
-{
-    // The timer is stopped on m_cssAgent destruction, so this method will never be called after m_cssAgent has been destroyed.
-    for (HashMap<NamedFlow*, int>::iterator it = m_namedFlows.begin(), end = m_namedFlows.end(); it != end; ++it)
-        m_cssAgent->regionOversetChanged(it->key, it->value);
-
-    m_namedFlows.clear();
 }
 
 class InspectorCSSAgent::StyleSheetAction : public InspectorHistory::Action {
@@ -555,11 +443,6 @@ void InspectorCSSAgent::reset()
 
 void InspectorCSSAgent::resetNonPersistentData()
 {
-    m_namedFlowCollectionsRequested.clear();
-    if (m_updateRegionLayoutTask)
-        m_updateRegionLayoutTask->reset();
-    if (m_changeRegionOversetTask)
-        m_changeRegionOversetTask->reset();
     resetPseudoStates();
 }
 
@@ -638,28 +521,6 @@ void InspectorCSSAgent::mediaQueryResultChanged()
         m_frontend->mediaQueryResultChanged();
 }
 
-void InspectorCSSAgent::didCreateNamedFlow(Document* document, NamedFlow* namedFlow)
-{
-    int documentNodeId = documentNodeWithRequestedFlowsId(document);
-    if (!documentNodeId)
-        return;
-
-    ErrorString errorString;
-    m_frontend->namedFlowCreated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
-}
-
-void InspectorCSSAgent::willRemoveNamedFlow(Document* document, NamedFlow* namedFlow)
-{
-    int documentNodeId = documentNodeWithRequestedFlowsId(document);
-    if (!documentNodeId)
-        return;
-
-    if (m_updateRegionLayoutTask)
-        m_updateRegionLayoutTask->unschedule(namedFlow);
-
-    m_frontend->namedFlowRemoved(documentNodeId, namedFlow->name().string());
-}
-
 void InspectorCSSAgent::willMutateRules()
 {
     ++m_styleSheetsPendingMutation;
@@ -692,50 +553,6 @@ void InspectorCSSAgent::didMutateStyle(CSSStyleDeclaration* style, bool isInline
         if (owner)
             owner->modifiedStyleSheet(parentSheet, RecalcStyleDeferred, FullStyleUpdate);
     }
-}
-
-void InspectorCSSAgent::didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
-{
-    int documentNodeId = documentNodeWithRequestedFlowsId(document);
-    if (!documentNodeId)
-        return;
-
-    if (!m_updateRegionLayoutTask)
-        m_updateRegionLayoutTask = adoptPtr(new UpdateRegionLayoutTask(this));
-    m_updateRegionLayoutTask->scheduleFor(namedFlow, documentNodeId);
-}
-
-void InspectorCSSAgent::regionLayoutUpdated(NamedFlow* namedFlow, int documentNodeId)
-{
-    if (namedFlow->flowState() == NamedFlow::FlowStateNull)
-        return;
-
-    ErrorString errorString;
-    RefPtr<NamedFlow> protector(namedFlow);
-
-    m_frontend->regionLayoutUpdated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
-}
-
-void InspectorCSSAgent::didChangeRegionOverset(Document* document, NamedFlow* namedFlow)
-{
-    int documentNodeId = documentNodeWithRequestedFlowsId(document);
-    if (!documentNodeId)
-        return;
-
-    if (!m_changeRegionOversetTask)
-        m_changeRegionOversetTask = adoptPtr(new ChangeRegionOversetTask(this));
-    m_changeRegionOversetTask->scheduleFor(namedFlow, documentNodeId);
-}
-
-void InspectorCSSAgent::regionOversetChanged(NamedFlow* namedFlow, int documentNodeId)
-{
-    if (namedFlow->flowState() == NamedFlow::FlowStateNull)
-        return;
-
-    ErrorString errorString;
-    RefPtr<NamedFlow> protector(namedFlow);
-
-    m_frontend->regionOversetChanged(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
 
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
@@ -1119,23 +936,6 @@ void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, c
     element->ownerDocument()->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
-void InspectorCSSAgent::getNamedFlowCollection(ErrorString* errorString, int documentNodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> >& result)
-{
-    Document* document = m_domAgent->assertDocument(errorString, documentNodeId);
-    if (!document)
-        return;
-
-    m_namedFlowCollectionsRequested.add(documentNodeId);
-
-    Vector<RefPtr<NamedFlow> > namedFlowsVector = document->namedFlows()->namedFlows();
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> > namedFlows = TypeBuilder::Array<TypeBuilder::CSS::NamedFlow>::create();
-
-    for (Vector<RefPtr<NamedFlow> >::iterator it = namedFlowsVector.begin(); it != namedFlowsVector.end(); ++it)
-        namedFlows->addItem(buildObjectForNamedFlow(errorString, it->get(), documentNodeId));
-
-    result = namedFlows.release();
-}
-
 PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const MediaList* media, MediaListSource mediaListSource, const String& sourceURL, CSSStyleSheet* parentStyleSheet)
 {
     // Make certain compilers happy by initializing |source| up-front.
@@ -1271,15 +1071,6 @@ Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
         return 0;
     }
     return toElement(node);
-}
-
-int InspectorCSSAgent::documentNodeWithRequestedFlowsId(Document* document)
-{
-    int documentNodeId = m_domAgent->boundNodeId(document);
-    if (!documentNodeId || !m_namedFlowCollectionsRequested.contains(documentNodeId))
-        return 0;
-
-    return documentNodeId;
 }
 
 void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& result)
@@ -1503,61 +1294,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttribut
 
     RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), mutableAttributeStyle->ensureCSSStyleDeclaration(), 0);
     return inspectorStyle->buildObjectForStyle();
-}
-
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > InspectorCSSAgent::buildArrayForRegions(ErrorString* errorString, PassRefPtr<NodeList> regionList, int documentNodeId)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > regions = TypeBuilder::Array<TypeBuilder::CSS::Region>::create();
-
-    for (unsigned i = 0; i < regionList->length(); ++i) {
-        TypeBuilder::CSS::Region::RegionOverset::Enum regionOverset;
-
-        switch (toElement(regionList->item(i))->renderRegion()->regionOversetState()) {
-        case RegionFit:
-            regionOverset = TypeBuilder::CSS::Region::RegionOverset::Fit;
-            break;
-        case RegionEmpty:
-            regionOverset = TypeBuilder::CSS::Region::RegionOverset::Empty;
-            break;
-        case RegionOverset:
-            regionOverset = TypeBuilder::CSS::Region::RegionOverset::Overset;
-            break;
-        case RegionUndefined:
-            continue;
-        default:
-            ASSERT_NOT_REACHED();
-            continue;
-        }
-
-        RefPtr<TypeBuilder::CSS::Region> region = TypeBuilder::CSS::Region::create()
-            .setRegionOverset(regionOverset)
-            // documentNodeId was previously asserted
-            .setNodeId(m_domAgent->pushNodeToFrontend(errorString, documentNodeId, regionList->item(i)));
-
-        regions->addItem(region);
-    }
-
-    return regions.release();
-}
-
-PassRefPtr<TypeBuilder::CSS::NamedFlow> InspectorCSSAgent::buildObjectForNamedFlow(ErrorString* errorString, NamedFlow* webkitNamedFlow, int documentNodeId)
-{
-    RefPtr<NodeList> contentList = webkitNamedFlow->getContent();
-    RefPtr<TypeBuilder::Array<int> > content = TypeBuilder::Array<int>::create();
-
-    for (unsigned i = 0; i < contentList->length(); ++i) {
-        // documentNodeId was previously asserted
-        content->addItem(m_domAgent->pushNodeToFrontend(errorString, documentNodeId, contentList->item(i)));
-    }
-
-    RefPtr<TypeBuilder::CSS::NamedFlow> namedFlow = TypeBuilder::CSS::NamedFlow::create()
-        .setDocumentNodeId(documentNodeId)
-        .setName(webkitNamedFlow->name().string())
-        .setOverset(webkitNamedFlow->overset())
-        .setContent(content)
-        .setRegions(buildArrayForRegions(errorString, webkitNamedFlow->getRegions(), documentNodeId));
-
-    return namedFlow.release();
 }
 
 void InspectorCSSAgent::didRemoveDocument(Document* document)

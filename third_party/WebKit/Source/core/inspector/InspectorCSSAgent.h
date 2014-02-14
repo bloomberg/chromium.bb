@@ -42,7 +42,6 @@
 
 namespace WebCore {
 
-class ChangeRegionOversetTask;
 struct CSSParserString;
 class CSSRule;
 class CSSRuleList;
@@ -59,7 +58,6 @@ class NodeList;
 class PlatformFontUsage;
 class RenderText;
 class StyleResolver;
-class UpdateRegionLayoutTask;
 
 class InspectorCSSAgent FINAL
     : public InspectorBaseAgent<InspectorCSSAgent>
@@ -115,21 +113,12 @@ public:
     void reset();
     void didCommitLoad(Frame*, DocumentLoader*);
     void mediaQueryResultChanged();
-    void didCreateNamedFlow(Document*, NamedFlow*);
-    void willRemoveNamedFlow(Document*, NamedFlow*);
     void willMutateRules();
     void didMutateRules(CSSStyleSheet*);
     void willMutateStyle();
     void didMutateStyle(CSSStyleDeclaration*, bool);
 
-private:
-    void regionLayoutUpdated(NamedFlow*, int documentNodeId);
-    void regionOversetChanged(NamedFlow*, int documentNodeId);
-
 public:
-    void didUpdateRegionLayout(Document*, NamedFlow*);
-    void didChangeRegionOverset(Document*, NamedFlow*);
-
     void activeStyleSheetsUpdated(Document*);
     void frameDetachedFromParent(Frame*);
 
@@ -144,7 +133,6 @@ public:
     virtual void setRuleSelector(ErrorString*, const RefPtr<JSONObject>& ruleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
     virtual void addRule(ErrorString*, int contextNodeId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
     virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses) OVERRIDE;
-    virtual void getNamedFlowCollection(ErrorString*, int documentNodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> >& result) OVERRIDE;
 
     PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
@@ -167,7 +155,6 @@ private:
     void resetNonPersistentData();
     InspectorStyleSheetForInlineStyle* asInspectorStyleSheet(Element* element);
     Element* elementForId(ErrorString*, int nodeId);
-    int documentNodeWithRequestedFlowsId(Document*);
     void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
     void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
@@ -188,8 +175,6 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > buildArrayForRuleList(CSSRuleList*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, Element*);
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > buildArrayForRegions(ErrorString*, PassRefPtr<NodeList>, int documentNodeId);
-    PassRefPtr<TypeBuilder::CSS::NamedFlow> buildObjectForNamedFlow(ErrorString*, NamedFlow*, int documentNodeId);
 
     // InspectorDOMAgent::DOMListener implementation
     virtual void didRemoveDocument(Document*) OVERRIDE;
@@ -215,9 +200,6 @@ private:
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
     HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
-    HashSet<int> m_namedFlowCollectionsRequested;
-    OwnPtr<UpdateRegionLayoutTask> m_updateRegionLayoutTask;
-    OwnPtr<ChangeRegionOversetTask> m_changeRegionOversetTask;
 
     RefPtr<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
@@ -227,10 +209,8 @@ private:
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
 
-    friend class ChangeRegionOversetTask;
     friend class EnableResourceClient;
     friend class StyleSheetBinder;
-    friend class UpdateRegionLayoutTask;
 };
 
 

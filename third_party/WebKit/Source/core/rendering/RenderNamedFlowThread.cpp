@@ -34,7 +34,6 @@
 #include "core/dom/Position.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderInline.h"
@@ -495,7 +494,6 @@ bool RenderNamedFlowThread::isChildAllowed(RenderObject* child, RenderStyle* sty
 void RenderNamedFlowThread::dispatchRegionLayoutUpdateEvent()
 {
     RenderFlowThread::dispatchRegionLayoutUpdateEvent();
-    InspectorInstrumentation::didUpdateRegionLayout(&document(), m_namedFlow.get());
 
     if (!m_regionLayoutUpdateEventTimer.isActive() && m_namedFlow->hasEventListeners())
         m_regionLayoutUpdateEventTimer.startOneShot(0);
@@ -504,7 +502,6 @@ void RenderNamedFlowThread::dispatchRegionLayoutUpdateEvent()
 void RenderNamedFlowThread::dispatchRegionOversetChangeEvent()
 {
     RenderFlowThread::dispatchRegionOversetChangeEvent();
-    InspectorInstrumentation::didChangeRegionOverset(&document(), m_namedFlow.get());
 
     if (!m_regionOversetChangeEventTimer.isActive() && m_namedFlow->hasEventListeners())
         m_regionOversetChangeEventTimer.startOneShot(0);

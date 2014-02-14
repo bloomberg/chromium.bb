@@ -118,18 +118,6 @@ interface InspectorInstrumentation {
     [DOM, Inline=FastReturn]
     void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
 
-    [CSS, Inline=FastReturn]
-    void didCreateNamedFlow([Keep] Document*, NamedFlow*);
-
-    [CSS, Inline=FastReturn]
-    void willRemoveNamedFlow([Keep] Document*, NamedFlow*);
-
-    [CSS, Inline=FastReturn]
-    void didUpdateRegionLayout([Keep] Document*, NamedFlow*);
-
-    [CSS, Inline=FastReturn]
-    void didChangeRegionOverset([Keep] Document*, NamedFlow*);
-
     [DOMDebugger, Inline=FastReturn]
     void willSendXMLHttpRequest(ExecutionContext*, const String& url);
 

@@ -33,7 +33,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/Document.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -84,8 +83,6 @@ PassRefPtr<NamedFlow> NamedFlowCollection::ensureFlowWithName(const AtomicString
     RefPtr<NamedFlow> newFlow = NamedFlow::create(this, flowName);
     m_namedFlows.add(newFlow.get());
 
-    InspectorInstrumentation::didCreateNamedFlow(document(), newFlow.get());
-
     return newFlow.release();
 }
 
@@ -97,8 +94,6 @@ void NamedFlowCollection::discardNamedFlow(NamedFlow* namedFlow)
 
     ASSERT(namedFlow->flowState() == NamedFlow::FlowStateNull);
     ASSERT(m_namedFlows.contains(namedFlow));
-
-    InspectorInstrumentation::willRemoveNamedFlow(document(), namedFlow);
 
     m_namedFlows.remove(namedFlow);
 }
