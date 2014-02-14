@@ -17,17 +17,9 @@ class DefaultState : public WindowState::State {
   virtual ~DefaultState();
 
   // WindowState::State overrides:
-  virtual void OnWMEvent(WindowState* window_state, WMEvent event) OVERRIDE;
-
+  virtual void OnWMEvent(WindowState* window_state,
+                         WMEvent event) OVERRIDE;
  private:
-  // Process stete dependent events, such as TOGGLE_MAXIMIZED,
-  // TOGGLE_FULLSCREEN.
-  static bool ProcessCompoundEvents(WindowState* window_state, WMEvent event);
-
-  // Animates to new window bounds based on the current and previous show type.
-  static void UpdateBoundsFromShowType(wm::WindowState* window_state,
-                                       wm::WindowShowType old_show_type);
-
   DISALLOW_COPY_AND_ASSIGN(DefaultState);
 };
 

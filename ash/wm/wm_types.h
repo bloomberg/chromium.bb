@@ -43,22 +43,6 @@ enum WindowShowType {
 
 // Set of operations that can change the window's state.
 enum WMEvent {
-  // Following events are the request to become corresponding state.
-  // Note that this does not mean the window will be in corresponding
-  // state and the request may not be fullfilled.
-
-  // NORMAL is used as a restore operation with a few exceptions.
-  NORMAL,
-  MAXIMIZE,
-  MINIMIZE,
-  FULLSCREEN,
-  // TODO(oshima): Consolidate these two events.
-  SNAP_LEFT,
-  SNAP_RIGHT,
-
-  // Following events are compond events which may lead to different
-  // states depending on the current state.
-
   // A user requested to toggle maximized state by double clicking window
   // header.
   TOGGLE_MAXIMIZE_CAPTION,
@@ -73,9 +57,6 @@ enum WMEvent {
   // A user requested to toggle horizontal maximize by double clicking
   // left/right edge.
   TOGGLE_HORIZONTAL_MAXIMIZE,
-
-  // A user requested to toggle fullscreen state.
-  TOGGLE_FULLSCREEN,
 };
 
 // Utility functions to convert WindowShowType <-> ui::WindowShowState.

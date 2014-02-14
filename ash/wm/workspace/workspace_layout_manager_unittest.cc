@@ -587,7 +587,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
   EXPECT_EQ(ui::SHOW_STATE_MINIMIZED, delegate.GetShowStateAndReset());
   window->Show();
   EXPECT_TRUE(window->IsVisible());
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, delegate.GetShowStateAndReset());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, delegate.GetShowStateAndReset());
 }
 
 // Tests maximized window size during root window resize.

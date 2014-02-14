@@ -17,7 +17,7 @@ ResizeHandleWindowTargeter::ResizeHandleWindowTargeter(
     : window_(window),
       immersive_controller_(controller) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
-  OnPostWindowShowTypeChange(window_state, wm::SHOW_TYPE_DEFAULT);
+  OnWindowShowTypeChanged(window_state, wm::SHOW_TYPE_DEFAULT);
   window_state->AddObserver(this);
   window_->AddObserver(this);
 }
@@ -29,7 +29,7 @@ ResizeHandleWindowTargeter::~ResizeHandleWindowTargeter() {
   }
 }
 
-void ResizeHandleWindowTargeter::OnPostWindowShowTypeChange(
+void ResizeHandleWindowTargeter::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
   if (window_state->IsMaximizedOrFullscreen()) {

@@ -459,7 +459,7 @@ void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
 
-void PanelLayoutManager::OnPostWindowShowTypeChange(
+void PanelLayoutManager::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
   // If the shelf is currently hidden then windows will not actually be shown

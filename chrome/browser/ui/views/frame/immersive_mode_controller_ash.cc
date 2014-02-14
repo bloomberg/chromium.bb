@@ -212,7 +212,7 @@ ImmersiveModeControllerAsh::GetVisibleBoundsInScreen() const {
   return bounds_in_screen;
 }
 
-void ImmersiveModeControllerAsh::OnPostWindowShowTypeChange(
+void ImmersiveModeControllerAsh::OnWindowShowTypeChanged(
     ash::wm::WindowState* window_state,
     ash::wm::WindowShowType old_type) {
   // Disable immersive fullscreen when the user exits fullscreen without going

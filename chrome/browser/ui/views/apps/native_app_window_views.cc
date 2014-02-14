@@ -211,7 +211,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   }
 
   // Overridden from ash::wm::WindowStateObserver:
-  virtual void OnPostWindowShowTypeChange(
+  virtual void OnWindowShowTypeChanged(
       ash::wm::WindowState* window_state,
       ash::wm::WindowShowType old_type) OVERRIDE {
     if (!window_state->IsFullscreen() &&

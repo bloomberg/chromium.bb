@@ -23,9 +23,6 @@ class Rect;
 }
 
 namespace ash {
-namespace internal {
-class WorkspaceLayoutManager;
-}
 
 namespace wm {
 class WindowStateDelegate;
@@ -274,10 +271,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Sets the currently stored restore bounds and clears the restore bounds.
   void SetAndClearRestoreBounds();
 
-  // Adjusts the |bounds| so that they are flush with the edge of the
-  // workspace if the window represented by |window_state| is side snapped.
-  void AdjustSnappedBounds(gfx::Rect* bounds);
-
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
@@ -288,26 +281,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                        intptr_t old) OVERRIDE;
 
  private:
-  friend class DefaultState;
-  // TODO(oshima): Move more logic from WLM to this class and remove
-  // this friend.
-  friend class internal::WorkspaceLayoutManager;
-
-  WindowStateDelegate* delegate() { return delegate_.get(); }
-
   // Snaps the window to left or right of the desktop with given bounds.
   void SnapWindow(WindowShowType left_or_right,
                   const gfx::Rect& bounds);
 
   // Sets the window show type and updates the show state if necessary.
-  // Note that this does not update the window bounds.
-  void UpdateWindowShowType(WindowShowType new_window_show_type);
-
-  void NotifyPreShowTypeChange(WindowShowType old_window_show_type);
-  void NotifyPostShowTypeChange(WindowShowType old_window_show_type);
-
-  void SetBoundsDirect(const gfx::Rect& bounds);
-  void SetBoundsDirectAnimated(const gfx::Rect& bounds);
+  void SetWindowShowType(WindowShowType new_window_show_type);
 
   // The owner of this window settings.
   aura::Window* window_;
@@ -334,9 +313,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   ObserverList<WindowStateObserver> observer_list_;
 
-  // True to ignore a property change event to avoid reentrance in
-  // UpdateWindowShowType()
-  bool ignore_property_change_;
+  // True when in SetWindowShowType(). This is used to avoid reentrance.
+  bool in_set_window_show_type_;
 
   WindowShowType window_show_type_;
 
