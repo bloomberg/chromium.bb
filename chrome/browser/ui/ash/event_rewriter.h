@@ -1,39 +1,49 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EVENT_REWRITER_H_
-#define CHROME_BROWSER_CHROMEOS_EVENT_REWRITER_H_
+#ifndef CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_
+#define CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_
 
 #include <map>
 #include <set>
 #include <string>
 
+#include "ash/event_rewriter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_observer.h"
-#include "chrome/browser/chromeos/device_hierarchy_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/device_hierarchy_observer.h"
+#endif
+
 class PrefService;
-typedef union _XEvent XEvent;
 
 namespace aura {
 class RootWindow;
 }
 
+#if defined(OS_CHROMEOS)
 namespace chromeos {
+
 class KeyboardDrivenEventRewriter;
+
 namespace input_method {
 class XKeyboard;
 }
+}
+#endif
 
-class EventRewriter : public aura::RootWindowObserver,
-                      public DeviceHierarchyObserver,
-                      public base::MessagePumpObserver {
+class EventRewriter : public ash::EventRewriterDelegate,
+                      public aura::RootWindowObserver
+#if defined(OS_CHROMEOS)
+                    , public chromeos::DeviceHierarchyObserver
+#endif
+{
  public:
   enum DeviceType {
     kDeviceUnknown = 0,
@@ -47,7 +57,7 @@ class EventRewriter : public aura::RootWindowObserver,
   DeviceType DeviceAddedForTesting(int device_id,
                                    const std::string& device_name);
   // Calls Rewrite.
-  void RewriteForTesting(XEvent* event);
+  void RewriteForTesting(ui::KeyEvent* event);
 
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
@@ -58,9 +68,11 @@ class EventRewriter : public aura::RootWindowObserver,
   void set_pref_service_for_testing(const PrefService* pref_service) {
     pref_service_for_testing_ = pref_service;
   }
-  void set_xkeyboard_for_testing(input_method::XKeyboard* xkeyboard) {
+#if defined(OS_CHROMEOS)
+  void set_xkeyboard_for_testing(chromeos::input_method::XKeyboard* xkeyboard) {
     xkeyboard_for_testing_ = xkeyboard;
   }
+#endif
 
   // Gets DeviceType from the |device_name|.
   static DeviceType GetDeviceType(const std::string& device_name);
@@ -69,15 +81,17 @@ class EventRewriter : public aura::RootWindowObserver,
   friend class EventRewriterAshTest;
   friend class EventRewriterTest;
 
+  // ash::EventRewriterDelegate overrides:
+  virtual ash::EventRewriterDelegate::Action RewriteOrFilterKeyEvent(
+      ui::KeyEvent* event) OVERRIDE;
+  virtual ash::EventRewriterDelegate::Action RewriteOrFilterLocatedEvent(
+      ui::LocatedEvent* event) OVERRIDE;
+
   // aura::RootWindowObserver overrides:
   virtual void OnKeyboardMappingChanged(const aura::RootWindow* root) OVERRIDE;
 
-  // base::MessagePumpObserver overrides:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-
-  // DeviceHierarchyObserver overrides:
+#if defined(OS_CHROMEOS)
+  // chromeos::DeviceHierarchyObserver overrides:
   virtual void DeviceHierarchyChanged() OVERRIDE {}
   virtual void DeviceAdded(int device_id) OVERRIDE;
   virtual void DeviceRemoved(int device_id) OVERRIDE;
@@ -95,8 +109,11 @@ class EventRewriter : public aura::RootWindowObserver,
 
   struct KeyboardRemapping {
     KeySym input_keysym;
+    unsigned int input_mods;
     unsigned int input_native_mods;
     KeySym output_keysym;
+    ui::KeyboardCode output_keycode;
+    unsigned int output_mods;
     unsigned int output_native_mods;
   };
 
@@ -104,7 +121,7 @@ class EventRewriter : public aura::RootWindowObserver,
   // keys instead of having them rewritten into back, forward, brightness,
   // volume, etc. or if the user has specified that they desire top-row keys to
   // be treated as function keys globally.
-  bool TopRowKeysAreFunctionKeys(XEvent* event) const;
+  bool TopRowKeysAreFunctionKeys(ui::KeyEvent* event) const;
 
   // Given a set of KeyboardRemapping structs, it finds a matching struct
   // if possible, and updates the remapped event values. Returns true if a
@@ -114,8 +131,11 @@ class EventRewriter : public aura::RootWindowObserver,
       size_t num_remappings,
       KeySym keysym,
       unsigned int native_mods,
+      unsigned int mods,
       KeySym* remapped_native_keysym,
-      unsigned int* remapped_native_mods);
+      unsigned int* remapped_native_mods,
+      ui::KeyboardCode* remapped_keycode,
+      unsigned int* remapped_mods);
 
   // Given a set of KeyboardRemapping structs, it finds a matching struct
   // if possible, and updates the remapped event values. This function converts
@@ -127,27 +147,31 @@ class EventRewriter : public aura::RootWindowObserver,
       size_t num_remappings,
       KeyCode keycode,
       unsigned int native_mods,
+      unsigned int mods,
       KeySym* remapped_native_keysym,
-      unsigned int* remapped_native_mods);
+      unsigned int* remapped_native_mods,
+      ui::KeyboardCode* remapped_keycode,
+      unsigned int* remapped_mods);
+#endif
 
   // Returns the PrefService that should be used.
   const PrefService* GetPrefService() const;
 
   // Rewrites the |event| by applying all RewriteXXX functions as needed.
-  void Rewrite(XEvent* event);
+  void Rewrite(ui::KeyEvent* event);
 
   // Rewrites a modifier key press/release following the current user
   // preferences.
-  bool RewriteModifiers(XEvent* event);
+  bool RewriteModifiers(ui::KeyEvent* event);
 
   // Rewrites Fn key press/release to Control. In some cases, Fn key is not
   // intercepted by the EC, but generates a key event like "XK_F15 + Mod3Mask"
   // as shown in crosbug.com/p/14339.
-  bool RewriteFnKey(XEvent* event);
+  bool RewriteFnKey(ui::KeyEvent* event);
 
   // Rewrites a NumPad key press/release without Num Lock to a corresponding key
   // press/release with the lock.  Returns true when |event| is rewritten.
-  bool RewriteNumPadKeys(XEvent* event);
+  bool RewriteNumPadKeys(ui::KeyEvent* event);
 
   // Rewrites Backspace and Arrow keys following the Chrome OS keyboard spec.
   //  * Alt+Backspace -> Delete
@@ -163,20 +187,22 @@ class EventRewriter : public aura::RootWindowObserver,
   //  * Search+Right -> End
   //  * Search+. -> Insert
   // Returns true when the |event| is rewritten.
-  bool RewriteExtendedKeys(XEvent* event);
+  bool RewriteExtendedKeys(ui::KeyEvent* event);
 
   // When the Search key acts as a function key, it remaps Search+1
   // through Search+= to F1 through F12. Returns true when the |event| is
   // rewritten.
-  bool RewriteFunctionKeys(XEvent* event);
+  bool RewriteFunctionKeys(ui::KeyEvent* event);
 
   // Rewrites the located |event|.
-  void RewriteLocatedEvent(XEvent* event);
+  void RewriteLocatedEvent(ui::LocatedEvent* event);
 
   // Overwrites |event| with the keycodes and flags.
-  void OverwriteEvent(XEvent* event,
+  void OverwriteEvent(ui::KeyEvent* event,
                       unsigned int new_native_keycode,
-                      unsigned int new_native_state);
+                      unsigned int new_native_state,
+                      ui::KeyboardCode new_keycode,
+                      int new_flags);
 
   // Checks the type of the |device_name|, and inserts a new entry to
   // |device_id_to_type_|.
@@ -185,30 +211,32 @@ class EventRewriter : public aura::RootWindowObserver,
   // Returns true if |last_device_id_| is Apple's.
   bool IsAppleKeyboard() const;
 
-  // Remaps |original_native_modifiers| to |remapped_native_modifiers| following
-  // the current user prefs.
-  void GetRemappedModifierMasks(unsigned int original_native_modifiers,
+  // Remaps |original_flags| to |remapped_flags| and |original_native_modifiers|
+  // to |remapped_native_modifiers| following the current user prefs.
+  void GetRemappedModifierMasks(int original_flags,
+                                unsigned int original_native_modifiers,
+                                int* remapped_flags,
                                 unsigned int* remapped_native_modifiers) const;
 
   std::map<int, DeviceType> device_id_to_type_;
   int last_device_id_;
 
+#if defined(OS_CHROMEOS)
   // A mapping from X11 KeySym keys to KeyCode values.
   base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
 
   // A set of device IDs whose press event has been rewritten.
   std::set<int> pressed_device_ids_;
 
-  input_method::XKeyboard* xkeyboard_for_testing_;
+  chromeos::input_method::XKeyboard* xkeyboard_for_testing_;
 
-  scoped_ptr<KeyboardDrivenEventRewriter>
+  scoped_ptr<chromeos::KeyboardDrivenEventRewriter>
       keyboard_driven_event_rewriter_;
+#endif
 
   const PrefService* pref_service_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_EVENT_REWRITER_H_
+#endif  // CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_

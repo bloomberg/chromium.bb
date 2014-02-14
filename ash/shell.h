@@ -328,6 +328,9 @@ class ASH_EXPORT Shell
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
+  internal::EventRewriterEventFilter* event_rewriter_filter() {
+    return event_rewriter_filter_.get();
+  }
   internal::OverlayEventFilter* overlay_filter() {
     return overlay_filter_.get();
   }
@@ -655,6 +658,9 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::EventTransformationHandler>
       event_transformation_handler_;
   scoped_ptr<WindowTreeHostFactory> window_tree_host_factory_;
+
+  // An event filter that rewrites or drops an event.
+  scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.

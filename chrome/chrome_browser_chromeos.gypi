@@ -309,8 +309,6 @@
         'browser/chromeos/drive/write_on_cache_file.h',
         'browser/chromeos/enrollment_dialog_view.cc',
         'browser/chromeos/enrollment_dialog_view.h',
-        'browser/chromeos/event_rewriter.cc',
-        'browser/chromeos/event_rewriter.h',
         'browser/chromeos/extensions/default_app_order.cc',
         'browser/chromeos/extensions/default_app_order.h',
         'browser/chromeos/extensions/device_local_account_external_policy_loader.cc',

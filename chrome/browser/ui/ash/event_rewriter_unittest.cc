@@ -1,41 +1,40 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/event_rewriter.h"
+#include "chrome/browser/ui/ash/event_rewriter.h"
 
-#include <X11/keysym.h>
-#include <X11/XF86keysym.h>
-#include <X11/Xlib.h>
-#undef Bool
-#undef None
-#undef RootWindow
-
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_member.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
+
+#if defined(OS_CHROMEOS)
+#include <X11/keysym.h>
+#include <X11/XF86keysym.h>
+#include <X11/Xlib.h>
+
+#include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/fake_xkeyboard.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
-#include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
 
-std::string GetRewrittenEventAsString(chromeos::EventRewriter* rewriter,
+std::string GetRewrittenEventAsString(EventRewriter* rewriter,
                                       ui::KeyboardCode ui_keycode,
                                       int ui_flags,
                                       ui::EventType ui_type,
@@ -46,8 +45,8 @@ std::string GetRewrittenEventAsString(chromeos::EventRewriter* rewriter,
   XEvent* xevent = xev;
   xevent->xkey.keycode = x_keycode;
   xevent->xkey.state = x_state;
-  rewriter->RewriteForTesting(xevent);
-  ui::KeyEvent keyevent(xevent, false /* is_char */);
+  ui::KeyEvent keyevent(xev, false /* is_char */);
+  rewriter->RewriteForTesting(&keyevent);
   return base::StringPrintf(
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
       keyevent.key_code(), keyevent.flags(), keyevent.type(),
@@ -67,9 +66,7 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
 
 }  // namespace
 
-namespace chromeos {
-
-class EventRewriterTest : public ash::test::AshTestBase {
+class EventRewriterTest : public testing::Test {
  public:
   EventRewriterTest()
       : display_(gfx::GetXDisplay()),
@@ -175,12 +172,9 @@ class EventRewriterTest : public ash::test::AshTestBase {
         new chromeos::input_method::MockInputMethodManager;
     chromeos::input_method::InitializeForTesting(
         input_method_manager_mock_);  // pass ownership
-
-    AshTestBase::SetUp();
   }
 
   virtual void TearDown() {
-    AshTestBase::TearDown();
     // Shutdown() deletes the IME mock object.
     chromeos::input_method::Shutdown();
   }
@@ -189,11 +183,9 @@ class EventRewriterTest : public ash::test::AshTestBase {
   void TestRewriteNumPadKeys();
   void TestRewriteNumPadKeysOnAppleKeyboard();
 
-  void RewriteMouseEvent(EventRewriter* rewriter,
-                         ui::MouseEvent* event) {
-    XEvent* xevent = event->native_event();
-    rewriter->RewriteLocatedEvent(xevent);
-    *event = ui::MouseEvent(xevent);
+  void RewriteLocatedEvent(EventRewriter* rewriter,
+                           ui::LocatedEvent* event) {
+    rewriter->RewriteLocatedEvent(event);
   }
 
   Display* display_;
@@ -286,6 +278,14 @@ class EventRewriterTest : public ash::test::AshTestBase {
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
 
+#else
+class EventRewriterTest : public testing::Test {
+ public:
+  EventRewriterTest() {}
+  virtual ~EventRewriterTest() {}
+};
+#endif
+
 TEST_F(EventRewriterTest, TestGetDeviceType) {
   // This is the typical string which an Apple keyboard sends.
   EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
@@ -339,6 +339,7 @@ TEST_F(EventRewriterTest, TestDeviceAddedOrRemoved) {
   EXPECT_EQ(2U, rewriter.device_id_to_type_for_testing().size());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test with a PC keyboard.
   TestingPrefServiceSyncable prefs;
@@ -2224,9 +2225,6 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    // XKeysymToKeycode returns zero for unknown keys. So ignore those.
-    if (tests[i].output_native == 0)
-      continue;
     EXPECT_EQ(GetExpectedResultAsString(tests[i].output,
                                         tests[i].output_mods,
                                         ui::ET_KEY_PRESSED,
@@ -2308,8 +2306,8 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     XEvent* xevent = xev;
     xevent->xkey.keycode = keycode_control_l_;
     xevent->xkey.send_event = True;  // XSendEvent() always does this.
-    rewriter.RewriteForTesting(xevent);
     ui::KeyEvent keyevent(xev, false /* is_char */);
+    rewriter.RewriteForTesting(&keyevent);
     rewritten_event = base::StringPrintf(
         "ui_keycode=%d ui_flags=%d ui_type=%d "
         "x_keycode=%u x_state=%u x_type=%d",
@@ -2337,7 +2335,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
   }
   virtual ~EventRewriterAshTest() {}
 
-  bool RewriteFunctionKeys(XEvent* event) {
+  bool RewriteFunctionKeys(ui::KeyEvent* event) {
     return rewriter_.RewriteFunctionKeys(event);
   }
 
@@ -2361,12 +2359,14 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   xev_f1.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F1, 0);
   XEvent* xevent = xev_f1;
   xevent->xkey.keycode = keycode_f1;
+  ui::KeyEvent press_f1(xev_f1, false);
+  ui::Event::DispatcherApi dispatch_helper(&press_f1);
+  dispatch_helper.set_target(window.get());
 
   // Simulate an apps v2 window that has requested top row keys as function
   // keys. The event should not be rewritten.
   window_state->set_top_row_keys_are_function_keys(true);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  ui::KeyEvent press_f1(xev_f1, false);
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
   ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
 
   // The event should also not be rewritten if the send-function-keys pref is
@@ -2374,19 +2374,16 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   BooleanPrefMember send_function_keys_pref;
   send_function_keys_pref.Init(prefs::kLanguageSendFunctionKeys, &prefs_);
   send_function_keys_pref.SetValue(true);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
   ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
   window_state->set_top_row_keys_are_function_keys(false);
-  ASSERT_FALSE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
+  ASSERT_FALSE(RewriteFunctionKeys(&press_f1));
   ASSERT_EQ(ui::VKEY_F1, press_f1.key_code());
 
   // If the pref isn't set when an event is sent to a regular window, F1 is
   // rewritten to the back key.
   send_function_keys_pref.SetValue(false);
-  ASSERT_TRUE(RewriteFunctionKeys(xevent));
-  press_f1 = ui::KeyEvent(xev_f1, false);
+  ASSERT_TRUE(RewriteFunctionKeys(&press_f1));
   ASSERT_EQ(ui::VKEY_BROWSER_BACK, press_f1.key_code());
 }
 
@@ -2407,7 +2404,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
     EXPECT_EQ(kLeftAndAltFlag, press.flags());
 
-    RewriteMouseEvent(&rewriter, &press);
+    RewriteLocatedEvent(&rewriter, &press);
 
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
   }
@@ -2415,7 +2412,7 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
+    RewriteLocatedEvent(&rewriter, &release);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
   }
 
@@ -2425,14 +2422,14 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON);
     ui::MouseEvent press(xev);
-    RewriteMouseEvent(&rewriter, &press);
+    RewriteLocatedEvent(&rewriter, &press);
     EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & press.flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
+    RewriteLocatedEvent(&rewriter, &release);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
                 release.flags());
   }
@@ -2442,14 +2439,14 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, kLeftAndAltFlag);
     ui::MouseEvent press(xev);
-    RewriteMouseEvent(&rewriter, &press);
+    RewriteLocatedEvent(&rewriter, &press);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
+    RewriteLocatedEvent(&rewriter, &release);
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
                 release.flags());
   }
@@ -2457,9 +2454,9 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    RewriteMouseEvent(&rewriter, &release);
+    RewriteLocatedEvent(&rewriter, &release);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
   }
 }
 
-}  // namespace chromeos
+#endif  // OS_CHROMEOS

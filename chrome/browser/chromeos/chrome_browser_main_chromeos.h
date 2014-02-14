@@ -21,7 +21,6 @@ class PowerSaveBlocker;
 namespace chromeos {
 
 class DataPromoNotification;
-class EventRewriter;
 class ExtensionSystemEventObserver;
 class IdleActionWarningObserver;
 class MagnificationManager;
@@ -72,7 +71,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
-  scoped_ptr<EventRewriter> event_rewriter_;
 
   VersionLoader cros_version_loader_;
   base::CancelableTaskTracker tracker_;
