@@ -14400,66 +14400,68 @@ Do you accept?
     </message>
 
     <!-- Windows 8 Metro mode. -->
-    <message name="IDS_METRO_FLOW_TAB_TITLE"
-             desc="The dialog window title.">
-      Welcome to Chrome
-    </message>
-    <message name="IDS_METRO_FLOW_TITLE_SHORT"
-             desc="The title at the top of the window guiding user through making Chrome default in Metro.">
-      Chrome is almost ready.
-    </message>
-    <message name="IDS_METRO_FLOW_DESCRIPTION"
-             desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
-      Click next to choose your default browser.
-    </message>
-    <message name="IDS_METRO_FLOW_SET_DEFAULT"
-             desc="The label of the button invoking Windows8 default app settings window.">
-      Next
-    </message>
-    <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
-             desc="Alt text for the faded chrome logo image.">
-        Chrome logo
-    </message>
-    <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
-             desc="Info Bar message to let user do something about the missing plugin">
-      <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
-    </message>
-    <message name="IDS_METRO_NPAPI_PLUGIN_PROMPT"
-             desc="Infobar message when an NPAPI plugin doesn't run in Metro mode.">
-      <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> only works on the desktop.
-    </message>
-    <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION"
-            desc="Notification displayed when a download request is completed">
-      Your download has completed
-    </message>
-    <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE"
-            desc="Title for notification displayed when a download request is completed">
-      Download complete notification
-    </message>
-    <message name="IDS_WIN8_DESKTOP_OPEN"
-             desc="Text for the infobar button to open Chrome in desktop mode.">
-      Open Chrome on the desktop
-    </message>
-    <message name="IDS_WIN8_DESKTOP_RESTART"
-             desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">
-      Relaunch Chrome on the desktop
-    </message>
-    <message name="IDS_WIN8_METRO_RESTART"
-             desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
-      Relaunch Chrome in Windows 8 mode
-    </message>
-    <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON"
-             desc="Infobar button 'no' text to cancel prompt to relaunch in deskop mode to use Chrome Apps">
-      Not now
-    </message>
-    <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
-             desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
-      Relaunching in Windows 8 mode will close your Chrome apps.
-    </message>
-    <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
-             desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
-      Relaunching in Desktop mode will close your Chrome apps.
-    </message>
+    <if expr="is_win">
+      <message name="IDS_METRO_FLOW_TAB_TITLE"
+               desc="The dialog window title.">
+        Welcome to Chrome
+      </message>
+      <message name="IDS_METRO_FLOW_TITLE_SHORT"
+               desc="The title at the top of the window guiding user through making Chrome default in Metro.">
+        Chrome is almost ready.
+      </message>
+      <message name="IDS_METRO_FLOW_DESCRIPTION"
+               desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
+        Click next to choose your default browser.
+      </message>
+      <message name="IDS_METRO_FLOW_SET_DEFAULT"
+               desc="The label of the button invoking Windows8 default app settings window.">
+        Next
+      </message>
+      <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
+               desc="Alt text for the faded chrome logo image.">
+          Chrome logo
+      </message>
+      <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
+               desc="Info Bar message to let user do something about the missing plugin">
+        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
+      </message>
+      <message name="IDS_METRO_NPAPI_PLUGIN_PROMPT"
+               desc="Infobar message when an NPAPI plugin doesn't run in Metro mode.">
+        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> only works on the desktop.
+      </message>
+      <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION"
+              desc="Notification displayed when a download request is completed">
+        Your download has completed
+      </message>
+      <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE"
+              desc="Title for notification displayed when a download request is completed">
+        Download complete notification
+      </message>
+      <message name="IDS_WIN8_DESKTOP_OPEN"
+               desc="Text for the infobar button to open Chrome in desktop mode.">
+        Open Chrome on the desktop
+      </message>
+      <message name="IDS_WIN8_DESKTOP_RESTART"
+               desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">
+        Relaunch Chrome on the desktop
+      </message>
+      <message name="IDS_WIN8_METRO_RESTART"
+               desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
+        Relaunch Chrome in Windows 8 mode
+      </message>
+      <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON"
+               desc="Infobar button 'no' text to cancel prompt to relaunch in deskop mode to use Chrome Apps">
+        Not now
+      </message>
+      <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
+        Relaunching in Windows 8 mode will close your Chrome apps.
+      </message>
+      <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed. Dialog is shown with choices: OK, Cancel.">
+        Relaunching in Desktop mode will close your Chrome apps.
+      </message>
+    </if>
 
     <!-- Media Galleries. -->
     <if expr="not is_android">
