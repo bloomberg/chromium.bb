@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -28,13 +27,13 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -168,7 +167,6 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
   params.push_back("id=" + extension_id);
   if (!install_source.empty())
     params.push_back("installsource=" + install_source);
-  params.push_back("lang=" + g_browser_process->GetApplicationLocale());
   params.push_back("uc");
   std::string url_string = extension_urls::GetWebstoreUpdateUrl().spec();
 

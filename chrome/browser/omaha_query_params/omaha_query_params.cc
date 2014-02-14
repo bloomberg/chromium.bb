@@ -1,12 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
+#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 
 #include "base/compiler_specific.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_version_info.h"
 
 namespace {
@@ -17,32 +18,32 @@ const char kUnknown[] = "unknown";
 // the server select the right package to be delivered.
 const char kOs[] =
 #if defined(OS_MACOSX)
-  "mac";
+    "mac";
 #elif defined(OS_WIN)
-  "win";
+    "win";
 #elif defined(OS_ANDROID)
-  "android";
+    "android";
 #elif defined(OS_CHROMEOS)
-  "cros";
+    "cros";
 #elif defined(OS_LINUX)
-  "linux";
+    "linux";
 #elif defined(OS_OPENBSD)
-  "openbsd";
+    "openbsd";
 #else
-    #error "unknown os"
+#error "unknown os"
 #endif
 
 const char kArch[] =
 #if defined(__amd64__) || defined(_WIN64)
-  "x64";
+    "x64";
 #elif defined(__i386__) || defined(_WIN32)
-  "x86";
+    "x86";
 #elif defined(__arm__)
-  "arm";
+    "arm";
 #elif defined(__mips__)
-  "mipsel";
+    "mipsel";
 #else
-  #error "unknown arch"
+#error "unknown arch"
 #endif
 
 const char kChrome[] = "chrome";
@@ -65,13 +66,15 @@ namespace chrome {
 // static
 std::string OmahaQueryParams::Get(ProdId prod) {
   return base::StringPrintf(
-      "os=%s&arch=%s&nacl_arch=%s&prod=%s&prodchannel=%s&prodversion=%s",
+      "os=%s&arch=%s&nacl_arch=%s&prod=%s&prodchannel=%s"
+          "&prodversion=%s&lang=%s",
       kOs,
       kArch,
-      getNaclArch(),
+      GetNaclArch(),
       GetProdIdString(prod),
       GetChannelString(),
-      chrome::VersionInfo().Version().c_str());
+      chrome::VersionInfo().Version().c_str(),
+      GetLang());
 }
 
 // static
@@ -93,17 +96,17 @@ const char* OmahaQueryParams::GetProdIdString(
 }
 
 // static
-const char* OmahaQueryParams::getOS() {
+const char* OmahaQueryParams::GetOS() {
   return kOs;
 }
 
 // static
-const char* OmahaQueryParams::getArch() {
+const char* OmahaQueryParams::GetArch() {
   return kArch;
 }
 
 // static
-const char* OmahaQueryParams::getNaclArch() {
+const char* OmahaQueryParams::GetNaclArch() {
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
   return "x86-64";
@@ -119,8 +122,8 @@ const char* OmahaQueryParams::getNaclArch() {
 #elif defined(ARCH_CPU_MIPSEL)
   return "mips32";
 #else
-  // NOTE: when adding new values here, please remember to update the
-  // comment in the .h file about possible return values from this function.
+// NOTE: when adding new values here, please remember to update the
+// comment in the .h file about possible return values from this function.
 #error "You need to add support for your architecture here"
 #endif
 }
@@ -144,6 +147,10 @@ const char* OmahaQueryParams::GetChannelString() {
       break;
   }
   return kUnknown;
+}
+
+const char* OmahaQueryParams::GetLang() {
+  return g_browser_process->GetApplicationLocale().c_str();
 }
 
 }  // namespace chrome

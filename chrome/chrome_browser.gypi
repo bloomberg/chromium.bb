@@ -1441,6 +1441,8 @@
         'browser/notifications/sync_notifier/welcome_delegate.h',
         'browser/notifications/extension_welcome_notification.cc',
         'browser/notifications/extension_welcome_notification.h',
+        'browser/omaha_query_params/omaha_query_params.h',
+        'browser/omaha_query_params/omaha_query_params.cc',
         'browser/omnibox/omnibox_field_trial.cc',
         'browser/omnibox/omnibox_field_trial.h',
         'browser/omnibox/omnibox_log.cc',

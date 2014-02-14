@@ -14,13 +14,13 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/runtime.h"
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -521,7 +521,7 @@ bool RuntimeRestartFunction::RunImpl() {
 bool RuntimeGetPlatformInfoFunction::RunImpl() {
   GetPlatformInfo::Results::PlatformInfo info;
 
-  const char* os = chrome::OmahaQueryParams::getOS();
+  const char* os = chrome::OmahaQueryParams::GetOS();
   if (strcmp(os, "mac") == 0) {
     info.os = GetPlatformInfo::Results::PlatformInfo::OS_MAC_;
   } else if (strcmp(os, "win") == 0) {
@@ -539,7 +539,7 @@ bool RuntimeGetPlatformInfoFunction::RunImpl() {
     return false;
   }
 
-  const char* arch = chrome::OmahaQueryParams::getArch();
+  const char* arch = chrome::OmahaQueryParams::GetArch();
   if (strcmp(arch, "arm") == 0) {
     info.arch = GetPlatformInfo::Results::PlatformInfo::ARCH_ARM;
   } else if (strcmp(arch, "x86") == 0) {
@@ -551,7 +551,7 @@ bool RuntimeGetPlatformInfoFunction::RunImpl() {
     return false;
   }
 
-  const char* nacl_arch = chrome::OmahaQueryParams::getNaclArch();
+  const char* nacl_arch = chrome::OmahaQueryParams::GetNaclArch();
   if (strcmp(nacl_arch, "arm") == 0) {
     info.nacl_arch = GetPlatformInfo::Results::PlatformInfo::NACL_ARCH_ARM;
   } else if (strcmp(nacl_arch, "x86-32") == 0) {

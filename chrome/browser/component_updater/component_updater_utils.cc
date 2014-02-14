@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/component_updater_utils.h"
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -14,8 +15,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
+#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -44,14 +45,15 @@ std::string BuildProtocolRequest(const std::string& request_body,
       "version=\"%s-%s\" prodversion=\"%s\" "
       "requestid=\"{%s}\" updaterchannel=\"%s\" prodchannel=\"%s\" "
       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
-      prod_id.c_str(), chrome_version.c_str(),        // "version"
-      chrome_version.c_str(),                         // "prodversion"
-      base::GenerateGUID().c_str(),                   // "requestid"
-      chrome::OmahaQueryParams::GetChannelString(),   // "updaterchannel"
-      chrome::OmahaQueryParams::GetChannelString(),   // "prodchannel"
-      chrome::OmahaQueryParams::getOS(),              // "os"
-      chrome::OmahaQueryParams::getArch(),            // "arch"
-      chrome::OmahaQueryParams::getNaclArch());       // "nacl_arch"
+      prod_id.c_str(),
+      chrome_version.c_str(),                        // "version"
+      chrome_version.c_str(),                        // "prodversion"
+      base::GenerateGUID().c_str(),                  // "requestid"
+      chrome::OmahaQueryParams::GetChannelString(),  // "updaterchannel"
+      chrome::OmahaQueryParams::GetChannelString(),  // "prodchannel"
+      chrome::OmahaQueryParams::GetOS(),             // "os"
+      chrome::OmahaQueryParams::GetArch(),           // "arch"
+      chrome::OmahaQueryParams::GetNaclArch());      // "nacl_arch"
 #if defined(OS_WIN)
     const bool is_wow64(
         base::win::OSInfo::GetInstance()->wow64_status() ==

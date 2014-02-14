@@ -1107,6 +1107,7 @@
         'browser/notifications/sync_notifier/sync_notifier_test_utils.h',
         'browser/notifications/sync_notifier/welcome_delegate_unittest.cc',
         'browser/omnibox/omnibox_field_trial_unittest.cc',
+        'browser/omaha_query_params/omaha_query_params_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/native_backend_gnome_x_unittest.cc',
         'browser/password_manager/native_backend_kwallet_x_unittest.cc',
