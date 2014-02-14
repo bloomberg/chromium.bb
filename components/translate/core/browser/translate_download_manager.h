@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_language_list.h"
@@ -34,10 +33,7 @@ class TranslateDownloadManager {
 
   // The application locale.
   // Should be set before this class can be used.
-  const std::string& application_locale() {
-    DCHECK(!application_locale_.empty());
-    return application_locale_;
-  }
+  const std::string& application_locale() { return application_locale_; }
   void set_application_locale(const std::string& locale) {
     application_locale_ = locale;
   }

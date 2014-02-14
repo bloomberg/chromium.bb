@@ -9,9 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -83,7 +83,7 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  prefs_.reset(new TranslatePrefs(profile->GetPrefs()));
+  prefs_ = TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs());
 }
 
 TranslateUIDelegate::~TranslateUIDelegate() {

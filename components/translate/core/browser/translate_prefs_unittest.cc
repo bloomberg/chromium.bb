@@ -1,17 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_prefs.h"
+#include "components/translate/core/browser/translate_prefs.h"
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "chrome/test/base/scoped_browser_locale.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(TranslatePrefsTest, CreateBlockedLanguages) {
+  TranslateDownloadManager::GetInstance()->set_application_locale("en");
   std::vector<std::string> blacklisted_languages;
   blacklisted_languages.push_back("en");
   blacklisted_languages.push_back("fr");
@@ -72,7 +73,7 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
 
   // Run in an English locale.
   {
-    ScopedBrowserLocale scoped_browser_locale("en");
+    TranslateDownloadManager::GetInstance()->set_application_locale("en");
     std::vector<std::string> blocked_languages;
     TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
                                            blacklisted_languages,
@@ -97,7 +98,7 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
   // English should not be included in the result even though Accept Languages
   // has English because the UI is not English.
   {
-    ScopedBrowserLocale scoped_browser_locale("ja");
+    TranslateDownloadManager::GetInstance()->set_application_locale("ja");
     std::vector<std::string> blocked_languages;
     TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
                                            blacklisted_languages,

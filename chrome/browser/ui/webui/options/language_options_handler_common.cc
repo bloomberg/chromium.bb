@@ -22,12 +22,13 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -263,9 +264,9 @@ void LanguageOptionsHandlerCommon::UpdateLanguageListCallback(
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-  TranslatePrefs translate_prefs(prefs);
-  translate_prefs.UpdateLanguageList(languages);
+  scoped_ptr<TranslatePrefs> translate_prefs =
+      TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs());
+  translate_prefs->UpdateLanguageList(languages);
 }
 
 void LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload(

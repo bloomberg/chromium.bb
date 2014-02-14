@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,8 +14,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/translate/core/browser/page_translated_details.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -87,6 +91,24 @@ TranslateTabHelper::~TranslateTabHelper() {
 
 LanguageState& TranslateTabHelper::GetLanguageState() {
   return translate_driver_.language_state();
+}
+
+// static
+scoped_ptr<TranslatePrefs> TranslateTabHelper::CreateTranslatePrefs(
+    PrefService* prefs) {
+#if defined(OS_CHROMEOS)
+  const char* preferred_languages_prefs = prefs::kLanguagePreferredLanguages;
+#else
+  const char* preferred_languages_prefs = NULL;
+#endif
+  return scoped_ptr<TranslatePrefs>(new TranslatePrefs(
+      prefs, prefs::kAcceptLanguages, preferred_languages_prefs));
+}
+
+// static
+TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages(
+    content::BrowserContext* browser_context) {
+  return TranslateAcceptLanguagesFactory::GetForBrowserContext(browser_context);
 }
 
 void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,

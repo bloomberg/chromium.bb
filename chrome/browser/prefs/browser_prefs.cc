@@ -73,7 +73,6 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
@@ -94,6 +93,7 @@
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -509,7 +509,7 @@ void MigrateUserPrefs(Profile* profile) {
 #endif
 
   PromoResourceService::MigrateUserPrefs(prefs);
-  TranslatePrefs::MigrateUserPrefs(prefs);
+  TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
 
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserService::MigrateUserPrefs(prefs);

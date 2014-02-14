@@ -17,7 +17,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -28,10 +27,12 @@
 #include "chrome/common/url_constants.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_script.h"
 #include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/language_detection_details.h"
@@ -299,17 +300,21 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
-  TranslatePrefs translate_prefs(prefs);
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs()));
 
+  TranslateAcceptLanguages* accept_languages =
+      TranslateTabHelper::GetTranslateAcceptLanguages(profile);
   // Don't translate any user black-listed languages.
-  if (!TranslatePrefs::CanTranslateLanguage(profile, language_code)) {
+  if (!translate_prefs->CanTranslateLanguage(accept_languages,
+                                             language_code)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
     return;
   }
 
   // Don't translate any user black-listed URLs.
-  if (translate_prefs.IsSiteBlacklisted(page_url.HostNoBrackets())) {
+  if (translate_prefs->IsSiteBlacklisted(page_url.HostNoBrackets())) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
     return;
@@ -611,8 +616,10 @@ std::string TranslateManager::GetAutoTargetLanguage(
     const std::string& original_language,
     PrefService* prefs) {
   std::string auto_target_lang;
-  if (TranslatePrefs::ShouldAutoTranslate(prefs, original_language,
-                                          &auto_target_lang)) {
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(prefs));
+  if (translate_prefs->ShouldAutoTranslate(original_language,
+                                           &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.
     // Also, GetLanguageCode will take care of removing country code if any.
     auto_target_lang =

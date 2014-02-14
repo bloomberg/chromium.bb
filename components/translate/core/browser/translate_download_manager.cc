@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "components/translate/core/common/translate_pref_names.h"

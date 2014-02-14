@@ -10,6 +10,7 @@
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/translate/translate_infobar_delegate.h"
+#import "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
@@ -234,10 +235,11 @@ TEST_F(TranslationInfoBarTest, Bug36895) {
 // Verify that the infobar shows the "Always translate this language" button
 // after doing 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
-  TranslatePrefs translate_prefs(profile()->GetPrefs());
-  translate_prefs.ResetTranslationAcceptedCount("en");
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(profile()->GetPrefs()));
+  translate_prefs->ResetTranslationAcceptedCount("en");
   for (int i = 0; i < 4; ++i) {
-    translate_prefs.IncrementTranslationAcceptedCount("en");
+    translate_prefs->IncrementTranslationAcceptedCount("en");
   }
   CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =
@@ -249,10 +251,11 @@ TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
 // Verify that the infobar shows the "Never translate this language" button
 // after denying 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
-  TranslatePrefs translate_prefs(profile()->GetPrefs());
-  translate_prefs.ResetTranslationDeniedCount("en");
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(profile()->GetPrefs()));
+  translate_prefs->ResetTranslationDeniedCount("en");
   for (int i = 0; i < 4; ++i) {
-    translate_prefs.IncrementTranslationDeniedCount("en");
+    translate_prefs->IncrementTranslationDeniedCount("en");
   }
   CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =

@@ -51,7 +51,6 @@
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -67,6 +66,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -1827,9 +1827,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
-      TranslatePrefs prefs(profile_->GetPrefs());
-      prefs.UnblockLanguage(original_lang);
-      prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
+      scoped_ptr<TranslatePrefs> prefs(
+          TranslateTabHelper::CreateTranslatePrefs(profile_->GetPrefs()));
+      prefs->UnblockLanguage(original_lang);
+      prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
       TranslateManager::GetInstance()->TranslatePage(
           source_web_contents_, original_lang, target_lang);
       break;

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -14,10 +15,14 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
 struct LanguageDetectionDetails;
+class PrefService;
+class TranslateAcceptLanguages;
+class TranslatePrefs;
 
 class TranslateTabHelper
     : public content::WebContentsObserver,
@@ -31,6 +36,14 @@ class TranslateTabHelper
   // Returns the ContentTranslateDriver instance associated with this
   // WebContents.
   ContentTranslateDriver& translate_driver() { return translate_driver_; }
+
+  // Helper method to return a new TranslatePrefs instance.
+  static scoped_ptr<TranslatePrefs> CreateTranslatePrefs(PrefService* prefs);
+
+  // Helper method to return the TranslateAcceptLanguages instance associated
+  // with |browser_context|.
+  static TranslateAcceptLanguages* GetTranslateAcceptLanguages(
+      content::BrowserContext* browser_context);
 
   // Denotes which state the user is in with respect to translate.
   enum TranslateStep {

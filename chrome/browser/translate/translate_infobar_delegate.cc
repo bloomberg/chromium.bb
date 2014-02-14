@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/browser/navigation_details.h"
@@ -141,8 +142,12 @@ bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
-  return TranslatePrefs::CanTranslateLanguage(original_profile,
-                                              original_language_code());
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(original_profile->GetPrefs()));
+  TranslateAcceptLanguages* accept_languages =
+      TranslateTabHelper::GetTranslateAcceptLanguages(original_profile);
+  return translate_prefs->CanTranslateLanguage(accept_languages,
+                                               original_language_code());
 }
 
 void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
@@ -255,14 +260,14 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-      (prefs_.GetTranslationDeniedCount(original_language_code()) >=
+      (prefs_->GetTranslationDeniedCount(original_language_code()) >=
           kNeverTranslateMinCount);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-      (prefs_.GetTranslationAcceptedCount(original_language_code()) >=
+      (prefs_->GetTranslationAcceptedCount(original_language_code()) >=
           kAlwaysTranslateMinCount);
 }
 
@@ -321,7 +326,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       background_animation_(NONE),
       ui_delegate_(web_contents, original_language, target_language),
       error_type_(error_type),
-      prefs_(prefs) {
+      prefs_(TranslateTabHelper::CreateTranslatePrefs(prefs)) {
   DCHECK_NE((infobar_type_ == TRANSLATION_ERROR),
             (error_type_ == TranslateErrors::NONE));
 

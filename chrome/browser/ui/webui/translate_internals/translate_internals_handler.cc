@@ -12,11 +12,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_event_details.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/web_contents.h"
@@ -100,7 +101,8 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
-  TranslatePrefs translate_prefs(prefs);
+  scoped_ptr<TranslatePrefs> translate_prefs(
+      TranslateTabHelper::CreateTranslatePrefs(prefs));
 
   std::string pref_name;
   if (!args->GetString(0, &pref_name))
@@ -110,24 +112,24 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     std::string language;
     if (!args->GetString(1, &language))
       return;
-    translate_prefs.UnblockLanguage(language);
+    translate_prefs->UnblockLanguage(language);
   } else if (pref_name == "language_blacklist") {
     std::string language;
     if (!args->GetString(1, &language))
       return;
-    translate_prefs.RemoveLanguageFromLegacyBlacklist(language);
+    translate_prefs->RemoveLanguageFromLegacyBlacklist(language);
   } else if (pref_name == "site_blacklist") {
     std::string site;
     if (!args->GetString(1, &site))
       return;
-    translate_prefs.RemoveSiteFromBlacklist(site);
+    translate_prefs->RemoveSiteFromBlacklist(site);
   } else if (pref_name == "whitelists") {
     std::string from, to;
     if (!args->GetString(1, &from))
       return;
     if (!args->GetString(2, &to))
       return;
-    translate_prefs.RemoveLanguagePairFromWhitelist(from, to);
+    translate_prefs->RemoveLanguagePairFromWhitelist(from, to);
   } else {
     return;
   }

@@ -21,6 +21,8 @@ static_library("translate_core_browser") {
     "core/browser/translate_event_details.h",
     "core/browser/translate_language_list.cc",
     "core/browser/translate_language_list.h",
+    "core/browser/translate_prefs.cc",
+    "core/browser/translate_prefs.h",
     "core/browser/translate_script.cc",
     "core/browser/translate_script.h",
     "core/browser/translate_url_fetcher.cc",

@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
@@ -201,7 +201,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   TranslateErrors::Type error_type_;
 
   // The translation related preferences.
-  TranslatePrefs prefs_;
+  scoped_ptr<TranslatePrefs> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
