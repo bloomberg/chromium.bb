@@ -32,6 +32,7 @@
 #define KeyPair_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -42,18 +43,21 @@ namespace WebCore {
 
 class Key;
 
-class KeyPair : public ScriptWrappable, public RefCounted<KeyPair> {
+class KeyPair : public RefCountedWillBeGarbageCollectedFinalized<KeyPair>,  public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
+    static PassRefPtrWillBeRawPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
 
     Key* publicKey() { return m_publicKey.get(); }
     Key* privateKey() { return m_privateKey.get(); }
 
-protected:
-    KeyPair(const PassRefPtr<Key>& publicKey, const PassRefPtr<Key>& privateKey);
+    void trace(Visitor*);
 
-    RefPtr<Key> m_publicKey;
-    RefPtr<Key> m_privateKey;
+protected:
+    KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey);
+
+    RefPtrWillBeMember<Key> m_publicKey;
+    RefPtrWillBeMember<Key> m_privateKey;
 };
 
 } // namespace WebCore

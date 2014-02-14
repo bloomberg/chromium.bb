@@ -37,6 +37,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(Crypto);
+
 namespace {
 
 bool isIntegerArray(ArrayBufferView* array)
@@ -81,6 +83,11 @@ SubtleCrypto* Crypto::subtle()
     if (!m_subtleCrypto)
         m_subtleCrypto = SubtleCrypto::create();
     return m_subtleCrypto.get();
+}
+
+void Crypto::trace(Visitor* visitor)
+{
+    visitor->trace(m_subtleCrypto);
 }
 
 }

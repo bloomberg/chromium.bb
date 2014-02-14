@@ -32,6 +32,7 @@
 #define Algorithm_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -39,13 +40,16 @@
 
 namespace WebCore {
 
-class Algorithm : public ScriptWrappable, public RefCounted<Algorithm> {
+class Algorithm : public RefCountedWillBeGarbageCollectedFinalized<Algorithm>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Algorithm> create(const blink::WebCryptoAlgorithm&);
+    static PassRefPtrWillBeRawPtr<Algorithm> create(const blink::WebCryptoAlgorithm&);
 
     String name();
 
     blink::WebCryptoAlgorithmParamsType type() const { return m_algorithm.paramsType(); }
+
+    void trace(Visitor*) { }
 
 protected:
     explicit Algorithm(const blink::WebCryptoAlgorithm&);

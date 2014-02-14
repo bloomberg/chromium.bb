@@ -29,7 +29,8 @@
  */
 
 [
-    NoInterfaceObject,
+    WillBeGarbageCollected,
+    NoInterfaceObject
 ] interface Key {
     readonly attribute DOMString type;
     readonly attribute boolean extractable;

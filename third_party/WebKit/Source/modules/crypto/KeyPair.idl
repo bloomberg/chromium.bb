@@ -29,7 +29,8 @@
  */
 
 [
-    NoInterfaceObject,
+    WillBeGarbageCollected,
+    NoInterfaceObject
 ] interface KeyPair {
     readonly attribute Key publicKey;
     readonly attribute Key privateKey;

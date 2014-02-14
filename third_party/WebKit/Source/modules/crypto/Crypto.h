@@ -30,6 +30,7 @@
 #define Crypto_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/crypto/SubtleCrypto.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -39,18 +40,21 @@ namespace WebCore {
 
 class ExceptionState;
 
-class Crypto : public ScriptWrappable, public RefCounted<Crypto> {
+class Crypto : public RefCountedWillBeGarbageCollectedFinalized<Crypto>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Crypto> create() { return adoptRef(new Crypto()); }
+    static PassRefPtrWillBeRawPtr<Crypto> create() { return adoptRefWillBeNoop(new Crypto()); }
 
     static void getRandomValues(ArrayBufferView*, ExceptionState&);
 
     SubtleCrypto* subtle();
 
+    void trace(Visitor*);
+
 private:
     Crypto();
 
-    RefPtr<SubtleCrypto> m_subtleCrypto;
+    RefPtrWillBeMember<SubtleCrypto> m_subtleCrypto;
 };
 
 }

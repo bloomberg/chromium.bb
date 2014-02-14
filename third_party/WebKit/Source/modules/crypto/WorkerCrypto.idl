@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject
 ] interface WorkerCrypto {
     [Custom, RaisesException] ArrayBufferView getRandomValues(ArrayBufferView array);

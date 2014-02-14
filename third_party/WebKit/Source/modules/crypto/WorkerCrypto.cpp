@@ -33,6 +33,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(WorkerCrypto);
+
 WorkerCrypto::WorkerCrypto()
 {
     ScriptWrappable::init(this);

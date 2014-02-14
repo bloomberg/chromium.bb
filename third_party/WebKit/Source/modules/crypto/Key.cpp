@@ -38,6 +38,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(Key);
+
 namespace {
 
 const char* keyTypeToString(blink::WebCryptoKeyType type)
@@ -240,6 +242,11 @@ bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageM
         mask |= usage;
     }
     return true;
+}
+
+void Key::trace(Visitor* visitor)
+{
+    visitor->trace(m_algorithm);
 }
 
 } // namespace WebCore

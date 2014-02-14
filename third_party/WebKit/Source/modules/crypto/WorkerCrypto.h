@@ -32,15 +32,22 @@
 #define WorkerCrypto_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WorkerCrypto : public ScriptWrappable, public RefCounted<WorkerCrypto> {
+class WorkerCrypto : public RefCountedWillBeGarbageCollectedFinalized<WorkerCrypto>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<WorkerCrypto> create() { return adoptRef(new WorkerCrypto()); }
+    static PassRefPtrWillBeRawPtr<WorkerCrypto> create()
+    {
+        return adoptRefWillBeNoop(new WorkerCrypto());
+    }
+
+    void trace(Visitor*) { }
 
 private:
     WorkerCrypto();

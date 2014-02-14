@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,9 +44,13 @@ class Dictionary;
 class ExceptionState;
 class Key;
 
-class SubtleCrypto : public ScriptWrappable, public RefCounted<SubtleCrypto> {
+class SubtleCrypto : public RefCountedWillBeGarbageCollectedFinalized<SubtleCrypto>,  public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<SubtleCrypto> create() { return adoptRef(new SubtleCrypto()); }
+    static PassRefPtrWillBeRawPtr<SubtleCrypto> create()
+    {
+        return adoptRefWillBeNoop(new SubtleCrypto());
+    }
 
     ScriptPromise encrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
     ScriptPromise decrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
@@ -60,6 +65,8 @@ public:
 
     ScriptPromise wrapKey(const String&, Key*, Key*, const Dictionary&, ExceptionState&);
     ScriptPromise unwrapKey(const String&, ArrayBufferView*, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     SubtleCrypto();

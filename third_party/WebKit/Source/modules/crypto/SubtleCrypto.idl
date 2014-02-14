@@ -29,7 +29,8 @@
  */
 
 [
-    NoInterfaceObject,
+    WillBeGarbageCollected,
+    NoInterfaceObject
 ] interface SubtleCrypto {
     [RaisesException] Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
     [RaisesException] Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);

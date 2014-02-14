@@ -44,6 +44,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(SubtleCrypto);
+
 namespace {
 
 bool parseAlgorithm(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, blink::WebCryptoAlgorithm &algorithm, ExceptionState& exceptionState, CryptoResult* result)
@@ -300,6 +302,5 @@ ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* 
     blink::Platform::current()->crypto()->unwrapKey(format, wrappedKeyData, wrappedKeyDataSize, unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
-
 
 } // namespace WebCore
