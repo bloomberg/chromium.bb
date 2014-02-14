@@ -1880,8 +1880,8 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
          AutofillType(type).group() == ADDRESS_BILLING)) {
       DCHECK(text.empty());
       // TODO(estade): string translation or remove this (sweet) hack.
-      text = base::ASCIIToUTF16("Sorry, Chrome failed to validate this field. "
-                                "Please wait and try again.");
+      text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_WAITING_FOR_RULES);
       sure = false;
       needs_validation_.insert(section);
     }
