@@ -1253,6 +1253,7 @@ void FrameView::updateCanBlitOnScrollRecursively()
 {
     // FIXME: useSlowRepaints reads compositing state in nested frames. Compositing state on the nested
     // frames is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343766
     DisableCompositingQueryAsserts disabler;
 
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
@@ -1393,6 +1394,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         return true;
     }
 
+    // https://code.google.com/p/chromium/issues/detail?id=343767
     DisableCompositingQueryAsserts disabler;
     const bool isCompositedContentLayer = contentsInCompositedLayer();
 
@@ -1476,6 +1478,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 {
     // FIXME: This is called when JS calls scrollTo, at which point there's no guarantee that
     // compositing state is up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343767
     DisableCompositingQueryAsserts disabler;
 
     if (contentsInCompositedLayer()) {
@@ -1651,6 +1654,7 @@ void FrameView::scrollPositionChanged()
 
     if (RenderView* renderView = document->renderView()) {
         if (renderView->usesCompositing()) {
+            // https://code.google.com/p/chromium/issues/detail?id=343767
             DisableCompositingQueryAsserts disabler;
             renderView->compositor()->frameViewDidScroll();
         }
@@ -1758,6 +1762,7 @@ void FrameView::scrollbarExistenceDidChange()
 
     // FIXME: Rather than updating this state synchronously, we should set some dirty bits
     // and clean them out when updating compositing.
+    // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
     if (renderView() && renderView()->usesCompositing()) {
         renderView()->compositor()->frameViewScrollbarsExistenceDidChange();
@@ -2273,6 +2278,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     IntRect clipRect;
     if (clipToLayerContents) {
         // FIXME: childrenClipRect relies on compositingState, which is not necessarily up to date.
+        // https://code.google.com/p/chromium/issues/detail?id=343769
         DisableCompositingQueryAsserts disabler;
         clipRect = pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect());
     } else {

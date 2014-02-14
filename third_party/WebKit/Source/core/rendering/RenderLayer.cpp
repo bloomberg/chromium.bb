@@ -1843,6 +1843,7 @@ static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlag
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
+    // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
 
     if (compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking) {
@@ -2620,9 +2621,7 @@ bool RenderLayer::hitTest(const HitTestRequest& request, HitTestResult& result)
 
 bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
 {
-    // FIXME: really, we're in the hit test phase here, and compositing queries are legal
-    // (since the document is up to date). Until those states are fully fledged, I'll
-    // just disable the ASSERTS.
+    // https://code.google.com/p/chromium/issues/detail?id=343775
     DisableCompositingQueryAsserts disabler;
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
