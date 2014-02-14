@@ -15,20 +15,15 @@ MouseInterpreter::MouseInterpreter(PropRegistry* prop_reg, Tracer* tracer)
 
 void MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
-  result_.type = kGestureTypeNull;
-  InterpretMouseEvent(prev_state_, *hwstate, &result_);
+  InterpretMouseEvent(prev_state_, *hwstate);
 
   // Pass max_finger_cnt = 0 to DeepCopy() since we don't care fingers and
   // did not allocate any space for fingers.
   prev_state_.DeepCopy(*hwstate, 0);
-
-  if (result_.type != kGestureTypeNull)
-    ProduceGesture(result_);
 }
 
-void InterpretMouseEvent(const HardwareState& prev_state,
-                         const HardwareState& hwstate,
-                         Gesture* result) {
+void MouseInterpreter::InterpretMouseEvent(const HardwareState& prev_state,
+                         const HardwareState& hwstate) {
   const unsigned buttons[3] = {
     GESTURES_BUTTON_LEFT,
     GESTURES_BUTTON_MIDDLE,
@@ -46,23 +41,23 @@ void InterpretMouseEvent(const HardwareState& prev_state,
   }
 
   if (down || up) {
-    *result = Gesture(kGestureButtonsChange,
-                      prev_state.timestamp,
-                      hwstate.timestamp,
-                      down,
-                      up);
+    ProduceGesture(Gesture(kGestureButtonsChange,
+                           prev_state.timestamp,
+                           hwstate.timestamp,
+                           down,
+                           up));
   } else if (hwstate.rel_hwheel || hwstate.rel_wheel) {
-    *result = Gesture(kGestureScroll,
-                      prev_state.timestamp,
-                      hwstate.timestamp,
-                      -hwstate.rel_hwheel,
-                      -hwstate.rel_wheel);
+    ProduceGesture(Gesture(kGestureScroll,
+                           prev_state.timestamp,
+                           hwstate.timestamp,
+                           -hwstate.rel_hwheel,
+                           -hwstate.rel_wheel));
   } else if (hwstate.rel_x || hwstate.rel_y) {
-    *result = Gesture(kGestureMove,
-                      prev_state.timestamp,
-                      hwstate.timestamp,
-                      hwstate.rel_x,
-                      hwstate.rel_y);
+    ProduceGesture(Gesture(kGestureMove,
+                           prev_state.timestamp,
+                           hwstate.timestamp,
+                           hwstate.rel_x,
+                           hwstate.rel_y));
   }
 }
 

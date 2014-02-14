@@ -23,19 +23,17 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
 
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
-
+  // This function interprets mouse events, which include button clicking,
+  // scroll wheel movement, and mouse movement.  This function needs two
+  // consecutive HardwareState.  If no mouse events are presented, result
+  // object is not modified.
+  void InterpretMouseEvent(const HardwareState& prev_state,
+                           const HardwareState& hwstate);
  private:
   HardwareState prev_state_;
-  Gesture result_;
 };
 
-// This function interprets mouse events, which include button clicking,
-// scroll wheel movement, and mouse movement.  This function needs two
-// consecutive HardwareState.  If no mouse events are presented, result
-// object is not modified.
-void InterpretMouseEvent(const HardwareState& prev_state,
-                         const HardwareState& hwstate,
-                         Gesture* result);
+
 
 }  // namespace gestures
 

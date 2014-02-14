@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "gestures/include/mouse_interpreter.h"
 #include "gestures/include/tracer.h"
 
 namespace gestures {
@@ -35,7 +34,7 @@ stime_t Origin::ButtonGoingUp(int button) const {
 MultitouchMouseInterpreter::MultitouchMouseInterpreter(
     PropRegistry* prop_reg,
     Tracer* tracer)
-    : Interpreter(NULL, tracer, false),
+    : MouseInterpreter(prop_reg, tracer),
       state_buffer_(2),
       scroll_buffer_(15),
       prev_gesture_type_(kGestureTypeNull),
@@ -53,6 +52,11 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
       moving_min_rel_amount_(prop_reg, "Moving Min Rel Magnitude", 0.1) {
   InitName();
   memset(&prev_state_, 0, sizeof(prev_state_));
+}
+
+void MultitouchMouseInterpreter::ProduceGesture(const Gesture& gesture) {
+  origin_.PushGesture(gesture);
+  MouseInterpreter::ProduceGesture(gesture);
 }
 
 void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
@@ -107,20 +111,7 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   for (size_t i = 0; i < num_fingers; i++)
     gs_fingers_.insert(fs[i].tracking_id);
 
-  // Mouse events are given higher priority than multi-touch events.  The
-  // interpreter first looks for mouse events.  If none of the mouse events
-  // are found, the interpreter then looks for multi-touch events.
-  result_.type = kGestureTypeNull;
-  extra_result_.type = kGestureTypeNull;
-
-  InterpretMouseEvent(prev_state_, *state_buffer_.Get(0), &result_);
-  origin_.PushGesture(result_);
-
-  Gesture* result;
-  if (result_.type == kGestureTypeNull)
-    result = &result_;
-  else
-    result = &extra_result_;
+  InterpretMouseEvent(prev_state_, *state_buffer_.Get(0));
 
   bool should_interpret_multitouch = true;
 
@@ -152,8 +143,7 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   }
 
   if (should_interpret_multitouch)
-    InterpretMultitouchEvent(result);
-  origin_.PushGesture(*result);
+    InterpretMultitouchEvent();
 
   // We don't keep finger data here, this is just for standard mouse:
   prev_state_ = *hwstate;
@@ -162,13 +152,6 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
 
   prev_gs_fingers_ = gs_fingers_;
   prev_gesture_type_ = current_gesture_type_;
-  prev_result_ = result_;
-
-  if (extra_result_.type != kGestureTypeNull)
-    ProduceGesture(extra_result_);
-
-  if (result_.type != kGestureTypeNull)
-    ProduceGesture(result_);
 }
 
 void MultitouchMouseInterpreter::Initialize(
@@ -180,16 +163,18 @@ void MultitouchMouseInterpreter::Initialize(
   state_buffer_.Reset(hw_props->max_finger_cnt);
 }
 
-void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
+void MultitouchMouseInterpreter::InterpretMultitouchEvent() {
+  Gesture result;
+
   // If a gesturing finger just left, do fling/lift
   if (should_fling_ && AnyGesturingFingerLeft(*state_buffer_.Get(0),
                                               prev_gs_fingers_)) {
     current_gesture_type_ = kGestureTypeFling;
-    scroll_manager_.ComputeFling(state_buffer_, scroll_buffer_, result);
-    if (result && result->type == kGestureTypeFling)
-      result->details.fling.vx = 0.0;
-    if (result->details.fling.vy == 0.0)
-      result->type = kGestureTypeNull;
+    scroll_manager_.ComputeFling(state_buffer_, scroll_buffer_, &result);
+    if (result.type == kGestureTypeFling)
+      result.details.fling.vx = 0.0;
+    if (result.details.fling.vy == 0.0)
+      result.type = kGestureTypeNull;
     should_fling_ = false;
   } else if (gs_fingers_.size() > 0) {
     // In general, finger movements are interpreted as scroll, but as
@@ -211,9 +196,9 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
                                       gs_fingers_,
                                       prev_gesture_type_,
                                       prev_result_,
-                                      result,
+                                      &result,
                                       &scroll_buffer_);
-    current_gesture_type_ = result->type;
+    current_gesture_type_ = result.type;
     if (current_gesture_type_ == kGestureTypeScroll)
       should_fling_ = true;
 
@@ -236,9 +221,9 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
         (button_left_age < click_left_button_going_up_lead_time_.val_) ||
         (button_right_age < click_right_button_going_up_lead_time_.val_);
 
-    if (hold_off_scroll && result->type == kGestureTypeScroll) {
+    if (hold_off_scroll && result.type == kGestureTypeScroll) {
       current_gesture_type_ = kGestureTypeNull;
-      result->type = kGestureTypeNull;
+      result.type = kGestureTypeNull;
     }
     if (current_gesture_type_ == kGestureTypeScroll &&
         !update_scroll_buffer) {
@@ -247,6 +232,9 @@ void MultitouchMouseInterpreter::InterpretMultitouchEvent(Gesture* result) {
   }
   scroll_manager_.UpdateScrollEventBuffer(current_gesture_type_,
                                           &scroll_buffer_);
+  if (result.type != kGestureTypeNull)
+    ProduceGesture(result);
+  prev_result_ = result;
 }
 
 }  // namespace gestures

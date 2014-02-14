@@ -7,6 +7,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/mouse_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/tracer.h"
 
@@ -29,7 +30,7 @@ class Origin {
   stime_t button_going_up_right_;
 };
 
-class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
+class MultitouchMouseInterpreter : public MouseInterpreter {
   FRIEND_TEST(MultitouchMouseInterpreterTest, SimpleTest);
  public:
   MultitouchMouseInterpreter(PropRegistry* prop_reg, Tracer* tracer);
@@ -40,8 +41,10 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   virtual void Initialize(const HardwareProperties* hw_props,
                           Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
+  virtual void ProduceGesture(const Gesture& gesture);
+
  private:
-  void InterpretMultitouchEvent(Gesture* result);
+  void InterpretMultitouchEvent();
 
   // We keep this for finger tracking:
   HardwareStateBuffer state_buffer_;
@@ -58,12 +61,8 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   // or when mouse starts moving.
   bool should_fling_;
 
-  Gesture prev_result_;
-  Gesture result_;
-  Gesture extra_result_;
-
   ScrollManager scroll_manager_;
-
+  Gesture prev_result_;
   Origin origin_;
 
   // This keeps track of where fingers started. Usually this is their original
