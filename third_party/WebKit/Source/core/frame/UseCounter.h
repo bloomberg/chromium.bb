@@ -309,6 +309,10 @@ public:
         PrefixedImageSmoothingEnabled = 267,
         UnprefixedImageSmoothingEnabled = 268,
         ShadowRootApplyAuthorStyles = 269,
+        PromiseConstructor = 270,
+        PromiseCast = 271,
+        PromiseReject = 272,
+        PromiseResolve = 273,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
