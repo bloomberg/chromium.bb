@@ -580,8 +580,8 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     if (m_doingPreLayoutStyleUpdate || layoutPending() || renderView->needsLayout())
         return;
 
-    // FIXME: really, we're in the compositing updates phase here, and the compositing queries are legal.
-    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+    // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
@@ -603,8 +603,8 @@ void FrameView::updateCompositingLayersAfterLayout()
     if (!renderView)
         return;
 
-    // FIXME: really, we're in the compositing updates phase here, and the compositing queries are legal.
-    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+    // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref

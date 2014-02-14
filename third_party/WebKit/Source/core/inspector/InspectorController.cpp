@@ -288,7 +288,7 @@ void InspectorController::evaluateForTestInFrontend(long callId, const String& s
 
 void InspectorController::drawHighlight(GraphicsContext& context) const
 {
-    // FIXME: paint depends on compositingState, which is  not necessarily up to date here.
+    // https://code.google.com/p/chromium/issues/detail?id=343757
     DisableCompositingQueryAsserts disabler;
     m_overlay->paint(context);
 }

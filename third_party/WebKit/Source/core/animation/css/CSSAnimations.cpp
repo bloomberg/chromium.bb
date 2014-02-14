@@ -443,6 +443,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     // FIXME: cancelling, pausing, unpausing animations all query compositingState, which is not necessarily up to date here
     // since we call this from recalc style.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
     DisableCompositingQueryAsserts disabler;
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {

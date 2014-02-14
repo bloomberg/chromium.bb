@@ -146,8 +146,8 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     m_widget->setFrameRect(newFrame);
 
     {
-        // FIXME: Once we resolve the chicken/egg problems, we can likely remove this
-        // incremental update of composing state.
+        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+        // https://code.google.com/p/chromium/issues/detail?id=343756
         DisableCompositingQueryAsserts disabler;
         if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
             layer()->compositedLayerMapping()->updateAfterWidgetResize();

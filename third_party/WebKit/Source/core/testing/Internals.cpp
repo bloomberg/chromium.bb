@@ -483,7 +483,7 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
         return;
     }
 
-    // FIXME: pauseAnimationsForTesting queries compositingState, which is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343760
     DisableCompositingQueryAsserts disabler;
 
     frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
@@ -1072,7 +1072,7 @@ void Internals::paintControlTints(Document* document, ExceptionState& exceptionS
         return;
     }
 
-    // FIXME: paint depends on compositingState, which is  not necessarily up to date here.
+    // https://code.google.com/p/chromium/issues/detail?id=343760
     DisableCompositingQueryAsserts disabler;
 
     FrameView* frameView = document->view();

@@ -213,7 +213,7 @@ bool RenderLayer::paintsWithFilters() const
     if (!renderer()->hasFilter())
         return false;
 
-    // FIXME: This is called from a bunch of places where compositingState is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
     if (compositingState() != PaintsIntoOwnBacking)
         return true;
@@ -258,8 +258,8 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
 
-    // Once we fix the chicken-egg issues, we should move updateLayerPositionsAfterLayout later
-    // in the state machine.
+    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+    // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
     RenderGeometryMap geometryMap(UseTransforms);
@@ -498,7 +498,8 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
 
     if (flags & HasSeenViewportConstrainedAncestor
         || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip && !m_canSkipRepaintRectsUpdateOnScroll)) {
-        // FIXME: containerForRepaint queries compositingState, which is not necessarily up to date here.
+        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+        // https://code.google.com/p/chromium/issues/detail?id=343756
         DisableCompositingQueryAsserts disabler;
         // FIXME: We could track the repaint container as we walk down the tree.
         repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
@@ -3534,7 +3535,7 @@ bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 
 bool RenderLayer::paintsWithBlendMode() const
 {
-    // FIXME: This is called from contexts where compositingState is not up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
     return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
 }
@@ -3843,19 +3844,15 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     bool didPaintWithFilters = false;
 
     {
-        // FIXME: We call this from within style recalc, but we read compositingState below!
+        // https://code.google.com/p/chromium/issues/detail?id=343759
         DisableCompositingQueryAsserts disabler;
         if (paintsWithFilters())
             didPaintWithFilters = true;
         updateFilters(oldStyle, renderer()->style());
     }
 
-
-    // FIXME: I assume that these geometry updates are done because they issue
-    // invalidations as a side effect? It doesn't make sense that we would do
-    // them otherwise since we haven't done layout yet and don't actually know
-    // where we (or our composited ancestor) are positioned. That is, we're just
-    // going to have to update this again later after layout anyhow.
+    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+    // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
     const RenderStyle* newStyle = renderer()->style();

@@ -634,7 +634,8 @@ void RenderLayerScrollableArea::updateAfterLayout()
         // FIXME: We should not be allowing repaint during layout. crbug.com/336251
         AllowRepaintScope scoper(m_box->view()->frameView());
 
-        // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
+        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+        // https://code.google.com/p/chromium/issues/detail?id=343756
         DisableCompositingQueryAsserts disabler;
         m_box->view()->compositor()->updateLayerCompositingState(m_box->layer());
     }

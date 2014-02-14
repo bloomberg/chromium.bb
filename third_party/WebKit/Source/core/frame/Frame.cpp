@@ -691,8 +691,7 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
-    // FIXME: updateControlTints calls paint, which depends on compositingState, which is
-    // not necessarily up to date after layout.
+    // https://code.google.com/p/chromium/issues/detail?id=343755
     DisableCompositingQueryAsserts disabler;
     m_view->paintContents(buffer->context(), paintingRect);
 

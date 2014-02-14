@@ -293,6 +293,7 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, i
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
 {
     // FIXME: canStartAnimationOnCompositor queries compositingState, which is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
     DisableCompositingQueryAsserts disabler;
 
     if (!canStartAnimationOnCompositor(element)) {

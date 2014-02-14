@@ -51,6 +51,7 @@ void CSSPendingAnimations::add(Player* player)
 bool CSSPendingAnimations::startPendingAnimations()
 {
     // FIXME: This is called from within style recalc, at which point compositor state is not up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
     DisableCompositingQueryAsserts disabler;
 
     bool startedOnCompositor = false;

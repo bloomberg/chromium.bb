@@ -678,9 +678,7 @@ void FocusController::setActive(bool active)
 
     if (FrameView* view = m_page->mainFrame()->view()) {
         view->updateLayoutAndStyleIfNeededRecursive();
-
-        // FIXME: updateControlTints calls paint, which depends on compositingState, which is
-        // not necessarily up to date after layout.
+        // https://code.google.com/p/chromium/issues/detail?id=343758
         DisableCompositingQueryAsserts disabler;
         view->updateControlTints();
     }
