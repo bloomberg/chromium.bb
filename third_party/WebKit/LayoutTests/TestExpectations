@@ -29,7 +29,7 @@ crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
-crbug.com/336925 inspector/styles/styles-add-blank-property.html [ Pass Failure ]
+crbug.com/336925 inspector/elements/styles/styles-add-blank-property.html [ Pass Failure ]
 
 # -----------------------------------------------------------------
 # Plugin tests
@@ -75,7 +75,7 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
-crbug.com/331572 http/tests/inspector/styles/selector-line-deprecated.html [ Failure Pass ]
+crbug.com/331572 http/tests/inspector/elements/styles/selector-line-deprecated.html [ Failure Pass ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
@@ -421,7 +421,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/keyframe-timing-funct
 crbug.com/248938 [ Win ] virtual/threaded/transitions/move-after-transition.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 
-crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
+crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 # Not yet supported on Win/Mac. See bug for details.
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ Skip ]
@@ -484,10 +484,10 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Failure Pass ]
+crbug.com/280698 inspector/elements/styles/multiple-imports-edit-crash.html [ Failure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
-crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
+crbug.com/282082 inspector/sources/debugger/live-edit.html [ Failure Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
 crbug.com/330049 media/track/track-cue-container-rendering-position.html [ Failure Pass ]
 crbug.com/282089 [ Win7 Debug ] plugins/override-node-method.html [ Crash Pass ]
@@ -640,11 +640,11 @@ crbug.com/327447 [ Linux Win Debug ] animations/combo-transform-translate+scale.
 
 # Temporary catchall for linux aura inspector failures.
 crbug.com/336713 [ Linux ] inspector/elements/edit-dom-actions.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/styles/styles-change-node-while-editing.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/styles/styles-add-new-rule.html [ Failure Pass ]
+crbug.com/336713 [ Linux ] inspector/elements/styles/styles-change-node-while-editing.html [ Failure Pass ]
+crbug.com/336713 [ Linux ] inspector/elements/styles/styles-add-new-rule.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/elements/edit-trimmed-attribute-value.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/editor/text-editor-selection-to-search.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/styles/undo-add-rule-crash.html [ Failure Pass Timeout ]
+crbug.com/336713 [ Linux ] inspector/elements/styles/undo-add-rule-crash.html [ Failure Pass Timeout ]
 
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-spinbutton-click-in-iframe.html [ Failure Pass ]
@@ -698,7 +698,7 @@ crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pas
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
-crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Slow ]
+crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
@@ -798,8 +798,8 @@ crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-ch
 
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
-crbug.com/333882 [ Win7 ] inspector/styles/styles-change-node-while-editing.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/styles/undo-add-rule-crash.html [ Pass Timeout ]
+crbug.com/333882 [ Win7 ] inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/elements/styles/undo-add-rule-crash.html [ Pass Timeout ]
 
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
 
@@ -936,7 +936,7 @@ crbug.com/340105 fast/js/JSON-stringify.html [ NeedsManualRebaseline ]
 crbug.com/340105 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/340105 fast/notifications/notifications-cancel-request-permission.html [ NeedsManualRebaseline ]
 crbug.com/340105 fast/workers/worker-onerror-09.html [ NeedsManualRebaseline ]
-crbug.com/340105 inspector/debugger/debugger-no-pause-on-antibreakpoint.html [ NeedsManualRebaseline ]
+crbug.com/340105 inspector/sources/debugger/debugger-no-pause-on-antibreakpoint.html [ NeedsManualRebaseline ]
 crbug.com/340105 plugins/npp-set-window-called-during-destruction.html [ NeedsManualRebaseline ]
 crbug.com/340105 svg/custom/createelement.svg [ NeedsManualRebaseline ]
 crbug.com/340105 svg/dom/svgpath-out-of-bounds-getPathSeg.html [ NeedsManualRebaseline ]

@@ -1,0 +1,23 @@
+<html>
+<head>
+<script type="text/javascript" src="../../../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    var cssProperty = "box-shadow";
+    var properties = WebInspector.CSSMetadata.cssPropertiesMetainfo.startsWith(cssProperty);
+    if (properties.length)
+        InspectorTest.addResult(cssProperty + " is supported");
+    else
+        InspectorTest.addResult(cssProperty + " is NOT supported");
+    var marginLonghands = WebInspector.CSSMetadata.cssPropertiesMetainfo.longhands("margin");
+    marginLonghands.sort();
+    InspectorTest.addResult("Margin longhands: " + marginLonghands.join(", "));
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onLoad="runTest();">
+
+</body>
+</html>

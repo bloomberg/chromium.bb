@@ -20,6 +20,9 @@ function performActions()
 
 function test()
 {
+    // Force panel load.
+    WebInspector.panel("elements");
+
     InspectorTest.evaluateInPage("var unused = document.body.offsetWidth; testRunner.display();", function() {
          InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
     });

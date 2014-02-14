@@ -1,0 +1,71 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+
+function testFunction()
+{
+    var x = Math.sqrt(10);
+    return x;
+}
+
+var test = function()
+{
+    var currentSourceFrame;
+    InspectorTest.setQuiet(true);
+    var pageURL = "js-with-inline-stylesheets.html";
+    InspectorTest.runDebuggerTestSuite([
+        function testSetBreakpoint(next)
+        {
+            InspectorTest.showScriptSource(pageURL, didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                currentSourceFrame = sourceFrame;
+                InspectorTest.addResult("Script source was shown.");
+                InspectorTest.setBreakpoint(currentSourceFrame, 9, "", true);
+                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+            }
+
+            function didPause(callFrames)
+            {
+                InspectorTest.addResult("Script execution paused.");
+                InspectorTest.captureStackTrace(callFrames);
+                InspectorTest.dumpBreakpointSidebarPane();
+                InspectorTest.addSniffer(currentSourceFrame, "_removeBreakpointDecoration", breakpointRemoved);
+                InspectorTest.removeBreakpoint(currentSourceFrame, 9);
+            }
+
+            function breakpointRemoved()
+            {
+                InspectorTest.resumeExecution(didResume);
+            }
+
+            function didResume()
+            {
+                InspectorTest.dumpBreakpointSidebarPane();
+                InspectorTest.addResult("Script execution resumed.");
+                next();
+            }
+        }
+    ]);
+}
+
+</script>
+<style>
+body {
+    color: green;
+}
+</style>
+
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that JS sourcemapping for inline scripts followed by inline stylesheets does not break.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test() {
+    var panel = WebInspector.showPanel("network");
+    var target = panel._networkLogView;
+    var types = WebInspector.resourceTypes;
+
+    target._resourceTypeFilterUI._toggleTypeFilter(types.XHR.name(), false);
+    InspectorTest.addResult("Clicked '" + types.XHR.name() + "' button.");
+
+    var requestFoo = new WebInspector.NetworkRequest("", "", "", "", "");
+    requestFoo.type = types.Script;
+    requestFoo.requestId = "foo";
+    target._appendRequest(requestFoo);
+    var requestBar = new WebInspector.NetworkRequest("", "", "", "", "");
+    requestBar.type = types.Script;
+    requestBar.requestId = "bar";
+    target._appendRequest(requestBar);
+    target.refresh();
+
+    InspectorTest.addResult("");
+    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.type.name() + "' is hidden: " + target._filteredOutRequests.contains(requestFoo));
+    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.type.name() + "' is hidden: " + target._filteredOutRequests.contains(requestBar));
+
+    InspectorTest.addResult("");
+    requestFoo.type = types.XHR;
+    target._refreshRequest(requestFoo);
+    InspectorTest.addResult("Updated request [" + requestFoo.requestId + "] type.");
+    target._refreshRequest(requestBar);
+    InspectorTest.addResult("Updated request [" + requestBar.requestId + "].");
+    target.refresh();
+
+    InspectorTest.addResult("");
+    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.type.name() + "' is hidden: " + target._filteredOutRequests.contains(requestFoo));
+    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.type.name() + "' is hidden: " + target._filteredOutRequests.contains(requestBar));
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that filter is reapplied when request is updated.</p>
+</body>
+</html>

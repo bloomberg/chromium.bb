@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.showPanel("elements");
+
+    var namePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.cssPropertiesMetainfo, null, true);
+    var valuePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.keywordsForProperty("color"), null, false);
+
+    InspectorTest.runTestSuite([
+        function testEmptyName(next)
+        {
+            testAgainstGolden(namePrompt, "", false, [], ["width"], next);
+        },
+
+        function testEmptyNameForce(next)
+        {
+            testAgainstGolden(namePrompt, "", true, ["width"], [], next);
+        },
+
+        function testSingleCharName(next)
+        {
+            testAgainstGolden(namePrompt, "w", false, ["width"], [], next);
+        },
+
+        function testEmptyValue(next)
+        {
+            testAgainstGolden(valuePrompt, "", false, ["aliceblue", "red", "inherit"], [], next);
+        },
+
+        function testValueR(next)
+        {
+            testAgainstGolden(valuePrompt, "R", false, ["red", "rosybrown"], ["aliceblue", "inherit"], next);
+        },
+
+        function testValueWithParenthesis(next)
+        {
+            testAgainstGolden(valuePrompt, "saturate(0%)", false, [], ["inherit"], next);
+        }
+    ]);
+
+    function testAgainstGolden(prompt, inputText, force, golden, antiGolden, callback)
+    {
+        var proxyElement = document.createElement("div");
+        document.body.appendChild(proxyElement);
+        proxyElement.style = "webkit-user-select: text; -webkit-user-modify: read-write-plaintext-only";
+        proxyElement.textContent = inputText;
+        var selectionRange = document.createRange();
+        var textNode = proxyElement.childNodes[0];
+        if (textNode) {
+            selectionRange.setStart(textNode, inputText.length);
+            selectionRange.setEnd(textNode, inputText.length);
+        } else {
+            selectionRange.selectNodeContents(proxyElement);
+        }
+        var range = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, prompt._completionStopCharacters, proxyElement, "backward");
+        prompt._buildPropertyCompletions(proxyElement, range, force, completions);
+
+        function completions(result, index)
+        {
+            var i;
+            for (i = 0; i < golden.length; ++i) {
+                if (result.indexOf(golden[i]) === -1)
+                    InspectorTest.addResult("NOT FOUND: " + golden[i]);
+            }
+            for (i = 0; i < antiGolden.length; ++i) {
+                if (result.indexOf(antiGolden[i]) !== -1)
+                    InspectorTest.addResult("FOUND: " + antiGolden[i]);
+            }
+            proxyElement.remove();
+            callback();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that autocompletions are computed correctly when editing the Styles pane.
+</p>
+</body>
+</html>
