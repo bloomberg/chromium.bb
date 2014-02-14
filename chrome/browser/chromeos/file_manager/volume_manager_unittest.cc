@@ -681,4 +681,59 @@ TEST_F(VolumeManagerTest, FindVolumeInfoById) {
   EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, volume_info.type);
 }
 
+TEST_F(VolumeManagerTest, ArchiveSourceFiltering) {
+  LoggingObserver observer;
+  volume_manager_->AddObserver(&observer);
+
+  // Mount a USB stick.
+  volume_manager_->OnMountEvent(
+      chromeos::disks::DiskMountManager::MOUNTING,
+      chromeos::MOUNT_ERROR_NONE,
+      chromeos::disks::DiskMountManager::MountPointInfo(
+          "/removable/usb",
+          "/removable/usb",
+          chromeos::MOUNT_TYPE_DEVICE,
+          chromeos::disks::MOUNT_CONDITION_NONE));
+
+  // Mount a zip archive in the stick.
+  volume_manager_->OnMountEvent(
+      chromeos::disks::DiskMountManager::MOUNTING,
+      chromeos::MOUNT_ERROR_NONE,
+      chromeos::disks::DiskMountManager::MountPointInfo(
+          "/removable/usb/1.zip",
+          "/archive/1",
+          chromeos::MOUNT_TYPE_ARCHIVE,
+          chromeos::disks::MOUNT_CONDITION_NONE));
+  VolumeInfo volume_info;
+  ASSERT_TRUE(volume_manager_->FindVolumeInfoById("archive:1", &volume_info));
+  EXPECT_EQ("/archive/1", volume_info.mount_path.AsUTF8Unsafe());
+  EXPECT_EQ(2u, observer.events().size());
+
+  // Mount a zip archive in the previous zip archive.
+  volume_manager_->OnMountEvent(
+      chromeos::disks::DiskMountManager::MOUNTING,
+      chromeos::MOUNT_ERROR_NONE,
+      chromeos::disks::DiskMountManager::MountPointInfo(
+          "/archive/1/2.zip",
+          "/archive/2",
+          chromeos::MOUNT_TYPE_ARCHIVE,
+          chromeos::disks::MOUNT_CONDITION_NONE));
+  ASSERT_TRUE(volume_manager_->FindVolumeInfoById("archive:2", &volume_info));
+  EXPECT_EQ("/archive/2", volume_info.mount_path.AsUTF8Unsafe());
+  EXPECT_EQ(3u, observer.events().size());
+
+  // A zip file is mounted from other profile. It must be ignored in the current
+  // VolumeManager.
+  volume_manager_->OnMountEvent(
+      chromeos::disks::DiskMountManager::MOUNTING,
+      chromeos::MOUNT_ERROR_NONE,
+      chromeos::disks::DiskMountManager::MountPointInfo(
+          "/other/profile/drive/folder/3.zip",
+          "/archive/3",
+          chromeos::MOUNT_TYPE_ARCHIVE,
+          chromeos::disks::MOUNT_CONDITION_NONE));
+  EXPECT_FALSE(volume_manager_->FindVolumeInfoById("archive:3", &volume_info));
+  EXPECT_EQ(3u, observer.events().size());
+}
+
 }  // namespace file_manager

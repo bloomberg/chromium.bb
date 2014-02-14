@@ -62,7 +62,7 @@ var expectedDriveVolume = {
 var expectedArchiveVolume = {
   volumeId: 'archive:archive_mount_path',
   mountPath: '/archive/archive_mount_path',
-  sourcePath: 'archive_path',
+  sourcePath: /removable\/mount_path3\/archive.zip$/,
   volumeType: 'archive',
   isReadOnly: true,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}

@@ -212,6 +212,8 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
 }
 
 void VolumeManager::Initialize() {
+  const bool kNotRemounting = false;
+
   // Path to mount user folders have changed several times. We need to migrate
   // the old preferences on paths to the new format when needed. For the detail,
   // see the comments in file_manager::util::MigratePathFromOldFormat,
@@ -236,20 +238,23 @@ void VolumeManager::Initialize() {
 
     DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  CreateDownloadsVolumeInfo(downloads),
-                 false /* is_remounting */);
+                 kNotRemounting);
   }
 
   // Subscribe to DriveIntegrationService.
   if (drive_integration_service_) {
     drive_integration_service_->AddObserver(this);
     if (drive_integration_service_->IsMounted()) {
-      DoMountEvent(
-          chromeos::MOUNT_ERROR_NONE, CreateDriveVolumeInfo(profile_), false);
+      DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+                   CreateDriveVolumeInfo(profile_),
+                   kNotRemounting);
     }
   }
 
   // Subscribe to DiskMountManager.
   disk_mount_manager_->AddObserver(this);
+
+  std::vector<VolumeInfo> archives;
 
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
       disk_mount_manager_->mount_points();
@@ -257,12 +262,42 @@ void VolumeManager::Initialize() {
            mount_points.begin();
        it != mount_points.end();
        ++it) {
+    if (it->second.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+      // Archives are mounted after other type of volumes. See below.
+      archives.push_back(CreateVolumeInfoFromMountPointInfo(it->second, NULL));
+      continue;
+    }
     DoMountEvent(
         chromeos::MOUNT_ERROR_NONE,
         CreateVolumeInfoFromMountPointInfo(
             it->second,
             disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)),
-        false /* is_remounting */);
+            kNotRemounting);
+  }
+
+  // We mount archives only if they are opened from currently mounted volumes.
+  // To check the condition correctly in DoMountEvent, we care the order.
+  std::vector<bool> done(archives.size(), false);
+  for (size_t i = 0; i < archives.size(); ++i) {
+    if (!done[i]) {
+      std::vector<VolumeInfo> chain;
+      done[i] = true;
+      chain.push_back(archives[i]);
+
+      // If archives[i]'s source_path is in another archive, mount it first.
+      for (size_t parent = 0; parent < archives.size(); ++parent) {
+        if (!done[parent] &&
+            archives[parent].mount_path.IsParent(chain.back().source_path)) {
+          done[parent] = true;
+          chain.push_back(archives[parent]);
+          parent = 0;  // Search archives[parent]'s parent from the beginning.
+        }
+      }
+
+      // Mount from the tail of chain.
+      for (size_t i = chain.size(); i > 0; --i)
+        DoMountEvent(chromeos::MOUNT_ERROR_NONE, chain[i - 1], kNotRemounting);
+    }
   }
 
   disk_mount_manager_->RequestMountInfoRefresh();
@@ -556,7 +591,24 @@ void VolumeManager::OnPrivetVolumesAvailable(
 void VolumeManager::DoMountEvent(chromeos::MountError error_code,
                                  const VolumeInfo& volume_info,
                                  bool is_remounting) {
-  // TODO(kinaba): filter zip.
+  // Archive files are mounted globally in system. We however don't want to show
+  // archives from profile-specific folders (Drive/Downloads) of other users in
+  // multi-profile session. To this end, we filter out archives not on the
+  // volumes already mounted on this VolumeManager instance.
+  if (volume_info.type == VOLUME_TYPE_MOUNTED_ARCHIVE_FILE) {
+    // Source may be in Drive cache folder under the current profile directory.
+    bool from_current_profile =
+        profile_->GetPath().IsParent(volume_info.source_path);
+    for (std::map<std::string, VolumeInfo>::const_iterator iter =
+             mounted_volumes_.begin();
+         !from_current_profile && iter != mounted_volumes_.end();
+         ++iter) {
+      if (iter->second.mount_path.IsParent(volume_info.source_path))
+        from_current_profile = true;
+    }
+    if (!from_current_profile)
+      return;
+  }
 
   if (error_code == chromeos::MOUNT_ERROR_NONE || volume_info.mount_condition)
     mounted_volumes_[volume_info.volume_id] = volume_info;

@@ -173,7 +173,9 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
         2
       },
       {
-        "archive_path",
+        // Set source path inside another mounted volume.
+        chromeos::CrosDisksClient::GetRemovableDiskMountPoint().AppendASCII(
+            "mount_path3/archive.zip").AsUTF8Unsafe(),
         chromeos::CrosDisksClient::GetArchiveMountPoint().AppendASCII(
             "archive_mount_path").AsUTF8Unsafe(),
         chromeos::MOUNT_TYPE_ARCHIVE,
