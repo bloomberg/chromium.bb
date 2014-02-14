@@ -44,6 +44,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
+#include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -134,6 +135,7 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -1624,8 +1626,15 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
     window_->GetLocationBar()->UpdateContentSettingsIcons();
   }
 
-  RegisterProtocolHandlerInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), registry, handler);
+  PermissionBubbleManager* bubble_manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
+  if (PermissionBubbleManager::Enabled() && bubble_manager) {
+    bubble_manager->AddRequest(
+        new RegisterProtocolHandlerPermissionRequest(registry, handler));
+  } else {
+    RegisterProtocolHandlerInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents), registry, handler);
+  }
 }
 
 void Browser::UpdatePreferredSize(WebContents* source,

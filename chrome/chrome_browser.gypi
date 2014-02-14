@@ -553,6 +553,8 @@
         'browser/custom_handlers/protocol_handler_registry_factory.h',
         'browser/custom_handlers/register_protocol_handler_infobar_delegate.cc',
         'browser/custom_handlers/register_protocol_handler_infobar_delegate.h',
+        'browser/custom_handlers/register_protocol_handler_permission_request.cc',
+        'browser/custom_handlers/register_protocol_handler_permission_request.h',
         'browser/custom_home_pages_table_model.cc',
         'browser/custom_home_pages_table_model.h',
         'browser/defaults.cc',
