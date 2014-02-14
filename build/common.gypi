@@ -56,9 +56,6 @@
           # Enable HiDPI support.
           'enable_hidpi%': 0,
 
-          # Enable touch optimized art assets and metrics.
-          'enable_touch_ui%': 0,
-
           # Override buildtype to select the desired build flavor.
           # Dev - everyday build for development/testing
           # Official - release build (generally implies additional processing)
@@ -130,7 +127,6 @@
         'use_system_fontconfig%': '<(use_system_fontconfig)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
-        'enable_touch_ui%': '<(enable_touch_ui)',
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
         'host_arch%': '<(host_arch)',
@@ -188,11 +184,6 @@
           # Enable HiDPI on Mac OS and Chrome OS.
           ['OS=="mac" or chromeos==1', {
             'enable_hidpi%': 1,
-          }],
-
-          # Enable touch UI on Metro.
-          ['OS=="win"', {
-            'enable_touch_ui%': 1,
           }],
 
           # Enable App Launcher on ChromeOS, Windows and OSX.
@@ -255,7 +246,6 @@
       'use_system_fontconfig%': '<(use_system_fontconfig)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
-      'enable_touch_ui%': '<(enable_touch_ui)',
       'android_webview_build%': '<(android_webview_build)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
@@ -911,7 +901,6 @@
     'chromeos%': '<(chromeos)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
-    'enable_touch_ui%': '<(enable_touch_ui)',
     'use_xi2_mt%':'<(use_xi2_mt)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
