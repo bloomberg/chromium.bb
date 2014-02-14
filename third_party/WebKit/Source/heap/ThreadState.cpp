@@ -349,9 +349,8 @@ void ThreadState::visitStack(Visitor* visitor)
     // will read past start address.
     current = reinterpret_cast<Address*>(reinterpret_cast<intptr_t>(current) & ~(sizeof(Address) - 1));
 
-    for (; current < start; ++current) {
+    for (; current < start; ++current)
         Heap::checkAndMarkPointer(visitor, *current);
-    }
 
     for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it)
         Heap::checkAndMarkPointer(visitor, *it);
@@ -605,10 +604,10 @@ void ThreadState::leaveSafePoint()
 {
     checkThread();
     ASSERT(m_atSafePoint);
+    s_safePointBarrier->leaveSafePoint(this);
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
     clearSafePointScopeMarker();
-    s_safePointBarrier->leaveSafePoint(this);
 }
 
 void ThreadState::copyStackUntilSafePointScope()
