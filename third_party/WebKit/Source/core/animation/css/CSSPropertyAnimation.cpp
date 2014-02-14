@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/frame/animation/CSSPropertyAnimation.h"
+#include "core/animation/css/CSSPropertyAnimation.h"
 
 #include <algorithm>
 #include "StylePropertyShorthand.h"
