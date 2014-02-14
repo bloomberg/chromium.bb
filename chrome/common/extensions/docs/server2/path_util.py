@@ -29,6 +29,11 @@ def AssertIsValid(path):
   assert IsValid(path), 'Path "%s" is invalid' % path
 
 
+def Join(*paths):
+  assert all(IsValid(path) for path in paths), paths
+  return posixpath.join(*paths)
+
+
 def SplitParent(path):
   '''Returns the parent directory and base name of |path| in a tuple.
   Any trailing slash of |path| is preserved, such that the parent of

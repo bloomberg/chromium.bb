@@ -11,7 +11,7 @@ from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Gettable, Future
 from path_canonicalizer import PathCanonicalizer
-from path_util import AssertIsValid, ToDirectory
+from path_util import AssertIsValid, Join, ToDirectory
 from special_paths import SITE_VERIFICATION_FILE
 from third_party.handlebar import Handlebar
 from third_party.markdown import markdown
@@ -153,11 +153,11 @@ class ContentProvider(object):
     futures = [self._path_canonicalizer.Cron()]
     for root, _, files in self.file_system.Walk(''):
       for f in files:
-        futures.append(self.GetContentAndType(posixpath.join(root, f)))
+        futures.append(self.GetContentAndType(Join(root, f)))
         # Also cache the extension-less version of the file if needed.
         base, ext = posixpath.splitext(f)
         if f != SITE_VERIFICATION_FILE and ext in self._default_extensions:
-          futures.append(self.GetContentAndType(posixpath.join(root, base)))
+          futures.append(self.GetContentAndType(Join(root, base)))
       # TODO(kalman): Cache .zip files for each directory (if supported).
     return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
 

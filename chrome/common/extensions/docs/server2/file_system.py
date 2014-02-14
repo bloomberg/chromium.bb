@@ -6,7 +6,9 @@ import posixpath
 import traceback
 
 from future import Gettable, Future
-from path_util import AssertIsDirectory, AssertIsValid, SplitParent, ToDirectory
+from path_util import (
+    AssertIsDirectory, AssertIsValid, IsDirectory, IsValid, SplitParent,
+    ToDirectory)
 
 
 class _BaseFileSystemException(Exception):
@@ -39,6 +41,9 @@ class StatInfo(object):
   '''The result of calling Stat on a FileSystem.
   '''
   def __init__(self, version, child_versions=None):
+    if child_versions:
+      assert all(IsValid(path) for path in child_versions.iterkeys()), \
+             child_versions
     self.version = version
     self.child_versions = child_versions
 
@@ -152,7 +157,7 @@ class FileSystem(object):
       dirs, files = [], []
 
       for f in self.ReadSingle(root).Get():
-        if f.endswith('/'):
+        if IsDirectory(f):
           dirs.append(f)
         else:
           files.append(f)
