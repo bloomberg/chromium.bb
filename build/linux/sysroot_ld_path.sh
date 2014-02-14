@@ -46,15 +46,19 @@ process_ld_so_conf() {
       echo "$ENTRY" | grep -qs ^include
       if [ $? -eq 0 ]; then
         local included_files=$(echo "$ENTRY" | sed 's/^include //')
-        if ls $included_files >/dev/null 2>&1 ; then
-          for inc_file in $included_files; do
-            echo $inc_file | grep -qs ^/
-            if [ $? -eq 0 ]; then
-              process_ld_so_conf "$root" "$root$inc_file"
-            else
-              process_ld_so_conf "$root" "$(pwd)/$inc_file"
-            fi
-          done
+        echo "$included_files" | grep -qs ^/
+        if [ $? -eq 0 ]; then
+          if ls $root$included_files >/dev/null 2>&1 ; then
+            for inc_file in $root$included_files; do
+              process_ld_so_conf "$root" "$inc_file"
+            done
+          fi
+        else
+          if ls $(pwd)/$included_files >/dev/null 2>&1 ; then
+            for inc_file in $(pwd)/$included_files; do
+              process_ld_so_conf "$root" "$inc_file"
+            done
+          fi
         fi
         continue
       fi
