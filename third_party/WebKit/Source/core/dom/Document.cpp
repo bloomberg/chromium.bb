@@ -423,7 +423,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_visitedLinkState(VisitedLinkState::create(*this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
-    , m_bParsing(false)
+    , m_isParsing(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -2636,13 +2636,10 @@ Document::PageDismissalType Document::pageDismissalEventBeingDispatched() const
 
 void Document::setParsing(bool b)
 {
-    m_bParsing = b;
+    m_isParsing = b;
 
-    if (m_bParsing && !m_elementDataCache)
+    if (m_isParsing && !m_elementDataCache)
         m_elementDataCache = ElementDataCache::create();
-
-    if (!m_bParsing && view())
-        view()->scheduleRelayout();
 }
 
 bool Document::shouldScheduleLayout()

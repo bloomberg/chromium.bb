@@ -601,7 +601,7 @@ public:
     bool isLoadCompleted();
 
     void setParsing(bool);
-    bool parsing() const { return m_bParsing; }
+    bool parsing() const { return m_isParsing; }
 
     bool shouldScheduleLayout();
     bool shouldParserYieldAgressivelyBeforeScriptExecution();
@@ -1220,7 +1220,7 @@ private:
 
     bool m_visuallyOrdered;
     ReadyState m_readyState;
-    bool m_bParsing;
+    bool m_isParsing;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;
