@@ -435,6 +435,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
   scoped_refptr<CompositingIOSurfaceContext> compositing_iosurface_context_;
 
+  // Timer used to dynamically transition the compositing layer in and out of
+  // asynchronous mode.
+  base::DelayTimer<RenderWidgetHostViewMac>
+      compositing_iosurface_layer_async_timer_;
+
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
@@ -511,6 +516,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   // Called when a software DIB is received.
   void GotSoftwareFrame();
+
+  // Called if it has been a quarter-second since a GPU SwapBuffers has been
+  // received. In this case, switch from polling for frames to pushing them.
+  void TimerSinceGotAcceleratedFrameFired();
 
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();

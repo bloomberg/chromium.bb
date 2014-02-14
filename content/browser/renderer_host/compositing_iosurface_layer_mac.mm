@@ -26,6 +26,7 @@
     context_ = content::CompositingIOSurfaceContext::Get(
         content::CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
     DCHECK(context_);
+    needsDisplay_ = NO;
 
     ScopedCAActionDisabler disabler;
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -64,6 +65,24 @@
   renderWidgetHostView_ = nil;
 }
 
+- (void)gotNewFrame {
+  if (![self isAsynchronous]) {
+    [self setNeedsDisplay];
+    [self setAsynchronous:YES];
+  } else {
+    needsDisplay_ = YES;
+  }
+}
+
+- (void)timerSinceGotNewFrameFired {
+  if (![self isAsynchronous])
+    return;
+
+  [self setAsynchronous:NO];
+  if (needsDisplay_)
+    [self setNeedsDisplay];
+}
+
 // The remaining methods implement the CAOpenGLLayer interface.
 
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask {
@@ -76,6 +95,18 @@
   if (!context_)
     return [super copyCGLContextForPixelFormat:pixelFormat];
   return CGLRetainContext(context_->cgl_context());
+}
+
+- (void)setNeedsDisplay {
+  needsDisplay_ = YES;
+  [super setNeedsDisplay];
+}
+
+- (BOOL)canDrawInCGLContext:(CGLContextObj)glContext
+                pixelFormat:(CGLPixelFormatObj)pixelFormat
+               forLayerTime:(CFTimeInterval)timeInterval
+                displayTime:(const CVTimeStamp*)timeStamp {
+  return needsDisplay_;
 }
 
 - (void)drawInCGLContext:(CGLContextObj)glContext
@@ -143,6 +174,7 @@
     return;
   }
 
+  needsDisplay_ = NO;
   renderWidgetHostView_->SendPendingLatencyInfoToHost();
 }
 

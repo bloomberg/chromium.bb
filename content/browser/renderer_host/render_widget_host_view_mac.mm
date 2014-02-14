@@ -408,6 +408,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      compositing_iosurface_layer_async_timer_(
+            FROM_HERE, base::TimeDelta::FromMilliseconds(250),
+            this, &RenderWidgetHostViewMac::TimerSinceGotAcceleratedFrameFired),
       allow_overlapping_views_(false),
       use_core_animation_(false),
       pending_latency_info_delay_(0),
@@ -1405,7 +1408,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (!about_to_validate_and_paint_) {
     if (use_core_animation_) {
       DCHECK(compositing_iosurface_layer_);
-      [compositing_iosurface_layer_ setNeedsDisplay];
+      compositing_iosurface_layer_async_timer_.Reset();
+      [compositing_iosurface_layer_ gotNewFrame];
     } else {
       if (!DrawIOSurfaceWithoutCoreAnimation()) {
         [cocoa_view_ setNeedsDisplay:YES];
@@ -1901,6 +1905,10 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
     else
       DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   }
+}
+
+void RenderWidgetHostViewMac::TimerSinceGotAcceleratedFrameFired() {
+  [compositing_iosurface_layer_ timerSinceGotNewFrameFired];
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
