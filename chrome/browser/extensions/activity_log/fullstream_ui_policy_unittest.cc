@@ -221,6 +221,139 @@ class FullStreamUIPolicyTest : public testing::Test {
     ASSERT_NE(-1, action.action_id());
   }
 
+  // A helper function initializes the policy with a number of actions, calls
+  // RemoveActions on a policy object and then checks the result of the
+  // deletion.
+  void CheckRemoveActions(
+      ActivityLogDatabasePolicy* policy,
+      const std::vector<int64>& action_ids,
+      const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
+
+    // Record some actions
+    scoped_refptr<Action> action = new Action(
+        "punky1", base::Time::Now(), Action::ACTION_DOM_ACCESS, "lets1");
+    action->mutable_args()->AppendString("vamoose1");
+    action->set_page_url(GURL("http://www.google1.com"));
+    action->set_page_title("Google1");
+    action->set_arg_url(GURL("http://www.args-url1.com"));
+    policy->ProcessAction(action);
+    // Record the same action twice, so there are multiple entries in the
+    // database.
+    policy->ProcessAction(action);
+
+    action = new Action(
+        "punky2", base::Time::Now(), Action::ACTION_API_CALL, "lets2");
+    action->mutable_args()->AppendString("vamoose2");
+    action->set_page_url(GURL("http://www.google2.com"));
+    action->set_page_title("Google2");
+    action->set_arg_url(GURL("http://www.args-url2.com"));
+    policy->ProcessAction(action);
+    // Record the same action twice, so there are multiple entries in the
+    // database.
+    policy->ProcessAction(action);
+
+    // Submit a request to delete actions.
+    policy->RemoveActions(action_ids);
+
+    // Check the result of the deletion. The checker function gets all
+    // activities in the database.
+    CheckReadData(policy, "", -1, checker);
+
+    // Clean database.
+    policy->DeleteDatabase();
+  }
+
+  static void AllActionsDeleted(scoped_ptr<Action::ActionVector> actions) {
+    ASSERT_EQ(0, static_cast<int>(actions->size()));
+  }
+
+  static void NoActionsDeleted(scoped_ptr<Action::ActionVector> actions) {
+    // These will be in the vector in reverse time order.
+    ASSERT_EQ(4, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0),
+                "punky2",
+                Action::ACTION_API_CALL,
+                "lets2",
+                "[\"vamoose2\"]",
+                "http://www.google2.com/",
+                "Google2",
+                "http://www.args-url2.com/");
+    ASSERT_EQ(3, actions->at(0)->action_id());
+    CheckAction(*actions->at(1),
+                "punky2",
+                Action::ACTION_API_CALL,
+                "lets2",
+                "[\"vamoose2\"]",
+                "http://www.google2.com/",
+                "Google2",
+                "http://www.args-url2.com/");
+    ASSERT_EQ(4, actions->at(1)->action_id());
+    CheckAction(*actions->at(2),
+                "punky1",
+                Action::ACTION_DOM_ACCESS,
+                "lets1",
+                "[\"vamoose1\"]",
+                "http://www.google1.com/",
+                "Google1",
+                "http://www.args-url1.com/");
+    ASSERT_EQ(1, actions->at(2)->action_id());
+    CheckAction(*actions->at(3),
+                "punky1",
+                Action::ACTION_DOM_ACCESS,
+                "lets1",
+                "[\"vamoose1\"]",
+                "http://www.google1.com/",
+                "Google1",
+                "http://www.args-url1.com/");
+    ASSERT_EQ(2, actions->at(3)->action_id());
+  }
+
+  static void Action1Deleted(scoped_ptr<Action::ActionVector> actions) {
+    // These will be in the vector in reverse time order.
+    ASSERT_EQ(2, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0),
+                "punky2",
+                Action::ACTION_API_CALL,
+                "lets2",
+                "[\"vamoose2\"]",
+                "http://www.google2.com/",
+                "Google2",
+                "http://www.args-url2.com/");
+    ASSERT_EQ(3, actions->at(0)->action_id());
+    CheckAction(*actions->at(1),
+                "punky2",
+                Action::ACTION_API_CALL,
+                "lets2",
+                "[\"vamoose2\"]",
+                "http://www.google2.com/",
+                "Google2",
+                "http://www.args-url2.com/");
+    ASSERT_EQ(4, actions->at(1)->action_id());
+  }
+
+  static void Action2Deleted(scoped_ptr<Action::ActionVector> actions) {
+    // These will be in the vector in reverse time order.
+    ASSERT_EQ(2, static_cast<int>(actions->size()));
+    CheckAction(*actions->at(0),
+                "punky1",
+                Action::ACTION_DOM_ACCESS,
+                "lets1",
+                "[\"vamoose1\"]",
+                "http://www.google1.com/",
+                "Google1",
+                "http://www.args-url1.com/");
+    ASSERT_EQ(1, actions->at(0)->action_id());
+    CheckAction(*actions->at(1),
+                "punky1",
+                Action::ACTION_DOM_ACCESS,
+                "lets1",
+                "[\"vamoose1\"]",
+                "http://www.google1.com/",
+                "Google1",
+                "http://www.args-url1.com/");
+    ASSERT_EQ(2, actions->at(1)->action_id());
+  }
+
  protected:
   ExtensionService* extension_service_;
   scoped_ptr<TestingProfile> profile_;
@@ -738,7 +871,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
   policy->Close();
 }
 
-TEST_F(FullStreamUIPolicyTest, DeleteActions) {
+TEST_F(FullStreamUIPolicyTest, DeleteDatabase) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
   policy->Init();
   scoped_refptr<const Extension> extension =
@@ -786,6 +919,60 @@ TEST_F(FullStreamUIPolicyTest, DeleteActions) {
       -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions0));
+
+  policy->Close();
+}
+
+TEST_F(FullStreamUIPolicyTest, RemoveActions) {
+  ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
+
+  std::vector<int64> action_ids;
+
+  CheckRemoveActions(policy,
+                     action_ids,
+                     base::Bind(&FullStreamUIPolicyTest::NoActionsDeleted));
+
+  action_ids.push_back(-1);
+  action_ids.push_back(-10);
+  action_ids.push_back(0);
+  action_ids.push_back(5);
+  action_ids.push_back(10);
+  CheckRemoveActions(policy,
+                     action_ids,
+                     base::Bind(&FullStreamUIPolicyTest::NoActionsDeleted));
+  action_ids.clear();
+
+  for (int i = 0; i < 50; i++) {
+    action_ids.push_back(i + 5);
+  }
+  CheckRemoveActions(policy,
+                     action_ids,
+                     base::Bind(&FullStreamUIPolicyTest::NoActionsDeleted));
+  action_ids.clear();
+
+  // CheckRemoveActions pushes four actions to the Activity Log database with
+  // IDs 1, 2, 3, and 4.
+  action_ids.push_back(1);
+  action_ids.push_back(2);
+  action_ids.push_back(3);
+  action_ids.push_back(4);
+  CheckRemoveActions(policy,
+                     action_ids,
+                     base::Bind(&FullStreamUIPolicyTest::AllActionsDeleted));
+  action_ids.clear();
+
+  action_ids.push_back(1);
+  action_ids.push_back(2);
+  CheckRemoveActions(
+      policy, action_ids, base::Bind(&FullStreamUIPolicyTest::Action1Deleted));
+  action_ids.clear();
+
+  action_ids.push_back(3);
+  action_ids.push_back(4);
+  CheckRemoveActions(
+      policy, action_ids, base::Bind(&FullStreamUIPolicyTest::Action2Deleted));
+  action_ids.clear();
 
   policy->Close();
 }

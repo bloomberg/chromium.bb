@@ -112,6 +112,10 @@ class ActivityLog : public BrowserContextKeyedService,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Remove actions from the activity log database which IDs specified in the
+  // action_ids array.
+  void RemoveActions(const std::vector<int64>& action_ids);
+
   // Clean up URLs from the activity log database.
   // If restrict_urls is empty then all URLs in the activity log database are
   // removed, otherwise only those in restrict_urls are removed.

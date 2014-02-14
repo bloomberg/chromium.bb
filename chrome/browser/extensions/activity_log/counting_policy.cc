@@ -518,6 +518,44 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
   return actions.Pass();
 }
 
+void CountingPolicy::DoRemoveActions(const std::vector<int64>& action_ids) {
+  if (action_ids.empty())
+    return;
+
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  // Flush data first so the activity removal affects queued-up data as well.
+  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
+
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return;
+
+  std::string statement_str =
+      base::StringPrintf("DELETE FROM %s WHERE rowid = ?", kTableName);
+  sql::Statement statement(db->GetCachedStatement(
+      sql::StatementID(SQL_FROM_HERE), statement_str.c_str()));
+  for (size_t i = 0; i < action_ids.size(); i++) {
+    statement.Reset(true);
+    statement.BindInt64(0, action_ids[i]);
+    if (!statement.Run()) {
+      LOG(ERROR) << "Removing activities from database failed: "
+                 << statement.GetSQLStatement();
+      break;
+    }
+  }
+
+  CleanStringTables(db);
+
+  if (!transaction.Commit()) {
+    LOG(ERROR) << "Removing activities from database failed";
+  }
+}
+
 void CountingPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
   sql::Connection* db = GetDatabaseConnection();
   if (!db) {
@@ -692,6 +730,10 @@ void CountingPolicy::ReadFilteredData(
                  arg_url,
                  days_ago),
       callback);
+}
+
+void CountingPolicy::RemoveActions(const std::vector<int64>& action_ids) {
+  ScheduleAndForget(this, &CountingPolicy::DoRemoveActions, action_ids);
 }
 
 void CountingPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {

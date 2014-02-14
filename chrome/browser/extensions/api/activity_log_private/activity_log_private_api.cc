@@ -176,6 +176,25 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
   SendResponse(true);
 }
 
+bool ActivityLogPrivateDeleteActivitiesFunction::RunImpl() {
+  scoped_ptr<activity_log_private::DeleteActivities::Params> params(
+      activity_log_private::DeleteActivities::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Put the arguments in the right format.
+  std::vector<int64> action_ids;
+  int64 value;
+  for (size_t i = 0; i < params->activity_ids.size(); i++) {
+    if (base::StringToInt64(params->activity_ids[i], &value))
+      action_ids.push_back(value);
+  }
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
+  DCHECK(activity_log);
+  activity_log->RemoveActions(action_ids);
+  return true;
+}
+
 bool ActivityLogPrivateDeleteDatabaseFunction::RunImpl() {
   ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
   DCHECK(activity_log);

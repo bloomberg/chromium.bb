@@ -745,7 +745,8 @@ enum HistogramValue {
   WEBVIEW_GETZOOM,
   DEVELOPERPRIVATE_REQUESTFILESOURCE,
   DEVELOPERPRIVATE_OPENDEVTOOLS,
-  ENUM_BOUNDARY // Last entry: Add new entries above.
+  ACTIVITYLOGPRIVATE_DELETEACTIVITIES,
+  ENUM_BOUNDARY  // Last entry: Add new entries above.
 };
 
 }  // namespace functions

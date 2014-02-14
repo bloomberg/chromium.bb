@@ -177,6 +177,9 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
       const base::Callback
          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
 
+  // Remove actions (rows) which IDs are in the action_ids array.
+  virtual void RemoveActions(const std::vector<int64>& action_ids) = 0;
+
   // Clean the relevant URL data. The cleaning may need to be different for
   // different policies. If restrict_urls is empty then all URLs are removed.
   virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) = 0;

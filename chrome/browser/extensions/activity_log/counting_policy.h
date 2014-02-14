@@ -45,6 +45,9 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
     retention_time_ = delta;
   }
 
+  // Remove actions (rows) which IDs are specified in the action_ids array.
+  virtual void RemoveActions(const std::vector<int64>& action_ids) OVERRIDE;
+
   // Clean the URL data stored for this policy.
   virtual void RemoveURLs(const std::vector<GURL>&) OVERRIDE;
 
@@ -90,6 +93,10 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago);
+
+  // The implementation of RemoveActions; this must only run on the database
+  // thread.
+  void DoRemoveActions(const std::vector<int64>& action_ids);
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.

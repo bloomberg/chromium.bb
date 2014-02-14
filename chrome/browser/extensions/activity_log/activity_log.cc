@@ -660,6 +660,12 @@ void ActivityLog::GetFilteredActions(
 
 // DELETE ACTIONS. -------------------------------------------------------------
 
+void ActivityLog::RemoveActions(const std::vector<int64>& action_ids) {
+  if (!database_policy_)
+    return;
+  database_policy_->RemoveActions(action_ids);
+}
+
 void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   if (!database_policy_)
     return;

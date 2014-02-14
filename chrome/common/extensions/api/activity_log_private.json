@@ -80,6 +80,19 @@
         ]
       },
       {
+        "name": "deleteActivities",
+        "type": "function",
+        "description": "Deletes activities in the ActivityLog database specified in the array of activity IDs.",
+        "parameters": [
+          {
+            "name": "activityIds",
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Erases only the activities which IDs are listed in the array."
+          }
+        ]
+      },
+      {
         "name": "deleteDatabase",
         "type": "function",
         "description": "Deletes the entire ActivityLog database.",

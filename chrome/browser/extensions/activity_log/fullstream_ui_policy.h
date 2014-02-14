@@ -40,6 +40,9 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   virtual void Close() OVERRIDE;
 
+  // Remove the actions stored for this policy according to the passed IDs.
+  virtual void RemoveActions(const std::vector<int64>& action_ids) OVERRIDE;
+
   // Clean the URL data stored for this policy.
   virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) OVERRIDE;
 
@@ -72,6 +75,10 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   // in FullStreamUIPolicy returns the action unmodified.
   virtual scoped_refptr<Action> ProcessArguments(
       scoped_refptr<Action> action) const;
+
+  // The implementation of RemoveActions; this must only run on the database
+  // thread.
+  void DoRemoveActions(const std::vector<int64>& action_ids);
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.
