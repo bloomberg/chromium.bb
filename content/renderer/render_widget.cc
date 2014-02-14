@@ -606,7 +606,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowHidden, OnCandidateWindowHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
-    IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnPaintAtSize)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
@@ -2168,86 +2167,6 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
 #endif
-}
-
-// This message causes the renderer to render an image of the
-// desired_size, regardless of whether the tab is hidden or not.
-void RenderWidget::OnPaintAtSize(const TransportDIB::Handle& dib_handle,
-                                 int tag,
-                                 const gfx::Size& page_size,
-                                 const gfx::Size& desired_size) {
-  if (!webwidget_ || !TransportDIB::is_valid_handle(dib_handle)) {
-    if (TransportDIB::is_valid_handle(dib_handle)) {
-      // Close our unused handle.
-#if defined(OS_WIN)
-      ::CloseHandle(dib_handle);
-#elif defined(OS_MACOSX)
-      base::SharedMemory::CloseHandle(dib_handle);
-#endif
-    }
-    return;
-  }
-
-  if (page_size.IsEmpty() || desired_size.IsEmpty()) {
-    // If one of these is empty, then we just return the dib we were
-    // given, to avoid leaking it.
-    Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, tag, desired_size));
-    return;
-  }
-
-  // Map the given DIB ID into this process, and unmap it at the end
-  // of this function.
-  scoped_ptr<TransportDIB> paint_at_size_buffer(
-      TransportDIB::CreateWithHandle(dib_handle));
-
-  gfx::Size page_size_in_pixel = gfx::ToFlooredSize(
-      gfx::ScaleSize(page_size, device_scale_factor_));
-  gfx::Size desired_size_in_pixel = gfx::ToFlooredSize(
-      gfx::ScaleSize(desired_size, device_scale_factor_));
-  gfx::Size canvas_size = page_size_in_pixel;
-  float x_scale = static_cast<float>(desired_size_in_pixel.width()) /
-                  static_cast<float>(canvas_size.width());
-  float y_scale = static_cast<float>(desired_size_in_pixel.height()) /
-                  static_cast<float>(canvas_size.height());
-
-  gfx::Rect orig_bounds(canvas_size);
-  canvas_size.set_width(static_cast<int>(canvas_size.width() * x_scale));
-  canvas_size.set_height(static_cast<int>(canvas_size.height() * y_scale));
-  gfx::Rect bounds(canvas_size);
-
-  scoped_ptr<skia::PlatformCanvas> canvas(
-      paint_at_size_buffer->GetPlatformCanvas(canvas_size.width(),
-                                              canvas_size.height()));
-  if (!canvas) {
-    NOTREACHED();
-    return;
-  }
-
-  // Reset bounds to what we actually received, but they should be the
-  // same.
-  DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
-  DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
-  bounds.set_width(canvas->getDevice()->width());
-  bounds.set_height(canvas->getDevice()->height());
-
-  canvas->save();
-  // Add the scale factor to the canvas, so that we'll get the desired size.
-  canvas->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
-
-  // Have to make sure we're laid out at the right size before
-  // rendering.
-  gfx::Size old_size = webwidget_->size();
-  webwidget_->resize(page_size);
-  webwidget_->layout();
-
-  // Paint the entire thing (using original bounds, not scaled bounds).
-  PaintRect(orig_bounds, orig_bounds.origin(), canvas.get());
-  canvas->restore();
-
-  // Return the widget to its previous size.
-  webwidget_->resize(old_size);
-
-  Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, tag, bounds.size()));
 }
 
 void RenderWidget::OnSnapshot(const gfx::Rect& src_subrect) {

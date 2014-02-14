@@ -89,7 +89,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IconManager* icon_manager() OVERRIDE;
   virtual GLStringManager* gl_string_manager() OVERRIDE;
   virtual GpuModeManager* gpu_mode_manager() OVERRIDE;
-  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
@@ -240,10 +239,6 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<printing::PrintJobManager> print_job_manager_;
 
   std::string locale_;
-
-  // This service just sits around and makes snapshots for renderers. It does
-  // nothing in the constructor so we don't have to worry about lazy init.
-  scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
 
   // Download status updates (like a changing application icon on dock/taskbar)
   // are global per-application. DownloadStatusUpdater does no work in the ctor

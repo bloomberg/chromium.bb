@@ -59,7 +59,6 @@
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabpose_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -1739,7 +1738,6 @@ enum {
     // TODO(pinkerton): figure out page-up, http://crbug.com/16305
   } else if (deltaY < -0.5) {
     // TODO(pinkerton): figure out page-down, http://crbug.com/16305
-    chrome::ExecuteCommand(browser_.get(), IDC_TABPOSE);
   }
 
   // Ensure the command is valid first (ExecuteCommand() won't do that) and
@@ -2165,47 +2163,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BOOL)floatingBarHasFocus {
   NSResponder* focused = [[self window] firstResponder];
   return [focused isKindOfClass:[AutocompleteTextFieldEditor class]];
-}
-
-- (void)tabposeWillClose:(NSNotification*)notif {
-  // Re-show the container after Tabpose closes.
-  [[infoBarContainerController_ view] setHidden:NO];
-}
-
-- (void)openTabpose {
-  NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
-  BOOL slomo = (modifierFlags & NSShiftKeyMask) != 0;
-
-  // Cover info bars, inspector window, and detached bookmark bar on NTP.
-  // Do not cover download shelf.
-  NSRect activeArea = [[self tabContentArea] frame];
-  // Take out the anti-spoof height so that Tabpose doesn't draw on top of the
-  // browser chrome.
-  activeArea.size.height +=
-      NSHeight([[infoBarContainerController_ view] frame]) -
-          [infoBarContainerController_ overlappingTipHeight];
-  if ([self isBookmarkBarVisible] && [self placeBookmarkBarBelowInfoBar]) {
-    NSView* bookmarkBarView = [bookmarkBarController_ view];
-    activeArea.size.height += NSHeight([bookmarkBarView frame]);
-  }
-
-  // Hide the infobar container so that the anti-spoof bulge doesn't show when
-  // Tabpose is open.
-  [[infoBarContainerController_ view] setHidden:YES];
-
-  TabposeWindow* window =
-      [TabposeWindow openTabposeFor:[self window]
-                               rect:activeArea
-                              slomo:slomo
-                      tabStripModel:browser_->tab_strip_model()];
-
-  // When the Tabpose window closes, the infobar container needs to be made
-  // visible again.
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(tabposeWillClose:)
-                 name:NSWindowWillCloseNotification
-               object:window];
 }
 
 @end  // @implementation BrowserWindowController(Fullscreen)

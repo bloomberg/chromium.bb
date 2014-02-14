@@ -1609,9 +1609,6 @@ const char kDisableSystemFullscreenForTesting[] =
 const char kDisableCoreAnimationLayerSquashing[] =
     "disable-core-animation-layer-squashing";
 
-// Enables the tabs expose feature ( http://crbug.com/50307 ).
-const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
-
 // Enables a simplified fullscreen UI on Mac.
 const char kEnableSimplifiedFullscreen[]    = "enable-simplified-fullscreen";
 

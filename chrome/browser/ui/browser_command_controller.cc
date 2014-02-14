@@ -290,7 +290,6 @@ bool BrowserCommandController::IsReservedCommandOrKey(
          command_id == IDC_RESTORE_TAB ||
          command_id == IDC_SELECT_NEXT_TAB ||
          command_id == IDC_SELECT_PREVIOUS_TAB ||
-         command_id == IDC_TABPOSE ||
          command_id == IDC_EXIT;
 }
 
@@ -414,9 +413,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       content::RecordAction(
           base::UserMetricsAction("Accel_SelectPreviousTab"));
       SelectPreviousTab(browser_);
-      break;
-    case IDC_TABPOSE:
-      OpenTabpose(browser_);
       break;
     case IDC_MOVE_TAB_NEXT:
       MoveTabNext(browser_);
@@ -1016,7 +1012,6 @@ void BrowserCommandController::InitCommandState() {
       IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
   command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
 #endif
-  command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);

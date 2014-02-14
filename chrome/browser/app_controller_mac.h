@@ -75,9 +75,6 @@ class WorkAreaWatcherObserver;
   // to it.
   IBOutlet NSMenu* helpMenu_;
 
-  // Outlet for the tabpose menu item so we can hide it.
-  IBOutlet NSMenuItem* tabposeMenuItem_;
-
   // Indicates wheter an NSPopover is currently being shown.
   BOOL hasPopover_;
 

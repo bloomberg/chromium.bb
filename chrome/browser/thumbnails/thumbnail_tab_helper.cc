@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnailing_algorithm.h"
@@ -164,9 +163,6 @@ void ThumbnailTabHelper::Observe(int type,
 
 void ThumbnailTabHelper::RenderViewDeleted(
     content::RenderViewHost* render_view_host) {
-  g_browser_process->GetRenderWidgetSnapshotTaker()->CancelSnapshot(
-      render_view_host);
-
   bool registered = registrar_.IsRegistered(
       this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,

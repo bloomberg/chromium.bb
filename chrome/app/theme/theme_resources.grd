@@ -1075,7 +1075,6 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="mac/tab_active_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_BACK" file="back_large.png" />
         <structure type="chrome_scaled_image" name="IDR_SWIPE_FORWARD" file="forward_large.png" />
-        <structure type="chrome_scaled_image" name="IDR_TABPOSE_CLOSE" file="mac/tabpose_close.png" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_CLOSE_1 over it,

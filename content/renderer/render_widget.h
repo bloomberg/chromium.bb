@@ -360,10 +360,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnImeConfirmComposition(const base::string16& text,
                                        const gfx::Range& replacement_range,
                                        bool keep_selection);
-  void OnPaintAtSize(const TransportDIB::Handle& dib_id,
-                     int tag,
-                     const gfx::Size& page_size,
-                     const gfx::Size& desired_size);
   void OnRepaint(gfx::Size size_to_paint);
   void OnSyntheticGestureCompleted();
   void OnSetTextDirection(blink::WebTextDirection direction);

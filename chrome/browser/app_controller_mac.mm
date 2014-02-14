@@ -741,11 +741,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     [self clearStartupUrls];
   }
 
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
-    [tabposeMenuItem_ setHidden:YES];
-  }
-
   PrefService* localState = g_browser_process->local_state();
   if (localState) {
     localPrefRegistrar_.Init(localState);

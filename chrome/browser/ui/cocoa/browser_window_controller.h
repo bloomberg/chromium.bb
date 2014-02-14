@@ -457,9 +457,6 @@ class WebContents;
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;
 
-// Opens the tabpose window.
-- (void)openTabpose;
-
 @end  // @interface BrowserWindowController(Fullscreen)
 
 

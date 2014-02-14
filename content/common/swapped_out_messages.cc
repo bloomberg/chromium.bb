@@ -19,7 +19,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
   switch (msg->type()) {
     // Handled by RenderWidgetHost.
     case InputHostMsg_HandleInputEvent_ACK::ID:
-    case ViewHostMsg_PaintAtSize_ACK::ID:
     case ViewHostMsg_UpdateRect::ID:
     // Allow targeted navigations while swapped out.
     case ViewHostMsg_OpenURL::ID:

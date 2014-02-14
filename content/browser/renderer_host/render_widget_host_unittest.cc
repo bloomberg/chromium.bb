@@ -21,11 +21,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
@@ -205,7 +200,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   // Allow poking at a few private members.
-  using RenderWidgetHostImpl::OnPaintAtSizeAck;
   using RenderWidgetHostImpl::OnUpdateRect;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::last_requested_size_;
@@ -557,41 +551,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unhandled_keyboard_event_called_;
   WebInputEvent::Type unhandled_keyboard_event_type_;
-};
-
-// MockPaintingObserver --------------------------------------------------------
-
-class MockPaintingObserver : public NotificationObserver {
- public:
-  void WidgetDidReceivePaintAtSizeAck(RenderWidgetHostImpl* host,
-                                      int tag,
-                                      const gfx::Size& size) {
-    host_ = reinterpret_cast<MockRenderWidgetHost*>(host);
-    tag_ = tag;
-    size_ = size;
-  }
-
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
-    if (type == NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
-      std::pair<int, gfx::Size>* size_ack_details =
-          Details<std::pair<int, gfx::Size> >(details).ptr();
-      WidgetDidReceivePaintAtSizeAck(
-          RenderWidgetHostImpl::From(Source<RenderWidgetHost>(source).ptr()),
-          size_ack_details->first,
-          size_ack_details->second);
-    }
-  }
-
-  MockRenderWidgetHost* host() const { return host_; }
-  int tag() const { return tag_; }
-  gfx::Size size() const { return size_; }
-
- private:
-  MockRenderWidgetHost* host_;
-  int tag_;
-  gfx::Size size_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -1116,27 +1075,6 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   Tuple1<bool> needs_repaint;
   ViewMsg_WasShown::Read(restored, &needs_repaint);
   EXPECT_TRUE(needs_repaint.a);
-}
-
-TEST_F(RenderWidgetHostTest, PaintAtSize) {
-  const int kPaintAtSizeTag = 42;
-  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), kPaintAtSizeTag,
-                     gfx::Size(40, 60), gfx::Size(20, 30));
-  EXPECT_TRUE(
-      process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
-
-  NotificationRegistrar registrar;
-  MockPaintingObserver observer;
-  registrar.Add(
-      &observer,
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      Source<RenderWidgetHost>(host_.get()));
-
-  host_->OnPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
-  EXPECT_EQ(host_.get(), observer.host());
-  EXPECT_EQ(kPaintAtSizeTag, observer.tag());
-  EXPECT_EQ(20, observer.size().width());
-  EXPECT_EQ(30, observer.size().height());
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {

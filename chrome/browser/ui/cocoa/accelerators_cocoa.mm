@@ -95,7 +95,6 @@ const struct AcceleratorMapping {
   {IDC_SELECT_NEXT_TAB, NSCommandKeyMask | NSAlternateKeyMask, ui::VKEY_RIGHT},
   {IDC_SELECT_PREVIOUS_TAB, NSCommandKeyMask | NSAlternateKeyMask,
    ui::VKEY_LEFT},
-  {IDC_TABPOSE, NSCommandKeyMask | NSControlKeyMask, ui::VKEY_T},
   {IDC_HELP_PAGE_VIA_MENU, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_OEM_2},
 };
 

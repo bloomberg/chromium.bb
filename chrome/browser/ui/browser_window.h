@@ -318,9 +318,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void Paste() = 0;
 
 #if defined(OS_MACOSX)
-  // Opens the tabpose view.
-  virtual void OpenTabpose() = 0;
-
   // Enters Mac specific fullscreen mode with chrome displayed (e.g. omnibox)
   // on OSX 10.7+, a.k.a. Lion Fullscreen mode.
   // Invalid to call on OSX earlier than 10.7.

@@ -81,7 +81,6 @@ TabStripModelDelegate::RestoreTabType GetRestoreTabType(
     const Browser* browser);
 void SelectNextTab(Browser* browser);
 void SelectPreviousTab(Browser* browser);
-void OpenTabpose(Browser* browser);  // Mac-only
 void MoveTabNext(Browser* browser);
 void MoveTabPrevious(Browser* browser);
 void SelectNumberedTab(Browser* browser, int index);

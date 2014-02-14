@@ -5549,12 +5549,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE" desc="The link for enabling a labs experiment.">
         Enable
       </message>
-      <message name="IDS_FLAGS_TABPOSE_NAME" desc="Name of the 'Tab Overview' lab.">
-        Tab Overview
-      </message>
-      <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
-        Swipe down with three fingers on your trackpad while holding the option key to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
-      </message>
       <message name="IDS_FLAGS_STACKED_TAB_STRIP_NAME" desc="Name of the 'Stacked Tabs' lab.">
         Stacked Tabs
       </message>
@@ -13249,9 +13243,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_PREV_TAB_MAC" desc="The Mac menu item for previous tab in the window menu.">
           Select Previous Tab
-        </message>
-        <message name="IDS_SHOW_TABPOSE_MAC" desc="The Mac menu item for showing a tab overview. This item is in the window menu.">
-          Show Tab Overview...
         </message>
         <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
           Downloads

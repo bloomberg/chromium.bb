@@ -261,12 +261,6 @@ class BrowserAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
 
-// Takes a snapshot of the given render widget, rendered at |page_size|. The
-// snapshot is set to |bitmap|. Returns true on success.
-bool TakeRenderWidgetSnapshot(content::RenderWidgetHost* rwh,
-                              const gfx::Size& page_size,
-                              SkBitmap* bitmap) WARN_UNUSED_RESULT;
-
 // Takes a snapshot of the entire page, according to the width and height
 // properties of the DOM's document. Returns true on success. DOMAutomation
 // must be enabled.

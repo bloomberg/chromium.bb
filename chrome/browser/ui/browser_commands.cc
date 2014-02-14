@@ -555,20 +555,6 @@ void SelectPreviousTab(Browser* browser) {
   browser->tab_strip_model()->SelectPreviousTab();
 }
 
-void OpenTabpose(Browser* browser) {
-#if defined(OS_MACOSX)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExposeForTabs)) {
-    return;
-  }
-
-  content::RecordAction(UserMetricsAction("OpenTabpose"));
-  browser->window()->OpenTabpose();
-#else
-  NOTREACHED();
-#endif
-}
-
 void MoveTabNext(Browser* browser) {
   content::RecordAction(UserMetricsAction("MoveTabNext"));
   browser->tab_strip_model()->MoveTabNext();

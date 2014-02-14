@@ -600,10 +600,6 @@ void BrowserWindowCocoa::Paste() {
   [NSApp sendAction:@selector(paste:) to:nil from:nil];
 }
 
-void BrowserWindowCocoa::OpenTabpose() {
-  [controller_ openTabpose];
-}
-
 void BrowserWindowCocoa::EnterFullscreenWithChrome() {
   // This method cannot be called if simplified fullscreen is enabled.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();

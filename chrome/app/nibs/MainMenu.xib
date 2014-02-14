@@ -1128,16 +1128,6 @@
 									<reference key="NSMixedImage" ref="549394948"/>
 									<int key="NSTag">34017</int>
 								</object>
-								<object class="NSMenuItem" id="648879968">
-									<reference key="NSMenu" ref="835318025"/>
-									<string key="NSTitle">^IDS_SHOW_TABPOSE_MAC</string>
-									<string key="NSKeyEquiv">t</string>
-									<int key="NSKeyEquivModMask">1310720</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="353210768"/>
-									<reference key="NSMixedImage" ref="549394948"/>
-									<int key="NSTag">34036</int>
-								</object>
 								<object class="NSMenuItem" id="710833675">
 									<reference key="NSMenu" ref="835318025"/>
 									<bool key="NSIsDisabled">YES</bool>
@@ -1781,14 +1771,6 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">commandDispatch:</string>
 						<reference key="source" ref="1014"/>
-						<reference key="destination" ref="648879968"/>
-					</object>
-					<int key="connectionID">684</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1014"/>
 						<reference key="destination" ref="210963491"/>
 					</object>
 					<int key="connectionID">693</int>
@@ -1872,14 +1854,6 @@
 						<reference key="destination" ref="374024848"/>
 					</object>
 					<int key="connectionID">667</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">tabposeMenuItem_</string>
-						<reference key="source" ref="168151378"/>
-						<reference key="destination" ref="648879968"/>
-					</object>
-					<int key="connectionID">685</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -2305,7 +2279,6 @@
 							<reference ref="238061183"/>
 							<reference ref="710833675"/>
 							<reference ref="1008975930"/>
-							<reference ref="648879968"/>
 							<reference ref="693413486"/>
 						</object>
 						<reference key="parent" ref="713487014"/>
@@ -2732,11 +2705,6 @@
 						<reference key="parent" ref="466310130"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">682</int>
-						<reference key="object" ref="648879968"/>
-						<reference key="parent" ref="835318025"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">636</int>
 						<reference key="object" ref="693413486"/>
 						<reference key="parent" ref="835318025"/>
@@ -2922,7 +2890,6 @@
 					<string>672.IBPluginDependency</string>
 					<string>674.IBPluginDependency</string>
 					<string>676.IBPluginDependency</string>
-					<string>682.IBPluginDependency</string>
 					<string>686.IBPluginDependency</string>
 					<string>687.IBPluginDependency</string>
 					<string>689.IBPluginDependency</string>
@@ -3080,7 +3047,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -3149,14 +3115,12 @@
 							<string>closeTabMenuItem_</string>
 							<string>closeWindowMenuItem_</string>
 							<string>helpMenu_</string>
-							<string>tabposeMenuItem_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>NSMenu</string>
-							<string>NSMenuItem</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -3166,7 +3130,6 @@
 							<string>closeTabMenuItem_</string>
 							<string>closeWindowMenuItem_</string>
 							<string>helpMenu_</string>
-							<string>tabposeMenuItem_</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3181,10 +3144,6 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">helpMenu_</string>
 								<string key="candidateClassName">NSMenu</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">tabposeMenuItem_</string>
-								<string key="candidateClassName">NSMenuItem</string>
 							</object>
 						</object>
 					</object>

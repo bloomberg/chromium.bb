@@ -24,7 +24,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -67,9 +66,6 @@ TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       module_ref_count_(0),
       app_locale_("en"),
-#if !defined(OS_IOS)
-      render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
-#endif
       local_state_(NULL),
       io_thread_(NULL),
       system_request_context_(NULL),
@@ -174,16 +170,6 @@ GLStringManager* TestingBrowserProcess::gl_string_manager() {
 
 GpuModeManager* TestingBrowserProcess::gpu_mode_manager() {
   return NULL;
-}
-
-RenderWidgetSnapshotTaker*
-TestingBrowserProcess::GetRenderWidgetSnapshotTaker() {
-#if defined(OS_IOS)
-  NOTREACHED();
-  return NULL;
-#else
-  return render_widget_snapshot_taker_.get();
-#endif
 }
 
 BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {

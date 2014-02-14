@@ -427,18 +427,6 @@ const Experiment::Choice kNotificationCenterTrayBehaviorChoices[] = {
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
   {
-    "expose-for-tabs",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_TABPOSE_NAME,
-    IDS_FLAGS_TABPOSE_DESCRIPTION,
-    kOsMac,
-#if defined(OS_MACOSX)
-    // The switch exists only on OS X.
-    SINGLE_VALUE_TYPE(switches::kEnableExposeForTabs)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,

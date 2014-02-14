@@ -36,7 +36,6 @@ class PrefRegistrySimple;
 class PrefService;
 class Profile;
 class ProfileManager;
-class RenderWidgetSnapshotTaker;
 class SafeBrowsingService;
 class StatusTray;
 class StorageMonitor;
@@ -144,8 +143,6 @@ class BrowserProcess {
   virtual GLStringManager* gl_string_manager() = 0;
 
   virtual GpuModeManager* gpu_mode_manager() = 0;
-
-  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() = 0;
 
   virtual AutomationProviderList* GetAutomationProviderList() = 0;
 

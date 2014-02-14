@@ -753,20 +753,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
 // exit if no other views are using it.
 IPC_MESSAGE_ROUTED0(ViewMsg_WasSwappedOut)
 
-// Sent to render the view into the supplied transport DIB, resize
-// the web widget to match the |page_size|, scale it by the
-// appropriate scale to make it fit the |desired_size|, and return
-// it.  In response to this message, the host generates a
-// ViewHostMsg_PaintAtSize_ACK message.  Note that the DIB *must* be
-// the right size to receive an RGBA image at the |desired_size|.
-// |tag| is sent along with ViewHostMsg_PaintAtSize_ACK unmodified to
-// identify the PaintAtSize message the ACK belongs to.
-IPC_MESSAGE_ROUTED4(ViewMsg_PaintAtSize,
-                    TransportDIB::Handle /* dib_handle */,
-                    int /* tag */,
-                    gfx::Size /* page_size */,
-                    gfx::Size /* desired_size */)
-
 // Tells the render view that a ViewHostMsg_UpdateRect message was processed.
 // This signals the render view that it can send another UpdateRect message.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
@@ -1464,13 +1450,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
                     std::string  /* security_origin */,
                     GURL         /* target URL */)
-
-// Tells the render view that a ViewHostMsg_PaintAtSize message was
-// processed, and the DIB is ready for use. |tag| has the same value that
-// the tag sent along with ViewMsg_PaintAtSize.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_PaintAtSize_ACK,
-                    int /* tag */,
-                    gfx::Size /* size */)
 
 // Sent to update part of the view.  In response to this message, the host
 // generates a ViewMsg_UpdateRect_ACK message.

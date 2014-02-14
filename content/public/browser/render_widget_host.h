@@ -240,20 +240,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
 
-  // This tells the renderer to paint into a bitmap and return it,
-  // regardless of whether the tab is hidden or not.  It resizes the
-  // web widget to match the |page_size| and then returns the bitmap
-  // scaled so it matches the |desired_size|, so that the scaling
-  // happens on the rendering thread.  When the bitmap is ready, the
-  // renderer sends a PaintAtSizeACK to this host, and a
-  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification is issued.
-  // Note that this bypasses most of the update logic that is normally invoked,
-  // and doesn't put the results into the backing store.
-  virtual void PaintAtSize(TransportDIB::Handle dib_handle,
-                           int tag,
-                           const gfx::Size& page_size,
-                           const gfx::Size& desired_size) = 0;
-
   // Makes an IPC call to tell webkit to replace the currently selected word
   // or a word around the cursor.
   virtual void Replace(const base::string16& word) = 0;

@@ -1039,8 +1039,6 @@
         'browser/ui/cocoa/tab_modal_confirm_dialog_mac.mm',
         'browser/ui/cocoa/table_row_nsimage_cache.h',
         'browser/ui/cocoa/table_row_nsimage_cache.mm',
-        'browser/ui/cocoa/tabpose_window.h',
-        'browser/ui/cocoa/tabpose_window.mm',
         'browser/ui/cocoa/tabs/dock_info_mac.cc',
         'browser/ui/cocoa/tabs/media_indicator_view.h',
         'browser/ui/cocoa/tabs/media_indicator_view.mm',

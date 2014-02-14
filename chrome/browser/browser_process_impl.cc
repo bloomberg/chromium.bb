@@ -65,7 +65,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -162,7 +161,6 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_safe_browsing_service_(false),
       module_ref_count_(0),
       did_start_(false),
-      render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner) {
   g_browser_process = this;
@@ -549,10 +547,6 @@ GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
   if (!gpu_mode_manager_.get())
     gpu_mode_manager_.reset(new GpuModeManager());
   return gpu_mode_manager_.get();
-}
-
-RenderWidgetSnapshotTaker* BrowserProcessImpl::GetRenderWidgetSnapshotTaker() {
-  return render_widget_snapshot_taker_.get();
 }
 
 AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {

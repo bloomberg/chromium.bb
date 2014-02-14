@@ -74,13 +74,6 @@ class SURFACE_EXPORT TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return NULL; }
-
-  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
-  // ACTUALLY USED AS A REAL HANDLE.
-  static Handle GetFakeHandleForTest() {
-    static int fake_handle = 10;
-    return reinterpret_cast<Handle>(fake_handle++);
-  }
 #elif defined(TOOLKIT_GTK)
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   struct Id {
@@ -102,13 +95,6 @@ class SURFACE_EXPORT TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return -1; }
-
-  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
-  // ACTUALLY USED AS A REAL HANDLE.
-  static Handle GetFakeHandleForTest() {
-    static int fake_handle = 10;
-    return fake_handle++;
-  }
 #else  // OS_POSIX
   typedef base::SharedMemoryHandle Handle;
   // On POSIX, the inode number of the backing file is used as an id.
@@ -121,13 +107,6 @@ class SURFACE_EXPORT TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return Handle(); }
-
-  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
-  // ACTUALLY USED AS A REAL HANDLE.
-  static Handle GetFakeHandleForTest() {
-    static int fake_handle = 10;
-    return Handle(fake_handle++, false);
-  }
 #endif
 
   // Create a new TransportDIB, returning NULL on failure.

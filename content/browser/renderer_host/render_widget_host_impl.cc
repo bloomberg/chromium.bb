@@ -481,7 +481,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnPaintAtSizeAck)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                         OnCompositorSurfaceBuffersSwapped)
@@ -775,17 +774,6 @@ bool RenderWidgetHostImpl::CopyFromBackingStoreToCGContext(
   return true;
 }
 #endif
-
-void RenderWidgetHostImpl::PaintAtSize(TransportDIB::Handle dib_handle,
-                                       int tag,
-                                       const gfx::Size& page_size,
-                                       const gfx::Size& desired_size) {
-  // Ask the renderer to create a bitmap regardless of whether it's
-  // hidden, being resized, redrawn, etc.  It resizes the web widget
-  // to the page_size and then scales it to the desired_size.
-  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle, tag,
-                               page_size, desired_size));
-}
 
 bool RenderWidgetHostImpl::TryGetBackingStore(const gfx::Size& desired_size,
                                               BackingStore** backing_store) {
@@ -1484,14 +1472,6 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
     view_->SetBounds(pos);
     Send(new ViewMsg_Move_ACK(routing_id_));
   }
-}
-
-void RenderWidgetHostImpl::OnPaintAtSizeAck(int tag, const gfx::Size& size) {
-  std::pair<int, gfx::Size> details = std::make_pair(tag, size);
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      Source<RenderWidgetHost>(this),
-      Details<std::pair<int, gfx::Size> >(&details));
 }
 
 #if defined(OS_MACOSX)

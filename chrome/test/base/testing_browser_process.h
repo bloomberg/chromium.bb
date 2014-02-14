@@ -67,7 +67,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual IconManager* icon_manager() OVERRIDE;
   virtual GLStringManager* gl_string_manager() OVERRIDE;
   virtual GpuModeManager* gpu_mode_manager() OVERRIDE;
-  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() OVERRIDE;
   virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
   virtual void set_background_mode_manager_for_test(
       scoped_ptr<BackgroundModeManager> manager) OVERRIDE;
@@ -160,7 +159,6 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
-  scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
 #endif  // !defined(OS_IOS)

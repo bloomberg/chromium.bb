@@ -2536,8 +2536,6 @@
         'browser/thumbnails/content_based_thumbnailing_algorithm.h',
         'browser/thumbnails/simple_thumbnail_crop.cc',
         'browser/thumbnails/simple_thumbnail_crop.h',
-        'browser/thumbnails/render_widget_snapshot_taker.cc',
-        'browser/thumbnails/render_widget_snapshot_taker.h',
         'browser/thumbnails/thumbnail_service.h',
         'browser/thumbnails/thumbnail_service_factory.cc',
         'browser/thumbnails/thumbnail_service_factory.h',
