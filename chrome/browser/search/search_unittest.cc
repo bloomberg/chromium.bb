@@ -800,6 +800,56 @@ TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
             GetSearchResultPrefetchBaseURL(profile()));
 }
 
+struct ExtractSearchTermsTestCase {
+  const char* url;
+  const char* expected_result;
+  const char* comment;
+};
+
+TEST_F(SearchTest, ExtractSearchTermsFromURL) {
+  const ExtractSearchTermsTestCase kTestCases[] = {
+    {chrome::kChromeSearchLocalNtpUrl,           "",    "NTP url"},
+    {"https://foo.com/instant?strk",             "",    "Invalid search url"},
+    {"https://foo.com/instant#strk",             "",    "Invalid search url"},
+    {"https://foo.com/alt#quux=foo",             "foo", "Valid search url"},
+    {"https://foo.com/alt#quux=foo&strk",        "foo", "Valid search url"}
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const ExtractSearchTermsTestCase& test = kTestCases[i];
+    EXPECT_EQ(
+        test.expected_result,
+        UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(),
+                                                       GURL(test.url))))
+            << test.url << " " << test.comment;
+  }
+}
+
+struct QueryExtractionAllowedTestCase {
+  const char* url;
+  bool expected_result;
+  const char* comment;
+};
+
+TEST_F(SearchTest, IsQueryExtractionAllowedForURL) {
+  const QueryExtractionAllowedTestCase kTestCases[] = {
+    {"http://foo.com/instant?strk",       false, "HTTP URL"},
+    {"https://foo.com/instant?strk",      true,  "Valid URL"},
+    {"https://foo.com/instant?",          false,
+     "No search terms replacement key"},
+    {"https://foo.com/alt#quux=foo",      false,
+     "No search terms replacement key"},
+    {"https://foo.com/alt#quux=foo&strk", true,  "Valid search url"}
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const QueryExtractionAllowedTestCase& test = kTestCases[i];
+    EXPECT_EQ(test.expected_result,
+              chrome::IsQueryExtractionAllowedForURL(profile(), GURL(test.url)))
+        << test.url << " " << test.comment;
+  }
+}
+
 class SearchURLTest : public SearchTest {
  protected:
   virtual void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url)

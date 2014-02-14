@@ -89,12 +89,16 @@ std::string InstantExtendedEnabledParam(bool for_search);
 // Returns whether query extraction is enabled.
 bool IsQueryExtractionEnabled();
 
-// Extracts and returns search terms from |url|. Returns empty string if the URL
-// is not secure or doesn't have a search term replacement key.  Does not
-// consider IsQueryExtractionEnabled() and Instant support state of the page and
-// does not check for a privileged process, so most callers should use
+// Extracts and returns search terms from |url|. Does not consider
+// IsQueryExtractionEnabled() and Instant support state of the page and does
+// not check for a privileged process, so most callers should use
 // GetSearchTerms() below instead.
-base::string16 GetSearchTermsFromURL(Profile* profile, const GURL& url);
+base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url);
+
+// Returns true if it is okay to extract search terms from |url|. |url| must
+// have a secure scheme and must contain the search terms replacement key for
+// the default search provider.
+bool IsQueryExtractionAllowedForURL(Profile* profile, const GURL& url);
 
 // Returns the search terms attached to a specific NavigationEntry, or empty
 // string otherwise. Does not consider IsQueryExtractionEnabled() and does not

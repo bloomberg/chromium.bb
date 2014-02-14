@@ -73,10 +73,8 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
   // support for the new disposition.
   DCHECK(disposition == CURRENT_TAB) << disposition;
 
-  // If we will not be replacing search terms from this URL, don't send to
-  // InstantController.
   const base::string16& search_terms =
-      chrome::GetSearchTermsFromURL(browser_->profile(), url);
+      chrome::ExtractSearchTermsFromURL(profile(), url);
   if (search_terms.empty())
     return false;
 
@@ -92,6 +90,11 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
       prerenderer->Cancel();
     }
   }
+
+  // If we will not be replacing search terms from this URL, don't send to
+  // InstantController.
+  if (!chrome::IsQueryExtractionAllowedForURL(profile(), url))
+    return false;
 
   return instant_.SubmitQuery(search_terms);
 }

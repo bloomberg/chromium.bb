@@ -34,30 +34,20 @@ InstantUnitTestBase::~InstantUnitTestBase() {
 }
 
 void InstantUnitTestBase::SetUp() {
-  SetUpHelper();
-}
-
-void InstantUnitTestBase::SetUpHelper() {
   chrome::EnableQueryExtractionForTesting();
-  BrowserWithTestWindowTest::SetUp();
-
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &TemplateURLServiceFactory::BuildInstanceFor);
-  template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
-
-  UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
-  TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
-  pref_service->SetUserPref(prefs::kLastPromptedGoogleURL,
-                            new base::StringValue("https://www.google.com/"));
-  SetDefaultSearchProvider("{google:baseURL}");
-  instant_service_ = InstantServiceFactory::GetForProfile(profile());
+  SetUpHelper();
 }
 
 void InstantUnitTestBase::TearDown() {
   UIThreadSearchTermsData::SetGoogleBaseURL("");
   BrowserWithTestWindowTest::TearDown();
 }
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
+  SetUpHelper();
+}
+#endif
 
 void InstantUnitTestBase::SetDefaultSearchProvider(
     const std::string& base_url) {
@@ -92,9 +82,23 @@ void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
       content::Details<GoogleURLTracker::UpdatedDetails>(&details));
 }
 
-
 bool InstantUnitTestBase::IsInstantServiceObserver(
     InstantServiceObserver* observer) {
   return instant_service_->observers_.HasObserver(observer);
 }
 
+void InstantUnitTestBase::SetUpHelper() {
+  BrowserWithTestWindowTest::SetUp();
+
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &TemplateURLServiceFactory::BuildInstanceFor);
+  template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
+
+  UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
+  TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
+  pref_service->SetUserPref(prefs::kLastPromptedGoogleURL,
+                            new base::StringValue("https://www.google.com/"));
+  SetDefaultSearchProvider("{google:baseURL}");
+  instant_service_ = InstantServiceFactory::GetForProfile(profile());
+}

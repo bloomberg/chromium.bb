@@ -203,13 +203,9 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
   return instant_service->IsInstantProcess(process_host->GetID());
 }
 
-// Returns true if |url| passes some basic checks that must succeed for it to be
-// usable as an instant URL:
-// (1) It contains the search terms replacement key of |template_url|, which is
-//     expected to be the TemplateURL* for the default search provider.
-// (2) Either it has a secure scheme, or else the user has manually specified a
-//     --google-base-url and it uses that base URL.  (This allows testers to use
-//     --google-base-url to point at non-HTTPS servers, which eases testing.)
+// |url| should either have a secure scheme or have a non-HTTPS base URL that
+// the user specified using --google-base-url. (This allows testers to use
+// --google-base-url to point at non-HTTPS servers, which eases testing.)
 bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
   return template_url->HasSearchTermsReplacementKey(url) &&
       (url.SchemeIsSecure() ||
@@ -273,8 +269,11 @@ base::string16 GetSearchTermsImpl(const content::WebContents* contents,
   if (!search_terms.empty())
     return search_terms;
 
+  if (!IsQueryExtractionAllowedForURL(profile, entry->GetVirtualURL()))
+    return base::string16();
+
   // Otherwise, extract from the URL.
-  return GetSearchTermsFromURL(profile, entry->GetVirtualURL());
+  return ExtractSearchTermsFromURL(profile, entry->GetVirtualURL());
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
@@ -388,7 +387,7 @@ bool IsQueryExtractionEnabled() {
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
-base::string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
+base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
   if (url.is_valid() && url == GetSearchResultPrefetchBaseURL(profile)) {
     // InstantSearchPrerenderer has the search query for the Instant search base
     // page.
@@ -398,11 +397,16 @@ base::string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
     return prerenderer->get_last_query();
   }
 
-  base::string16 search_terms;
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (template_url && IsSuitableURLForInstant(url, template_url))
+  base::string16 search_terms;
+  if (template_url)
     template_url->ExtractSearchTermsFromURL(url, &search_terms);
   return search_terms;
+}
+
+bool IsQueryExtractionAllowedForURL(Profile* profile, const GURL& url) {
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  return template_url && IsSuitableURLForInstant(url, template_url);
 }
 
 base::string16 GetSearchTermsFromNavigationEntry(
@@ -454,9 +458,9 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return url == GURL(chrome::kChromeUINewTabURL);
 
+  const base::string16 search_terms = ExtractSearchTermsFromURL(profile, url);
   return profile &&
-      ((IsInstantURL(url, profile) &&
-        GetSearchTermsFromURL(profile, url).empty()) ||
+      ((IsInstantURL(url, profile) && search_terms.empty()) ||
        url == GURL(chrome::kChromeSearchLocalNtpUrl));
 }
 

@@ -25,7 +25,10 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  virtual void SetUpHelper();
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // Query extraction is always enabled on Android and iOS.
+  void SetUpWithoutQueryExtraction();
+#endif
 
   // Adds and sets the default search provider using the base_url.
   // The base_url should have the http[s]:// prefix and a trailing / after the
@@ -44,6 +47,9 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
+
+ private:
+  void SetUpHelper();
 };
 
 #endif  // CHROME_BROWSER_SEARCH_INSTANT_UNITTEST_BASE_H_

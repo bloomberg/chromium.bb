@@ -238,14 +238,14 @@ TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {
   EXPECT_EQ(GURL("https://www.google.com/instant?ion=1&foo=foo#foo=foo&strk"),
             url);
   EXPECT_EQ(UTF16ToASCII(prerenderer->get_last_query()),
-            UTF16ToASCII(chrome::GetSearchTermsFromURL(profile(), url)));
+            UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(), url)));
 
   // Assume the prerendered page prefetched search results for the query
   // "flowers".
   SetLastQuery(ASCIIToUTF16("flowers"));
   EXPECT_EQ("flowers", UTF16ToASCII(prerenderer->get_last_query()));
   EXPECT_EQ(UTF16ToASCII(prerenderer->get_last_query()),
-            UTF16ToASCII(chrome::GetSearchTermsFromURL(profile(), url)));
+            UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(), url)));
 }
 
 TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
@@ -336,8 +336,8 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   // used only when the underlying page doesn't support Instant.
   NavigateAndCommitActiveTab(GURL("https://www.google.com/alt#quux=foo&strk"));
   active_tab = GetActiveWebContents();
-  EXPECT_FALSE(chrome::GetSearchTermsFromURL(profile(), active_tab->GetURL())
-      .empty());
+  EXPECT_FALSE(chrome::ExtractSearchTermsFromURL(profile(),
+                                                 active_tab->GetURL()).empty());
   EXPECT_FALSE(chrome::ShouldPrefetchSearchResultsOnSRP());
   EXPECT_FALSE(prerenderer->IsAllowed(search_type_match, active_tab));
 }
@@ -448,3 +448,31 @@ TEST_F(ReuseInstantSearchBasePageTest,
   EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
                                            ASCIIToUTF16("joy")));
 }
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+class TestUsePrerenderPage : public InstantSearchPrerendererTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    // Disable query extraction flag in field trials.
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "EmbeddedSearch",
+        "Group1 strk:20 query_extraction:0 prefetch_results:1"));
+    InstantUnitTestBase::SetUpWithoutQueryExtraction();
+  }
+};
+
+TEST_F(TestUsePrerenderPage, ExtractSearchTermsAndUsePrerenderPage) {
+  PrerenderSearchQuery(ASCIIToUTF16("foo"));
+
+  // Open a search results page. Query extraction flag is disabled in field
+  // trials. Search results page URL does not contain search terms replacement
+  // key. Make sure UsePrerenderedPage() extracts the search terms from the URL
+  // and uses the prerendered page contents.
+  GURL url("https://www.google.com/alt#quux=foo");
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
+                                            content::PAGE_TRANSITION_TYPED,
+                                            false));
+  EXPECT_EQ(GetPrerenderURL(), GetActiveWebContents()->GetURL());
+  EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
+}
+#endif

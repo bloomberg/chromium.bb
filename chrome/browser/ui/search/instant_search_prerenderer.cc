@@ -123,7 +123,8 @@ bool InstantSearchPrerenderer::CanCommitQuery(
 bool InstantSearchPrerenderer::UsePrerenderedPage(
     const GURL& url,
     chrome::NavigateParams* params) {
-  base::string16 search_terms = chrome::GetSearchTermsFromURL(profile_, url);
+  base::string16 search_terms =
+      chrome::ExtractSearchTermsFromURL(profile_, url);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (search_terms.empty() || !params->target_contents ||
