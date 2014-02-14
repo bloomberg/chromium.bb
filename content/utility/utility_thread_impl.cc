@@ -118,7 +118,8 @@ void UtilityThreadImpl::OnBatchModeStarted() {
 }
 
 void UtilityThreadImpl::OnBatchModeFinished() {
-  ChildProcess::current()->ReleaseProcess();
+  batch_mode_ = false;
+  ReleaseProcessIfNeeded();
 }
 
 #if defined(OS_POSIX)
