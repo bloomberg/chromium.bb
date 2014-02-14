@@ -283,3 +283,22 @@ TEST_F(PermissionBubbleManagerTest, TestAddDuplicateRequest) {
   EXPECT_EQ(&request1_, view_.permission_requests_[0]);
   EXPECT_EQ(&request2_, view_.permission_requests_[1]);
 }
+
+TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  EXPECT_TRUE(view_.shown_);
+
+  Accept();
+  EXPECT_TRUE(request1_.granted_);
+
+  EXPECT_FALSE(view_.shown_);
+
+  manager_->AddRequest(&request2_);
+  WaitForCoalescing();
+  EXPECT_TRUE(view_.shown_);
+  Accept();
+  EXPECT_FALSE(view_.shown_);
+  EXPECT_TRUE(request2_.granted_);
+}
