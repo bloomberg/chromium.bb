@@ -203,6 +203,15 @@ other types of suffix sets.
   <summary>Interactions with the App Launcher promo dialog.</summary>
 </histogram>
 
+<histogram name="Apps.AppListHowEnabled" enum="AppListEnableSource">
+  <summary>
+    The trigger that caused the app list to be enabled. Recorded when the user
+    first shows the app list. If not shown after one hour, will be recorded
+    then. If Chrome was not running at the one-hour mark, will be recorded
+    during the next Chrome startup.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListSearchCommenced" units="searches">
   <summary>
     The number of searches that are started in the app list. This is gathered
@@ -214,6 +223,16 @@ other types of suffix sets.
   <summary>
     The type of app list search result that was opened by the user. This is
     gathered per click of a search result.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppListTimeToDiscover" units="milliseconds">
+  <summary>
+    Time between enabling the app list, and a user explicitly choosing to show
+    it. If the app list is not shown after one hour, an entry in the last bucket
+    is recorded. If the user installs a second packaged app within one hour, or
+    if the app list was not enabled by installing a packaged app from the Web
+    Store, no time value is recorded - only Apps.AppListHowEnabled.
   </summary>
 </histogram>
 
@@ -22741,6 +22760,15 @@ other types of suffix sets.
   <int value="1" label="Shown"/>
   <int value="2" label="Dismissed"/>
   <int value="3" label="Learn more"/>
+</enum>
+
+<enum name="AppListEnableSource" type="int">
+  <int value="0" label="Not enabled (should never be recorded)"/>
+  <int value="1" label="Packaged app installed from Web Store"/>
+  <int value="2" label="Clicked app launcher link from the Web Store"/>
+  <int value="3" label="Command line flag"/>
+  <int value="4" label="Chrome reinstalled over old, enabled profile"/>
+  <int value="5" label="Second packaged app installed without showing"/>
 </enum>
 
 <enum name="AppListSearchResult" type="int">
