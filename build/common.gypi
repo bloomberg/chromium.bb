@@ -1332,8 +1332,10 @@
             # can use breakpad for these builds.
             'release_unwind_tables%': 0,
           }],
-          # TODO(jungshik): Turn this on on Android and Chrome OS
-          ['OS!="android" and chromeos==0', {
+          # TODO(jungshik): Turn this on on Android.
+          # For ChromeOS, this should be turned on in chromeos-chrome.ebuild
+          # file as well by adding icu_use_data_file_flag=1 to BUILD_DEFINES.
+          ['OS!="android"', {
             'icu_use_data_file_flag%': 1,
           }],
         ],
