@@ -26,14 +26,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A class to start/stop the Apache HTTP server used by layout tests."""
-
+"""Start and stop the Apache HTTP server as it is used by the layout tests."""
 
 import logging
 import os
-import re
 import socket
-import sys
 
 from webkitpy.layout_tests.servers import server_base
 
@@ -43,43 +40,46 @@ _log = logging.getLogger(__name__)
 
 class ApacheHTTP(server_base.ServerBase):
     def __init__(self, port_obj, output_dir, additional_dirs=None, number_of_servers=None):
-        """Args:
-          port_obj: handle to the platform-specific routines
-          output_dir: the absolute path to the layout test result directory
-        """
         super(ApacheHTTP, self).__init__(port_obj, output_dir)
-        self._number_of_servers = number_of_servers
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
         self._mappings = [{'port': 8000},
                           {'port': 8080},
                           {'port': 8443, 'sslcert': True}]
+        self._number_of_servers = number_of_servers
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
 
+        executable = self._port_obj.path_to_apache()
+        server_root = self._filesystem.dirname(self._filesystem.dirname(executable))
+
         test_dir = self._port_obj.layout_tests_dir()
+        document_root = self._filesystem.join(test_dir, "http", "tests")
         js_test_resources_dir = self._filesystem.join(test_dir, "resources")
         media_resources_dir = self._filesystem.join(test_dir, "media")
         mime_types_path = self._filesystem.join(test_dir, "http", "conf", "mime.types")
         cert_file = self._filesystem.join(test_dir, "http", "conf", "webkit-httpd.pem")
+
         access_log = self._filesystem.join(output_dir, "access_log.txt")
         error_log = self._filesystem.join(output_dir, "error_log.txt")
-        document_root = self._filesystem.join(test_dir, "http", "tests")
-
-        executable = self._port_obj.path_to_apache()
 
         start_cmd = [executable,
-            '-f', "\"%s\"" % self._port_obj.path_to_apache_config_file(),
-            '-C', "\'DocumentRoot \"%s\"\'" % document_root,
-            '-c', "\'Alias /js-test-resources \"%s\"'" % js_test_resources_dir,
-            '-c', "\'Alias /media-resources \"%s\"'" % media_resources_dir,
-            '-c', "\'TypesConfig \"%s\"\'" % mime_types_path,
-            '-c', "\'CustomLog \"%s\" common\'" % access_log,
-            '-c', "\'ErrorLog \"%s\"\'" % error_log,
-            '-C', "\'User \"%s\"\'" % os.environ.get("USERNAME", os.environ.get("USER", "")),
-            '-c', "\'PidFile %s'" % self._pid_file,
-            '-k', "start"]
+            '-f', '%s' % self._port_obj.path_to_apache_config_file(),
+            '-C', 'ServerRoot "%s"' % server_root,
+            '-C', 'DocumentRoot "%s"' % document_root,
+            '-c', 'Alias /js-test-resources "%s"' % js_test_resources_dir,
+            '-c', 'Alias /media-resources "%s"' % media_resources_dir,
+            '-c', 'TypesConfig "%s"' % mime_types_path,
+            '-c', 'CustomLog "%s" common' % access_log,
+            '-c', 'ErrorLog "%s"' % error_log,
+            '-C', 'User "%s"' % os.environ.get("USERNAME", os.environ.get("USER", "")),
+            '-c', 'PidFile %s' % self._pid_file,
+            '-c', 'SSLCertificateFile "%s"' % cert_file,
+            '-c', 'StartServers %d' % number_of_servers,
+            '-c', 'MinSpareServers %d' % number_of_servers,
+            '-c', 'MaxSpareServers %d' % number_of_servers,
+            '-k', 'start']
 
         enable_ipv6 = self._port_obj.http_server_supports_ipv6()
         # Perform part of the checks Apache's APR does when trying to listen to
@@ -97,45 +97,24 @@ class ApacheHTTP(server_base.ServerBase):
         for mapping in self._mappings:
             port = mapping['port']
 
-            start_cmd += ['-C', "\'Listen 127.0.0.1:%d\'" % port]
+            start_cmd += ['-C', "Listen 127.0.0.1:%d" % port]
 
             # We listen to both IPv4 and IPv6 loop-back addresses, but ignore
             # requests to 8000 from random users on network.
             # See https://bugs.webkit.org/show_bug.cgi?id=37104
             if enable_ipv6:
-                start_cmd += ['-C', "\'Listen [::1]:%d\'" % port]
+                start_cmd += ['-C', "Listen [::1]:%d" % port]
 
-        if additional_dirs:
-            for alias, path in additional_dirs.iteritems():
-                start_cmd += ['-c', "\'Alias %s \"%s\"\'" % (alias, path),
-                        # Disable CGI handler for additional dirs.
-                        '-c', "\'<Location %s>\'" % alias,
-                        '-c', "\'RemoveHandler .cgi .pl\'",
-                        '-c', "\'</Location>\'"]
-
-        if self._number_of_servers:
-            start_cmd += ['-c', "\'StartServers %d\'" % self._number_of_servers,
-                          '-c', "\'MinSpareServers %d\'" % self._number_of_servers,
-                          '-c', "\'MaxSpareServers %d\'" % self._number_of_servers]
-
-        stop_cmd = [executable,
-            '-f', "\"%s\"" % self._port_obj.path_to_apache_config_file(),
-            '-c', "\'PidFile %s'" % self._pid_file,
-            '-k', "stop"]
-
-        start_cmd.extend(['-c', "\'SSLCertificateFile %s\'" % cert_file])
-        # Join the string here so that Cygwin/Windows and Mac/Linux
-        # can use the same code. Otherwise, we could remove the single
-        # quotes above and keep cmd as a sequence.
-        # FIXME: It's unclear if this is still needed.
-        self._start_cmd = " ".join(start_cmd)
-        self._stop_cmd = " ".join(stop_cmd)
+        self._start_cmd = start_cmd
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))
-        retval, err = self._run(self._start_cmd)
-        if retval or len(err):
-            raise server_base.ServerError('Failed to start %s: %s' % (self._name, err))
+        self._process = self._executive.popen(self._start_cmd)
+        if self._process.returncode is not None:
+            retval = self._process.returncode
+            err = self._process.stderr.read()
+            if retval or len(err):
+                raise server_base.ServerError('Failed to start %s: %s' % (self._name, err))
 
         # For some reason apache isn't guaranteed to have created the pid file before
         # the process exits, so we wait a little while longer.
@@ -144,6 +123,9 @@ class ApacheHTTP(server_base.ServerBase):
 
         return int(self._filesystem.read_text_file(self._pid_file))
 
+    def stop(self):
+        self._stop_running_server()
+
     def _stop_running_server(self):
         # If apache was forcefully killed, the pid file will not have been deleted, so check
         # that the process specified by the pid_file no longer exists before deleting the file.
@@ -151,7 +133,13 @@ class ApacheHTTP(server_base.ServerBase):
             self._filesystem.remove(self._pid_file)
             return
 
-        retval, err = self._run(self._stop_cmd)
+        proc = self._executive.popen([self._port_obj.path_to_apache(),
+                                      '-f', self._port_obj.path_to_apache_config_file(),
+                                      '-c', 'PidFile "%s"' % self._pid_file,
+                                      '-k', 'stop'], stderr=self._executive.PIPE)
+        proc.wait()
+        retval = proc.returncode
+        err = proc.stderr.read()
         if retval or len(err):
             raise server_base.ServerError('Failed to stop %s: %s' % (self._name, err))
 
@@ -160,16 +148,3 @@ class ApacheHTTP(server_base.ServerBase):
         # pid file to be removed.
         if not self._wait_for_action(lambda: not self._filesystem.exists(self._pid_file)):
             raise server_base.ServerError('Failed to stop %s: pid file still exists' % self._name)
-
-    def _run(self, cmd):
-        # Use shell=True because we join the arguments into a string for
-        # the sake of Window/Cygwin and it needs quoting that breaks
-        # shell=False.
-        # FIXME: We should not need to be joining shell arguments into strings.
-        # shell=True is a trail of tears.
-        # Note: Not thread safe: http://bugs.python.org/issue2320
-        process = self._executive.popen(cmd, shell=True, stderr=self._executive.PIPE)
-        process.wait()
-        retval = process.returncode
-        err = process.stderr.read()
-        return (retval, err)
