@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/worker/shared_worker_devtools_agent.h"
+#include "content/child/shared_worker_devtools_agent.h"
 
+#include "content/child/child_thread.h"
 #include "content/common/devtools_messages.h"
-#include "content/worker/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
@@ -82,7 +82,7 @@ void SharedWorkerDevToolsAgent::OnResumeWorkerContext() {
 }
 
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {
-  return WorkerThread::current()->Send(message);
+  return ChildThread::current()->Send(message);
 }
 
 }  // namespace content

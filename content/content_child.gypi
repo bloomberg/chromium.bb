@@ -139,6 +139,8 @@
     'child/service_worker/web_service_worker_impl.h',
     'child/service_worker/web_service_worker_provider_impl.cc',
     'child/service_worker/web_service_worker_provider_impl.h',
+    'child/shared_worker_devtools_agent.cc',
+    'child/shared_worker_devtools_agent.h',
     'child/simple_webmimeregistry_impl.cc',
     'child/simple_webmimeregistry_impl.h',
     'child/site_isolation_policy.cc',

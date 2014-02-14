@@ -9,8 +9,6 @@
     '../third_party/WebKit/public/blink.gyp:blink',
   ],
   'sources': [
-    'worker/shared_worker_devtools_agent.cc',
-    'worker/shared_worker_devtools_agent.h',
     'worker/websharedworker_stub.cc',
     'worker/websharedworker_stub.h',
     'worker/websharedworkerclient_proxy.cc',
