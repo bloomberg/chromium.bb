@@ -1419,6 +1419,31 @@ bool HttpResponseHeaders::GetChromeProxyInfo(
 
   return false;
 }
+
+bool HttpResponseHeaders::IsChromeProxyResponse() const {
+  const size_t kVersionSize = 4;
+  const char kChromeProxyViaValue[] = "Chrome-Compression-Proxy";
+  size_t value_len = strlen(kChromeProxyViaValue);
+  void* iter = NULL;
+  std::string value;
+
+  // Case-sensitive comparison of |value|. Assumes the received protocol and the
+  // space following it are always |kVersionSize| characters. E.g.,
+  // 'Via: 1.1 Chrome-Compression-Proxy'
+  while (EnumerateHeader(&iter, "via", &value)) {
+    if (!value.compare(kVersionSize, value_len, kChromeProxyViaValue))
+      return true;
+  }
+
+  // TODO(bengr): Remove deprecated header value.
+  const char kDeprecatedChromeProxyViaValue[] = "1.1 Chrome Compression Proxy";
+  iter = NULL;
+  while (EnumerateHeader(&iter, "via", &value))
+    if (value == kDeprecatedChromeProxyViaValue)
+      return true;
+
+  return false;
+}
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 }  // namespace net

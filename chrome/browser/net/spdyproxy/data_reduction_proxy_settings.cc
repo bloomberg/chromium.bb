@@ -208,17 +208,6 @@ bool DataReductionProxySettings::IsPreconnectHintingAllowed() {
 }
 
 // static
-bool DataReductionProxySettings::WasFetchedViaProxy(
-    const net::HttpResponseHeaders* headers) {
-  const char kChromeProxyViaValue[] = "1.1 Chrome Compression Proxy";
-  void* iter = NULL;
-  std::string value;
-  while (headers->EnumerateHeader(&iter, "via", &value))
-    if (value == kChromeProxyViaValue) return true;
-  return false;
-}
-
-// static
 std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSpdyProxyDevAuthOrigin))

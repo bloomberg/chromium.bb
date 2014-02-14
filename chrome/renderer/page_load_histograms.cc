@@ -32,6 +32,10 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "net/http/http_response_headers.h"
+#endif
+
 using blink::WebDataSource;
 using blink::WebFrame;
 using blink::WebPerformance;
@@ -191,15 +195,30 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
 
 // Returns true if the data reduction proxy was used. Note, this function will
 // produce a false positive if a page is fetched using SPDY and using a proxy,
-// and |kDatReductionProxyViaValue| is added to the Via header.
-// TODO(bengr): Plumb the hostname of the proxy from |HttpNetworkTransaction|
-// and check if it matches |SPDY_PROXY_AUTH_ORIGIN|.
+// and the data reduction proxy's via value is added to the Via header.
+// TODO(bengr): Plumb the hostname of the proxy and check if it matches
+// |SPDY_PROXY_AUTH_ORIGIN|.
 bool DataReductionProxyWasUsed(WebFrame* frame) {
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
-  return ViaHeaderContains(frame, kDatReductionProxyViaValue);
-#endif
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  if (!document_state->was_fetched_via_proxy())
+    return false;
+
+  std::string via_header =
+      base::UTF16ToUTF8(frame->dataSource()->response().httpHeaderField("Via"));
+
+  if (via_header.empty())
+    return false;
+  std::string headers = "HTTP/1.1 200 OK\nVia: " + via_header + "\n\n";
+  // Produce raw headers, expected by the |HttpResponseHeaders| constructor.
+  std::replace(headers.begin(), headers.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> response_headers(
+      new net::HttpResponseHeaders(headers));
+  return response_headers->IsChromeProxyResponse();
+#else
   return false;
+#endif
 }
 
 // Returns true if the provided URL is a referrer string that came from

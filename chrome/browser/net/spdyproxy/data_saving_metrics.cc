@@ -348,28 +348,6 @@ bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
-// IsDataReductionProxyReponse returns true if response_headers contains the
-// data reduction proxy Via header value.
-bool IsDataReductionProxyReponse(
-    const net::HttpResponseHeaders* response_headers) {
-  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
-  size_t value_len = strlen(kDatReductionProxyViaValue);
-  void* iter = NULL;
-  std::string temp;
-  while (response_headers->EnumerateHeader(&iter, "Via", &temp)) {
-    string::const_iterator it =
-        std::search(temp.begin(),
-                    temp.end(),
-                    kDatReductionProxyViaValue,
-                    kDatReductionProxyViaValue + value_len,
-                    base::CaseInsensitiveCompareASCII<char>());
-    if (it != temp.end()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 namespace spdyproxy {
@@ -387,8 +365,13 @@ DataReductionRequestType GetDataReductionRequestType(
     return (bypass_delay > kLongBypassDelayInSeconds) ?
       LONG_BYPASS : SHORT_BYPASS;
   }
-  return IsDataReductionProxyReponse(request->response_info().headers) ?
-    VIA_DATA_REDUCTION_PROXY: UNKNOWN_TYPE;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (request->response_info().headers &&
+      request->response_info().headers->IsChromeProxyResponse()) {
+    return VIA_DATA_REDUCTION_PROXY;
+  }
+#endif
+  return UNKNOWN_TYPE;
 }
 
 int64 GetAdjustedOriginalContentLength(

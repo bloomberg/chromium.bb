@@ -623,7 +623,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithProxyTimedBypass) {
     MockRead("HTTP/1.1 200 OK\r\n"
              "Connection: keep-alive\r\n"
              "Chrome-Proxy: bypass=86400\r\n"
-             "Via: 1.1 Chrome Compression Proxy\r\n\r\n"),
+             "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n"),
     MockRead("Bypass message"),
     MockRead(SYNCHRONOUS, OK),
   };
@@ -681,7 +681,27 @@ TEST_F(HttpNetworkLayerTest, NoServerFallbackWithChainedViaHeader) {
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"
              "Connection: keep-alive\r\n"
-             "Via: 1.1 Chrome Compression Proxy, 1.0 some-other-proxy\r\n\r\n"),
+             "Via: 1.1 Chrome-Compression-Proxy, 1.0 some-other-proxy\r\n\r\n"),
+    MockRead("Bypass message"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+
+  TestProxyFallbackByMethodWithMockReads(chrome_proxy, std::string(),
+                                         data_reads, arraysize(data_reads),
+                                         "GET", std::string(), false, 0);
+}
+
+TEST_F(HttpNetworkLayerTest, NoServerFallbackWithDeprecatedViaHeader) {
+  // Verify that Chrome will not be induced to bypass the Chrome proxy when
+  // the Chrome Proxy via header is present, even if that header is chained.
+  std::string chrome_proxy = GetChromeProxy();
+  ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
+      "PROXY " + chrome_proxy + "; PROXY good:8080"));
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"
+             "Connection: keep-alive\r\n"
+             "Via: 1.1 Chrome Compression Proxy\r\n\r\n"),
     MockRead("Bypass message"),
     MockRead(SYNCHRONOUS, OK),
   };
@@ -706,7 +726,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithProxyTimedBypassAll) {
     MockRead("HTTP/1.1 200 OK\r\n"
              "Connection: keep-alive\r\n"
              "Chrome-Proxy: block=86400\r\n"
-             "Via: 1.1 Chrome Compression Proxy\r\n\r\n"),
+             "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n"),
     MockRead("Bypass message"),
     MockRead(SYNCHRONOUS, OK),
   };

@@ -10,10 +10,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
-
 namespace chrome {
 
 InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
@@ -55,8 +51,8 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
     net::HttpRequestHeaders headers;
     request_->GetFullRequestHeaders(&headers);
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
-        !DataReductionProxySettings::WasFetchedViaProxy(
-            request_->response_info().headers)) {
+        !(request_->response_info().headers &&
+            request_->response_info().headers->IsChromeProxyResponse())) {
       return;
     }
 #else

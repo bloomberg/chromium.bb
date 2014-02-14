@@ -640,48 +640,6 @@ TEST_F(DataReductionProxySettingsTest, TestBypassList) {
   }
 }
 
-TEST_F(DataReductionProxySettingsTest, WasFetchedViaProxy) {
-  const struct {
-     const char* headers;
-     bool expected_result;
-  } tests[] = {
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Proxy\n",
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Compression Proxy\n",
-      true,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Foo Bar, 1.1 Chrome Compression Proxy\n",
-      true,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Chrome Compression Proxy, 1.1 Bar Foo\n",
-      true,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 chrome compression proxy\n",
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "Via: 1.1 Foo Bar\n"
-      "Via: 1.1 Chrome Compression Proxy\n",
-      true,
-    },
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    std::string headers(tests[i].headers);
-    HeadersToRaw(&headers);
-    scoped_refptr<net::HttpResponseHeaders> parsed(
-        new net::HttpResponseHeaders(headers));
-
-    EXPECT_EQ(tests[i].expected_result,
-              DataReductionProxySettings::WasFetchedViaProxy(parsed));
-  }
-}
-
 TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // No call to |AddProxyToCommandLine()| was made, so the proxy feature
   // should be unavailable.

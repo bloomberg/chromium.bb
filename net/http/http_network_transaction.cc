@@ -119,30 +119,6 @@ base::Value* NetLogSSLVersionFallbackCallback(
   return dict;
 }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-// Returns true if |response_headers| contains the data reduction proxy Via
-// header value.
-bool IsChromeProxyResponse(const net::HttpResponseHeaders* response_headers) {
-  if (!response_headers) {
-    return false;
-  }
-  const char kDataReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
-  size_t value_len = strlen(kDataReductionProxyViaValue);
-  void* iter = NULL;
-  std::string temp;
-  while (response_headers->EnumerateHeader(&iter, "Via", &temp)) {
-    std::string::const_iterator it =
-        std::search(temp.begin(), temp.end(),
-                    kDataReductionProxyViaValue,
-                    kDataReductionProxyViaValue + value_len,
-                    base::CaseInsensitiveCompareASCII<char>());
-    if (it != temp.end())
-      return true;
-  }
-  return false;
-}
-#endif
-
 }  // namespace
 
 //-----------------------------------------------------------------------------
@@ -1043,7 +1019,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 #endif
 
     if (chrome_proxy_used || chrome_fallback_proxy_used) {
-      if (!IsChromeProxyResponse(response_.headers.get())) {
+      if (!response_.headers->IsChromeProxyResponse()) {
         proxy_bypass_event = ProxyService::MISSING_VIA_HEADER;
       } else if (response_.headers->GetChromeProxyInfo(&chrome_proxy_info)) {
         if (chrome_proxy_info.bypass_duration < TimeDelta::FromMinutes(30))

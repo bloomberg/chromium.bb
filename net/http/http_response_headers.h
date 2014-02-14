@@ -272,6 +272,9 @@ class NET_EXPORT HttpResponseHeaders
   // If all available Chrome proxies should by bypassed, |bypass_all| is set to
   // true. |proxy_info| must be non-NULL.
   bool GetChromeProxyInfo(ChromeProxyInfo* proxy_info) const;
+
+  // Returns true if response headers contain the Chrome proxy Via header value.
+  bool IsChromeProxyResponse() const;
 #endif
 
   // Creates a Value for use with the NetLog containing the response headers.
