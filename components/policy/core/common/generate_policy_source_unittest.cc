@@ -28,11 +28,11 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   subschema = schema.GetProperty("no such policy exists");
   EXPECT_FALSE(subschema.valid());
 
-  subschema = schema.GetProperty(key::kAlternateErrorPagesEnabled);
+  subschema = schema.GetProperty(key::kSearchSuggestEnabled);
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::TYPE_BOOLEAN, subschema.type());
 
-  subschema = schema.GetProperty(key::kIncognitoModeAvailability);
+  subschema = schema.GetProperty(key::kDefaultCookiesSetting);
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::TYPE_INTEGER, subschema.type());
 
@@ -88,16 +88,16 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
 TEST(GeneratePolicySource, PolicyDetails) {
   EXPECT_FALSE(GetChromePolicyDetails(""));
   EXPECT_FALSE(GetChromePolicyDetails("no such policy"));
-  EXPECT_FALSE(GetChromePolicyDetails("AlternateErrorPagesEnable"));
-  EXPECT_FALSE(GetChromePolicyDetails("alternateErrorPagesEnabled"));
-  EXPECT_FALSE(GetChromePolicyDetails("AAlternateErrorPagesEnabled"));
+  EXPECT_FALSE(GetChromePolicyDetails("SearchSuggestEnable"));
+  EXPECT_FALSE(GetChromePolicyDetails("searchSuggestEnabled"));
+  EXPECT_FALSE(GetChromePolicyDetails("SSearchSuggestEnabled"));
 
   const PolicyDetails* details =
-      GetChromePolicyDetails(key::kAlternateErrorPagesEnabled);
+      GetChromePolicyDetails(key::kSearchSuggestEnabled);
   ASSERT_TRUE(details);
   EXPECT_FALSE(details->is_deprecated);
   EXPECT_FALSE(details->is_device_policy);
-  EXPECT_EQ(5, details->id);
+  EXPECT_EQ(6, details->id);
   EXPECT_EQ(0u, details->max_external_data_size);
 
 #if !defined(OS_IOS)
