@@ -17,6 +17,20 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
+namespace {
+
+// Spacing constant for outer margin. This is added to the
+// bubble margin itself to equalize the margins at 20px.
+const int kBubbleOuterMargin = 12;
+
+// Spacing between major items should be 10px.
+const int kItemMajorSpacing = 10;
+
+// Button border size, draws inside the spacing distance.
+const int kButtonBorderSize = 2;
+
+}  // namespace
+
 // View implementation for the permissions bubble.
 class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
                                       public views::ButtonListener {
@@ -68,7 +82,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   set_close_on_deactivate(false);
 
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 30, 0, 20));
+      views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -106,7 +120,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                      0, views::GridLayout::USE_PREF, 0, 0);
   if (!customization_mode) {
-    columns->AddPaddingColumn(0, 10);  // padding between buttons
+    columns->AddPaddingColumn(0, kItemMajorSpacing - (2*kButtonBorderSize));
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                        0, views::GridLayout::USE_PREF, 0, 0);
   }
@@ -127,7 +141,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     button_layout->AddView(ok_button);
     allow_ = ok_button;
 
-    button_layout->AddPaddingRow(0, 12);
+    button_layout->AddPaddingRow(0, kBubbleOuterMargin);
     return;
   }
 
@@ -170,7 +184,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   button_layout->AddView(allow_button);
   allow_ = allow_button;
 
-  button_layout->AddPaddingRow(0, 30);
+  button_layout->AddPaddingRow(0, kBubbleOuterMargin);
 }
 
 PermissionsBubbleDelegateView::~PermissionsBubbleDelegateView() {
