@@ -44,13 +44,6 @@ base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir) {
   return default_profile_dir;
 }
 
-base::FilePath GetProfilePrefsPath(
-    const base::FilePath &profile_dir) {
-  base::FilePath default_prefs_path(profile_dir);
-  default_prefs_path = default_prefs_path.Append(chrome::kPreferencesFilename);
-  return default_prefs_path;
-}
-
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);

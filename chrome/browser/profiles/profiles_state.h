@@ -22,9 +22,6 @@ bool IsMultipleProfilesEnabled();
 // user data directory.
 base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir);
 
-// Returns the path to the preferences file given the user profile directory.
-base::FilePath GetProfilePrefsPath(const base::FilePath& profile_dir);
-
 // Register multi-profile related preferences in Local State.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
