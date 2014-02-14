@@ -17,6 +17,7 @@ class TestScreen;
 
 namespace content {
 class ShellBrowserContext;
+class ShellDevToolsDelegate;
 struct MainFunctionParams;
 }
 
@@ -97,6 +98,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   scoped_ptr<aura::TestScreen> test_screen_;
 
   scoped_ptr<views::Widget> webview_window_;
+
+  scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
 
   // Owned by the BrowserContextKeyedService system.
   extensions::ShellExtensionSystem* extension_system_;

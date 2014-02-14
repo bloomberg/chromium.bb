@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
+#include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -119,6 +120,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       browser_context_.get());
 
+  devtools_delegate_.reset(
+      new content::ShellDevToolsDelegate(browser_context_.get()));
+
   CreateRootWindow();
   CreateViewsDelegate();
 
@@ -145,6 +149,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  devtools_delegate_->Stop();
   DestroyViewsDelegate();
   DestroyRootWindow();
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
