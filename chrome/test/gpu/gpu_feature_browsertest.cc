@@ -296,7 +296,15 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
   RunEventTest(url, kWebGLCreationEvent, false);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// This test is oblivious to the fact that multisample could be blacklisted on
+// some configurations.
+// http://crbug.com/314745
+#define MAYBE_MultisamplingAllowed DISABLED_MultisamplingAllowed
+#else
+#define MAYBE_MultisamplingAllowed MultisamplingAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_MultisamplingAllowed) {
   bool expect_blacklisted = false;
   if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
     expect_blacklisted = true;
