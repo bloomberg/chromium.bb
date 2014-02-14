@@ -1964,9 +1964,9 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "embed-flash-fullscreen",
-    IDS_FLAGS_EMBED_FLASH_FULLSCREEN_NAME,
-    IDS_FLAGS_EMBED_FLASH_FULLSCREEN_DESCRIPTION,
+    "fullscreen-within-tab",
+    IDS_FLAGS_FULLSCREEN_WITHIN_TAB_NAME,
+    IDS_FLAGS_FULLSCREEN_WITHIN_TAB_DESCRIPTION,
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEmbedFlashFullscreen)
   },
