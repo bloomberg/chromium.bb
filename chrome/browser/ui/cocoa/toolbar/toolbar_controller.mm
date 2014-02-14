@@ -398,8 +398,17 @@ class NotificationBridge
 }
 
 - (void)focusLocationBar:(BOOL)selectAll {
-  if (locationBarView_.get())
-    locationBarView_->FocusLocation(selectAll ? true : false);
+  if (locationBarView_.get()) {
+    if (chrome::ShouldDisplayOriginChip() && selectAll) {
+      // select_all is true when it's expected that the user may want to copy
+      // the URL to the clipboard. If the origin chip is being displayed (and
+      // thus the URL is not being shown in the Omnibox) show it now to support
+      // the same functionality.
+      locationBarView_->GetOmniboxView()->ShowURL();
+    } else {
+      locationBarView_->FocusLocation(selectAll ? true : false);
+    }
+  }
 }
 
 // Called when the state for a command changes to |enabled|. Update the
