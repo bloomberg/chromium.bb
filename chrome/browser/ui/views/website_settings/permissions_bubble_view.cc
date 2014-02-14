@@ -43,7 +43,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
       bool customization_mode);
   virtual ~PermissionsBubbleDelegateView();
 
-  void Close();
+  void ResetOwner();
   void SizeToContents();
 
   // BubbleDelegateView:
@@ -192,9 +192,8 @@ PermissionsBubbleDelegateView::~PermissionsBubbleDelegateView() {
     owner_->Closing();
 }
 
-void PermissionsBubbleDelegateView::Close() {
+void PermissionsBubbleDelegateView::ResetOwner() {
   owner_ = NULL;
-  GetWidget()->Close();
 }
 
 bool PermissionsBubbleDelegateView::ShouldShowCloseButton() const {
@@ -243,10 +242,7 @@ PermissionBubbleViewViews::PermissionBubbleViewViews(views::View* anchor_view)
       delegate_(NULL),
       bubble_delegate_(NULL) {}
 
-PermissionBubbleViewViews::~PermissionBubbleViewViews() {
-  if (delegate_)
-    delegate_->SetView(NULL);
-}
+PermissionBubbleViewViews::~PermissionBubbleViewViews() {}
 
 void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
@@ -256,8 +252,10 @@ void PermissionBubbleViewViews::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& values,
     bool customization_mode) {
-  if (bubble_delegate_ != NULL)
-    bubble_delegate_->Close();
+  if (bubble_delegate_ != NULL) {
+    bubble_delegate_->ResetOwner();
+    bubble_delegate_->StartFade(false);
+  }
 
   PermissionsBubbleDelegateView* bubble_delegate =
       new PermissionsBubbleDelegateView(anchor_view_, this,
@@ -271,8 +269,8 @@ void PermissionBubbleViewViews::Show(
 
 void PermissionBubbleViewViews::Hide() {
   if (bubble_delegate_) {
-    bubble_delegate_->Close();
-    bubble_delegate_ = NULL;
+    bubble_delegate_->ResetOwner();
+    bubble_delegate_->StartFade(false);
   }
 }
 
