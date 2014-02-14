@@ -443,7 +443,7 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   if (duplicate) {
     cast_environment_->Logging()->InsertPacketEvent(
         now,
-        kDuplicatePacketReceived,
+        kDuplicateVideoPacketReceived,
         rtp_header.webrtc.header.timestamp,
         rtp_header.frame_id,
         rtp_header.packet_id,

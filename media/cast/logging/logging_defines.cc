@@ -63,7 +63,8 @@ std::string CastLoggingToString(CastLoggingEvent event) {
     ENUM_TO_STRING(PacketRetransmitted);
     ENUM_TO_STRING(AudioPacketReceived);
     ENUM_TO_STRING(VideoPacketReceived);
-    ENUM_TO_STRING(DuplicatePacketReceived);
+    ENUM_TO_STRING(DuplicateAudioPacketReceived);
+    ENUM_TO_STRING(DuplicateVideoPacketReceived);
     case kNumOfLoggingEvents:
       NOTREACHED();
       return "";

@@ -198,7 +198,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
                                               rtp_header, &duplicate);
   if (duplicate) {
     cast_environment_->Logging()->InsertPacketEvent(
-        now, kDuplicatePacketReceived, rtp_header.webrtc.header.timestamp,
+        now, kDuplicateAudioPacketReceived, rtp_header.webrtc.header.timestamp,
         rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
         payload_size);
     // Duplicate packets are ignored.

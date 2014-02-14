@@ -67,7 +67,8 @@ enum CastLoggingEvent {
   // Receive-side packet events.
   kAudioPacketReceived,
   kVideoPacketReceived,
-  kDuplicatePacketReceived,
+  kDuplicateAudioPacketReceived,
+  kDuplicateVideoPacketReceived,
   kNumOfLoggingEvents,
 };
 

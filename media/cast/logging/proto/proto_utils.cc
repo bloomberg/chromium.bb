@@ -39,7 +39,10 @@ media::cast::proto::EventType ToProtoEventType(CastLoggingEvent event) {
     TO_PROTO_ENUM(kPacketRetransmitted, PACKET_RETRANSMITTED);
     TO_PROTO_ENUM(kAudioPacketReceived, AUDIO_PACKET_RECEIVED);
     TO_PROTO_ENUM(kVideoPacketReceived, VIDEO_PACKET_RECEIVED);
-    TO_PROTO_ENUM(kDuplicatePacketReceived, DUPLICATE_PACKET_RECEIVED);
+    TO_PROTO_ENUM(kDuplicateAudioPacketReceived,
+                  DUPLICATE_AUDIO_PACKET_RECEIVED);
+    TO_PROTO_ENUM(kDuplicateVideoPacketReceived,
+                  DUPLICATE_VIDEO_PACKET_RECEIVED);
     case kNumOfLoggingEvents:
       NOTREACHED();
       return media::cast::proto::UNKNOWN;

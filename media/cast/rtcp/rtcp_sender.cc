@@ -42,8 +42,10 @@ int ConvertEventTypeToWireFormat(const media::cast::CastLoggingEvent& event) {
       return 7;
     case media::cast::kVideoPacketReceived:
       return 8;
-    case media::cast::kDuplicatePacketReceived:
+    case media::cast::kDuplicateAudioPacketReceived:
       return 9;
+    case media::cast::kDuplicateVideoPacketReceived:
+      return 10;
     default:
       return 0;  // Not an interesting event.
   }
@@ -645,7 +647,8 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
           break;
         case kAudioPacketReceived:
         case kVideoPacketReceived:
-        case kDuplicatePacketReceived:
+        case kDuplicateAudioPacketReceived:
+        case kDuplicateVideoPacketReceived:
           big_endian_writer.WriteU16(event_message.packet_id);
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;

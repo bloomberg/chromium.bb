@@ -44,7 +44,8 @@ enum EventType {
   // Receiver-side packet events.
   AUDIO_PACKET_RECEIVED = 22;
   VIDEO_PACKET_RECEIVED = 23;
-  DUPLICATE_PACKET_RECEIVED = 24;
+  DUPLICATE_AUDIO_PACKET_RECEIVED = 24;
+  DUPLICATE_VIDEO_PACKET_RECEIVED = 25;
 }
 
 message AggregatedFrameEvent {

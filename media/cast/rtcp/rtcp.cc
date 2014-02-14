@@ -79,7 +79,8 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
         switch (event_it->type) {
           case kAudioPacketReceived:
           case kVideoPacketReceived:
-          case kDuplicatePacketReceived:
+          case kDuplicateAudioPacketReceived:
+          case kDuplicateVideoPacketReceived:
             cast_environment_->Logging()->InsertPacketEvent(
                 event_it->event_timestamp, event_it->type, rtp_timestamp,
                 kFrameIdUnknown, event_it->packet_id, 0, 0);
