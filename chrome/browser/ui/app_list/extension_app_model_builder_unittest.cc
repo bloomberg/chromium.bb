@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -118,7 +119,7 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
         .AppendASCII("Extensions");
     base::FilePath pref_path = source_install_dir
         .DirName()
-        .AppendASCII("Preferences");
+        .Append(chrome::kPreferencesFilename);
     InitializeInstalledExtensionService(pref_path, source_install_dir);
     service_->Init();
 

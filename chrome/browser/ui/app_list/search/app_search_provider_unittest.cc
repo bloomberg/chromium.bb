@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,7 @@ class AppSearchProviderTest : public ExtensionServiceTestBase {
         .AppendASCII("Extensions");
     base::FilePath pref_path = source_install_dir
         .DirName()
-        .AppendASCII("Preferences");
+        .Append(chrome::kPreferencesFilename);
     InitializeInstalledExtensionService(pref_path, source_install_dir);
     service_->Init();
 
