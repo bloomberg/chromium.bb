@@ -1235,6 +1235,9 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_OTHER_LANGUAGES" desc="Option group name dividing vendor-configured languages from other available languages in out-of-box 'Select language' select control.">
     Other languages
   </message>
+  <message name="IDS_OOBE_OTHER_KEYBOARD_LAYOUTS" desc="Option group name dividing vendor-configured keyboard layouts from other available layouts in out-of-box 'Select your keyboard' select control.">
+    Other layouts
+  </message>
   <message name="IDS_LOGIN_TITLE" desc="Title of sign-in box">
     Sign in
   </message>
