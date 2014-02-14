@@ -21,13 +21,13 @@ Running: heapSnapshotDominatorsTreeTest
 
 Running: heapSnapshotRetainedSizeTest
 
+Running: heapSnapshotLargeRetainedSize
+
 Running: heapSnapshotDominatedNodesTest
 
 Running: heapSnapshotPageOwnedTest
 
 Running: heapSnapshotRetainersTest
-
-Running: heapSnapshotOrphanNodesTest
 
 Running: heapSnapshotAggregatesTest
 

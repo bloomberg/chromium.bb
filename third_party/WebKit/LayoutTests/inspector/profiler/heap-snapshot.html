@@ -146,9 +146,28 @@ function test()
                 var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
                 var actualRetainedSizes = new Array(snapshot.nodeCount);
                 for (var nodeOrdinal = 0; nodeOrdinal < snapshot.nodeCount; ++nodeOrdinal)
-                    actualRetainedSizes[nodeOrdinal] = snapshot._nodes[nodeOrdinal * snapshot._nodeFieldCount + snapshot._nodeRetainedSizeOffset];
+                    actualRetainedSizes[nodeOrdinal] = snapshot._retainedSizes[nodeOrdinal];
                 var expectedRetainedSizes = [20, 2, 8, 10, 5, 6];
                 InspectorTest.assertEquals(JSON.stringify(expectedRetainedSizes), JSON.stringify(actualRetainedSizes), "Retained sizes");
+            },
+
+            function heapSnapshotLargeRetainedSize(next)
+            {
+                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var node = builder.rootNode;
+
+                var iterations = 6;
+                var nodeSize = 1000 * 1000 * 1000;
+                for (var i = 0; i < 6; i++) {
+                    var newNode = new InspectorTest.HeapNode("Node" + i, nodeSize);
+                    node.linkNode(newNode, InspectorTest.HeapEdge.Type.element);
+                    node = newNode;
+                }
+
+                var snapshot = new WebInspector.JSHeapSnapshot(builder.generateSnapshot(), new WebInspector.HeapSnapshotProgress());
+                InspectorTest.assertEquals(
+                    iterations * nodeSize, snapshot.rootNode().retainedSize(),
+                    "Ensure that root node retained size supports values exceeding 2^32 bytes.");
             },
 
             function heapSnapshotDominatedNodesTest()
@@ -216,33 +235,6 @@ function test()
                     names.sort();
                     InspectorTest.assertEquals(expectedRetainers[nodes.item().name()].join(","), names.join(","), "retainers of \"" + nodes.item().name() + "\"");
                 }
-            },
-
-            function heapSnapshotOrphanNodesTest()
-            {
-                var snapshotMock = InspectorTest._postprocessHeapSnapshotMock({
-                    snapshot: {
-                        meta: {
-                            node_fields: ["type", "name", "id", "edge_count"],
-                            node_types: [["hidden", "object"], "", "", ""],
-                            edge_fields: ["type", "name_or_index", "to_node"],
-                            edge_types: [["element", "hidden", "internal"], "", ""]
-                        },
-                        node_count: 2,
-                        edge_count: 0
-                    },
-                    nodes: [
-                        /* (root) */    0,  0,  1, 0,
-                        /* Orphan */    1,  1,  2, 0
-                        ],
-                    edges: [],
-                    strings: ["", "Orphan"]
-                });
-
-                var snapshot = new WebInspector.JSHeapSnapshot(snapshotMock, new WebInspector.HeapSnapshotProgress());
-
-                for (var nodes = snapshot._allNodes(); nodes.hasNext(); nodes.next())
-                    InspectorTest.assertEquals(false, nodes.item().retainers().hasNext(), "No retainers");
             },
 
             function heapSnapshotAggregatesTest()
