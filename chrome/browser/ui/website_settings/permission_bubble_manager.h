@@ -44,7 +44,7 @@ class PermissionBubbleManager
 
   // Set the active view for the permission bubble. If this is NULL, it
   // means the permission bubble is no longer showing.
-  virtual void SetView(PermissionBubbleView* view);
+  virtual void SetView(PermissionBubbleView* view) OVERRIDE;
 
  protected:
   // Sets the coalesce time interval to |interval_ms|. For testing only.
