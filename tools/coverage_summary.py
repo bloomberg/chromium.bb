@@ -144,7 +144,7 @@ def ShortGroup(path):
 def CoverageResult(used, total, name):
   # Perf dashboard format results.
   return [
-      'RESULT coverage_percent_%s: coverage_percent_%s= %f coverage%' % (
+      'RESULT coverage_percent_%s: coverage_percent_%s= %f coverage%%' % (
           name, name, used * 100.0 / total),
       'RESULT lines_%s: lines_%s= %d lines' % (
           name, name, total),
