@@ -1262,6 +1262,15 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
 
 def UploadSymbols(buildroot, board, official, cnt, failed_list):
   """Upload debug symbols for this build."""
+  log_cmd = ['upload_symbols', '--board', board]
+  if failed_list is not None:
+    log_cmd += ['--failed-list', str(failed_list)]
+  if official:
+    log_cmd.append('--official_build')
+  if cnt is not None:
+    log_cmd += ['--upload-limit', str(cnt)]
+  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
+
   ret = upload_symbols.UploadSymbols(
       board=board, official=official, upload_limit=cnt,
       root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
@@ -1275,19 +1284,19 @@ def UploadSymbols(buildroot, board, official, cnt, failed_list):
 def PushImages(board, archive_url, dryrun, profile, sign_types=()):
   """Push the generated image to the release bucket for signing."""
   # Log the equivalent command for debugging purposes.
-  cmd = ['pushimage', '--board=%s' % board]
+  log_cmd = ['pushimage', '--board=%s' % board]
 
   if dryrun:
-    cmd.append('-n')
+    log_cmd.append('-n')
 
   if profile:
-    cmd.append('--profile=%s' % profile)
+    log_cmd.append('--profile=%s' % profile)
 
   if sign_types:
-    cmd.append('--sign-types=%s' % ' '.join(sign_types))
+    log_cmd.append('--sign-types=%s' % ' '.join(sign_types))
 
-  cmd.append(archive_url)
-  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(cmd))
+  log_cmd.append(archive_url)
+  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
 
   return pushimage.PushImage(archive_url, board, profile=profile,
                              sign_types=sign_types, dry_run=dryrun)
