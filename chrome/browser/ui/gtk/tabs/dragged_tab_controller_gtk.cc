@@ -17,7 +17,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_view_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/window_finder.h"
 #include "chrome/browser/ui/media_utils.h"
+#include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/browser/notification_source.h"
@@ -362,12 +364,7 @@ void DraggedTabControllerGtk::MoveDetached(const gfx::Point& screen_point) {
 
 TabStripGtk* DraggedTabControllerGtk::GetTabStripForPoint(
     const gfx::Point& screen_point) {
-  GtkWidget* dragged_window = dragged_view_->widget();
-  dock_windows_.insert(dragged_window);
-  gfx::NativeWindow local_window =
-      DockInfo::GetLocalProcessWindowAtPoint(
-          chrome::HOST_DESKTOP_TYPE_NATIVE, screen_point, dock_windows_);
-  dock_windows_.erase(dragged_window);
+  gfx::NativeWindow local_window = GetLocalProcessWindow(screen_point);
   if (!local_window)
     return NULL;
 
@@ -778,7 +775,7 @@ bool DraggedTabControllerGtk::CompleteDrag() {
 
     Browser* new_browser =
         source_tabstrip_->model()->delegate()->CreateNewStripWithContents(
-            contentses, window_bounds, dock_info_, window->IsMaximized());
+            contentses, window_bounds, DockInfo(), window->IsMaximized());
     RestoreSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
     CleanUpHiddenFrame();
@@ -874,17 +871,8 @@ void DraggedTabControllerGtk::OnAnimateToBoundsComplete() {
 
 void DraggedTabControllerGtk::BringWindowUnderMouseToFront() {
   // If we're going to dock to another window, bring it to the front.
-  gfx::NativeWindow window = dock_info_.window();
-  if (!window) {
-    gfx::NativeView dragged_tab = dragged_view_->widget();
-    dock_windows_.insert(dragged_tab);
-    window = DockInfo::GetLocalProcessWindowAtPoint(
-        chrome::HOST_DESKTOP_TYPE_NATIVE,
-        gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
-        dock_windows_);
-    dock_windows_.erase(dragged_tab);
-  }
-
+  gfx::NativeWindow window = GetLocalProcessWindow(
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint());
   if (window)
     gtk_window_present(GTK_WINDOW(window));
 }
@@ -897,4 +885,14 @@ bool DraggedTabControllerGtk::AreTabsConsecutive() {
     }
   }
   return true;
+}
+
+gfx::NativeWindow DraggedTabControllerGtk::GetLocalProcessWindow(
+    const gfx::Point& screen_point) {
+  std::set<GtkWidget*> dragged_window;
+  dragged_window.insert(dragged_view_->widget());
+  return GetLocalProcessWindowAtPoint(
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
+      dragged_window);
+
 }

@@ -1408,6 +1408,8 @@
         'browser/ui/gtk/tabs/tab_strip_gtk.h',
         'browser/ui/gtk/tabs/tab_strip_menu_controller.cc',
         'browser/ui/gtk/tabs/tab_strip_menu_controller.h',
+        'browser/ui/gtk/tabs/window_finder.cc',
+        'browser/ui/gtk/tabs/window_finder.h',
         'browser/ui/gtk/task_manager_gtk.cc',
         'browser/ui/gtk/task_manager_gtk.h',
         'browser/ui/gtk/throbber_gtk.cc',

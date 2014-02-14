@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
-#include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -217,6 +216,10 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // |source_tabstrip_|.
   bool AreTabsConsecutive();
 
+  // Returns the NativeWindow at the specified point, not including the window
+  // being dragged.
+  gfx::NativeWindow GetLocalProcessWindow(const gfx::Point& screen_point);
+
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
 
@@ -254,12 +257,6 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
 
   // True until |MoveAttached| is invoked once.
   bool initial_move_;
-
-  // DockInfo for the tabstrip.
-  DockInfo dock_info_;
-
-  typedef std::set<GtkWidget*> DockWindows;
-  DockWindows dock_windows_;
 
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is
