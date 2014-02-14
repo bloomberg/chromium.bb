@@ -628,13 +628,6 @@ input::-webkit-input-speech-button {
     -webkit-user-modify: read-only !important;
     -webkit-align-self: flex-start;
     margin: auto 0;
-    opacity: 0;
-    pointer-events: none;
-}
-
-input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-input-speech-button {
-    opacity: 1;
-    pointer-events: auto;
 }
 #endif
 
