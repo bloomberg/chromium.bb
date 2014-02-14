@@ -95,7 +95,7 @@ TEST_F(TimingFunctionTestHelperTest, LinearPrintTo)
     RefPtr<TimingFunction> linearTiming = LinearTimingFunction::create();
     EXPECT_THAT(
         PrintToString(linearTiming),
-        ::testing::MatchesRegex("LinearTimingFunction@.*"));
+        ::testing::MatchesRegex("linear"));
 }
 
 TEST_F(TimingFunctionTestHelperTest, CubicPrintTo)
@@ -103,12 +103,12 @@ TEST_F(TimingFunctionTestHelperTest, CubicPrintTo)
     RefPtr<TimingFunction> cubicEaseTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
     EXPECT_THAT(
         PrintToString(cubicEaseTiming),
-        ::testing::MatchesRegex("CubicBezierTimingFunction@.*\\(EaseIn, 0.42, 0, 1, 1\\)"));
+        ::testing::MatchesRegex("ease-in"));
 
     RefPtr<TimingFunction> cubicCustomTiming = CubicBezierTimingFunction::create(0.17, 0.67, 1, -1.73);
     EXPECT_THAT(
         PrintToString(cubicCustomTiming),
-        ::testing::MatchesRegex("CubicBezierTimingFunction@.*\\(Custom, 0.17, 0.67, 1, -1.73\\)"));
+        ::testing::MatchesRegex("cubic-bezier\\(0.17, 0.67, 1, -1.73\\)"));
 }
 
 TEST_F(TimingFunctionTestHelperTest, StepPrintTo)
@@ -116,12 +116,12 @@ TEST_F(TimingFunctionTestHelperTest, StepPrintTo)
     RefPtr<TimingFunction> stepTimingStart = StepsTimingFunction::preset(StepsTimingFunction::Start);
     EXPECT_THAT(
         PrintToString(stepTimingStart),
-        ::testing::MatchesRegex("StepsTimingFunction@.*\\(Start, 1, true\\)"));
+        ::testing::MatchesRegex("step-start"));
 
     RefPtr<TimingFunction> stepTimingCustom = StepsTimingFunction::create(5, false);
     EXPECT_THAT(
         PrintToString(stepTimingCustom),
-        ::testing::MatchesRegex("StepsTimingFunction@.*\\(Custom, 5, false\\)"));
+        ::testing::MatchesRegex("steps\\(5, end\\)"));
 }
 
 TEST_F(TimingFunctionTestHelperTest, ChainedPrintTo)
@@ -132,8 +132,8 @@ TEST_F(TimingFunctionTestHelperTest, ChainedPrintTo)
     EXPECT_THAT(
         PrintToString(chainedLinearSingle),
         ::testing::MatchesRegex(
-            "ChainedTimingFunction@.*\\("
-                "LinearTimingFunction@.*\\[0 -> 1\\]"
+            "chained\\("
+                "linear\\[0 -> 1\\]"
             "\\)"));
 
     RefPtr<TimingFunction> cubicCustomTiming = CubicBezierTimingFunction::create(1.0, 0.0, 1, -1);
@@ -144,11 +144,11 @@ TEST_F(TimingFunctionTestHelperTest, ChainedPrintTo)
     EXPECT_THAT(
         PrintToString(chainedMixed),
         ::testing::MatchesRegex(
-            "ChainedTimingFunction@.*\\("
-                "ChainedTimingFunction@.*\\("
-                    "LinearTimingFunction@.*\\[0 -> 1\\]"
+            "chained\\("
+                "chained\\("
+                    "linear\\[0 -> 1\\]"
                 "\\)\\[0 -> 0.75\\], "
-                "CubicBezierTimingFunction@.*\\(Custom, 1, 0, 1, -1\\)\\[0.75 -> 1\\]"
+                "cubic-bezier\\(1, 0, 1, -1\\)\\[0.75 -> 1\\]"
             "\\)"));
 }
 

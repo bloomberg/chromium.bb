@@ -340,7 +340,7 @@ bool Animation::updateChildrenAndEffects() const
 
 double Animation::calculateTimeToEffectChange(double localTime, double timeToNextIteration) const
 {
-    const double activeStartTime = startTime() + specified().startDelay;
+    const double activeStartTime = startTime() + specifiedTiming().startDelay;
     switch (phase()) {
     case PhaseBefore:
         return activeStartTime - localTime;
@@ -369,7 +369,7 @@ bool Animation::isCandidateForAnimationOnCompositor() const
 {
     if (!effect() || !m_target)
         return false;
-    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specified(), *effect());
+    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect());
 }
 
 bool Animation::maybeStartAnimationOnCompositor()
@@ -379,7 +379,7 @@ bool Animation::maybeStartAnimationOnCompositor()
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target.get()))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target.get(), specified(), *effect(), m_compositorAnimationIds))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target.get(), specifiedTiming(), *effect(), m_compositorAnimationIds))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;

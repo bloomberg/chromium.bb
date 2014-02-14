@@ -1,0 +1,108 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "core/animation/TimedItemTiming.h"
+
+#include "core/animation/TimedItem.h"
+#include "platform/animation/TimingFunction.h"
+
+namespace WebCore {
+
+PassRefPtr<TimedItemTiming> TimedItemTiming::create(TimedItem* parent)
+{
+    return adoptRef(new TimedItemTiming(parent));
+}
+
+TimedItemTiming::TimedItemTiming(TimedItem* parent)
+: m_parent(parent)
+{
+}
+
+double TimedItemTiming::delay()
+{
+    return m_parent->specifiedTiming().startDelay;
+}
+
+double TimedItemTiming::endDelay()
+{
+    return m_parent->specifiedTiming().endDelay;
+}
+
+String TimedItemTiming::fill()
+{
+    Timing::FillMode fillMode = m_parent->specifiedTiming().fillMode;
+    switch (fillMode) {
+    case Timing::FillModeNone:
+        return "none";
+    case Timing::FillModeForwards:
+        return "forwards";
+    case Timing::FillModeBackwards:
+        return "backwards";
+    case Timing::FillModeBoth:
+        return "both";
+    case Timing::FillModeAuto:
+        return "auto";
+    }
+    ASSERT_NOT_REACHED();
+    return "auto";
+}
+
+double TimedItemTiming::iterationStart()
+{
+    return m_parent->specifiedTiming().iterationStart;
+}
+
+double TimedItemTiming::iterations()
+{
+    return m_parent->specifiedTiming().iterationCount;
+}
+
+// This logic was copied from the example in bindings/tests/idls/TestInterface.idl
+// and bindings/tests/results/V8TestInterface.cpp.
+// FIXME: It might be possible to have 'duration' defined as an attribute in the idl.
+// If possible, fix will be in a follow-up patch.
+void TimedItemTiming::duration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1)
+{
+    if (propertyName != "duration")
+        return;
+
+    if (std::isnan(m_parent->specifiedTiming().iterationDuration)) {
+        element1Enabled = true;
+        element1 = "auto";
+        return;
+    }
+    element0Enabled = true;
+    element0 = m_parent->specifiedTiming().iterationDuration;
+    return;
+}
+
+double TimedItemTiming::playbackRate()
+{
+    return m_parent->specifiedTiming().playbackRate;
+}
+
+String TimedItemTiming::direction()
+{
+    Timing::PlaybackDirection direction = m_parent->specifiedTiming().direction;
+    switch (direction) {
+    case Timing::PlaybackDirectionNormal:
+        return "normal";
+    case Timing::PlaybackDirectionReverse:
+        return "reverse";
+    case Timing::PlaybackDirectionAlternate:
+        return "alternate";
+    case Timing::PlaybackDirectionAlternateReverse:
+        return "alternate-reverse";
+    }
+    ASSERT_NOT_REACHED();
+    return "normal";
+}
+
+String TimedItemTiming::easing()
+{
+    return m_parent->specifiedTiming().timingFunction->toString();
+}
+
+} // namespace WebCore

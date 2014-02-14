@@ -145,6 +145,7 @@
       'animation/AnimationValue.h',
       'animation/KeyframeValueList.cpp',
       'animation/KeyframeValueList.h',
+      'animation/TimingFunction.cpp',
       'animation/TimingFunction.h',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',

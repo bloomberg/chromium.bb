@@ -31,6 +31,7 @@
 #ifndef TimedItem_h
 #define TimedItem_h
 
+#include "core/animation/TimedItemTiming.h"
 #include "core/animation/Timing.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -83,12 +84,13 @@ public:
     double activeDuration() const;
     double timeFraction() const { return ensureCalculated().timeFraction; }
     double startTime() const { return m_startTime; }
-    double endTime() const { return startTime() + specified().startDelay + activeDuration() + specified().endDelay; }
+    double endTime() const { return startTime() + specifiedTiming().startDelay + activeDuration() + specifiedTiming().endDelay; }
 
     const Player* player() const { return m_player; }
     Player* player() { return m_player; }
     Player* player(bool& isNull) { isNull = !m_player; return m_player; }
-    const Timing& specified() const { return m_specified; }
+    const Timing& specifiedTiming() const { return m_specified; }
+    PassRefPtr<TimedItemTiming> specified() { return TimedItemTiming::create(this); }
 
     double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime; }
     double currentIteration(bool& isNull) const { isNull = !ensureCalculated().isInEffect; return ensureCalculated().currentIteration; }

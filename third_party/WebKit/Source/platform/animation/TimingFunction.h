@@ -34,12 +34,14 @@
 #include "wtf/RefCounted.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 
 
 namespace WebCore {
 
-class TimingFunction : public RefCounted<TimingFunction> {
+class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 public:
 
     enum Type {
@@ -50,9 +52,11 @@ public:
 
     Type type() const { return m_type; }
 
+    virtual String toString() const = 0;
+
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
-    virtual double evaluate(double fraction, double accuracy) const = 0;
+    virtual double evaluate(double fraction, double accuracy) const =0;
 
 protected:
     TimingFunction(Type type)
@@ -64,7 +68,7 @@ private:
     Type m_type;
 };
 
-class LinearTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT LinearTimingFunction FINAL : public TimingFunction {
 public:
     static PassRefPtr<LinearTimingFunction> create()
     {
@@ -73,11 +77,9 @@ public:
 
     virtual ~LinearTimingFunction() { }
 
-    virtual double evaluate(double fraction, double) const OVERRIDE
-    {
-        ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
-        return fraction;
-    }
+    virtual String toString() const OVERRIDE;
+
+    virtual double evaluate(double fraction, double) const OVERRIDE;
 
 private:
     LinearTimingFunction()
@@ -86,11 +88,10 @@ private:
     }
 };
 
-
 // Forward declare so we can friend it below. Don't use in production code!
 class ChainedTimingFunctionTestHelper;
 
-class CubicBezierTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT CubicBezierTimingFunction FINAL : public TimingFunction {
 public:
     enum SubType {
         Ease,
@@ -136,13 +137,9 @@ public:
 
     virtual ~CubicBezierTimingFunction() { }
 
-    virtual double evaluate(double fraction, double accuracy) const OVERRIDE
-    {
-        ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
-        if (!m_bezier)
-            m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
-        return m_bezier->solve(fraction, accuracy);
-    }
+    virtual String toString() const OVERRIDE;
+
+    virtual double evaluate(double fraction, double accuracy) const OVERRIDE;
 
     double x1() const { return m_x1; }
     double y1() const { return m_y1; }
@@ -170,7 +167,7 @@ private:
     mutable OwnPtr<UnitBezier> m_bezier;
 };
 
-class StepsTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT StepsTimingFunction FINAL : public TimingFunction {
 public:
     enum SubType {
         Start,
@@ -205,11 +202,9 @@ public:
 
     virtual ~StepsTimingFunction() { }
 
-    virtual double evaluate(double fraction, double) const OVERRIDE
-    {
-        ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
-        return std::min(1.0, (floor(m_steps * fraction) + m_stepAtStart) / m_steps);
-    }
+    virtual String toString() const OVERRIDE;
+
+    virtual double evaluate(double fraction, double) const OVERRIDE;
 
     int numberOfSteps() const { return m_steps; }
     bool stepAtStart() const { return m_stepAtStart; }
@@ -230,7 +225,7 @@ private:
     SubType m_subType;
 };
 
-class ChainedTimingFunction FINAL : public TimingFunction {
+class PLATFORM_EXPORT ChainedTimingFunction FINAL : public TimingFunction {
 public:
     static PassRefPtr<ChainedTimingFunction> create()
     {
@@ -243,18 +238,10 @@ public:
         ASSERT(upperBound > max);
         m_segments.append(Segment(max, upperBound, timingFunction));
     }
-    virtual double evaluate(double fraction, double accuracy) const OVERRIDE
-    {
-        ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
-        ASSERT(!m_segments.isEmpty());
-        ASSERT(m_segments.last().max() == 1);
-        size_t i = 0;
-        const Segment* segment = &m_segments[i++];
-        while (fraction >= segment->max() && i < m_segments.size()) {
-            segment = &m_segments[i++];
-        }
-        return segment->evaluate(fraction, accuracy);
-    }
+
+    virtual String toString() const OVERRIDE;
+
+    virtual double evaluate(double fraction, double accuracy) const OVERRIDE;
 
 private:
     class Segment {
@@ -289,6 +276,7 @@ private:
         // Allow PrintTo/operator== of the segments. Can be removed once
         // ChainedTimingFunction has a public API for segments.
         friend class ChainedTimingFunctionTestHelper;
+        friend class ChainedTimingFunction;
     };
 
     ChainedTimingFunction()

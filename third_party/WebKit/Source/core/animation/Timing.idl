@@ -1,0 +1,24 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    RuntimeEnabled=WebAnimationsAPI,
+    ImplementedAs=TimedItemTiming,
+] interface Timing {
+    // FIXME: None of these are readonly in the spec. They need setters.
+    readonly attribute double delay;
+    readonly attribute double endDelay;
+    readonly attribute DOMString fill;
+    readonly attribute double iterationStart;
+    readonly attribute double iterations;
+
+    // FIXME: This uses a NamedPropertyGetter to implement the 'duration' attribute
+    // because duration has a union type (which is tricky to do with an attribute).
+    // Fix will be in a follow-up patch if there is a better solution.
+    [NotEnumerable, ImplementedAs=duration] getter (double or DOMString) (DOMString name);
+
+    readonly attribute double playbackRate;
+    readonly attribute DOMString direction;
+    readonly attribute DOMString easing;
+};

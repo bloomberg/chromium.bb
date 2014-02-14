@@ -36,23 +36,6 @@ namespace WebCore {
 
 // This class exists so that ChainedTimingFunction only needs to friend one thing.
 class ChainedTimingFunctionTestHelper {
-    static void PrintTo(const ChainedTimingFunction& timingFunction, ::std::ostream* os)
-    {
-        // Forward declare the generic PrintTo function as ChainedTimingFunction needs to call it.
-        void PrintTo(const TimingFunction&, ::std::ostream*);
-
-        *os << "ChainedTimingFunction@" << &timingFunction << "(";
-        for (size_t i = 0; i < timingFunction.m_segments.size(); i++) {
-            ChainedTimingFunction::Segment segment = timingFunction.m_segments[i];
-            PrintTo(*(segment.m_timingFunction.get()), os);
-            *os << "[" << segment.m_min << " -> " << segment.m_max << "]";
-            if (i+1 != timingFunction.m_segments.size()) {
-                *os << ", ";
-            }
-        }
-        *os << ")";
-    }
-
     static bool equals(const ChainedTimingFunction& lhs, const TimingFunction& rhs)
     {
         if (rhs.type() != TimingFunction::ChainedFunction)
@@ -89,98 +72,12 @@ class ChainedTimingFunctionTestHelper {
         return (*(lhs.m_timingFunction.get())) == (*(rhs.m_timingFunction.get()));
     }
 
-    friend void PrintTo(const ChainedTimingFunction&, ::std::ostream*);
     friend bool operator==(const ChainedTimingFunction& lhs, const TimingFunction& rhs);
 };
 
-void PrintTo(const LinearTimingFunction& timingFunction, ::std::ostream* os)
-{
-    *os << "LinearTimingFunction@" << &timingFunction;
-}
-
-void PrintTo(const CubicBezierTimingFunction& timingFunction, ::std::ostream* os)
-{
-    *os << "CubicBezierTimingFunction@" << &timingFunction << "(";
-    switch (timingFunction.subType()) {
-    case CubicBezierTimingFunction::Ease:
-        *os << "Ease";
-        break;
-    case CubicBezierTimingFunction::EaseIn:
-        *os << "EaseIn";
-        break;
-    case CubicBezierTimingFunction::EaseOut:
-        *os << "EaseOut";
-        break;
-    case CubicBezierTimingFunction::EaseInOut:
-        *os << "EaseInOut";
-        break;
-    case CubicBezierTimingFunction::Custom:
-        *os << "Custom";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    *os << ", " << timingFunction.x1();
-    *os << ", " << timingFunction.y1();
-    *os << ", " << timingFunction.x2();
-    *os << ", " << timingFunction.y2();
-    *os << ")";
-}
-
-void PrintTo(const StepsTimingFunction& timingFunction, ::std::ostream* os)
-{
-    *os << "StepsTimingFunction@" << &timingFunction << "(";
-    switch (timingFunction.subType()) {
-    case StepsTimingFunction::Start:
-        *os << "Start";
-        break;
-    case StepsTimingFunction::End:
-        *os << "End";
-        break;
-    case StepsTimingFunction::Custom:
-        *os << "Custom";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    *os << ", " << timingFunction.numberOfSteps();
-    *os << ", " << (timingFunction.stepAtStart() ? "true" : "false");
-    *os << ")";
-}
-
-void PrintTo(const ChainedTimingFunction& timingFunction, ::std::ostream* os)
-{
-    ChainedTimingFunctionTestHelper::PrintTo(timingFunction, os);
-}
-
-// The generic PrintTo *must* come after the non-generic PrintTo otherwise it
-// will end up calling itself.
 void PrintTo(const TimingFunction& timingFunction, ::std::ostream* os)
 {
-    switch (timingFunction.type()) {
-    case TimingFunction::LinearFunction: {
-        const LinearTimingFunction& linear = toLinearTimingFunction(timingFunction);
-        PrintTo(linear, os);
-        return;
-    }
-    case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(timingFunction);
-        PrintTo(cubic, os);
-        return;
-    }
-    case TimingFunction::StepsFunction: {
-        const StepsTimingFunction& step = toStepsTimingFunction(timingFunction);
-        PrintTo(step, os);
-        return;
-    }
-    case TimingFunction::ChainedFunction: {
-        const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
-        PrintTo(chained, os);
-        return;
-    }
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    *os << timingFunction.toString().latin1().data();
 }
 
 bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)

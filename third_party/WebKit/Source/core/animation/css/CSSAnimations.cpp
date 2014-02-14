@@ -473,7 +473,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const InertAnimation* inertAnimation = animationsIter->get();
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
-            RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::DefaultPriority, eventDelegate.release());
+            RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
             Player* player = element->document().timeline()->createPlayer(animation.get());
             if (inertAnimation->paused())
                 player->pause();
@@ -531,7 +531,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames.append(frames[1]->clone());
             effect = KeyframeEffectModel::create(newFrames);
         }
-        RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specified(), Animation::TransitionPriority, eventDelegate.release());
+        RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
         player->update();
         element->document().cssPendingAnimations().add(player.get());
@@ -757,13 +757,13 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* ti
         // between a single pair of samples. See http://crbug.com/275263. For
         // compatibility with the existing implementation, this event uses
         // the elapsedTime for the first iteration in question.
-        ASSERT(!std::isnan(timedItem->specified().iterationDuration));
-        const double elapsedTime = timedItem->specified().iterationDuration * (previousIteration + 1);
+        ASSERT(!std::isnan(timedItem->specifiedTiming().iterationDuration));
+        const double elapsedTime = timedItem->specifiedTiming().iterationDuration * (previousIteration + 1);
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
         return;
     }
     if ((isFirstSample || previousPhase == TimedItem::PhaseBefore) && isLaterPhase(currentPhase, TimedItem::PhaseBefore)) {
-        ASSERT(timedItem->specified().startDelay > 0 || isFirstSample);
+        ASSERT(timedItem->specifiedTiming().startDelay > 0 || isFirstSample);
         // The spec states that the elapsed time should be
         // 'delay < 0 ? -delay : 0', but we always use 0 to match the existing
         // implementation. See crbug.com/279611
@@ -782,7 +782,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
     const TimedItem::Phase currentPhase = timedItem->phase();
     if (currentPhase == TimedItem::PhaseAfter && (isFirstSample || previousPhase != currentPhase) && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
-        const Timing& timing = timedItem->specified();
+        const Timing& timing = timedItem->specifiedTiming();
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());

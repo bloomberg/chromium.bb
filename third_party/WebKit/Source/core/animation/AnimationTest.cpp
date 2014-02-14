@@ -11,6 +11,7 @@
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/TimedItemTiming.h"
 #include "platform/animation/TimingFunctionTestHelper.h"
 
 #include <gtest/gtest.h>
@@ -159,7 +160,7 @@ TEST_F(AnimationAnimationTest, CanSetDuration)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, duration);
 
-    EXPECT_EQ(duration, animation->specified().iterationDuration);
+    EXPECT_EQ(duration, animation->specifiedTiming().iterationDuration);
 }
 
 TEST_F(AnimationAnimationTest, CanOmitSpecifiedDuration)
@@ -173,7 +174,7 @@ TEST_F(AnimationAnimationTest, CanOmitSpecifiedDuration)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes);
 
-    EXPECT_TRUE(std::isnan(animation->specified().iterationDuration));
+    EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
 TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
@@ -187,7 +188,84 @@ TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2);
 
-    EXPECT_EQ(0, animation->specified().iterationDuration);
+    EXPECT_EQ(0, animation->specifiedTiming().iterationDuration);
+}
+
+TEST_F(AnimationAnimationTest, SpecifiedGetters)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+
+    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+    setV8ObjectPropertyAsNumber(timingInput, "delay", 2);
+    setV8ObjectPropertyAsNumber(timingInput, "endDelay", 0.5);
+    setV8ObjectPropertyAsString(timingInput, "fill", "backwards");
+    setV8ObjectPropertyAsNumber(timingInput, "iterationStart", 2);
+    setV8ObjectPropertyAsNumber(timingInput, "iterations", 10);
+    setV8ObjectPropertyAsNumber(timingInput, "playbackRate", 2);
+    setV8ObjectPropertyAsString(timingInput, "direction", "reverse");
+    setV8ObjectPropertyAsString(timingInput, "easing", "step-start");
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
+
+    RefPtr<TimedItemTiming> specified = animation->specified();
+    EXPECT_EQ(2, specified->delay());
+    EXPECT_EQ(0.5, specified->endDelay());
+    EXPECT_EQ("backwards", specified->fill());
+    EXPECT_EQ(2, specified->iterationStart());
+    EXPECT_EQ(10, specified->iterations());
+    EXPECT_EQ(2, specified->playbackRate());
+    EXPECT_EQ("reverse", specified->direction());
+    EXPECT_EQ("step-start", specified->easing());
+}
+
+TEST_F(AnimationAnimationTest, SpecifiedDurationGetter)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+
+    v8::Handle<v8::Object> timingInputWithDuration = v8::Object::New(isolate);
+    setV8ObjectPropertyAsNumber(timingInputWithDuration, "duration", 2.5);
+    Dictionary timingInputDictionaryWithDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputWithDuration), isolate);
+
+    RefPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration);
+
+    RefPtr<TimedItemTiming> specifiedWithDuration = animationWithDuration->specified();
+    bool isNumber = false;
+    double numberDuration = std::numeric_limits<double>::quiet_NaN();
+    bool isString = false;
+    String stringDuration = "";
+    specifiedWithDuration->duration("duration", isNumber, numberDuration, isString, stringDuration);
+    EXPECT_TRUE(isNumber);
+    EXPECT_EQ(2.5, numberDuration);
+    EXPECT_FALSE(isString);
+    EXPECT_EQ("", stringDuration);
+
+
+    v8::Handle<v8::Object> timingInputNoDuration = v8::Object::New(isolate);
+    Dictionary timingInputDictionaryNoDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputNoDuration), isolate);
+
+    RefPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration);
+
+    RefPtr<TimedItemTiming> specifiedNoDuration = animationNoDuration->specified();
+    isNumber = false;
+    numberDuration = std::numeric_limits<double>::quiet_NaN();
+    isString = false;
+    stringDuration = "";
+    specifiedNoDuration->duration("duration", isNumber, numberDuration, isString, stringDuration);
+    EXPECT_FALSE(isNumber);
+    EXPECT_TRUE(std::isnan(numberDuration));
+    EXPECT_TRUE(isString);
+    EXPECT_EQ("auto", stringDuration);
 }
 
 TEST_F(AnimationAnimationTest, TimingInputStartDelay)
