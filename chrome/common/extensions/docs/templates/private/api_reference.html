@@ -1,4 +1,4 @@
-<div class="api_reference">
+<div class="api-reference">
   {{- This is a span not a header-tag so that it doesn't show up in the TOC. -}}
   {{?api.types}}
     <h2 id="types">Types</h2>
@@ -8,9 +8,11 @@
   {{/api.types}}
   {{?api.properties}}
     <h2 id="properties">Properties</h2>
+    <table>
     {{#p:api.properties}}
       {{+partials.api_property api:api property:p/}}
     {{/}}
+    </table>
   {{/api.properties}}
   {{?api.functions}}
     <h2 id="methods">Methods</h2>

@@ -3,14 +3,15 @@
   {{?display_name}}
   <h3 id="{{id}}">{{display_name}}</h3>
   {{/display_name}}
-  <div>
+  <table>
     {{^is_object}}
     {{?enum_values}}
-    <dd>enum of
+    <tr><th>Enum</th></tr>
+    <tr><td>
       {{#e:enum_values}}
       {{?e.last}}or {{/}}<code>"{{e.name}}"</code>{{^e.last}}, {{/}}
       {{/enum_values}}
-    </dd>
+    </td></tr>
     {{:enum_values}}
     <dd>
       {{+partials.variable_type type:type/}}
@@ -40,6 +41,6 @@
                             items:events
                             item_partial:partials.event/}}
     {{/events}}
-  </div>
+  </table>
 </div>
 {{/type}}

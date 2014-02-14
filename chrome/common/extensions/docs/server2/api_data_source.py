@@ -299,6 +299,7 @@ class _JSCModel(object):
       'name': callback.simple_name,
       'description': self._FormatDescription(callback.description),
       'optional': callback.optional,
+      'is_callback': True,
       'id': _CreateId(callback, 'property'),
       'simple_type': 'function',
     }

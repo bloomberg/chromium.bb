@@ -1,23 +1,10 @@
 {{#parameter}}
-<div>
-  {{?parentName}}<a name="{{id}}"></a>{{/}}
-  <dl>
-    {{+partials.property
-        property:parameter
-        parentName:name
-        hideParamTOC:hideParamTOC /}}
-  </dl>
-  {{?properties}}
-  <dd>
-    <h4 title="">Properties</h4>
-    <dl>
-      {{#p:properties +partials.parameter_full
-          parameter:p
-          parentName:name
-          hideParamTOC:hideParamTOC /}}
-    </dl>
-  </dd>
-  {{/properties}}
+<tr>
+  {{+partials.property
+      property:parameter
+      parentName:name
+      parentCallback:parentCallback
+      hideParamTOC:hideParamTOC/}}
   {{?parameters}}
   <dd>
     <dl>
@@ -39,5 +26,5 @@
     </dl>
   </dd>
   {{/returns}}
-</div>
+</tr>
 {{/parameter}}

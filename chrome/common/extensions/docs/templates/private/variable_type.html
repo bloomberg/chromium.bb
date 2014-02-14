@@ -1,5 +1,11 @@
 {{#type}}
-{{?link +partials.ref_link link:link/}}
+{{?link}}
+  {{?disableLink}}
+    {{link.text}}
+  {{:disableLink}}
+    {{+partials.ref_link link:link/}}
+  {{/disableLink}}
+{{/link}}
 {{?choices}}
 {{#c:choices}}
 {{+partials.variable_type type:c/}}{{^c.last}} or {{/}}

@@ -1,5 +1,5 @@
 {{#callback}}
-<p>
+  <p>
   {{?optional}}
       If you specify the <em>{{name}}</em> parameter, it should
       specify a function that looks like this:
@@ -7,18 +7,18 @@
       The <em>{{name}}</em> parameter should specify a function
       that looks like this:
   {{/optional}}
-</p>
-<pre>function({{#p:parameters}}{{+partials.variable_type type:p/}} {{p.name}}{{^p.last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
+  </p>
+<code class="prettyprint">function({{#p:parameters}}{{+partials.variable_type type:p/}} {{p.name}}{{^p.last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</code>
 {{?description}}
 <p>
   {{{description}}}
 </p>
 {{/description}}
 {{?parameters}}
-<dl>
+  <table class="innerTable">
   {{#p:parameters}}
     {{+partials.parameter_full parameter:p parentName:name hideParamTOC:true /}}
   {{/parameters}}
-</dl>
+  </table>
 {{/parameters}}
 {{/callback}}

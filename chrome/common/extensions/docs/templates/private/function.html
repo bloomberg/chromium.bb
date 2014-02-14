@@ -1,4 +1,5 @@
 {{!function The function to render}}
+{{?parentName}}<tr><td>{{/}}
 <div>
   {{?parentName}}<h4{{:}}<h3{{/}}
       {{- Might be an anonymous function. -}}
@@ -11,3 +12,4 @@
       parentName:parentName
       api:api/}}
 </div>
+{{?parentName}}</td></tr>{{/}}

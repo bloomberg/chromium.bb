@@ -1,10 +1,4 @@
 {{?display_name}}
-<h3 id="{{display_name}}-{{title}}" class="capitalize" title="">
-  {{title}} of <a href="#type-{{display_name}}">{{display_name}}</a>
-</h3>
+<tr><th colspan="3" id="{{display_name}}-{{title}}">{{title}}</th></tr>
 {{/display_name}}
-<dd>
-  <dl>
-    {{#i:items +item_partial parameter:i property:i event:i function:i parentName:display_name/}}
-  </dl>
-</dd>
+{{#i:items +item_partial parameter:i property:i event:i function:i parentName:display_name/}}

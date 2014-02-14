@@ -13,20 +13,22 @@
 {{?api.channelWarning.trunk +partials.warning_trunk/}}
 {{?api.channelWarning.dev   +partials.warning_dev/}}
 {{?api.channelWarning.beta  +partials.warning_beta/}}
-<h1>{{api.title}}</h1>
-{{?api.deprecated +partials.warning_deprecated item:api/}}
-$(table_of_contents)
-{{+partials.intro_table api:api /}}
-{{?intro}}
-<section>
-{{+intro platform:platform platformTitle:platformTitle /}}
-</section>
-{{/intro}}
-<section>
-<h2 id="api-reference-header" title="">{{api.namespace}} reference</h2>
-{{+partials.api_reference api:api
-                          platform:platform
-                          platformTitle:platformTitle
-                          samplesForApi:samplesForApi /}}
-</section>
+<article>
+  <div itemprop="articleBody" class="api">
+    <h1>{{api.title}}</h1>
+    {{+partials.intro_table api:api /}}
+    {{?intro}}
+    <section>
+      {{+intro platform:platform platformTitle:platformTitle /}}
+    </section>
+    {{/intro}}
+    {{+partials.api_summary api:api/}}
+    <section>
+      {{+partials.api_reference api:api
+                                platform:platform
+                                platformTitle:platformTitle
+                                samplesForApi:samplesForApi /}}
+    </section>
+  </div>
+</article>
 {{/partials.site}}
