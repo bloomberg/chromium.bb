@@ -91,7 +91,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual void StopSearch() = 0;
 
   // Invoked to open the search result.
-  virtual void OpenSearchResult(SearchResult* result, int event_flags) = 0;
+  virtual void OpenSearchResult(SearchResult* result,
+                                bool auto_launch,
+                                int event_flags) = 0;
 
   // Called to invoke a custom action on |result|.  |action_index| corresponds
   // to the index of an icon in |result.action_icons()|.

@@ -226,8 +226,10 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
     delegate_->StopSearch();
 }
 
-void AppListMainView::OpenResult(SearchResult* result, int event_flags) {
-  delegate_->OpenSearchResult(result, event_flags);
+void AppListMainView::OpenResult(SearchResult* result,
+                                 bool auto_launch,
+                                 int event_flags) {
+  delegate_->OpenSearchResult(result, auto_launch, event_flags);
 }
 
 void AppListMainView::InvokeResultAction(SearchResult* result,

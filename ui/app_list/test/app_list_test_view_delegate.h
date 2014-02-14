@@ -48,6 +48,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void StartSearch() OVERRIDE {}
   virtual void StopSearch() OVERRIDE {}
   virtual void OpenSearchResult(SearchResult* result,
+                                bool auto_launch,
                                 int event_flags) OVERRIDE;
   virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,

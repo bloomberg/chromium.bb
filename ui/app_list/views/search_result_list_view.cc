@@ -201,7 +201,7 @@ void SearchResultListView::VisibilityChanged(views::View* starting_from,
 
 void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(auto_launch_animation_.get(), animation);
-  delegate_->OpenResult(results_->GetItemAt(0), ui::EF_NONE);
+  delegate_->OpenResult(results_->GetItemAt(0), true, ui::EF_NONE);
 }
 
 void SearchResultListView::AnimationProgressed(
@@ -237,7 +237,7 @@ void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                                  int event_flags) {
   if (delegate_ && view->result())
-    delegate_->OpenResult(view->result(), event_flags);
+    delegate_->OpenResult(view->result(), false, event_flags);
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,

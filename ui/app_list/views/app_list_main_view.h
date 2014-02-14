@@ -86,6 +86,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // Overridden from SearchResultListViewDelegate:
   virtual void OpenResult(SearchResult* result,
+                          bool auto_launch,
                           int event_flags) OVERRIDE;
   virtual void InvokeResultAction(SearchResult* result,
                                   int action_index,

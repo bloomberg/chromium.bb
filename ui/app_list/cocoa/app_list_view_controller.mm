@@ -348,8 +348,10 @@ void AppListModelObserverBridge::OnProfilesChanged() {
 }
 
 - (void)openResult:(app_list::SearchResult*)result {
-  if (delegate_)
-    delegate_->OpenSearchResult(result, 0 /* event flags */);
+  if (delegate_) {
+    delegate_->OpenSearchResult(
+        result, false /* auto_launch */, 0 /* event flags */);
+  }
 }
 
 - (void)redoSearch {

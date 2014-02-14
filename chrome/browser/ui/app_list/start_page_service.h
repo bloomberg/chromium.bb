@@ -78,6 +78,8 @@ class StartPageService : public BrowserContextKeyedService {
   scoped_ptr<RecommendedApps> recommended_apps_;
   SpeechRecognitionState state_;
   ObserverList<StartPageObserver> observers_;
+  bool speech_button_toggled_manually_;
+  bool speech_result_obtained_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageService);
 };

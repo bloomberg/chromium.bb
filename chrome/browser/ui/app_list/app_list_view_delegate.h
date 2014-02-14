@@ -71,6 +71,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void StartSearch() OVERRIDE;
   virtual void StopSearch() OVERRIDE;
   virtual void OpenSearchResult(app_list::SearchResult* result,
+                                bool auto_launch,
                                 int event_flags) OVERRIDE;
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,
                                         int action_index,

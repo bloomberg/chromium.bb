@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -234,7 +235,10 @@ void AppListViewDelegate::StopSearch() {
 
 void AppListViewDelegate::OpenSearchResult(
     app_list::SearchResult* result,
+    bool auto_launch,
     int event_flags) {
+  if (auto_launch)
+    base::RecordAction(base::UserMetricsAction("AppList_AutoLaunched"));
   search_controller_->OpenResult(result, event_flags);
 }
 
@@ -250,6 +254,7 @@ base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
 }
 
 void AppListViewDelegate::AutoLaunchCanceled() {
+  base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
   auto_launch_timeout_ = base::TimeDelta();
 }
 

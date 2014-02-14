@@ -265,6 +265,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   virtual void OpenSearchResult(app_list::SearchResult* result,
+                                bool auto_launch,
                                 int event_flags) OVERRIDE {
     const ExampleSearchResult* example_result =
         static_cast<const ExampleSearchResult*>(result);

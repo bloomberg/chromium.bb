@@ -89,6 +89,7 @@ void AppListTestViewDelegate::GetShortcutPathForApp(
 }
 
 void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
+                                               bool auto_launch,
                                                int event_flags) {
   ++open_search_result_count_;
 }

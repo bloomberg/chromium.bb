@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +29,19 @@
 #include "extensions/common/extension.h"
 #include "ui/app_list/app_list_switches.h"
 
+using base::RecordAction;
+using base::UserMetricsAction;
+
 namespace app_list {
+
+namespace {
+
+bool InSpeechRecognition(SpeechRecognitionState state) {
+  return state == SPEECH_RECOGNITION_RECOGNIZING ||
+      state == SPEECH_RECOGNITION_IN_SPEECH;
+}
+
+}
 
 class StartPageService::ProfileDestroyObserver
     : public content::NotificationObserver {
@@ -84,7 +97,9 @@ StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
       profile_destroy_observer_(new ProfileDestroyObserver(this)),
       recommended_apps_(new RecommendedApps(profile)),
-      state_(app_list::SPEECH_RECOGNITION_OFF) {
+      state_(app_list::SPEECH_RECOGNITION_OFF),
+      speech_button_toggled_manually_(false),
+      speech_result_obtained_(false) {
 #if defined(OS_CHROMEOS)
   // Updates the default state to hotword listening, because this is
   // the default behavior. This will be updated when the page is loaded and
@@ -123,6 +138,7 @@ void StartPageService::RemoveObserver(StartPageObserver* observer) {
 }
 
 void StartPageService::ToggleSpeechRecognition() {
+  speech_button_toggled_manually_ = true;
   contents_->GetWebUI()->CallJavascriptFunction(
       "appList.startPage.toggleSpeechRecognition");
 }
@@ -138,6 +154,10 @@ content::WebContents* StartPageService::GetSpeechRecognitionContents() {
 
 void StartPageService::OnSpeechResult(
     const base::string16& query, bool is_final) {
+  if (is_final) {
+    speech_result_obtained_ = true;
+    RecordAction(UserMetricsAction("AppList_SearchedBySpeech"));
+  }
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechResult(query, is_final));
@@ -151,6 +171,19 @@ void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
+  if (!InSpeechRecognition(state_) && InSpeechRecognition(new_state)) {
+    if (!speech_button_toggled_manually_ &&
+        state_ == SPEECH_RECOGNITION_HOTWORD_LISTENING) {
+      RecordAction(UserMetricsAction("AppList_HotwordRecognized"));
+    } else {
+      RecordAction(UserMetricsAction("AppList_VoiceSearchStartedManually"));
+    }
+  } else if (InSpeechRecognition(state_) && !InSpeechRecognition(new_state) &&
+             !speech_result_obtained_) {
+    RecordAction(UserMetricsAction("AppList_VoiceSearchCanceled"));
+  }
+  speech_button_toggled_manually_ = false;
+  speech_result_obtained_ = false;
   state_ = new_state;
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
