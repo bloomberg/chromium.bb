@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -59,9 +61,18 @@ void MultiProfileUserController::RegisterPrefs(
 // static
 void MultiProfileUserController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Use "disabled" default if there is no user manager or no logged in user.
+  // This is true for signin profile (where the value does not matter) or
+  // for the primary user's profile. This essentially disables multiprofile
+  // unless the primary user has a policy to say otherwise.
+  const bool use_disable_default =
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kForceMultiProfileInTests) &&
+      (!UserManager::IsInitialized() ||
+       UserManager::Get()->GetLoggedInUsers().size() == 1);
   registry->RegisterStringPref(
       prefs::kMultiProfileUserBehavior,
-      kBehaviorUnrestricted,
+      use_disable_default ? kBehaviorNotAllowed : kBehaviorUnrestricted,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
