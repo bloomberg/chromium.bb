@@ -1,12 +1,10 @@
 Test timeline records coalescing
 
-Main thread frames:
+Test: main thread only
 {
     cpuTime : 0.003999
     duration : 0.016
     endTime : 1.016001
-    id : "1"
-    isBackground : false
     startTime : 1.000001
     timeByCategory : {
         other : 0.000002
@@ -14,302 +12,148 @@ Main thread frames:
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0.010999
     duration : 0.016
     endTime : 1.032001
-    id : "2"
-    isBackground : false
     startTime : 1.016001
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.002003
+        rendering : 0.005999
+        scripting : 0.002997
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0.001999
     duration : 0.016
     endTime : 1.048001
-    id : "3"
-    isBackground : false
     startTime : 1.032001
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.001999
     }
 }
+Test: impl-side only
 {
-    cpuTime : 0.043999
-    duration : 0.052
-    endTime : 1.100001
-    id : "4"
-    isBackground : false
-    startTime : 1.048001
+    cpuTime : 0
+    duration : 0.03
+    endTime : 1.03
+    startTime : 1
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.043997
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0
     duration : 0.016
-    endTime : 1.116001
-    id : "5"
-    isBackground : false
-    startTime : 1.100001
+    endTime : 1.046
+    startTime : 1.03
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0.002997
+    duration : 0.032
+    endTime : 1.078
+    startTime : 1.046
+    timeByCategory : {
+        painting : 0.002997
+    }
+}
+{
+    cpuTime : 0
+    duration : 0.003
+    endTime : 1.081
+    startTime : 1.078
+    timeByCategory : {
+    }
+}
+Test: impl-side with commits
+{
+    cpuTime : 0.032999
+    duration : 0.046
+    endTime : 1.046
+    startTime : 1
+    timeByCategory : {
+        other : 0.001004
+        painting : 0.001999
+        rendering : 0.011999
+        scripting : 0.017997
+    }
+}
+{
+    cpuTime : 0.011999
     duration : 0.016
-    endTime : 1.132001
-    id : "6"
-    isBackground : false
-    startTime : 1.116001
+    endTime : 1.062
+    startTime : 1.046
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.001002
+        painting : 0.010997
+        rendering : 0
     }
 }
+Test: impl-side with interleaving commits
 {
-    cpuTime : 0.003999
-    duration : 0.016
-    endTime : 1.148001
-    id : "7"
-    isBackground : false
-    startTime : 1.132001
-    timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
-    }
-}
-{
-    cpuTime : 0.043999
-    duration : 0.052
-    endTime : 1.200001
-    id : "8"
-    isBackground : false
-    startTime : 1.148001
-    timeByCategory : {
-        other : 0.000002
-        scripting : 0.043997
-    }
-}
-{
-    cpuTime : 0.003999
-    duration : 0.016
-    endTime : 1.216001
-    id : "9"
-    isBackground : false
-    startTime : 1.200001
+    cpuTime : 0.012999
+    duration : 0.014001
+    endTime : 1.014001
+    startTime : 1
     timeByCategory : {
         other : 0.000002
-        scripting : 0.003997
+        painting : 0.012997
+        rendering : 0
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0.012999
     duration : 0.016
-    endTime : 1.232001
-    id : "10"
-    isBackground : false
-    startTime : 1.216001
+    endTime : 1.030001
+    startTime : 1.014001
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.000003
+        painting : 0.003999
+        rendering : 0
+        scripting : 0.008997
     }
 }
 {
-    cpuTime : 0.003999
+    cpuTime : 0.008002
     duration : 0.016
-    endTime : 1.248001
-    id : "11"
-    isBackground : false
-    startTime : 1.232001
+    endTime : 1.046001
+    startTime : 1.030001
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.000005
+        painting : 0.007997
+        rendering : 0
     }
 }
-Background frames:
+Test: pre-frame time accounting
 {
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.01599
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "1"
-    startTime : 0.99999
+    cpuTime : 0.000999
+    duration : 0.003001
+    endTime : 1.035001
+    startTime : 1.032
     timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.03199
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "2"
-    startTime : 1.01599
-    timeByCategory : {
-        other : 0
+        other : 0.000003
+        painting : 0.000598
+        rendering : 0.000398
     }
 }
 {
     cpuTime : 0
-    duration : 0.016
-    endTime : 1.04799
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "3"
-    startTime : 1.03199
+    duration : 0.028
+    endTime : 1.063001
+    startTime : 1.035001
     timeByCategory : {
-        other : 0
-        painting : 0.003
     }
 }
 {
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.06399
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "4"
-    startTime : 1.04799
+    cpuTime : 0.026998
+    duration : 0.008001
+    endTime : 1.071002
+    startTime : 1.063001
     timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.07999
-    id : undefined
-    isBackground : true
-    startTime : 1.06399
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.09599
-    id : undefined
-    isBackground : true
-    startTime : 1.07999
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.02
-    endTime : 1.11599
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "5"
-    startTime : 1.09599
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.13199
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "6"
-    startTime : 1.11599
-    timeByCategory : {
-        other : 0
-        painting : 0.003
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.14799
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "7"
-    startTime : 1.13199
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.16399
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "8"
-    startTime : 1.14799
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.17999
-    id : undefined
-    isBackground : true
-    startTime : 1.16399
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.19599
-    id : undefined
-    isBackground : true
-    startTime : 1.17999
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.02
-    endTime : 1.21599
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "9"
-    startTime : 1.19599
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.23199
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "10"
-    startTime : 1.21599
-    timeByCategory : {
-        other : 0
-    }
-}
-{
-    cpuTime : 0
-    duration : 0.016
-    endTime : 1.24799
-    id : undefined
-    isBackground : true
-    mainThreadFrameId : "11"
-    startTime : 1.23199
-    timeByCategory : {
-        other : 0
+        other : 0.012005
+        painting : 0.002998
+        rendering : 0.002998
+        scripting : 0.008997
     }
 }
 

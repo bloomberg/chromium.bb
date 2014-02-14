@@ -8,7 +8,7 @@ function initialize_timelineFrameModel()
 
 InspectorTest.dumpFrame = function(frame)
 {
-    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting", "painting"];
+    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting", "painting", "rendering", "committedFrom"];
     function formatFields(object)
     {
         var result = {};
@@ -31,97 +31,151 @@ InspectorTest.dumpFrame = function(frame)
 
 function test()
 {
-    var records = [
-        {"startTime": 999.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1000.000, "data":{},"endTime":1003.999, "type":"Program", "children":[
-            {"startTime":1000.001, "type":"BeginFrame", "data":{"id":"1"}},
-            {"startTime":1000.002, "endTime":1003.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1005.000, "type":"ActivateLayerTree", "data":{"id":"1"},"thread":"implSide"},
-        {"startTime": 1015.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1016.000, "data":{}, "endTime":1019.999,"type":"Program", "children":[
-            {"startTime":1016.001, "type":"BeginFrame", "data":{"id":"2"}},
-            {"startTime":1016.002, "endTime":1019.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1021.000, "type":"ActivateLayerTree", "data":{"id":"2"}, "thread":"implSide"},
-        {"startTime": 1031.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1032.990, "type":"Rasterize", "thread":"implSide", "endTime": 1035.990},
-        {"startTime": 1032.000, "data":{}, "endTime":1035.999, "type":"Program", "children":[
-            {"startTime":1032.001, "type":"BeginFrame", "data":{"id":"3"}},
-            {"startTime":1032.002, "endTime":1035.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1041.000, "type":"ActivateLayerTree", "data":{"id":"3"}, "thread":"implSide"},
-        {"startTime": 1047.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1048.000, "data":{}, "endTime":1091.999, "type":"Program", "children":[
-            {"startTime":1048.001, "type":"BeginFrame", "data":{"id":"4"}},
-            {"startTime":1048.002, "endTime":1091.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1092.000, "type":"ActivateLayerTree", "data":{"id":"4"}, "thread":"implSide"},
-        {"startTime": 1063.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1079.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1095.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1100.000, "data":{}, "endTime":1103.999,"type":"Program", "children":[
-            {"startTime":1100.001, "type":"BeginFrame", "data":{"id":"5"}},
-            {"startTime":1100.002, "endTime":1103.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1105.000, "type":"ActivateLayerTree", "data":{"id":"5"}, "thread":"implSide"},
-        {"startTime": 1115.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1116.990, "type":"Rasterize", "thread":"1", "endTime": 1118.990},
-        {"startTime": 1117.990, "type":"Rasterize", "thread":"2", "endTime": 1119.990},
-        {"startTime": 1116.000,"data":{}, "endTime":1119.999, "type":"Program", "children":[
-            {"startTime":1116.001, "type":"BeginFrame", "data":{"id":"6"}},
-            {"startTime":1116.002, "endTime":1119.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1121.000, "type":"ActivateLayerTree", "data":{"id":"6"}, "thread":"implSide"},
-        {"startTime": 1131.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1132.000, "data":{}, "endTime":1135.999, "type":"Program", "children":[
-            {"startTime":1132.001, "type":"BeginFrame", "data":{"id":"7"}},
-            {"startTime":1132.002, "endTime":1135.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1137.000, "type":"ActivateLayerTree", "data":{"id":"7"},"thread":"implSide"},
-        {"startTime": 1147.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1148.000, "data":{}, "endTime":1191.999, "type":"Program", "children":[
-            {"startTime":1148.001, "type":"BeginFrame", "data":{"id":"8"}},
-            {"startTime":1148.002, "endTime":1191.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1192.000, "type":"ActivateLayerTree", "data":{"id":"8"}, "thread":"implSide"},
-        {"startTime": 1163.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1179.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1195.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1200.000, "data":{}, "endTime":1203.999,"type":"Program", "children":[
-            {"startTime":1200.001, "type":"BeginFrame", "data":{"id":"9"}},
-            {"startTime":1200.002, "endTime":1203.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1205.000, "type":"ActivateLayerTree", "data":{"id":"9"}, "thread":"implSide"},
-        {"startTime": 1215.990, "type":"BeginFrame","thread":"implSide"},
-        {"startTime": 1216.000, "data":{}, "endTime":1219.999, "type":"Program", "children":[
-            {"startTime":1216.001, "type":"BeginFrame", "data":{"id":"10"}},
-            {"startTime":1216.002, "endTime":1219.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1221.000, "type":"ActivateLayerTree", "data":{"id":"10"}, "thread":"implSide"},
-        {"startTime": 1231.990, "type":"BeginFrame","thread":"implSide"},
-        {"startTime": 1232.000, "data":{}, "endTime":1235.999, "type":"Program", "children":[
-            {"startTime":1232.001, "type":"BeginFrame","data":{"id":"11"}},
-            {"startTime":1232.002, "endTime":1235.999, "type":"FunctionCall" }
-        ]},
-        {"startTime": 1237.000, "type":"ActivateLayerTree", "data":{"id":"11"}, "thread":"implSide"},
-        {"startTime": 1247.990, "type":"BeginFrame", "thread":"implSide"},
-        {"startTime": 1248.000, "data":{}, "endTime":1291.999, "type":"Program", "children":[
-            {"startTime":1248.001, "type":"BeginFrame", "data":{"id":"12"}},
-            {"startTime":1248.002, "endTime":1291.999, "type":"FunctionCall" }
-        ]}
-    ];
+    var testData = {
+        "main thread only": [
+            {"startTime": 1000.000, "data":{},"endTime":1003.999, "type":"Program", "children":[
+                {"startTime":1000.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1000.002, "endTime":1003.999, "type":"FunctionCall" }
+            ]},
+            {"startTime": 1016.000, "data":{},"endTime":1026.999, "type":"Program", "children":[
+                {"startTime":1016.001, "type":"BeginFrame", "data":{"id":"2"}},
+                {"startTime":1016.002, "endTime":1018.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1019.000, "endTime":1020.999, "type":"StyleRecalculate", "data":{}},
+                {"startTime":1021.000, "endTime":1026.999, "type":"Layout", "data":{}},
+            ]},
+            {"startTime": 1032.000, "data":{},"endTime":1033.999, "type":"Program", "children":[
+                {"startTime":1032.001, "type":"BeginFrame", "data":{"id":"3"}},
+            ]},
+            {"startTime": 1048.000, "data":{},"endTime":1049.999, "type":"Program", "children":[
+                {"startTime":1048.001, "type":"BeginFrame", "data":{"id":"4"}},
+            ]}
+        ],
+        "impl-side only": [
+            {"startTime":1000.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1016.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1030.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1032.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1046.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1048.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1064.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1065.001, "endTime":1066, "type":"Paint", "thread": "paintWorker", "data":{}},
+            {"startTime":1066.001, "endTime":1067, "type":"Paint", "thread": "paintWorker", "data":{}},
+            {"startTime":1067.001, "endTime":1068, "type":"Paint", "thread": "paintWorker", "data":{}},
+            {"startTime":1078.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1080.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1081.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1082.000, "data":{},"endTime":1082.1, "type":"Program", "children":[]}
+        ],
+        "impl-side with commits": [
+            {"startTime":1000.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1000.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1014.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1016.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1030.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1032.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime": 1001.000, "data":{},"endTime":1033.999, "type":"Program", "children":[
+                {"startTime":1001.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1001.002, "endTime":1018.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1019.000, "endTime":1020.999, "type":"StyleRecalculate", "data":{}},
+                {"startTime":1021.000, "endTime":1032.999, "type":"Layout", "data":{}},
+                {"startTime":1032.000, "endTime":1033.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime": 1034.000, "data":{},"endTime":1039.999, "type":"Program", "children":[
+                {"startTime":1034.002, "endTime":1039.999, "type":"FunctionCall", "data":{}},
+            ]},
+            {"startTime":1045.001, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"1"}},
+            {"startTime":1046.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1048.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1048.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1060.001, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"2"}},
+            {"startTime":1062.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1049.000, "data":{},"endTime":1060.999, "type":"Program", "children":[
+                {"startTime":1050.001, "type":"BeginFrame", "data":{"id":"2"}},
+                {"startTime":1050.002, "endTime":1060.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1064.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1064.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime": 1065.000, "data":{},"endTime":1078.999, "type":"Program", "children":[
+                {"startTime":1065.001, "type":"BeginFrame"}
+            ]}
+        ],
+        "impl-side with interleaving commits": [
+            {"startTime":1000.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1000.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1014.000, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"1"}},
+            {"startTime":1014.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1001.000, "data":{},"endTime":1013.999, "type":"Program", "children":[
+                {"startTime":1001.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1001.002, "endTime":1013.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1016.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1016.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1030.000, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"2"}},
+            {"startTime":1030.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1017.000, "data":{},"endTime":1029.999, "type":"Program", "children":[
+                {"startTime":1017.001, "type":"BeginFrame", "data":{"id":"2"}},
+                {"startTime":1017.002, "endTime":1025.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1026.000, "endTime":1029.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1032.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1032.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1046.000, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"3"}},
+            {"startTime":1046.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1033.000, "data":{},"endTime":1045.999, "type":"Program", "children":[
+                {"startTime":1033.001, "type":"BeginFrame", "data":{"id":"3"}},
+                {"startTime":1033.002, "endTime":1040.999, "type":"CompositeLayers", "data":{}},
+                {"startTime":1041.002, "endTime":1045.999, "type":"FunctionCall", "data":{}},
+            ]},
+            {"startTime":1048.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime": 1049.000, "data":{},"endTime":1049.999, "type":"Program", "children":[
+            ]}
+        ],
+        "pre-frame time accounting": [
+            {"startTime": 1000.000, "data":{},"endTime":1029.999, "type":"Program", "children":[
+                {"startTime":1000.002, "endTime":1028.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1029.000, "endTime":1029.999, "type":"ScheduleStyleRecalculation", "data":{}},
+            ]},
+            {"startTime":1032.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1032.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1034.001, "type":"ActivateLayerTree", "thread": "implSide", "data":{"id": "1"}},
+            {"startTime":1035.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1033.000, "data":{},"endTime":1033.999, "type":"Program", "children":[
+                {"startTime":1033.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1033.002, "endTime":1033.400, "type":"RecalculateStyles", "data":{}},
+                {"startTime":1033.401, "endTime":1033.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1048.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime": 1050.000, "data":{},"endTime":1070.999, "type":"Program", "children":[
+                {"startTime":1050.002, "endTime":1058.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1059.000, "type":"InvalidateLayout", "data":{}},
+            ]},
+            {"startTime":1063.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1064.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1064.001, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1071.001, "type":"ActivateLayerTree", "thread": "implSide", "data":{"id": "2"}},
+            {"startTime":1071.002, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1065.000, "data":{},"endTime":1070.999, "type":"Program", "children":[
+                {"startTime":1065.001, "type":"BeginFrame", "data":{"id":"2"}},
+                {"startTime":1065.002, "endTime":1068.000, "type":"Layout", "data":{}},
+                {"startTime":1068.001, "endTime":1070.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1072.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime": 1073.000, "data":{},"endTime":1073.999, "type":"Program", "children":[
+            ]}
+        ]
+    };
 
-    InspectorTest.loadTimelineRecords(records);
-
-    var timelinePanel = WebInspector.panels.timeline;
+    var timelinePanel = WebInspector.showPanel("timeline");
     timelinePanel._onModeChanged(WebInspector.TimelinePanel.Mode.Frames);
     var overview = timelinePanel._overviewPane;
     var frameModel = overview._overviewControl._frameModel;
-    InspectorTest.addResult("Main thread frames:");
-    frameModel.mainThreadFrames().forEach(InspectorTest.dumpFrame, InspectorTest);
-    InspectorTest.addResult("Background frames:");
-    frameModel.backgroundFrames().forEach(InspectorTest.dumpFrame, InspectorTest);
+
+    for (var testName in testData) {
+        var data = testData[testName];
+        InspectorTest.loadTimelineRecords(data);
+        InspectorTest.addResult("Test: " + testName);
+        frameModel.frames().forEach(InspectorTest.dumpFrame, InspectorTest);
+    }
     InspectorTest.completeTest();
 }
 

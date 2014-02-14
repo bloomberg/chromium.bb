@@ -36,26 +36,26 @@ records count: 34
 
 mode = Frames
 range = 0 - 1
-time range = 1390988669.1625888 - 1390988670.111423
+time range = 1390988669.115716 - 1390988670.098158
 records count: 77
 
 mode = Frames
 range = 0.25 - 0.75
-time range = 1390988669.4765599 - 1390988670.044563
-records count: 44
+time range = 1390988669.4384089 - 1390988670.098158
+records count: 47
 
 mode = Frames
 range = 0.33 - 0.66
-time range = 1390988669.560015 - 1390988669.99458
-records count: 35
+time range = 1390988669.535377 - 1390988670.098158
+records count: 38
 
 --------------------------------------------------------
 mode = Frames
-time range = 1390988669.309568 - 1390988670.111423
+time range = 1390988669.264497 - 1390988670.098158
 
 mode = Events
-time range = 1390988669.309568 - 1390988670.111423
+time range = 1390988669.264497 - 1390988670.098158
 
 mode = Memory
-time range = 1390988669.309568 - 1390988670.111423
+time range = 1390988669.264497 - 1390988670.098158
 
