@@ -26,6 +26,7 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
       orientation_scale_(1.0),
+      australian_scrolling_(prop_reg, "Australian Scrolling", false),
       surface_area_from_pressure_(prop_reg,
                                   "Compute Surface Area from Pressure", true),
       tp_x_bias_(prop_reg, "Touchpad Device Output Bias on X-Axis", 0.0),
@@ -207,23 +208,28 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.move.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeScroll:
-      // We don't scale mouse scroll events as they are derived from discrete
-      // wheel events which are not physical distances. Pointer moves (both
-      // from mice and touchpads), as well as touchpad scrolls are all derived
-      // from real, physical movements which can be connected to the distance
-      // on the screen.
-      if (devclass_ == GESTURES_DEVCLASS_MOUSE)
-        break;
       copy.details.scroll.dx *= screen_x_scale_;
       copy.details.scroll.dy *= screen_y_scale_;
       copy.details.scroll.ordinal_dx *= screen_x_scale_;
       copy.details.scroll.ordinal_dy *= screen_y_scale_;
+      if (australian_scrolling_.val_) {
+        copy.details.scroll.dx *= -1;
+        copy.details.scroll.dy *= -1;
+        copy.details.scroll.ordinal_dx *= -1;
+        copy.details.scroll.ordinal_dy *= -1;
+      }
       break;
     case kGestureTypeFling:
       copy.details.fling.vx *= screen_x_scale_;
       copy.details.fling.vy *= screen_y_scale_;
       copy.details.fling.ordinal_vx *= screen_x_scale_;
       copy.details.fling.ordinal_vy *= screen_y_scale_;
+      if (australian_scrolling_.val_) {
+        copy.details.fling.vx *= -1;
+        copy.details.fling.vy *= -1;
+        copy.details.fling.ordinal_vx *= -1;
+        copy.details.fling.ordinal_vy *= -1;
+      }
       break;
     case kGestureTypeSwipe:
       // Scale swipes, as we want them to follow the pointer speed.
@@ -231,6 +237,12 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.swipe.dy *= screen_y_scale_;
       copy.details.swipe.ordinal_dx *= screen_x_scale_;
       copy.details.swipe.ordinal_dy *= screen_y_scale_;
+      if (australian_scrolling_.val_) {
+        copy.details.swipe.dx *= -1;
+        copy.details.swipe.dy *= -1;
+        copy.details.swipe.ordinal_dx *= -1;
+        copy.details.swipe.ordinal_dy *= -1;
+      }
       break;
     default:
       break;

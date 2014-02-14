@@ -81,6 +81,9 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   // When orientation_scale_ = 0, no orientation is provided from kernel.
   float orientation_scale_;
 
+  // True if scrolling should be inverted
+  BoolProperty australian_scrolling_;
+
   // Output surface area (sq. mm) =
   // if surface_area_from_pressure_
   //   input pressure * pressure_scale_ + pressure_translate_
