@@ -22,4 +22,18 @@ MOJO_TEST_SUPPORT_EXPORT void MojoTestSupportLogPerfResult(
 }  // extern "C"
 #endif
 
+#ifdef __cplusplus
+namespace mojo {
+namespace test {
+
+inline void LogPerfResult(const char* test_name,
+                          double value,
+                          const char* units) {
+  MojoTestSupportLogPerfResult(test_name, value, units);
+}
+
+}  // namespace test
+}  // namespace mojo
+#endif  // __cplusplus
+
 #endif  // MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_

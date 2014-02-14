@@ -183,6 +183,7 @@
         'mojo_public_test_utils',
         'mojo_run_all_perftests',
         'mojo_system',
+        'mojo_utility',
       ],
       'sources': [
         'public/tests/system/core_perftest.cc',
