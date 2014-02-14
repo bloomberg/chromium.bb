@@ -1,64 +1,69 @@
 /*
- * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVGAnimatedInteger_h
 #define SVGAnimatedInteger_h
 
-#include "core/svg/SVGAnimatedTypeAnimator.h"
-#include "core/svg/properties/SVGAnimatedPropertyMacros.h"
-#include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
+#include "core/svg/SVGInteger.h"
+#include "core/svg/properties/NewSVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef SVGAnimatedStaticPropertyTearOff<int> SVGAnimatedInteger;
+class SVGAnimatedIntegerOptionalInteger;
 
-// Helper macros to declare/define a SVGAnimatedInteger object
-#define DECLARE_ANIMATED_INTEGER(UpperProperty, LowerProperty) \
-DECLARE_ANIMATED_PROPERTY(SVGAnimatedInteger, int, UpperProperty, LowerProperty)
-
-#define DEFINE_ANIMATED_INTEGER(OwnerType, DOMAttribute, UpperProperty, LowerProperty) \
-DEFINE_ANIMATED_PROPERTY(AnimatedInteger, OwnerType, DOMAttribute, DOMAttribute.localName(), UpperProperty, LowerProperty, SVGAnimatedInteger, int)
-
-#define DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(OwnerType, DOMAttribute, SVGDOMAttributeIdentifier, UpperProperty, LowerProperty) \
-DEFINE_ANIMATED_PROPERTY(AnimatedIntegerOptionalInteger, OwnerType, DOMAttribute, SVGDOMAttributeIdentifier, UpperProperty, LowerProperty, SVGAnimatedInteger, int)
-
-class SVGAnimationElement;
-
-class SVGAnimatedIntegerAnimator FINAL : public SVGAnimatedTypeAnimator {
+// SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedInteger
+class SVGAnimatedInteger : public NewSVGAnimatedProperty<SVGInteger> {
 public:
-    SVGAnimatedIntegerAnimator(SVGAnimationElement*, SVGElement*);
-    virtual ~SVGAnimatedIntegerAnimator() { }
+    static PassRefPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
+    {
+        return adoptRef(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
+    }
 
-    static void calculateAnimatedInteger(SVGAnimationElement*, float percentage, unsigned repeatCount, int fromInteger, int toInteger, int toAtEndOfDurationInteger, int& animatedInteger);
+    virtual void synchronizeAttribute() OVERRIDE;
 
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&) OVERRIDE;
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*) OVERRIDE;
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    void setParentOptionalInteger(SVGAnimatedIntegerOptionalInteger* numberOptionalInteger)
+    {
+        m_parentIntegerOptionalInteger = numberOptionalInteger;
+    }
 
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
+protected:
+    SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
+        : NewSVGAnimatedProperty<SVGInteger>(contextElement, attributeName, initialValue)
+        , m_parentIntegerOptionalInteger(0)
+    {
+    }
+
+    // FIXME: oilpan: This is kept as raw ptr as this is a back ptr. Change this to Member<> in oilpan.
+    SVGAnimatedIntegerOptionalInteger* m_parentIntegerOptionalInteger;
 };
 
 } // namespace WebCore
 
-#endif
+#endif // SVGAnimatedInteger_h

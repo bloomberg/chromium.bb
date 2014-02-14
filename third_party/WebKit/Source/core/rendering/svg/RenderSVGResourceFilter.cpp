@@ -188,8 +188,8 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
         //  If resolution is specified, scale to match it.
         filterScale = FloatSize(
-            filterElement->filterResXCurrentValue() / filterData->boundaries.width(),
-            filterElement->filterResYCurrentValue() / filterData->boundaries.height());
+            filterElement->filterResX()->currentValue()->value() / filterData->boundaries.width(),
+            filterElement->filterResY()->currentValue()->value() / filterData->boundaries.height());
     } else {
         // Otherwise, use the scale of the absolute transform.
         filterScale = FloatSize(absoluteTransform.xScale(), absoluteTransform.yScale());
@@ -236,8 +236,8 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
             FloatSize size = context->getCTM().mapSize(boundaries.size());
             // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
             FloatSize filterResScale(
-                filterElement->filterResXCurrentValue() / size.width(),
-                filterElement->filterResYCurrentValue() / size.height());
+                filterElement->filterResX()->currentValue()->value() / size.width(),
+                filterElement->filterResY()->currentValue()->value() / size.height());
             // Scale the CTM so the primitive is drawn to filterRes.
             context->translate(boundaries.x(), boundaries.y());
             context->scale(filterResScale);

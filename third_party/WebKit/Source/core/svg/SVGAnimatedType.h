@@ -39,8 +39,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createAngleAndEnumeration(std::pair<SVGAngle, unsigned>*);
     static PassOwnPtr<SVGAnimatedType> createColor(StyleColor*);
     static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
-    static PassOwnPtr<SVGAnimatedType> createInteger(int*);
-    static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
@@ -65,18 +63,6 @@ public:
     {
         ASSERT(m_type == AnimatedEnumeration);
         return *m_data.enumeration;
-    }
-
-    int& integer()
-    {
-        ASSERT(m_type == AnimatedInteger);
-        return *m_data.integer;
-    }
-
-    pair<int, int>& integerOptionalInteger()
-    {
-        ASSERT(m_type == AnimatedIntegerOptionalInteger);
-        return *m_data.integerOptionalInteger;
     }
 
     SVGPathByteStream* path()
@@ -113,8 +99,6 @@ private:
         std::pair<SVGAngle, unsigned>* angleAndEnumeration;
         StyleColor* color;
         unsigned* enumeration;
-        int* integer;
-        std::pair<int, int>* integerOptionalInteger;
         SVGPathByteStream* path;
         SVGTransformList* transformList;
     } m_data;

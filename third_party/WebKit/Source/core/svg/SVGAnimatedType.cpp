@@ -40,12 +40,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedEnumeration:
         delete m_data.enumeration;
         break;
-    case AnimatedInteger:
-        delete m_data.integer;
-        break;
-    case AnimatedIntegerOptionalInteger:
-        delete m_data.integerOptionalInteger;
-        break;
     case AnimatedPath:
         delete m_data.path;
         break;
@@ -55,6 +49,8 @@ SVGAnimatedType::~SVGAnimatedType()
     // Below properties are migrated to new property implementation.
     case AnimatedBoolean:
     case AnimatedColor:
+    case AnimatedInteger:
+    case AnimatedIntegerOptionalInteger:
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
@@ -92,22 +88,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createEnumeration(unsigned* enumera
     ASSERT(enumeration);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedEnumeration));
     animatedType->m_data.enumeration = enumeration;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createInteger(int* integer)
-{
-    ASSERT(integer);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedInteger));
-    animatedType->m_data.integer = integer;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createIntegerOptionalInteger(pair<int, int>* integerOptionalInteger)
-{
-    ASSERT(integerOptionalInteger);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedIntegerOptionalInteger));
-    animatedType->m_data.integerOptionalInteger = integerOptionalInteger;
     return animatedType.release();
 }
 

@@ -23,8 +23,6 @@
 #include "core/svg/SVGAnimatedAngle.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedInteger.h"
-#include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
 #include "core/svg/SVGAnimatedPath.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
@@ -48,10 +46,6 @@ public:
             return adoptPtr(new SVGAnimatedAngleAnimator(animationElement, contextElement));
         case AnimatedEnumeration:
             return adoptPtr(new SVGAnimatedEnumerationAnimator(animationElement, contextElement));
-        case AnimatedInteger:
-            return adoptPtr(new SVGAnimatedIntegerAnimator(animationElement, contextElement));
-        case AnimatedIntegerOptionalInteger:
-            return adoptPtr(new SVGAnimatedIntegerOptionalIntegerAnimator(animationElement, contextElement));
         case AnimatedPath:
             return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
         case AnimatedTransformList:
@@ -59,6 +53,8 @@ public:
         // Below properties have migrated to new property implementation.
         case AnimatedBoolean:
         case AnimatedColor:
+        case AnimatedInteger:
+        case AnimatedIntegerOptionalInteger:
         case AnimatedNumber:
         case AnimatedNumberList:
         case AnimatedNumberOptionalNumber:

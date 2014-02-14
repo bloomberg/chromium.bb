@@ -23,6 +23,7 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
+#include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
@@ -68,9 +69,6 @@ class SVGFEConvolveMatrixElement FINAL : public SVGFilterPrimitiveStandardAttrib
 public:
     static PassRefPtr<SVGFEConvolveMatrixElement> create(Document&);
 
-    void setOrder(float orderX, float orderY);
-    void setKernelUnitLength(float kernelUnitLengthX, float kernelUnitLengthY);
-
     SVGAnimatedBoolean* preserveAlpha() { return m_preserveAlpha.get(); }
     SVGAnimatedNumber* divisor() { return m_divisor.get(); }
     SVGAnimatedNumber* bias() { return m_bias.get(); }
@@ -78,6 +76,10 @@ public:
     SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
     SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedInteger* orderX() { return m_order->firstInteger(); }
+    SVGAnimatedInteger* orderY() { return m_order->secondInteger(); }
+    SVGAnimatedInteger* targetX() { return m_targetX.get(); }
+    SVGAnimatedInteger* targetY() { return m_targetY.get(); }
 
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
@@ -88,20 +90,16 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
-    static const AtomicString& orderXIdentifier();
-    static const AtomicString& orderYIdentifier();
-
-    RefPtr<SVGAnimatedBoolean> m_preserveAlpha;
-    RefPtr<SVGAnimatedNumber> m_divisor;
     RefPtr<SVGAnimatedNumber> m_bias;
-    RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-    RefPtr<SVGAnimatedNumberList> m_kernelMatrix;
+    RefPtr<SVGAnimatedNumber> m_divisor;
     RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedNumberList> m_kernelMatrix;
+    RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+    RefPtr<SVGAnimatedIntegerOptionalInteger> m_order;
+    RefPtr<SVGAnimatedBoolean> m_preserveAlpha;
+    RefPtr<SVGAnimatedInteger> m_targetX;
+    RefPtr<SVGAnimatedInteger> m_targetY;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
-        DECLARE_ANIMATED_INTEGER(OrderX, orderX)
-        DECLARE_ANIMATED_INTEGER(OrderY, orderY)
-        DECLARE_ANIMATED_INTEGER(TargetX, targetX)
-        DECLARE_ANIMATED_INTEGER(TargetY, targetY)
         DECLARE_ANIMATED_ENUMERATION(EdgeMode, edgeMode, EdgeModeType)
     END_DECLARE_ANIMATED_PROPERTIES
 };

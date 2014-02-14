@@ -28,77 +28,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGNumber_h
-#define SVGNumber_h
+#ifndef SVGIntegerOptionalInteger_h
+#define SVGIntegerOptionalInteger_h
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/SVGAnimatedInteger.h"
 
 namespace WebCore {
 
-class SVGNumberTearOff;
-
-class SVGNumber : public NewSVGPropertyBase {
+class SVGIntegerOptionalInteger : public NewSVGPropertyBase {
 public:
-    // SVGNumber has a tear-off type, but SVGAnimatedNumber uses primitive type.
-    typedef SVGNumberTearOff TearOffType;
-    typedef float PrimitiveType;
+    // Tearoff of SVGIntegerOptionalInteger is never created.
+    typedef void TearOffType;
+    typedef void PrimitiveType;
 
-    static PassRefPtr<SVGNumber> create(float value = 0.0f)
+    static PassRefPtr<SVGIntegerOptionalInteger> create(PassRefPtr<SVGInteger> firstInteger, PassRefPtr<SVGInteger> secondInteger)
     {
-        return adoptRef(new SVGNumber(value));
+        return adoptRef(new SVGIntegerOptionalInteger(firstInteger, secondInteger));
     }
 
-    virtual PassRefPtr<SVGNumber> clone() const;
+    PassRefPtr<SVGIntegerOptionalInteger> clone() const;
     virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
 
-    float value() const { return m_value; }
-    void setValue(float value) { m_value = value; }
-
     virtual String valueAsString() const OVERRIDE;
-    virtual void setValueAsString(const String&, ExceptionState&);
+    void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
     virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
     virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
-    static AnimatedPropertyType classType() { return AnimatedNumber; }
+    static AnimatedPropertyType classType() { return AnimatedIntegerOptionalInteger; }
+
+    PassRefPtr<SVGInteger> firstInteger() { return m_firstInteger; }
+    PassRefPtr<SVGInteger> secondInteger() { return m_secondInteger; }
 
 protected:
-    explicit SVGNumber(float);
+    SVGIntegerOptionalInteger(PassRefPtr<SVGInteger> firstInteger, PassRefPtr<SVGInteger> secondInteger);
 
-    template<typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
-
-    float m_value;
+    RefPtr<SVGInteger> m_firstInteger;
+    RefPtr<SVGInteger> m_secondInteger;
 };
 
-inline PassRefPtr<SVGNumber> toSVGNumber(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGIntegerOptionalInteger> toSVGIntegerOptionalInteger(PassRefPtr<NewSVGPropertyBase> passBase)
 {
     RefPtr<NewSVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGNumber::classType());
-    return static_pointer_cast<SVGNumber>(base.release());
+    ASSERT(base->type() == SVGIntegerOptionalInteger::classType());
+    return static_pointer_cast<SVGIntegerOptionalInteger>(base.release());
 }
-
-// SVGNumber which also accepts percentage as its value.
-// This is used for <stop> "offset"
-// Spec: http://www.w3.org/TR/SVG11/pservers.html#GradientStops
-//   offset = "<number> | <percentage>"
-class SVGNumberAcceptPercentage FINAL : public SVGNumber {
-public:
-    static PassRefPtr<SVGNumberAcceptPercentage> create(float value = 0)
-    {
-        return adoptRef(new SVGNumberAcceptPercentage(value));
-    }
-
-    virtual PassRefPtr<SVGNumber> clone() const OVERRIDE;
-    virtual void setValueAsString(const String&, ExceptionState&) OVERRIDE;
-
-private:
-    SVGNumberAcceptPercentage(float value);
-};
 
 } // namespace WebCore
 
-#endif // SVGNumber_h
+#endif // SVGIntegerOptionalInteger_h

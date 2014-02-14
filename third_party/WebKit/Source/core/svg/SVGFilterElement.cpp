@@ -35,14 +35,10 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::filterUnitsAttr, FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::primitiveUnitsAttr, PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
-DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResXIdentifier(), FilterResX, filterResX)
-DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResYIdentifier(), FilterResY, filterResY)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(primitiveUnits)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(filterResX)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(filterResY)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
@@ -52,6 +48,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
+    , m_filterRes(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::filterResAttr))
     , m_filterUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_primitiveUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
@@ -69,6 +66,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
     addToPropertyMap(m_href);
+    addToPropertyMap(m_filterRes);
     registerAnimatedPropertiesForSVGFilterElement();
 }
 
@@ -77,26 +75,13 @@ PassRefPtr<SVGFilterElement> SVGFilterElement::create(Document& document)
     return adoptRef(new SVGFilterElement(document));
 }
 
-const AtomicString& SVGFilterElement::filterResXIdentifier()
+void SVGFilterElement::setFilterRes(unsigned x, unsigned y)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, s_identifier, ("SVGFilterResX", AtomicString::ConstructFromLiteral));
-    return s_identifier;
-}
+    filterResX()->baseValue()->setValue(x);
+    filterResY()->baseValue()->setValue(y);
 
-const AtomicString& SVGFilterElement::filterResYIdentifier()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, s_identifier, ("SVGFilterResY", AtomicString::ConstructFromLiteral));
-    return s_identifier;
-}
-
-void SVGFilterElement::setFilterRes(unsigned filterResX, unsigned filterResY)
-{
-    setFilterResXBaseValue(filterResX);
-    setFilterResYBaseValue(filterResY);
-
-    RenderSVGResourceContainer* renderer = toRenderSVGResourceContainer(this->renderer());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    invalidateSVGAttributes();
+    svgAttributeChanged(SVGNames::filterResAttr);
 }
 
 bool SVGFilterElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -137,15 +122,11 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::filterResAttr) {
-        float x, y;
-        if (parseNumberOptionalNumber(value, x, y)) {
-            setFilterResXBaseValue(x);
-            setFilterResYBaseValue(y);
-        }
-    } else if (name.matches(XLinkNames::hrefAttr)) {
+    else if (name == SVGNames::filterResAttr)
+        m_filterRes->setBaseValueAsString(value, parseError);
+    else if (name.matches(XLinkNames::hrefAttr))
         m_href->setBaseValueAsString(value, parseError);
-    } else
+    else
         ASSERT_NOT_REACHED();
 
     reportAttributeParsingError(parseError, name, value);

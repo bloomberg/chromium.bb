@@ -1,48 +1,70 @@
 /*
- * Copyright (C) Research In Motion Limited 2012. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVGAnimatedIntegerOptionalInteger_h
 #define SVGAnimatedIntegerOptionalInteger_h
 
-#include "core/svg/SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGAnimatedInteger.h"
+#include "core/svg/SVGIntegerOptionalInteger.h"
 
 namespace WebCore {
 
-class SVGAnimationElement;
-
-class SVGAnimatedIntegerOptionalIntegerAnimator FINAL : public SVGAnimatedTypeAnimator {
+// SVG Spec: http://www.w3.org/TR/SVG11/types.html <number-optional-number>
+// Unlike other SVGAnimated* class, this class is not exposed to Javascript directly,
+// while DOM attribute and SMIL animations operate on this class.
+// From Javascript, the two SVGAnimatedIntegers |firstInteger| and |secondInteger| are used.
+// For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
+class SVGAnimatedIntegerOptionalInteger : public NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger> {
 public:
-    SVGAnimatedIntegerOptionalIntegerAnimator(SVGAnimationElement*, SVGElement*);
-    virtual ~SVGAnimatedIntegerOptionalIntegerAnimator() { }
+    static PassRefPtr<SVGAnimatedIntegerOptionalInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
+    {
+        return adoptRef(new SVGAnimatedIntegerOptionalInteger(contextElement, attributeName, initialFirstValue, initialSecondValue));
+    }
 
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&) OVERRIDE;
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*) OVERRIDE;
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual void animationStarted() OVERRIDE;
+    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
+    virtual bool needsSynchronizeAttribute() OVERRIDE;
+    virtual void animationEnded() OVERRIDE;
+    virtual void animValWillChange() OVERRIDE;
+    virtual void animValDidChange() OVERRIDE;
 
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
+    SVGAnimatedInteger* firstInteger() { return m_firstInteger.get(); }
+    SVGAnimatedInteger* secondInteger() { return m_secondInteger.get(); }
+
+protected:
+    SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue);
+
+    RefPtr<SVGAnimatedInteger> m_firstInteger;
+    RefPtr<SVGAnimatedInteger> m_secondInteger;
 };
 
 } // namespace WebCore
 
-#endif
+#endif // SVGAnimatedIntegerOptionalInteger_h

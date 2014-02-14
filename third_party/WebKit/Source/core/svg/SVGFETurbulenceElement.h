@@ -101,6 +101,7 @@ public:
     SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
     SVGAnimatedNumber* baseFrequencyY() { return m_baseFrequency->secondNumber(); }
     SVGAnimatedNumber* seed() { return m_seed.get(); }
+    SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
 
 private:
     explicit SVGFETurbulenceElement(Document&);
@@ -113,8 +114,8 @@ private:
 
     RefPtr<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
     RefPtr<SVGAnimatedNumber> m_seed;
+    RefPtr<SVGAnimatedInteger> m_numOctaves;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFETurbulenceElement)
-        DECLARE_ANIMATED_INTEGER(NumOctaves, numOctaves)
         DECLARE_ANIMATED_ENUMERATION(StitchTiles, stitchTiles, SVGStitchOptions)
         DECLARE_ANIMATED_ENUMERATION(Type, type, TurbulenceType)
     END_DECLARE_ANIMATED_PROPERTIES

@@ -27,6 +27,7 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
+#include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -39,7 +40,7 @@ class SVGFilterElement FINAL : public SVGElement,
 public:
     static PassRefPtr<SVGFilterElement> create(Document&);
 
-    void setFilterRes(unsigned filterResX, unsigned filterResY);
+    void setFilterRes(unsigned x, unsigned y);
     void addClient(Node*);
     void removeClient(Node*);
 
@@ -48,6 +49,8 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedString* href() { return m_href.get(); }
+    SVGAnimatedInteger* filterResX() { return m_filterRes->firstInteger(); }
+    SVGAnimatedInteger* filterResY() { return m_filterRes->secondInteger(); }
 
 private:
     explicit SVGFilterElement(Document&);
@@ -63,19 +66,15 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
-    static const AtomicString& filterResXIdentifier();
-    static const AtomicString& filterResYIdentifier();
-
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedString> m_href;
+    RefPtr<SVGAnimatedIntegerOptionalInteger> m_filterRes;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterElement)
         DECLARE_ANIMATED_ENUMERATION(FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
-        DECLARE_ANIMATED_INTEGER(FilterResX, filterResX)
-        DECLARE_ANIMATED_INTEGER(FilterResY, filterResY)
     END_DECLARE_ANIMATED_PROPERTIES
 
     HashSet<RefPtr<Node> > m_clientsToAdd;
