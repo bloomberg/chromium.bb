@@ -434,11 +434,10 @@ if __name__ == '__main__':
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
-  # If using ninja on windows, and the automatic toolchain has been installed
-  # by depot_tools, then use it.
+  # If on windows, and the automatic toolchain has been installed by
+  # depot_tools, then use it.
   vs2013_runtime_dll_dirs = None
-  if (sys.platform in ('win32', 'cygwin') and
-      os.environ.get('GYP_GENERATORS') == 'ninja'):
+  if sys.platform in ('win32', 'cygwin'):
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
     toolchain = os.path.normpath(os.path.join(
         depot_tools_path, 'win_toolchain', 'vs2013_files'))
