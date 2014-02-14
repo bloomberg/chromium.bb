@@ -750,36 +750,6 @@ TEST_F(FrameMaximizeButtonTest, MaximizeSnapLeftRestore) {
   EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
-// Test hovering over the minimize button in the help bubble then tapping the
-// snap left button.
-TEST_F(FrameMaximizeButtonTest, MaximizeBubbleMouseHoverAndTouch) {
-  aura::Window* window = widget()->GetNativeWindow();
-  ash::FrameMaximizeButton* maximize_button =
-      FrameMaximizeButtonTest::maximize_button();
-  maximize_button->set_bubble_appearance_delay_ms(0);
-
-  // Move the mouse cursor over the maximize button to make the help bubble
-  // appear.
-  aura::test::EventGenerator generator(window->GetRootWindow());
-  generator.MoveMouseTo(maximize_button->GetBoundsInScreen().CenterPoint());
-  MaximizeBubbleController* maximizer = maximize_button->maximizer();
-  ASSERT_TRUE(maximizer);
-
-  // Move the mouse cursor over the minimize button in the help bubble.
-  gfx::Point minimize_pos = maximizer->GetButtonForUnitTest(SNAP_MINIMIZE)->
-      GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(minimize_pos);
-
-  // Tap the snap left button in the help bubble.
-  gfx::Point snap_pos = maximizer->GetButtonForUnitTest(SNAP_LEFT)->
-      GetBoundsInScreen().CenterPoint();
-  generator.GestureTapAt(snap_pos);
-  internal::SnapSizer sizer(wm::GetWindowState(window), gfx::Point(),
-      internal::SnapSizer::LEFT_EDGE,
-      internal::SnapSizer::OTHER_INPUT);
-  EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
-}
-
 // Test that minimizing the window per keyboard closes the maximize bubble.
 TEST_F(FrameMaximizeButtonTest, MinimizePerKeyClosesBubble) {
   aura::Window* window = widget()->GetNativeWindow();
