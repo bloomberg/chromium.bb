@@ -10,6 +10,11 @@
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
+// From gl2/gl2ext.h.
+#ifndef GL_MAILBOX_SIZE_CHROMIUM
+#define GL_MAILBOX_SIZE_CHROMIUM 64
+#endif
+
 namespace gpu {
 
 struct GPU_EXPORT Mailbox {
@@ -17,7 +22,7 @@ struct GPU_EXPORT Mailbox {
   bool IsZero() const;
   void SetZero();
   void SetName(const int8* name);
-  int8 name[64];
+  int8 name[GL_MAILBOX_SIZE_CHROMIUM];
   bool operator<(const Mailbox& other) const {
     return memcmp(this, &other, sizeof other) < 0;
   }

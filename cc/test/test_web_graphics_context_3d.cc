@@ -436,7 +436,7 @@ void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
     --times_gen_mailbox_succeeds_;
   }
   if (context_lost_) {
-    memset(mailbox, 0, 64);
+    memset(mailbox, 0, GL_MAILBOX_SIZE_CHROMIUM);
     return;
   }
 
