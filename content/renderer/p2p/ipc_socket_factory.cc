@@ -48,6 +48,7 @@ bool JingleSocketOptionToP2PSocketOption(talk_base::Socket::Option option,
     case talk_base::Socket::OPT_DONTFRAGMENT:
     case talk_base::Socket::OPT_NODELAY:
     case talk_base::Socket::OPT_IPV6_V6ONLY:
+    case talk_base::Socket::OPT_RTP_SENDTIME_EXTN_ID:
       return false;  // Not supported by the chrome sockets.
     default:
       NOTREACHED();

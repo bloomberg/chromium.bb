@@ -582,6 +582,7 @@
         }],
         ['use_openssl==1', {
           'sources': [
+            '<(libjingle_source)/talk/base/openssl.h',
             '<(libjingle_source)/talk/base/openssladapter.cc',
             '<(libjingle_source)/talk/base/openssldigest.cc',
             '<(libjingle_source)/talk/base/opensslidentity.cc',
@@ -679,6 +680,8 @@
             '<(libjingle_source)/talk/app/webrtc/peerconnectioninterface.h',
             '<(libjingle_source)/talk/app/webrtc/portallocatorfactory.cc',
             '<(libjingle_source)/talk/app/webrtc/portallocatorfactory.h',
+            '<(libjingle_source)/talk/app/webrtc/remoteaudiosource.cc',
+            '<(libjingle_source)/talk/app/webrtc/remoteaudiosource.h',
             '<(libjingle_source)/talk/app/webrtc/remotevideocapturer.cc',
             '<(libjingle_source)/talk/app/webrtc/remotevideocapturer.h',
             '<(libjingle_source)/talk/app/webrtc/sctputils.cc',

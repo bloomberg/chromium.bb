@@ -246,6 +246,10 @@ int UdpPacketSocket::SetOption(talk_base::Socket::Option option, int value) {
     case talk_base::Socket::OPT_DSCP:
       NOTIMPLEMENTED();
       return -1;
+
+    case talk_base::Socket::OPT_RTP_SENDTIME_EXTN_ID:
+      NOTIMPLEMENTED();
+      return -1;
   }
 
   NOTREACHED();

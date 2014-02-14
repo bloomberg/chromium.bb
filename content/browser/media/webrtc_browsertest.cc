@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
   MakeTypicalPeerConnectionCall(
-      "callAndForwardRemoteStream({video: true, audio: true});");
+      "callAndForwardRemoteStream({video: true, audio: false});");
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
