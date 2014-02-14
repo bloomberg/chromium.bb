@@ -66,7 +66,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual bool EnableInputMethod(const std::string& new_active_input_method_id)
       OVERRIDE;
   virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE;
-  virtual void ActivateInputMethodProperty(const std::string& key) OVERRIDE;
+  virtual void ActivateInputMethodMenuItem(const std::string& key) OVERRIDE;
   virtual void AddInputMethodExtension(
       const std::string& id,
       InputMethodEngineInterface* instance) OVERRIDE;
@@ -80,10 +80,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
-  virtual InputMethodPropertyList
-      GetCurrentInputMethodProperties() const OVERRIDE;
-  virtual void SetCurrentInputMethodProperties(
-      const InputMethodPropertyList& property_list) OVERRIDE;
 
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
@@ -101,9 +97,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
  private:
-  // Notifies observers that the property list is updated.
-  void PropertyChanged();
-
   // CandidateWindowController::Observer overrides:
   virtual void CandidateClicked(int index) OVERRIDE;
   virtual void CandidateWindowOpened() OVERRIDE;
@@ -188,9 +181,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Extra input methods that have been explicitly added to the menu, such as
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
-
-  // Property list of the input method.  This is set by extension IMEs.
-  InputMethodPropertyList property_list_;
 
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.

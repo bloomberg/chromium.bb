@@ -28,8 +28,6 @@ class ExtensionInputMethodEventRouter
   virtual void InputMethodChanged(
       input_method::InputMethodManager* manager,
       bool show_message) OVERRIDE;
-  virtual void InputMethodPropertyChanged(
-      input_method::InputMethodManager* manager) OVERRIDE {}
 
  private:
   content::BrowserContext* context_;

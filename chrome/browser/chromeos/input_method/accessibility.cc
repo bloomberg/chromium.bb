@@ -54,9 +54,5 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
       ui::AccessibilityTypes::EVENT_ALERT, &event);
 }
 
-void Accessibility::InputMethodPropertyChanged(InputMethodManager* imm) {
-  // Do nothing.
-}
-
 }  // namespace input_method
 }  // namespace chromeos
