@@ -73,12 +73,6 @@
         ],
       },
     }],
-    ['OS=="linux" or OS=="mac"', {
-      'variables': {
-        # Can't be enabled on Windows due to http://crbug.com/342913
-        'read_only': 1,
-      },
-    }],
     ['OS=="mac"', {
       'variables': {
         'isolate_dependency_tracked': [
