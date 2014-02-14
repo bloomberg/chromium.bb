@@ -83,9 +83,6 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
 
-  // Indicates a new QuicConfig has been negotiated.
-  virtual void OnConfigNegotiated() = 0;
-
   // Called when a blocked socket becomes writable.  If all pending bytes for
   // this visitor are consumed by the connection successfully this should
   // return true, otherwise it should return false.

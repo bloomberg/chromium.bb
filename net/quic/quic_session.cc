@@ -60,10 +60,6 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->OnSuccessfulVersionNegotiation(version);
   }
 
-  virtual void OnConfigNegotiated() OVERRIDE {
-    session_->OnConfigNegotiated();
-  }
-
   virtual void OnConnectionClosed(
       QuicErrorCode error, bool from_peer) OVERRIDE {
     session_->OnConnectionClosed(error, from_peer);

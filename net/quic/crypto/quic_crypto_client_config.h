@@ -96,7 +96,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     void InitializeFrom(const CachedState& other);
 
    private:
-    std::string server_config_id_;      // An opaque id from the server.
     std::string server_config_;         // A serialized handshake message.
     std::string source_address_token_;  // An opaque proof of IP ownership.
     std::vector<std::string> certs_;    // A list of certificates in leaf-first
