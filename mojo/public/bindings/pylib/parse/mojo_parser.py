@@ -243,7 +243,7 @@ class Parser(object):
 
   def p_expression(self, p):
     """expression : conditional_expression"""
-    p[0] = p[1]
+    p[0] = ('EXPRESSION', p[1])
 
   def p_conditional_expression(self, p):
     """conditional_expression : binary_expression
@@ -251,7 +251,7 @@ class Parser(object):
                                     conditional_expression"""
     # Just pass the arguments through. I don't think it's possible to preserve
     # the spaces of the original, so just put a single space between them.
-    p[0] = ' '.join(p[1:])
+    p[0] = ListFromConcat(*p[1:])
 
   # PLY lets us specify precedence of operators, but since we don't actually
   # evaluate them, we don't need that here.
@@ -259,7 +259,7 @@ class Parser(object):
     """binary_expression : unary_expression
                          | binary_expression binary_operator \
                                binary_expression"""
-    p[0] = ' '.join(p[1:])
+    p[0] = ListFromConcat(*p[1:])
 
   def p_binary_operator(self, p):
     """binary_operator : TIMES
@@ -285,7 +285,7 @@ class Parser(object):
   def p_unary_expression(self, p):
     """unary_expression : primary_expression
                         | unary_operator expression"""
-    p[0] = ''.join(p[1:])
+    p[0] = ListFromConcat(*p[1:])
 
   def p_unary_operator(self, p):
     """unary_operator : PLUS
@@ -296,9 +296,13 @@ class Parser(object):
 
   def p_primary_expression(self, p):
     """primary_expression : constant
-                          | NAME
-                          | NAME DOT NAME
+                          | identifier
                           | LPAREN expression RPAREN"""
+    p[0] = ListFromConcat(*p[1:])
+
+  def p_identifier(self, p):
+    """identifier : NAME
+                  | NAME DOT NAME"""
     p[0] = ''.join(p[1:])
 
   def p_constant(self, p):
@@ -311,7 +315,7 @@ class Parser(object):
                 | WCHAR_CONST
                 | STRING_LITERAL
                 | WSTRING_LITERAL"""
-    p[0] = ''.join(p[1:])
+    p[0] = ListFromConcat(*p[1:])
 
   def p_error(self, e):
     print('error: %s'%e)

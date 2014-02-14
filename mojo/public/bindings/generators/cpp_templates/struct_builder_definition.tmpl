@@ -9,7 +9,7 @@
 {%- macro set_default(kind, value, depth) -%}
 {#--- Strings ---#}
 {%-   if kind|is_string_kind -%}
-{{caller("mojo::String(" ~ value ~ ")")}}
+{{caller("mojo::String(" ~ value|expression_to_text(module) ~ ")")}}
 {#--- Arrays ---#}
 {%-   elif kind|is_array_kind %}
 {%-     set _ = value|verify_token_type("ARRAY") %}
@@ -43,7 +43,7 @@ tmp{{depth}}.set_{{subfield.name}}({{result}});
 }
 {#--- POD types ---#}
 {%-   else -%}
-{{caller(value|substitute_namespace(imports))}}
+{{caller(value|expression_to_text(module))}}
 {%-   endif %}
 {%- endmacro %}
 

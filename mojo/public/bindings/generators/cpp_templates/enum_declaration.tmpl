@@ -1,7 +1,7 @@
 enum {{enum.name}} {
 {%- for field in enum.fields %}
 {%-    if field.value %}
-  {{field.name}} = {{field.value}},
+  {{field.name}} = {{field.value|expression_to_text(module)}},
 {%-    else %}
   {{field.name}},
 {%-    endif %}

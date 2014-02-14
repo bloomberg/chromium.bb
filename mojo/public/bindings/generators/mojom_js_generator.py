@@ -10,7 +10,6 @@ from generate import mojom_generator
 
 from generate.template_expander import UseJinja
 
-
 _kind_to_javascript_default_value = {
   mojom.BOOL:    "false",
   mojom.INT8:    "0",
@@ -148,11 +147,57 @@ def JavaScriptEncodeSnippet(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
 
 
-def SubstituteNamespace(value, imports):
-  for import_item in imports:
-    value = value.replace(import_item["namespace"] + ".",
-        import_item["unique_name"] + ".")
+def GetConstants(module):
+  """Returns a generator that enumerates all constants that can be referenced
+  from this module."""
+  class Constant:
+    pass
+
+  for enum in module.enums:
+    for field in enum.fields:
+      constant = Constant()
+      constant.namespace = module.namespace
+      constant.is_current_namespace = True
+      constant.import_item = None
+      constant.name = (enum.name, field.name)
+      yield constant
+
+  for each in module.imports:
+    for enum in each["module"].enums:
+      for field in enum.fields:
+        constant = Constant()
+        constant.namespace = each["namespace"]
+        constant.is_current_namespace = constant.namespace == module.namespace
+        constant.import_item = each
+        constant.name = (enum.name, field.name)
+        yield constant
+
+
+def TranslateConstants(value, module):
+  # We're assuming we're dealing with an identifier, but that may not be
+  # the case. If we're not, we just won't find any matches.
+  if value.find(".") != -1:
+    namespace, identifier = value.split(".")
+  else:
+    namespace, identifier = "", value
+
+  for constant in GetConstants(module):
+    if namespace == constant.namespace or (
+        namespace == "" and constant.is_current_namespace):
+      if constant.name[1] == identifier:
+        if constant.import_item:
+          return "%s.%s.%s" % (constant.import_item["unique_name"],
+              constant.name[0], constant.name[1])
+        else:
+          return "%s.%s" % (constant.name[0], constant.name[1])
   return value
+
+
+def ExpressionToText(value, module):
+  if value[0] != "EXPRESSION":
+    raise Exception("Expected EXPRESSION, got" + value)
+  return "".join(mojom_generator.ExpressionMapper(value,
+      lambda token: TranslateConstants(token, module)))
 
 
 def JavascriptType(kind):
@@ -169,12 +214,12 @@ class Generator(mojom_generator.Generator):
     "payload_size": JavaScriptPayloadSize,
     "decode_snippet": JavaScriptDecodeSnippet,
     "encode_snippet": JavaScriptEncodeSnippet,
+    "expression_to_text": ExpressionToText,
     "is_object_kind": mojom_generator.IsObjectKind,
     "is_string_kind": mojom_generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
     "js_type": JavascriptType,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
-    "substitute_namespace": SubstituteNamespace,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
@@ -184,6 +229,7 @@ class Generator(mojom_generator.Generator):
       "imports": self.GetImports(),
       "kinds": self.module.kinds,
       "enums": self.module.enums,
+      "module": self.module,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,
     }

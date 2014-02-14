@@ -16,6 +16,7 @@
       },
       'inputs': [
         '<(mojom_bindings_generator)',
+        '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/enum_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_proxy_declaration.tmpl',
@@ -30,6 +31,7 @@
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_destructor.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_macros.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/wrapper_class_declaration.tmpl',
+        '<(DEPTH)/mojo/public/bindings/generators/js_templates/enum_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/js_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/js_templates/module.js.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/js_templates/struct_definition.tmpl',

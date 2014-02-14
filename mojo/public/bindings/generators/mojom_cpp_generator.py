@@ -102,11 +102,17 @@ def IsStructWithHandles(struct):
       return True
   return False
 
-def SubstituteNamespace(value, imports):
-  for import_item in imports:
-    value = value.replace(import_item['namespace'] + ".",
-        import_item['namespace'] + "::")
-  return value
+def SubstituteNamespace(token, module):
+  for import_item in module.imports:
+    token = token.replace(import_item["namespace"] + ".",
+        import_item["namespace"] + "::")
+  return token
+
+def ExpressionToText(value, module):
+  if value[0] != "EXPRESSION":
+    raise Exception("Expected EXPRESSION, got" + value)
+  return "".join(mojom_generator.ExpressionMapper(value,
+      lambda token: SubstituteNamespace(token, module)))
 
 _HEADER_SIZE = 8
 
@@ -118,6 +124,7 @@ class Generator(mojom_generator.Generator):
     "cpp_field_type": GetCppFieldType,
     "cpp_type": GetCppType,
     "cpp_wrapper_type": GetCppWrapperType,
+    "expression_to_text": ExpressionToText,
     "get_pad": mojom_pack.GetPad,
     "is_handle_kind": mojom_generator.IsHandleKind,
     "is_object_kind": mojom_generator.IsObjectKind,
@@ -127,12 +134,12 @@ class Generator(mojom_generator.Generator):
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": mojom_generator.GetStructFromMethod,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
-    "substitute_namespace": SubstituteNamespace,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
   def GetJinjaExports(self):
     return {
+      "module": self.module,
       "module_name": self.module.name,
       "namespace": self.module.namespace,
       "imports": self.module.imports,

@@ -8,7 +8,8 @@ define([
     "gin/test/expect",
     "mojom/sample_service",
     "mojom/sample_import",
-  ], function(console, hexdump, expect, sample, imported) {
+    "mojom/sample_import2",
+  ], function(console, hexdump, expect, sample, imported, imported2) {
 
   var global = this;
 
@@ -117,12 +118,10 @@ define([
     expect(full.point.y).toBe(15);
 
     expect(full.shape_masks.length).toBe(1);
-    // TODO(mpcomplete): This is broken.
-    // http://crbug.com/320082
-    // expect(full.shape_masks[0]).toBe(1 << imported.Shape.SHAPE_RECTANGLE);
+    expect(full.shape_masks[0]).toBe(1 << imported.Shape.SHAPE_RECTANGLE);
 
-    //expect(full.thing.shape).toBe(imported.Shape.SHAPE_RECTANGLE);
-    //expect(full.thing.color).toBe(imported.Color.COLOR_RED);
+    expect(full.thing.shape).toBe(imported.Shape.SHAPE_CIRCLE);
+    expect(full.thing.color).toBe(imported2.Color.COLOR_BLACK);
   }
 
   function ServiceImpl() {

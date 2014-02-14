@@ -53,6 +53,14 @@ def VerifyTokenType(token, expected):
     raise Exception("Expected token type '%s'. Got '%s'." %
         (expected, token[0]))
 
+def ExpressionMapper(expression, mapper):
+  if isinstance(expression, tuple) and expression[0] == 'EXPRESSION':
+    result = []
+    for each in expression[1]:
+      result.extend(ExpressionMapper(each, mapper))
+    return result
+  return [mapper(expression)]
+
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
   # files to stdout.

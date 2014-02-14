@@ -48,7 +48,7 @@ struct DefaultsTest {
   uint8[] data = [1, 2, 3] @2;
   imported.Point point = {7, 15} @3;
   int32[] shape_masks = [1 << imported.SHAPE_RECTANGLE] @4;
-  imported.Thing thing = {imported.SHAPE_RECTANGLE, imported.COLOR_RED};
+  imported.Thing thing = {imported.SHAPE_CIRCLE, imported.COLOR_BLACK};
 };
 
 interface Port {

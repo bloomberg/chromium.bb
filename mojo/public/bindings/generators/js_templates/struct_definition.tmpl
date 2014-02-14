@@ -1,7 +1,7 @@
 {%- macro set_default(kind, value, depth) -%}
 {#--- Strings ---#}
 {%-   if kind|is_string_kind -%}
-{{caller(value)}}
+{{caller(value|expression_to_text(module))}}
 {#--- Arrays ---#}
 {%-   elif kind|is_array_kind %}
 {%-     set _ = value|verify_token_type("ARRAY") %}
@@ -35,11 +35,12 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 }
 {#--- POD types ---#}
 {%-   else -%}
-{{caller(value|substitute_namespace(imports))}}
+{{caller(value|expression_to_text(module))}}
 {%-   endif %}
 {%- endmacro %}
 
 
+{#--- Begin #}
   function {{struct.name}}() {
 {%- for packed_field in struct.packed.packed_fields %}
 {%- if packed_field.field.default %}

@@ -60,6 +60,7 @@ def ImportFromData(module, data):
   import_item = {}
   import_item['module_name'] = import_module.name
   import_item['namespace'] = import_module.namespace
+  import_item['module'] = import_module
 
   # Copy the struct kinds from our imports into the current module.
   for kind in import_module.kinds.itervalues():

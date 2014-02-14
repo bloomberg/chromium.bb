@@ -15,14 +15,14 @@ define([
 ) {
 
 {#--- Enums #}
-{%- from "enum_definition.tmpl" import enum_def -%}
+{%  from "enum_definition.tmpl" import enum_def -%}
 {%  for enum in enums %}
-{{    enum_def("var %s"|format(enum.name), enum) }}
+  var {{ enum_def(enum.name, enum, module) }}
 {%-  endfor %}
 
 {#--- Struct definitions #}
 {%  for struct in structs %}
-{%    include "struct_definition.tmpl" %}
+{%-   include "struct_definition.tmpl" %}
 {%- endfor %}
 
 {#--- Interface definitions #}

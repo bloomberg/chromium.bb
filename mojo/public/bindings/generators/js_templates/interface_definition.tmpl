@@ -46,8 +46,8 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif %}
   };
 
 {#--- Enums #}
-{%- from "enum_definition.tmpl" import enum_def -%}
+{%  from "enum_definition.tmpl" import enum_def -%}
 {%  for enum in interface.enums %}
-{{  enum_def("%sProxy.%s"|format(interface.name, enum.name), enum)}}
+  {{enum_def("%sProxy.%s"|format(interface.name, enum.name), enum, module)}}
   {{interface.name}}Stub.{{enum.name}} = {{interface.name}}Proxy.{{enum.name}};
 {%-  endfor %}
