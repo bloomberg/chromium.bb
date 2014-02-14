@@ -29,6 +29,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
@@ -113,29 +114,27 @@ class ImageTransportClientTexture : public OwnedTexture {
                      device_scale_factor,
                      texture_id) {}
 
-  virtual void Consume(const std::string& mailbox_name,
+  virtual void Consume(const gpu::Mailbox& mailbox,
                        const gfx::Size& new_size) OVERRIDE {
-    DCHECK(mailbox_name.size() == GL_MAILBOX_SIZE_CHROMIUM);
-    mailbox_name_ = mailbox_name;
-    if (mailbox_name.empty())
+    mailbox_ = mailbox;
+    if (mailbox.IsZero())
       return;
 
     DCHECK(provider_ && texture_id_);
     GLES2Interface* gl = provider_->ContextGL();
     gl->BindTexture(GL_TEXTURE_2D, texture_id_);
-    gl->ConsumeTextureCHROMIUM(
-        GL_TEXTURE_2D, reinterpret_cast<const GLbyte*>(mailbox_name.c_str()));
+    gl->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     size_ = new_size;
     gl->ShallowFlushCHROMIUM();
   }
 
-  virtual std::string Produce() OVERRIDE { return mailbox_name_; }
+  virtual gpu::Mailbox Produce() OVERRIDE { return mailbox_; }
 
  protected:
   virtual ~ImageTransportClientTexture() {}
 
  private:
-  std::string mailbox_name_;
+  gpu::Mailbox mailbox_;
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 

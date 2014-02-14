@@ -64,11 +64,11 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   // iterator in the MailboxToTextureMap to be able to manage changes to
   // the TextureToMailboxMap efficiently.
   typedef std::multimap<Texture*, TargetName> TextureToMailboxMap;
-  typedef std::map<
-      TargetName,
-      TextureToMailboxMap::iterator,
-      std::pointer_to_binary_function<
-          const TargetName&, const TargetName&, bool> > MailboxToTextureMap;
+  typedef std::map<TargetName,
+                   TextureToMailboxMap::iterator,
+                   std::pointer_to_binary_function<const TargetName&,
+                                                   const TargetName&,
+                                                   bool> > MailboxToTextureMap;
 
   MailboxToTextureMap mailbox_to_textures_;
   TextureToMailboxMap textures_to_mailboxes_;
@@ -79,5 +79,4 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
-
 
