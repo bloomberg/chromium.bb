@@ -306,4 +306,18 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
     updateClockAndService(4.98);
 }
 
+TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
+{
+    timing.iterationDuration = 2;
+    timing.startDelay = 5;
+
+    timeline = document->timeline();
+    element = 0;
+    document = 0;
+
+    RefPtr<Animation> anim = Animation::create(0, 0, timing);
+    // Test passes if this does not crash.
+    timeline->play(anim.get());
+}
+
 }

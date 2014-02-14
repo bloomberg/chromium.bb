@@ -88,6 +88,8 @@ public:
     void dispatchEvents();
     void dispatchEventsAsync();
 
+    void detachFromDocument();
+
 protected:
     DocumentTimeline(Document*, PassOwnPtr<PlatformTiming>);
 

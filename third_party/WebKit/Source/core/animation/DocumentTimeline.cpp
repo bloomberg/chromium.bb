@@ -131,12 +131,14 @@ void DocumentTimeline::DocumentTimelineTiming::cancelWake()
 
 void DocumentTimeline::DocumentTimelineTiming::serviceOnNextFrame()
 {
-    if (m_timeline->m_document->view())
+    if (m_timeline->m_document && m_timeline->m_document->view())
         m_timeline->m_document->view()->scheduleAnimation();
 }
 
 double DocumentTimeline::currentTime()
 {
+    if (!m_document)
+        return std::numeric_limits<double>::quiet_NaN();
     return m_document->animationClock().currentTime() - m_zeroTime;
 }
 
@@ -150,7 +152,7 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 void DocumentTimeline::setHasPlayerNeedingUpdate()
 {
     m_hasPlayerNeedingUpdate = true;
-    if (m_document->view() && !m_document->view()->isServicingAnimations())
+    if (m_document && m_document->view() && !m_document->view()->isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }
 
@@ -189,6 +191,10 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
             count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));
     }
     return count;
+}
+
+void DocumentTimeline::detachFromDocument() {
+    m_document = 0;
 }
 
 } // namespace
