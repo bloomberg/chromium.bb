@@ -64,17 +64,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
 }
 
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  ui::NinePartImageIds imageIds = {
-    IDR_MANAGED_USER_LABEL_TOP_LEFT,
-    IDR_MANAGED_USER_LABEL_TOP,
-    IDR_MANAGED_USER_LABEL_TOP_RIGHT,
-    IDR_MANAGED_USER_LABEL_LEFT,
-    IDR_MANAGED_USER_LABEL_CENTER,
-    IDR_MANAGED_USER_LABEL_RIGHT,
-    IDR_MANAGED_USER_LABEL_BOTTOM_LEFT,
-    IDR_MANAGED_USER_LABEL_BOTTOM,
-    IDR_MANAGED_USER_LABEL_BOTTOM_RIGHT
-  };
+  ui::NinePartImageIds imageIds = IMAGE_GRID(IDR_MANAGED_USER_LABEL);
   ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
 }
 
