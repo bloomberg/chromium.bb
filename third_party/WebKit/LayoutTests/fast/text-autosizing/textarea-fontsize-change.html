@@ -9,6 +9,12 @@
     margin: 0;
     overflow-y: hidden;
   }
+  /* Avoid complications from scrollbar changing the width which changes the
+   * text autosizing multiplier. Mobile uses overlay scrollbars anyway.
+   */
+  textarea::-webkit-scrollbar {
+    display: none;
+  }
 </style>
 
 <script>
