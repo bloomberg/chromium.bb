@@ -57,7 +57,7 @@ NavigationAction::NavigationAction()
 NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, FrameLoadType frameLoadType,
         bool isFormSubmission, PassRefPtr<Event> event)
     : m_resourceRequest(resourceRequest)
-    , m_type(navigationType(frameLoadType, isFormSubmission, event))
+    , m_type(navigationType(frameLoadType, isFormSubmission || resourceRequest.httpBody(), event))
     , m_event(event)
 {
     const MouseEvent* mouseEvent = 0;

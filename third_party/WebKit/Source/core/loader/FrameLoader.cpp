@@ -768,24 +768,34 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
+static ResourceRequest requestFromHistoryItem(HistoryItem* item, ResourceRequestCachePolicy cachePolicy)
+{
+    RefPtr<FormData> formData = item->formData();
+    ResourceRequest request(item->url(), item->referrer());
+    request.setCachePolicy(cachePolicy);
+    if (formData) {
+        request.setHTTPMethod("POST");
+        request.setHTTPBody(formData);
+        request.setHTTPContentType(item->formContentType());
+        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
+        FrameLoader::addHTTPOriginIfNeeded(request, securityOrigin->toAtomicString());
+    }
+    return request;
+}
+
 void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding)
 {
-    if (!m_documentLoader)
+    if (!m_currentItem)
         return;
 
-    ResourceRequest request = m_documentLoader->request();
-    // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
-    // Do we need to propagate anything other than the url?
-    request.setCachePolicy(UseProtocolCachePolicy);
+    ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), ReloadIgnoringCacheData);
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
-    } else if (!m_documentLoader->unreachableURL().isEmpty())
-        request.setURL(m_documentLoader->unreachableURL());
+    }
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    NavigationAction action(request, type, request.httpMethod() == "POST");
-    loadWithNavigationAction(action, type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
+    loadWithNavigationAction(NavigationAction(request, type), type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1405,20 +1415,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
         return;
     }
-
-    RefPtr<FormData> formData = item->formData();
-    ResourceRequest request(item->url());
-    request.setHTTPReferrer(item->referrer());
-    request.setCachePolicy(cachePolicy);
-    if (formData) {
-        request.setHTTPMethod("POST");
-        request.setHTTPBody(formData);
-        request.setHTTPContentType(item->formContentType());
-        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
-        addHTTPOriginIfNeeded(request, securityOrigin->toAtomicString());
-    }
-
-    loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward, formData), FrameLoadTypeBackForward, 0, SubstituteData());
+    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, 0, SubstituteData());
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

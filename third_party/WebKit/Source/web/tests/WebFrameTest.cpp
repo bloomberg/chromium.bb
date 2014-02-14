@@ -2639,7 +2639,7 @@ TEST_F(WebFrameTest, ReloadWhileProvisional)
 
     WebDataSource* dataSource = webViewHelper.webView()->mainFrame()->dataSource();
     ASSERT_TRUE(dataSource);
-    EXPECT_EQ(toKURL("about:blank"), toKURL(dataSource->request().url().spec()));
+    EXPECT_EQ(toKURL(m_baseURL + "fixed_layout.html"), toKURL(dataSource->request().url().spec()));
 }
 
 TEST_F(WebFrameTest, AppendRedirects)
