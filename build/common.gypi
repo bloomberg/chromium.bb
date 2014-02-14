@@ -287,6 +287,7 @@
 
       # The system root for cross-compiles. Default: none.
       'sysroot%': '',
+      'chroot_cmd%': '',
 
       # The system libdir used for this ABI.
       'system_libdir%': 'lib',
@@ -913,6 +914,7 @@
     'arm_neon%': '<(arm_neon)',
     'arm_neon_optional%': '<(arm_neon_optional)',
     'sysroot%': '<(sysroot)',
+    'chroot_cmd%': '<(chroot_cmd)',
     'system_libdir%': '<(system_libdir)',
     'component%': '<(component)',
     'use_titlecase_in_grd_files%': '<(use_titlecase_in_grd_files)',
