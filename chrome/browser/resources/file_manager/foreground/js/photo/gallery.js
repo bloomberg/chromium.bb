@@ -637,13 +637,12 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateSelectionAndState_ = function() {
-  var numSelectedItems = this.selectionModel_.length;
+  var numSelectedItems = this.selectionModel_.selectedIndexes.length;
   var displayName = '';
   var selectedEntryURL = null;
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
-    var selectedIndex = this.selectionModel_.selectedIndex;
     var selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
     this.selectedEntry_ = selectedItem.getEntry();
