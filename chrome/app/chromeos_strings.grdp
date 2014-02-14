@@ -1584,6 +1584,9 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
     Type the characters you see in the picture below.
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
+    Some settings belonging to <ph name="PRIMARY_EMAIL">$1<ex>john@google.com</ex></ph> are being shared with you. These settings only affect your account when using multiple sign-in.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
     Date and time
   </message>
@@ -2685,12 +2688,20 @@ Press any key to continue exploring.
   <message name="IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON" desc="Text of the accept button on the Terms of Service screen.">
     Accept and continue
   </message>
-
-  <message name="IDS_OPTIONS_CONTROLLED_SETTING_OWNER" desc="Tooltip for options which can be edited only by the owner">
-    This setting is enforced by the owner of the device.
+  <message name="IDS_OPTIONS_CONTROLLED_SETTING_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
+    This setting is managed by the device owner, <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>
-  <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
+  <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by enterprise policy.">
     This option is controlled by enterprise policy. Please contact your administrator for more information.
+  </message>
+  <message name="IDS_OPTIONS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
+    This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
+  </message>
+  <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_SHARED" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings which belong to the primary user but can be edited.">
+    These settings belong to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
+  </message>
+  <message name="IDS_OPTIONS_CONTROLLED_SETTING_SHARED_SCREEN_LOCK" desc="Text displayed in the controlled settings bubble for the screen lock option, indicating screen lock is enabled if it's set for any profile in a session.">
+    Passwords are required for signed-in users, as one or more users has this setting turned on.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
            desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">

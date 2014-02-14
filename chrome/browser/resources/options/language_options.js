@@ -557,6 +557,11 @@ cr.define('options', function() {
       // hidden by a language change.
       uiLanguageButton.hidden = false;
 
+      // Hide the controlled setting indicator.
+      var uiLanguageIndicator = document.querySelector(
+          '.language-options-contents .controlled-setting-indicator');
+      uiLanguageIndicator.removeAttribute('controlled-by');
+
       if (languageCode == this.prospectiveUiLanguageCode_) {
         uiLanguageMessage.textContent =
             loadTimeData.getString('isDisplayedInThisLanguage');
@@ -571,11 +576,17 @@ cr.define('options', function() {
         } else {
           uiLanguageButton.textContent =
               loadTimeData.getString('displayInThisLanguage');
+
+          if (loadTimeData.getBoolean('secondaryUser')) {
+            uiLanguageButton.disabled = true;
+            uiLanguageIndicator.setAttribute('controlled-by', 'shared');
+          } else {
+            uiLanguageButton.onclick = function(e) {
+              chrome.send('uiLanguageChange', [languageCode]);
+            };
+          }
           showMutuallyExclusiveNodes(
               [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 0);
-          uiLanguageButton.onclick = function(e) {
-            chrome.send('uiLanguageChange', [languageCode]);
-          };
         }
       } else {
         uiLanguageMessage.textContent =

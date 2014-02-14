@@ -27,11 +27,6 @@
   padding: 0;
 }
 
-input:-webkit-any([type='text'],[type='url'],:not([type])) +
-    .controlled-setting-indicator {
-  -webkit-margin-start: 5px;
-}
-
 .controlled-setting-indicator:not([controlled-by]) {
   display: none;
 }
@@ -41,11 +36,15 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
 }
 
 .controlled-setting-indicator[controlled-by='owner'] > div {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_OWNER');
 }
 
 .controlled-setting-indicator[controlled-by='extension'] > div {
   background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
+}
+
+.controlled-setting-indicator[controlled-by='shared'] > div {
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_SHARED');
 }
 
 .controlled-setting-indicator:-webkit-any([controlled-by='recommended'],

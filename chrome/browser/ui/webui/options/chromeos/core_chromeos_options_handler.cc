@@ -6,11 +6,14 @@
 
 #include <string>
 
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -42,13 +45,6 @@ bool IsSettingOwnerOnly(const std::string& pref) {
   return std::find(kNonOwnerSettings, end, pref) == end;
 }
 
-// Returns true if |username| is the logged-in owner.
-bool IsLoggedInOwner(const std::string& username) {
-  UserManager* user_manager = UserManager::Get();
-  return user_manager->IsCurrentUserOwner() &&
-      user_manager->GetLoggedInUser()->email() == username;
-}
-
 // Creates a user info dictionary to be stored in the |ListValue| that is
 // passed to Javascript for the |kAccountsPrefUsers| preference.
 base::DictionaryValue* CreateUserInfo(const std::string& username,
@@ -58,7 +54,9 @@ base::DictionaryValue* CreateUserInfo(const std::string& username,
   user_dict->SetString("username", username);
   user_dict->SetString("name", display_email);
   user_dict->SetString("email", display_name);
-  user_dict->SetBoolean("owner", IsLoggedInOwner(username));
+
+  bool is_owner = UserManager::Get()->GetOwnerEmail() == username;
+  user_dict->SetBoolean("owner", is_owner);
   return user_dict;
 }
 
@@ -133,6 +131,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
 
     return value;
   }
+
   if (!CrosSettings::IsCrosSettings(pref_name)) {
     std::string controlling_pref =
         pref_name == prefs::kUseSharedProxies ? prefs::kProxy : std::string();
@@ -152,13 +151,16 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     dict->Set("value", pref_value->DeepCopy());
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged())
+  if (connector->IsEnterpriseManaged()) {
+    dict->SetBoolean("disabled", true);
     dict->SetString("controlledBy", "policy");
-  bool disabled_by_owner = IsSettingOwnerOnly(pref_name) &&
-      !ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
-  dict->SetBoolean("disabled", disabled_by_owner);
-  if (disabled_by_owner)
-    dict->SetString("controlledBy", "owner");
+  } else {
+    bool controlled_by_owner = IsSettingOwnerOnly(pref_name) &&
+        !ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
+    dict->SetBoolean("disabled", controlled_by_owner);
+    if (controlled_by_owner)
+      dict->SetString("controlledBy", "owner");
+  }
   return dict;
 }
 
@@ -209,15 +211,92 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     ::options::CoreOptionsHandler::StopObservingPref(path);
 }
 
+base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
+    const std::string& pref_name,
+    const std::string& controlling_pref_name) {
+  // The screen lock setting is shared if multiple users are logged in and at
+  // least one has chosen to require passwords.
+  if (pref_name == prefs::kEnableAutoScreenLock &&
+      UserManager::Get()->GetLoggedInUsers().size() > 1 &&
+      controlling_pref_name.empty()) {
+    PrefService* user_prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    const PrefService::Preference* pref =
+        user_prefs->FindPreference(prefs::kEnableAutoScreenLock);
+
+    ash::SessionStateDelegate* delegate =
+        ash::Shell::GetInstance()->session_state_delegate();
+    if (pref && pref->IsUserModifiable() &&
+        delegate->ShouldLockScreenBeforeSuspending()) {
+      bool screen_lock = false;
+      bool success = pref->GetValue()->GetAsBoolean(&screen_lock);
+      DCHECK(success);
+      if (!screen_lock) {
+        // Screen lock is enabled for the session, but not in the user's
+        // preferences. Show the user's value in the checkbox, but indicate
+        // that the password requirement is enabled by some other user.
+        base::DictionaryValue* dict = new base::DictionaryValue;
+        dict->Set("value", pref->GetValue()->DeepCopy());
+        dict->SetString("controlledBy", "shared");
+        return dict;
+      }
+    }
+  }
+
+  return CoreOptionsHandler::CreateValueForPref(pref_name,
+                                                controlling_pref_name);
+}
+
 void CoreChromeOSOptionsHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 
-  AddAccountUITweaksLocalizedValues(localized_strings,
-                                    Profile::FromWebUI(web_ui()));
-  localized_strings->SetString("controlledSettingOwner",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_OWNER));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  AddAccountUITweaksLocalizedValues(localized_strings, profile);
+
+  UserManager* user_manager = UserManager::Get();
+  const std::string& primary_email = user_manager->GetPrimaryUser()->email();
+
+  // Check at load time whether this is a secondary user in a multi-profile
+  // session.
+  if (user_manager->GetUserByProfile(profile)->email() != primary_email) {
+    // Set secondaryUser to show the shared icon by the network section header.
+    localized_strings->SetBoolean("secondaryUser", true);
+    localized_strings->SetString("secondaryUserBannerText",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_SETTINGS_SECONDARY_USER_BANNER,
+            base::ASCIIToUTF16(primary_email)));
+    localized_strings->SetString("controlledSettingShared",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_CONTROLLED_SETTING_SHARED,
+            base::ASCIIToUTF16(primary_email)));
+    localized_strings->SetString("controlledSettingsShared",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_CONTROLLED_SETTINGS_SHARED,
+            base::ASCIIToUTF16(primary_email)));
+  } else {
+    localized_strings->SetBoolean("secondaryUser", false);
+    localized_strings->SetString("secondaryUserBannerText", base::string16());
+    localized_strings->SetString("controlledSettingShared", base::string16());
+    localized_strings->SetString("controlledSettingsShared", base::string16());
+  }
+
+  // Screen lock icon can show up as primary or secondary user.
+  localized_strings->SetString("screenLockShared",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTING_SHARED_SCREEN_LOCK));
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged()) {
+    // Managed machines have no "owner".
+    localized_strings->SetString("controlledSettingOwner", base::string16());
+  } else {
+    localized_strings->SetString("controlledSettingOwner",
+        l10n_util::GetStringFUTF16(
+            IDS_OPTIONS_CONTROLLED_SETTING_OWNER,
+            base::ASCIIToUTF16(user_manager->GetOwnerEmail())));
+  }
 }
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(

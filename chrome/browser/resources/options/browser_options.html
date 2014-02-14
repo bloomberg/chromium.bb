@@ -4,12 +4,13 @@
   </header>
   <include src="reset_profile_settings_banner.html">
   <include src="automatic_settings_reset_banner.html">
-<if expr="not pp_ifdef('chromeos')">
-  <include src="sync_section.html">
-</if>
 <if expr="pp_ifdef('chromeos')">
+  <include src="secondary_user_banner.html">
   <section>
-    <h3 i18n-content="sectionTitleInternet"></h3>
+    <div id="network-section-header" class="section-header">
+      <h3 i18n-content="sectionTitleInternet"></h3>
+      <span class="controlled-setting-indicator" plural></span>
+    </div>
     <div id="network-settings">
       <list id="network-list"></list>
       <div id="shared-proxies" class="checkbox">
@@ -24,6 +25,7 @@
   </section>
 </if>
 <if expr="not pp_ifdef('chromeos')">
+  <include src="sync_section.html">
   <include src="startup_section.html">
 </if>
   <section>

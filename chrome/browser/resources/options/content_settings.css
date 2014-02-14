@@ -68,15 +68,6 @@ div[role='listitem'][controlled-by] {
   position: relative;
 }
 
-.section-header {
-  -webkit-margin-start: -18px;
-  margin-bottom: 0.8em;
-}
-
-.section-header > h3 {
-  display: inline;
-}
-
 .settings-list div[role='listitem'][controlled-by='policy'],
 .settings-list div[role='listitem'][controlled-by='extension'] {
   background: rgb(250, 230, 146);

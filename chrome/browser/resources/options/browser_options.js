@@ -77,8 +77,11 @@ cr.define('options', function() {
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
 
-      if (cr.isChromeOS)
+      if (cr.isChromeOS) {
         UIAccountTweaks.applyGuestModeVisibility(document);
+        if (loadTimeData.getBoolean('secondaryUser'))
+          $('secondary-user-banner').hidden = false;
+      }
 
       // Sync (Sign in) section.
       this.updateSyncState_(loadTimeData.getValue('syncData'));
@@ -98,6 +101,14 @@ cr.define('options', function() {
       // Internet connection section (ChromeOS only).
       if (cr.isChromeOS) {
         options.network.NetworkList.decorate($('network-list'));
+        // Show that the network settings are shared if this is a secondary user
+        // in a multi-profile session.
+        if (loadTimeData.getBoolean('secondaryUser')) {
+          var networkIndicator = document.querySelector(
+              '#network-section-header > .controlled-setting-indicator');
+          networkIndicator.setAttribute('controlled-by', 'shared');
+          networkIndicator.location = cr.ui.ArrowLocation.TOP_START;
+        }
         options.network.NetworkList.refreshNetworkData(
             loadTimeData.getValue('networkData'));
       }
@@ -230,8 +241,15 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
         };
+
+        document.querySelector(
+            '#enable-screen-lock + span > .controlled-setting-indicator').
+            setAttribute('textshared',
+                         loadTimeData.getString('screenLockShared'));
+
         $('hotword-app-list').hidden =
             !loadTimeData.getBoolean('shouldShowAppListHotword');
+
       } else {
         $('import-data').onclick = function(event) {
           ImportDataOverlay.show();

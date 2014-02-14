@@ -1551,6 +1551,7 @@
         'browser/ui/webui/options/chromeos/accounts_options_browsertest.js',
         'browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js',
         'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
+        'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',
         'browser/ui/webui/options/content_options_browsertest.js',
         'browser/ui/webui/options/content_settings_exception_area_browsertest.js',
         'browser/ui/webui/options/cookies_view_browsertest.js',

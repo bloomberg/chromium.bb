@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -389,8 +390,15 @@ base::string16 CrosLanguageOptionsHandler::GetProductName() {
 
 void CrosLanguageOptionsHandler::SetApplicationLocale(
     const std::string& language_code) {
-  Profile::FromWebUI(web_ui())->ChangeAppLocale(
-      language_code, Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  UserManager* user_manager = UserManager::Get();
+
+  // Only the primary user can change the locale.
+  if (user_manager->GetUserByProfile(profile)->email() ==
+      user_manager->GetPrimaryUser()->email()) {
+    profile->ChangeAppLocale(language_code,
+                             Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
+  }
 }
 
 void CrosLanguageOptionsHandler::RestartCallback(const base::ListValue* args) {

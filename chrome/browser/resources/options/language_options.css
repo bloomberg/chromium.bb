@@ -29,7 +29,8 @@
   padding: 0 12px 4px;
 }
 
-.language-options-contents > span:not(.input-method-label) {
+.language-options-contents >
+    span:not(.input-method-label):not(.controlled-setting-indicator) {
   display: inline-block;
   margin: 1px;
   padding: 0.42em 10px;

@@ -105,6 +105,10 @@ cr.define('options', function() {
             'extensionWithName': loadTimeData.getString(
                 'controlledSettingsExtensionWithName'),
           };
+          if (cr.isChromeOS) {
+            defaultStrings.shared =
+                loadTimeData.getString('controlledSettingsShared');
+          }
         } else {
           var defaultStrings = {
             'policy': loadTimeData.getString('controlledSettingPolicy'),
@@ -119,6 +123,8 @@ cr.define('options', function() {
           if (cr.isChromeOS) {
             defaultStrings.owner =
                 loadTimeData.getString('controlledSettingOwner');
+            defaultStrings.shared =
+                loadTimeData.getString('controlledSettingShared');
           }
         }
 
@@ -221,6 +227,10 @@ cr.define('options', function() {
    *                        override this recommendation but has not done so.
    * - 'hasRecommendation': A value is recommended by policy. The user has
    *                        overridden this recommendation.
+   * - 'owner':             A value is controlled by the owner of the device
+   *                        (Chrome OS only).
+   * - 'shared':            A value belongs to the primary user but can be
+   *                        modified (Chrome OS only).
    * - unset:               The value is controlled by the user alone.
    * @type {string}
    */

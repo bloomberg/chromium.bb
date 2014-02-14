@@ -88,8 +88,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // Creates dictionary value for the pref described by |pref_name|.
   // If |controlling_pref| is not empty, it describes the pref that manages
   // |pref| via policy or extension.
-  base::Value* CreateValueForPref(const std::string& pref_name,
-                                  const std::string& controlling_pref_name);
+  virtual base::Value* CreateValueForPref(
+      const std::string& pref_name,
+      const std::string& controlling_pref_name);
 
   typedef std::multimap<std::string, std::string> PreferenceCallbackMap;
   PreferenceCallbackMap pref_callback_map_;

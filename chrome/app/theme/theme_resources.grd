@@ -154,6 +154,10 @@
       <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_EXTENSION" file="common/controlled_setting_extension.png" />
       <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_MANDATORY" file="common/controlled_setting_mandatory.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_OWNER" file="common/controlled_setting_owner.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_SHARED" file="cros/controlled_setting_shared.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_COOKIE_ICON" file="cookie.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" />
       <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT" file="common/credit_card_cvc_hint.png" />
@@ -869,6 +873,9 @@
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP" file="screen_capture_notification_grip.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREENSHOT_NOTIFICATION_ICON" file="common/notification_screenshot_icon.png" />
+      <if expr="pp_ifdef('chromeos')"> 
+        <structure type="chrome_scaled_image" name="IDR_SECONDARY_USER_SETTINGS" file="cros/secondary_user_settings.png" />
+      </if>
       <if expr="pp_ifdef('enable_settings_app')">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_128" file="settings_app_icon_128.png" />
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_16" file="settings_app_icon_16.png" />
