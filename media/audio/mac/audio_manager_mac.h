@@ -78,9 +78,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
       const AudioParameters& input_params) OVERRIDE;
 
  private:
-  // Helper methods for constructing AudioDeviceListenerMac on the audio thread.
-  void CreateDeviceListener();
-  void DestroyDeviceListener();
+  void InitializeOnAudioThread();
+  void ShutdownOnAudioThread();
 
   int ChooseBufferSize(int output_sample_rate);
 

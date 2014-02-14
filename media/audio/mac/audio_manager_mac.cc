@@ -261,26 +261,25 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
 
 AudioManagerMac::AudioManagerMac(AudioLogFactory* audio_log_factory)
     : AudioManagerBase(audio_log_factory),
-      current_sample_rate_(0) {
-  current_output_device_ = kAudioDeviceUnknown;
-
+      current_sample_rate_(0),
+      current_output_device_(kAudioDeviceUnknown) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
   // Task must be posted last to avoid races from handing out "this" to the
   // audio thread.  Always PostTask even if we're on the right thread since
   // AudioManager creation is on the startup path and this may be slow.
   GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerMac::CreateDeviceListener, base::Unretained(this)));
+      &AudioManagerMac::InitializeOnAudioThread, base::Unretained(this)));
 }
 
 AudioManagerMac::~AudioManagerMac() {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
-    DestroyDeviceListener();
+    ShutdownOnAudioThread();
   } else {
     // It's safe to post a task here since Shutdown() will wait for all tasks to
     // complete before returning.
     GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-        &AudioManagerMac::DestroyDeviceListener, base::Unretained(this)));
+        &AudioManagerMac::ShutdownOnAudioThread, base::Unretained(this)));
   }
 
   Shutdown();
@@ -565,6 +564,19 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     DLOG(ERROR) << "Failed to open output device: " << device_id;
     return NULL;
   }
+
+  // Lazily create the audio device listener on the first stream creation.
+  if (!output_device_listener_) {
+    output_device_listener_.reset(new AudioDeviceListenerMac(base::Bind(
+        &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
+    // Only set the current output device for the default device.
+    if (device_id == AudioManagerBase::kDefaultDeviceId || device_id.empty())
+      current_output_device_ = device;
+    // Just use the current sample rate since we don't allow non-native sample
+    // rates on OSX.
+    current_sample_rate_ = params.sample_rate();
+  }
+
   return new AUHALStream(this, params, device);
 }
 
@@ -675,21 +687,12 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
       AudioParameters::NO_EFFECTS);
 }
 
-void AudioManagerMac::CreateDeviceListener() {
+void AudioManagerMac::InitializeOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-
-  // Get a baseline for the sample-rate and current device,
-  // so we can intelligently handle device notifications only when necessary.
-  current_sample_rate_ = HardwareSampleRate();
-  if (!GetDefaultOutputDevice(&current_output_device_))
-    current_output_device_ = kAudioDeviceUnknown;
-
-  output_device_listener_.reset(new AudioDeviceListenerMac(base::Bind(
-      &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
   power_observer_.reset(new AudioPowerObserver());
 }
 
-void AudioManagerMac::DestroyDeviceListener() {
+void AudioManagerMac::ShutdownOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_device_listener_.reset();
   power_observer_.reset();
