@@ -19,25 +19,39 @@
   opacity: 0.4;
 }
 
+.destination-list-item-content {
+  display: flex;
+}
+
 .destination-list-item-icon {
   -webkit-margin-end: 8px;
   -webkit-transition: opacity 150ms;
   display: inline-block;
+  flex: 0 0 auto;
   height: 24px;
   vertical-align: middle;
   width: 24px;
 }
 
 .destination-list-item-name {
+  flex: 0 1 auto;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .destination-list-item .offline-status {
   -webkit-margin-start: 1em;
+  flex: 0 0 auto;
   font-size: 75%;
+  line-height: 24px;
   opacity: 0.6;
+  vertical-align: middle;
 }
 
 .register-promo {
   -webkit-margin-start: 1em;
+  flex: 0 0 auto;
 }
