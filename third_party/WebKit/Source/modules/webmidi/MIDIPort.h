@@ -32,7 +32,6 @@
 #define MIDIPort_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +39,9 @@
 
 namespace WebCore {
 
-class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+class MIDIAccess;
+
+class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MIDIPort);
 public:
     enum MIDIPortTypeCode {
@@ -48,7 +49,7 @@ public:
         MIDIPortTypeOutput
     };
 
-    virtual ~MIDIPort();
+    virtual ~MIDIPort() { }
 
     String id() const { return m_id; }
     String manufacturer() const { return m_manufacturer; }
@@ -56,14 +57,16 @@ public:
     String type() const;
     String version() const { return m_version; }
 
+    MIDIAccess* midiAccess() const { return m_access; }
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIPort; }
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
 protected:
-    MIDIPort(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
+    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
 
 private:
     String m_id;
@@ -71,6 +74,10 @@ private:
     String m_name;
     MIDIPortTypeCode m_type;
     String m_version;
+    // Hold a raw pointer to avoid a circular reference.
+    // Lifecycle is guaranteed by SetWrapperReferenceTo() IDL annotation.
+    // This will be improved by the oilpan.
+    MIDIAccess* m_access;
 };
 
 typedef Vector<RefPtr<MIDIPort> > MIDIPortVector;

@@ -29,7 +29,6 @@
  */
 
 [
-    ActiveDOMObject,
     NoInterfaceObject,
     SetWrapperReferenceTo(MIDIAccess midiAccess),
 ] interface MIDIOutput : MIDIPort {

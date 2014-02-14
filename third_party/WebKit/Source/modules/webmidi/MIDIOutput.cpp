@@ -163,17 +163,15 @@ private:
 
 } // namespace
 
-PassRefPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, ExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    RefPtr<MIDIOutput> output = adoptRef(new MIDIOutput(access, portIndex, context, id, manufacturer, name, version));
-    output->suspendIfNeeded();
+    RefPtr<MIDIOutput> output = adoptRef(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
     return output.release();
 }
 
-MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, ExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
-    : MIDIPort(context, id, manufacturer, name, MIDIPortTypeOutput, version)
-    , m_access(access)
+MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
+    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version)
     , m_portIndex(portIndex)
 {
     ScriptWrappable::init(this);
@@ -188,8 +186,8 @@ void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& excep
     if (!array)
         return;
 
-    if (MessageValidator::validate(array, exceptionState, m_access->sysExEnabled()))
-        m_access->sendMIDIData(m_portIndex, array->data(), array->length(), timestamp);
+    if (MessageValidator::validate(array, exceptionState, midiAccess()->sysExEnabled()))
+        midiAccess()->sendMIDIData(m_portIndex, array->data(), array->length(), timestamp);
 }
 
 void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionState& exceptionState)

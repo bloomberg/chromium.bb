@@ -35,7 +35,6 @@ enum MIDIPortType {
 
 [
     NoInterfaceObject,
-    ActiveDOMObject
 ] interface MIDIPort : EventTarget {
     readonly attribute DOMString id;
     readonly attribute DOMString manufacturer;

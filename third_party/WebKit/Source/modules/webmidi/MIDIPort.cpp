@@ -31,23 +31,21 @@
 #include "config.h"
 #include "modules/webmidi/MIDIPort.h"
 
+#include "modules/webmidi/MIDIAccess.h"
+
 namespace WebCore {
 
-MIDIPort::MIDIPort(ExecutionContext* context, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
-    : ActiveDOMObject(context)
-    , m_id(id)
+MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
+    : m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
     , m_type(type)
     , m_version(version)
+    , m_access(access)
 {
+    ASSERT(access);
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
     ScriptWrappable::init(this);
-}
-
-MIDIPort::~MIDIPort()
-{
-    stop();
 }
 
 String MIDIPort::type() const
@@ -61,6 +59,11 @@ String MIDIPort::type() const
         ASSERT_NOT_REACHED();
     }
     return emptyString();
+}
+
+ExecutionContext* MIDIPort::executionContext() const
+{
+    return m_access->executionContext();
 }
 
 } // namespace WebCore
