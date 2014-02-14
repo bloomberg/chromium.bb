@@ -327,7 +327,7 @@ public:
     WebCore::Frame* focusedWebCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
-    WebCore::Element* focusedElement();
+    WebCore::Element* focusedElement() const;
 
     static WebViewImpl* fromPage(WebCore::Page*);
 

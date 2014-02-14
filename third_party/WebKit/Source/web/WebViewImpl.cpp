@@ -3586,7 +3586,7 @@ NotificationPresenterImpl* WebViewImpl::notificationPresenterImpl()
     return &m_notificationPresenter;
 }
 
-Element* WebViewImpl::focusedElement()
+Element* WebViewImpl::focusedElement() const
 {
     Frame* frame = m_page->focusController().focusedFrame();
     if (!frame)
