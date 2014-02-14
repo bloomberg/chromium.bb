@@ -102,7 +102,7 @@ bool isTabSpanNode(const Node*);
 bool isTabSpanTextNode(const Node*);
 bool isMailBlockquote(const Node*);
 bool isRenderedTable(const Node*);
-bool isTableElement(const Node*);
+bool isRenderedTableElement(const Node*);
 bool isTableCell(const Node*);
 bool isEmptyTableCell(const Node*);
 bool isTableStructureNode(const Node*);

@@ -155,7 +155,7 @@ bool PositionIterator::isCandidate() const
     if (renderer->isText())
         return !Position::nodeIsUserSelectNone(m_anchorNode) && Position(*this).inRenderedText();
 
-    if (isTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
+    if (isRenderedTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
     if (!m_anchorNode->hasTagName(htmlTag) && renderer->isRenderBlockFlow()) {
