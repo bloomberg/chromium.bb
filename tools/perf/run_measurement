@@ -12,7 +12,7 @@ import urllib2
 BASE_URL = 'http://src.chromium.org/chrome/trunk/'
 DEPS_FILE = 'bootstrap_deps'
 
-SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 # Directory containing src/ in a Chromium checkout.
 CHECKOUT_BASE_PATH = os.path.join(SCRIPT_PATH, os.pardir, os.pardir, os.pardir)
 # Directory in which to save bootstrap files.
