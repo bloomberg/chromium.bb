@@ -32,6 +32,8 @@
                 forType:(autofill::ServerFieldType)type {
   for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
+    if (!dialog_->delegate()->SectionIsActive(section))
+      continue;
     // TODO(groby): Need to find the section for an input directly - wasteful.
     [[mainContainer_ sectionForId:section] setFieldValue:text forType:type];
   }
@@ -45,6 +47,8 @@
 - (void)activateFieldForType:(autofill::ServerFieldType)type {
   for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
+    if (!dialog_->delegate()->SectionIsActive(section))
+      continue;
     [[mainContainer_ sectionForId:section] activateFieldForType:type];
   }
 }
@@ -86,6 +90,8 @@ base::string16 AutofillDialogViewTesterCocoa::GetTextContentsOfInput(
     ServerFieldType type) {
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
+    if (!dialog_->delegate()->SectionIsActive(section))
+      continue;
     FieldValueMap contents;
     [controller() getInputs:&contents forSection:section];
     FieldValueMap::const_iterator it = contents.find(type);
