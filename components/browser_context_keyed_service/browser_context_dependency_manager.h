@@ -68,6 +68,13 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
   // mode. This will NOTREACHED() whenever the user is trying to access a stale
   // BrowserContext*.
   void AssertBrowserContextWasntDestroyed(content::BrowserContext* context);
+
+  // Marks |context| as live (i.e., not stale). This method can be called as a
+  // safeguard against |AssertBrowserContextWasntDestroyed()| checks going off
+  // due to |context| aliasing a BrowserContext instance from a prior test
+  // (i.e., 0xWhatever might be created, be destroyed, and then a new
+  // BrowserContext object might be created at 0xWhatever).
+  void MarkBrowserContextLiveForTesting(content::BrowserContext* context);
 #endif
 
   static BrowserContextDependencyManager* GetInstance();

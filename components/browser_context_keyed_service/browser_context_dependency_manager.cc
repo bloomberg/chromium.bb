@@ -71,11 +71,7 @@ void BrowserContextDependencyManager::DoCreateBrowserContextServices(
   TRACE_EVENT0("browser",
     "BrowserContextDependencyManager::DoCreateBrowserContextServices")
 #ifndef NDEBUG
-  // Unmark |context| as dead. This exists because of unit tests, which will
-  // often have similar stack structures. 0xWhatever might be created, go out
-  // of scope, and then a new BrowserContext object might be created
-  // at 0xWhatever.
-  dead_context_pointers_.erase(context);
+  MarkBrowserContextLiveForTesting(context);
 #endif
 
   std::vector<DependencyNode*> construction_order;
@@ -138,6 +134,11 @@ void BrowserContextDependencyManager::AssertBrowserContextWasntDestroyed(
                  << "service MUST NOT refer to depended BrowserContext "
                  << "services again.";
   }
+}
+
+void BrowserContextDependencyManager::MarkBrowserContextLiveForTesting(
+    content::BrowserContext* context) {
+  dead_context_pointers_.erase(context);
 }
 #endif
 

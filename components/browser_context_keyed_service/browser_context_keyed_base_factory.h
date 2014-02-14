@@ -111,6 +111,12 @@ BrowserContextKeyedBaseFactory
   // Mark context as Preferences set.
   void MarkPreferencesSetOn(content::BrowserContext* context);
 
+  // Which BrowserContextDependencyManager we should communicate with.
+  // In real code, this will always be
+  // BrowserContextDependencyManager::GetInstance(), but unit tests will want
+  // to use their own copy.
+  BrowserContextDependencyManager* dependency_manager_;
+
  private:
   friend class BrowserContextDependencyManager;
   friend class BrowserContextDependencyManagerUnittests;
@@ -131,12 +137,6 @@ BrowserContextKeyedBaseFactory
   // We also need a generalized, non-returning method that generates the object
   // now for when we're creating the context.
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;
-
-  // Which BrowserContextDependencyManager we should communicate with.
-  // In real code, this will always be
-  // BrowserContextDependencyManager::GetInstance(), but unit tests will want
-  // to use their own copy.
-  BrowserContextDependencyManager* dependency_manager_;
 
   // BrowserContexts that have this service's preferences registered on them.
   std::set<const content::BrowserContext*> registered_preferences_;
