@@ -37,27 +37,6 @@
 .type pushAllRegisters, %function
 .global pushAllRegisters
 .hidden pushAllRegisters
-.if __thumb__
-/* THUMB Mode */
-.code 16
-.thumb_func
-pushAllRegisters:
-        /* Push all callee-saved registers and save return address. */
-        push {r4-r7, lr}
-        /* Pass the two first arguments unchanged (r0, r1)
-         * and pass the stack pointer after pushing callee-saved
-         * registers to the callback function.
-         */
-        mov r3, r2
-        mov r2, sp
-        blx r3
-        /* Discard all the registers, and pop lr into pc which returns
-         * and switches mode if needed.
-         */
-        add sp, sp, #16
-        pop {pc}
-.else
-/* ARM Mode */
 pushAllRegisters:
         /* Push all callee-saved registers and save return address. */
         push {r4-r11, lr}
@@ -73,4 +52,3 @@ pushAllRegisters:
          */
         add sp, sp, #32
         pop {pc}
-.endif
