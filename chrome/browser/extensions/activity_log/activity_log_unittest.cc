@@ -34,6 +34,19 @@ namespace {
 
 const char kExtensionId[] = "abc";
 
+const char* kUrlApiCalls[] = {
+    "HTMLButtonElement.formAction", "HTMLEmbedElement.src",
+    "HTMLFormElement.action",       "HTMLFrameElement.src",
+    "HTMLHtmlElement.manifest",     "HTMLIFrameElement.src",
+    "HTMLImageElement.longDesc",    "HTMLImageElement.src",
+    "HTMLImageElement.lowsrc",      "HTMLInputElement.formAction",
+    "HTMLInputElement.src",         "HTMLLinkElement.href",
+    "HTMLMediaElement.src",         "HTMLMediaElement.currentSrc",
+    "HTMLModElement.cite",          "HTMLObjectElement.data",
+    "HTMLQuoteElement.cite",        "HTMLScriptElement.src",
+    "HTMLSourceElement.src",        "HTMLTrackElement.src",
+    "HTMLVideoElement.poster"};
+
 }  // namespace
 
 namespace extensions {
@@ -146,6 +159,30 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ("[{\"url\":\"\\u003Carg_url>\"}]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_EQ("http://www.google.co.uk/", action->arg_url().spec());
+  }
+
+  static void RetrieveActions_ArgUrlApiCalls(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > actions) {
+    size_t api_calls_size = arraysize(kUrlApiCalls);
+    const base::DictionaryValue* other = NULL;
+    int dom_verb = -1;
+
+    ASSERT_EQ(api_calls_size, actions->size());
+
+    for (size_t i = 0; i < actions->size(); i++) {
+      scoped_refptr<Action> action = actions->at(i);
+      ASSERT_EQ(kExtensionId, action->extension_id());
+      ASSERT_EQ(Action::ACTION_DOM_ACCESS, action->action_type());
+      ASSERT_EQ(kUrlApiCalls[i], action->api_name());
+      ASSERT_EQ("[\"\\u003Carg_url>\"]",
+                ActivityLogPolicy::Util::Serialize(action->args()));
+      ASSERT_EQ("http://www.google.co.uk/", action->arg_url().spec());
+      other = action->other();
+      ASSERT_TRUE(other);
+      ASSERT_TRUE(
+          other->GetInteger(activity_log_constants::kActionDomVerb, &dom_verb));
+      ASSERT_EQ(DomActionType::SETTER, dom_verb);
+    }
   }
 
   ExtensionService* extension_service_;
@@ -338,6 +375,34 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
       "",
       -1,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions0));
+}
+
+TEST_F(ActivityLogTest, ArgUrlApiCalls) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::Time now = base::Time::Now();
+  int api_calls_size = arraysize(kUrlApiCalls);
+  scoped_refptr<Action> action;
+
+  for (int i = 0; i < api_calls_size; i++) {
+    action = new Action(kExtensionId,
+                        now - base::TimeDelta::FromSeconds(i),
+                        Action::ACTION_DOM_ACCESS,
+                        kUrlApiCalls[i]);
+    action->mutable_args()->AppendString("http://www.google.co.uk");
+    action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
+                                        DomActionType::SETTER);
+    activity_log->LogAction(action);
+  }
+
+  activity_log->GetFilteredActions(
+      kExtensionId,
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      -1,
+      base::Bind(ActivityLogTest::RetrieveActions_ArgUrlApiCalls));
 }
 
 }  // namespace extensions
