@@ -163,7 +163,8 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     if (needsUpdate)  {
         // FIXME: This probably shouldn't be recursive.
         didTriggerStyleRecalc = updateChildrenAndEffects();
-        m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, timeToNextIteration);
+        m_calculated.timeToForwardsEffectChange = calculateTimeToEffectChange(true, localTime, timeToNextIteration);
+        m_calculated.timeToReverseEffectChange = calculateTimeToEffectChange(false, localTime, timeToNextIteration);
     }
     return didTriggerStyleRecalc;
 }

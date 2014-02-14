@@ -78,13 +78,12 @@ public:
     virtual bool updateChildrenAndEffects() const OVERRIDE { return false; }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
-    virtual double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const OVERRIDE
+    virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const OVERRIDE
     {
         m_localTime = localTime;
         m_timeToNextIteration = timeToNextIteration;
         return -1;
     }
-
     double takeLocalTime()
     {
         const double result = m_localTime;

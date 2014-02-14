@@ -79,7 +79,7 @@ protected:
     virtual bool updateChildrenAndEffects() const OVERRIDE;
     virtual void didAttach() OVERRIDE;
     virtual void willDetach() OVERRIDE;
-    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE;
+    virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
     static void populateTiming(Timing&, Dictionary);

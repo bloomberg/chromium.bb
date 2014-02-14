@@ -654,4 +654,101 @@ TEST_F(AnimationAnimationTest, TimingInputEmpty)
     EXPECT_EQ(*controlTiming.timingFunction.get(), *updatedTiming.timingFunction.get());
 }
 
+TEST_F(AnimationAnimationTest, TimeToEffectChange)
+{
+    Timing timing;
+    timing.iterationDuration = 100;
+    timing.startDelay = 100;
+    timing.endDelay = 100;
+    timing.fillMode = Timing::FillModeNone;
+    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Player> player = document->timeline()->play(animation.get());
+    double inf = std::numeric_limits<double>::infinity();
+
+    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(100);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(199);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(200);
+    // End-exclusive.
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(300);
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(100, animation->timeToReverseEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
+{
+    Timing timing;
+    timing.iterationDuration = 100;
+    timing.startDelay = 100;
+    timing.endDelay = 100;
+    timing.playbackRate = 2;
+    timing.fillMode = Timing::FillModeNone;
+    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Player> player = document->timeline()->play(animation.get());
+    double inf = std::numeric_limits<double>::infinity();
+
+    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(100);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(149);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(150);
+    // End-exclusive.
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(200);
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(50, animation->timeToReverseEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
+{
+    Timing timing;
+    timing.iterationDuration = 100;
+    timing.startDelay = 100;
+    timing.endDelay = 100;
+    timing.playbackRate = -2;
+    timing.fillMode = Timing::FillModeNone;
+    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Player> player = document->timeline()->play(animation.get());
+    double inf = std::numeric_limits<double>::infinity();
+
+    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(100);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(149);
+    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(150);
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+
+    player->setCurrentTime(200);
+    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(50, animation->timeToReverseEffectChange());
+}
+
 } // namespace WebCore

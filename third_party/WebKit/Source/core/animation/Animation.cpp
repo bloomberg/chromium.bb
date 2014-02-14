@@ -338,30 +338,38 @@ bool Animation::updateChildrenAndEffects() const
     return false;
 }
 
-double Animation::calculateTimeToEffectChange(double localTime, double timeToNextIteration) const
+double Animation::calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const
 {
-    const double activeStartTime = startTime() + specifiedTiming().startDelay;
+    const double start = startTime() + specifiedTiming().startDelay;
+    const double end = start + activeDuration();
+
     switch (phase()) {
     case PhaseBefore:
-        return activeStartTime - localTime;
+        ASSERT(start >= localTime);
+        return forwards
+            ? start - localTime
+            : std::numeric_limits<double>::infinity();
     case PhaseActive:
-        if (hasActiveAnimationsOnCompositor()) {
+        if (forwards && hasActiveAnimationsOnCompositor()) {
+            ASSERT(specifiedTiming().playbackRate == 1);
             // Need service to apply fill / fire events.
-            const double activeEndTime = activeStartTime + activeDuration();
-            return std::min(activeEndTime - localTime, timeToNextIteration);
+            return std::min(end - localTime, timeToNextIteration);
         }
         return 0;
     case PhaseAfter:
+        ASSERT(localTime >= end);
         // If this Animation is still in effect then it will need to update
         // when its parent goes out of effect. We have no way of knowing when
         // that will be, however, so the parent will need to supply it.
-        return std::numeric_limits<double>::infinity();
+        return forwards
+            ? std::numeric_limits<double>::infinity()
+            : localTime - end;
     case PhaseNone:
         ASSERT(player() && !player()->timeline().hasStarted());
         return std::numeric_limits<double>::infinity();
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return std::numeric_limits<double>::infinity();
     }
 }
 

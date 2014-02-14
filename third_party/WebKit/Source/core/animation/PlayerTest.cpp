@@ -614,6 +614,7 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
     Timing timing;
     timing.startDelay = 1;
     timing.iterationDuration = 1;
+    timing.endDelay = 1;
     RefPtr<Animation> animation = Animation::create(0, 0, timing);
     player = Player::create(*timeline, animation.get());
     player->setStartTime(0);
@@ -636,6 +637,27 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
 
     updateTimeline(3, &timeToNextEffect);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+
+    player->setCurrentTime(0);
+    player->update(&timeToNextEffect);
+    EXPECT_EQ(1, timeToNextEffect);
+
+    player->setPlaybackRate(2);
+    player->update(&timeToNextEffect);
+    EXPECT_EQ(0.5, timeToNextEffect);
+
+    player->setPlaybackRate(0);
+    player->update(&timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+
+    player->setCurrentTime(3);
+    player->setPlaybackRate(-1);
+    player->update(&timeToNextEffect);
+    EXPECT_EQ(1, timeToNextEffect);
+
+    player->setPlaybackRate(-2);
+    player->update(&timeToNextEffect);
+    EXPECT_EQ(0.5, timeToNextEffect);
 }
 
 TEST_F(AnimationPlayerTest, AttachedPlayers)

@@ -77,7 +77,8 @@ public:
     bool isCurrent() const { return ensureCalculated().isCurrent; }
     bool isInEffect() const { return ensureCalculated().isInEffect; }
     bool isInPlay() const { return ensureCalculated().isInPlay; }
-    double timeToEffectChange() const { return ensureCalculated().timeToEffectChange; }
+    double timeToForwardsEffectChange() const { return ensureCalculated().timeToForwardsEffectChange; }
+    double timeToReverseEffectChange() const { return ensureCalculated().timeToReverseEffectChange; }
 
     double currentIteration() const { return ensureCalculated().currentIteration; }
     double duration() const { return iterationDuration(); }
@@ -106,13 +107,14 @@ protected:
     void invalidate() const { m_needsUpdate = true; };
 
 private:
+
     double iterationDuration() const;
     double repeatedDuration() const;
 
     // Returns whether style recalc was triggered.
     virtual bool updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
-    virtual double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const = 0;
+    virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const = 0;
     virtual void didAttach() { };
     virtual void willDetach() { };
 
@@ -143,8 +145,9 @@ private:
         bool isCurrent;
         bool isInEffect;
         bool isInPlay;
-        double timeToEffectChange;
         double localTime;
+        double timeToForwardsEffectChange;
+        double timeToReverseEffectChange;
     } m_calculated;
     mutable bool m_isFirstSample;
     mutable bool m_needsUpdate;

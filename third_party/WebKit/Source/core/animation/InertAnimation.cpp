@@ -58,7 +58,7 @@ PassOwnPtr<AnimationEffect::CompositableValueList> InertAnimation::sample()
 }
 
 
-double InertAnimation::calculateTimeToEffectChange(double, double) const
+double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
 {
     return std::numeric_limits<double>::infinity();
 }

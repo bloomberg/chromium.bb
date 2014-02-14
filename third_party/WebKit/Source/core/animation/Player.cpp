@@ -271,8 +271,15 @@ bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
 
     bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(inheritedTime);
 
-    if (timeToEffectChange)
-        *timeToEffectChange = m_content->timeToEffectChange();
+    if (timeToEffectChange) {
+        if (m_playbackRate > 0) {
+            *timeToEffectChange = m_content->timeToForwardsEffectChange() / m_playbackRate;
+        } else if (m_playbackRate < 0) {
+            *timeToEffectChange = m_content->timeToReverseEffectChange() / abs(m_playbackRate);
+        } else {
+            *timeToEffectChange = std::numeric_limits<double>::infinity();
+        }
+    }
     if (didTriggerStyleRecalc)
         *didTriggerStyleRecalc = didTriggerStyleRecalcLocal;
 
