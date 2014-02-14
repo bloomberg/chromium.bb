@@ -1635,15 +1635,6 @@ bool AutofillDialogViews::Accept() {
   return false;
 }
 
-// TODO(wittman): Remove this override once we move to the new style frame view
-// on all dialogs.
-views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
-    views::Widget* widget) {
-  return CreateConstrainedStyleNonClientFrameView(
-      widget,
-      delegate_->GetWebContents()->GetBrowserContext());
-}
-
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const base::string16& new_contents) {
   InputEditedOrActivated(TypeForTextfield(sender),

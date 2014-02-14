@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -236,16 +235,6 @@ bool SSLClientCertificateSelector::Accept() {
   }
 
   return false;
-}
-
-// TODO(wittman): Remove this override once we move to the new style frame view
-// on all dialogs.
-views::NonClientFrameView*
-    SSLClientCertificateSelector::CreateNonClientFrameView(
-        views::Widget* widget) {
-  return CreateConstrainedStyleNonClientFrameView(
-      widget,
-      web_contents_->GetBrowserContext());
 }
 
 views::View* SSLClientCertificateSelector::GetInitiallyFocusedView() {

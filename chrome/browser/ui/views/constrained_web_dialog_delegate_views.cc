@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -33,11 +32,10 @@ namespace {
 class ConstrainedWebDialogDelegateViews
     : public ConstrainedWebDialogDelegateBase {
  public:
-  ConstrainedWebDialogDelegateViews(
-      content::BrowserContext* browser_context,
-      WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate,
-      views::WebView* view)
+  ConstrainedWebDialogDelegateViews(content::BrowserContext* browser_context,
+                                    WebDialogDelegate* delegate,
+                                    WebDialogWebContentsDelegate* tab_delegate,
+                                    views::WebView* view)
       : ConstrainedWebDialogDelegateBase(
             browser_context, delegate, tab_delegate),
         view_(view),
@@ -130,13 +128,9 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
-  // TODO(wittman): Remove this override once we move to the new style frame
-  // view on all dialogs.
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE {
-    return CreateConstrainedStyleNonClientFrameView(
-        widget,
-        GetWebContents()->GetBrowserContext());
+    return views::DialogDelegate::CreateDialogFrameView(widget);
   }
   virtual bool ShouldShowCloseButton() const OVERRIDE {
     // No close button if the dialog doesn't want a title bar.
@@ -199,7 +193,8 @@ ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
-ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() {
+ConstrainedWebDialogDelegateViewViews::
+~ConstrainedWebDialogDelegateViewViews() {
 }
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(

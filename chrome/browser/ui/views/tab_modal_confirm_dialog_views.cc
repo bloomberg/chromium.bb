@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -41,8 +40,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
     : delegate_(delegate),
-      dialog_(NULL),
-      browser_context_(web_contents->GetBrowserContext()) {
+      dialog_(NULL) {
   views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       views::kUnrelatedControlVerticalSpacing;
@@ -122,13 +120,6 @@ bool TabModalConfirmDialogViews::Close() {
 
 views::View* TabModalConfirmDialogViews::GetContentsView() {
   return message_box_view_;
-}
-
-// TODO(wittman): Remove this override once we move to the new style frame view
-// on all dialogs.
-views::NonClientFrameView* TabModalConfirmDialogViews::CreateNonClientFrameView(
-    views::Widget* widget) {
-  return CreateConstrainedStyleNonClientFrameView(widget, browser_context_);
 }
 
 views::Widget* TabModalConfirmDialogViews::GetWidget() {
