@@ -3356,9 +3356,9 @@ class ArchiveStage(ArchivingStage):
       True if the tarball was generated.
     """
     cros_build_lib.Info('Waiting for debug tarball...')
-    status = self._breakpad_symbols_queue.get(timeout=timeout)
+    status = self._debug_tarball_queue.get(timeout=timeout)
     # Put the status back so other processes don't starve.
-    self._breakpad_symbols_queue.put(status)
+    self._debug_tarball_queue.put(status)
     return status
 
   def AnnounceChannelSigned(self, channel):
