@@ -32,9 +32,11 @@ namespace WebCore {
 
 namespace ElementTraversal {
 
-// First element child of the node.
+// First / Last element child of the node.
 Element* firstWithin(const Node&);
 Element* firstWithin(const ContainerNode&);
+Element* lastWithin(const Node&);
+Element* lastWithin(const ContainerNode&);
 
 // Pre-order traversal skipping non-element nodes.
 Element* next(const Node&);
@@ -71,6 +73,17 @@ inline Element* firstElementWithinTemplate(NodeType& current)
 }
 inline Element* firstWithin(const ContainerNode& current) { return firstElementWithinTemplate(current); }
 inline Element* firstWithin(const Node& current) { return firstElementWithinTemplate(current); }
+
+template <class NodeType>
+inline Element* lastWithinTemplate(NodeType& current)
+{
+    Node* node = current.lastChild();
+    while (node && !node->isElementNode())
+        node = node->previousSibling();
+    return toElement(node);
+}
+inline Element* lastWithin(const ContainerNode& current) { return lastWithinTemplate(current); }
+inline Element* lastWithin(const Node& current) { return lastWithinTemplate(current); }
 
 template <class NodeType>
 inline Element* traverseNextElementTemplate(NodeType& current)

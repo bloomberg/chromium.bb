@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/editing/BreakBlockquoteCommand.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -381,10 +382,13 @@ bool TypingCommand::makeEditableRootEmpty()
     if (!root || !root->firstChild())
         return false;
 
-    if (root->firstChild() == root->lastChild() && root->firstElementChild() && root->firstElementChild()->hasTagName(brTag)) {
-        // If there is a single child and it could be a placeholder, leave it alone.
-        if (root->renderer() && root->renderer()->isRenderBlockFlow())
-            return false;
+    if (root->firstChild() == root->lastChild()) {
+        Element* firstElementChild = ElementTraversal::firstWithin(*root);
+        if (firstElementChild && firstElementChild->hasTagName(brTag)) {
+            // If there is a single child and it could be a placeholder, leave it alone.
+            if (root->renderer() && root->renderer()->isRenderBlockFlow())
+                return false;
+        }
     }
 
     while (Node* child = root->firstChild())

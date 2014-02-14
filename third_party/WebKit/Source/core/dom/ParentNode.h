@@ -32,6 +32,7 @@
 #define ParentNode_h
 
 #include "core/dom/ContainerNode.h"
+#include "core/dom/ElementTraversal.h"
 
 namespace WebCore {
 
@@ -44,17 +45,23 @@ public:
 
     static Element* firstElementChild(ContainerNode* node)
     {
-        return node->firstElementChild();
+        ASSERT(node);
+        return ElementTraversal::firstWithin(*node);
     }
 
     static Element* lastElementChild(ContainerNode* node)
     {
-        return node->lastElementChild();
+        ASSERT(node);
+        return ElementTraversal::lastWithin(*node);
     }
 
     static unsigned childElementCount(ContainerNode* node)
     {
-        return node->childElementCount();
+        ASSERT(node);
+        unsigned count = 0;
+        for (Element* child = ElementTraversal::firstWithin(*node); child; child = ElementTraversal::nextSibling(*child))
+            ++count;
+        return count;
     }
 };
 

@@ -1378,7 +1378,7 @@ void Document::removeTitle(Element* titleElement)
     // FIXME: This is broken for SVG.
     // Update title based on first title element in the head, if one exists.
     if (HTMLElement* headElement = head()) {
-        for (Element* element = headElement->firstElementChild(); element; element = element->nextElementSibling()) {
+        for (Element* element = ElementTraversal::firstWithin(*headElement); element; element = ElementTraversal::nextSibling(*element)) {
             if (!element->hasTagName(titleTag))
                 continue;
             HTMLTitleElement* title = toHTMLTitleElement(element);
@@ -4127,7 +4127,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     // in the title bar.
     if (m_titleElement
         && encoding() != newData.encoding()
-        && !m_titleElement->firstElementChild()
+        && !ElementTraversal::firstWithin(*m_titleElement)
         && encoding() == Latin1Encoding()
         && m_titleElement->textContent().containsOnlyLatin1()) {
 

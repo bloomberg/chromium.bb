@@ -87,11 +87,7 @@ public:
     bool hasOneChild() const { return m_firstChild && !m_firstChild->nextSibling(); }
     bool hasOneTextChild() const { return hasOneChild() && m_firstChild->isTextNode(); }
 
-    // ParentNode interface API
     PassRefPtr<HTMLCollection> children();
-    Element* firstElementChild() const;
-    Element* lastElementChild() const;
-    unsigned childElementCount() const;
 
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;

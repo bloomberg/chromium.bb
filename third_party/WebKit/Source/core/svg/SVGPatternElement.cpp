@@ -24,6 +24,7 @@
 #include "core/svg/SVGPatternElement.h"
 
 #include "XLinkNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/SVGElementInstance.h"
@@ -199,7 +200,7 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
         attributes.setPatternTransform(transform);
     }
 
-    if (!attributes.hasPatternContentElement() && element->childElementCount())
+    if (!attributes.hasPatternContentElement() && ElementTraversal::firstWithin(*element))
         attributes.setPatternContentElement(element);
 }
 

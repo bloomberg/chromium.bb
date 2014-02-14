@@ -48,6 +48,7 @@
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementRareData.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/MutationObserverInterestGroup.h"
@@ -1880,7 +1881,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     // |afterChange| is 0 in the parser case, so it works out that we'll skip this block.
     if (childrenAffectedByFirstChildRules() && afterChange) {
         // Find our new first child.
-        Node* newFirstChild = firstElementChild();
+        Element* newFirstChild = ElementTraversal::firstWithin(*this);
         RenderStyle* newFirstChildStyle = newFirstChild ? newFirstChild->renderStyle() : 0;
 
         // Find the first element node following |afterChange|
@@ -1900,7 +1901,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     // In the DOM case, we only need to do something if |afterChange| is not 0.
     if (childrenAffectedByLastChildRules() && beforeChange) {
         // Find our new last child.
-        Node* newLastChild = lastElementChild();
+        Node* newLastChild = ElementTraversal::lastWithin(*this);
         RenderStyle* newLastChildStyle = newLastChild ? newLastChild->renderStyle() : 0;
 
         // Find the last element node going backwards from |beforeChange|
