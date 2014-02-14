@@ -235,7 +235,7 @@ Settings* Frame::settings() const
     return 0;
 }
 
-void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot shouldAdjustViewSize)
+void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
 {
     // In setting printing, we should not validate resources already cached for the document.
     // See https://bugs.webkit.org/show_bug.cgi?id=43704
@@ -246,16 +246,15 @@ void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSiz
 
     document()->styleResolverChanged(RecalcStyleImmediately);
     if (shouldUsePrintingLayout()) {
-        view()->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio, shouldAdjustViewSize);
+        view()->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio);
     } else {
         view()->forceLayout();
-        if (shouldAdjustViewSize == AdjustViewSize)
-            view()->adjustViewSize();
+        view()->adjustViewSize();
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
     for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling())
-        child->setPrinting(printing, FloatSize(), FloatSize(), 0, shouldAdjustViewSize);
+        child->setPrinting(printing, FloatSize(), FloatSize(), 0);
 }
 
 bool Frame::shouldUsePrintingLayout() const

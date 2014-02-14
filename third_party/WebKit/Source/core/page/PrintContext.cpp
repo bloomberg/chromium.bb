@@ -168,7 +168,7 @@ void PrintContext::begin(float width, float height)
     FloatSize minLayoutSize = m_frame->resizePageRectsKeepingRatio(originalPageSize, FloatSize(width * printingMinimumShrinkFactor, height * printingMinimumShrinkFactor));
 
     // This changes layout, so callers need to make sure that they don't paint to screen while in printing mode.
-    m_frame->setPrinting(true, minLayoutSize, originalPageSize, printingMaximumShrinkFactor / printingMinimumShrinkFactor, AdjustViewSize);
+    m_frame->setPrinting(true, minLayoutSize, originalPageSize, printingMaximumShrinkFactor / printingMinimumShrinkFactor);
 }
 
 float PrintContext::computeAutomaticScaleFactor(const FloatSize& availablePaperSize)
@@ -219,7 +219,7 @@ void PrintContext::end()
 {
     ASSERT(m_isPrinting);
     m_isPrinting = false;
-    m_frame->setPrinting(false, FloatSize(), FloatSize(), 0, AdjustViewSize);
+    m_frame->setPrinting(false, FloatSize(), FloatSize(), 0);
     m_linkedDestinations.clear();
     m_linkedDestinationsValid = false;
 }

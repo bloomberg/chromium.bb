@@ -30,7 +30,6 @@
 
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
-#include "core/frame/AdjustViewSizeOrNot.h"
 #include "core/page/FrameTree.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -178,7 +177,7 @@ namespace WebCore {
 
         Settings* settings() const; // can be NULL
 
-        void setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot);
+        void setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio);
         bool shouldUsePrintingLayout() const;
         FloatSize resizePageRectsKeepingRatio(const FloatSize& originalSize, const FloatSize& expectedSize);
 

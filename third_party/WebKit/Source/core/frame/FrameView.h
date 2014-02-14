@@ -25,7 +25,6 @@
 #ifndef FrameView_h
 #define FrameView_h
 
-#include "core/frame/AdjustViewSizeOrNot.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/PartialLayoutState.h"
 #include "platform/geometry/LayoutRect.h"
@@ -229,7 +228,7 @@ public:
     void enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize);
 
     void forceLayout(bool allowSubtree = false);
-    void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor, AdjustViewSizeOrNot);
+    void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
 
     bool scrollToFragment(const KURL&);
     bool scrollToAnchor(const String&);
