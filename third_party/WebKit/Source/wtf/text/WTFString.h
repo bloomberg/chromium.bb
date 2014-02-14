@@ -382,13 +382,6 @@ public:
     String isolatedCopy() const;
     bool isSafeToSendToAnotherThread() const;
 
-    // Prevent Strings from being implicitly convertable to bool as it will be ambiguous on any platform that
-    // allows implicit conversion to another pointer type (e.g., Mac allows implicit conversion to NSString*).
-    typedef struct ImplicitConversionFromWTFStringToBoolDisallowedA* (String::*UnspecifiedBoolTypeA);
-    typedef struct ImplicitConversionFromWTFStringToBoolDisallowedB* (String::*UnspecifiedBoolTypeB);
-    operator UnspecifiedBoolTypeA() const;
-    operator UnspecifiedBoolTypeB() const;
-
 #if USE(CF)
     String(CFStringRef);
     RetainPtr<CFStringRef> createCFString() const;
@@ -444,6 +437,9 @@ public:
     }
 
 private:
+    typedef struct ImplicitConversionFromWTFStringToBoolDisallowed* (String::*UnspecifiedBoolType);
+    operator UnspecifiedBoolType() const;
+
     template <typename CharacterType>
     void removeInternal(const CharacterType*, unsigned, int);
 
