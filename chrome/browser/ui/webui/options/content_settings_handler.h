@@ -23,6 +23,7 @@ class ProtocolHandlerRegistry;
 namespace options {
 
 class ContentSettingsHandler : public OptionsPageUIHandler,
+                               public content::NotificationObserver,
                                public PepperFlashSettingsManager::Client {
  public:
   ContentSettingsHandler();

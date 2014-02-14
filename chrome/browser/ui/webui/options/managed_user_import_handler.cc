@@ -48,10 +48,18 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
 namespace options {
 
 ManagedUserImportHandler::ManagedUserImportHandler()
-    : weak_ptr_factory_(this) {
-}
+    : weak_ptr_factory_(this) {}
 
-ManagedUserImportHandler::~ManagedUserImportHandler() {}
+ManagedUserImportHandler::~ManagedUserImportHandler() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile->IsManaged()) {
+    ManagedUserSyncService* service =
+        ManagedUserSyncServiceFactory::GetForProfile(profile);
+    if (service)
+      service->RemoveObserver(this);
+    subscription_.reset();
+  }
+}
 
 void ManagedUserImportHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
@@ -76,8 +84,17 @@ void ManagedUserImportHandler::GetLocalizedValues(
 }
 
 void ManagedUserImportHandler::InitializeHandler() {
+  Profile* profile = Profile::FromWebUI(web_ui());
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(Profile::FromWebUI(web_ui())));
+                 content::Source<Profile>(profile));
+  if (!profile->IsManaged()) {
+    ManagedUserSyncServiceFactory::GetForProfile(profile)->AddObserver(this);
+    subscription_ =
+        ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile)
+            ->Subscribe(
+                base::Bind(&ManagedUserImportHandler::OnSharedSettingChanged,
+                           weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ManagedUserImportHandler::RegisterMessages() {
@@ -93,14 +110,18 @@ void ManagedUserImportHandler::Observe(
   if (type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
     SigninGlobalError* error =
         SigninGlobalError::GetForProfile(Profile::FromWebUI(web_ui()));
-    if (content::Details<SigninGlobalError>(details).ptr() != error)
-      return;
-
-    RequestManagedUserImportUpdate(NULL);
-    return;
+    if (content::Details<SigninGlobalError>(details).ptr() == error)
+      FetchManagedUsers();
   }
+}
 
-  OptionsPageUIHandler::Observe(type, source, details);
+void ManagedUserImportHandler::OnManagedUsersChanged() {
+  FetchManagedUsers();
+}
+
+void ManagedUserImportHandler::FetchManagedUsers() {
+  web_ui()->CallJavascriptFunction("options.ManagedUserListData.resetPromise");
+  RequestManagedUserImportUpdate(NULL);
 }
 
 void ManagedUserImportHandler::RequestManagedUserImportUpdate(
@@ -206,6 +227,13 @@ bool ManagedUserImportHandler::HasAuthError() const {
       state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
       state == GoogleServiceAuthError::ACCOUNT_DELETED ||
       state == GoogleServiceAuthError::ACCOUNT_DISABLED;
+}
+
+void ManagedUserImportHandler::OnSharedSettingChanged(
+    const std::string& managed_user_id,
+    const std::string& key) {
+  if (key == managed_users::kChromeAvatarIndex)
+    FetchManagedUsers();
 }
 
 }  // namespace options

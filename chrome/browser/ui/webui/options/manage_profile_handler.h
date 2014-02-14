@@ -11,6 +11,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace base {
 class StringValue;
@@ -20,6 +21,7 @@ namespace options {
 
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public OptionsPageUIHandler,
+                             public content::NotificationObserver,
                              public ProfileSyncServiceObserver {
  public:
   ManageProfileHandler();

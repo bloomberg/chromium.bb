@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/public/browser/notification_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -52,7 +53,8 @@ class BrowserOptionsHandler
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
 #endif
-      public TemplateURLServiceObserver {
+      public TemplateURLServiceObserver,
+      public content::NotificationObserver {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();

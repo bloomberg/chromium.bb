@@ -10,6 +10,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +26,8 @@ class DictionaryValue;
 
 namespace options {
 
-class HandlerOptionsHandler : public OptionsPageUIHandler {
+class HandlerOptionsHandler : public OptionsPageUIHandler,
+                              public content::NotificationObserver {
  public:
   HandlerOptionsHandler();
   virtual ~HandlerOptionsHandler();

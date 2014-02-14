@@ -193,8 +193,6 @@ void ManageProfileHandler::Observe(
     SendProfileNames();
     base::StringValue value(kManageProfileIconGridName);
     SendProfileIcons(value);
-  } else {
-    OptionsPageUIHandler::Observe(type, source, details);
   }
 }
 

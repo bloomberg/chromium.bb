@@ -119,6 +119,7 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
 
   void NotifyManagedUserAcknowledged(const std::string& managed_user_id);
   void NotifyManagedUsersSyncingStopped();
+  void NotifyManagedUsersChanged();
 
   void DispatchCallbacks();
 

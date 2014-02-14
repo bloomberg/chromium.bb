@@ -10,9 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -37,8 +35,7 @@ class PointerDeviceObserver;
 namespace options {
 
 // The base class handler of Javascript messages of options pages.
-class OptionsPageUIHandler : public content::WebUIMessageHandler,
-                             public content::NotificationObserver {
+class OptionsPageUIHandler : public content::WebUIMessageHandler {
  public:
   // Key for identifying the Settings App localized_strings in loadTimeData.
   static const char kSettingsAppKey[];
@@ -69,11 +66,6 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler,
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE {}
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {}
 
  protected:
   struct OptionsStringResource {

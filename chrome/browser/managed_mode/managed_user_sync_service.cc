@@ -426,6 +426,8 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
         value->SetString(kChromeAvatar, managed_user.chrome_avatar());
         value->SetString(kChromeOsAvatar, managed_user.chromeos_avatar());
         dict->SetWithoutPathExpansion(managed_user.id(), value);
+
+        NotifyManagedUsersChanged();
         break;
       }
       case SyncChange::ACTION_DELETE: {
@@ -459,6 +461,12 @@ void ManagedUserSyncService::NotifyManagedUserAcknowledged(
 void ManagedUserSyncService::NotifyManagedUsersSyncingStopped() {
   FOR_EACH_OBSERVER(ManagedUserSyncServiceObserver, observers_,
                     OnManagedUsersSyncingStopped());
+}
+
+void ManagedUserSyncService::NotifyManagedUsersChanged() {
+  FOR_EACH_OBSERVER(ManagedUserSyncServiceObserver,
+                    observers_,
+                    OnManagedUsersChanged());
 }
 
 void ManagedUserSyncService::DispatchCallbacks() {

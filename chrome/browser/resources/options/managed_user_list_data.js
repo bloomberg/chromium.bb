@@ -12,7 +12,9 @@ cr.define('options', function() {
    * @constructor
    * @class
    */
-  function ManagedUserListData() {};
+  function ManagedUserListData() {
+    this.observers_ = [];
+  };
 
   cr.addSingletonGetter(ManagedUserListData);
 
@@ -31,7 +33,10 @@ cr.define('options', function() {
    */
   ManagedUserListData.prototype.receiveExistingManagedUsers_ = function(
       managedUsers) {
-    assert(this.promise_);
+    if (!this.promise_) {
+      this.onDataChanged_(managedUsers);
+      return;
+    }
     this.resolve_(managedUsers);
   };
 
@@ -86,10 +91,51 @@ cr.define('options', function() {
     this.promise_ = null;
   };
 
+  /**
+   * Initializes |promise| with the new data and also passes the new data to
+   * observers.
+   * @param {Array.<Object>} managedUsers An array of managed user objects.
+   *     For the format of the objects, see receiveExistingManagedUsers_().
+   * @private
+   */
+  ManagedUserListData.prototype.onDataChanged_ = function(managedUsers) {
+    this.promise_ = this.createPromise_();
+    this.resolve_(managedUsers);
+    for (var i = 0; i < this.observers_.length; ++i)
+      this.observers_[i].receiveExistingManagedUsers_(managedUsers);
+  };
+
+  /**
+   * Adds an observer to the list of observers.
+   * @param {Object} observer The observer to be added.
+   * @private
+   */
+  ManagedUserListData.prototype.addObserver_ = function(observer) {
+    for (var i = 0; i < this.observers_.length; ++i)
+      assert(this.observers_[i] != observer);
+    this.observers_.push(observer);
+  };
+
+  /**
+   * Removes an observer from the list of observers.
+   * @param {Object} observer The observer to be removed.
+   * @private
+   */
+  ManagedUserListData.prototype.removeObserver_ = function(observer) {
+    for (var i = 0; i < this.observers_.length; ++i) {
+      if (this.observers_[i] == observer) {
+        this.observers_.splice(i, 1);
+        return;
+      }
+    }
+  };
+
   // Forward public APIs to private implementations.
   [
+    'addObserver',
     'onSigninError',
     'receiveExistingManagedUsers',
+    'removeObserver',
     'requestExistingManagedUsers',
     'resetPromise',
   ].forEach(function(name) {

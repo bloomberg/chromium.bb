@@ -64,6 +64,7 @@ class ManagedUserRegistrationUtilityImpl
   virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
       OVERRIDE;
   virtual void OnManagedUsersSyncingStopped() OVERRIDE;
+  virtual void OnManagedUsersChanged() OVERRIDE;
 
  private:
   // Fetches the managed user token when we have the device name.
@@ -269,6 +270,8 @@ void ManagedUserRegistrationUtilityImpl::OnManagedUsersSyncingStopped() {
       true,  // Run the callback.
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
+
+void ManagedUserRegistrationUtilityImpl::OnManagedUsersChanged() {}
 
 void ManagedUserRegistrationUtilityImpl::FetchToken(
     const std::string& client_name) {

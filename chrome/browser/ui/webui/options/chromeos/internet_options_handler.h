@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -38,7 +39,8 @@ namespace options {
 class InternetOptionsHandler
     : public ::options::OptionsPageUIHandler,
       public chromeos::NetworkStateHandlerObserver,
-      public chromeos::LoginState::Observer {
+      public chromeos::LoginState::Observer,
+      public content::NotificationObserver {
  public:
   InternetOptionsHandler();
   virtual ~InternetOptionsHandler();
@@ -100,7 +102,7 @@ class InternetOptionsHandler
   // Updates the logged in user type.
   void UpdateLoggedInUserType();
 
-  // content::NotificationObserver (from OptionsPageUIHandler)
+  // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

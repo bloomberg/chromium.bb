@@ -545,9 +545,6 @@ void ContentSettingsHandler::Observe(
       UpdateHandlersEnabledRadios();
       break;
     }
-
-    default:
-      OptionsPageUIHandler::Observe(type, source, details);
   }
 }
 

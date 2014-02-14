@@ -76,6 +76,7 @@ cr.define('options', function() {
     didShowPage: function() {
       options.ManagedUserListData.requestExistingManagedUsers().then(
           this.receiveExistingManagedUsers_, this.onSigninError_.bind(this));
+      options.ManagedUserListData.addObserver(this);
 
       this.updateImportInProgress_(false);
       $('managed-user-import-error-bubble').hidden = true;
@@ -89,6 +90,13 @@ cr.define('options', function() {
           loadTimeData.getString('managedUserImportText');
       $('managed-user-import-title').textContent =
           loadTimeData.getString('managedUserImportTitle');
+    },
+
+    /**
+     * @override
+     */
+    didClosePage: function() {
+      options.ManagedUserListData.removeObserver(this);
     },
 
     /**

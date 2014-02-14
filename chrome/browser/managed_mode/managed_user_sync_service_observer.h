@@ -14,6 +14,8 @@ class ManagedUserSyncServiceObserver {
 
   virtual void OnManagedUsersSyncingStopped() = 0;
 
+  virtual void OnManagedUsersChanged() = 0;
+
  protected:
   virtual ~ManagedUserSyncServiceObserver() {}
 };
