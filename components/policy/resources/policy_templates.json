@@ -881,6 +881,8 @@
 
       This policy is meant to allow for strict plugin blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
 
+      Note that both the plugin name and the plugin's group name have to be exempted. Each plugin group is shown in a separate section in about:plugins; each section may have one or more plugins. For example, the "Shockware Flash" plugin belongs to the "Adobe Flash Player" group, and both names have to have a match in the exceptions list if that plugin is to be exempted from the blacklist.
+
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.''',
       'label': '''List of exceptions to the list of disabled plugins''',
     },
