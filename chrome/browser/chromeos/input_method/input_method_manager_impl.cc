@@ -6,8 +6,6 @@
 
 #include <algorithm>  // std::find
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -57,13 +55,11 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       util_(delegate_.get(), GetSupportedInputMethods()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       weak_ptr_factory_(this) {
-  ash::ime::InputMethodMenuManager::Initialize();
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (candidate_window_controller_.get())
     candidate_window_controller_->RemoveObserver(this);
-  ash::ime::InputMethodMenuManager::Shutdown();
 }
 
 void InputMethodManagerImpl::AddObserver(
@@ -354,11 +350,8 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     // extension IMEs via InputMethodEngine::(Set|Update)MenuItems.
     // If the current input method is a keyboard layout, empty
     // properties are sufficient.
-    const ash::ime::InputMethodMenuItemList empty_menu_item_list;
-    ash::ime::InputMethodMenuManager* input_method_menu_manager =
-        ash::ime::InputMethodMenuManager::Get();
-    input_method_menu_manager->SetCurrentInputMethodMenuItemList(
-            empty_menu_item_list);
+    const InputMethodPropertyList empty_property_list;
+    SetCurrentInputMethodProperties(empty_property_list);
 
     const InputMethodDescriptor* descriptor = NULL;
     if (extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
@@ -426,20 +419,21 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
   }
 }
 
-void InputMethodManagerImpl::ActivateInputMethodMenuItem(
+void InputMethodManagerImpl::ActivateInputMethodProperty(
     const std::string& key) {
   DCHECK(!key.empty());
 
-  if (ash::ime::InputMethodMenuManager::Get()->
-      HasInputMethodMenuItemForKey(key)) {
-    IMEEngineHandlerInterface* engine =
-        IMEBridge::Get()->GetCurrentEngineHandler();
-    if (engine)
-      engine->PropertyActivate(key);
-    return;
+  for (size_t i = 0; i < property_list_.size(); ++i) {
+    if (property_list_[i].key == key) {
+      IMEEngineHandlerInterface* engine =
+          IMEBridge::Get()->GetCurrentEngineHandler();
+      if (engine)
+        engine->PropertyActivate(key);
+      return;
+    }
   }
 
-  DVLOG(1) << "ActivateInputMethodMenuItem: unknown key: " << key;
+  DVLOG(1) << "ActivateInputMethodProperty: unknown key: " << key;
 }
 
 void InputMethodManagerImpl::AddInputMethodExtension(
@@ -693,6 +687,21 @@ InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {
   return current_input_method_;
 }
 
+InputMethodPropertyList
+InputMethodManagerImpl::GetCurrentInputMethodProperties() const {
+  // This check is necessary since an IME property (e.g. for Pinyin) might be
+  // sent from ibus-daemon AFTER the current input method is switched to XKB.
+  if (InputMethodUtil::IsKeyboardLayout(GetCurrentInputMethod().id()))
+    return InputMethodPropertyList();  // Empty list.
+  return property_list_;
+}
+
+void InputMethodManagerImpl::SetCurrentInputMethodProperties(
+    const InputMethodPropertyList& property_list) {
+  property_list_ = property_list;
+  PropertyChanged();
+}
+
 XKeyboard* InputMethodManagerImpl::GetXKeyboard() {
   return xkeyboard_.get();
 }
@@ -746,6 +755,12 @@ void InputMethodManagerImpl::SetXKeyboardForTesting(XKeyboard* xkeyboard) {
 void InputMethodManagerImpl::InitializeComponentExtensionForTesting(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   OnComponentExtensionInitialized(delegate.Pass());
+}
+
+void InputMethodManagerImpl::PropertyChanged() {
+  FOR_EACH_OBSERVER(InputMethodManager::Observer,
+                    observers_,
+                    InputMethodPropertyChanged(this));
 }
 
 void InputMethodManagerImpl::CandidateClicked(int index) {

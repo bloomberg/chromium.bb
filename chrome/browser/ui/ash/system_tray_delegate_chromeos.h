@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
-#include "ash/ime/input_method_menu_manager.h"
 #include "ash/session_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -31,8 +30,7 @@
 namespace chromeos {
 
 class SystemTrayDelegateChromeOS
-    : public ash::ime::InputMethodMenuManager::Observer,
-      public ash::SystemTrayDelegate,
+    : public ash::SystemTrayDelegate,
       public SessionManagerClient::Observer,
       public drive::JobListObserver,
       public content::NotificationObserver,
@@ -182,9 +180,8 @@ class SystemTrayDelegateChromeOS
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
                                   bool show_message) OVERRIDE;
 
-  // Overridden from InputMethodMenuManager::Observer.
-  virtual void InputMethodMenuItemChanged(
-      ash::ime::InputMethodMenuManager* manager) OVERRIDE;
+  virtual void InputMethodPropertyChanged(
+      input_method::InputMethodManager* manager) OVERRIDE;
 
   // drive::JobListObserver overrides.
   virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;

@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -73,8 +71,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     IMEBridge::Initialize();
     IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
-    menu_manager_ = ash::ime::InputMethodMenuManager::Get();
-
     ime_list_.clear();
 
     ComponentExtensionIME ext1;
@@ -125,7 +121,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
     manager_.reset();
-
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
     IMEBridge::Shutdown();
   }
@@ -158,18 +153,16 @@ class InputMethodManagerImplTest :  public testing::Test {
   base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
   std::vector<ComponentExtensionIME> ime_list_;
-  ash::ime::InputMethodMenuManager* menu_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);
 };
 
-class TestObserver : public InputMethodManager::Observer,
-                     public ash::ime::InputMethodMenuManager::Observer{
+class TestObserver : public InputMethodManager::Observer {
  public:
   TestObserver()
       : input_method_changed_count_(0),
-        input_method_menu_item_changed_count_(0),
+        input_method_property_changed_count_(0),
         last_show_message_(false) {
   }
   virtual ~TestObserver() {}
@@ -179,13 +172,13 @@ class TestObserver : public InputMethodManager::Observer,
     ++input_method_changed_count_;
     last_show_message_ = show_message;
   }
-  virtual void InputMethodMenuItemChanged(
-      ash::ime::InputMethodMenuManager* manager) OVERRIDE {
-    ++input_method_menu_item_changed_count_;
+  virtual void InputMethodPropertyChanged(
+      InputMethodManager* manager) OVERRIDE {
+    ++input_method_property_changed_count_;
   }
 
   int input_method_changed_count_;
-  int input_method_menu_item_changed_count_;
+  int input_method_property_changed_count_;
   bool last_show_message_;
 
  private:
@@ -243,15 +236,14 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   TestObserver observer;
   InitComponentExtension();
   manager_->AddObserver(&observer);
-  menu_manager_->AddObserver(&observer);
   EXPECT_EQ(0, observer.input_method_changed_count_);
   manager_->EnableLoginLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(1, observer.input_method_changed_count_);
-  EXPECT_EQ(1, observer.input_method_menu_item_changed_count_);
+  EXPECT_EQ(1, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
   EXPECT_FALSE(observer.last_show_message_);
   EXPECT_EQ(2, observer.input_method_changed_count_);
-  EXPECT_EQ(2, observer.input_method_menu_item_changed_count_);
+  EXPECT_EQ(2, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
   EXPECT_FALSE(observer.last_show_message_);
 
@@ -262,7 +254,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
 
   // If the same input method ID is passed, PropertyChanged() is not
   // notified.
-  EXPECT_EQ(2, observer.input_method_menu_item_changed_count_);
+  EXPECT_EQ(2, observer.input_method_property_changed_count_);
 
   manager_->RemoveObserver(&observer);
 }
@@ -601,24 +593,23 @@ TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
   EXPECT_EQ("us(colemak)", xkeyboard_->last_layout_);
 }
 
-TEST_F(InputMethodManagerImplTest, TestActivateInputMethodMenuItem) {
+TEST_F(InputMethodManagerImplTest, TestActivateInputMethodProperty) {
   const std::string kKey = "key";
-  ash::ime::InputMethodMenuItemList menu_list;
-  menu_list.push_back(ash::ime::InputMethodMenuItem(
-      kKey, "label", false, false));
-  menu_manager_->SetCurrentInputMethodMenuItemList(menu_list);
+  InputMethodPropertyList property_list;
+  property_list.push_back(InputMethodProperty(kKey, "label", false, false));
+  manager_->SetCurrentInputMethodProperties(property_list);
 
-  manager_->ActivateInputMethodMenuItem(kKey);
+  manager_->ActivateInputMethodProperty(kKey);
   EXPECT_EQ(kKey, mock_engine_handler_->last_activated_property());
 
   // Key2 is not registered, so activated property should not be changed.
-  manager_->ActivateInputMethodMenuItem("key2");
+  manager_->ActivateInputMethodProperty("key2");
   EXPECT_EQ(kKey, mock_engine_handler_->last_activated_property());
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
   InitComponentExtension();
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
@@ -626,25 +617,26 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
   ids.push_back(kNaclMozcUsId);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
   manager_->ChangeInputMethod(kNaclMozcUsId);
 
-  ash::ime::InputMethodMenuItemList current_property_list;
-  current_property_list.push_back(ash::ime::InputMethodMenuItem(
-      "key", "label", false, false));
-  menu_manager_->SetCurrentInputMethodMenuItemList(current_property_list);
+  InputMethodPropertyList current_property_list;
+  current_property_list.push_back(InputMethodProperty("key",
+                                                      "label",
+                                                      false,
+                                                      false));
+  manager_->SetCurrentInputMethodProperties(current_property_list);
 
-  ASSERT_EQ(1U, menu_manager_->GetCurrentInputMethodMenuItemList().size());
-  EXPECT_EQ("key",
-            menu_manager_->GetCurrentInputMethodMenuItemList().at(0).key);
+  ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
+  EXPECT_EQ("key", manager_->GetCurrentInputMethodProperties().at(0).key);
 
   manager_->ChangeInputMethod("xkb:us::eng");
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   InitComponentExtension();
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
@@ -652,31 +644,32 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   ids.push_back(kExt2Engine1Id);  // T-Chinese
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
-  ash::ime::InputMethodMenuItemList current_property_list;
-  current_property_list.push_back(ash::ime::InputMethodMenuItem("key-mozc",
-                                                                "label",
-                                                                false,
-                                                                false));
-  menu_manager_->SetCurrentInputMethodMenuItemList(current_property_list);
+  InputMethodPropertyList current_property_list;
+  current_property_list.push_back(InputMethodProperty("key-mozc",
+                                                      "label",
+                                                      false,
+                                                      false));
+  manager_->SetCurrentInputMethodProperties(current_property_list);
 
-  ASSERT_EQ(1U, menu_manager_->GetCurrentInputMethodMenuItemList().size());
-  EXPECT_EQ("key-mozc",
-            menu_manager_->GetCurrentInputMethodMenuItemList().at(0).key);
+  ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
+  EXPECT_EQ("key-mozc", manager_->GetCurrentInputMethodProperties().at(0).key);
 
   manager_->ChangeInputMethod(kExt2Engine1Id);
   // Since the IME is changed, the property for mozc Japanese should be hidden.
-  EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
+  EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 
   // Asynchronous property update signal from mozc-chewing.
   current_property_list.clear();
-  current_property_list.push_back(ash::ime::InputMethodMenuItem(
-      "key-chewing", "label", false, false));
-  menu_manager_->SetCurrentInputMethodMenuItemList(current_property_list);
-  ASSERT_EQ(1U, menu_manager_->GetCurrentInputMethodMenuItemList().size());
+  current_property_list.push_back(InputMethodProperty("key-chewing",
+                                                      "label",
+                                                      false,
+                                                      false));
+  manager_->SetCurrentInputMethodProperties(current_property_list);
+  ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
   EXPECT_EQ("key-chewing",
-            menu_manager_->GetCurrentInputMethodMenuItemList().at(0).key);
+            manager_->GetCurrentInputMethodProperties().at(0).key);
 }
 
 TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
