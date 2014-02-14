@@ -175,6 +175,27 @@ ZeroSuggestProvider::ZeroSuggestProvider(
 ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
+const TemplateURL* ZeroSuggestProvider::GetTemplateURL(
+    const SuggestResult& result) const {
+  // Zero suggest provider should not receive keyword results.
+  DCHECK(!result.from_keyword_provider());
+  return template_url_service_->GetDefaultSearchProvider();
+}
+
+const AutocompleteInput ZeroSuggestProvider::GetInput(
+    const SuggestResult& result) const {
+  AutocompleteInput input;
+  // Set |input|'s text to be |query_string| to avoid bolding.
+  input.UpdateText(result.suggestion(), base::string16::npos, input.parts());
+  return input;
+}
+
+bool ZeroSuggestProvider::ShouldAppendExtraParams(
+      const SuggestResult& result) const {
+  // We always use the default provider for search, so append the params.
+  return true;
+}
+
 void ZeroSuggestProvider::FillResults(const base::Value& root_val,
                                       int* verbatim_relevance,
                                       SuggestResults* suggest_results,
@@ -260,48 +281,17 @@ void ZeroSuggestProvider::FillResults(const base::Value& root_val,
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
     const SuggestResults& results,
-    const TemplateURL* template_url,
     MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
-    AddMatchToMap(results[i].relevance(), AutocompleteMatchType::SEARCH_SUGGEST,
-                  template_url, results[i].suggestion(), i, map);
+    const base::string16& query_string(results[i].suggestion());
+    // TODO(mariakhomenko): Do not reconstruct SuggestResult objects with
+    // a different query -- create correct objects to begin with.
+    const SuggestResult suggestion(
+        query_string, AutocompleteMatchType::SEARCH_SUGGEST, query_string,
+        base::string16(), std::string(), std::string(), false,
+        results[i].relevance(), true, false, query_string);
+    AddMatchToMap(suggestion, std::string(), i, map);
   }
-}
-
-void ZeroSuggestProvider::AddMatchToMap(int relevance,
-                                        AutocompleteMatch::Type type,
-                                        const TemplateURL* template_url,
-                                        const base::string16& query_string,
-                                        int accepted_suggestion,
-                                        MatchMap* map) {
-  // Pass in query_string as the input_text to avoid bolding.
-  SuggestResult suggestion(
-      query_string, type, query_string, base::string16(), std::string(),
-      std::string(), false, relevance, true, false, query_string);
-  // TODO(samarth|melevin): use the actual omnibox margin here as well instead
-  // of passing in -1.
-  AutocompleteMatch match = CreateSearchSuggestion(this, AutocompleteInput(),
-      query_string, suggestion, template_url, accepted_suggestion, -1, true);
-  if (!match.destination_url.is_valid())
-    return;
-
-  // Try to add |match| to |map|.  If a match for |query_string| is already in
-  // |map|, replace it if |match| is more relevant.
-  // NOTE: Keep this ToLower() call in sync with url_database.cc.
-  MatchKey match_key(
-      std::make_pair(base::i18n::ToLower(query_string), std::string()));
-  const std::pair<MatchMap::iterator, bool> i(map->insert(
-      std::make_pair(match_key, match)));
-  // NOTE: We purposefully do a direct relevance comparison here instead of
-  // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
-  // first" rather than "items alphabetically first" when the scores are equal.
-  // The only case this matters is when a user has results with the same score
-  // that differ only by capitalization; because the history system returns
-  // results sorted by recency, this means we'll pick the most recent such
-  // result even if the precision of our relevance score is too low to
-  // distinguish the two.
-  if (!i.second && (match.relevance > i.first->second.relevance))
-    i.first->second = match;
 }
 
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
@@ -367,9 +357,7 @@ void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
               &suggest_results, &navigation_results_);
 
   query_matches_map_.clear();
-  AddSuggestResultsToMap(suggest_results,
-                         template_url_service_->GetDefaultSearchProvider(),
-                         &query_matches_map_);
+  AddSuggestResultsToMap(suggest_results, &query_matches_map_);
 }
 
 void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(

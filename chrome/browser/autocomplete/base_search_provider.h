@@ -39,6 +39,9 @@ class BaseSearchProvider : public AutocompleteProvider,
                      Profile* profile,
                      AutocompleteProvider::Type type);
 
+  // Returns whether |match| is flagged as a query that should be prefetched.
+  static bool ShouldPrefetch(const AutocompleteMatch& match);
+
   // AutocompleteProvider:
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
@@ -47,6 +50,26 @@ class BaseSearchProvider : public AutocompleteProvider,
   }
 
  protected:
+  // The following keys are used to record additional information on matches.
+
+  // We annotate our AutocompleteMatches with whether their relevance scores
+  // were server-provided using this key in the |additional_info| field.
+  static const char kRelevanceFromServerKey[];
+
+  // Indicates whether the server said a match should be prefetched.
+  static const char kShouldPrefetchKey[];
+
+  // Used to store metadata from the server response, which is needed for
+  // prefetching.
+  static const char kSuggestMetadataKey[];
+
+  // Used to store a deletion request url for server-provided suggestions.
+  static const char kDeletionUrlKey[];
+
+  // These are the values for the above keys.
+  static const char kTrue[];
+  static const char kFalse[];
+
   virtual ~BaseSearchProvider();
 
   // The Result classes are intermediate representations of AutocompleteMatches,
@@ -258,21 +281,20 @@ class BaseSearchProvider : public AutocompleteProvider,
   // for the search |suggestion|, which represents a search via |template_url|.
   // If |template_url| is NULL, returns a match with an invalid destination URL.
   //
-  // |input_text| is the original user input.  This is used to highlight
+  // |input| is the original user input. Text in the input is used to highlight
   // portions of the match contents to distinguish locally-typed text from
   // suggested text.
   //
-  // |input| is necessary for various other details, like whether we should
+  // |input| is also necessary for various other details, like whether we should
   // allow inline autocompletion and what the transition type should be.
-  // |accepted_suggestion| and |omnibox_start_margin| are used along with
-  // |input_text| to generate Assisted Query Stats.
+  // |accepted_suggestion| and |omnibox_start_margin| are used to generate
+  // Assisted Query Stats.
   // |append_extra_query_params| should be set if |template_url| is the default
   // search engine, so the destination URL will contain any
   // command-line-specified query params.
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       const AutocompleteInput& input,
-      const base::string16& input_text,
       const SuggestResult& suggestion,
       const TemplateURL* template_url,
       int accepted_suggestion,
@@ -312,6 +334,29 @@ class BaseSearchProvider : public AutocompleteProvider,
       const TemplateURL* template_url,
       AutocompleteInput::PageClassification page_classification,
       Profile* profile);
+
+  // Creates an AutocompleteMatch from |result| to search for the query in
+  // |result|. Adds the created match to |map|; if such a match
+  // already exists, whichever one has lower relevance is eliminated.
+  // |metadata| and |accepted_suggestion| are used for generating an
+  // AutocompleteMatch.
+  void AddMatchToMap(const SuggestResult& result,
+                     const std::string& metadata,
+                     int accepted_suggestion,
+                     MatchMap* map);
+
+  // Returns the TemplateURL for the given |result|.
+  virtual const TemplateURL* GetTemplateURL(
+      const SuggestResult& result) const = 0;
+
+  // Returns the AutocompleteInput based on whether the |result| is from the
+  // default provider or from the keyword provider.
+  virtual const AutocompleteInput GetInput(
+      const SuggestResult& result) const = 0;
+
+  // Returns whether the destination URL corresponding to the given |result|
+  // should contain command-line-specified query params.
+  virtual bool ShouldAppendExtraParams(const SuggestResult& result) const = 0;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion

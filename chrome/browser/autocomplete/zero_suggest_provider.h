@@ -72,6 +72,14 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   virtual ~ZeroSuggestProvider();
 
+  // BaseSearchProvider:
+  virtual const TemplateURL* GetTemplateURL(
+      const SuggestResult& result) const OVERRIDE;
+  virtual const AutocompleteInput GetInput(
+      const SuggestResult& result) const OVERRIDE;
+  virtual bool ShouldAppendExtraParams(
+      const SuggestResult& result) const OVERRIDE;
+
   // The 4 functions below (that take classes defined in SearchProvider as
   // arguments) were copied and trimmed from SearchProvider.
   // TODO(hfung): Refactor them into a new base class common to both
@@ -86,24 +94,10 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                    SuggestResults* suggest_results,
                    NavigationResults* navigation_results);
 
-  // Creates AutocompleteMatches to search |template_url| for "<suggestion>" for
-  // all suggestions in |results|, and adds them to |map|.
+  // Adds AutocompleteMatches for each of the suggestions in |results| to
+  // |map|.
   void AddSuggestResultsToMap(const SuggestResults& results,
-                              const TemplateURL* template_url,
                               MatchMap* map);
-
-  // Creates an AutocompleteMatch with the provided |relevance| and |type| to
-  // search |template_url| for |query_string|.  |accepted_suggestion| will be
-  // used to generate Assisted Query Stats.
-  //
-  // Adds this match to |map|; if such a match already exists, whichever one
-  // has lower relevance is eliminated.
-  void AddMatchToMap(int relevance,
-                     AutocompleteMatch::Type type,
-                     const TemplateURL* template_url,
-                     const base::string16& query_string,
-                     int accepted_suggestion,
-                     MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);

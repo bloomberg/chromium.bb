@@ -57,10 +57,6 @@ class SearchProvider : public BaseSearchProvider {
 
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-  // Returns whether the SearchProvider previously flagged |match| as a query
-  // that should be prefetched.
-  static bool ShouldPrefetch(const AutocompleteMatch& match);
-
   // Extracts the suggest response metadata which SearchProvider previously
   // stored for |match|.
   static std::string GetSuggestMetadata(const AutocompleteMatch& match);
@@ -166,6 +162,14 @@ class SearchProvider : public BaseSearchProvider {
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // BaseSearchProvider:
+  virtual const TemplateURL* GetTemplateURL(
+      const SuggestResult& result) const OVERRIDE;
+  virtual const AutocompleteInput GetInput(
+      const SuggestResult& result) const OVERRIDE;
+  virtual bool ShouldAppendExtraParams(
+      const SuggestResult& result) const OVERRIDE;
 
   // This gets called when we have requested a suggestion deletion from the
   // server to handle the results of the deletion.
@@ -312,15 +316,6 @@ class SearchProvider : public BaseSearchProvider {
                                    bool use_aggressive_method,
                                    bool prevent_search_history_inlining) const;
 
-  // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
-  // the supplied details.  Adds this match to |map|; if such a match already
-  // exists, whichever one has lower relevance is eliminated.
-  void AddMatchToMap(const SuggestResult& result,
-                     const base::string16& input_text,
-                     const std::string& metadata,
-                     int accepted_suggestion,
-                     MatchMap* map);
-
   // Returns an AutocompleteMatch for a navigational suggestion.
   AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
 
@@ -340,26 +335,6 @@ class SearchProvider : public BaseSearchProvider {
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
-
-  // The following keys are used to record additional information on matches.
-
-  // We annotate our AutocompleteMatches with whether their relevance scores
-  // were server-provided using this key in the |additional_info| field.
-  static const char kRelevanceFromServerKey[];
-
-  // Indicates whether the server said a match should be prefetched.
-  static const char kShouldPrefetchKey[];
-
-  // Used to store metadata from the server response, which is needed for
-  // prefetching.
-  static const char kSuggestMetadataKey[];
-
-  // Used to store a deletion request url for server-provided suggestions.
-  static const char kDeletionUrlKey[];
-
-  // These are the values for the above keys.
-  static const char kTrue[];
-  static const char kFalse[];
 
   // Maintains the TemplateURLs used.
   Providers providers_;

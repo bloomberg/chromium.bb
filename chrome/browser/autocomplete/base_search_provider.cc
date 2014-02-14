@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/base_search_provider.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -12,6 +13,9 @@
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -33,6 +37,11 @@ BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {}
 
+// static
+bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
+  return match.GetAdditionalInfo(kShouldPrefetchKey) == kTrue;
+}
+
 void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
@@ -49,6 +58,15 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
      }
   }
 }
+
+// static
+const char BaseSearchProvider::kRelevanceFromServerKey[] =
+    "relevance_from_server";
+const char BaseSearchProvider::kShouldPrefetchKey[] = "should_prefetch";
+const char BaseSearchProvider::kSuggestMetadataKey[] = "suggest_metadata";
+const char BaseSearchProvider::kDeletionUrlKey[] = "deletion_url";
+const char BaseSearchProvider::kTrue[] = "true";
+const char BaseSearchProvider::kFalse[] = "false";
 
 BaseSearchProvider::~BaseSearchProvider() {}
 
@@ -258,7 +276,6 @@ bool BaseSearchProvider::Results::HasServerProvidedScores() const {
 AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     AutocompleteProvider* autocomplete_provider,
     const AutocompleteInput& input,
-    const base::string16& input_text,
     const SuggestResult& suggestion,
     const TemplateURL* template_url,
     int accepted_suggestion,
@@ -277,7 +294,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     match.description = suggestion.annotation();
 
   match.allowed_to_be_default_match =
-      (input_text == suggestion.match_contents());
+      (input.text() == suggestion.match_contents());
 
   // When the user forced a query, we need to make sure all the fill_into_edit
   // values preserve that property.  Otherwise, if the user starts editing a
@@ -287,9 +304,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
   if (!input.prevent_inline_autocomplete() &&
-      StartsWith(suggestion.suggestion(), input_text, false)) {
+      StartsWith(suggestion.suggestion(), input.text(), false)) {
     match.inline_autocompletion =
-        suggestion.suggestion().substr(input_text.length());
+        suggestion.suggestion().substr(input.text().length());
     match.allowed_to_be_default_match = true;
   }
   match.fill_into_edit.append(suggestion.suggestion());
@@ -298,7 +315,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   DCHECK(search_url.SupportsReplacement());
   match.search_terms_args.reset(
       new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
-  match.search_terms_args->original_query = input_text;
+  match.search_terms_args->original_query = input.text();
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
   match.search_terms_args->suggest_query_params =
@@ -403,3 +420,80 @@ bool BaseSearchProvider::CanSendURL(
   return true;
 }
 
+void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
+                                       const std::string& metadata,
+                                       int accepted_suggestion,
+                                       MatchMap* map) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  // Android and iOS have no InstantService.
+  const int omnibox_start_margin = instant_service ?
+      instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
+
+  AutocompleteMatch match = CreateSearchSuggestion(
+      this, GetInput(result), result, GetTemplateURL(result),
+      accepted_suggestion, omnibox_start_margin,
+      ShouldAppendExtraParams(result));
+  if (!match.destination_url.is_valid())
+    return;
+  match.search_terms_args->bookmark_bar_pinned =
+      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  match.RecordAdditionalInfo(kRelevanceFromServerKey,
+                             result.relevance_from_server() ? kTrue : kFalse);
+  match.RecordAdditionalInfo(kShouldPrefetchKey,
+                             result.should_prefetch() ? kTrue : kFalse);
+
+  if (!result.deletion_url().empty()) {
+    GURL url(match.destination_url.GetOrigin().Resolve(result.deletion_url()));
+    if (url.is_valid()) {
+      match.RecordAdditionalInfo(kDeletionUrlKey, url.spec());
+      match.deletable = true;
+    }
+  }
+
+  // Metadata is needed only for prefetching queries.
+  if (result.should_prefetch())
+    match.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
+
+  // Try to add |match| to |map|.  If a match for this suggestion is
+  // already in |map|, replace it if |match| is more relevant.
+  // NOTE: Keep this ToLower() call in sync with url_database.cc.
+  MatchKey match_key(
+      std::make_pair(base::i18n::ToLower(result.suggestion()),
+                     match.search_terms_args->suggest_query_params));
+  const std::pair<MatchMap::iterator, bool> i(
+       map->insert(std::make_pair(match_key, match)));
+
+  bool should_prefetch = result.should_prefetch();
+  if (!i.second) {
+     // NOTE: We purposefully do a direct relevance comparison here instead of
+     // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items
+     // added first" rather than "items alphabetically first" when the scores
+     // are equal. The only case this matters is when a user has results with
+     // the same score that differ only by capitalization; because the history
+     // system returns results sorted by recency, this means we'll pick the most
+     // recent such result even if the precision of our relevance score is too
+     // low to distinguish the two.
+     if (match.relevance > i.first->second.relevance) {
+       i.first->second = match;
+     } else if (match.keyword == i.first->second.keyword) {
+       // Old and new matches are from the same search provider. It is okay to
+       // record one match's prefetch data onto a different match (for the same
+       // query string) for the following reasons:
+       // 1. Because the suggest server only sends down a query string from
+       // which we construct a URL, rather than sending a full URL, and because
+       // we construct URLs from query strings in the same way every time, the
+       // URLs for the two matches will be the same. Therefore, we won't end up
+       // prefetching something the server didn't intend.
+       // 2. Presumably the server sets the prefetch bit on a match it things is
+       // sufficiently relevant that the user is likely to choose it. Surely
+       // setting the prefetch bit on a match of even higher relevance won't
+       // violate this assumption.
+       should_prefetch |= ShouldPrefetch(i.first->second);
+       i.first->second.RecordAdditionalInfo(kShouldPrefetchKey,
+                                            should_prefetch ? kTrue : kFalse);
+       if (should_prefetch)
+         i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
+     }
+   }
+}
