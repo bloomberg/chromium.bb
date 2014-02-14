@@ -109,17 +109,10 @@
 #define WTF_USE_SYSTEM_MALLOC 0
 
 #if OS(POSIX)
-#define HAVE_MMAP 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_SYS_TIME_H 1
 #define WTF_USE_PTHREADS 1
 #endif /* OS(POSIX) */
-
-#if !defined(HAVE_VASPRINTF)
-#if !COMPILER(MSVC)
-#define HAVE_VASPRINTF 1
-#endif
-#endif
 
 #if !OS(WIN) && !OS(ANDROID)
 #define HAVE_TM_GMTOFF 1
@@ -128,7 +121,6 @@
 #endif
 
 #if OS(MACOSX)
-#define HAVE_DISPATCH_H 1
 #define HAVE_PTHREAD_SETNAME_NP 1
 #define WTF_USE_NEW_THEME 1
 #endif /* OS(MACOSX) */
