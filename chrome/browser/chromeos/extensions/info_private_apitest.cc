@@ -26,6 +26,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
   ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kAutoclickEnabled));
 
+  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kLanguageSendFunctionKeys));
+
   ASSERT_TRUE(RunComponentExtensionTest("chromeos_info_private")) << message_;
 
   // Check that accessability settings have been all flipped by the test.
@@ -37,4 +40,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
       prefs::kScreenMagnifierEnabled));
   ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
       prefs::kAutoclickEnabled));
+
+  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kLanguageSendFunctionKeys));
 }

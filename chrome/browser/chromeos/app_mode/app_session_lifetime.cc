@@ -6,7 +6,6 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
-#include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -33,9 +32,7 @@ namespace chromeos {
 namespace {
 
 // AppWindowHandler watches for app window and exits the session when the
-// last app window is closed. It also initializes the kiosk app window so
-// that it receives all function keys as a temp solution before underlying
-// http:://crbug.com/166928 is fixed..
+// last app window is closed.
 class AppWindowHandler : public ShellWindowRegistry::Observer {
  public:
   AppWindowHandler() : window_registry_(NULL) {}
@@ -50,13 +47,7 @@ class AppWindowHandler : public ShellWindowRegistry::Observer {
 
  private:
   // apps::ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
-    // Set flags to allow kiosk app to receive all function keys.
-    // TODO(xiyuan): Remove this after http:://crbug.com/166928.
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(shell_window->GetNativeWindow());
-    window_state->set_top_row_keys_are_function_keys(true);
-  }
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {}
   virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
     OVERRIDE {}
   virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {

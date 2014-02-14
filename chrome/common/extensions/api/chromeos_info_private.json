@@ -44,6 +44,7 @@
                   "a11yHighContrastEnabled" : {"type": "boolean", "optional": "true", "description": "If true, all displays have high contrast mode turned on."},
                   "a11yScreenMagnifierEnabled" : {"type": "boolean", "optional": "true", "description": "If true, all displays have screen magnifier turned on."},
                   "a11yAutoClickEnabled" : {"type": "boolean", "optional": "true", "description": "If true, auto mouse click accessibility feature is turned on."},
+                  "sendFunctionKeys" : {"type": "boolean", "optional": "true", "description": "If true, the ChromeOS top row keys send function keys."},
                   "supportedTimezones" : {
                     "type": "array",
                     "items": {
@@ -73,7 +74,8 @@
                      "a11ySpokenFeedbackEnabled",
                      "a11yHighContrastEnabled",
                      "a11yScreenMagnifierEnabled",
-                     "a11yAutoClickEnabled"],
+                     "a11yAutoClickEnabled",
+                     "sendFunctionKeys"],
             "description": "Chrome OS system property name"
           },
           {

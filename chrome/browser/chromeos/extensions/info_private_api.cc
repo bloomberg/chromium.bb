@@ -68,6 +68,9 @@ const char kPropertyScreenMagnifierEnabled[] = "a11yScreenMagnifierEnabled";
 // Key which corresponds to the auto click A11Y property in JS.
 const char kPropertyAutoclickEnabled[] = "a11yAutoClickEnabled";
 
+// Key which corresponds to the send-function-keys property in JS.
+const char kPropertySendFunctionsKeys[] = "sendFunctionKeys";
+
 // Property not found error message.
 const char kPropertyNotFound[] = "Property '*' does not exist.";
 
@@ -80,7 +83,8 @@ const struct {
     { kPropertySpokenFeedbackEnabled, prefs::kSpokenFeedbackEnabled },
     { kPropertyHighContrastEnabled, prefs::kHighContrastEnabled },
     { kPropertyScreenMagnifierEnabled, prefs::kScreenMagnifierEnabled },
-    { kPropertyAutoclickEnabled, prefs::kAutoclickEnabled }
+    { kPropertyAutoclickEnabled, prefs::kAutoclickEnabled },
+    { kPropertySendFunctionsKeys, prefs::kLanguageSendFunctionKeys }
 };
 
 const char* GetBoolPrefNameForApiProperty(const char* api_name) {

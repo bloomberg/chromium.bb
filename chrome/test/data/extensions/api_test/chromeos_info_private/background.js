@@ -68,20 +68,22 @@ function timezoneSetTest() {
       ));
 }
 
-function a11ySetTest() {
+function prefsTest() {
   chrome.chromeosInfoPrivate.set('a11yLargeCursorEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yStickyKeysEnabled', true);
   chrome.chromeosInfoPrivate.set('a11ySpokenFeedbackEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yHighContrastEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yScreenMagnifierEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yAutoClickEnabled', true);
+  chrome.chromeosInfoPrivate.set('sendFunctionKeys', true);
   chrome.chromeosInfoPrivate.get(
       ['a11yLargeCursorEnabled',
        'a11yStickyKeysEnabled',
        'a11ySpokenFeedbackEnabled',
        'a11yHighContrastEnabled',
        'a11yScreenMagnifierEnabled',
-       'a11yAutoClickEnabled'],
+       'a11yAutoClickEnabled',
+       'sendFunctionKeys'],
       pass(
         function(values) {
           chrome.test.assertEq(values['a11yLargeCursorEnabled'], true);
@@ -90,6 +92,7 @@ function a11ySetTest() {
           chrome.test.assertEq(values['a11yHighContrastEnabled'], true);
           chrome.test.assertEq(values['a11yScreenMagnifierEnabled'], true);
           chrome.test.assertEq(values['a11yAutoClickEnabled'], true);
+          chrome.test.assertEq(values['sendFunctionKeys'], true);
         }
       ));
 }
@@ -106,11 +109,12 @@ var tests = generateTestsForKeys(['hwid',
                                   'a11yHighContrastEnabled',
                                   'a11yScreenMagnifierEnabled',
                                   'a11yAutoClickEnabled',
+                                  'sendFunctionKeys',
                                   'timezone',
                                   'supportedTimezones'])
 
 // Add chrome.chromeosInfoPrivate.set() test.
 tests.push(timezoneSetTest);
-tests.push(a11ySetTest);
+tests.push(prefsTest);
 
 chrome.test.runTests(tests);
