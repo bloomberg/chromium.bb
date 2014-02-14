@@ -367,7 +367,7 @@ void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheM
 
     typename U::KeyType key = cacheEntry->cacheKey();
     typename V::AddResult result = identifierMap->add(cacheEntry->generator(), typename V::MappedType());
-    result.iterator->value.add(key);
+    result.storedValue->value.add(key);
     cacheMap->add(key, cacheEntry);
 
     TRACE_COUNTER1("webkit", "ImageDecodingStoreDiscardableMemoryUsageBytes", m_discardableMemoryUsageInBytes);

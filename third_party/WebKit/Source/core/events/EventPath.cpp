@@ -204,7 +204,7 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
     if (!treeScope)
         return 0;
     TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, TreeScopeEventContext::create(*treeScope));
-    TreeScopeEventContext* treeScopeEventContext = addResult.iterator->value.get();
+    TreeScopeEventContext* treeScopeEventContext = addResult.storedValue->value.get();
     if (addResult.isNewEntry) {
         TreeScopeEventContext* parentTreeScopeEventContext = ensureTreeScopeEventContext(0, treeScope->olderShadowRootOrParentTreeScope(), treeScopeEventContextMap);
         if (parentTreeScopeEventContext && parentTreeScopeEventContext->target()) {
@@ -234,7 +234,7 @@ void EventPath::calculateAdjustedTargets()
                 lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
             } else {
                 TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
-                lastTreeScopeEventContext = addResult.iterator->value.get();
+                lastTreeScopeEventContext = addResult.storedValue->value.get();
                 if (addResult.isNewEntry) {
                     // Don't adjust an event target for SVG.
                     lastTreeScopeEventContext->setTarget(eventTargetRespectingTargetRules(at(0).node()));

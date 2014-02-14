@@ -577,7 +577,7 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
 
 void HTMLCollection::append(NodeCacheMap& map, const AtomicString& key, Element* element)
 {
-    OwnPtr<Vector<Element*> >& vector = map.add(key.impl(), nullptr).iterator->value;
+    OwnPtr<Vector<Element*> >& vector = map.add(key.impl(), nullptr).storedValue->value;
     if (!vector)
         vector = adoptPtr(new Vector<Element*>);
     vector->append(element);

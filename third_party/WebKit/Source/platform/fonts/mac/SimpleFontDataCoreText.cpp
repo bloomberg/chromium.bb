@@ -35,7 +35,7 @@ CFDictionaryRef SimpleFontData::getCFStringAttributes(TypesettingFeatures typese
 {
     unsigned key = typesettingFeatures + 1;
     HashMap<unsigned, RetainPtr<CFDictionaryRef> >::AddResult addResult = m_CFStringAttributes.add(key, RetainPtr<CFDictionaryRef>());
-    RetainPtr<CFDictionaryRef>& attributesDictionary = addResult.iterator->value;
+    RetainPtr<CFDictionaryRef>& attributesDictionary = addResult.storedValue->value;
     if (!addResult.isNewEntry)
         return attributesDictionary.get();
 

@@ -158,7 +158,7 @@ void Node::dumpStatistics()
                 Element* element = toElement(node);
                 HashMap<String, size_t>::AddResult result = perTagCount.add(element->tagName(), 1);
                 if (!result.isNewEntry)
-                    result.iterator->value++;
+                    result.storedValue->value++;
 
                 if (ElementData* elementData = element->elementData()) {
                     attributes += elementData->length();
@@ -2087,7 +2087,7 @@ static inline void collectMatchingObserversForMutation(HashMap<MutationObserver*
             MutationRecordDeliveryOptions deliveryOptions = registration.deliveryOptions();
             HashMap<MutationObserver*, MutationRecordDeliveryOptions>::AddResult result = observers.add(registration.observer(), deliveryOptions);
             if (!result.isNewEntry)
-                result.iterator->value |= deliveryOptions;
+                result.storedValue->value |= deliveryOptions;
         }
     }
 }

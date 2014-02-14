@@ -153,8 +153,8 @@ void SVGDocumentExtensions::addPendingResource(const AtomicString& id, Element* 
 
     HashMap<AtomicString, OwnPtr<SVGPendingElements> >::AddResult result = m_pendingResources.add(id, nullptr);
     if (result.isNewEntry)
-        result.iterator->value = adoptPtr(new SVGPendingElements);
-    result.iterator->value->add(element);
+        result.storedValue->value = adoptPtr(new SVGPendingElements);
+    result.storedValue->value->add(element);
 
     element->setHasPendingResources();
 }

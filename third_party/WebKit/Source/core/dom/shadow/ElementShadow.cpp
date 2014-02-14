@@ -335,7 +335,7 @@ void ElementShadow::distribute()
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)
 {
     NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, DestinationInsertionPoints());
-    result.iterator->value.append(insertionPoint);
+    result.storedValue->value.append(insertionPoint);
 }
 
 const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()

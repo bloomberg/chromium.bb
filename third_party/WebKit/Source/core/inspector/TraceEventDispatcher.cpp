@@ -106,8 +106,9 @@ void TraceEventDispatcher::innerAddListener(const char* name, char phase, TraceE
         client->setTraceEventCallback(dispatchEventOnAnyThread);
     HandlersMap::iterator it = m_handlers.find(std::make_pair(name, phase));
     if (it == m_handlers.end())
-        it = m_handlers.add(std::make_pair(name, phase), Vector<BoundTraceEventHandler>()).iterator;
-    it->value.append(BoundTraceEventHandler(instance, method));
+        m_handlers.add(std::make_pair(name, phase), Vector<BoundTraceEventHandler>()).storedValue->value.append(BoundTraceEventHandler(instance, method));
+    else
+        it->value.append(BoundTraceEventHandler(instance, method));
 }
 
 void TraceEventDispatcher::removeAllListeners(TraceEventTargetBase* instance, InspectorClient* client)

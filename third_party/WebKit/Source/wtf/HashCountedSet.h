@@ -154,7 +154,7 @@ namespace WTF {
     inline typename HashCountedSet<Value, HashFunctions, Traits>::AddResult HashCountedSet<Value, HashFunctions, Traits>::add(const ValueType &value)
     {
         AddResult result = m_impl.add(value, 0);
-        ++result.iterator->value;
+        ++result.storedValue->value;
         return result;
     }
 

@@ -419,7 +419,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
 
     WTF::HashMap<String, bool>::AddResult addResult = m_combiningCharacterSequenceSupport->add(String(characters, length), false);
     if (!addResult.isNewEntry)
-        return addResult.iterator->value;
+        return addResult.storedValue->value;
 
     RetainPtr<CGFontRef> cgFont(AdoptCF, CTFontCopyGraphicsFont(platformData().ctFont(), 0));
 
@@ -439,7 +439,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
             return false;
     }
 
-    addResult.iterator->value = true;
+    addResult.storedValue->value = true;
     return true;
 }
 

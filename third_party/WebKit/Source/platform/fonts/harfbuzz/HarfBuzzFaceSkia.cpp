@@ -94,10 +94,10 @@ static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoin
         paint->setTextEncoding(SkPaint::kUTF32_TextEncoding);
         uint16_t glyph16;
         paint->textToGlyphs(&unicode, sizeof(hb_codepoint_t), &glyph16);
-        result.iterator->value = glyph16;
+        result.storedValue->value = glyph16;
         *glyph = glyph16;
     }
-    *glyph = result.iterator->value;
+    *glyph = result.storedValue->value;
     return !!*glyph;
 }
 

@@ -51,7 +51,7 @@ void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLR
     if (m_isStopped)
         return;
 
-    RegistryURLMap::iterator found = m_registryToURL.add(&registrable->registry(), URLSet()).iterator;
+    RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLSet()).storedValue;
     found->key->registerURL(origin, url, registrable);
     found->value.add(url.string());
 }

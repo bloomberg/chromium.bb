@@ -3983,9 +3983,11 @@ void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
             rects.set(this, rect);
             if (const RenderLayer* parentLayer = parent()) {
                 LayerHitTestRects::iterator iter = rects.find(parentLayer);
-                if (iter == rects.end())
-                    iter = rects.add(parentLayer, Vector<LayoutRect>()).iterator;
-                iter->value.append(boundingBox(parentLayer));
+                if (iter == rects.end()) {
+                    rects.add(parentLayer, Vector<LayoutRect>()).storedValue->value.append(boundingBox(parentLayer));
+                } else {
+                    iter->value.append(boundingBox(parentLayer));
+                }
             }
         } else {
             rect.append(localBoundingBox());

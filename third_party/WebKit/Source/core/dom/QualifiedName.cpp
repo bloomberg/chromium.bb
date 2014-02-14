@@ -77,7 +77,7 @@ QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const
 {
     QualifiedNameComponents components = { p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl() };
     QualifiedNameCache::AddResult addResult = qualifiedNameCache().add<QNameComponentsTranslator>(components);
-    m_impl = addResult.isNewEntry ? adoptRef(*addResult.iterator) : *addResult.iterator;
+    m_impl = addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 
 QualifiedName::~QualifiedName()

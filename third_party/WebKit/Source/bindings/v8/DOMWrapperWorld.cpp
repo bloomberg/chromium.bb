@@ -127,7 +127,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
 
     WorldMap& map = isolatedWorldMap();
     WorldMap::AddResult result = map.add(worldId, 0);
-    RefPtr<DOMWrapperWorld> world = result.iterator->value;
+    RefPtr<DOMWrapperWorld> world = result.storedValue->value;
     if (world) {
         ASSERT(world->worldId() == worldId);
         ASSERT(world->extensionGroup() == extensionGroup);
@@ -135,7 +135,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
     }
 
     world = DOMWrapperWorld::create(worldId, extensionGroup);
-    result.iterator->value = world.get();
+    result.storedValue->value = world.get();
     isolatedWorldCount++;
     ASSERT(map.size() == isolatedWorldCount);
 

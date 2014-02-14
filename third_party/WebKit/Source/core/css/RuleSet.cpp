@@ -212,7 +212,7 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
 
 void RuleSet::addToRuleSet(const AtomicString& key, PendingRuleMap& map, const RuleData& ruleData)
 {
-    OwnPtr<LinkedStack<RuleData> >& rules = map.add(key, nullptr).iterator->value;
+    OwnPtr<LinkedStack<RuleData> >& rules = map.add(key, nullptr).storedValue->value;
     if (!rules)
         rules = adoptPtr(new LinkedStack<RuleData>);
     rules->push(ruleData);
@@ -426,7 +426,7 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& co
     PendingRuleMap::iterator end = pendingMap.end();
     for (PendingRuleMap::iterator it = pendingMap.begin(); it != end; ++it) {
         OwnPtr<LinkedStack<RuleData> > pendingRules = it->value.release();
-        CompactRuleMap::iterator compactRules = compactMap.add(it->key, nullptr).iterator;
+        CompactRuleMap::ValueType* compactRules = compactMap.add(it->key, nullptr).storedValue;
 
         TerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
         builder.grow(pendingRules->size());

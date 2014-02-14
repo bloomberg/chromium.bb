@@ -250,12 +250,13 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
         for (PropertySet::const_iterator propertyIter = keyframeProperties.begin(); propertyIter != keyframeProperties.end(); ++propertyIter) {
             CSSPropertyID property = *propertyIter;
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
-            if (groupIter == m_keyframeGroups->end()) {
-                KeyframeGroupMap::AddResult result = m_keyframeGroups->add(property, adoptPtr(new PropertySpecificKeyframeGroup));
-                ASSERT(result.isNewEntry);
-                groupIter = result.iterator;
-            }
-            groupIter->value->appendKeyframe(adoptPtr(
+            PropertySpecificKeyframeGroup* group;
+            if (groupIter == m_keyframeGroups->end())
+                group = m_keyframeGroups->add(property, adoptPtr(new PropertySpecificKeyframeGroup)).storedValue->value.get();
+            else
+                group = groupIter->value.get();
+
+            group->appendKeyframe(adoptPtr(
                 new PropertySpecificKeyframe(keyframe->offset(), keyframe->easing(), keyframe->propertyValue(property), keyframe->composite())));
         }
     }

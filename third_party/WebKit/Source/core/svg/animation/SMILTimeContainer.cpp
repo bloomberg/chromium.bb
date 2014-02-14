@@ -72,7 +72,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation, SVGElement* target, 
 #endif
 
     ElementAttributePair key(target, attributeName);
-    OwnPtr<AnimationsVector>& scheduled = m_scheduledAnimations.add(key, nullptr).iterator->value;
+    OwnPtr<AnimationsVector>& scheduled = m_scheduledAnimations.add(key, nullptr).storedValue->value;
     if (!scheduled)
         scheduled = adoptPtr(new AnimationsVector);
     ASSERT(!scheduled->contains(animation));

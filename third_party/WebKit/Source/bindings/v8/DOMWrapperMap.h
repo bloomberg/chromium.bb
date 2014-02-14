@@ -91,8 +91,8 @@ public:
         ASSERT(result.isNewEntry);
         // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
         if (!result.isNewEntry)
-            result.iterator->value.dispose();
-        result.iterator->value = UnsafePersistent<v8::Object>(persistent);
+            result.storedValue->value.dispose();
+        result.storedValue->value = UnsafePersistent<v8::Object>(persistent);
     }
 
     void clear()

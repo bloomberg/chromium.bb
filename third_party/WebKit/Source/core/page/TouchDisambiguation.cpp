@@ -128,7 +128,7 @@ void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntR
             if (node->isDocumentNode() || node->hasTagName(HTMLNames::htmlTag) || node->hasTagName(HTMLNames::bodyTag))
                 break;
             if (node->willRespondToMouseClickEvents()) {
-                TouchTargetData& targetData = touchTargets.add(node, TouchTargetData()).iterator->value;
+                TouchTargetData& targetData = touchTargets.add(node, TouchTargetData()).storedValue->value;
                 targetData.windowBoundingBox = boundingBoxForEventNodes(node);
                 targetData.score = scoreTouchTarget(touchPoint, touchPointPadding, targetData.windowBoundingBox);
                 bestScore = max(bestScore, targetData.score);

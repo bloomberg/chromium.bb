@@ -200,7 +200,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
 
     m_possiblyExistingMarkerTypes.add(newMarker.type());
 
-    OwnPtr<MarkerLists>& markers = m_markers.add(node, nullptr).iterator->value;
+    OwnPtr<MarkerLists>& markers = m_markers.add(node, nullptr).storedValue->value;
     if (!markers) {
         markers = adoptPtr(new MarkerLists);
         markers->grow(DocumentMarker::MarkerTypeIndexesCount);

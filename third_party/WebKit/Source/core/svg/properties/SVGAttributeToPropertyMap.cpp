@@ -118,13 +118,13 @@ SVGAttributeToPropertyMap::PropertiesVector* SVGAttributeToPropertyMap::getOrCre
 {
     ASSERT(attributeName != anyQName());
     AttributeToPropertiesMap::AddResult addResult = m_map.add(attributeName, PassOwnPtr<PropertiesVector>());
-    PropertiesVector* vector = addResult.iterator->value.get();
+    PropertiesVector* vector = addResult.storedValue->value.get();
     if (addResult.isNewEntry) {
         ASSERT(!vector);
-        vector = (addResult.iterator->value = adoptPtr(new PropertiesVector)).get();
+        vector = (addResult.storedValue->value = adoptPtr(new PropertiesVector)).get();
     }
     ASSERT(vector);
-    ASSERT(addResult.iterator->value.get() == vector);
+    ASSERT(addResult.storedValue->value.get() == vector);
     return vector;
 }
 

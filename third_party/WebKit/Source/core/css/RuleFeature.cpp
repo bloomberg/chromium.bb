@@ -160,8 +160,8 @@ DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const Atom
 {
     InvalidationSetMap::AddResult addResult = m_classInvalidationSets.add(className, 0);
     if (addResult.isNewEntry)
-        addResult.iterator->value = DescendantInvalidationSet::create();
-    return *addResult.iterator->value;
+        addResult.storedValue->value = DescendantInvalidationSet::create();
+    return *addResult.storedValue->value;
 }
 
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
@@ -334,8 +334,8 @@ RuleFeatureSet::InvalidationList& RuleFeatureSet::ensurePendingInvalidationList(
 {
     PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(element, 0);
     if (addResult.isNewEntry)
-        addResult.iterator->value = new InvalidationList;
-    return *addResult.iterator->value;
+        addResult.storedValue->value = new InvalidationList;
+    return *addResult.storedValue->value;
 }
 
 void RuleFeatureSet::computeStyleInvalidation(Document& document)

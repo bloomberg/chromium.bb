@@ -169,7 +169,7 @@ static AttrNodeList& ensureAttrNodeListForElement(Element* element)
     ASSERT(!attrNodeListMap().contains(element));
     element->setHasSyntheticAttrChildNodes(true);
     AttrNodeListMap::AddResult result = attrNodeListMap().add(element, adoptPtr(new AttrNodeList));
-    return *result.iterator->value;
+    return *result.storedValue->value;
 }
 
 static void removeAttrNodeListForElement(Element* element)

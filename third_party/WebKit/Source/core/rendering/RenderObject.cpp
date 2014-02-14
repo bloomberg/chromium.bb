@@ -2389,12 +2389,15 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     const size_t maxRectsPerLayer = 100;
 
     LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
+    Vector<WebCore::LayoutRect>* iterValue;
     if (iter == layerRects.end())
-        iter = layerRects.add(currentLayer, Vector<LayoutRect>()).iterator;
+        iterValue = &layerRects.add(currentLayer, Vector<LayoutRect>()).storedValue->value;
+    else
+        iterValue = &iter->value;
     for (size_t i = 0; i < ownRects.size(); i++) {
         if (!containerRect.contains(ownRects[i])) {
-            iter->value.append(ownRects[i]);
-            if (iter->value.size() > maxRectsPerLayer) {
+            iterValue->append(ownRects[i]);
+            if (iterValue->size() > maxRectsPerLayer) {
                 // Just mark the entire layer instead, and switch to walking the layer
                 // tree instead of the render tree.
                 layerRects.remove(currentLayer);

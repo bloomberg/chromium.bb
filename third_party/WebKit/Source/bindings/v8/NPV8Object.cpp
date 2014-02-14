@@ -141,10 +141,10 @@ NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWind
                     return reinterpret_cast<NPObject*>(v8npObject);
                 }
             }
+            objectVector = &iter->value;
         } else {
-            iter = v8NPObjectMap->set(v8ObjectHash, V8NPObjectVector()).iterator;
+            objectVector = &v8NPObjectMap->set(v8ObjectHash, V8NPObjectVector()).storedValue->value;
         }
-        objectVector = &iter->value;
     }
 
     V8NPObject* v8npObject = reinterpret_cast<V8NPObject*>(_NPN_CreateObject(npp, &V8NPObjectClass));

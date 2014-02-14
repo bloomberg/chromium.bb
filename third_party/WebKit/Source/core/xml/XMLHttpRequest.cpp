@@ -1106,7 +1106,7 @@ void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const At
 {
     HTTPHeaderMap::AddResult result = m_requestHeaders.add(name, value);
     if (!result.isNewEntry)
-        result.iterator->value = result.iterator->value + ", " + value;
+        result.storedValue->value = result.storedValue->value + ", " + value;
 }
 
 const AtomicString& XMLHttpRequest::getRequestHeader(const AtomicString& name) const

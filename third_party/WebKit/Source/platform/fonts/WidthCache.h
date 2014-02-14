@@ -159,7 +159,7 @@ private:
         if (length == 1) {
             SingleCharMap::AddResult addResult = m_singleCharMap.add(run[0], entry);
             isNewEntry = addResult.isNewEntry;
-            value = &addResult.iterator->value;
+            value = &addResult.storedValue->value;
         } else {
             SmallStringKey smallStringKey;
             if (run.is8Bit())
@@ -169,7 +169,7 @@ private:
 
             Map::AddResult addResult = m_map.add(smallStringKey, entry);
             isNewEntry = addResult.isNewEntry;
-            value = &addResult.iterator->value;
+            value = &addResult.storedValue->value;
         }
 
         // Cache hit: ramp up by sampling the next few words.

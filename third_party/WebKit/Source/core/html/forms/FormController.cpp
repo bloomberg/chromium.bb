@@ -356,14 +356,14 @@ const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithSt
     String signature = formSignature(*form);
     ASSERT(!signature.isNull());
     FormSignatureToNextIndexMap::AddResult result = m_formSignatureToNextIndexMap.add(signature, 0);
-    unsigned nextIndex = result.iterator->value++;
+    unsigned nextIndex = result.storedValue->value++;
 
     StringBuilder formKeyBuilder;
     formKeyBuilder.append(signature);
     formKeyBuilder.appendLiteral(" #");
     formKeyBuilder.appendNumber(nextIndex);
     FormToKeyMap::AddResult addFormKeyresult = m_formToKeyMap.add(form, formKeyBuilder.toAtomicString());
-    return addFormKeyresult.iterator->value;
+    return addFormKeyresult.storedValue->value;
 }
 
 void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
@@ -402,8 +402,8 @@ PassOwnPtr<FormController::SavedFormStateMap> FormController::createSavedFormSta
             continue;
         SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control), nullptr);
         if (result.isNewEntry)
-            result.iterator->value = SavedFormState::create();
-        result.iterator->value->appendControlState(control->name(), control->type(), control->saveFormControlState());
+            result.storedValue->value = SavedFormState::create();
+        result.storedValue->value->appendControlState(control->name(), control->type(), control->saveFormControlState());
     }
     return stateMap.release();
 }

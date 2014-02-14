@@ -146,8 +146,8 @@ TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeSc
 
     HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
     if (result.isNewEntry)
-        result.iterator->value = adoptPtr(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
-    return result.iterator->value.get();
+        result.storedValue->value = adoptPtr(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
+    return result.storedValue->value.get();
 }
 
 TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
@@ -568,15 +568,15 @@ PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& tex
         AtomicString textContent(text);
 
         HashMap<AtomicString, StyleSheetContents*>::AddResult result = textToSheetCache().add(textContent, 0);
-        if (result.isNewEntry || !result.iterator->value) {
+        if (result.isNewEntry || !result.storedValue->value) {
             styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
             if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
-                result.iterator->value = styleSheet->contents();
+                result.storedValue->value = styleSheet->contents();
                 sheetToTextCache().add(styleSheet->contents(), textContent);
             }
         } else {
-            ASSERT(result.iterator->value->maybeCacheable());
-            styleSheet = CSSStyleSheet::createInline(result.iterator->value, e, startPosition);
+            ASSERT(result.storedValue->value->maybeCacheable());
+            styleSheet = CSSStyleSheet::createInline(result.storedValue->value, e, startPosition);
         }
     } else {
         // FIXME: currently we don't cache StyleSheetContents inQuirksMode.

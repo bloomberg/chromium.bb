@@ -42,9 +42,9 @@ void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObser
 
     IdToObserverSetMap::AddResult result = m_registry.add(id.impl(), nullptr);
     if (result.isNewEntry)
-        result.iterator->value = adoptPtr(new ObserverSet());
+        result.storedValue->value = adoptPtr(new ObserverSet());
 
-    result.iterator->value->add(observer);
+    result.storedValue->value->add(observer);
 }
 
 void IdTargetObserverRegistry::removeObserver(const AtomicString& id, IdTargetObserver* observer)

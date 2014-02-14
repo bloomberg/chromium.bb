@@ -702,7 +702,7 @@ static bool getDerivedFontData(const UChar* family, int style, LOGFONT* logfont,
         // check it against what we actually want (as is done in
         // FontCacheWin.cpp)
         ShaperFontDataCache::AddResult entry = gFontDataCache->add(fontKey, ShaperFontData());
-        derived = &entry.iterator->value;
+        derived = &entry.storedValue->value;
         derived->hfont = CreateFontIndirect(logfont);
         // GetAscent may return kUndefinedAscent, but we still want to
         // cache it so that we won't have to call CreateFontIndirect once

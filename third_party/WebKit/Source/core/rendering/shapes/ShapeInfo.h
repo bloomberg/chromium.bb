@@ -49,7 +49,7 @@ public:
         if (InfoType* info = infoMap.get(key))
             return info;
         typename InfoMap::AddResult result = infoMap.add(key, InfoType::createInfo(key));
-        return result.iterator->value.get();
+        return result.storedValue->value.get();
     }
     static void removeInfo(const KeyType* key) { infoMap().remove(key); }
     static InfoType* info(const KeyType* key) { return infoMap().get(key); }

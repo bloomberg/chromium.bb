@@ -205,9 +205,9 @@ namespace WTF {
         template<typename T, typename U, typename V> static void translate(T& location, const U&, const V& value) { location = value; }
     };
 
-    template<typename IteratorType> struct HashTableAddResult {
-        HashTableAddResult(IteratorType iter, bool isNewEntry) : iterator(iter), isNewEntry(isNewEntry) { }
-        IteratorType iterator;
+    template<typename ValueType> struct HashTableAddResult {
+        HashTableAddResult(ValueType* storedValue, bool isNewEntry) : storedValue(storedValue), isNewEntry(isNewEntry) { }
+        ValueType* storedValue;
         bool isNewEntry;
     };
 
@@ -230,7 +230,7 @@ namespace WTF {
         typedef Value ValueType;
         typedef typename Traits::PeekInType ValuePeekInType;
         typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
-        typedef HashTableAddResult<iterator> AddResult;
+        typedef HashTableAddResult<ValueType> AddResult;
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         struct Stats {
@@ -687,7 +687,7 @@ namespace WTF {
                     break;
 
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
-                    return AddResult(makeKnownGoodIterator(entry), false);
+                    return AddResult(entry, false);
 
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
@@ -698,7 +698,7 @@ namespace WTF {
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
                 else if (HashTranslator::equal(Extractor::extract(*entry), key))
-                    return AddResult(makeKnownGoodIterator(entry), false);
+                    return AddResult(entry, false);
             }
 #if DUMP_HASHTABLE_STATS
             ++probeCount;
@@ -731,12 +731,14 @@ namespace WTF {
             // follow a pivot entry and return the new position.
             typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
             expand();
-            AddResult result(find(enteredKey), true);
-            ASSERT(result.iterator != end());
+            iterator findResult = find(enteredKey);
+            ASSERT(findResult != end());
+            ValueType* resultValue = findResult.get();
+            AddResult result(resultValue, true);
             return result;
         }
 
-        return AddResult(makeKnownGoodIterator(entry), true);
+        return AddResult(entry, true);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -753,7 +755,7 @@ namespace WTF {
         unsigned h = lookupResult.second;
 
         if (found)
-            return AddResult(makeKnownGoodIterator(entry), false);
+            return AddResult(entry, false);
 
         if (isDeletedBucket(*entry)) {
             initializeBucket(*entry);
@@ -768,12 +770,14 @@ namespace WTF {
             // follow a pivot entry and return the new position.
             typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
             expand();
-            AddResult result(find(enteredKey), true);
-            ASSERT(result.iterator != end());
+            iterator findResult = find(enteredKey);
+            ASSERT(findResult != end());
+            ValueType* resultValue = findResult.get();
+            AddResult result(resultValue, true);
             return result;
         }
 
-        return AddResult(makeKnownGoodIterator(entry), true);
+        return AddResult(entry, true);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>

@@ -52,7 +52,7 @@ void WebSocketHandshakeRequest::addAndMergeHeader(HTTPHeaderMap* map, const Atom
     HTTPHeaderMap::AddResult result = map->add(name, value);
     if (!result.isNewEntry) {
         // Inspector expects the "\n" separated format.
-        result.iterator->value = result.iterator->value + "\n" + String(value);
+        result.storedValue->value = result.storedValue->value + "\n" + String(value);
     }
 }
 

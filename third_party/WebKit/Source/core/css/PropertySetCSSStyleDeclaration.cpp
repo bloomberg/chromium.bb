@@ -292,7 +292,7 @@ CSSValue* AbstractPropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue
     if (!m_cssomCSSValueClones)
         m_cssomCSSValueClones = adoptPtr(new HashMap<CSSValue*, RefPtr<CSSValue> >);
 
-    RefPtr<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtr<CSSValue>()).iterator->value;
+    RefPtr<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtr<CSSValue>()).storedValue->value;
     if (!clonedValue)
         clonedValue = internalValue->cloneForCSSOM();
     return clonedValue.get();

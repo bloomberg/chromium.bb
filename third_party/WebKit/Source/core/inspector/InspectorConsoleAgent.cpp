@@ -247,7 +247,7 @@ void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptAr
                                         : String(title + '@');
 
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
-    String message = title + ": " + String::number(result.iterator->value);
+    String message = title + ": " + String::number(result.storedValue->value);
     addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, callStack);
 }
 

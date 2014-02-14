@@ -311,7 +311,7 @@ void ResourceResponse::addHTTPHeaderField(const AtomicString& name, const Atomic
 
     HTTPHeaderMap::AddResult result = m_httpHeaderFields.add(name, value);
     if (!result.isNewEntry)
-        result.iterator->value = result.iterator->value + ", " + value;
+        result.storedValue->value = result.storedValue->value + ", " + value;
 }
 
 void ResourceResponse::clearHTTPHeaderField(const AtomicString& name)

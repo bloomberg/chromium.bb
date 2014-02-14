@@ -50,9 +50,12 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
     ASSERT_UNUSED(result, result.isNewEntry);
 
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
+    ElementSet* elements;
     if (it == m_unresolvedDefinitions.end())
-        it = m_unresolvedDefinitions.add(descriptor, ElementSet()).iterator;
-    it->value.add(element);
+        elements = &m_unresolvedDefinitions.add(descriptor, ElementSet()).storedValue->value;
+    else
+        elements = &it->value;
+    elements->add(element);
 }
 
 void CustomElementUpgradeCandidateMap::remove(Element* element)

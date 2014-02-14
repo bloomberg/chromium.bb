@@ -82,7 +82,12 @@ namespace WTF {
         typedef ListHashSetConstReverseIterator<ValueType, inlineCapacity, HashArg> const_reverse_iterator;
         friend class ListHashSetConstReverseIterator<ValueType, inlineCapacity, HashArg>;
 
-        typedef HashTableAddResult<iterator> AddResult;
+        template<typename ValueType> struct HashTableAddResult {
+        HashTableAddResult(Node* storedValue, bool isNewEntry) : storedValue(storedValue), isNewEntry(isNewEntry) { }
+            Node* storedValue;
+            bool isNewEntry;
+        };
+        typedef HashTableAddResult<ValueType> AddResult;
 
         ListHashSet();
         ListHashSet(const ListHashSet&);
@@ -126,9 +131,15 @@ namespace WTF {
         template<typename HashTranslator, typename T> const_iterator find(const T&) const;
         template<typename HashTranslator, typename T> bool contains(const T&) const;
 
-        // The return value of add is a pair of an iterator to the new value's location,
+        // The return value of add is a pair of a pointer to the stored value,
         // and a bool that is true if an new entry was added.
         AddResult add(const ValueType&);
+
+        // Same as add() except that the return value is an
+        // iterator. Useful in cases where it's needed to have the
+        // same return value as find() and where it's not possible to
+        // use a pointer to the storedValue.
+        iterator addReturnIterator(const ValueType&);
 
         // Add the value to the end of the collection. If the value was already in
         // the list, it is moved to the end.
@@ -735,20 +746,25 @@ namespace WTF {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
         if (result.isNewEntry)
-            appendNode(*result.iterator);
-        return AddResult(makeIterator(*result.iterator), result.isNewEntry);
+            appendNode(*result.storedValue);
+        return AddResult(*result.storedValue, result.isNewEntry);
     }
 
+    template<typename T, size_t inlineCapacity, typename U>
+    typename ListHashSet<T, inlineCapacity, U>::iterator ListHashSet<T, inlineCapacity, U>::addReturnIterator(const ValueType &value)
+    {
+        return makeIterator(add(value).storedValue);
+    }
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::appendOrMoveToLast(const ValueType &value)
     {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
-        Node* node = *result.iterator;
+        Node* node = *result.storedValue;
         if (!result.isNewEntry)
             unlink(node);
         appendNode(node);
-        return AddResult(makeIterator(*result.iterator), result.isNewEntry);
+        return AddResult(*result.storedValue, result.isNewEntry);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -756,11 +772,11 @@ namespace WTF {
     {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
-        Node* node = *result.iterator;
+        Node* node = *result.storedValue;
         if (!result.isNewEntry)
             unlink(node);
         prependNode(node);
-        return AddResult(makeIterator(*result.iterator), result.isNewEntry);
+        return AddResult(*result.storedValue, result.isNewEntry);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
@@ -769,8 +785,8 @@ namespace WTF {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(newValue, m_allocator.get());
         if (result.isNewEntry)
-            insertNodeBefore(it.node(), *result.iterator);
-        return AddResult(makeIterator(*result.iterator), result.isNewEntry);
+            insertNodeBefore(it.node(), *result.storedValue);
+        return AddResult(*result.storedValue, result.isNewEntry);
     }
 
     template<typename T, size_t inlineCapacity, typename U>

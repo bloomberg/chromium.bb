@@ -604,7 +604,7 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
             selectedObjects.set(os, adoptPtr(new RenderSelectionInfo(os, clipToVisibleContent)));
             RenderBlock* cb = os->containingBlock();
             while (cb && !cb->isRenderView()) {
-                OwnPtr<RenderSelectionInfo>& blockInfo = selectedObjects.add(cb, nullptr).iterator->value;
+                OwnPtr<RenderSelectionInfo>& blockInfo = selectedObjects.add(cb, nullptr).storedValue->value;
                 if (blockInfo)
                     break;
                 blockInfo = adoptPtr(new RenderSelectionInfo(cb, clipToVisibleContent));
@@ -732,7 +732,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
             if (blockRepaintMode == RepaintNewXOROld) {
                 RenderBlock* cb = os->containingBlock();
                 while (cb && !cb->isRenderView()) {
-                    OwnPtr<RenderBlockSelectionInfo>& blockInfo = oldSelectedBlocks.add(cb, nullptr).iterator->value;
+                    OwnPtr<RenderBlockSelectionInfo>& blockInfo = oldSelectedBlocks.add(cb, nullptr).storedValue->value;
                     if (blockInfo)
                         break;
                     blockInfo = adoptPtr(new RenderBlockSelectionInfo(cb));
@@ -787,7 +787,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
             newSelectedObjects.set(o, adoptPtr(new RenderSelectionInfo(o, true)));
             RenderBlock* cb = o->containingBlock();
             while (cb && !cb->isRenderView()) {
-                OwnPtr<RenderBlockSelectionInfo>& blockInfo = newSelectedBlocks.add(cb, nullptr).iterator->value;
+                OwnPtr<RenderBlockSelectionInfo>& blockInfo = newSelectedBlocks.add(cb, nullptr).storedValue->value;
                 if (blockInfo)
                     break;
                 blockInfo = adoptPtr(new RenderBlockSelectionInfo(cb));

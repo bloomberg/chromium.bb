@@ -84,10 +84,10 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
 {
     HarfBuzzFaceCache::AddResult result = harfBuzzFaceCache()->add(m_uniqueID, 0);
     if (result.isNewEntry)
-        result.iterator->value = FaceCacheEntry::create(createFace());
-    result.iterator->value->ref();
-    m_face = result.iterator->value->face();
-    m_glyphCacheForFaceCacheEntry = result.iterator->value->glyphCache();
+        result.storedValue->value = FaceCacheEntry::create(createFace());
+    result.storedValue->value->ref();
+    m_face = result.storedValue->value->face();
+    m_glyphCacheForFaceCacheEntry = result.storedValue->value->glyphCache();
 }
 
 HarfBuzzFace::~HarfBuzzFace()

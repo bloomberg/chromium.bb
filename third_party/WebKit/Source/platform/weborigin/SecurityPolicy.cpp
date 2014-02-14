@@ -120,9 +120,9 @@ void SecurityPolicy::addOriginAccessWhitelistEntry(const SecurityOrigin& sourceO
     String sourceString = sourceOrigin.toString();
     OriginAccessMap::AddResult result = originAccessMap().add(sourceString, nullptr);
     if (result.isNewEntry)
-        result.iterator->value = adoptPtr(new OriginAccessWhiteList);
+        result.storedValue->value = adoptPtr(new OriginAccessWhiteList);
 
-    OriginAccessWhiteList* list = result.iterator->value.get();
+    OriginAccessWhiteList* list = result.storedValue->value.get();
     list->append(OriginAccessEntry(destinationProtocol, destinationDomain, allowDestinationSubdomains ? OriginAccessEntry::AllowSubdomains : OriginAccessEntry::DisallowSubdomains, OriginAccessEntry::TreatIPAddressAsIPAddress));
 }
 

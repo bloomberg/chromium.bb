@@ -292,7 +292,7 @@ namespace WebCore {
     typedef CounterDirectiveMap::iterator Iterator;
     Iterator end = parentMap.end();
     for (Iterator it = parentMap.begin(); it != end; ++it) {
-        CounterDirectives& directives = map.add(it->key, CounterDirectives()).iterator->value;
+        CounterDirectives& directives = map.add(it->key, CounterDirectives()).storedValue->value;
         directives.inherit{{action}}(it->value);
     }
 }
@@ -325,7 +325,7 @@ namespace WebCore {
 
         AtomicString identifier(pair->first()->getStringValue());
         int value = pair->second()->getIntValue();
-        CounterDirectives& directives = map.add(identifier, CounterDirectives()).iterator->value;
+        CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
         {%- if action == "Reset" %}
         directives.setResetValue(value);
         {%- else %}

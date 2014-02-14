@@ -95,9 +95,9 @@ void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* pa
     ASSERT(hash);
     Cache::AddResult addResult = m_cache.add(hash, nullptr);
     if (addResult.isNewEntry)
-        addResult.iterator->value = adoptPtr(new CachedMatchedProperties);
+        addResult.storedValue->value = adoptPtr(new CachedMatchedProperties);
 
-    CachedMatchedProperties* cacheItem = addResult.iterator->value.get();
+    CachedMatchedProperties* cacheItem = addResult.storedValue->value.get();
     if (!addResult.isNewEntry)
         cacheItem->clear();
 

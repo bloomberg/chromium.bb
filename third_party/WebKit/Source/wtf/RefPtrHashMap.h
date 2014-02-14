@@ -217,7 +217,7 @@ namespace WTF {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {
             // The inlineAdd call above found an existing hash table entry; we need to set the mapped value.
-            MappedTraits::store(mapped, result.iterator->value);
+            MappedTraits::store(mapped, result.storedValue->value);
         }
         return result;
     }
@@ -229,7 +229,7 @@ namespace WTF {
         AddResult result = inlineAdd(key, mapped);
         if (!result.isNewEntry) {
             // The inlineAdd call above found an existing hash table entry; we need to set the mapped value.
-            MappedTraits::store(mapped, result.iterator->value);
+            MappedTraits::store(mapped, result.storedValue->value);
         }
         return result;
     }

@@ -58,11 +58,11 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<Fon
 {
     RefPtr<FontFace> fontFace = prpFontFace;
 
-    OwnPtr<TraitsMap>& familyFontFaces = m_fontFaces.add(fontFace->family(), nullptr).iterator->value;
+    OwnPtr<TraitsMap>& familyFontFaces = m_fontFaces.add(fontFace->family(), nullptr).storedValue->value;
     if (!familyFontFaces)
         familyFontFaces = adoptPtr(new TraitsMap);
 
-    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(fontFace->traitsMask(), 0).iterator->value;
+    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(fontFace->traitsMask(), 0).storedValue->value;
     if (!segmentedFontFace)
         segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, static_cast<FontTraitsMask>(fontFace->traitsMask()));
 
@@ -193,13 +193,13 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
     if (!familyFontFaces || familyFontFaces->isEmpty())
         return 0;
 
-    OwnPtr<TraitsMap>& segmentedFontFaceCache = m_fonts.add(family, nullptr).iterator->value;
+    OwnPtr<TraitsMap>& segmentedFontFaceCache = m_fonts.add(family, nullptr).storedValue->value;
     if (!segmentedFontFaceCache)
         segmentedFontFaceCache = adoptPtr(new TraitsMap);
 
     FontTraitsMask traitsMask = fontDescription.traitsMask();
 
-    RefPtr<CSSSegmentedFontFace>& face = segmentedFontFaceCache->add(traitsMask, 0).iterator->value;
+    RefPtr<CSSSegmentedFontFace>& face = segmentedFontFaceCache->add(traitsMask, 0).storedValue->value;
     if (!face) {
         for (TraitsMap::const_iterator i = familyFontFaces->begin(); i != familyFontFaces->end(); ++i) {
             CSSSegmentedFontFace* candidate = i->value.get();

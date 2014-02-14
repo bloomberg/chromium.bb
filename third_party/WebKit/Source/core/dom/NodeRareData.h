@@ -101,10 +101,10 @@ public:
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), 0);
         if (!result.isNewEntry)
-            return static_cast<T*>(result.iterator->value);
+            return static_cast<T*>(result.storedValue->value);
 
         RefPtr<T> list = T::create(node, collectionType, name);
-        result.iterator->value = list.get();
+        result.storedValue->value = list.get();
         return list.release();
     }
 
@@ -113,10 +113,10 @@ public:
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), 0);
         if (!result.isNewEntry)
-            return static_cast<T*>(result.iterator->value);
+            return static_cast<T*>(result.storedValue->value);
 
         RefPtr<T> list = T::create(node, collectionType);
-        result.iterator->value = list.get();
+        result.storedValue->value = list.get();
         return list.release();
     }
 
@@ -131,10 +131,10 @@ public:
         QualifiedName name(nullAtom, localName, namespaceURI);
         TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, 0);
         if (!result.isNewEntry)
-            return result.iterator->value;
+            return result.storedValue->value;
 
         RefPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
-        result.iterator->value = list.get();
+        result.storedValue->value = list.get();
         return list.release();
     }
 

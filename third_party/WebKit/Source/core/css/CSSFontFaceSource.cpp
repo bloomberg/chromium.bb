@@ -144,7 +144,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily);
 
-    RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), 0).iterator->value;
+    RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), 0).storedValue->value;
     if (fontData)
         return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
 

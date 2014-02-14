@@ -4743,7 +4743,7 @@ CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const 
 
 HTMLCanvasElement* Document::getCSSCanvasElement(const String& name)
 {
-    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).iterator->value;
+    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).storedValue->value;
     if (!element) {
         element = HTMLCanvasElement::create(*this);
         element->setAccelerationDisabled(true);
@@ -5326,8 +5326,8 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
         return Locale::defaultLocale();
     LocaleIdentifierToLocaleMap::AddResult result = m_localeCache.add(localeKey, nullptr);
     if (result.isNewEntry)
-        result.iterator->value = Locale::create(localeKey);
-    return *(result.iterator->value);
+        result.storedValue->value = Locale::create(localeKey);
+    return *(result.storedValue->value);
 }
 
 Document& Document::ensureTemplateDocument()

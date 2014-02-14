@@ -113,7 +113,7 @@ void ResourceLoadPriorityOptimizer::notifyImageResourceVisibility(ImageResource*
 
     ImageResourceMap::AddResult result = m_imageResources.add(img->identifier(), adoptPtr(new ResourceAndVisibility(img, status)));
     if (!result.isNewEntry && status == Visible)
-        result.iterator->value->status = status;
+        result.storedValue->value->status = status;
 }
 
 }

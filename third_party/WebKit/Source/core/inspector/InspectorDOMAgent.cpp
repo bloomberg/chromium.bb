@@ -1039,12 +1039,12 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     }
 
     *searchId = IdentifiersFactory::createIdentifier();
-    SearchResults::iterator resultsIt = m_searchResults.add(*searchId, Vector<RefPtr<Node> >()).iterator;
+    Vector<RefPtr<Node> >* resultsIt = &m_searchResults.add(*searchId, Vector<RefPtr<Node> >()).storedValue->value;
 
     for (ListHashSet<Node*>::iterator it = resultCollector.begin(); it != resultCollector.end(); ++it)
-        resultsIt->value.append(*it);
+        resultsIt->append(*it);
 
-    *resultCount = resultsIt->value.size();
+    *resultCount = resultsIt->size();
 }
 
 void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int> >& nodeIds)

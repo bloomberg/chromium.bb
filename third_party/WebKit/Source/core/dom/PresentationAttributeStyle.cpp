@@ -163,18 +163,18 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
 
     unsigned cacheHash = computePresentationAttributeCacheHash(cacheKey);
 
-    PresentationAttributeCache::iterator cacheIterator;
+    PresentationAttributeCache::ValueType* cacheValue;
     if (cacheHash) {
-        cacheIterator = presentationAttributeCache().add(cacheHash, nullptr).iterator;
-        if (cacheIterator->value && cacheIterator->value->key != cacheKey)
+        cacheValue = presentationAttributeCache().add(cacheHash, nullptr).storedValue;
+        if (cacheValue->value && cacheValue->value->key != cacheKey)
             cacheHash = 0;
     } else {
-        cacheIterator = presentationAttributeCache().end();
+        cacheValue = 0;
     }
 
     RefPtr<StylePropertySet> style;
-    if (cacheHash && cacheIterator->value) {
-        style = cacheIterator->value->value;
+    if (cacheHash && cacheValue->value) {
+        style = cacheValue->value->value;
         cacheCleaner.didHitPresentationAttributeCache();
     } else {
         style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
@@ -185,7 +185,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         }
     }
 
-    if (!cacheHash || cacheIterator->value)
+    if (!cacheHash || cacheValue->value)
         return style.release();
 
     OwnPtr<PresentationAttributeCacheEntry> newEntry = adoptPtr(new PresentationAttributeCacheEntry);
@@ -199,7 +199,7 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         presentationAttributeCache().clear();
         presentationAttributeCache().set(cacheHash, newEntry.release());
     } else {
-        cacheIterator->value = newEntry.release();
+        cacheValue->value = newEntry.release();
     }
 
     return style.release();

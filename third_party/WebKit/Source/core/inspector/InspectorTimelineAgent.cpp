@@ -1191,7 +1191,7 @@ TimelineThreadState& InspectorTimelineAgent::threadState(ThreadIdentifier thread
     ThreadStateMap::iterator it = m_threadStates.find(thread);
     if (it != m_threadStates.end())
         return it->value;
-    return m_threadStates.add(thread, TimelineThreadState(this)).iterator->value;
+    return m_threadStates.add(thread, TimelineThreadState(this)).storedValue->value;
 }
 
 void InspectorTimelineAgent::commitFrameRecord()

@@ -58,12 +58,12 @@ ScopedStyleResolver* ScopedStyleTree::addScopedStyleResolver(ContainerNode& scop
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::AddResult addResult = m_authorStyles.add(&scopingNode, nullptr);
 
     if (addResult.isNewEntry) {
-        addResult.iterator->value = ScopedStyleResolver::create(scopingNode);
+        addResult.storedValue->value = ScopedStyleResolver::create(scopingNode);
         if (scopingNode.isDocumentNode())
-            m_scopedResolverForDocument = addResult.iterator->value.get();
+            m_scopedResolverForDocument = addResult.storedValue->value.get();
     }
     isNewEntry = addResult.isNewEntry;
-    return addResult.iterator->value.get();
+    return addResult.storedValue->value.get();
 }
 
 void ScopedStyleTree::setupScopedStylesTree(ScopedStyleResolver* target)

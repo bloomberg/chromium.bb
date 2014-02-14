@@ -47,7 +47,7 @@ PassRefPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWit
 {
     ASSERT(!attributes.isEmpty());
 
-    ShareableElementDataCache::iterator it = m_shareableElementDataCache.add(attributeHash(attributes), 0).iterator;
+    ShareableElementDataCache::ValueType* it = m_shareableElementDataCache.add(attributeHash(attributes), 0).storedValue;
 
     // FIXME: This prevents sharing when there's a hash collision.
     if (it->value && !hasSameAttributes(attributes, *it->value))

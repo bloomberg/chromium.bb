@@ -80,13 +80,17 @@ public:
     void addEventListenerData(EventTarget* eventTarget, const AtomicString& eventType, const EventListenerAsyncCallChain& item)
     {
         HashMap<EventTarget*, EventListenerAsyncCallChainVectorHashMap>::iterator it = m_eventTargetCallChains.find(eventTarget);
+        EventListenerAsyncCallChainVectorHashMap* mapPtr;
         if (it == m_eventTargetCallChains.end())
-            it = m_eventTargetCallChains.set(eventTarget, EventListenerAsyncCallChainVectorHashMap()).iterator;
-        EventListenerAsyncCallChainVectorHashMap& map = it->value;
+            mapPtr = &m_eventTargetCallChains.set(eventTarget, EventListenerAsyncCallChainVectorHashMap()).storedValue->value;
+        else
+            mapPtr = &it->value;
+        EventListenerAsyncCallChainVectorHashMap& map = *mapPtr;
         EventListenerAsyncCallChainVectorHashMap::iterator it2 = map.find(eventType);
         if (it2 == map.end())
-            it2 = map.set(eventType, EventListenerAsyncCallChainVector()).iterator;
-        it2->value.append(item);
+            map.set(eventType, EventListenerAsyncCallChainVector()).storedValue->value.append(item);
+        else
+            it2->value.append(item);
     }
 
     void removeEventListenerData(EventTarget* eventTarget, const AtomicString& eventType, const RegisteredEventListener& item)

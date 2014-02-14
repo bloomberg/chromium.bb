@@ -285,7 +285,7 @@ static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScroll
 WebScrollbarLayer* ScrollingCoordinator::addWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, PassOwnPtr<blink::WebScrollbarLayer> scrollbarLayer)
 {
     ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
-    return scrollbars.add(scrollableArea, scrollbarLayer).iterator->value.get();
+    return scrollbars.add(scrollableArea, scrollbarLayer).storedValue->value.get();
 }
 
 WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
@@ -395,8 +395,9 @@ static void makeLayerChildFrameMap(const Frame* currentFrame, LayerFrameMap* map
         const RenderLayer* containingLayer = child->ownerRenderer()->enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
-            iter = map->add(containingLayer, Vector<const Frame*>()).iterator;
-        iter->value.append(child);
+            map->add(containingLayer, Vector<const Frame*>()).storedValue->value.append(child);
+        else
+            iter->value.append(child);
     }
 }
 
@@ -430,8 +431,11 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
         }
 
         LayerHitTestRects::iterator compIter = compositorRects.find(compositedLayer);
+        Vector<LayoutRect>* compIterValue;
         if (compIter == compositorRects.end())
-            compIter = compositorRects.add(compositedLayer, Vector<LayoutRect>()).iterator;
+            compIterValue = &compositorRects.add(compositedLayer, Vector<LayoutRect>()).storedValue->value;
+        else
+            compIterValue = &compIter->value;
         // Transform each rect to the co-ordinate space of it's enclosing composited layer.
         for (size_t i = 0; i < layerIter->value.size(); ++i) {
             LayoutRect rect = layerIter->value[i];
@@ -444,7 +448,7 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
                 if (compositedLayer->renderer()->hasOverflowClip())
                     rect.move(compositedLayer->renderBox()->scrolledContentOffset());
             }
-            compIter->value.append(rect);
+            compIterValue->append(rect);
         }
     }
 

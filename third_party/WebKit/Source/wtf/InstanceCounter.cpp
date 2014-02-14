@@ -96,7 +96,7 @@ void InstanceCounter::incrementInstanceCount(const String& instanceName, void* p
     MutexLocker locker(m_mutex);
     HashMap<String, int>::AddResult result = m_counterMap.add(instanceName, 1);
     if (!result.isNewEntry)
-        ++(result.iterator->value);
+        ++(result.storedValue->value);
 }
 
 void InstanceCounter::decrementInstanceCount(const String& instanceName, void* ptr)

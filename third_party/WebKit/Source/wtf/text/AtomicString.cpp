@@ -52,7 +52,7 @@ public:
         if (!string->length())
             return StringImpl::empty();
 
-        StringImpl* result = *m_table.add(string).iterator;
+        StringImpl* result = *m_table.add(string).storedValue;
 
         if (!result->isAtomic())
             result->setIsAtomic(true);
@@ -117,7 +117,7 @@ static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
 
     // If the string is newly-translated, then we need to adopt it.
     // The boolean in the pair tells us if that is so.
-    return addResult.isNewEntry ? adoptRef(*addResult.iterator) : *addResult.iterator;
+    return addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 
 struct CStringTranslator {

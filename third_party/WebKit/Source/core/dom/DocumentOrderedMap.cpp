@@ -70,7 +70,7 @@ void DocumentOrderedMap::add(StringImpl* key, Element* element)
     if (addResult.isNewEntry)
         return;
 
-    OwnPtr<MapEntry>& entry = addResult.iterator->value;
+    OwnPtr<MapEntry>& entry = addResult.storedValue->value;
     ASSERT(entry->count);
     entry->element = 0;
     entry->count++;

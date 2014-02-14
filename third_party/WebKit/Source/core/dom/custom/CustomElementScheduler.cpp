@@ -117,7 +117,7 @@ CustomElementCallbackQueue* CustomElementScheduler::ensureCallbackQueue(PassRefP
     Element* key = element.get();
     ElementCallbackQueueMap::iterator it = m_elementCallbackQueueMap.find(key);
     if (it == m_elementCallbackQueueMap.end())
-        it = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(element)).iterator;
+        return m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(element)).storedValue->value.get();
     return it->value.get();
 }
 

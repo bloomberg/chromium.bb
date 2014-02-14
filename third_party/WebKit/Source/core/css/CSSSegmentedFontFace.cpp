@@ -95,9 +95,10 @@ void CSSSegmentedFontFace::addFontFace(PassRefPtr<FontFace> prpFontFace, bool cs
     if (cssConnected) {
         m_fontFaces.insertBefore(m_firstNonCssConnectedFace, fontFace);
     } else {
-        FontFaceList::AddResult result = m_fontFaces.add(fontFace);
+        // This is the only place in Blink that is using addReturnIterator.
+        FontFaceList::iterator iterator = m_fontFaces.addReturnIterator(fontFace);
         if (m_firstNonCssConnectedFace == m_fontFaces.end())
-            m_firstNonCssConnectedFace = result.iterator;
+            m_firstNonCssConnectedFace = iterator;
     }
 }
 
@@ -138,7 +139,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily, desiredTraitsMask);
 
-    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), 0).iterator->value;
+    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), 0).storedValue->value;
     if (fontData && fontData->numRanges())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 

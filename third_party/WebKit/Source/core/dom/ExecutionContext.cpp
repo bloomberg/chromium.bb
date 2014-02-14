@@ -199,7 +199,7 @@ int ExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int 
     }
     TimeoutMap::AddResult result = m_timeouts.add(timeoutID, DOMTimer::create(this, action, timeout, singleShot, timeoutID));
     ASSERT(result.isNewEntry);
-    DOMTimer* timer = result.iterator->value.get();
+    DOMTimer* timer = result.storedValue->value.get();
 
     timer->suspendIfNeeded();
 

@@ -262,7 +262,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
 
     WTF::HashMap<String, bool>::AddResult addResult = m_combiningCharacterSequenceSupport->add(String(characters, length), false);
     if (!addResult.isNewEntry)
-        return addResult.iterator->value;
+        return addResult.storedValue->value;
 
     UErrorCode error = U_ZERO_ERROR;
     Vector<UChar, 4> normalizedCharacters(length);
@@ -275,7 +275,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     m_platformData.setupPaint(&paint);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     if (paint.textToGlyphs(&normalizedCharacters[0], normalizedLength * 2, 0)) {
-        addResult.iterator->value = true;
+        addResult.storedValue->value = true;
         return true;
     }
     return false;

@@ -300,7 +300,7 @@ void StyleSheetContents::parserAddNamespace(const AtomicString& prefix, const At
     PrefixNamespaceURIMap::AddResult result = m_namespaces.add(prefix, uri);
     if (result.isNewEntry)
         return;
-    result.iterator->value = uri;
+    result.storedValue->value = uri;
 }
 
 const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& prefix)

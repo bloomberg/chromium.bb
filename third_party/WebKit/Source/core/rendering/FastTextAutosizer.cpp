@@ -279,10 +279,10 @@ FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const Render
 
     SuperclusterMap::AddResult addResult = m_superclusters.add(fingerprint, PassOwnPtr<Supercluster>());
     if (!addResult.isNewEntry)
-        return addResult.iterator->value.get();
+        return addResult.storedValue->value.get();
 
     Supercluster* supercluster = new Supercluster(roots);
-    addResult.iterator->value = adoptPtr(supercluster);
+    addResult.storedValue->value = adoptPtr(supercluster);
     return supercluster;
 }
 
@@ -502,8 +502,8 @@ void FastTextAutosizer::FingerprintMapper::add(const RenderBlock* block, AtomicS
 
     ReverseFingerprintMap::AddResult addResult = m_blocksForFingerprint.add(fingerprint, PassOwnPtr<BlockSet>());
     if (addResult.isNewEntry)
-        addResult.iterator->value = adoptPtr(new BlockSet);
-    addResult.iterator->value->add(block);
+        addResult.storedValue->value = adoptPtr(new BlockSet);
+    addResult.storedValue->value->add(block);
 }
 
 void FastTextAutosizer::FingerprintMapper::remove(const RenderBlock* block)

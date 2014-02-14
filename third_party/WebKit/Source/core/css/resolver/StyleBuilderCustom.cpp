@@ -940,9 +940,9 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
             for (CSSValueListIterator j = lineNamesValue; j.hasMore(); j.advance()) {
                 String namedGridLine = toCSSPrimitiveValue(j.value())->getStringValue();
                 NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
-                result.iterator->value.append(currentNamedGridLine);
+                result.storedValue->value.append(currentNamedGridLine);
                 OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
-                orderedInsertionResult.iterator->value.append(namedGridLine);
+                orderedInsertionResult.storedValue->value.append(namedGridLine);
             }
             continue;
         }
