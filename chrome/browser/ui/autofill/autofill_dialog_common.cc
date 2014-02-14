@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -203,10 +204,19 @@ void BuildInputsForSection(DialogSection dialog_section,
     case SECTION_CC_BILLING:
       BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
 
-      if (IsI18nInputEnabled())
-        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING, country_code, inputs);
-      else
+      if (IsI18nInputEnabled()) {
+        // Wallet only supports US billing addresses.
+        const std::string hardcoded_country_code = "US";
+        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING,
+                               hardcoded_country_code,
+                               inputs);
+        DCHECK_EQ(inputs->back().type, ADDRESS_BILLING_COUNTRY);
+        inputs->back().length = DetailInput::NONE;
+        inputs->back().initial_value =
+            base::ASCIIToUTF16(hardcoded_country_code);
+      } else {
         BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+      }
 
       BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
       break;

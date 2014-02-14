@@ -1165,8 +1165,10 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   }
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
-    it->initial_value = common::GetHardcodedValueForType(it->type);
+  for (DetailInputs::iterator it = inputs->begin();
+       it != inputs->end(); ++it) {
+    if (it->length != DetailInput::NONE)
+      it->initial_value = common::GetHardcodedValueForType(it->type);
   }
 }
 
@@ -1250,8 +1252,10 @@ void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
     DetailInputs* inputs = MutableRequestedFieldsForSection(section);
     for (size_t i = 0; i < inputs->size(); ++i) {
       DetailInput* input = &(*inputs)[i];
-      input->initial_value =
-          GetInfoFromInputs(snapshot, section, AutofillType(input->type));
+      if (input->length != DetailInput::NONE) {
+        input->initial_value =
+            GetInfoFromInputs(snapshot, section, AutofillType(input->type));
+      }
       if (InputWasEdited(input->type, input->initial_value))
         SuggestionsMenuModelForSection(section)->SetCheckedItem(kAddNewItemKey);
     }
@@ -3001,12 +3005,12 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   FieldValueMap::const_iterator billing_it =
       snapshot.find(ADDRESS_BILLING_COUNTRY);
   if (billing_it != snapshot.end())
-    RebuildInputsForCountry(ActiveBillingSection(), billing_it->second, false);
+    RebuildInputsForCountry(ActiveBillingSection(), billing_it->second, true);
 
   FieldValueMap::const_iterator shipping_it =
       snapshot.find(ADDRESS_HOME_COUNTRY);
   if (shipping_it != snapshot.end())
-    RebuildInputsForCountry(SECTION_SHIPPING, shipping_it->second, false);
+    RebuildInputsForCountry(SECTION_SHIPPING, shipping_it->second, true);
 
   RestoreUserInputFromSnapshot(snapshot);
 
@@ -3180,7 +3184,7 @@ DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
 
 CountryComboboxModel* AutofillDialogControllerImpl::
     CountryComboboxModelForSection(DialogSection section) {
-  if (section == SECTION_BILLING || section == SECTION_CC_BILLING)
+  if (section == SECTION_BILLING)
     return &billing_country_combobox_model_;
 
   if (section == SECTION_SHIPPING)

@@ -1432,6 +1432,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   EXPECT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
+// Changing the data source to or from Wallet preserves the shipping country,
+// but not the billing country because Wallet only supports US billing
+// addresses.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        ChangingDataSourcePreservesCountry) {
   AutofillProfile verified_profile(test::GetVerifiedProfile());
@@ -1450,20 +1453,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
 
   EXPECT_TRUE(controller()->IsPayingWithWallet());
 
-  // Select "Add new billing/shipping address...".
-  controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
+  // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
 
   scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
-            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
-  ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 
-  // Switch both billing and shipping countries.
-  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
-  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
-  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
+  // Switch the shipping country.
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("China"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
 
   // Switch to using Autofill instead of Wallet.
@@ -1472,26 +1470,32 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
 
   EXPECT_FALSE(controller()->IsPayingWithWallet());
 
-  // Countries should have stayed the same.
+  // Shipping country should have stayed the same.
+  EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+  ASSERT_TRUE(
+      SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_DEPENDENT_LOCALITY));
+
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
   EXPECT_EQ(ASCIIToUTF16("China"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
-  EXPECT_EQ(ASCIIToUTF16("France"),
-            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
-
   ASSERT_TRUE(
       SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
 
-  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY,
-                               ASCIIToUTF16("Antarctica"));
-  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
-
-  // Select the first Wallet account.
+  // Switch back to Wallet. Country should go back to US.
   account_chooser->ActivatedAt(0);
-  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
-
-  // Verify that inputs are rebuilt for billing sections across changes.
-  EXPECT_FALSE(
+  EXPECT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  ASSERT_FALSE(
       SectionHasField(SECTION_CC_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+
+  // Make sure shipping is still on China.
+  EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+  ASSERT_TRUE(
+      SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_DEPENDENT_LOCALITY));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {

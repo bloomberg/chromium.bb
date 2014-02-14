@@ -441,6 +441,8 @@ class AutofillDialogControllerImpl
   CountryComboboxModel* CountryComboboxModelForSection(DialogSection section);
 
   // Clears and builds the inputs in |section| for |country_name|.
+  // When |should_clobber| is false, and the view's country value matches
+  // |country_name|, the inputs won't be rebuilt.
   bool RebuildInputsForCountry(DialogSection section,
                                const base::string16& country_name,
                                bool should_clobber);
