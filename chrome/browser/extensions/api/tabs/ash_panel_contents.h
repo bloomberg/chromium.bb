@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -25,20 +25,20 @@ namespace extensions {
 struct DraggableRegion;
 }
 
-// apps::ShellWindowContents class specific to panel windows created by v1
+// apps::AppWindowContents class specific to panel windows created by v1
 // extenstions. This class maintains a WebContents instance and observes it for
 // the purpose of passing messages to the extensions system. It also creates
 // an extensions::WindowController instance for interfacing with the v1
 // extensions API.
-class AshPanelContents : public apps::ShellWindowContents,
+class AshPanelContents : public apps::AppWindowContents,
                          public content::WebContentsObserver,
                          public LauncherFaviconLoader::Delegate,
                          public ExtensionFunctionDispatcher::Delegate {
  public:
-  explicit AshPanelContents(apps::ShellWindow* host);
+  explicit AshPanelContents(apps::AppWindow* host);
   virtual ~AshPanelContents();
 
-  // apps::ShellWindowContents
+  // apps::AppWindowContents
   virtual void Initialize(content::BrowserContext* context,
                           const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
@@ -65,7 +65,7 @@ class AshPanelContents : public apps::ShellWindowContents,
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
-  apps::ShellWindow* host_;
+  apps::AppWindow* host_;
   GURL url_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;

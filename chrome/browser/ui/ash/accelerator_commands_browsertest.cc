@@ -4,7 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "apps/ui/native_app_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
@@ -288,20 +288,20 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
   virtual ~AcceleratorCommandsPlatformAppFullscreenBrowserTest() {
   }
 
-  // Sets |shell_window|'s show state to |initial_show_state_|.
-  void SetToInitialShowState(apps::ShellWindow* shell_window) {
+  // Sets |app_window|'s show state to |initial_show_state_|.
+  void SetToInitialShowState(apps::AppWindow* app_window) {
     if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
-      shell_window->Maximize();
+      app_window->Maximize();
     else
-      shell_window->Restore();
+      app_window->Restore();
   }
 
-  // Returns true if |shell_window|'s show state is |initial_show_state_|.
-  bool IsInitialShowState(apps::ShellWindow* shell_window) const {
+  // Returns true if |app_window|'s show state is |initial_show_state_|.
+  bool IsInitialShowState(apps::AppWindow* app_window) const {
     if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
-      return shell_window->GetBaseWindow()->IsMaximized();
+      return app_window->GetBaseWindow()->IsMaximized();
     else
-      return ui::BaseWindow::IsRestored(*shell_window->GetBaseWindow());
+      return ui::BaseWindow::IsRestored(*app_window->GetBaseWindow());
   }
 
   // content::BrowserTestBase override:
@@ -343,50 +343,48 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     // Test that ToggleFullscreen() toggles a platform's app's fullscreen
     // state and that it additionally puts the app into immersive fullscreen
     // if put_all_windows_in_immersive() returns true.
-    apps::ShellWindow::CreateParams params;
-    params.frame = apps::ShellWindow::FRAME_CHROME;
-    apps::ShellWindow* shell_window = CreateShellWindowFromParams(
-        extension, params);
-    apps::NativeAppWindow* app_window = shell_window->GetBaseWindow();
-    SetToInitialShowState(shell_window);
-    ASSERT_TRUE(shell_window->GetBaseWindow()->IsActive());
-    EXPECT_TRUE(IsInitialShowState(shell_window));
+    apps::AppWindow::CreateParams params;
+    params.frame = apps::AppWindow::FRAME_CHROME;
+    apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
+    apps::NativeAppWindow* native_app_window = app_window->GetBaseWindow();
+    SetToInitialShowState(app_window);
+    ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());
+    EXPECT_TRUE(IsInitialShowState(app_window));
 
     ash::accelerators::ToggleFullscreen();
-    EXPECT_TRUE(app_window->IsFullscreen());
+    EXPECT_TRUE(native_app_window->IsFullscreen());
     ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(app_window->GetNativeWindow());
+        ash::wm::GetWindowState(native_app_window->GetNativeWindow());
     EXPECT_EQ(put_all_windows_in_immersive(),
               IsInImmersiveFullscreen(window_state));
 
     ash::accelerators::ToggleFullscreen();
-    EXPECT_TRUE(IsInitialShowState(shell_window));
+    EXPECT_TRUE(IsInitialShowState(app_window));
 
-    CloseShellWindow(shell_window);
+    CloseAppWindow(app_window);
   }
 
   {
     // Repeat the test, but make sure that frameless platform apps are never put
     // into immersive fullscreen.
-    apps::ShellWindow::CreateParams params;
-    params.frame = apps::ShellWindow::FRAME_NONE;
-    apps::ShellWindow* shell_window = CreateShellWindowFromParams(
-        extension, params);
-    apps::NativeAppWindow* app_window = shell_window->GetBaseWindow();
-    ASSERT_TRUE(shell_window->GetBaseWindow()->IsActive());
-    SetToInitialShowState(shell_window);
-    EXPECT_TRUE(IsInitialShowState(shell_window));
+    apps::AppWindow::CreateParams params;
+    params.frame = apps::AppWindow::FRAME_NONE;
+    apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
+    apps::NativeAppWindow* native_app_window = app_window->GetBaseWindow();
+    ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());
+    SetToInitialShowState(app_window);
+    EXPECT_TRUE(IsInitialShowState(app_window));
 
     ash::accelerators::ToggleFullscreen();
-    EXPECT_TRUE(app_window->IsFullscreen());
+    EXPECT_TRUE(native_app_window->IsFullscreen());
     ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(app_window->GetNativeWindow());
+        ash::wm::GetWindowState(native_app_window->GetNativeWindow());
     EXPECT_FALSE(IsInImmersiveFullscreen(window_state));
 
     ash::accelerators::ToggleFullscreen();
-    EXPECT_TRUE(IsInitialShowState(shell_window));
+    EXPECT_TRUE(IsInitialShowState(app_window));
 
-    CloseShellWindow(shell_window);
+    CloseAppWindow(app_window);
   }
 }
 

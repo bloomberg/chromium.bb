@@ -20,7 +20,7 @@ class ExtensionPointerLockTest : public extensions::PlatformAppBrowserTest {
     ResultCatcher catcher;
 
     if (!ui_test_utils::ShowAndFocusNativeWindow(
-             GetFirstShellWindow()->GetNativeWindow())) {
+             GetFirstAppWindow()->GetNativeWindow())) {
       message_ = "Can't focus window";
       return false;
     }

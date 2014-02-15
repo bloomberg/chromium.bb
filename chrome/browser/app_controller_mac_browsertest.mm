@@ -4,18 +4,18 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/user_manager_mac.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -73,8 +73,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
       InstallAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
-  NSWindow* app_window = apps::ShellWindowRegistry::Get(profile())->
-      GetShellWindowsForApp(app->id()).front()->GetNativeWindow();
+  NSWindow* app_window = apps::AppWindowRegistry::Get(profile())
+                             ->GetAppWindowsForApp(app->id())
+                             .front()
+                             ->GetNativeWindow();
   NSWindow* browser_window = browser()->window()->GetNativeWindow();
 
   EXPECT_LE([[NSApp orderedWindows] indexOfObject:app_window],

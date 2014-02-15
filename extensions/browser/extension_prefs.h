@@ -500,7 +500,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void SetNeedsStorageGarbageCollection(bool value);
   bool NeedsStorageGarbageCollection();
 
-  // Used by ShellWindowGeometryCache to persist its cache. These methods
+  // Used by AppWindowGeometryCache to persist its cache. These methods
   // should not be called directly.
   const base::DictionaryValue* GetGeometryCache(
         const std::string& extension_id) const;

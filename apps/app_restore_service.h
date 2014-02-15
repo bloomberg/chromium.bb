@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 namespace extensions {

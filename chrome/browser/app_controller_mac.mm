@@ -6,7 +6,7 @@
 
 #include "apps/app_shim/app_shim_mac.h"
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -417,7 +417,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // If there are no windows, quit immediately.
   if (chrome::BrowserIterator().done() &&
-      !apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0)) {
+      !apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0)) {
     return NSTerminateNow;
   }
 

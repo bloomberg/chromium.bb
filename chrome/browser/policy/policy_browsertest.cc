@@ -153,8 +153,8 @@
 #endif
 
 #if !defined(OS_MACOSX)
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -534,54 +534,49 @@ void WebContentsLoadedOrDestroyedWatcher::DidStopLoading(
 
 #if !defined(OS_MACOSX)
 
-// Observer used to wait for the creation of a new shell window.
-class TestAddShellWindowObserver : public apps::ShellWindowRegistry::Observer {
+// Observer used to wait for the creation of a new app window.
+class TestAddAppWindowObserver : public apps::AppWindowRegistry::Observer {
  public:
-  explicit TestAddShellWindowObserver(apps::ShellWindowRegistry* registry);
-  virtual ~TestAddShellWindowObserver();
+  explicit TestAddAppWindowObserver(apps::AppWindowRegistry* registry);
+  virtual ~TestAddAppWindowObserver();
 
-  // apps::ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  // apps::AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
-  apps::ShellWindow* WaitForShellWindow();
+  apps::AppWindow* WaitForAppWindow();
 
  private:
-  apps::ShellWindowRegistry* registry_;  // Not owned.
-  apps::ShellWindow* window_;  // Not owned.
+  apps::AppWindowRegistry* registry_;  // Not owned.
+  apps::AppWindow* window_;            // Not owned.
   base::RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAddShellWindowObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestAddAppWindowObserver);
 };
 
-TestAddShellWindowObserver::TestAddShellWindowObserver(
-    apps::ShellWindowRegistry* registry)
-    : registry_(registry),
-      window_(NULL) {
+TestAddAppWindowObserver::TestAddAppWindowObserver(
+    apps::AppWindowRegistry* registry)
+    : registry_(registry), window_(NULL) {
   registry_->AddObserver(this);
 }
 
-TestAddShellWindowObserver::~TestAddShellWindowObserver() {
+TestAddAppWindowObserver::~TestAddAppWindowObserver() {
   registry_->RemoveObserver(this);
 }
 
-void TestAddShellWindowObserver::OnShellWindowAdded(
-    apps::ShellWindow* shell_window) {
-  window_ = shell_window;
+void TestAddAppWindowObserver::OnAppWindowAdded(apps::AppWindow* app_window) {
+  window_ = app_window;
   run_loop_.Quit();
 }
 
-void TestAddShellWindowObserver::OnShellWindowIconChanged(
-    apps::ShellWindow* shell_window) {
+void TestAddAppWindowObserver::OnAppWindowIconChanged(
+    apps::AppWindow* app_window) {}
+
+void TestAddAppWindowObserver::OnAppWindowRemoved(apps::AppWindow* app_window) {
 }
 
-void TestAddShellWindowObserver::OnShellWindowRemoved(
-    apps::ShellWindow* shell_window) {
-}
-
-apps::ShellWindow* TestAddShellWindowObserver::WaitForShellWindow() {
+apps::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
   run_loop_.Run();
   return window_;
 }
@@ -2095,13 +2090,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   ASSERT_TRUE(extension);
 
   // Launch an app that tries to open a fullscreen window.
-  TestAddShellWindowObserver add_window_observer(
-      apps::ShellWindowRegistry::Get(browser()->profile()));
+  TestAddAppWindowObserver add_window_observer(
+      apps::AppWindowRegistry::Get(browser()->profile()));
   OpenApplication(AppLaunchParams(browser()->profile(),
                                   extension,
                                   extensions::LAUNCH_CONTAINER_NONE,
                                   NEW_WINDOW));
-  apps::ShellWindow* window = add_window_observer.WaitForShellWindow();
+  apps::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 
   // Verify that the window is not in fullscreen mode.

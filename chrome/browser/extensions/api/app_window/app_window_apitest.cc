@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,29 +19,26 @@
 #include "content/public/test/test_utils.h"
 #endif
 
-using apps::ShellWindow;
+using apps::AppWindow;
 
 namespace {
 
-class TestShellWindowRegistryObserver
-    : public apps::ShellWindowRegistry::Observer {
+class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
  public:
-  explicit TestShellWindowRegistryObserver(Profile* profile)
-      : profile_(profile),
-        icon_updates_(0) {
-    apps::ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  explicit TestAppWindowRegistryObserver(Profile* profile)
+      : profile_(profile), icon_updates_(0) {
+    apps::AppWindowRegistry::Get(profile_)->AddObserver(this);
   }
-  virtual ~TestShellWindowRegistryObserver() {
-    apps::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+  virtual ~TestAppWindowRegistryObserver() {
+    apps::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
-  // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {
+  // Overridden from AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {
     ++icon_updates_;
   }
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {
-  }
+  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {}
 
   int icon_updates() { return icon_updates_; }
 
@@ -49,7 +46,7 @@ class TestShellWindowRegistryObserver
   Profile* profile_;
   int icon_updates_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestShellWindowRegistryObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestAppWindowRegistryObserver);
 };
 
 }  // namespace
@@ -65,15 +62,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApiBounds) {
   LoadAndLaunchPlatformApp("windows_api_bounds");
   ASSERT_TRUE(background_listener.WaitUntilSatisfied());
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
-  ShellWindow* window = GetFirstShellWindow();
+  AppWindow* window = GetFirstAppWindow();
 
   gfx::Rect new_bounds(100, 200, 300, 400);
   new_bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
   window->GetBaseWindow()->SetBounds(new_bounds);
 
   // TODO(jeremya/asargent) figure out why in GTK the window doesn't end up
-  // with exactly the bounds we set. Is it a bug in our shell window
-  // implementation?  crbug.com/160252
+// with exactly the bounds we set. Is it a bug in our app window
+// implementation?  crbug.com/160252
 #ifdef TOOLKIT_GTK
   int slop = 50;
 #else
@@ -103,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApiBounds) {
 
 // Tests chrome.app.window.setIcon.
 IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
-  scoped_ptr<TestShellWindowRegistryObserver> test_observer(
-      new TestShellWindowRegistryObserver(browser()->profile()));
+  scoped_ptr<TestAppWindowRegistryObserver> test_observer(
+      new TestAppWindowRegistryObserver(browser()->profile()));
   ExtensionTestMessageListener listener("IconSet", false);
   LoadAndLaunchPlatformApp("windows_api_set_icon");
   EXPECT_EQ(0, test_observer->icon_updates());
@@ -117,10 +114,10 @@ IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
-  ShellWindow* shell_window = GetFirstShellWindow();
-  ASSERT_TRUE(shell_window);
+  AppWindow* app_window = GetFirstAppWindow();
+  ASSERT_TRUE(app_window);
   EXPECT_NE(std::string::npos,
-            shell_window->app_icon_url().spec().find("icon.png"));
+            app_window->app_icon_url().spec().find("icon.png"));
   EXPECT_EQ(1, test_observer->icon_updates());
 }
 

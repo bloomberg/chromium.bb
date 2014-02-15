@@ -6,9 +6,9 @@
 
 #include "apps/app_load_service.h"
 #include "apps/app_restore_service.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -76,8 +76,8 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using apps::ShellWindow;
-using apps::ShellWindowRegistry;
+using apps::AppWindow;
+using apps::AppWindowRegistry;
 using content::RenderViewHost;
 
 namespace extensions {
@@ -473,20 +473,20 @@ void DeveloperPrivateGetItemsInfoFunction::
   }
 }
 
-void DeveloperPrivateGetItemsInfoFunction::
-    GetShellWindowPagesForExtensionProfile(
-        const Extension* extension,
-        ItemInspectViewList* result) {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());
+void DeveloperPrivateGetItemsInfoFunction::GetAppWindowPagesForExtensionProfile(
+    const Extension* extension,
+    ItemInspectViewList* result) {
+  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
   if (!registry) return;
 
-  const ShellWindowRegistry::ShellWindowList windows =
-      registry->GetShellWindowsForApp(extension->id());
+  const AppWindowRegistry::AppWindowList windows =
+      registry->GetAppWindowsForApp(extension->id());
 
   bool has_generated_background_page =
       BackgroundInfo::HasGeneratedBackgroundPage(extension);
-  for (ShellWindowRegistry::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
+  for (AppWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
     content::WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
     content::RenderProcessHost* process = host->GetProcess();
@@ -539,8 +539,8 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
 
-  // Get shell window views
-  GetShellWindowPagesForExtensionProfile(extension, &result);
+  // Get app window views
+  GetAppWindowPagesForExtensionProfile(extension, &result);
 
   // Include a link to start the lazy background page, if applicable.
   if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
@@ -556,7 +556,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
 
   ExtensionService* service = GetProfile()->GetExtensionService();
   // Repeat for the incognito process, if applicable. Don't try to get
-  // shell windows for incognito process.
+  // app windows for incognito process.
   if (service->profile()->HasOffTheRecordProfile() &&
       IncognitoInfo::IsSplitMode(extension)) {
     process_manager = ExtensionSystem::Get(
@@ -704,11 +704,11 @@ bool DeveloperPrivateShowPermissionsDialogFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id_));
   ExtensionService* service = GetProfile()->GetExtensionService();
   CHECK(!extension_id_.empty());
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
   DCHECK(registry);
-  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-      render_view_host());
-  prompt_.reset(new ExtensionInstallPrompt(shell_window->web_contents()));
+  AppWindow* app_window =
+      registry->GetAppWindowForRenderViewHost(render_view_host());
+  prompt_.reset(new ExtensionInstallPrompt(app_window->web_contents()));
   const Extension* extension = service->GetInstalledExtension(extension_id_);
 
   if (!extension)
@@ -784,16 +784,16 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   if (enable) {
     ExtensionPrefs* prefs = service->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());
+      AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
       CHECK(registry);
-      ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-          render_view_host());
-      if (!shell_window) {
+      AppWindow* app_window =
+          registry->GetAppWindowForRenderViewHost(render_view_host());
+      if (!app_window) {
         return false;
       }
 
       ShowExtensionDisabledDialog(
-          service, shell_window->web_contents(), extension);
+          service, app_window->web_contents(), extension);
     } else if ((prefs->GetDisableReasons(extension_id) &
                   Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
                !requirements_checker_.get()) {
@@ -912,11 +912,11 @@ bool DeveloperPrivateChooseEntryFunction::ShowPicker(
     const base::string16& select_title,
     const ui::SelectFileDialog::FileTypeInfo& info,
     int file_type_index) {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
   DCHECK(registry);
-  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-      render_view_host());
-  if (!shell_window) {
+  AppWindow* app_window =
+      registry->GetAppWindowForRenderViewHost(render_view_host());
+  if (!app_window) {
     return false;
   }
 
@@ -924,8 +924,13 @@ bool DeveloperPrivateChooseEntryFunction::ShowPicker(
   // and subsequent sending of the function response) until the user has
   // selected a file or cancelled the picker. At that point, the picker will
   // delete itself.
-  new EntryPicker(this, shell_window->web_contents(), picker_type,
-  last_directory, select_title, info, file_type_index);
+  new EntryPicker(this,
+                  app_window->web_contents(),
+                  picker_type,
+                  last_directory,
+                  select_title,
+                  info,
+                  file_type_index);
   return true;
 }
 

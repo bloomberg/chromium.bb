@@ -6,9 +6,9 @@
 
 #include "apps/app_load_service.h"
 #include "apps/app_restore_service.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
 #include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -1121,9 +1121,9 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
 
-  // Get shell window views
-  GetShellWindowPagesForExtensionProfile(extension,
-      extension_service_->profile(), &result);
+  // Get app window views
+  GetAppWindowPagesForExtensionProfile(
+      extension, extension_service_->profile(), &result);
 
   // Include a link to start the lazy background page, if applicable.
   if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
@@ -1138,7 +1138,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   }
 
   // Repeat for the incognito process, if applicable. Don't try to get
-  // shell windows for incognito processes.
+  // app windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
       IncognitoInfo::IsSplitMode(extension) &&
       util::IsIncognitoEnabled(extension->id(),
@@ -1195,20 +1195,21 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
   }
 }
 
-void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
+void ExtensionSettingsHandler::GetAppWindowPagesForExtensionProfile(
     const Extension* extension,
     Profile* profile,
     std::vector<ExtensionPage>* result) {
-  apps::ShellWindowRegistry* registry = apps::ShellWindowRegistry::Get(profile);
+  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
   if (!registry) return;
 
-  const apps::ShellWindowRegistry::ShellWindowList windows =
-      registry->GetShellWindowsForApp(extension->id());
+  const apps::AppWindowRegistry::AppWindowList windows =
+      registry->GetAppWindowsForApp(extension->id());
 
   bool has_generated_background_page =
       BackgroundInfo::HasGeneratedBackgroundPage(extension);
-  for (apps::ShellWindowRegistry::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
+  for (apps::AppWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
     WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
     content::RenderProcessHost* process = host->GetProcess();

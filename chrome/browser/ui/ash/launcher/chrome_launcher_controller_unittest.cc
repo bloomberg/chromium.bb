@@ -47,7 +47,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_window_contents.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
@@ -684,7 +684,7 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
   return browser_window.Pass();
 }
 
-// A views delegate which allows creating shell windows.
+// A views delegate which allows creating app windows.
 class TestViewsDelegateForAppTest : public views::TestViewsDelegate {
  public:
   TestViewsDelegateForAppTest() {}
@@ -782,13 +782,11 @@ class V1App : public TestBrowserWindow {
 class V2App {
  public:
   V2App(Profile* profile, const extensions::Extension* extension) {
-    window_ = new apps::ShellWindow(profile,
-                                    new ChromeShellWindowDelegate(),
-                                    extension);
-    apps::ShellWindow::CreateParams params = apps::ShellWindow::CreateParams();
-    window_->Init(GURL(std::string()),
-                  new apps::AppWindowContents(window_),
-                  params);
+    window_ = new apps::AppWindow(
+        profile, new ChromeShellWindowDelegate(), extension);
+    apps::AppWindow::CreateParams params = apps::AppWindow::CreateParams();
+    window_->Init(
+        GURL(std::string()), new apps::AppWindowContentsImpl(window_), params);
   }
 
   virtual ~V2App() {
@@ -798,10 +796,10 @@ class V2App {
   }
 
  private:
-  // The shell window which represents the application. Note that the window
+  // The app window which represents the application. Note that the window
   // deletes itself asynchronously after window_->GetBaseWindow()->Close() gets
   // called.
-  apps::ShellWindow* window_;
+  apps::AppWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(V2App);
 };

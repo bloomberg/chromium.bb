@@ -199,10 +199,9 @@ class ExtensionSettingsHandler
       const Extension* extension,
       const std::set<content::RenderViewHost*>& views,
       std::vector<ExtensionPage>* result);
-  void GetShellWindowPagesForExtensionProfile(
-      const Extension* extension,
-      Profile* profile,
-      std::vector<ExtensionPage>* result);
+  void GetAppWindowPagesForExtensionProfile(const Extension* extension,
+                                            Profile* profile,
+                                            std::vector<ExtensionPage>* result);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -22,9 +22,9 @@ bool ChromeLauncherController::LaunchedInNativeDesktop(
   // launch request through the viewer process to desktop Chrome. This allows
   // Ash to relinquish foreground window status and trigger a switch to
   // desktop mode.
-  apps::ShellWindow* any_existing_window =
-      apps::ShellWindowRegistry::Get(profile())->
-          GetCurrentShellWindowForApp(app_id);
+  apps::AppWindow* any_existing_window =
+      apps::AppWindowRegistry::Get(profile())
+          ->GetCurrentAppWindowForApp(app_id);
   if (!any_existing_window ||
       chrome::GetHostDesktopTypeForNativeWindow(
           any_existing_window->GetNativeWindow())

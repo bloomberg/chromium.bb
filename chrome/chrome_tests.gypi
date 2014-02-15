@@ -156,7 +156,7 @@
       },
       'sources': [
         '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
-        '../apps/shell_window_interactive_uitest.cc',
+        '../apps/app_window_interactive_uitest.cc',
         '../ui/views/corewm/desktop_capture_controller_unittest.cc',
         '../ui/views/widget/widget_interactive_uitest.cc',
         'browser/apps/app_browsertest_util.cc',

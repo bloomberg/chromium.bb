@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/multi_profile_uma.h"
@@ -123,20 +123,19 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
     if (!g_browser_process->profile_manager())
       return;
     // If it is not a browser, it is probably be a V2 application. In that case
-    // one of the ShellWindowRegistries should know about it.
-    apps::ShellWindow* shell_window = NULL;
+    // one of the AppWindowRegistry instances should know about it.
+    apps::AppWindow* app_window = NULL;
     std::vector<Profile*> profiles =
         g_browser_process->profile_manager()->GetLoadedProfiles();
     for (std::vector<Profile*>::iterator it = profiles.begin();
-         it != profiles.end() && shell_window == NULL; it++) {
-      shell_window = apps::ShellWindowRegistry::Get(
-          *it)->GetShellWindowForNativeWindow(window);
+         it != profiles.end() && app_window == NULL;
+         it++) {
+      app_window = apps::AppWindowRegistry::Get(*it)
+                       ->GetAppWindowForNativeWindow(window);
     }
-    if (shell_window) {
-      if (shell_window->window_type() ==
-              apps::ShellWindow::WINDOW_TYPE_PANEL ||
-          shell_window->window_type() ==
-              apps::ShellWindow::WINDOW_TYPE_V1_PANEL) {
+    if (app_window) {
+      if (app_window->window_type() == apps::AppWindow::WINDOW_TYPE_PANEL ||
+          app_window->window_type() == apps::AppWindow::WINDOW_TYPE_V1_PANEL) {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_PANEL;
       } else {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V2_APP;
@@ -210,22 +209,20 @@ class UserChangeActionDisabler {
 // When an app gets created, the window will be tagged for that user. Note
 // that the destruction does not need to be tracked here since the universal
 // window observer will take care of that.
-class AppObserver : public apps::ShellWindowRegistry::Observer {
+class AppObserver : public apps::AppWindowRegistry::Observer {
  public:
   explicit AppObserver(const std::string& user_id) : user_id_(user_id) {}
   virtual ~AppObserver() {}
 
-  // ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
-    aura::Window* window = shell_window->GetNativeWindow();
+  // AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
+    aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
     MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,
                                                                   user_id_);
   }
-  virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
-      OVERRIDE {}
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window)
-      OVERRIDE {}
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
 
  private:
   std::string user_id_;
@@ -265,14 +262,14 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   }
 
   // Remove all app observers.
-  UserIDToShellWindowObserver::iterator app_observer_iterator =
+  UserIDToAppWindowObserver::iterator app_observer_iterator =
       user_id_to_app_observer_.begin();
   while (app_observer_iterator != user_id_to_app_observer_.end()) {
     Profile* profile = multi_user_util::GetProfileFromUserID(
         app_observer_iterator->first);
     DCHECK(profile);
-    apps::ShellWindowRegistry::Get(profile)->RemoveObserver(
-        app_observer_iterator->second);
+    apps::AppWindowRegistry::Get(profile)
+        ->RemoveObserver(app_observer_iterator->second);
     delete app_observer_iterator->second;
     user_id_to_app_observer_.erase(app_observer_iterator);
     app_observer_iterator = user_id_to_app_observer_.begin();
@@ -382,16 +379,16 @@ void MultiUserWindowManagerChromeOS::AddUser(Profile* profile) {
     return;
 
   user_id_to_app_observer_[user_id] = new AppObserver(user_id);
-  apps::ShellWindowRegistry::Get(profile)->AddObserver(
-      user_id_to_app_observer_[user_id]);
+  apps::AppWindowRegistry::Get(profile)
+      ->AddObserver(user_id_to_app_observer_[user_id]);
 
   // Account all existing application windows of this user accordingly.
-  const apps::ShellWindowRegistry::ShellWindowList& shell_windows =
-      apps::ShellWindowRegistry::Get(profile)->shell_windows();
-  apps::ShellWindowRegistry::ShellWindowList::const_iterator it =
-      shell_windows.begin();
-  for (; it != shell_windows.end(); ++it)
-    user_id_to_app_observer_[user_id]->OnShellWindowAdded(*it);
+  const apps::AppWindowRegistry::AppWindowList& app_windows =
+      apps::AppWindowRegistry::Get(profile)->app_windows();
+  apps::AppWindowRegistry::AppWindowList::const_iterator it =
+      app_windows.begin();
+  for (; it != app_windows.end(); ++it)
+    user_id_to_app_observer_[user_id]->OnAppWindowAdded(*it);
 
   // Account all existing browser windows of this user accordingly.
   BrowserList* browser_list = BrowserList::GetInstance(HOST_DESKTOP_TYPE_ASH);

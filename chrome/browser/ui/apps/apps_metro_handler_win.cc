@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/apps/apps_metro_handler_win.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "grit/chromium_strings.h"
@@ -16,8 +16,8 @@ bool VerifyMetroSwitchForApps(gfx::NativeWindow parent_window,
                               int win8_restart_command_id) {
   DCHECK(win8_restart_command_id == IDC_WIN8_DESKTOP_RESTART ||
       win8_restart_command_id == IDC_WIN8_METRO_RESTART);
-  if (!apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
-          apps::ShellWindow::WINDOW_TYPE_DEFAULT)) {
+  if (!apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
+           apps::AppWindow::WINDOW_TYPE_DEFAULT)) {
     return true;
   }
 

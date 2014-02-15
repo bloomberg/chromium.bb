@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/views/shell_window_frame_view.h"
+#include "apps/ui/views/app_window_frame_view.h"
 
 #include "apps/ui/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,10 +34,10 @@ const int kCaptionHeight = 25;
 
 namespace apps {
 
-const char ShellWindowFrameView::kViewClassName[] =
-    "browser/ui/views/extensions/ShellWindowFrameView";
+const char AppWindowFrameView::kViewClassName[] =
+    "browser/ui/views/extensions/AppWindowFrameView";
 
-ShellWindowFrameView::ShellWindowFrameView(NativeAppWindow* window)
+AppWindowFrameView::AppWindowFrameView(NativeAppWindow* window)
     : window_(window),
       frame_(NULL),
       close_button_(NULL),
@@ -46,17 +46,15 @@ ShellWindowFrameView::ShellWindowFrameView(NativeAppWindow* window)
       minimize_button_(NULL),
       resize_inside_bounds_size_(0),
       resize_outside_bounds_size_(0),
-      resize_area_corner_size_(0) {
-}
+      resize_area_corner_size_(0) {}
 
-ShellWindowFrameView::~ShellWindowFrameView() {
-}
+AppWindowFrameView::~AppWindowFrameView() {}
 
-void ShellWindowFrameView::Init(views::Widget* frame,
-                                int resize_inside_bounds_size,
-                                int resize_outside_bounds_size,
-                                int resize_outside_scale_for_touch,
-                                int resize_area_corner_size) {
+void AppWindowFrameView::Init(views::Widget* frame,
+                              int resize_inside_bounds_size,
+                              int resize_outside_bounds_size,
+                              int resize_outside_scale_for_touch,
+                              int resize_area_corner_size) {
   frame_ = frame;
   resize_inside_bounds_size_ = resize_inside_bounds_size;
   resize_outside_bounds_size_ = resize_outside_bounds_size;
@@ -65,43 +63,56 @@ void ShellWindowFrameView::Init(views::Widget* frame,
   if (!window_->IsFrameless()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    close_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+    close_button_->SetImage(
+        views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_H).ToImageSkia());
-    close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+    close_button_->SetImage(
+        views::CustomButton::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_P).ToImageSkia());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
     AddChildView(close_button_);
     maximize_button_ = new views::ImageButton(this);
-    maximize_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_HOVERED,
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_PRESSED,
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_P).ToImageSkia());
-    maximize_button_->SetImage(views::CustomButton::STATE_DISABLED,
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_DISABLED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_D).ToImageSkia());
     maximize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
     AddChildView(maximize_button_);
     restore_button_ = new views::ImageButton(this);
-    restore_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    restore_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE).ToImageSkia());
-    restore_button_->SetImage(views::CustomButton::STATE_HOVERED,
+    restore_button_->SetImage(
+        views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_H).ToImageSkia());
-    restore_button_->SetImage(views::CustomButton::STATE_PRESSED,
+    restore_button_->SetImage(
+        views::CustomButton::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_P).ToImageSkia());
     restore_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
     AddChildView(restore_button_);
     minimize_button_ = new views::ImageButton(this);
-    minimize_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    minimize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
-    minimize_button_->SetImage(views::CustomButton::STATE_HOVERED,
+    minimize_button_->SetImage(
+        views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_H).ToImageSkia());
-    minimize_button_->SetImage(views::CustomButton::STATE_PRESSED,
+    minimize_button_->SetImage(
+        views::CustomButton::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_P).ToImageSkia());
     minimize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
@@ -113,22 +124,24 @@ void ShellWindowFrameView::Init(views::Widget* frame,
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
-      gfx::Insets(resize_inside_bounds_size_, resize_inside_bounds_size_,
-                  resize_inside_bounds_size_, resize_inside_bounds_size_));
+      gfx::Insets(resize_inside_bounds_size_,
+                  resize_inside_bounds_size_,
+                  resize_inside_bounds_size_,
+                  resize_inside_bounds_size_));
 #endif
 }
 
 // views::NonClientFrameView implementation.
 
-gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
+gfx::Rect AppWindowFrameView::GetBoundsForClientView() const {
   if (window_->IsFrameless() || frame_->IsFullscreen())
     return bounds();
-  return gfx::Rect(0, kCaptionHeight, width(),
-      std::max(0, height() - kCaptionHeight));
+  return gfx::Rect(
+      0, kCaptionHeight, width(), std::max(0, height() - kCaptionHeight));
 }
 
-gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const {
+gfx::Rect AppWindowFrameView::GetWindowBoundsForClientBounds(
+    const gfx::Rect& client_bounds) const {
   if (window_->IsFrameless()) {
     gfx::Rect window_bounds = client_bounds;
     // Enforce minimum size (1, 1) in case that client_bounds is passed with
@@ -141,8 +154,7 @@ gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
     return window_bounds;
   }
 
-  int closeButtonOffsetX =
-      (kCaptionHeight - close_button_->height()) / 2;
+  int closeButtonOffsetX = (kCaptionHeight - close_button_->height()) / 2;
   int header_width = close_button_->width() + closeButtonOffsetX * 2;
   return gfx::Rect(client_bounds.x(),
                    std::max(0, client_bounds.y() - kCaptionHeight),
@@ -150,7 +162,7 @@ gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
                    client_bounds.height() + kCaptionHeight);
 }
 
-int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
+int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_->IsFullscreen())
     return HTCLIENT;
 
@@ -166,14 +178,14 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Check the frame first, as we allow a small area overlapping the contents
   // to be used for resize handles.
-  bool can_ever_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
+  bool can_ever_resize = frame_->widget_delegate()
+                             ? frame_->widget_delegate()->CanResize()
+                             : false;
   // Don't allow overlapping resize handles when the window is maximized or
   // fullscreen, as it can't be resized in those states.
-  int resize_border =
-      (frame_->IsMaximized() || frame_->IsFullscreen()) ? 0 :
-      resize_inside_bounds_size_;
+  int resize_border = (frame_->IsMaximized() || frame_->IsFullscreen())
+                          ? 0
+                          : resize_inside_bounds_size_;
   int frame_component = GetHTComponentForFrame(point,
                                                resize_border,
                                                resize_border,
@@ -215,21 +227,22 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   return HTCAPTION;
 }
 
-void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
-                                         gfx::Path* window_mask) {
+void AppWindowFrameView::GetWindowMask(const gfx::Size& size,
+                                       gfx::Path* window_mask) {
   // We got nothing to say about no window mask.
 }
 
 // views::View implementation.
 
-gfx::Size ShellWindowFrameView::GetPreferredSize() {
+gfx::Size AppWindowFrameView::GetPreferredSize() {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
-      bounds).size();
+  return frame_->non_client_view()
+      ->GetWindowBoundsForClientBounds(bounds)
+      .size();
 }
 
-void ShellWindowFrameView::Layout() {
+void AppWindowFrameView::Layout() {
   if (window_->IsFrameless())
     return;
   gfx::Size close_size = close_button_->GetPreferredSize();
@@ -237,15 +250,14 @@ void ShellWindowFrameView::Layout() {
   const int kButtonSpacing = 1;
   const int kRightMargin = 3;
 
-  close_button_->SetBounds(
-      width() - kRightMargin - close_size.width(),
-      kButtonOffsetY,
-      close_size.width(),
-      close_size.height());
+  close_button_->SetBounds(width() - kRightMargin - close_size.width(),
+                           kButtonOffsetY,
+                           close_size.width(),
+                           close_size.height());
 
-  bool can_ever_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
+  bool can_ever_resize = frame_->widget_delegate()
+                             ? frame_->widget_delegate()->CanResize()
+                             : false;
   maximize_button_->SetEnabled(can_ever_resize);
   gfx::Size maximize_size = maximize_button_->GetPreferredSize();
   maximize_button_->SetBounds(
@@ -276,16 +288,18 @@ void ShellWindowFrameView::Layout() {
       minimize_size.height());
 }
 
-void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
+void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   if (window_->IsFrameless())
     return;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    close_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
   } else {
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    close_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_U).ToImageSkia());
   }
 
@@ -303,11 +317,9 @@ void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(path, paint);
 }
 
-const char* ShellWindowFrameView::GetClassName() const {
-  return kViewClassName;
-}
+const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }
 
-gfx::Size ShellWindowFrameView::GetMinimumSize() {
+gfx::Size AppWindowFrameView::GetMinimumSize() {
   gfx::Size min_size = frame_->client_view()->GetMinimumSize();
   if (window_->IsFrameless())
     return min_size;
@@ -317,15 +329,14 @@ gfx::Size ShellWindowFrameView::GetMinimumSize() {
   min_size.Enlarge(0, client_bounds.y());
   // Ensure we have enough space for the window icon and buttons.  We allow
   // the title string to collapse to zero width.
-  int closeButtonOffsetX =
-      (kCaptionHeight - close_button_->height()) / 2;
+  int closeButtonOffsetX = (kCaptionHeight - close_button_->height()) / 2;
   int header_width = close_button_->width() + closeButtonOffsetX * 2;
   if (header_width > min_size.width())
     min_size.set_width(header_width);
   return min_size;
 }
 
-gfx::Size ShellWindowFrameView::GetMaximumSize() {
+gfx::Size AppWindowFrameView::GetMaximumSize() {
   gfx::Size max_size = frame_->client_view()->GetMaximumSize();
 
   // Add to the client maximum size the height of any title bar and borders.
@@ -340,8 +351,8 @@ gfx::Size ShellWindowFrameView::GetMaximumSize() {
 
 // views::ButtonListener implementation.
 
-void ShellWindowFrameView::ButtonPressed(views::Button* sender,
-                                         const ui::Event& event) {
+void AppWindowFrameView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
   DCHECK(!window_->IsFrameless());
   if (sender == close_button_)
     frame_->Close();

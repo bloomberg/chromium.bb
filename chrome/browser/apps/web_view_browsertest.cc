@@ -520,7 +520,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     content::RunAllPendingInMessageLoop();
 
     content::WebContents* embedder_web_contents =
-        GetFirstShellWindowWebContents();
+        GetFirstAppWindowWebContents();
     if (!embedder_web_contents) {
       LOG(ERROR) << "UNABLE TO FIND EMBEDDER WEB CONTENTS.";
       return;
@@ -577,7 +577,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
 
     content::WebContents* embedder_web_contents =
-        GetFirstShellWindowWebContents();
+        GetFirstAppWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
 
     ExtensionTestMessageListener test_run_listener("PASSED", false);
@@ -906,8 +906,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   LoadAndLaunchPlatformApp("web_view/shim");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  content::WebContents* embedder_web_contents =
-      GetFirstShellWindowWebContents();
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
 
   GURL::Replacements replace_host;
@@ -998,8 +997,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
       SetBrowserClientForTesting(&new_client);
 
   // Now load the guest.
-  content::WebContents* embedder_web_contents =
-      GetFirstShellWindowWebContents();
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ExtensionTestMessageListener second("GuestAddedToDom", false);
   EXPECT_TRUE(content::ExecuteScript(
       embedder_web_contents,
@@ -1013,7 +1011,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
   WaitForInterstitial(guest_web_contents);
 
   // Now close the app while interstitial page being shown in guest.
-  apps::ShellWindow* window = GetFirstShellWindow();
+  apps::AppWindow* window = GetFirstAppWindow();
   window->GetBaseWindow()->Close();
 }
 
@@ -1490,8 +1488,7 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   LoadAndLaunchPlatformApp("web_view/media_access/allow");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  content::WebContents* embedder_web_contents =
-      GetFirstShellWindowWebContents();
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
   MockWebContentsDelegate* mock = new MockWebContentsDelegate;
   embedder_web_contents->SetDelegate(mock);
@@ -1581,12 +1578,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/teardown");
   ASSERT_TRUE(first_loaded_listener.WaitUntilSatisfied());
-  apps::ShellWindow* window = NULL;
-  if (!GetShellWindowCount())
-    window = CreateShellWindow(extension);
+  apps::AppWindow* window = NULL;
+  if (!GetAppWindowCount())
+    window = CreateAppWindow(extension);
   else
-    window = GetFirstShellWindow();
-  CloseShellWindow(window);
+    window = GetFirstAppWindow();
+  CloseAppWindow(window);
 
   // Load the app again.
   ExtensionTestMessageListener second_loaded_listener("guest-loaded", false);

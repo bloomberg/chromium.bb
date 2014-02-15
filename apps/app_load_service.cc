@@ -5,8 +5,8 @@
 #include "apps/app_load_service.h"
 
 #include "apps/app_load_service_factory.h"
+#include "apps/app_window_registry.h"
 #include "apps/launcher.h"
-#include "apps/shell_window_registry.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -116,7 +116,7 @@ void AppLoadService::Observe(int type,
         break;
 
       if (WasUnloadedForReload(*unload_info) &&
-          HasShellWindows(unload_info->extension->id()) &&
+          HasAppWindows(unload_info->extension->id()) &&
           !HasPostReloadAction(unload_info->extension->id())) {
         post_reload_actions_[unload_info->extension->id()].action_type = LAUNCH;
       }
@@ -127,9 +127,10 @@ void AppLoadService::Observe(int type,
   }
 }
 
-bool AppLoadService::HasShellWindows(const std::string& extension_id) {
-  return !ShellWindowRegistry::Get(profile_)->
-      GetShellWindowsForApp(extension_id).empty();
+bool AppLoadService::HasAppWindows(const std::string& extension_id) {
+  return !AppWindowRegistry::Get(profile_)
+              ->GetAppWindowsForApp(extension_id)
+              .empty();
 }
 
 bool AppLoadService::WasUnloadedForReload(

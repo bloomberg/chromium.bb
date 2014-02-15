@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "base/observer_list.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,7 +26,7 @@ namespace apps {
 // events.
 class AppLifetimeMonitor : public BrowserContextKeyedService,
                            public content::NotificationObserver,
-                           public ShellWindowRegistry::Observer {
+                           public AppWindowRegistry::Observer {
  public:
   class Observer {
    public:
@@ -61,10 +61,10 @@ class AppLifetimeMonitor : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
+  // AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
 
   // BrowserContextKeyedService overrides:
   virtual void Shutdown() OVERRIDE;

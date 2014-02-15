@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "apps/ui/native_app_window.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,7 +31,7 @@ class ImmersiveFullscreenController;
 class ExtensionKeybindingRegistryViews;
 
 namespace apps {
-class ShellWindowFrameView;
+class AppWindowFrameView;
 }
 
 namespace content {
@@ -61,8 +61,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
  public:
   NativeAppWindowViews();
   virtual ~NativeAppWindowViews();
-  void Init(apps::ShellWindow* shell_window,
-            const apps::ShellWindow::CreateParams& create_params);
+  void Init(apps::AppWindow* app_window,
+            const apps::AppWindow::CreateParams& create_params);
 
   SkRegion* shape() { return shape_.get(); }
 
@@ -77,26 +77,24 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void Activate() OVERRIDE;
 
   content::BrowserContext* browser_context() {
-    return shell_window_->browser_context();
+    return app_window_->browser_context();
   }
 
-  const extensions::Extension* extension() {
-    return shell_window_->extension();
-  }
+  const extensions::Extension* extension() { return app_window_->extension(); }
 
  private:
   friend class ShapedAppWindowTargeterTest;
 
   void InitializeDefaultWindow(
-      const apps::ShellWindow::CreateParams& create_params);
+      const apps::AppWindow::CreateParams& create_params);
   void InitializePanelWindow(
-      const apps::ShellWindow::CreateParams& create_params);
+      const apps::AppWindow::CreateParams& create_params);
   void OnViewWasResized();
 
   bool ShouldUseChromeStyleFrame() const;
 
   // Caller owns the returned object.
-  apps::ShellWindowFrameView* CreateShellWindowFrameView();
+  apps::AppWindowFrameView* CreateAppWindowFrameView();
 
 #if defined(OS_WIN)
   void OnShortcutInfoLoaded(
@@ -205,11 +203,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void RemoveObserver(
       web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
-  content::WebContents* web_contents() {
-    return shell_window_->web_contents();
-  }
+  content::WebContents* web_contents() { return app_window_->web_contents(); }
 
-  apps::ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
+  apps::AppWindow* app_window_;  // Not owned.
   views::WebView* web_view_;
   views::Widget* window_;
   bool is_fullscreen_;

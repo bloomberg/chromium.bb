@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_GEOMETRY_CACHE_H_
-#define CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_GEOMETRY_CACHE_H_
+#ifndef APPS_APP_WINDOW_GEOMETRY_CACHE_H_
+#define APPS_APP_WINDOW_GEOMETRY_CACHE_H_
 
 #include <map>
 #include <set>
@@ -30,20 +30,20 @@ class ExtensionPrefs;
 
 namespace apps {
 
-// A cache for persisted geometry of shell windows, both to not have to wait
+// A cache for persisted geometry of app windows, both to not have to wait
 // for IO when creating a new window, and to not cause IO on every window
 // geometry change.
-class ShellWindowGeometryCache
-    : public BrowserContextKeyedService,
-      public content::NotificationObserver {
+class AppWindowGeometryCache : public BrowserContextKeyedService,
+                               public content::NotificationObserver {
  public:
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
-    static ShellWindowGeometryCache* GetForContext(
+    static AppWindowGeometryCache* GetForContext(
         content::BrowserContext* context,
         bool create);
 
     static Factory* GetInstance();
+
    private:
     friend struct DefaultSingletonTraits<Factory>;
 
@@ -68,13 +68,12 @@ class ShellWindowGeometryCache
     virtual ~Observer() {};
   };
 
-  ShellWindowGeometryCache(Profile* profile,
-                           extensions::ExtensionPrefs* prefs);
+  AppWindowGeometryCache(Profile* profile, extensions::ExtensionPrefs* prefs);
 
-  virtual ~ShellWindowGeometryCache();
+  virtual ~AppWindowGeometryCache();
 
   // Returns the instance for the given browsing context.
-  static ShellWindowGeometryCache* Get(content::BrowserContext* context);
+  static AppWindowGeometryCache* Get(content::BrowserContext* context);
 
   // Save the geometry and state associated with |extension_id| and |window_id|.
   void SaveGeometry(const std::string& extension_id,
@@ -102,7 +101,7 @@ class ShellWindowGeometryCache
   static const size_t kMaxCachedWindows = 100;
 
  protected:
-  friend class ShellWindowGeometryCacheTest;
+  friend class AppWindowGeometryCacheTest;
 
   // For tests, this modifies the timeout delay for saving changes from calls
   // to SaveGeometry. (Note that even if this is set to 0, you still need to
@@ -142,7 +141,7 @@ class ShellWindowGeometryCache
   std::set<std::string> unsynced_extensions_;
 
   // The timer used to save the data
-  base::OneShotTimer<ShellWindowGeometryCache> sync_timer_;
+  base::OneShotTimer<AppWindowGeometryCache> sync_timer_;
 
   // The timeout value we'll use for |sync_timer_|.
   base::TimeDelta sync_delay_;
@@ -153,4 +152,4 @@ class ShellWindowGeometryCache
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_GEOMETRY_CACHE_H_
+#endif  // APPS_APP_WINDOW_GEOMETRY_CACHE_H_

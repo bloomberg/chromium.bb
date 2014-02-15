@@ -7,7 +7,7 @@
 #include "apps/app_keep_alive_service_factory.h"
 #include "apps/app_load_service_factory.h"
 #include "apps/app_restore_service_factory.h"
-#include "apps/shell_window_geometry_cache.h"
+#include "apps/app_window_geometry_cache.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -146,10 +146,10 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/log_private/log_private_api.h"
 #endif
@@ -240,7 +240,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AppShortcutManagerFactory::GetInstance();
   apps::AppLoadServiceFactory::GetInstance();
   apps::AppRestoreServiceFactory::GetInstance();
-  apps::ShellWindowGeometryCache::Factory::GetInstance();
+  apps::AppWindowGeometryCache::Factory::GetInstance();
   EphemeralAppServiceFactory::GetInstance();
   extensions::ActivityLogFactory::GetInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();

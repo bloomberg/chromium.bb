@@ -8,7 +8,7 @@
 #include <limits>
 #include <vector>
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -90,12 +90,12 @@
 #endif  // OS_WIN
 
 #if defined(USE_ASH)
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
 #endif
 
-using apps::ShellWindow;
+using apps::AppWindow;
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -523,15 +523,14 @@ bool WindowsCreateFunction::RunImpl() {
 
 #if defined(USE_ASH)
     if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-      ShellWindow::CreateParams create_params;
-      create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
+      AppWindow::CreateParams create_params;
+      create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
-      ShellWindow* shell_window = new ShellWindow(
-          window_profile, new ChromeShellWindowDelegate(),
-          GetExtension());
-      AshPanelContents* ash_panel_contents = new AshPanelContents(shell_window);
-      shell_window->Init(urls[0], ash_panel_contents, create_params);
+      AppWindow* app_window = new AppWindow(
+          window_profile, new ChromeShellWindowDelegate(), GetExtension());
+      AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
+      app_window->Init(urls[0], ash_panel_contents, create_params);
       SetResult(ash_panel_contents->GetExtensionWindowController()->
                 CreateWindowValueWithTabs(GetExtension()));
       return true;

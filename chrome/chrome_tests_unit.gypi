@@ -531,9 +531,9 @@
       'sources': [
         '../apps/app_keep_alive_service_unittest.cc',
         '../apps/app_shim/app_shim_host_mac_unittest.cc',
-        '../apps/saved_files_service_unittest.cc',
         '../apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
-        '../apps/shell_window_geometry_cache_unittest.cc',
+        '../apps/app_window_geometry_cache_unittest.cc',
+        '../apps/saved_files_service_unittest.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
         '../components/autofill/content/renderer/test_password_generation_agent.cc',

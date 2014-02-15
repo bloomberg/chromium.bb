@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -24,12 +24,12 @@ chrome::HostDesktopType GetDesktopType(content::WebUI* web_ui) {
   if (browser)
     return browser->host_desktop_type();
 
-  apps::ShellWindow* shell_window =
-      apps::ShellWindowRegistry::Get(Profile::FromWebUI(web_ui))->
-          GetShellWindowForRenderViewHost(web_contents->GetRenderViewHost());
-  if (shell_window) {
+  apps::AppWindow* app_window =
+      apps::AppWindowRegistry::Get(Profile::FromWebUI(web_ui))
+          ->GetAppWindowForRenderViewHost(web_contents->GetRenderViewHost());
+  if (app_window) {
     return chrome::GetHostDesktopTypeForNativeWindow(
-        shell_window->GetNativeWindow());
+        app_window->GetNativeWindow());
   }
 
   return chrome::GetActiveDesktop();

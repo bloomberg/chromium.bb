@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
 #define CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -29,7 +29,8 @@ class ShellWindowLinkDelegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShellWindowLinkDelegate);
 };
 
-class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
+// TODO(jamescook): Rename to ChromeAppWindowDelegate. http://crbug.com/344084
+class ChromeShellWindowDelegate : public apps::AppWindow::Delegate {
  public:
   ChromeShellWindowDelegate();
   virtual ~ChromeShellWindowDelegate();
@@ -37,11 +38,11 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
   static void DisableExternalOpenForTesting();
 
  private:
-  // apps::ShellWindow::Delegate:
+  // apps::AppWindow::Delegate:
   virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
   virtual apps::NativeAppWindow* CreateNativeAppWindow(
-      apps::ShellWindow* window,
-      const apps::ShellWindow::CreateParams& params) OVERRIDE;
+      apps::AppWindow* window,
+      const apps::AppWindow::CreateParams& params) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,
@@ -71,8 +72,8 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
 
   // Implemented in platform specific code.
   static apps::NativeAppWindow* CreateNativeAppWindowImpl(
-      apps::ShellWindow* window,
-      const apps::ShellWindow::CreateParams& params);
+      apps::AppWindow* window,
+      const apps::AppWindow::CreateParams& params);
 
   scoped_ptr<ShellWindowLinkDelegate> shell_window_link_delegate_;
 

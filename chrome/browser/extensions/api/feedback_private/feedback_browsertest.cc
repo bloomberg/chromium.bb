@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -19,8 +19,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 
-using apps::ShellWindow;
-using apps::ShellWindowRegistry;
+using apps::AppWindow;
+using apps::AppWindowRegistry;
 using extensions::Extension;
 
 namespace {
@@ -62,8 +62,8 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 
   void VerifyFeedbackAppLaunch() {
-    ShellWindow* window =
-        PlatformAppBrowserTest::GetFirstShellWindowForBrowser(browser());
+    AppWindow* window =
+        PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
     ASSERT_TRUE(window);
     const Extension* feedback_app = window->extension();
     ASSERT_TRUE(feedback_app);

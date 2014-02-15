@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -25,7 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 
-using apps::ShellWindowRegistry;
+using apps::AppWindowRegistry;
 
 namespace chromeos {
 
@@ -33,31 +33,30 @@ namespace {
 
 // AppWindowHandler watches for app window and exits the session when the
 // last app window is closed.
-class AppWindowHandler : public ShellWindowRegistry::Observer {
+class AppWindowHandler : public AppWindowRegistry::Observer {
  public:
   AppWindowHandler() : window_registry_(NULL) {}
   virtual ~AppWindowHandler() {}
 
   void Init(Profile* profile) {
     DCHECK(!window_registry_);
-    window_registry_ = ShellWindowRegistry::Get(profile);
+    window_registry_ = AppWindowRegistry::Get(profile);
     if (window_registry_)
       window_registry_->AddObserver(this);
   }
 
  private:
-  // apps::ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
-    OVERRIDE {}
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {
-    if (window_registry_->shell_windows().empty()) {
+  // apps::AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {
+    if (window_registry_->app_windows().empty()) {
       chrome::AttemptUserExit();
       window_registry_->RemoveObserver(this);
     }
   }
 
-  apps::ShellWindowRegistry* window_registry_;
+  apps::AppWindowRegistry* window_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };

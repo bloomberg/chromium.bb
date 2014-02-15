@@ -180,7 +180,7 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
     web_contents_stack_.push_back(web_contents);
 
   if (is_platform_app()) {
-    EXPECT_EQ(GetFirstShellWindowWebContents(), active_web_contents());
+    EXPECT_EQ(GetFirstAppWindowWebContents(), active_web_contents());
   } else {
     // For apps v1 only, the DOMOperationObserver is not ready at the LOAD_STOP
     // event. A half second wait is necessary for the subsequent javascript

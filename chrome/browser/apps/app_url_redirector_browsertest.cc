@@ -28,7 +28,7 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // subdirectory);
   // - navigates the current tab to the HTML page |lancher_page| (ditto);
   // - then waits for |handler| to launch and send back a |handler_ack_message|;
-  // - finally checks that the resulting shell window count is as expected.
+  // - finally checks that the resulting app window count is as expected.
   // The |launcher_page| is supposed to trigger a navigation matching one of the
   // url_handlers in the |handler|'s manifest, and thereby launch the |handler|.
   void TestNavigationInTab(const char* launcher_page,
@@ -47,7 +47,7 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   //   url_handlers in |handler|;
   // - waits until |xhr_opening_page| gets a response back and changes the tab's
   //   title to a value indicating success/failure of the XHR;
-  // - verifies that no shell windows have been opened, i.e. |handler| wasn't
+  // - verifies that no app windows have been opened, i.e. |handler| wasn't
   //   launched even though its url_handlers match the URL.
   void TestNegativeXhrInTab(const char* xhr_opening_page,
                             const char* success_tab_title,
@@ -61,7 +61,7 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // - waits for the |launcher| to launch and send back a |launcher_ack_message|
   //   (to make sure it's not the failing entity, if the test fails overall);
   // - waits for the |handler| to launch and send back a |handler_ack_message|;
-  // - finally checks that the resulting shell window count is as expected.
+  // - finally checks that the resulting app window count is as expected.
   // The |launcher| is supposed to trigger a navigation matching one of the
   // url_handlers in the |handler|'s manifest, and thereby launch the |handler|.
   void TestNavigationInApp(const char* launcher,
@@ -90,7 +90,7 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // - navigates the current tab to the HTML page |matching_target_page| with
   //   page transition |transition|;
   // - waits for |handler| to launch and send back a |handler_start_message|;
-  // - finally checks that the resulting shell window count is as expected.
+  // - finally checks that the resulting app window count is as expected.
   void TestNavigationInBrowser(const char* matching_target_page,
                                content::PageTransition transition,
                                const char* handler,
@@ -144,7 +144,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInTab(
 
   ASSERT_TRUE(handler_listener.WaitUntilSatisfied());
 
-  ASSERT_EQ(1U, GetShellWindowCount());
+  ASSERT_EQ(1U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInTab(
@@ -169,7 +169,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInTab(
 
   ASSERT_EQ(success_title, title_watcher.WaitAndGetTitle());
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
-  ASSERT_EQ(0U, GetShellWindowCount());
+  ASSERT_EQ(0U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestNegativeXhrInTab(
@@ -197,7 +197,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeXhrInTab(
 
   ASSERT_EQ(success_title, title_watcher.WaitAndGetTitle());
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
-  ASSERT_EQ(0U, GetShellWindowCount());
+  ASSERT_EQ(0U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestNavigationInApp(
@@ -217,7 +217,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInApp(
   ASSERT_TRUE(launcher_listener.WaitUntilSatisfied());
   ASSERT_TRUE(handler_listener.WaitUntilSatisfied());
 
-  ASSERT_EQ(2U, GetShellWindowCount());
+  ASSERT_EQ(2U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInApp(
@@ -240,7 +240,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInApp(
 
   observer.Wait();
 
-  ASSERT_EQ(1U, GetShellWindowCount());
+  ASSERT_EQ(1U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInApp(
@@ -261,7 +261,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInApp(
   ASSERT_TRUE(launcher_listener.WaitUntilSatisfied());
 
   observer.Wait();
-  ASSERT_EQ(1U, GetShellWindowCount());
+  ASSERT_EQ(1U, GetAppWindowCount());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -285,7 +285,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInBrowser(
 
   ASSERT_TRUE(handler_listener.WaitUntilSatisfied());
 
-  ASSERT_EQ(1U, GetShellWindowCount());
+  ASSERT_EQ(1U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
@@ -310,7 +310,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
   ui_test_utils::NavigateToURL(&params);
 
   ASSERT_EQ(success_title, title_watcher.WaitAndGetTitle());
-  ASSERT_EQ(0U, GetShellWindowCount());
+  ASSERT_EQ(0U, GetAppWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInBrowser(

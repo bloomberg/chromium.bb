@@ -153,7 +153,7 @@ class MultiUserWindowManagerChromeOS
   };
 
   typedef std::map<aura::Window*, WindowEntry*> WindowToEntryMap;
-  typedef std::map<std::string, AppObserver*> UserIDToShellWindowObserver;
+  typedef std::map<std::string, AppObserver*> UserIDToAppWindowObserver;
   typedef std::map<aura::Window*, bool> TransientWindowToVisibility;
 
   // The animation step for the user change animation. First the old user gets
@@ -222,8 +222,8 @@ class MultiUserWindowManagerChromeOS
   // should get shown.
   WindowToEntryMap window_to_entry_;
 
-  // A list of all known users and their shell window observers.
-  UserIDToShellWindowObserver user_id_to_app_observer_;
+  // A list of all known users and their app window observers.
+  UserIDToAppWindowObserver user_id_to_app_observer_;
 
   // An observer list to be notified upon window owner changes.
   ObserverList<Observer> observers_;

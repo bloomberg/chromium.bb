@@ -6,9 +6,9 @@
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_restore_service_factory.h"
+#include "apps/app_window.h"
 #include "apps/launcher.h"
 #include "apps/saved_files_service.h"
-#include "apps/shell_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"

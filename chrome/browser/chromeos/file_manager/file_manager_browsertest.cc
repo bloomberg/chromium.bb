@@ -11,8 +11,8 @@
 #include <deque>
 #include <string>
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -913,13 +913,13 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     } else if (name == "getWindowOwnerId") {
       chrome::MultiUserWindowManager* const window_manager =
           chrome::MultiUserWindowManager::GetInstance();
-      apps::ShellWindowRegistry* const shell_window_registry =
-          apps::ShellWindowRegistry::Get(profile());
+      apps::AppWindowRegistry* const app_window_registry =
+          apps::AppWindowRegistry::Get(profile());
       DCHECK(window_manager);
-      DCHECK(shell_window_registry);
+      DCHECK(app_window_registry);
 
-      const apps::ShellWindowRegistry::ShellWindowList& list =
-          shell_window_registry->GetShellWindowsForApp(
+      const apps::AppWindowRegistry::AppWindowList& list =
+          app_window_registry->GetAppWindowsForApp(
               file_manager::kFileManagerAppId);
       return list.size() == 1u ?
           window_manager->GetUserPresentingWindow(

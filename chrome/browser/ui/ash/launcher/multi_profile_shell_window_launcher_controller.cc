@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_shell_window_launcher_controller.h"
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -29,8 +29,9 @@ MultiProfileShellWindowLauncherController::
 MultiProfileShellWindowLauncherController::
     ~MultiProfileShellWindowLauncherController() {
   // We need to remove all Registry observers for added users.
-  for (ShellWindowRegistryList::iterator it = multi_user_registry_.begin();
-       it != multi_user_registry_.end(); ++it)
+  for (AppWindowRegistryList::iterator it = multi_user_registry_.begin();
+       it != multi_user_registry_.end();
+       ++it)
     (*it)->RemoveObserver(this);
 }
 
@@ -40,48 +41,49 @@ void MultiProfileShellWindowLauncherController::ActiveUserChanged(
   // show / hide them one by one. To avoid that a user dependent state
   // "survives" in a launcher item, we first delete all items making sure that
   // nothing remains and then re-create them again.
-  for (ShellWindowList::iterator it = shell_window_list_.begin();
-       it != shell_window_list_.end(); ++it) {
-    apps::ShellWindow* shell_window = *it;
+  for (AppWindowList::iterator it = app_window_list_.begin();
+       it != app_window_list_.end();
+       ++it) {
+    apps::AppWindow* app_window = *it;
     Profile* profile =
-        Profile::FromBrowserContext(shell_window->browser_context());
+        Profile::FromBrowserContext(app_window->browser_context());
     if (!multi_user_util::IsProfileFromActiveUser(profile) &&
-        IsRegisteredApp(shell_window->GetNativeWindow()))
-      UnregisterApp(shell_window->GetNativeWindow());
+        IsRegisteredApp(app_window->GetNativeWindow()))
+      UnregisterApp(app_window->GetNativeWindow());
   }
-  for (ShellWindowList::iterator it = shell_window_list_.begin();
-       it != shell_window_list_.end(); ++it) {
-    apps::ShellWindow* shell_window = *it;
+  for (AppWindowList::iterator it = app_window_list_.begin();
+       it != app_window_list_.end();
+       ++it) {
+    apps::AppWindow* app_window = *it;
     Profile* profile =
-        Profile::FromBrowserContext(shell_window->browser_context());
+        Profile::FromBrowserContext(app_window->browser_context());
     if (multi_user_util::IsProfileFromActiveUser(profile) &&
-        !IsRegisteredApp(shell_window->GetNativeWindow()))
+        !IsRegisteredApp(app_window->GetNativeWindow()))
       RegisterApp(*it);
   }
 }
 
 void MultiProfileShellWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
-  // Each users ShellRegistry needs to be observed.
-  apps::ShellWindowRegistry* registry = apps::ShellWindowRegistry::Get(profile);
+  // Each users AppWindowRegistry needs to be observed.
+  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
   multi_user_registry_.push_back(registry);
   registry->AddObserver(this);
 }
 
-void MultiProfileShellWindowLauncherController::OnShellWindowAdded(
-    apps::ShellWindow* shell_window) {
-  if (!ControlsWindow(shell_window->GetNativeWindow()))
+void MultiProfileShellWindowLauncherController::OnAppWindowAdded(
+    apps::AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
-  shell_window_list_.push_back(shell_window);
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
+  app_window_list_.push_back(app_window);
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   if (multi_user_util::IsProfileFromActiveUser(profile))
-    RegisterApp(shell_window);
+    RegisterApp(app_window);
 }
 
-void MultiProfileShellWindowLauncherController::OnShellWindowRemoved(
-    apps::ShellWindow* shell_window) {
-  if (!ControlsWindow(shell_window->GetNativeWindow()))
+void MultiProfileShellWindowLauncherController::OnAppWindowRemoved(
+    apps::AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
   // If the application is registered with ShellWindowLauncher (because the user
@@ -89,9 +91,8 @@ void MultiProfileShellWindowLauncherController::OnShellWindowRemoved(
   // soon) unregister it independently from the shelf. If it was not registered
   // we don't need to do anything anyways. As such, all which is left to do here
   // is to get rid of our own reference.
-  ShellWindowList::iterator it = std::find(shell_window_list_.begin(),
-                                           shell_window_list_.end(),
-                                           shell_window);
-  DCHECK(it != shell_window_list_.end());
-  shell_window_list_.erase(it);
+  AppWindowList::iterator it =
+      std::find(app_window_list_.begin(), app_window_list_.end(), app_window);
+  DCHECK(it != app_window_list_.end());
+  app_window_list_.erase(it);
 }

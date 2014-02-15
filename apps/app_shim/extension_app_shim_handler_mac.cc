@@ -7,9 +7,9 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "apps/app_shim/app_shim_messages.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/launcher.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -34,7 +34,7 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-typedef apps::ShellWindowRegistry::ShellWindowList ShellWindowList;
+typedef apps::AppWindowRegistry::AppWindowList AppWindowList;
 
 void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
                            Profile* profile,
@@ -49,10 +49,11 @@ void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
 }
 
 void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
-  ShellWindowList windows =
-      apps::ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(app_id);
-  for (ShellWindowList::const_reverse_iterator it = windows.rbegin();
-       it != windows.rend(); ++it) {
+  AppWindowList windows =
+      apps::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id);
+  for (AppWindowList::const_reverse_iterator it = windows.rbegin();
+       it != windows.rend();
+       ++it) {
     if (hidden)
       (*it)->GetBaseWindow()->HideWithApp();
     else
@@ -60,13 +61,13 @@ void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
   }
 }
 
-bool FocusWindows(const ShellWindowList& windows) {
+bool FocusWindows(const AppWindowList& windows) {
   if (windows.empty())
     return false;
 
   std::set<gfx::NativeWindow> native_windows;
-  for (ShellWindowList::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
+  for (AppWindowList::const_iterator it = windows.begin(); it != windows.end();
+       ++it) {
     native_windows.insert((*it)->GetNativeWindow());
   }
   // Allow workspace switching. For the browser process, we can reasonably rely
@@ -153,10 +154,10 @@ void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
       base::string16(), base::string16(), std::string());
 }
 
-ShellWindowList ExtensionAppShimHandler::Delegate::GetWindows(
+AppWindowList ExtensionAppShimHandler::Delegate::GetWindows(
     Profile* profile,
     const std::string& extension_id) {
-  return ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(extension_id);
+  return AppWindowRegistry::Get(profile)->GetAppWindowsForApp(extension_id);
 }
 
 const extensions::Extension*
@@ -226,44 +227,41 @@ AppShimHandler::Host* ExtensionAppShimHandler::FindHost(
 }
 
 // static
-void ExtensionAppShimHandler::QuitAppForWindow(ShellWindow* shell_window) {
+void ExtensionAppShimHandler::QuitAppForWindow(AppWindow* app_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
   Host* host = handler->FindHost(
-      Profile::FromBrowserContext(shell_window->browser_context()),
-      shell_window->extension_id());
+      Profile::FromBrowserContext(app_window->browser_context()),
+      app_window->extension_id());
   if (host) {
     handler->OnShimQuit(host);
   } else {
     // App shims might be disabled or the shim is still starting up.
-    ShellWindowRegistry::Get(
-        Profile::FromBrowserContext(shell_window->browser_context()))
-        ->CloseAllShellWindowsForApp(shell_window->extension_id());
+    AppWindowRegistry::Get(
+        Profile::FromBrowserContext(app_window->browser_context()))
+        ->CloseAllAppWindowsForApp(app_window->extension_id());
   }
 }
 
-void ExtensionAppShimHandler::HideAppForWindow(ShellWindow* shell_window) {
+void ExtensionAppShimHandler::HideAppForWindow(AppWindow* app_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
-  Host* host = handler->FindHost(profile, shell_window->extension_id());
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+  Host* host = handler->FindHost(profile, app_window->extension_id());
   if (host)
     host->OnAppHide();
   else
-    SetAppHidden(profile, shell_window->extension_id(), true);
+    SetAppHidden(profile, app_window->extension_id(), true);
 }
 
-
-void ExtensionAppShimHandler::FocusAppForWindow(ShellWindow* shell_window) {
+void ExtensionAppShimHandler::FocusAppForWindow(AppWindow* app_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
-  const std::string& app_id = shell_window->extension_id();
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+  const std::string& app_id = app_window->extension_id();
   Host* host = handler->FindHost(profile, app_id);
   if (host) {
     handler->OnShimFocus(host,
@@ -271,27 +269,26 @@ void ExtensionAppShimHandler::FocusAppForWindow(ShellWindow* shell_window) {
                          std::vector<base::FilePath>());
   } else {
     FocusWindows(
-        apps::ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(app_id));
+        apps::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id));
   }
 }
 
 // static
 bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
-    ShellWindow* shell_window) {
+    AppWindow* app_window) {
   ExtensionAppShimHandler* handler =
       g_browser_process->platform_part()->app_shim_host_manager()->
           extension_app_shim_handler();
-  Profile* profile =
-      Profile::FromBrowserContext(shell_window->browser_context());
-  Host* host = handler->FindHost(profile, shell_window->extension_id());
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+  Host* host = handler->FindHost(profile, app_window->extension_id());
   if (host) {
     // Bring the window to the front without showing it.
-    ShellWindowRegistry::Get(profile)->ShellWindowActivated(shell_window);
+    AppWindowRegistry::Get(profile)->AppWindowActivated(app_window);
     host->OnAppRequestUserAttention();
     return true;
   } else {
     // Just show the app.
-    SetAppHidden(profile, shell_window->extension_id(), false);
+    SetAppHidden(profile, app_window->extension_id(), false);
     return false;
   }
 }
@@ -418,7 +415,7 @@ void ExtensionAppShimHandler::OnShimFocus(
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
-  const ShellWindowList windows =
+  const AppWindowList windows =
       delegate_->GetWindows(profile, host->GetAppId());
   bool windows_focused = FocusWindows(windows);
 
@@ -450,10 +447,10 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
   const std::string& app_id = host->GetAppId();
-  const ShellWindowList windows =
-      delegate_->GetWindows(profile, app_id);
-  for (ShellWindowRegistry::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
+  const AppWindowList windows = delegate_->GetWindows(profile, app_id);
+  for (AppWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
     (*it)->GetBaseWindow()->Close();
   }
   // Once the last window closes, flow will end up in OnAppDeactivated via

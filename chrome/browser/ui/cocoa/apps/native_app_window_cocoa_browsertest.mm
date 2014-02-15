@@ -6,10 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
@@ -50,8 +50,8 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
 // Test interaction of Hide/Show() with Hide/ShowWithApp().
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   SetUpAppWithWindows(2);
-  apps::ShellWindowRegistry::ShellWindowList windows =
-      apps::ShellWindowRegistry::Get(profile())->shell_windows();
+  apps::AppWindowRegistry::AppWindowList windows =
+      apps::AppWindowRegistry::Get(profile())->app_windows();
   apps::NativeAppWindow* window = windows.front()->GetBaseWindow();
   NSWindow* ns_window = window->GetNativeWindow();
   apps::NativeAppWindow* other_window = windows.back()->GetBaseWindow();

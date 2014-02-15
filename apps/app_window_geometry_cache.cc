@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window_geometry_cache.h"
+#include "apps/app_window_geometry_cache.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -24,35 +24,36 @@ namespace {
 // StateStore.
 const int kSyncTimeoutMilliseconds = 1000;
 
-} // namespace
+}  // namespace
 
 namespace apps {
 
-ShellWindowGeometryCache::ShellWindowGeometryCache(
-    Profile* profile, extensions::ExtensionPrefs* prefs)
+AppWindowGeometryCache::AppWindowGeometryCache(
+    Profile* profile,
+    extensions::ExtensionPrefs* prefs)
     : prefs_(prefs),
       sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 }
 
-ShellWindowGeometryCache::~ShellWindowGeometryCache() {
-}
+AppWindowGeometryCache::~AppWindowGeometryCache() {}
 
 // static
-ShellWindowGeometryCache* ShellWindowGeometryCache::Get(
+AppWindowGeometryCache* AppWindowGeometryCache::Get(
     content::BrowserContext* context) {
   return Factory::GetForContext(context, true /* create */);
 }
 
-void ShellWindowGeometryCache::SaveGeometry(
-    const std::string& extension_id,
-    const std::string& window_id,
-    const gfx::Rect& bounds,
-    const gfx::Rect& screen_bounds,
-    ui::WindowShowState window_state) {
+void AppWindowGeometryCache::SaveGeometry(const std::string& extension_id,
+                                          const std::string& window_id,
+                                          const gfx::Rect& bounds,
+                                          const gfx::Rect& screen_bounds,
+                                          ui::WindowShowState window_state) {
   ExtensionData& extension_data = cache_[extension_id];
 
   // If we don't have any unsynced changes and this is a duplicate of what's
@@ -74,9 +75,11 @@ void ShellWindowGeometryCache::SaveGeometry(
     ExtensionData::iterator oldest = extension_data.end();
     // Too many windows in the cache, find the oldest one to remove.
     for (ExtensionData::iterator it = extension_data.begin();
-         it != extension_data.end(); ++it) {
+         it != extension_data.end();
+         ++it) {
       // Don't expunge the window that was just added.
-      if (it->first == window_id) continue;
+      if (it->first == window_id)
+        continue;
 
       // If time is in the future, reset it to now to minimize weirdness.
       if (it->second.last_change > now)
@@ -94,21 +97,25 @@ void ShellWindowGeometryCache::SaveGeometry(
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
   sync_timer_.Stop();
-  sync_timer_.Start(FROM_HERE, sync_delay_, this,
-                    &ShellWindowGeometryCache::SyncToStorage);
+  sync_timer_.Start(
+      FROM_HERE, sync_delay_, this, &AppWindowGeometryCache::SyncToStorage);
 }
 
-void ShellWindowGeometryCache::SyncToStorage() {
+void AppWindowGeometryCache::SyncToStorage() {
   std::set<std::string> tosync;
   tosync.swap(unsynced_extensions_);
   for (std::set<std::string>::const_iterator it = tosync.begin(),
-      eit = tosync.end(); it != eit; ++it) {
+                                             eit = tosync.end();
+       it != eit;
+       ++it) {
     const std::string& extension_id = *it;
     const ExtensionData& extension_data = cache_[extension_id];
 
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     for (ExtensionData::const_iterator it = extension_data.begin(),
-         eit = extension_data.end(); it != eit; ++it) {
+                                       eit = extension_data.end();
+         it != eit;
+         ++it) {
       base::DictionaryValue* value = new base::DictionaryValue;
       const gfx::Rect& bounds = it->second.bounds;
       const gfx::Rect& screen_bounds = it->second.screen_bounds;
@@ -129,24 +136,23 @@ void ShellWindowGeometryCache::SyncToStorage() {
       dict->SetWithoutPathExpansion(it->first, value);
 
       FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnGeometryCacheChanged(extension_id, it->first, bounds));
+          Observer,
+          observers_,
+          OnGeometryCacheChanged(extension_id, it->first, bounds));
     }
 
     prefs_->SetGeometryCache(extension_id, dict.Pass());
   }
 }
 
-bool ShellWindowGeometryCache::GetGeometry(
-    const std::string& extension_id,
-    const std::string& window_id,
-    gfx::Rect* bounds,
-    gfx::Rect* screen_bounds,
-    ui::WindowShowState* window_state) {
+bool AppWindowGeometryCache::GetGeometry(const std::string& extension_id,
+                                         const std::string& window_id,
+                                         gfx::Rect* bounds,
+                                         gfx::Rect* screen_bounds,
+                                         ui::WindowShowState* window_state) {
 
-  std::map<std::string, ExtensionData>::const_iterator
-      extension_data_it = cache_.find(extension_id);
+  std::map<std::string, ExtensionData>::const_iterator extension_data_it =
+      cache_.find(extension_id);
 
   // Not in the map means loading data for the extension didn't finish yet or
   // the cache was not constructed until after the extension was loaded.
@@ -157,8 +163,8 @@ bool ShellWindowGeometryCache::GetGeometry(
     DCHECK(extension_data_it != cache_.end());
   }
 
-  ExtensionData::const_iterator window_data_it = extension_data_it->second.find(
-      window_id);
+  ExtensionData::const_iterator window_data_it =
+      extension_data_it->second.find(window_id);
 
   if (window_data_it == extension_data_it->second.end())
     return false;
@@ -180,20 +186,16 @@ bool ShellWindowGeometryCache::GetGeometry(
   return true;
 }
 
-void ShellWindowGeometryCache::Shutdown() {
-  SyncToStorage();
-}
+void AppWindowGeometryCache::Shutdown() { SyncToStorage(); }
 
+AppWindowGeometryCache::WindowData::WindowData()
+    : window_state(ui::SHOW_STATE_DEFAULT) {}
 
-ShellWindowGeometryCache::WindowData::WindowData()
-  : window_state(ui::SHOW_STATE_DEFAULT) {
-}
+AppWindowGeometryCache::WindowData::~WindowData() {}
 
-ShellWindowGeometryCache::WindowData::~WindowData() {
-}
-
-void ShellWindowGeometryCache::Observe(
-    int type, const content::NotificationSource& source,
+void AppWindowGeometryCache::Observe(
+    int type,
+    const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -204,8 +206,9 @@ void ShellWindowGeometryCache::Observe(
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       std::string extension_id =
-          content::Details<const extensions::UnloadedExtensionInfo>(details).
-              ptr()->extension->id();
+          content::Details<const extensions::UnloadedExtensionInfo>(details)
+              .ptr()
+              ->extension->id();
       OnExtensionUnloaded(extension_id);
       break;
     }
@@ -215,11 +218,11 @@ void ShellWindowGeometryCache::Observe(
   }
 }
 
-void ShellWindowGeometryCache::SetSyncDelayForTests(int timeout_ms) {
+void AppWindowGeometryCache::SetSyncDelayForTests(int timeout_ms) {
   sync_delay_ = base::TimeDelta::FromMilliseconds(timeout_ms);
 }
 
-void ShellWindowGeometryCache::LoadGeometryFromStorage(
+void AppWindowGeometryCache::LoadGeometryFromStorage(
     const std::string& extension_id) {
   ExtensionData& extension_data = cache_[extension_id];
 
@@ -258,8 +261,7 @@ void ShellWindowGeometryCache::LoadGeometryFromStorage(
         if (stored_window->GetInteger("screen_bounds_h", &i))
           window_data.screen_bounds.set_height(i);
         if (stored_window->GetInteger("state", &i)) {
-          window_data.window_state =
-              static_cast<ui::WindowShowState>(i);
+          window_data.window_state = static_cast<ui::WindowShowState>(i);
         }
         std::string ts_as_string;
         if (stored_window->GetString("ts", &ts_as_string)) {
@@ -273,7 +275,7 @@ void ShellWindowGeometryCache::LoadGeometryFromStorage(
   }
 }
 
-void ShellWindowGeometryCache::OnExtensionUnloaded(
+void AppWindowGeometryCache::OnExtensionUnloaded(
     const std::string& extension_id) {
   SyncToStorage();
   cache_.erase(extension_id);
@@ -283,53 +285,52 @@ void ShellWindowGeometryCache::OnExtensionUnloaded(
 // Factory boilerplate
 
 // static
-ShellWindowGeometryCache* ShellWindowGeometryCache::Factory::GetForContext(
-    content::BrowserContext* context, bool create) {
-  return static_cast<ShellWindowGeometryCache*>(
+AppWindowGeometryCache* AppWindowGeometryCache::Factory::GetForContext(
+    content::BrowserContext* context,
+    bool create) {
+  return static_cast<AppWindowGeometryCache*>(
       GetInstance()->GetServiceForBrowserContext(context, create));
 }
 
-ShellWindowGeometryCache::Factory*
-ShellWindowGeometryCache::Factory::GetInstance() {
-  return Singleton<ShellWindowGeometryCache::Factory>::get();
+AppWindowGeometryCache::Factory*
+AppWindowGeometryCache::Factory::GetInstance() {
+  return Singleton<AppWindowGeometryCache::Factory>::get();
 }
 
-ShellWindowGeometryCache::Factory::Factory()
+AppWindowGeometryCache::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
-        "ShellWindowGeometryCache",
-        BrowserContextDependencyManager::GetInstance()) {
+          "AppWindowGeometryCache",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 }
 
-ShellWindowGeometryCache::Factory::~Factory() {
-}
+AppWindowGeometryCache::Factory::~Factory() {}
 
 BrowserContextKeyedService*
-ShellWindowGeometryCache::Factory::BuildServiceInstanceFor(
+AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new ShellWindowGeometryCache(
-      profile,
-      extensions::ExtensionPrefs::Get(profile));
+  return new AppWindowGeometryCache(profile,
+                                    extensions::ExtensionPrefs::Get(profile));
 }
 
-bool ShellWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
+bool AppWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 
 content::BrowserContext*
-ShellWindowGeometryCache::Factory::GetBrowserContextToUse(
+AppWindowGeometryCache::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return extensions::ExtensionsBrowserClient::Get()->
-      GetOriginalContext(context);
+  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
+      context);
 }
 
-void ShellWindowGeometryCache::AddObserver(Observer* observer) {
+void AppWindowGeometryCache::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void ShellWindowGeometryCache::RemoveObserver(Observer* observer) {
+void AppWindowGeometryCache::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-} // namespace apps
+}  // namespace apps

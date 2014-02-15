@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -55,15 +55,15 @@ AppLaunchController::ReturnBoolCallback*
 // AppLaunchController::AppWindowWatcher
 
 class AppLaunchController::AppWindowWatcher
-    : public apps::ShellWindowRegistry::Observer {
+    : public apps::AppWindowRegistry::Observer {
  public:
   explicit AppWindowWatcher(AppLaunchController* controller,
                             const std::string& app_id)
-    : controller_(controller),
-      app_id_(app_id),
-      window_registry_(apps::ShellWindowRegistry::Get(controller->profile_)),
-      weak_factory_(this) {
-    if (!window_registry_->GetShellWindowsForApp(app_id).empty()) {
+      : controller_(controller),
+        app_id_(app_id),
+        window_registry_(apps::AppWindowRegistry::Get(controller->profile_)),
+        weak_factory_(this) {
+    if (!window_registry_->GetAppWindowsForApp(app_id).empty()) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&AppWindowWatcher::NotifyAppWindowCreated,
@@ -78,16 +78,15 @@ class AppLaunchController::AppWindowWatcher
   }
 
  private:
-  // apps::ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
-    if (shell_window->extension_id() == app_id_) {
+  // apps::AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
+    if (app_window->extension_id() == app_id_) {
       window_registry_->RemoveObserver(this);
       NotifyAppWindowCreated();
     }
   }
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
 
   void NotifyAppWindowCreated() {
     controller_->OnAppWindowCreated();
@@ -95,7 +94,7 @@ class AppLaunchController::AppWindowWatcher
 
   AppLaunchController* controller_;
   std::string app_id_;
-  apps::ShellWindowRegistry* window_registry_;
+  apps::AppWindowRegistry* window_registry_;
   base::WeakPtrFactory<AppWindowWatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowWatcher);

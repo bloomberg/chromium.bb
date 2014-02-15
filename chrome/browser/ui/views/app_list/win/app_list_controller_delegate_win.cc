@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -49,9 +49,9 @@ bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow() {
 
 void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
   params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  apps::ShellWindow* any_existing_window =
-      apps::ShellWindowRegistry::Get(params->profile)->
-          GetCurrentShellWindowForApp(params->extension_id);
+  apps::AppWindow* any_existing_window =
+      apps::AppWindowRegistry::Get(params->profile)
+          ->GetCurrentAppWindowForApp(params->extension_id);
   if (any_existing_window &&
       chrome::GetHostDesktopTypeForNativeWindow(
           any_existing_window->GetNativeWindow())

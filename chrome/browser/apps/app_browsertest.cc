@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/launcher.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -56,8 +56,8 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #endif
 
-using apps::ShellWindow;
-using apps::ShellWindowRegistry;
+using apps::AppWindow;
+using apps::AppWindowRegistry;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
@@ -196,13 +196,13 @@ const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 
 }  // namespace
 
-// Tests that CreateShellWindow doesn't crash if you close it straight away.
+// Tests that CreateAppWindow doesn't crash if you close it straight away.
 // LauncherPlatformAppBrowserTest relies on this behaviour, but is only run for
 // ash, so we test that it works here.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseAppWindow) {
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
-  ShellWindow* window = CreateShellWindow(extension);
-  CloseShellWindow(window);
+  AppWindow* window = CreateAppWindow(extension);
+  CloseAppWindow(window);
 }
 
 // Tests that platform apps received the "launch" event when launched.
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
 
   // The empty app doesn't add any context menu items, so its menu should
   // only include the developer tools.
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
 
   // The context_menu app has two context menu items. These, along with a
   // separator and the developer tools, is all that should be in the menu.
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
 
   // The context_menu app has two context menu items. For an installed app
   // these are all that should be in the menu.
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   params.is_editable = true;
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   params.selection_text = base::ASCIIToUTF16("Hello World");
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // Test that the menu item shows up
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.bar");
@@ -461,33 +461,33 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
       test_data_dir_.AppendASCII("common/background_page"));
   ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(extension));
 
-  // And no shell windows.
-  ASSERT_EQ(0U, GetShellWindowCount());
+  // And no app windows.
+  ASSERT_EQ(0U, GetAppWindowCount());
 
   // Launch a platform app that shows a window.
   ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_EQ(1U, GetShellWindowCount());
-  int shell_window_id = GetFirstShellWindow()->session_id().id();
+  ASSERT_EQ(1U, GetAppWindowCount());
+  int app_window_id = GetFirstAppWindow()->session_id().id();
 
   // But it's not visible to the extensions API, it still thinks there's just
   // one browser window.
   ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(extension));
   // It can't look it up by ID either
-  ASSERT_FALSE(RunGetWindowFunctionForExtension(shell_window_id, extension));
+  ASSERT_FALSE(RunGetWindowFunctionForExtension(app_window_id, extension));
 
   // The app can also only see one window (its own).
-  // TODO(jeremya): add an extension function to get a shell window by ID, and
-  // to get a list of all the shell windows, so we can test this.
+  // TODO(jeremya): add an extension function to get an app window by ID, and
+  // to get a list of all the app windows, so we can test this.
 
   // Launch another platform app that also shows a window.
   ExtensionTestMessageListener launched_listener2("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
 
-  // There are two total shell windows, but each app can only see its own.
-  ASSERT_EQ(2U, GetShellWindowCount());
+  // There are two total app windows, but each app can only see its own.
+  ASSERT_EQ(2U, GetAppWindowCount());
   // TODO(jeremya): as above, this requires more extension functions.
 }
 
@@ -715,19 +715,18 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 // This appears to be unreliable on linux.
 // TODO(stevenjb): Investigate and enable
 #if defined(OS_LINUX) && !defined(USE_ASH)
-#define MAYBE_ShellWindowRestoreState DISABLED_ShellWindowRestoreState
+#define MAYBE_AppWindowRestoreState DISABLED_AppWindowRestoreState
 #else
-#define MAYBE_ShellWindowRestoreState ShellWindowRestoreState
+#define MAYBE_AppWindowRestoreState AppWindowRestoreState
 #endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       MAYBE_ShellWindowRestoreState) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWindowRestoreState) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restore_state"));
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       ShellWindowAdjustBoundsToBeVisibleOnScreen) {
+                       AppWindowAdjustBoundsToBeVisibleOnScreen) {
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
-  ShellWindow* window = CreateShellWindow(extension);
+  AppWindow* window = CreateAppWindow(extension);
 
   // The screen bounds didn't change, the cached bounds didn't need to adjust.
   gfx::Rect cached_bounds(80, 100, 400, 400);
@@ -735,28 +734,28 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   gfx::Rect current_screen_bounds(0, 0, 1600, 900);
   gfx::Size minimum_size(200, 200);
   gfx::Rect bounds;
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(window,
-                                                    cached_bounds,
-                                                    cached_screen_bounds,
-                                                    current_screen_bounds,
-                                                    minimum_size,
-                                                    &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
+                                                  cached_bounds,
+                                                  cached_screen_bounds,
+                                                  current_screen_bounds,
+                                                  minimum_size,
+                                                  &bounds);
   EXPECT_EQ(bounds, cached_bounds);
 
   // We have an empty screen bounds, the cached bounds didn't need to adjust.
   gfx::Rect empty_screen_bounds;
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(window,
-                                                    cached_bounds,
-                                                    empty_screen_bounds,
-                                                    current_screen_bounds,
-                                                    minimum_size,
-                                                    &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
+                                                  cached_bounds,
+                                                  empty_screen_bounds,
+                                                  current_screen_bounds,
+                                                  minimum_size,
+                                                  &bounds);
   EXPECT_EQ(bounds, cached_bounds);
 
   // Cached bounds is completely off the new screen bounds in horizontal
   // locations. Expect to reposition the bounds.
   gfx::Rect horizontal_out_of_screen_bounds(-800, 100, 400, 400);
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
       window,
       horizontal_out_of_screen_bounds,
       gfx::Rect(-1366, 0, 1600, 900),
@@ -768,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // Cached bounds is completely off the new screen bounds in vertical
   // locations. Expect to reposition the bounds.
   gfx::Rect vertical_out_of_screen_bounds(10, 1000, 400, 400);
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(
       window,
       vertical_out_of_screen_bounds,
       gfx::Rect(-1366, 0, 1600, 900),
@@ -779,24 +778,22 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   // From a large screen resulotion to a small one. Expect it fit on screen.
   gfx::Rect big_cache_bounds(10, 10, 1000, 1000);
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
-      window,
-      big_cache_bounds,
-      gfx::Rect(0, 0, 1600, 1000),
-      gfx::Rect(0, 0, 800, 600),
-      minimum_size,
-      &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
+                                                  big_cache_bounds,
+                                                  gfx::Rect(0, 0, 1600, 1000),
+                                                  gfx::Rect(0, 0, 800, 600),
+                                                  minimum_size,
+                                                  &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 0, 800, 600));
 
   // Don't resize the bounds smaller than minimum size, when the minimum size is
   // larger than the screen.
-  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
-      window,
-      big_cache_bounds,
-      gfx::Rect(0, 0, 1600, 1000),
-      gfx::Rect(0, 0, 800, 600),
-      gfx::Size(900, 900),
-      &bounds);
+  CallAdjustBoundsToBeVisibleOnScreenForAppWindow(window,
+                                                  big_cache_bounds,
+                                                  gfx::Rect(0, 0, 1600, 1000),
+                                                  gfx::Rect(0, 0, 800, 600),
+                                                  gfx::Size(900, 900),
+                                                  &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 0, 900, 900));
 }
 
@@ -808,7 +805,7 @@ class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
     RELAUNCH = 0x1,
     HAS_ID = 0x2,
   };
-  // Runs a test inside a harness that opens DevTools on a shell window.
+  // Runs a test inside a harness that opens DevTools on an app window.
   void RunTestWithDevTools(const char* name, int test_flags);
 };
 
@@ -819,30 +816,30 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
   const Extension* extension = LoadAndLaunchPlatformApp(name);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ShellWindow* window = GetFirstShellWindow();
+  AppWindow* window = GetFirstAppWindow();
   ASSERT_TRUE(window);
   ASSERT_EQ(window->window_key().empty(), (test_flags & HAS_ID) == 0);
   content::RenderViewHost* rvh = window->web_contents()->GetRenderViewHost();
   ASSERT_TRUE(rvh);
 
-  // Ensure no DevTools open for the ShellWindow, then open one.
+  // Ensure no DevTools open for the AppWindow, then open one.
   ASSERT_FALSE(DevToolsAgentHost::HasFor(rvh));
   DevToolsWindow::OpenDevToolsWindow(rvh);
   ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
 
   if (test_flags & RELAUNCH) {
-    // Close the ShellWindow, and ensure it is gone.
-    CloseShellWindow(window);
-    ASSERT_FALSE(GetFirstShellWindow());
+    // Close the AppWindow, and ensure it is gone.
+    CloseAppWindow(window);
+    ASSERT_FALSE(GetFirstAppWindow());
 
-    // Relaunch the app and get a new ShellWindow.
+    // Relaunch the app and get a new AppWindow.
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     OpenApplication(AppLaunchParams(
         browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
     app_loaded_observer.Wait();
-    window = GetFirstShellWindow();
+    window = GetFirstAppWindow();
     ASSERT_TRUE(window);
 
     // DevTools should have reopened with the relaunch.
@@ -895,10 +892,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
       LoadAndLaunchPlatformApp("optional_permission_request");
   ASSERT_TRUE(extension) << "Failed to load extension.";
 
-  WebContents* web_contents = GetFirstShellWindowWebContents();
+  WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
 
-  // Verify that the shell window has a dialog attached.
+  // Verify that the app window has a dialog attached.
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -919,13 +916,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   const Extension* extension = LoadAndLaunchPlatformApp("reload");
   ASSERT_TRUE(extension);
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(GetFirstShellWindow());
+  ASSERT_TRUE(GetFirstAppWindow());
 
   // Now tell the app to reload itself
   ExtensionTestMessageListener launched_listener2("Launched", false);
   launched_listener.Reply("reload");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
-  ASSERT_TRUE(GetFirstShellWindow());
+  ASSERT_TRUE(GetFirstAppWindow());
 }
 
 namespace {
@@ -962,7 +959,7 @@ class CheckExtensionInstalledObserver : public content::NotificationObserver {
 // Component App Test 1 of 3: ensure that the initial load of a component
 // extension utilizing a background page (e.g. a v2 platform app) has its
 // background page run and is launchable. Waits for the Launched response from
-// the script resource in the opened shell window.
+// the script resource in the opened app window.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        PRE_PRE_ComponentAppBackgroundPage) {
   CheckExtensionInstalledObserver should_install;
@@ -1076,9 +1073,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   LoadAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  EXPECT_EQ(1LU, GetShellWindowCount());
-  EXPECT_TRUE(GetFirstShellWindow()->web_contents()->
-      GetRenderWidgetHostView()->HasFocus());
+  EXPECT_EQ(1LU, GetAppWindowCount());
+  EXPECT_TRUE(GetFirstAppWindow()
+                  ->web_contents()
+                  ->GetRenderWidgetHostView()
+                  ->HasFocus());
 }
 
 // The next three tests will only run automatically with Chrome branded builds
@@ -1126,7 +1125,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ScopedPreviewTestingDelegate preview_delegate(false);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
-  GetFirstShellWindow()->GetBaseWindow()->Close();
+  GetFirstAppWindow()->GetBaseWindow()->Close();
 }
 
 // This test currently only passes on OS X (on other platforms the print preview
@@ -1152,14 +1151,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
             minimum_dialog_size.width());
   EXPECT_GE(preview_delegate.dialog_size().height(),
             minimum_dialog_size.height());
-  GetFirstShellWindow()->GetBaseWindow()->Close();
+  GetFirstAppWindow()->GetBaseWindow()->Close();
 }
 
 
 #if defined(OS_CHROMEOS)
 
 class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
-                                        public ShellWindowRegistry::Observer {
+                                        public AppWindowRegistry::Observer {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Tell chromeos to launch in Guest mode, aka incognito.
@@ -1172,15 +1171,15 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
     PlatformAppBrowserTest::SetUp();
   }
 
-  // ShellWindowRegistry::Observer implementation.
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {
-    opener_app_ids_.insert(shell_window->extension()->id());
+  // AppWindowRegistry::Observer implementation.
+  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {
+    opener_app_ids_.insert(app_window->extension()->id());
   }
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {}
 
  protected:
-  // A set of ids of apps we've seen open a shell window.
+  // A set of ids of apps we've seen open a app window.
   std::set<std::string> opener_app_ids_;
 };
 
@@ -1201,8 +1200,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
     content::RunAllPendingInMessageLoop();
   }
 
-  // Listen for new shell windows so we see the file manager app launch itself.
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(incognito_profile);
+  // Listen for new app windows so we see the file manager app launch itself.
+  AppWindowRegistry* registry = AppWindowRegistry::Get(incognito_profile);
   ASSERT_TRUE(registry != NULL);
   registry->AddObserver(this);
 

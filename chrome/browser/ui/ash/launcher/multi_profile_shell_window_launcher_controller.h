@@ -9,6 +9,8 @@
 
 // Inherits from ShellWindowLauncherController and overwrites the ShellWindow
 // observing functions to switch between users dynamically.
+// TODO(jamescook): Rename this to MultiProfileAppWindowLauncherController.
+// http://crbug.com/344079
 class MultiProfileShellWindowLauncherController
     : public ShellWindowLauncherController {
  public:
@@ -20,19 +22,19 @@ class MultiProfileShellWindowLauncherController
   virtual void ActiveUserChanged(const std::string& user_email) OVERRIDE;
   virtual void AdditionalUserAddedToSession(Profile* profile) OVERRIDE;
 
-  // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  // Overridden from AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
  private:
-  typedef std::vector<apps::ShellWindow*> ShellWindowList;
-  typedef std::vector<apps::ShellWindowRegistry*> ShellWindowRegistryList;
+  typedef std::vector<apps::AppWindow*> AppWindowList;
+  typedef std::vector<apps::AppWindowRegistry*> AppWindowRegistryList;
 
-  // A list of all shell windows for all users.
-  ShellWindowList shell_window_list_;
+  // A list of all app windows for all users.
+  AppWindowList app_window_list_;
 
-  // A list of the shell window registries which we additionally observe.
-  ShellWindowRegistryList multi_user_registry_;
+  // A list of the app window registries which we additionally observe.
+  AppWindowRegistryList multi_user_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiProfileShellWindowLauncherController);
 };

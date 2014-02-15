@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
+#include "apps/app_window.h"
 #include "apps/app_window_contents.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -36,7 +36,7 @@
 #include "ui/aura/window.h"
 #endif
 
-using apps::ShellWindow;
+using apps::AppWindow;
 
 namespace app_window = extensions::api::app_window;
 namespace Create = app_window::Create;
@@ -108,9 +108,9 @@ bool AppWindowCreateFunction::RunImpl() {
   bool inject_html_titlebar = false;
 
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
-  // ShellWindow::Create so we can set the opener at create time rather than
+  // AppWindow::Create so we can set the opener at create time rather than
   // with a hack in AppWindowCustomBindings::GetView().
-  ShellWindow::CreateParams create_params;
+  AppWindow::CreateParams create_params;
   app_window::CreateWindowOptions* options = params->options.get();
   if (options) {
     if (options->id.get()) {
@@ -131,9 +131,9 @@ bool AppWindowCreateFunction::RunImpl() {
       }
 
       if (!options->singleton || *options->singleton) {
-        ShellWindow* window = apps::ShellWindowRegistry::Get(
-            GetProfile())->GetShellWindowForAppAndKey(extension_id(),
-                                                      create_params.window_key);
+        AppWindow* window = apps::AppWindowRegistry::Get(GetProfile())
+                                ->GetAppWindowForAppAndKey(
+                                      extension_id(), create_params.window_key);
         if (window) {
           content::RenderViewHost* created_view =
               window->web_contents()->GetRenderViewHost();
@@ -144,9 +144,9 @@ bool AppWindowCreateFunction::RunImpl() {
           }
 
           if (options->focused.get() && !*options->focused.get())
-            window->Show(ShellWindow::SHOW_INACTIVE);
+            window->Show(AppWindow::SHOW_INACTIVE);
           else
-            window->Show(ShellWindow::SHOW_ACTIVE);
+            window->Show(AppWindow::SHOW_ACTIVE);
 
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", new base::FundamentalValue(view_id));
@@ -195,7 +195,7 @@ bool AppWindowCreateFunction::RunImpl() {
     if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
         GetExtension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
-          create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+        create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
       }
     }
 
@@ -204,12 +204,12 @@ bool AppWindowCreateFunction::RunImpl() {
           (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
            CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kEnableExperimentalExtensionApis))) {
-        create_params.frame = ShellWindow::FRAME_NONE;
+        create_params.frame = AppWindow::FRAME_NONE;
         inject_html_titlebar = true;
       } else if (*options->frame == kNoneFrameOption) {
-        create_params.frame = ShellWindow::FRAME_NONE;
+        create_params.frame = AppWindow::FRAME_NONE;
       } else {
-        create_params.frame = ShellWindow::FRAME_CHROME;
+        create_params.frame = AppWindow::FRAME_CHROME;
       }
     }
 
@@ -265,17 +265,16 @@ bool AppWindowCreateFunction::RunImpl() {
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
-  ShellWindow* shell_window = new ShellWindow(
+  AppWindow* app_window = new AppWindow(
       GetProfile(), new ChromeShellWindowDelegate(), GetExtension());
-  shell_window->Init(url,
-                     new apps::AppWindowContents(shell_window),
-                     create_params);
+  app_window->Init(
+      url, new apps::AppWindowContentsImpl(app_window), create_params);
 
   if (chrome::IsRunningInForcedAppMode())
-    shell_window->ForcedFullscreen();
+    app_window->ForcedFullscreen();
 
   content::RenderViewHost* created_view =
-      shell_window->web_contents()->GetRenderViewHost();
+      app_window->web_contents()->GetRenderViewHost();
   int view_id = MSG_ROUTING_NONE;
   if (create_params.creator_process_id == created_view->GetProcess()->GetID())
     view_id = created_view->GetRoutingID();
@@ -284,11 +283,11 @@ bool AppWindowCreateFunction::RunImpl() {
   result->Set("viewId", new base::FundamentalValue(view_id));
   result->Set("injectTitlebar",
       new base::FundamentalValue(inject_html_titlebar));
-  result->Set("id", new base::StringValue(shell_window->window_key()));
-  shell_window->GetSerializedState(result);
+  result->Set("id", new base::StringValue(app_window->window_key()));
+  app_window->GetSerializedState(result);
   SetResult(result);
 
-  if (apps::ShellWindowRegistry::Get(GetProfile())
+  if (apps::AppWindowRegistry::Get(GetProfile())
           ->HadDevToolsAttached(created_view)) {
     new DevToolsRestorer(this, created_view);
     return true;

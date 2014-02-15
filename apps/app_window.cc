@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 
-#include "apps/shell_window_geometry_cache.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_geometry_cache.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -57,26 +57,23 @@ const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
 
 bool IsFullscreen(int fullscreen_types) {
-  return fullscreen_types != apps::ShellWindow::FULLSCREEN_TYPE_NONE;
+  return fullscreen_types != apps::AppWindow::FULLSCREEN_TYPE_NONE;
 }
 
 }  // namespace
 
 namespace apps {
 
-ShellWindow::SizeConstraints::SizeConstraints()
-    : maximum_size_(kUnboundedSize, kUnboundedSize) {
-}
+AppWindow::SizeConstraints::SizeConstraints()
+    : maximum_size_(kUnboundedSize, kUnboundedSize) {}
 
-ShellWindow::SizeConstraints::SizeConstraints(const gfx::Size& min_size,
-                                              const gfx::Size& max_size)
-    : minimum_size_(min_size),
-      maximum_size_(max_size) {
-}
+AppWindow::SizeConstraints::SizeConstraints(const gfx::Size& min_size,
+                                            const gfx::Size& max_size)
+    : minimum_size_(min_size), maximum_size_(max_size) {}
 
-ShellWindow::SizeConstraints::~SizeConstraints() {}
+AppWindow::SizeConstraints::~SizeConstraints() {}
 
-gfx::Size ShellWindow::SizeConstraints::ClampSize(gfx::Size size) const {
+gfx::Size AppWindow::SizeConstraints::ClampSize(gfx::Size size) const {
   const gfx::Size max_size = GetMaximumSize();
   if (max_size.width() != kUnboundedSize)
     size.set_width(std::min(size.width(), GetMaximumSize().width()));
@@ -86,62 +83,62 @@ gfx::Size ShellWindow::SizeConstraints::ClampSize(gfx::Size size) const {
   return size;
 }
 
-bool ShellWindow::SizeConstraints::HasMinimumSize() const {
+bool AppWindow::SizeConstraints::HasMinimumSize() const {
   return GetMinimumSize().width() != kUnboundedSize ||
-      GetMinimumSize().height() != kUnboundedSize;
+         GetMinimumSize().height() != kUnboundedSize;
 }
 
-bool ShellWindow::SizeConstraints::HasMaximumSize() const {
+bool AppWindow::SizeConstraints::HasMaximumSize() const {
   const gfx::Size max_size = GetMaximumSize();
   return max_size.width() != kUnboundedSize ||
-      max_size.height() != kUnboundedSize;
+         max_size.height() != kUnboundedSize;
 }
 
-bool ShellWindow::SizeConstraints::HasFixedSize() const {
+bool AppWindow::SizeConstraints::HasFixedSize() const {
   return !GetMinimumSize().IsEmpty() && GetMinimumSize() == GetMaximumSize();
 }
 
-gfx::Size ShellWindow::SizeConstraints::GetMinimumSize() const {
+gfx::Size AppWindow::SizeConstraints::GetMinimumSize() const {
   return minimum_size_;
 }
 
-gfx::Size ShellWindow::SizeConstraints::GetMaximumSize() const {
+gfx::Size AppWindow::SizeConstraints::GetMaximumSize() const {
   return gfx::Size(
-      maximum_size_.width() == kUnboundedSize ?
-          kUnboundedSize :
-          std::max(maximum_size_.width(), minimum_size_.width()),
-      maximum_size_.height() == kUnboundedSize ?
-          kUnboundedSize :
-          std::max(maximum_size_.height(), minimum_size_.height()));
+      maximum_size_.width() == kUnboundedSize
+          ? kUnboundedSize
+          : std::max(maximum_size_.width(), minimum_size_.width()),
+      maximum_size_.height() == kUnboundedSize
+          ? kUnboundedSize
+          : std::max(maximum_size_.height(), minimum_size_.height()));
 }
 
-void ShellWindow::SizeConstraints::set_minimum_size(const gfx::Size& min_size) {
+void AppWindow::SizeConstraints::set_minimum_size(const gfx::Size& min_size) {
   minimum_size_ = min_size;
 }
 
-void ShellWindow::SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
+void AppWindow::SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
   maximum_size_ = max_size;
 }
 
-ShellWindow::CreateParams::CreateParams()
-  : window_type(ShellWindow::WINDOW_TYPE_DEFAULT),
-    frame(ShellWindow::FRAME_CHROME),
-    transparent_background(false),
-    bounds(INT_MIN, INT_MIN, 0, 0),
-    creator_process_id(0),
-    state(ui::SHOW_STATE_DEFAULT),
-    hidden(false),
-    resizable(true),
-    focused(true),
-    always_on_top(false) {}
+AppWindow::CreateParams::CreateParams()
+    : window_type(AppWindow::WINDOW_TYPE_DEFAULT),
+      frame(AppWindow::FRAME_CHROME),
+      transparent_background(false),
+      bounds(INT_MIN, INT_MIN, 0, 0),
+      creator_process_id(0),
+      state(ui::SHOW_STATE_DEFAULT),
+      hidden(false),
+      resizable(true),
+      focused(true),
+      always_on_top(false) {}
 
-ShellWindow::CreateParams::~CreateParams() {}
+AppWindow::CreateParams::~CreateParams() {}
 
-ShellWindow::Delegate::~Delegate() {}
+AppWindow::Delegate::~Delegate() {}
 
-ShellWindow::ShellWindow(BrowserContext* context,
-                         Delegate* delegate,
-                         const extensions::Extension* extension)
+AppWindow::AppWindow(BrowserContext* context,
+                     Delegate* delegate,
+                     const extensions::Extension* extension)
     : browser_context_(context),
       extension_(extension),
       extension_id_(extension->id()),
@@ -158,15 +155,15 @@ ShellWindow::ShellWindow(BrowserContext* context,
       << "Only off the record window may be opened in the guest mode.";
 }
 
-void ShellWindow::Init(const GURL& url,
-                       ShellWindowContents* shell_window_contents,
-                       const CreateParams& params) {
+void AppWindow::Init(const GURL& url,
+                     AppWindowContents* app_window_contents,
+                     const CreateParams& params) {
   // Initialize the render interface and web contents
-  shell_window_contents_.reset(shell_window_contents);
-  shell_window_contents_->Initialize(browser_context(), url);
-  WebContents* web_contents = shell_window_contents_->GetWebContents();
+  app_window_contents_.reset(app_window_contents);
+  app_window_contents_->Initialize(browser_context(), url);
+  WebContents* web_contents = app_window_contents_->GetWebContents();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAppsShowOnFirstPaint)) {
+          switches::kEnableAppsShowOnFirstPaint)) {
     content::WebContentsObserver::Observe(web_contents);
   }
   delegate_->InitWebContents(web_contents);
@@ -174,16 +171,16 @@ void ShellWindow::Init(const GURL& url,
   extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
-  WebContentsModalDialogManager::FromWebContents(web_contents)->
-      SetDelegate(this);
+  WebContentsModalDialogManager::FromWebContents(web_contents)
+      ->SetDelegate(this);
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_SHELL);
 
   // Initialize the window
   CreateParams new_params = LoadDefaultsAndConstrain(params);
   window_type_ = new_params.window_type;
   window_key_ = new_params.window_key;
-  size_constraints_ = SizeConstraints(new_params.minimum_size,
-                                      new_params.maximum_size);
+  size_constraints_ =
+      SizeConstraints(new_params.minimum_size, new_params.maximum_size);
 
   // Windows cannot be always-on-top in fullscreen mode for security reasons.
   cached_always_on_top_ = new_params.always_on_top;
@@ -218,13 +215,14 @@ void ShellWindow::Init(const GURL& url,
                  content::Source<content::BrowserContext>(
                      client->GetOriginalContext(browser_context_)));
   // Close when the browser process is exiting.
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
-  shell_window_contents_->LoadContents(new_params.creator_process_id);
+  app_window_contents_->LoadContents(new_params.creator_process_id);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAppsShowOnFirstPaint)) {
+          switches::kEnableAppsShowOnFirstPaint)) {
     // We want to show the window only when the content has been painted. For
     // that to happen, we need to define a size for the content, otherwise the
     // layout will happen in a 0x0 area.
@@ -237,10 +235,10 @@ void ShellWindow::Init(const GURL& url,
 
   UpdateExtensionAppIcon();
 
-  ShellWindowRegistry::Get(browser_context_)->AddShellWindow(this);
+  AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 }
 
-ShellWindow::~ShellWindow() {
+AppWindow::~AppWindow() {
   // Unregister now to prevent getting NOTIFICATION_APP_TERMINATING if we're the
   // last window open.
   registrar_.RemoveAll();
@@ -249,16 +247,16 @@ ShellWindow::~ShellWindow() {
   chrome::EndKeepAlive();
 }
 
-void ShellWindow::RequestMediaAccessPermission(
+void AppWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  delegate_->RequestMediaAccessPermission(web_contents, request, callback,
-                                          extension());
+  delegate_->RequestMediaAccessPermission(
+      web_contents, request, callback, extension());
 }
 
-WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
-                                         const content::OpenURLParams& params) {
+WebContents* AppWindow::OpenURLFromTab(WebContents* source,
+                                       const content::OpenURLParams& params) {
   // Don't allow the current tab to be navigated. It would be nice to map all
   // anchor tags (even those without target="_blank") to new tabs, but right
   // now we can't distinguish between those and <meta> refreshes or window.href
@@ -293,12 +291,12 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
   return contents;
 }
 
-void ShellWindow::AddNewContents(WebContents* source,
-                                 WebContents* new_contents,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture,
-                                 bool* was_blocked) {
+void AppWindow::AddNewContents(WebContents* source,
+                               WebContents* new_contents,
+                               WindowOpenDisposition disposition,
+                               const gfx::Rect& initial_pos,
+                               bool user_gesture,
+                               bool* was_blocked) {
   DCHECK(new_contents->GetBrowserContext() == browser_context_);
   delegate_->AddNewContents(browser_context_,
                             new_contents,
@@ -308,7 +306,7 @@ void ShellWindow::AddNewContents(WebContents* source,
                             was_blocked);
 }
 
-bool ShellWindow::PreHandleKeyboardEvent(
+bool AppWindow::PreHandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
@@ -331,7 +329,7 @@ bool ShellWindow::PreHandleKeyboardEvent(
   return false;
 }
 
-void ShellWindow::HandleKeyboardEvent(
+void AppWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   // If the window is currently fullscreen and not forced, ESC should leave
@@ -347,9 +345,9 @@ void ShellWindow::HandleKeyboardEvent(
   native_app_window_->HandleKeyboardEvent(event);
 }
 
-void ShellWindow::RequestToLockMouse(WebContents* web_contents,
-                                     bool user_gesture,
-                                     bool last_unlocked_by_target) {
+void AppWindow::RequestToLockMouse(WebContents* web_contents,
+                                   bool user_gesture,
+                                   bool last_unlocked_by_target) {
   bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
       APIPermission::kPointerLock,
       extension_,
@@ -358,16 +356,15 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
   web_contents->GotResponseToLockMouseRequest(has_permission);
 }
 
-bool ShellWindow::PreHandleGestureEvent(
-    WebContents* source,
-    const blink::WebGestureEvent& event) {
-  // Disable pinch zooming in shell windows.
+bool AppWindow::PreHandleGestureEvent(WebContents* source,
+                                      const blink::WebGestureEvent& event) {
+  // Disable pinch zooming in app windows.
   return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-      event.type == blink::WebGestureEvent::GesturePinchEnd;
+         event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+         event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
-void ShellWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
+void AppWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
   first_paint_complete_ = true;
   if (show_on_first_paint_) {
     DCHECK(delayed_show_type_ == SHOW_ACTIVE ||
@@ -376,74 +373,69 @@ void ShellWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
   }
 }
 
-void ShellWindow::OnNativeClose() {
-  ShellWindowRegistry::Get(browser_context_)->RemoveShellWindow(this);
-  if (shell_window_contents_) {
-    WebContents* web_contents = shell_window_contents_->GetWebContents();
-    WebContentsModalDialogManager::FromWebContents(web_contents)->
-        SetDelegate(NULL);
-    shell_window_contents_->NativeWindowClosed();
+void AppWindow::OnNativeClose() {
+  AppWindowRegistry::Get(browser_context_)->RemoveAppWindow(this);
+  if (app_window_contents_) {
+    WebContents* web_contents = app_window_contents_->GetWebContents();
+    WebContentsModalDialogManager::FromWebContents(web_contents)
+        ->SetDelegate(NULL);
+    app_window_contents_->NativeWindowClosed();
   }
   delete this;
 }
 
-void ShellWindow::OnNativeWindowChanged() {
+void AppWindow::OnNativeWindowChanged() {
   SaveWindowPosition();
 
 #if defined(OS_WIN)
-  if (native_app_window_ &&
-      cached_always_on_top_ &&
-      !IsFullscreen(fullscreen_types_) &&
-      !native_app_window_->IsMaximized() &&
+  if (native_app_window_ && cached_always_on_top_ &&
+      !IsFullscreen(fullscreen_types_) && !native_app_window_->IsMaximized() &&
       !native_app_window_->IsMinimized()) {
     UpdateNativeAlwaysOnTop();
   }
 #endif
 
-  if (shell_window_contents_ && native_app_window_)
-    shell_window_contents_->NativeWindowChanged(native_app_window_.get());
+  if (app_window_contents_ && native_app_window_)
+    app_window_contents_->NativeWindowChanged(native_app_window_.get());
 }
 
-void ShellWindow::OnNativeWindowActivated() {
-  ShellWindowRegistry::Get(browser_context_)->ShellWindowActivated(this);
+void AppWindow::OnNativeWindowActivated() {
+  AppWindowRegistry::Get(browser_context_)->AppWindowActivated(this);
 }
 
-content::WebContents* ShellWindow::web_contents() const {
-  return shell_window_contents_->GetWebContents();
+content::WebContents* AppWindow::web_contents() const {
+  return app_window_contents_->GetWebContents();
 }
 
-NativeAppWindow* ShellWindow::GetBaseWindow() {
-  return native_app_window_.get();
-}
+NativeAppWindow* AppWindow::GetBaseWindow() { return native_app_window_.get(); }
 
-gfx::NativeWindow ShellWindow::GetNativeWindow() {
+gfx::NativeWindow AppWindow::GetNativeWindow() {
   return GetBaseWindow()->GetNativeWindow();
 }
 
-gfx::Rect ShellWindow::GetClientBounds() const {
+gfx::Rect AppWindow::GetClientBounds() const {
   gfx::Rect bounds = native_app_window_->GetBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
   return bounds;
 }
 
-base::string16 ShellWindow::GetTitle() const {
+base::string16 AppWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
   base::string16 title;
-  if (!web_contents() ||
-      !web_contents()->GetController().GetActiveEntry() ||
+  if (!web_contents() || !web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
     title = base::UTF8ToUTF16(extension()->name());
   } else {
     title = web_contents()->GetTitle();
   }
-  const base::char16 kBadChars[] = { '\n', 0 };
+  const base::char16 kBadChars[] = {'\n', 0};
   base::RemoveChars(title, kBadChars, &title);
   return title;
 }
 
-void ShellWindow::SetAppIconUrl(const GURL& url) {
+void AppWindow::SetAppIconUrl(const GURL& url) {
   // If the same url is being used for the badge, ignore it.
   if (url == badge_icon_url_)
     return;
@@ -458,12 +450,12 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
   web_contents()->DownloadImage(
       url,
       true,  // is a favicon
-      0,  // no maximum size
-      base::Bind(&ShellWindow::DidDownloadFavicon,
+      0,     // no maximum size
+      base::Bind(&AppWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void ShellWindow::SetBadgeIconUrl(const GURL& url) {
+void AppWindow::SetBadgeIconUrl(const GURL& url) {
   // Avoid using any previous icons that were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
@@ -474,35 +466,35 @@ void ShellWindow::SetBadgeIconUrl(const GURL& url) {
   web_contents()->DownloadImage(
       url,
       true,  // is a favicon
-      0,  // no maximum size
-      base::Bind(&ShellWindow::DidDownloadFavicon,
+      0,     // no maximum size
+      base::Bind(&AppWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void ShellWindow::ClearBadge() {
+void AppWindow::ClearBadge() {
   badge_icon_image_.reset();
   badge_icon_url_ = GURL();
   UpdateBadgeIcon(gfx::Image());
 }
 
-void ShellWindow::UpdateShape(scoped_ptr<SkRegion> region) {
+void AppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
   native_app_window_->UpdateShape(region.Pass());
 }
 
-void ShellWindow::UpdateDraggableRegions(
+void AppWindow::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   native_app_window_->UpdateDraggableRegions(regions);
 }
 
-void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
+void AppWindow::UpdateAppIcon(const gfx::Image& image) {
   if (image.IsEmpty())
     return;
   app_icon_ = image;
   native_app_window_->UpdateWindowIcon();
-  ShellWindowRegistry::Get(browser_context_)->ShellWindowIconChanged(this);
+  AppWindowRegistry::Get(browser_context_)->AppWindowIconChanged(this);
 }
 
-void ShellWindow::Fullscreen() {
+void AppWindow::Fullscreen() {
 #if !defined(OS_MACOSX)
   // Do not enter fullscreen mode if disallowed by pref.
   PrefService* prefs =
@@ -515,15 +507,11 @@ void ShellWindow::Fullscreen() {
   SetNativeWindowFullscreen();
 }
 
-void ShellWindow::Maximize() {
-  GetBaseWindow()->Maximize();
-}
+void AppWindow::Maximize() { GetBaseWindow()->Maximize(); }
 
-void ShellWindow::Minimize() {
-  GetBaseWindow()->Minimize();
-}
+void AppWindow::Minimize() { GetBaseWindow()->Minimize(); }
 
-void ShellWindow::Restore() {
+void AppWindow::Restore() {
   if (IsFullscreen(fullscreen_types_)) {
     fullscreen_types_ = FULLSCREEN_TYPE_NONE;
     SetNativeWindowFullscreen();
@@ -532,7 +520,7 @@ void ShellWindow::Restore() {
   }
 }
 
-void ShellWindow::OSFullscreen() {
+void AppWindow::OSFullscreen() {
 #if !defined(OS_MACOSX)
   // Do not enter fullscreen mode if disallowed by pref.
   PrefService* prefs =
@@ -545,24 +533,24 @@ void ShellWindow::OSFullscreen() {
   SetNativeWindowFullscreen();
 }
 
-void ShellWindow::ForcedFullscreen() {
+void AppWindow::ForcedFullscreen() {
   fullscreen_types_ |= FULLSCREEN_TYPE_FORCED;
   SetNativeWindowFullscreen();
 }
 
-void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
+void AppWindow::SetMinimumSize(const gfx::Size& min_size) {
   size_constraints_.set_minimum_size(min_size);
   OnSizeConstraintsChanged();
 }
 
-void ShellWindow::SetMaximumSize(const gfx::Size& max_size) {
+void AppWindow::SetMaximumSize(const gfx::Size& max_size) {
   size_constraints_.set_maximum_size(max_size);
   OnSizeConstraintsChanged();
 }
 
-void ShellWindow::Show(ShowType show_type) {
+void AppWindow::Show(ShowType show_type) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAppsShowOnFirstPaint)) {
+          switches::kEnableAppsShowOnFirstPaint)) {
     show_on_first_paint_ = true;
 
     if (!first_paint_complete_) {
@@ -581,7 +569,7 @@ void ShellWindow::Show(ShowType show_type) {
   }
 }
 
-void ShellWindow::Hide() {
+void AppWindow::Hide() {
   // This is there to prevent race conditions with Hide() being called before
   // there was a non-empty paint. It should have no effect in a non-racy
   // scenario where the application is hiding then showing a window: the second
@@ -590,7 +578,7 @@ void ShellWindow::Hide() {
   GetBaseWindow()->Hide();
 }
 
-void ShellWindow::SetAlwaysOnTop(bool always_on_top) {
+void AppWindow::SetAlwaysOnTop(bool always_on_top) {
   if (cached_always_on_top_ == always_on_top)
     return;
 
@@ -605,15 +593,13 @@ void ShellWindow::SetAlwaysOnTop(bool always_on_top) {
   OnNativeWindowChanged();
 }
 
-bool ShellWindow::IsAlwaysOnTop() const {
-  return cached_always_on_top_;
-}
+bool AppWindow::IsAlwaysOnTop() const { return cached_always_on_top_; }
 
-void ShellWindow::GetSerializedState(base::DictionaryValue* properties) const {
+void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   DCHECK(properties);
 
   properties->SetBoolean("fullscreen",
-      native_app_window_->IsFullscreenOrPending());
+                         native_app_window_->IsFullscreenOrPending());
   properties->SetBoolean("minimized", native_app_window_->IsMinimized());
   properties->SetBoolean("maximized", native_app_window_->IsMaximized());
   properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
@@ -641,12 +627,12 @@ void ShellWindow::GetSerializedState(base::DictionaryValue* properties) const {
 //------------------------------------------------------------------------------
 // Private methods
 
-void ShellWindow::UpdateBadgeIcon(const gfx::Image& image) {
+void AppWindow::UpdateBadgeIcon(const gfx::Image& image) {
   badge_icon_ = image;
   native_app_window_->UpdateBadgeIcon();
 }
 
-void ShellWindow::DidDownloadFavicon(
+void AppWindow::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
@@ -674,13 +660,13 @@ void ShellWindow::DidDownloadFavicon(
   UpdateBadgeIcon(gfx::Image::CreateFrom1xBitmap(largest));
 }
 
-void ShellWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
+void AppWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
   DCHECK_EQ(app_icon_image_.get(), image);
 
   UpdateAppIcon(gfx::Image(app_icon_image_->image_skia()));
 }
 
-void ShellWindow::UpdateExtensionAppIcon() {
+void AppWindow::UpdateExtensionAppIcon() {
   // Avoid using any previous app icons were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
@@ -697,7 +683,7 @@ void ShellWindow::UpdateExtensionAppIcon() {
   app_icon_image_->image_skia().GetRepresentation(1.0f);
 }
 
-void ShellWindow::OnSizeConstraintsChanged() {
+void AppWindow::OnSizeConstraintsChanged() {
   native_app_window_->UpdateWindowMinMaxSize();
   gfx::Rect bounds = GetClientBounds();
   gfx::Size constrained_size = size_constraints_.ClampSize(bounds.size());
@@ -708,21 +694,22 @@ void ShellWindow::OnSizeConstraintsChanged() {
   OnNativeWindowChanged();
 }
 
-void ShellWindow::SetNativeWindowFullscreen() {
+void AppWindow::SetNativeWindowFullscreen() {
   native_app_window_->SetFullscreen(fullscreen_types_);
 
   if (cached_always_on_top_)
     UpdateNativeAlwaysOnTop();
 }
 
-bool ShellWindow::IntersectsWithTaskbar() const {
+bool AppWindow::IntersectsWithTaskbar() const {
 #if defined(OS_WIN)
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect window_bounds = native_app_window_->GetRestoredBounds();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
 
   for (std::vector<gfx::Display>::const_iterator it = displays.begin();
-       it != displays.end(); ++it) {
+       it != displays.end();
+       ++it) {
     gfx::Rect taskbar_bounds = it->bounds();
     taskbar_bounds.Subtract(it->work_area());
     if (taskbar_bounds.IsEmpty())
@@ -736,7 +723,7 @@ bool ShellWindow::IntersectsWithTaskbar() const {
   return false;
 }
 
-void ShellWindow::UpdateNativeAlwaysOnTop() {
+void AppWindow::UpdateNativeAlwaysOnTop() {
   DCHECK(cached_always_on_top_);
   bool is_on_top = native_app_window_->IsAlwaysOnTop();
   bool fullscreen = IsFullscreen(fullscreen_types_);
@@ -753,23 +740,21 @@ void ShellWindow::UpdateNativeAlwaysOnTop() {
   }
 }
 
-void ShellWindow::CloseContents(WebContents* contents) {
+void AppWindow::CloseContents(WebContents* contents) {
   native_app_window_->Close();
 }
 
-bool ShellWindow::ShouldSuppressDialogs() {
-  return true;
-}
+bool AppWindow::ShouldSuppressDialogs() { return true; }
 
-content::ColorChooser* ShellWindow::OpenColorChooser(
-      WebContents* web_contents,
-      SkColor initial_color,
-      const std::vector<content::ColorSuggestion>& suggestionss) {
+content::ColorChooser* AppWindow::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor initial_color,
+    const std::vector<content::ColorSuggestion>& suggestionss) {
   return delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
-void ShellWindow::RunFileChooser(WebContents* tab,
-                                 const content::FileChooserParams& params) {
+void AppWindow::RunFileChooser(WebContents* tab,
+                               const content::FileChooserParams& params) {
   if (window_type_is_panel()) {
     // Panels can't host a file dialog, abort. TODO(stevenjb): allow file
     // dialogs to be unhosted but still close with the owning web contents.
@@ -781,24 +766,22 @@ void ShellWindow::RunFileChooser(WebContents* tab,
   delegate_->RunFileChooser(tab, params);
 }
 
-bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
-  return true;
-}
+bool AppWindow::IsPopupOrPanel(const WebContents* source) const { return true; }
 
-void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
+void AppWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
   native_app_window_->SetBounds(pos);
 }
 
-void ShellWindow::NavigationStateChanged(
-    const content::WebContents* source, unsigned changed_flags) {
+void AppWindow::NavigationStateChanged(const content::WebContents* source,
+                                       unsigned changed_flags) {
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     native_app_window_->UpdateWindowTitle();
   else if (changed_flags & content::INVALIDATE_TYPE_TAB)
     native_app_window_->UpdateWindowIcon();
 }
 
-void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
-                                             bool enter_fullscreen) {
+void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
+                                           bool enter_fullscreen) {
 #if !defined(OS_MACOSX)
   // Do not enter fullscreen mode if disallowed by pref.
   // TODO(bartfab): Add a test once it becomes possible to simulate a user
@@ -812,9 +795,9 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
 #endif
 
   if (!IsExtensionWithPermissionOrSuggestInConsole(
-      APIPermission::kFullscreen,
-      extension_,
-      source->GetRenderViewHost())) {
+           APIPermission::kFullscreen,
+           extension_,
+           source->GetRenderViewHost())) {
     return;
   }
 
@@ -825,19 +808,19 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
   SetNativeWindowFullscreen();
 }
 
-bool ShellWindow::IsFullscreenForTabOrPending(
-    const content::WebContents* source) const {
+bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
+    const {
   return ((fullscreen_types_ & FULLSCREEN_TYPE_HTML_API) != 0);
 }
 
-void ShellWindow::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
+void AppWindow::Observe(int type,
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const extensions::Extension* unloaded_extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
+          content::Details<extensions::UnloadedExtensionInfo>(details)
+              ->extension;
       if (extension_ == unloaded_extension)
         native_app_window_->Close();
       break;
@@ -850,54 +833,51 @@ void ShellWindow::Observe(int type,
   }
 }
 
-void ShellWindow::SetWebContentsBlocked(content::WebContents* web_contents,
-                                        bool blocked) {
+void AppWindow::SetWebContentsBlocked(content::WebContents* web_contents,
+                                      bool blocked) {
   delegate_->SetWebContentsBlocked(web_contents, blocked);
 }
 
-bool ShellWindow::IsWebContentsVisible(content::WebContents* web_contents) {
+bool AppWindow::IsWebContentsVisible(content::WebContents* web_contents) {
   return delegate_->IsWebContentsVisible(web_contents);
 }
 
 extensions::ActiveTabPermissionGranter*
-    ShellWindow::GetActiveTabPermissionGranter() {
-  // Shell windows don't support the activeTab permission.
+AppWindow::GetActiveTabPermissionGranter() {
+  // App windows don't support the activeTab permission.
   return NULL;
 }
 
-WebContentsModalDialogHost* ShellWindow::GetWebContentsModalDialogHost() {
+WebContentsModalDialogHost* AppWindow::GetWebContentsModalDialogHost() {
   return native_app_window_.get();
 }
 
-void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
-                                              const std::string& message) {
+void AppWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
+                                            const std::string& message) {
   content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
   rvh->Send(new ExtensionMsg_AddMessageToConsole(
       rvh->GetRoutingID(), level, message));
 }
 
-void ShellWindow::SaveWindowPosition() {
+void AppWindow::SaveWindowPosition() {
   if (window_key_.empty())
     return;
   if (!native_app_window_)
     return;
 
-  ShellWindowGeometryCache* cache =
-      ShellWindowGeometryCache::Get(browser_context());
+  AppWindowGeometryCache* cache =
+      AppWindowGeometryCache::Get(browser_context());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
   gfx::Rect screen_bounds =
       gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds).work_area();
   ui::WindowShowState window_state = native_app_window_->GetRestoredState();
-  cache->SaveGeometry(extension()->id(),
-                      window_key_,
-                      bounds,
-                      screen_bounds,
-                      window_state);
+  cache->SaveGeometry(
+      extension()->id(), window_key_, bounds, screen_bounds, window_state);
 }
 
-void ShellWindow::AdjustBoundsToBeVisibleOnScreen(
+void AppWindow::AdjustBoundsToBeVisibleOnScreen(
     const gfx::Rect& cached_bounds,
     const gfx::Rect& cached_screen_bounds,
     const gfx::Rect& current_screen_bounds,
@@ -927,26 +907,28 @@ void ShellWindow::AdjustBoundsToBeVisibleOnScreen(
   }
 }
 
-ShellWindow::CreateParams ShellWindow::LoadDefaultsAndConstrain(
-    CreateParams params) const {
+AppWindow::CreateParams AppWindow::LoadDefaultsAndConstrain(CreateParams params)
+    const {
   if (params.bounds.width() == 0)
     params.bounds.set_width(kDefaultWidth);
   if (params.bounds.height() == 0)
     params.bounds.set_height(kDefaultHeight);
 
-  // If left and top are left undefined, the native shell window will center
+  // If left and top are left undefined, the native app window will center
   // the window on the main screen in a platform-defined manner.
 
   // Load cached state if it exists.
   if (!params.window_key.empty()) {
-    ShellWindowGeometryCache* cache =
-        ShellWindowGeometryCache::Get(browser_context());
+    AppWindowGeometryCache* cache =
+        AppWindowGeometryCache::Get(browser_context());
 
     gfx::Rect cached_bounds;
     gfx::Rect cached_screen_bounds;
     ui::WindowShowState cached_state = ui::SHOW_STATE_DEFAULT;
-    if (cache->GetGeometry(extension()->id(), params.window_key,
-                           &cached_bounds, &cached_screen_bounds,
+    if (cache->GetGeometry(extension()->id(),
+                           params.window_key,
+                           &cached_bounds,
+                           &cached_screen_bounds,
                            &cached_state)) {
       // App window has cached screen bounds, make sure it fits on screen in
       // case the screen resolution changed.
@@ -971,12 +953,13 @@ ShellWindow::CreateParams ShellWindow::LoadDefaultsAndConstrain(
 }
 
 // static
-SkRegion* ShellWindow::RawDraggableRegionsToSkRegion(
-      const std::vector<extensions::DraggableRegion>& regions) {
+SkRegion* AppWindow::RawDraggableRegionsToSkRegion(
+    const std::vector<extensions::DraggableRegion>& regions) {
   SkRegion* sk_region = new SkRegion;
   for (std::vector<extensions::DraggableRegion>::const_iterator iter =
            regions.begin();
-       iter != regions.end(); ++iter) {
+       iter != regions.end();
+       ++iter) {
     const extensions::DraggableRegion& region = *iter;
     sk_region->op(
         region.bounds.x(),

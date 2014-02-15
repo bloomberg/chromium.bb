@@ -8,9 +8,9 @@
 
 // static
 apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindowImpl(
-    apps::ShellWindow* shell_window,
-    const apps::ShellWindow::CreateParams& params) {
+    apps::AppWindow* app_window,
+    const apps::AppWindow::CreateParams& params) {
   NativeAppWindowViews* window = new NativeAppWindowViews;
-  window->Init(shell_window, params);
+  window->Init(app_window, params);
   return window;
 }

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/lazy_instance.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
@@ -108,10 +108,10 @@ WebContents* GetWebContents(content::RenderViewHost* rvh,
       WebContentsModalDialogManager::FromWebContents(contents);
   if (!web_contents_modal_dialog_manager) {
     // If there is no WebContentsModalDialogManager, then this contents is
-    // probably the background page for an app. Try to find a shell window to
+    // probably the background page for an app. Try to find a app window to
     // host the dialog.
-    apps::ShellWindow* window = apps::ShellWindowRegistry::Get(
-        profile)->GetCurrentShellWindowForApp(app_id);
+    apps::AppWindow* window = apps::AppWindowRegistry::Get(profile)
+                                  ->GetCurrentAppWindowForApp(app_id);
     contents = window ? window->web_contents() : NULL;
   }
   return contents;

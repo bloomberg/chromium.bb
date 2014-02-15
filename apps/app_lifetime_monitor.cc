@@ -4,7 +4,7 @@
 
 #include "apps/app_lifetime_monitor.h"
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,11 +29,11 @@ AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
       this, chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
 
-  ShellWindowRegistry* shell_window_registry =
-      ShellWindowRegistry::Factory::GetForBrowserContext(
-          profile_, false /* create */);
-  DCHECK(shell_window_registry);
-  shell_window_registry->AddObserver(this);
+  AppWindowRegistry* app_window_registry =
+      AppWindowRegistry::Factory::GetForBrowserContext(profile_,
+                                                       false /* create */);
+  DCHECK(app_window_registry);
+  app_window_registry->AddObserver(this);
 }
 
 AppLifetimeMonitor::~AppLifetimeMonitor() {}
@@ -77,33 +77,33 @@ void AppLifetimeMonitor::Observe(int type,
   }
 }
 
-void AppLifetimeMonitor::OnShellWindowAdded(ShellWindow* shell_window) {
-  if (shell_window->window_type() != ShellWindow::WINDOW_TYPE_DEFAULT)
+void AppLifetimeMonitor::OnAppWindowAdded(AppWindow* app_window) {
+  if (app_window->window_type() != AppWindow::WINDOW_TYPE_DEFAULT)
     return;
 
-  ShellWindowRegistry::ShellWindowList windows =
-      ShellWindowRegistry::Get(shell_window->browser_context())
-          ->GetShellWindowsForApp(shell_window->extension_id());
+  AppWindowRegistry::AppWindowList windows =
+      AppWindowRegistry::Get(app_window->browser_context())
+          ->GetAppWindowsForApp(app_window->extension_id());
   if (windows.size() == 1)
-    NotifyAppActivated(shell_window->extension_id());
+    NotifyAppActivated(app_window->extension_id());
 }
 
-void AppLifetimeMonitor::OnShellWindowIconChanged(ShellWindow* shell_window) {}
+void AppLifetimeMonitor::OnAppWindowIconChanged(AppWindow* app_window) {}
 
-void AppLifetimeMonitor::OnShellWindowRemoved(ShellWindow* shell_window) {
-  ShellWindowRegistry::ShellWindowList windows =
-      ShellWindowRegistry::Get(shell_window->browser_context())
-          ->GetShellWindowsForApp(shell_window->extension_id());
+void AppLifetimeMonitor::OnAppWindowRemoved(AppWindow* app_window) {
+  AppWindowRegistry::AppWindowList windows =
+      AppWindowRegistry::Get(app_window->browser_context())
+          ->GetAppWindowsForApp(app_window->extension_id());
   if (windows.empty())
-    NotifyAppDeactivated(shell_window->extension_id());
+    NotifyAppDeactivated(app_window->extension_id());
 }
 
 void AppLifetimeMonitor::Shutdown() {
-  ShellWindowRegistry* shell_window_registry =
-      ShellWindowRegistry::Factory::GetForBrowserContext(
-          profile_, false /* create */);
-  if (shell_window_registry)
-    shell_window_registry->RemoveObserver(this);
+  AppWindowRegistry* app_window_registry =
+      AppWindowRegistry::Factory::GetForBrowserContext(profile_,
+                                                       false /* create */);
+  if (app_window_registry)
+    app_window_registry->RemoveObserver(this);
 }
 
 void AppLifetimeMonitor::NotifyAppStart(const std::string& app_id) {

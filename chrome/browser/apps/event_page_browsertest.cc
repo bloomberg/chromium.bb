@@ -28,10 +28,10 @@ class AppEventPageTest : public PlatformAppBrowserTest {
         content::NotificationService::AllSources());
 
     // Close the app window.
-    EXPECT_EQ(1U, GetShellWindowCount());
-    apps::ShellWindow* shell_window = GetFirstShellWindow();
-    ASSERT_TRUE(shell_window);
-    CloseShellWindow(shell_window);
+    EXPECT_EQ(1U, GetAppWindowCount());
+    apps::AppWindow* app_window = GetFirstAppWindow();
+    ASSERT_TRUE(app_window);
+    CloseAppWindow(app_window);
 
     // Verify that the event page is destroyed.
     event_page_suspended.Wait();

@@ -172,8 +172,8 @@ class DeveloperPrivateGetItemsInfoFunction
       const Extension* extension,
       bool extension_is_enabled);
 
-  void GetShellWindowPagesForExtensionProfile(const Extension* extension,
-                                              ItemInspectViewList* result);
+  void GetAppWindowPagesForExtensionProfile(const Extension* extension,
+                                            ItemInspectViewList* result);
 
   linked_ptr<developer::ItemInspectView> constructInspectView(
       const GURL& url,

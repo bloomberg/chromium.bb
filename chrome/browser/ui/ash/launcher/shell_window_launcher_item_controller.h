@@ -14,7 +14,7 @@
 #include "ui/aura/window_observer.h"
 
 namespace apps {
-class ShellWindow;
+class AppWindow;
 }
 
 namespace aura {
@@ -27,14 +27,16 @@ class Image;
 
 class ChromeLauncherController;
 
-// This is a ShellWindowItemLauncherController for shell windows. There is one
+// This is a ShellWindowItemLauncherController for app windows. There is one
 // instance per app, per launcher id.
 // For apps with multiple windows, each item controller keeps track of all
 // windows associated with the app and their activation order.
 // Instances are owned by ash::ShelfItemDelegateManager.
 //
 // Tests are in chrome_launcher_controller_browsertest.cc
-
+//
+// TODO(jamescook): Rename to AppWindowLauncherItemController.
+// http://crbug.com/344079
 class ShellWindowLauncherItemController : public LauncherItemController,
                                           public aura::WindowObserver {
  public:
@@ -45,8 +47,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
 
   virtual ~ShellWindowLauncherItemController();
 
-  void AddShellWindow(apps::ShellWindow* shell_window,
-                      ash::ShelfItemStatus status);
+  void AddAppWindow(apps::AppWindow* app_window, ash::ShelfItemStatus status);
 
   void RemoveShellWindowForWindow(aura::Window* window);
 
@@ -75,25 +76,25 @@ class ShellWindowLauncherItemController : public LauncherItemController,
                                        intptr_t old) OVERRIDE;
 
   // Get the number of running applications/incarnations of this.
-  size_t shell_window_count() const { return shell_windows_.size(); }
+  size_t app_window_count() const { return app_windows_.size(); }
 
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
 
  private:
-  typedef std::list<apps::ShellWindow*> ShellWindowList;
+  typedef std::list<apps::AppWindow*> AppWindowList;
 
-  void ShowAndActivateOrMinimize(apps::ShellWindow* shell_window);
+  void ShowAndActivateOrMinimize(apps::AppWindow* app_window);
 
   // Activate the given |window_to_show|, or - if already selected - advance to
   // the next window of similar type.
-  void ActivateOrAdvanceToNextShellWindow(apps::ShellWindow* window_to_show);
+  void ActivateOrAdvanceToNextShellWindow(apps::AppWindow* window_to_show);
 
-  // List of associated shell windows
-  ShellWindowList shell_windows_;
+  // List of associated app windows
+  AppWindowList app_windows_;
 
-  // Pointer to the most recently active shell window
-  apps::ShellWindow* last_active_shell_window_;
+  // Pointer to the most recently active app window
+  apps::AppWindow* last_active_app_window_;
 
   // The launcher id associated with this set of windows. There is one
   // AppLauncherItemController for each |app_shelf_id_|.

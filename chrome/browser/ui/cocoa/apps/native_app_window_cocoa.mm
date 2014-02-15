@@ -38,8 +38,7 @@
 // windowWillUseStandardFrame, as the window would not restore back to the
 // desired size.
 
-
-using apps::ShellWindow;
+using apps::AppWindow;
 
 @interface NSWindow (NSPrivateApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
@@ -176,6 +175,8 @@ NSInteger AlwaysOnTopWindowLevel() {
 - (CGFloat)roundedCornerRadius;
 @end
 
+// TODO(jamescook): Should these be AppNSWindow to match apps::AppWindow?
+// http://crbug.com/344082
 @interface ShellNSWindow : ChromeEventProcessingWindow
 @end
 @implementation ShellNSWindow
@@ -275,10 +276,10 @@ NSInteger AlwaysOnTopWindowLevel() {
 @end
 
 NativeAppWindowCocoa::NativeAppWindowCocoa(
-    ShellWindow* shell_window,
-    const ShellWindow::CreateParams& params)
-    : shell_window_(shell_window),
-      has_frame_(params.frame == ShellWindow::FRAME_CHROME),
+    AppWindow* app_window,
+    const AppWindow::CreateParams& params)
+    : app_window_(app_window),
+      has_frame_(params.frame == AppWindow::FRAME_CHROME),
       is_hidden_(false),
       is_hidden_with_app_(false),
       is_maximized_(false),
@@ -318,8 +319,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     window_class = [ShellFramelessNSWindow class];
   }
 
-  ShellWindow::SizeConstraints size_constraints =
-      shell_window_->size_constraints();
+  AppWindow::SizeConstraints size_constraints = app_window_->size_constraints();
   shows_resize_controls_ =
       params.resizable && !size_constraints.HasFixedSize();
   shows_fullscreen_controls_ =
@@ -365,10 +365,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   UpdateWindowMinMaxSize();
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
-      Profile::FromBrowserContext(shell_window_->browser_context()),
+      Profile::FromBrowserContext(app_window_->browser_context()),
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      shell_window));
+      app_window));
 }
 
 NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {
@@ -439,7 +439,7 @@ bool NativeAppWindowCocoa::IsFullscreen() const {
 }
 
 void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
-  bool fullscreen = (fullscreen_types != ShellWindow::FULLSCREEN_TYPE_NONE);
+  bool fullscreen = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
   if (fullscreen == is_fullscreen_)
     return;
   is_fullscreen_ = fullscreen;
@@ -540,7 +540,7 @@ void NativeAppWindowCocoa::Show() {
     // If there is a shim to gently request attention, return here. Otherwise
     // show the window as usual.
     if (apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
-            shell_window_)) {
+            app_window_)) {
       return;
     }
   }
@@ -627,7 +627,7 @@ void NativeAppWindowCocoa::UpdateWindowIcon() {
 }
 
 void NativeAppWindowCocoa::UpdateWindowTitle() {
-  base::string16 title = shell_window_->GetTitle();
+  base::string16 title = app_window_->GetTitle();
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
@@ -766,7 +766,7 @@ void NativeAppWindowCocoa::UpdateDraggableRegionsForCustomDrag(
 
   // Aggregate the draggable areas and non-draggable areas such that hit test
   // could be performed easily.
-  draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
+  draggable_region_.reset(AppWindow::RawDraggableRegionsToSkRegion(regions));
 }
 
 void NativeAppWindowCocoa::HandleKeyboardEvent(
@@ -881,8 +881,8 @@ void NativeAppWindowCocoa::RemoveObserver(
 
 void NativeAppWindowCocoa::WindowWillClose() {
   [window_controller_ setAppWindow:NULL];
-  shell_window_->OnNativeWindowChanged();
-  shell_window_->OnNativeClose();
+  app_window_->OnNativeWindowChanged();
+  app_window_->OnNativeClose();
 }
 
 void NativeAppWindowCocoa::WindowDidBecomeKey() {
@@ -890,7 +890,7 @@ void NativeAppWindowCocoa::WindowDidBecomeKey() {
       web_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetActive(true);
-  shell_window_->OnNativeWindowActivated();
+  app_window_->OnNativeWindowActivated();
 
   web_contents()->GetView()->RestoreFocus();
 }
@@ -934,20 +934,20 @@ void NativeAppWindowCocoa::WindowDidFinishResize() {
 }
 
 void NativeAppWindowCocoa::WindowDidResize() {
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::WindowDidMove() {
   UpdateRestoredBounds();
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::WindowDidMiniaturize() {
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::WindowDidDeminiaturize() {
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::WindowWillZoom() {
@@ -1024,11 +1024,11 @@ void NativeAppWindowCocoa::UpdateRestoredBounds() {
 }
 
 void NativeAppWindowCocoa::UpdateWindowMinMaxSize() {
-  gfx::Size min_size = shell_window_->size_constraints().GetMinimumSize();
+  gfx::Size min_size = app_window_->size_constraints().GetMinimumSize();
   [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
 
-  gfx::Size max_size = shell_window_->size_constraints().GetMaximumSize();
-  const int kUnboundedSize = ShellWindow::SizeConstraints::kUnboundedSize;
+  gfx::Size max_size = app_window_->size_constraints().GetMaximumSize();
+  const int kUnboundedSize = AppWindow::SizeConstraints::kUnboundedSize;
   CGFloat max_width = max_size.width() == kUnboundedSize ?
       CGFLOAT_MAX : max_size.width();
   CGFloat max_height = max_size.height() == kUnboundedSize ?

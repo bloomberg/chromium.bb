@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/native_app_window_views_win.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "ash/shell.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
@@ -38,9 +38,9 @@ void NativeAppWindowViewsWin::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params, views::Widget* widget) {
   // If an app has any existing windows, ensure new ones are created on the
   // same desktop.
-  apps::ShellWindow* any_existing_window =
-      apps::ShellWindowRegistry::Get(browser_context())
-          ->GetCurrentShellWindowForApp(extension()->id());
+  apps::AppWindow* any_existing_window =
+      apps::AppWindowRegistry::Get(browser_context())
+          ->GetCurrentAppWindowForApp(extension()->id());
   chrome::HostDesktopType desktop_type;
   if (any_existing_window) {
     desktop_type = chrome::GetHostDesktopTypeForNativeWindow(

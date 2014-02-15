@@ -9,12 +9,12 @@
 #include <map>
 #include <string>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 
 namespace apps {
-class ShellWindow;
+class AppWindow;
 }
 
 namespace aura {
@@ -31,11 +31,13 @@ class ChromeLauncherController;
 class Profile;
 class ShellWindowLauncherItemController;
 
-// ShellWindowLauncherController observes the Shell Window registry and the
+// ShellWindowLauncherController observes the app window registry and the
 // aura window manager. It handles adding and removing launcher items from
 // ChromeLauncherController.
+// TODO(jamescook): Rename this to AppWindowLauncherController.
+// http://crbug.com/344079
 class ShellWindowLauncherController
-    : public apps::ShellWindowRegistry::Observer,
+    : public apps::AppWindowRegistry::Observer,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
@@ -50,11 +52,10 @@ class ShellWindowLauncherController
   // session.
   virtual void AdditionalUserAddedToSession(Profile* profile);
 
-  // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  // Overridden from AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
@@ -64,10 +65,10 @@ class ShellWindowLauncherController
                                  aura::Window* lost_active) OVERRIDE;
 
  protected:
-  // Registers a shell window with the shelf and this object.
-  void RegisterApp(apps::ShellWindow* shell_window);
+  // Registers a app window with the shelf and this object.
+  void RegisterApp(apps::AppWindow* app_window);
 
-  // Unregisters a shell window with the shelf and this object.
+  // Unregisters a app window with the shelf and this object.
   void UnregisterApp(aura::Window* window);
 
   // Check if a given window is known to the launcher controller.
@@ -81,10 +82,10 @@ class ShellWindowLauncherController
   ShellWindowLauncherItemController* ControllerForWindow(aura::Window* window);
 
   ChromeLauncherController* owner_;
-  // A set of unowned ShellWindowRegistry pointers for loaded users.
+  // A set of unowned AppWindowRegistry pointers for loaded users.
   // Note that this will only be used with multiple users in the side by side
   // mode.
-  std::set<apps::ShellWindowRegistry*> registry_;
+  std::set<apps::AppWindowRegistry*> registry_;
   aura::client::ActivationClient* activation_client_;
 
   // Map of app launcher id to controller.

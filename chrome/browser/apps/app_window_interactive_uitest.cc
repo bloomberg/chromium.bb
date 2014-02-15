@@ -56,12 +56,12 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
 
   bool SimulateKeyPress(ui::KeyboardCode key) {
     return ui_test_utils::SendKeyPressToWindowSync(
-      GetFirstShellWindow()->GetNativeWindow(),
-      key,
-      false,
-      false,
-      false,
-      false);
+        GetFirstAppWindow()->GetNativeWindow(),
+        key,
+        false,
+        false,
+        false,
+        false);
   }
 
   // This method will wait until the application is able to ack a key event.
@@ -88,14 +88,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-                  GetFirstShellWindow()->GetNativeWindow()));
+      GetFirstAppWindow()->GetNativeWindow()));
 
   // When receiving the reply, the application will try to go fullscreen using
   // the Window API but there is no synchronous way to know if that actually
   // succeeded. Also, failure will not be notified. A failure case will only be
   // known with a timeout.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     launched_listener.Reply("window");
 
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
   // Same idea as above but for leaving fullscreen. Fullscreen mode should be
   // left when ESC is received.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_ESCAPE));
 
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-                GetFirstShellWindow()->GetNativeWindow()));
+      GetFirstAppWindow()->GetNativeWindow()));
 
   launched_listener.Reply("dom");
 
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
   // actually succeeded. Also, failure will not be notified. A failure case will
   // only be known with a timeout.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     WaitUntilKeyFocus();
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
   // Same idea as above but for leaving fullscreen. Fullscreen mode should be
   // left when ESC is received.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_ESCAPE));
 
@@ -184,14 +184,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-                GetFirstShellWindow()->GetNativeWindow()));
+      GetFirstAppWindow()->GetNativeWindow()));
 
   // When receiving the reply, the application will try to go fullscreen using
   // the Window API but there is no synchronous way to know if that actually
   // succeeded. Also, failure will not be notified. A failure case will only be
   // known with a timeout.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     launched_listener.Reply("window");
 
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   // However, by nature, we can not guarantee that and given that we do test
   // that nothing happens, we might end up with random-success when the feature
   // is broken.
-  EXPECT_TRUE(GetFirstShellWindow()->GetBaseWindow()->IsFullscreen());
+  EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-                GetFirstShellWindow()->GetNativeWindow()));
+      GetFirstAppWindow()->GetNativeWindow()));
 
   launched_listener.Reply("dom");
 
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   // actually succeeded. Also, failure will not be notified. A failure case will
   // only be known with a timeout.
   {
-    FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
+    FullscreenChangeWaiter fs_changed(GetFirstAppWindow()->GetBaseWindow());
 
     WaitUntilKeyFocus();
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   // However, by nature, we can not guarantee that and given that we do test
   // that nothing happens, we might end up with random-success when the feature
   // is broken.
-  EXPECT_TRUE(GetFirstShellWindow()->GetBaseWindow()->IsFullscreen());
+  EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
 // This test does not work on Linux Aura because ShowInactive() is not

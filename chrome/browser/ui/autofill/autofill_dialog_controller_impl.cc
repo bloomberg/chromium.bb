@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -255,7 +255,7 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
 }
 
 // Returns the containing window for the given |web_contents|. The containing
-// window might be a browser window for a Chrome tab, or it might be a shell
+// window might be a browser window for a Chrome tab, or it might be an app
 // window for a platform app.
 ui::BaseWindow* GetBaseWindowForWebContents(
     const content::WebContents* web_contents) {
@@ -265,10 +265,10 @@ ui::BaseWindow* GetBaseWindowForWebContents(
 
   gfx::NativeWindow native_window =
       web_contents->GetView()->GetTopLevelNativeWindow();
-  apps::ShellWindow* shell_window =
-      apps::ShellWindowRegistry::
-          GetShellWindowForNativeWindowAnyProfile(native_window);
-  return shell_window->GetBaseWindow();
+  apps::AppWindow* app_window =
+      apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+          native_window);
+  return app_window->GetBaseWindow();
 }
 
 // Returns a string descriptor for a DialogSection, for use with prefs (do not

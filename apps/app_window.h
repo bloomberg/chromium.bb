@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_WINDOW_H_
-#define APPS_SHELL_WINDOW_H_
+#ifndef APPS_APP_WINDOW_H_
+#define APPS_APP_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -48,14 +48,14 @@ namespace apps {
 
 class NativeAppWindow;
 
-// Manages the web contents for Shell Windows. The implementation for this
+// Manages the web contents for app windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
 // any message passing between the web contents and the extension system or
 // native window.
-class ShellWindowContents {
+class AppWindowContents {
  public:
-  ShellWindowContents() {}
-  virtual ~ShellWindowContents() {}
+  AppWindowContents() {}
+  virtual ~AppWindowContents() {}
 
   // Called to initialize the WebContents, before the app window is created.
   virtual void Initialize(content::BrowserContext* context,
@@ -73,28 +73,28 @@ class ShellWindowContents {
   virtual content::WebContents* GetWebContents() const = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowContents);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowContents);
 };
 
-// ShellWindow is the type of window used by platform apps. Shell windows
+// AppWindow is the type of window used by platform apps. App windows
 // have a WebContents but none of the chrome of normal browser windows.
-class ShellWindow : public content::NotificationObserver,
-                    public content::WebContentsDelegate,
-                    public content::WebContentsObserver,
-                    public web_modal::WebContentsModalDialogManagerDelegate,
-                    public extensions::ExtensionKeybindingRegistry::Delegate,
-                    public extensions::IconImage::Observer {
+class AppWindow : public content::NotificationObserver,
+                  public content::WebContentsDelegate,
+                  public content::WebContentsObserver,
+                  public web_modal::WebContentsModalDialogManagerDelegate,
+                  public extensions::ExtensionKeybindingRegistry::Delegate,
+                  public extensions::IconImage::Observer {
  public:
   enum WindowType {
-    WINDOW_TYPE_DEFAULT  = 1 << 0,  // Default shell window.
-    WINDOW_TYPE_PANEL    = 1 << 1,  // OS controlled panel window (Ash only).
+    WINDOW_TYPE_DEFAULT = 1 << 0,   // Default app window.
+    WINDOW_TYPE_PANEL = 1 << 1,     // OS controlled panel window (Ash only).
     WINDOW_TYPE_V1_PANEL = 1 << 2,  // For apps v1 support in Ash; deprecate
                                     // with v1 apps.
   };
 
   enum Frame {
     FRAME_CHROME,  // Chrome-style window frame.
-    FRAME_NONE,  // Frameless window.
+    FRAME_NONE,    // Frameless window.
   };
 
   enum FullscreenType {
@@ -197,7 +197,7 @@ class ShellWindow : public content::NotificationObserver,
     // General initialization.
     virtual void InitWebContents(content::WebContents* web_contents) = 0;
     virtual NativeAppWindow* CreateNativeAppWindow(
-        ShellWindow* window,
+        AppWindow* window,
         const CreateParams& params) = 0;
 
     // Link handling.
@@ -222,7 +222,7 @@ class ShellWindow : public content::NotificationObserver,
         content::WebContents* web_contents,
         const content::MediaStreamRequest& request,
         const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension) = 0;
+        const extensions::Extension* extension) = 0;
     virtual int PreferredIconSize() = 0;
 
     // Web contents modal dialog support.
@@ -236,20 +236,19 @@ class ShellWindow : public content::NotificationObserver,
   static SkRegion* RawDraggableRegionsToSkRegion(
       const std::vector<extensions::DraggableRegion>& regions);
 
-  // The constructor and Init methods are public for constructing a ShellWindow
+  // The constructor and Init methods are public for constructing a AppWindow
   // with a non-standard render interface (e.g. v1 apps using Ash Panels).
-  // Normally ShellWindow::Create should be used.
-  // The constructed shell window takes ownership of |delegate|.
-  ShellWindow(content::BrowserContext* context,
-              Delegate* delegate,
-              const extensions::Extension* extension);
+  // Normally AppWindow::Create should be used.
+  // The constructed app window takes ownership of |delegate|.
+  AppWindow(content::BrowserContext* context,
+            Delegate* delegate,
+            const extensions::Extension* extension);
 
   // Initializes the render interface, web contents, and native window.
-  // |shell_window_contents| will become owned by ShellWindow.
+  // |app_window_contents| will become owned by AppWindow.
   void Init(const GURL& url,
-            ShellWindowContents* shell_window_contents,
+            AppWindowContents* app_window_contents,
             const CreateParams& params);
-
 
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
@@ -326,10 +325,7 @@ class ShellWindow : public content::NotificationObserver,
   void SetMinimumSize(const gfx::Size& min_size);
   void SetMaximumSize(const gfx::Size& max_size);
 
-  enum ShowType {
-    SHOW_ACTIVE,
-    SHOW_INACTIVE
-  };
+  enum ShowType { SHOW_ACTIVE, SHOW_INACTIVE };
 
   // Shows the window if its contents have been painted; otherwise flags the
   // window to be shown as soon as its contents are painted for the first time.
@@ -339,14 +335,12 @@ class ShellWindow : public content::NotificationObserver,
   // first paint, it will be unflagged.
   void Hide();
 
-  ShellWindowContents* shell_window_contents_for_test() {
-    return shell_window_contents_.get();
+  AppWindowContents* app_window_contents_for_test() {
+    return app_window_contents_.get();
   }
 
   // Get the size constraints.
-  const SizeConstraints& size_constraints() const {
-    return size_constraints_;
-  }
+  const SizeConstraints& size_constraints() const { return size_constraints_; }
 
   // Set whether the window should stay above other windows which are not
   // configured to be always-on-top.
@@ -362,7 +356,7 @@ class ShellWindow : public content::NotificationObserver,
   void GetSerializedState(base::DictionaryValue* properties) const;
 
  protected:
-  virtual ~ShellWindow();
+  virtual ~AppWindow();
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
@@ -375,19 +369,19 @@ class ShellWindow : public content::NotificationObserver,
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
-  virtual void RunFileChooser(
-      content::WebContents* tab,
-      const content::FileChooserParams& params) OVERRIDE;
-  virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const OVERRIDE;
-  virtual void MoveContents(
-      content::WebContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void RunFileChooser(content::WebContents* tab,
+                              const content::FileChooserParams& params)
+      OVERRIDE;
+  virtual bool IsPopupOrPanel(const content::WebContents* source)
+      const OVERRIDE;
+  virtual void MoveContents(content::WebContents* source,
+                            const gfx::Rect& pos) OVERRIDE;
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(content::WebContents* source,
                                           bool enter_fullscreen) OVERRIDE;
-  virtual bool IsFullscreenForTabOrPending(
-      const content::WebContents* source) const OVERRIDE;
+  virtual bool IsFullscreenForTabOrPending(const content::WebContents* source)
+      const OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -405,15 +399,15 @@ class ShellWindow : public content::NotificationObserver,
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void HandleKeyboardEvent(content::WebContents* source,
+                                   const content::NativeWebKeyboardEvent& event)
+      OVERRIDE;
   virtual void RequestToLockMouse(content::WebContents* web_contents,
                                   bool user_gesture,
                                   bool last_unlocked_by_target) OVERRIDE;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
+  virtual bool PreHandleGestureEvent(content::WebContents* source,
+                                     const blink::WebGestureEvent& event)
+      OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
@@ -426,8 +420,8 @@ class ShellWindow : public content::NotificationObserver,
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) OVERRIDE;
-  virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual bool IsWebContentsVisible(content::WebContents* web_contents)
+      OVERRIDE;
 
   // Helper method to add a message to the renderer's DevTools console.
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
@@ -438,12 +432,11 @@ class ShellWindow : public content::NotificationObserver,
 
   // Helper method to adjust the cached bounds so that we can make sure it can
   // be visible on the screen. See http://crbug.com/145752 .
-  void AdjustBoundsToBeVisibleOnScreen(
-      const gfx::Rect& cached_bounds,
-      const gfx::Rect& cached_screen_bounds,
-      const gfx::Rect& current_screen_bounds,
-      const gfx::Size& minimum_size,
-      gfx::Rect* bounds) const;
+  void AdjustBoundsToBeVisibleOnScreen(const gfx::Rect& cached_bounds,
+                                       const gfx::Rect& cached_screen_bounds,
+                                       const gfx::Rect& current_screen_bounds,
+                                       const gfx::Size& minimum_size,
+                                       gfx::Rect* bounds) const;
 
   // Loads the appropriate default or cached window bounds and constrains them
   // based on screen size and minimum/maximum size. Returns a new CreateParams
@@ -471,8 +464,8 @@ class ShellWindow : public content::NotificationObserver,
       GetActiveTabPermissionGranter() OVERRIDE;
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
-  virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() OVERRIDE;
+  virtual web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      OVERRIDE;
 
   // Updates the badge to |image|. Called internally from the image loader
   // callback.
@@ -486,10 +479,10 @@ class ShellWindow : public content::NotificationObserver,
                           const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // extensions::IconImage::Observer implementation.
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) OVERRIDE;
+  virtual void OnExtensionIconImageChanged(extensions::IconImage* image)
+      OVERRIDE;
 
-  // The browser context with which this window is associated. ShellWindow does
+  // The browser context with which this window is associated. AppWindow does
   // not own this object.
   content::BrowserContext* browser_context_;
 
@@ -525,10 +518,10 @@ class ShellWindow : public content::NotificationObserver,
   scoped_ptr<extensions::IconImage> badge_icon_image_;
 
   scoped_ptr<NativeAppWindow> native_app_window_;
-  scoped_ptr<ShellWindowContents> shell_window_contents_;
+  scoped_ptr<AppWindowContents> app_window_contents_;
   scoped_ptr<Delegate> delegate_;
 
-  base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
+  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 
   // Bit field of FullscreenType.
   int fullscreen_types_;
@@ -553,9 +546,9 @@ class ShellWindow : public content::NotificationObserver,
   // taskbar.
   bool cached_always_on_top_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindow);
+  DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_WINDOW_H_
+#endif  // APPS_APP_WINDOW_H_

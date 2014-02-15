@@ -21,15 +21,12 @@ namespace app_window = extensions::api::app_window;
 
 namespace apps {
 
-AppWindowContents::AppWindowContents(ShellWindow* host)
-    : host_(host) {
-}
+AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host) : host_(host) {}
 
-AppWindowContents::~AppWindowContents() {
-}
+AppWindowContentsImpl::~AppWindowContentsImpl() {}
 
-void AppWindowContents::Initialize(content::BrowserContext* context,
-                                   const GURL& url) {
+void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
+                                       const GURL& url) {
   url_ = url;
 
   extension_function_dispatcher_.reset(
@@ -45,7 +42,7 @@ void AppWindowContents::Initialize(content::BrowserContext* context,
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 
-void AppWindowContents::LoadContents(int32 creator_process_id) {
+void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
   // If the new view is in the same process as the creator, block the created
   // RVH from loading anything until the background page has had a chance to
   // do any initialization it wants. If it's a different process, the new RVH
@@ -54,10 +51,9 @@ void AppWindowContents::LoadContents(int32 creator_process_id) {
       creator_process_id) {
     SuspendRenderViewHost(web_contents_->GetRenderViewHost());
   } else {
-    VLOG(1) << "ShellWindow created in new process ("
+    VLOG(1) << "AppWindow created in new process ("
             << web_contents_->GetRenderViewHost()->GetProcess()->GetID()
-            << ") != creator (" << creator_process_id
-            << "). Routing disabled.";
+            << ") != creator (" << creator_process_id << "). Routing disabled.";
   }
 
   // TODO(jeremya): there's a bug where navigating a web contents to an
@@ -76,7 +72,7 @@ void AppWindowContents::LoadContents(int32 creator_process_id) {
   registrar_.RemoveAll();
 }
 
-void AppWindowContents::NativeWindowChanged(
+void AppWindowContentsImpl::NativeWindowChanged(
     NativeAppWindow* native_app_window) {
   base::ListValue args;
   base::DictionaryValue* dictionary = new base::DictionaryValue();
@@ -92,16 +88,16 @@ void AppWindowContents::NativeWindowChanged(
                                            false));
 }
 
-void AppWindowContents::NativeWindowClosed() {
+void AppWindowContentsImpl::NativeWindowClosed() {
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
 }
 
-content::WebContents* AppWindowContents::GetWebContents() const {
+content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
 }
 
-void AppWindowContents::Observe(
+void AppWindowContentsImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -122,9 +118,9 @@ void AppWindowContents::Observe(
   }
 }
 
-bool AppWindowContents::OnMessageReceived(const IPC::Message& message) {
+bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AppWindowContents, message)
+  IPC_BEGIN_MESSAGE_MAP(AppWindowContentsImpl, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UpdateDraggableRegions,
                         UpdateDraggableRegions)
@@ -134,26 +130,26 @@ bool AppWindowContents::OnMessageReceived(const IPC::Message& message) {
 }
 
 extensions::WindowController*
-AppWindowContents::GetExtensionWindowController() const {
+AppWindowContentsImpl::GetExtensionWindowController() const {
   return NULL;
 }
 
-content::WebContents* AppWindowContents::GetAssociatedWebContents() const {
+content::WebContents* AppWindowContentsImpl::GetAssociatedWebContents() const {
   return web_contents_.get();
 }
 
-void AppWindowContents::OnRequest(
+void AppWindowContentsImpl::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_->Dispatch(
       params, web_contents_->GetRenderViewHost());
 }
 
-void AppWindowContents::UpdateDraggableRegions(
+void AppWindowContentsImpl::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   host_->UpdateDraggableRegions(regions);
 }
 
-void AppWindowContents::SuspendRenderViewHost(
+void AppWindowContentsImpl::SuspendRenderViewHost(
     content::RenderViewHost* rvh) {
   DCHECK(rvh);
   content::BrowserThread::PostTask(

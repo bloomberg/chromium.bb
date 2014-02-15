@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -18,14 +18,14 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 
-using apps::ShellWindow;
+using apps::AppWindow;
 
 namespace {
 
-std::string GetAppShelfId(ShellWindow* shell_window) {
-  if (shell_window->window_type_is_panel())
-    return base::StringPrintf("panel:%d", shell_window->session_id().id());
-  return shell_window->extension()->id();
+std::string GetAppShelfId(AppWindow* app_window) {
+  if (app_window->window_type_is_panel())
+    return base::StringPrintf("panel:%d", app_window->session_id().id());
+  return app_window->extension()->id();
 }
 
 bool ControlsWindow(aura::Window* window) {
@@ -39,8 +39,8 @@ ShellWindowLauncherController::ShellWindowLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner),
       activation_client_(NULL) {
-  apps::ShellWindowRegistry* registry =
-      apps::ShellWindowRegistry::Get(owner->profile());
+  apps::AppWindowRegistry* registry =
+      apps::AppWindowRegistry::Get(owner->profile());
   registry_.insert(registry);
   registry->AddObserver(this);
   if (ash::Shell::HasInstance()) {
@@ -54,8 +54,9 @@ ShellWindowLauncherController::ShellWindowLauncherController(
 }
 
 ShellWindowLauncherController::~ShellWindowLauncherController() {
-  for (std::set<apps::ShellWindowRegistry*>::iterator it = registry_.begin();
-      it != registry_.end(); ++it)
+  for (std::set<apps::AppWindowRegistry*>::iterator it = registry_.begin();
+       it != registry_.end();
+       ++it)
     (*it)->RemoveObserver(this);
 
   if (activation_client_)
@@ -75,7 +76,7 @@ void ShellWindowLauncherController::AdditionalUserAddedToSession(
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED)
     return;
 
-  apps::ShellWindowRegistry* registry = apps::ShellWindowRegistry::Get(profile);
+  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
   if (registry_.find(registry) != registry_.end())
     return;
 
@@ -83,36 +84,34 @@ void ShellWindowLauncherController::AdditionalUserAddedToSession(
   registry_.insert(registry);
 }
 
-void ShellWindowLauncherController::OnShellWindowAdded(
-    ShellWindow* shell_window) {
-  if (!ControlsWindow(shell_window->GetNativeWindow()))
+void ShellWindowLauncherController::OnAppWindowAdded(AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
-  RegisterApp(shell_window);
+  RegisterApp(app_window);
 }
 
-void ShellWindowLauncherController::OnShellWindowIconChanged(
-    ShellWindow* shell_window) {
-  if (!ControlsWindow(shell_window->GetNativeWindow()))
+void ShellWindowLauncherController::OnAppWindowIconChanged(
+    AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
-  const std::string app_shelf_id = GetAppShelfId(shell_window);
+  const std::string app_shelf_id = GetAppShelfId(app_window);
   AppControllerMap::iterator iter = app_controller_map_.find(app_shelf_id);
   if (iter == app_controller_map_.end())
     return;
   ShellWindowLauncherItemController* controller = iter->second;
   controller->set_image_set_by_controller(true);
   owner_->SetLauncherItemImage(controller->shelf_id(),
-                               shell_window->app_icon().AsImageSkia());
+                               app_window->app_icon().AsImageSkia());
 }
 
-void ShellWindowLauncherController::OnShellWindowRemoved(
-    ShellWindow* shell_window) {
-  // Do nothing here; shell_window->window() has already been deleted and
+void ShellWindowLauncherController::OnAppWindowRemoved(AppWindow* app_window) {
+  // Do nothing here; app_window->window() has already been deleted and
   // OnWindowDestroying() has been called, doing the removal.
 }
 
 // Called from aura::Window::~Window(), before delegate_->OnWindowDestroyed()
-// which destroys ShellWindow, so both |window| and the associated ShellWindow
+// which destroys AppWindow, so both |window| and the associated AppWindow
 // are valid here.
 void ShellWindowLauncherController::OnWindowDestroying(aura::Window* window) {
   if (!ControlsWindow(window))
@@ -138,17 +137,17 @@ void ShellWindowLauncherController::OnWindowActivated(
     owner_->SetItemStatus(old_controller->shelf_id(), ash::STATUS_RUNNING);
 }
 
-void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
-  aura::Window* window = shell_window->GetNativeWindow();
+void ShellWindowLauncherController::RegisterApp(AppWindow* app_window) {
+  aura::Window* window = app_window->GetNativeWindow();
   // Get the app's shelf identifier and add an entry to the map.
   DCHECK(window_to_app_shelf_id_map_.find(window) ==
          window_to_app_shelf_id_map_.end());
-  const std::string app_shelf_id = GetAppShelfId(shell_window);
+  const std::string app_shelf_id = GetAppShelfId(app_window);
   window_to_app_shelf_id_map_[window] = app_shelf_id;
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
-  std::string app_id = shell_window->extension()->id();
+  std::string app_id = app_window->extension()->id();
   ash::ShelfItemStatus status = ash::wm::IsActiveWindow(window) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   AppControllerMap::iterator iter = app_controller_map_.find(app_shelf_id);
@@ -157,15 +156,16 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
     ShellWindowLauncherItemController* controller = iter->second;
     DCHECK(controller->app_id() == app_id);
     shelf_id = controller->shelf_id();
-    controller->AddShellWindow(shell_window, status);
+    controller->AddAppWindow(app_window, status);
   } else {
-    LauncherItemController::Type type = shell_window->window_type_is_panel()
-        ? LauncherItemController::TYPE_APP_PANEL
-        : LauncherItemController::TYPE_APP;
+    LauncherItemController::Type type =
+        app_window->window_type_is_panel()
+            ? LauncherItemController::TYPE_APP_PANEL
+            : LauncherItemController::TYPE_APP;
     ShellWindowLauncherItemController* controller =
         new ShellWindowLauncherItemController(
             type, app_shelf_id, app_id, owner_);
-    controller->AddShellWindow(shell_window, status);
+    controller->AddAppWindow(app_window, status);
     // If the app shelf id is not unique, and there is already a shelf
     // item for this app id (e.g. pinned), use that shelf item.
     if (app_shelf_id == app_id)
@@ -173,7 +173,7 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
     if (shelf_id == 0) {
       shelf_id = owner_->CreateAppLauncherItem(controller, app_id, status);
       // Restore any existing app icon and flag as set.
-      const gfx::Image& app_icon = shell_window->app_icon();
+      const gfx::Image& app_icon = app_window->app_icon();
       if (!app_icon.IsEmpty()) {
         owner_->SetLauncherItemImage(shelf_id, app_icon.AsImageSkia());
         controller->set_image_set_by_controller(true);
@@ -181,7 +181,7 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
     } else {
       owner_->SetItemController(shelf_id, controller);
     }
-    const std::string app_shelf_id = GetAppShelfId(shell_window);
+    const std::string app_shelf_id = GetAppShelfId(app_window);
     app_controller_map_[app_shelf_id] = controller;
   }
   owner_->SetItemStatus(shelf_id, status);
@@ -200,7 +200,7 @@ void ShellWindowLauncherController::UnregisterApp(aura::Window* window) {
   DCHECK(iter2 != app_controller_map_.end());
   ShellWindowLauncherItemController* controller = iter2->second;
   controller->RemoveShellWindowForWindow(window);
-  if (controller->shell_window_count() == 0) {
+  if (controller->app_window_count() == 0) {
     // If this is the last window associated with the app shelf id, close the
     // shelf item.
     ash::ShelfID shelf_id = controller->shelf_id();

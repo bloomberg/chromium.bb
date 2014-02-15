@@ -5,21 +5,21 @@
 #ifndef APPS_UI_NATIVE_APP_WINDOW_H_
 #define APPS_UI_NATIVE_APP_WINDOW_H_
 
-#include "apps/shell_window.h"
+#include "apps/app_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
 
 namespace apps {
 
-// This is an interface to a native implementation of a shell window, used for
-// new-style packaged apps. Shell windows contain a web contents, but no tabs
+// This is an interface to a native implementation of a app window, used for
+// new-style packaged apps. App windows contain a web contents, but no tabs
 // or URL bar.
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
   // Sets whether the window is fullscreen and the type of fullscreen.
-  // |fullscreen_types| is a bit field of ShellWindow::FullscreenType.
+  // |fullscreen_types| is a bit field of AppWindow::FullscreenType.
   virtual void SetFullscreen(int fullscreen_types) = 0;
 
   // Returns whether the window is fullscreen or about to enter fullscreen.

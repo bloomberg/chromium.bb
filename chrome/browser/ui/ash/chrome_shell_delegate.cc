@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "ash/content_support/gpu_support_impl.h"
 #include "ash/host/window_tree_host_factory.h"
 #include "ash/magnifier/magnifier_constants.h"

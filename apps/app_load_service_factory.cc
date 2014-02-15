@@ -5,7 +5,7 @@
 #include "apps/app_load_service_factory.h"
 
 #include "apps/app_load_service.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -31,7 +31,7 @@ AppLoadServiceFactory::AppLoadServiceFactory()
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
-  DependsOn(ShellWindowRegistry::Factory::GetInstance());
+  DependsOn(AppWindowRegistry::Factory::GetInstance());
 }
 
 AppLoadServiceFactory::~AppLoadServiceFactory() {

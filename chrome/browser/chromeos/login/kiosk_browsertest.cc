@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
@@ -212,18 +212,16 @@ class JsConditionWaiter {
 }  // namespace
 
 // Helper class that monitors app windows to wait for a window to appear.
-class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
+class AppWindowObserver : public apps::AppWindowRegistry::Observer {
  public:
-  ShellWindowObserver(apps::ShellWindowRegistry* registry,
-                      const std::string& app_id)
+  AppWindowObserver(apps::AppWindowRegistry* registry,
+                    const std::string& app_id)
       : registry_(registry), app_id_(app_id), window_(NULL), running_(false) {
     registry_->AddObserver(this);
   }
-  virtual ~ShellWindowObserver() {
-    registry_->RemoveObserver(this);
-  }
+  virtual ~AppWindowObserver() { registry_->RemoveObserver(this); }
 
-  apps::ShellWindow* Wait() {
+  apps::AppWindow* Wait() {
     running_ = true;
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
@@ -231,29 +229,28 @@ class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
     return window_;
   }
 
-  // ShellWindowRegistry::Observer
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
+  // AppWindowRegistry::Observer
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
     if (!running_)
       return;
 
-    if (shell_window->extension_id() == app_id_) {
-      window_ = shell_window;
+    if (app_window->extension_id() == app_id_) {
+      window_ = app_window;
       message_loop_runner_->Quit();
       running_ = false;
     }
   }
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
 
  private:
-  apps::ShellWindowRegistry* registry_;
+  apps::AppWindowRegistry* registry_;
   std::string app_id_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  apps::ShellWindow* window_;
+  apps::AppWindow* window_;
   bool running_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowObserver);
 };
 
 class KioskTest : public OobeBaseTest {
@@ -392,10 +389,10 @@ class KioskTest : public OobeBaseTest {
     EXPECT_TRUE(app);
 
     // App should appear with its window.
-    apps::ShellWindowRegistry* shell_window_registry =
-        apps::ShellWindowRegistry::Get(app_profile);
-    apps::ShellWindow* window =
-        ShellWindowObserver(shell_window_registry, test_app_id_).Wait();
+    apps::AppWindowRegistry* app_window_registry =
+        apps::AppWindowRegistry::Get(app_profile);
+    apps::AppWindow* window =
+        AppWindowObserver(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
     // Login screen should be gone or fading out.
@@ -407,7 +404,7 @@ class KioskTest : public OobeBaseTest {
             0.0f);
 
     // Wait until the app terminates if it is still running.
-    if (!shell_window_registry->GetShellWindowsForApp(test_app_id_).empty())
+    if (!app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
       content::RunMessageLoop();
 
     // Check that the app had been informed that it is running in a kiosk
@@ -1001,9 +998,10 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
             chromeos::KioskAppLaunchError::Get());
 
   // Wait for the window to appear.
-  apps::ShellWindow* window = ShellWindowObserver(
-      apps::ShellWindowRegistry::Get(ProfileManager::GetPrimaryUserProfile()),
-      kTestEnterpriseKioskApp).Wait();
+  apps::AppWindow* window =
+      AppWindowObserver(
+          apps::AppWindowRegistry::Get(ProfileManager::GetPrimaryUserProfile()),
+          kTestEnterpriseKioskApp).Wait();
   ASSERT_TRUE(window);
 
   // Check whether the app can retrieve an OAuth2 access token.

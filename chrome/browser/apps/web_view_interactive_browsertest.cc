@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -27,7 +27,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-using apps::ShellWindow;
+using apps::AppWindow;
 
 class WebViewInteractiveTest
     : public extensions::PlatformAppBrowserTest {
@@ -63,20 +63,19 @@ class WebViewInteractiveTest
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
-    const apps::ShellWindowRegistry::ShellWindowList& shell_windows =
-        apps::ShellWindowRegistry::Get(
-            browser()->profile())->shell_windows();
-    return (*shell_windows.begin())->GetNativeWindow();
+    const apps::AppWindowRegistry::AppWindowList& app_windows =
+        apps::AppWindowRegistry::Get(browser()->profile())->app_windows();
+    return (*app_windows.begin())->GetNativeWindow();
   }
 
   void SendKeyPressToPlatformApp(ui::KeyboardCode key) {
-    ASSERT_EQ(1U, GetShellWindowCount());
+    ASSERT_EQ(1U, GetAppWindowCount());
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         GetPlatformAppWindow(), key, false, false, false, false));
   }
 
   void SendCopyKeyPressToPlatformApp() {
-    ASSERT_EQ(1U, GetShellWindowCount());
+    ASSERT_EQ(1U, GetAppWindowCount());
 #if defined(OS_MACOSX)
     // Send Cmd+C on MacOSX.
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
@@ -169,7 +168,7 @@ class WebViewInteractiveTest
     // Flush any pending events to make sure we start with a clean slate.
     content::RunAllPendingInMessageLoop();
 
-    *embedder_web_contents = GetFirstShellWindowWebContents();
+    *embedder_web_contents = GetFirstAppWindowWebContents();
 
     scoped_ptr<ExtensionTestMessageListener> done_listener(
         new ExtensionTestMessageListener("TEST_PASSED", false));
@@ -336,7 +335,7 @@ class WebViewInteractiveTest
     SimulateRWHMouseClick(popup_rwh, blink::WebMouseEvent::ButtonLeft, 2, 2);
 
     content::RenderViewHost* embedder_rvh =
-        GetFirstShellWindowWebContents()->GetRenderViewHost();
+        GetFirstAppWindowWebContents()->GetRenderViewHost();
     gfx::Rect embedder_bounds = embedder_rvh->GetView()->GetViewBounds();
     gfx::Vector2d diff = popup_bounds.origin() - embedder_bounds.origin();
     LOG(INFO) << "DIFF: x = " << diff.x() << ", y = " << diff.y();
@@ -392,7 +391,7 @@ class WebViewInteractiveTest
     // MessageLoop) in it.
 
     // Now check if we got a drop and read the drop data.
-    embedder_web_contents_ = GetFirstShellWindowWebContents();
+    embedder_web_contents_ = GetFirstAppWindowWebContents();
     ExtensionTestMessageListener drop_listener("guest-got-drop", false);
     EXPECT_TRUE(content::ExecuteScript(embedder_web_contents_,
                                        "window.checkIfGuestGotDrop()"));
@@ -688,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
   gfx::Rect offset;
-  embedder_web_contents_ = GetFirstShellWindowWebContents();
+  embedder_web_contents_ = GetFirstAppWindowWebContents();
   embedder_web_contents_->GetView()->GetContainerBounds(&offset);
   corner_ = gfx::Point(offset.x(), offset.y());
 
@@ -737,8 +736,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   // Flush any pending events to make sure we start with a clean slate.
   content::RunAllPendingInMessageLoop();
 
-  content::WebContents* embedder_web_contents =
-      GetFirstShellWindowWebContents();
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
 
   ExtensionTestMessageListener done_listener(

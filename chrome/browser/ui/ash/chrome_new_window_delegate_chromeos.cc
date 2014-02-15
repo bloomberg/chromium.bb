@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"

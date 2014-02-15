@@ -4,8 +4,8 @@ include_rules = [
   # chrome/browser/extensions, the restriction of not being able
   # to depend on apps will be lifted.
   "-apps",
-  "+apps/shell_window.h",
-  "+apps/shell_window_registry.h",
+  "+apps/app_window.h",
+  "+apps/app_window_registry.h",
   "-chrome/browser/apps",
 
   # TODO(tfarina): Remove all these. crbug.com/125846.

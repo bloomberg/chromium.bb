@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -36,7 +36,7 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/widget/widget.h"
 
-using apps::ShellWindow;
+using apps::AppWindow;
 using content::BrowserThread;
 
 namespace {
@@ -278,26 +278,27 @@ void SelectFileDialogExtension::SelectFileImpl(
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;
 
-  // To get the base_window and profile, either a Browser or ShellWindow is
+  // To get the base_window and profile, either a Browser or AppWindow is
   // needed.
   Browser* owner_browser =  NULL;
-  ShellWindow* shell_window = NULL;
+  AppWindow* app_window = NULL;
 
-  // If owner_window is supplied, use that to find a browser or a shell window.
+  // If owner_window is supplied, use that to find a browser or a app window.
   if (owner_window) {
     owner_browser = chrome::FindBrowserWithWindow(owner_window);
     if (!owner_browser) {
       // If an owner_window was supplied but we couldn't find a browser, this
-      // could be for a shell window.
-      shell_window = apps::ShellWindowRegistry::
-          GetShellWindowForNativeWindowAnyProfile(owner_window);
+      // could be for a app window.
+      app_window =
+          apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+              owner_window);
     }
   }
 
-  if (shell_window) {
-    DCHECK(!shell_window->window_type_is_panel());
-    base_window = shell_window->GetBaseWindow();
-    web_contents = shell_window->web_contents();
+  if (app_window) {
+    DCHECK(!app_window->window_type_is_panel());
+    base_window = app_window->GetBaseWindow();
+    web_contents = app_window->web_contents();
   } else {
     // If the owning window is still unknown, this could be a background page or
     // and extension popup. Use the last active browser.

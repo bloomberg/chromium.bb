@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -55,7 +55,7 @@
 
 using apps::SavedFileEntry;
 using apps::SavedFilesService;
-using apps::ShellWindow;
+using apps::AppWindow;
 using fileapi::IsolatedContext;
 
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
@@ -546,17 +546,17 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // platform-app only.
   content::WebContents* web_contents = NULL;
   if (extension_->is_platform_app()) {
-    apps::ShellWindowRegistry* registry =
-        apps::ShellWindowRegistry::Get(GetProfile());
+    apps::AppWindowRegistry* registry =
+        apps::AppWindowRegistry::Get(GetProfile());
     DCHECK(registry);
-    ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-        render_view_host());
-    if (!shell_window) {
+    AppWindow* app_window =
+        registry->GetAppWindowForRenderViewHost(render_view_host());
+    if (!app_window) {
       error_ = kInvalidCallingPage;
       SendResponse(false);
       return;
     }
-    web_contents = shell_window->web_contents();
+    web_contents = app_window->web_contents();
   } else {
     web_contents = GetAssociatedWebContents();
   }
@@ -667,17 +667,17 @@ void FileSystemChooseEntryFunction::FilesSelected(
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
     // confirmation dialog if necessary.
-    apps::ShellWindowRegistry* registry =
-        apps::ShellWindowRegistry::Get(GetProfile());
+    apps::AppWindowRegistry* registry =
+        apps::AppWindowRegistry::Get(GetProfile());
     DCHECK(registry);
-    ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-        render_view_host());
-    if (!shell_window) {
+    AppWindow* app_window =
+        registry->GetAppWindowForRenderViewHost(render_view_host());
+    if (!app_window) {
       error_ = kInvalidCallingPage;
       SendResponse(false);
       return;
     }
-    content::WebContents* web_contents = shell_window->web_contents();
+    content::WebContents* web_contents = app_window->web_contents();
 
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,

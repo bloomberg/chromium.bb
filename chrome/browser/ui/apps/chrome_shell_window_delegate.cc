@@ -144,8 +144,8 @@ void ChromeShellWindowDelegate::InitWebContents(
 }
 
 apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindow(
-    apps::ShellWindow* window,
-    const apps::ShellWindow::CreateParams& params) {
+    apps::AppWindow* window,
+    const apps::AppWindow::CreateParams& params) {
   return CreateNativeAppWindowImpl(window, params);
 }
 

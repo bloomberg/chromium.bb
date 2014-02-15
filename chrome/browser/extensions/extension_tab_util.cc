@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
-#include "apps/shell_window.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -32,7 +32,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
 
-using apps::ShellWindow;
+using apps::AppWindow;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -42,18 +42,17 @@ namespace {
 
 namespace keys = tabs_constants;
 
-WindowController* GetShellWindowController(const WebContents* contents) {
+WindowController* GetAppWindowController(const WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  apps::ShellWindowRegistry* registry =
-      apps::ShellWindowRegistry::Get(profile);
+  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
   if (!registry)
     return NULL;
-  ShellWindow* shell_window =
-      registry->GetShellWindowForRenderViewHost(contents->GetRenderViewHost());
-  if (!shell_window)
+  AppWindow* app_window =
+      registry->GetAppWindowForRenderViewHost(contents->GetRenderViewHost());
+  if (!app_window)
     return NULL;
   return WindowControllerList::GetInstance()->FindWindowById(
-      shell_window->session_id().id());
+      app_window->session_id().id());
 }
 
 }  // namespace
@@ -88,9 +87,9 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     TabStripModel* tab_strip,
     int tab_index,
     const Extension* extension) {
-  // If we have a matching ShellWindow with a controller, get the tab value
+  // If we have a matching AppWindow with a controller, get the tab value
   // from its controller instead.
-  WindowController* controller = GetShellWindowController(contents);
+  WindowController* controller = GetAppWindowController(contents);
   if (controller &&
       (!extension || controller->IsVisibleToExtension(extension))) {
     return controller->CreateTabValue(extension, tab_index);
@@ -120,9 +119,9 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
-  // If we have a matching ShellWindow with a controller, get the tab value
+  // If we have a matching AppWindow with a controller, get the tab value
   // from its controller instead.
-  WindowController* controller = GetShellWindowController(contents);
+  WindowController* controller = GetAppWindowController(contents);
   if (controller)
     return controller->CreateTabValue(NULL, tab_index);
 

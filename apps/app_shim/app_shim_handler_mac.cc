@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -22,11 +22,12 @@ namespace apps {
 
 namespace {
 
-void TerminateIfNoShellWindows() {
-  bool shell_windows_left =
-      apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
-  if (!shell_windows_left && !AppListService::Get(
-          chrome::HOST_DESKTOP_TYPE_NATIVE)->IsAppListVisible()) {
+void TerminateIfNoAppWindows() {
+  bool app_windows_left =
+      apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0);
+  if (!app_windows_left &&
+      !AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)
+           ->IsAppListVisible()) {
     chrome::AttemptExit();
   }
 }
@@ -61,11 +62,10 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
 
   void MaybeTerminate() {
     if (!browser_opened_ever_) {
-      // Post this to give ShellWindows a chance to remove themselves from the
+      // Post this to give AppWindows a chance to remove themselves from the
       // registry.
       base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&TerminateIfNoShellWindows));
+          FROM_HERE, base::Bind(&TerminateIfNoAppWindows));
     }
   }
 

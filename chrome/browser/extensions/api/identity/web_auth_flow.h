@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -45,7 +45,7 @@ namespace extensions {
 // a window. If a window would be required, the flow fails.
 class WebAuthFlow : public content::NotificationObserver,
                     public content::WebContentsObserver,
-                    public apps::ShellWindowRegistry::Observer {
+                    public apps::AppWindowRegistry::Observer {
  public:
   enum Mode {
     INTERACTIVE,  // Show UI to the user if necessary.
@@ -91,11 +91,10 @@ class WebAuthFlow : public content::NotificationObserver,
  private:
   friend class ::WebAuthFlowTest;
 
-  // ::ShellWindowRegistry::Observer implementation.
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
-      OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  // ::AppWindowRegistry::Observer implementation.
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -134,8 +133,8 @@ class WebAuthFlow : public content::NotificationObserver,
   GURL provider_url_;
   Mode mode_;
 
-  apps::ShellWindow* shell_window_;
-  std::string shell_window_key_;
+  apps::AppWindow* app_window_;
+  std::string app_window_key_;
   bool embedded_window_created_;
 
   content::NotificationRegistrar registrar_;

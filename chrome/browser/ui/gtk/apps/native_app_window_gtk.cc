@@ -24,7 +24,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
-using apps::ShellWindow;
+using apps::AppWindow;
 
 namespace {
 
@@ -40,15 +40,15 @@ const char* kAtomsToCache[] = {
 
 } // namespace
 
-NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
-                                       const ShellWindow::CreateParams& params)
-    : shell_window_(shell_window),
+NativeAppWindowGtk::NativeAppWindowGtk(AppWindow* app_window,
+                                       const AppWindow::CreateParams& params)
+    : app_window_(app_window),
       window_(NULL),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(false),
       content_thinks_its_fullscreen_(false),
       maximize_pending_(false),
-      frameless_(params.frame == ShellWindow::FRAME_NONE),
+      frameless_(params.frame == AppWindow::FRAME_NONE),
       always_on_top_(params.always_on_top),
       frame_cursor_(NULL),
       atom_cache_(base::MessagePumpGtk::GetDefaultXDisplay(), kAtomsToCache),
@@ -89,7 +89,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
   gtk_window_get_position(window_, &x, &y);
   bounds_.set_origin(gfx::Point(x, y));
 
-  // Hide titlebar when {frame: 'none'} specified on ShellWindow.
+  // Hide titlebar when {frame: 'none'} specified on AppWindow..
   if (frameless_)
     gtk_window_set_decorated(window_, false);
 
@@ -146,10 +146,10 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
 
   // Add the keybinding registry.
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryGtk(
-      Profile::FromBrowserContext(shell_window_->browser_context()),
+      Profile::FromBrowserContext(app_window_->browser_context()),
       window_,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      shell_window_));
+      app_window_));
 
   ui::ActiveWindowWatcherX::AddObserver(this);
 }
@@ -231,7 +231,7 @@ void NativeAppWindowGtk::Hide() {
 }
 
 void NativeAppWindowGtk::Close() {
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 
   // Cancel any pending callback from the window configure debounce timer.
   window_configure_debounce_timer_.Stop();
@@ -244,7 +244,7 @@ void NativeAppWindowGtk::Close() {
   // OnNativeClose does a delete this so no other members should
   // be accessed after. gtk_widget_destroy is safe (and must
   // be last).
-  shell_window_->OnNativeClose();
+  app_window_->OnNativeClose();
   gtk_widget_destroy(window);
 }
 
@@ -335,7 +335,7 @@ GdkFilterReturn NativeAppWindowGtk::OnXEvent(GdkXEvent* gdk_x_event,
         static_cast<GdkWindowState>(state_ & ~GDK_WINDOW_STATE_ICONIFIED);
 
     if (previous_state != state_) {
-      shell_window_->OnNativeWindowChanged();
+      app_window_->OnNativeWindowChanged();
     }
   }
 
@@ -402,7 +402,7 @@ void NativeAppWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
   is_active_ = gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
   if (is_active_)
-    shell_window_->OnNativeWindowActivated();
+    app_window_->OnNativeWindowActivated();
 }
 
 // Callback for the delete event.  This event is fired when the user tries to
@@ -445,7 +445,7 @@ gboolean NativeAppWindowGtk::OnConfigure(GtkWidget* widget,
 
 void NativeAppWindowGtk::OnConfigureDebounced() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
-  shell_window_->OnNativeWindowChanged();
+  app_window_->OnNativeWindowChanged();
 
   FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
                     observer_list_,
@@ -593,7 +593,7 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
 // NativeAppWindow implementation:
 
 void NativeAppWindowGtk::SetFullscreen(int fullscreen_types) {
-  bool fullscreen = (fullscreen_types != ShellWindow::FULLSCREEN_TYPE_NONE);
+  bool fullscreen = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
   content_thinks_its_fullscreen_ = fullscreen;
   if (fullscreen) {
     if (resizable_) {
@@ -625,8 +625,8 @@ bool NativeAppWindowGtk::IsDetached() const {
 
 void NativeAppWindowGtk::UpdateWindowIcon() {
   Profile* profile =
-      Profile::FromBrowserContext(shell_window_->browser_context());
-  gfx::Image app_icon = shell_window_->app_icon();
+      Profile::FromBrowserContext(app_window_->browser_context());
+  gfx::Image app_icon = app_window_->app_icon();
   if (!app_icon.IsEmpty())
     gtk_util::SetWindowIcon(window_, profile, app_icon.ToGdkPixbuf());
   else
@@ -634,7 +634,7 @@ void NativeAppWindowGtk::UpdateWindowIcon() {
 }
 
 void NativeAppWindowGtk::UpdateWindowTitle() {
-  base::string16 title = shell_window_->GetTitle();
+  base::string16 title = app_window_->GetTitle();
   gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
 }
 
@@ -648,7 +648,7 @@ void NativeAppWindowGtk::UpdateDraggableRegions(
   if (!frameless_)
     return;
 
-  draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
+  draggable_region_.reset(AppWindow::RawDraggableRegionsToSkRegion(regions));
 }
 
 SkRegion* NativeAppWindowGtk::GetDraggableRegion() {
@@ -700,15 +700,15 @@ void NativeAppWindowGtk::ShowWithApp() {}
 void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
   GdkGeometry hints;
   int hints_mask = 0;
-  if (shell_window_->size_constraints().HasMinimumSize()) {
-    gfx::Size min_size = shell_window_->size_constraints().GetMinimumSize();
+  if (app_window_->size_constraints().HasMinimumSize()) {
+    gfx::Size min_size = app_window_->size_constraints().GetMinimumSize();
     hints.min_height = min_size.height();
     hints.min_width = min_size.width();
     hints_mask |= GDK_HINT_MIN_SIZE;
   }
-  if (shell_window_->size_constraints().HasMaximumSize()) {
-    gfx::Size max_size = shell_window_->size_constraints().GetMaximumSize();
-    const int kUnboundedSize = ShellWindow::SizeConstraints::kUnboundedSize;
+  if (app_window_->size_constraints().HasMaximumSize()) {
+    gfx::Size max_size = app_window_->size_constraints().GetMaximumSize();
+    const int kUnboundedSize = AppWindow::SizeConstraints::kUnboundedSize;
     hints.max_height = max_size.height() == kUnboundedSize ?
         G_MAXINT : max_size.height();
     hints.max_width = max_size.width() == kUnboundedSize ?

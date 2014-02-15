@@ -78,10 +78,10 @@ class EphemeralAppBrowserTest : public PlatformAppBrowserTest {
         chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
         content::Source<Profile>(browser()->profile()));
 
-    EXPECT_EQ(1U, GetShellWindowCountForApp(app_id));
-    apps::ShellWindow* shell_window = GetFirstShellWindowForApp(app_id);
-    ASSERT_TRUE(shell_window);
-    CloseShellWindow(shell_window);
+    EXPECT_EQ(1U, GetAppWindowCountForApp(app_id));
+    apps::AppWindow* app_window = GetFirstAppWindowForApp(app_id);
+    ASSERT_TRUE(app_window);
+    CloseAppWindow(app_window);
 
     event_page_destroyed_signal.Wait();
   }

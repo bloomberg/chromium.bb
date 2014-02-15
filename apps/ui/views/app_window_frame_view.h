@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_
-#define APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_
+#ifndef APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
+#define APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
 
 #include <string>
 
@@ -32,13 +32,13 @@ namespace apps {
 class NativeAppWindow;
 
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
-class ShellWindowFrameView : public views::NonClientFrameView,
-                             public views::ButtonListener {
+class AppWindowFrameView : public views::NonClientFrameView,
+                           public views::ButtonListener {
  public:
   static const char kViewClassName[];
 
-  explicit ShellWindowFrameView(NativeAppWindow* window);
-  virtual ~ShellWindowFrameView();
+  explicit AppWindowFrameView(NativeAppWindow* window);
+  virtual ~AppWindowFrameView();
 
   // Initializes this for the window |frame|. Sets the number of pixels for
   // which a click is interpreted as a resize for the inner and outer border of
@@ -70,8 +70,8 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   virtual gfx::Size GetMaximumSize() OVERRIDE;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
-      OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
 
   NativeAppWindow* window_;
   views::Widget* frame_;
@@ -89,9 +89,9 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   // Size in pixels of the lower-right corner resize handle.
   int resize_area_corner_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowFrameView);
 };
 
 }  // namespace apps
 
-#endif  // APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_
+#endif  // APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_

@@ -11,7 +11,7 @@
 
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
-#include "apps/shell_window_registry.h"
+#include "apps/app_window_registry.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,7 +33,7 @@ class Extension;
 
 namespace apps {
 
-class ShellWindow;
+class AppWindow;
 
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
@@ -50,8 +50,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LoadProfileAsync(const base::FilePath& path,
                                   base::Callback<void(Profile*)> callback);
 
-    virtual ShellWindowRegistry::ShellWindowList GetWindows(
-        Profile* profile, const std::string& extension_id);
+    virtual AppWindowRegistry::AppWindowList GetWindows(
+        Profile* profile,
+        const std::string& extension_id);
 
     virtual const extensions::Extension* GetAppExtension(
         Profile* profile, const std::string& extension_id);
@@ -72,15 +73,15 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
 
-  static void QuitAppForWindow(ShellWindow* shell_window);
+  static void QuitAppForWindow(AppWindow* app_window);
 
-  static void HideAppForWindow(ShellWindow* shell_window);
+  static void HideAppForWindow(AppWindow* app_window);
 
-  static void FocusAppForWindow(ShellWindow* shell_window);
+  static void FocusAppForWindow(AppWindow* app_window);
 
   // Brings the window to the front without showing it and instructs the shim to
   // request user attention. Returns false if there is no shim for this window.
-  static bool RequestUserAttentionForWindow(ShellWindow* shell_window);
+  static bool RequestUserAttentionForWindow(AppWindow* app_window);
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(Host* host,

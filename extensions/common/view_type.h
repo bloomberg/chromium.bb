@@ -14,6 +14,8 @@ namespace extensions {
 // data.
 enum ViewType {
   VIEW_TYPE_INVALID,
+  // TODO(jamescook): Rename this to VIEW_TYPE_APP_WINDOW after figuring out
+  // if the strings can be changed.  http://crbug.com/344067
   VIEW_TYPE_APP_SHELL,
   VIEW_TYPE_BACKGROUND_CONTENTS,
   VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,

@@ -64,7 +64,7 @@ class AppLoadService : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  bool HasShellWindows(const std::string& extension_id);
+  bool HasAppWindows(const std::string& extension_id);
   bool WasUnloadedForReload(
       const extensions::UnloadedExtensionInfo& unload_info);
   bool HasPostReloadAction(const std::string& extension_id);
