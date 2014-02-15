@@ -6,6 +6,8 @@
 
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -45,6 +47,12 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
 }  // anonymous namespace
 
 TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
+  chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
+  chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager);
+  const char test_user_email[] = "test_user@example.com";
+  const User* test_user = user_manager->AddUser(test_user_email);
+  user_manager->LoginUser(test_user_email);
+
   TestingPrefServiceSyncable prefs;
   Preferences::RegisterProfilePrefs(prefs.registry());
   DownloadPrefs::RegisterProfilePrefs(prefs.registry());
@@ -64,7 +72,7 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
 
   MyMockInputMethodManager mock_manager(&previous, &current);
   Preferences testee(&mock_manager);
-  testee.InitUserPrefsForTesting(&prefs);
+  testee.InitUserPrefsForTesting(&prefs, test_user);
   testee.SetInputMethodListForTesting();
 
   // Confirm they're unchanged.

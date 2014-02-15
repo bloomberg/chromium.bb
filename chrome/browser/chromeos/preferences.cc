@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/tracing_manager.h"
@@ -44,14 +44,11 @@ namespace chromeos {
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
-// TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
-static const char kEnableTouchpadThreeFingerSwipe[] =
-    "settings.touchpad.enable_three_finger_swipe";
-
 Preferences::Preferences()
     : prefs_(NULL),
       input_method_manager_(input_method::InputMethodManager::Get()),
-      is_primary_user_prefs_(true) {
+      user_(NULL),
+      user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
@@ -61,7 +58,7 @@ Preferences::Preferences()
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
     : prefs_(NULL),
       input_method_manager_(input_method_manager),
-      is_primary_user_prefs_(true) {
+      user_(NULL) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
@@ -70,6 +67,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
 
 Preferences::~Preferences() {
   prefs_->RemoveObserver(this);
+  UserManager::Get()->RemoveSessionStateObserver(this);
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
   if (ash::Shell::HasInstance())
@@ -300,12 +298,6 @@ void Preferences::RegisterProfilePrefs(
       "",
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
-  registry->RegisterBooleanPref(
-      kEnableTouchpadThreeFingerSwipe,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
   registry->RegisterBooleanPref(
       prefs::kTouchHudProjectionEnabled,
       false,
@@ -325,38 +317,14 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
       prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
-  a11y_spoken_feedback_enabled_.Init(prefs::kSpokenFeedbackEnabled,
-                                     prefs, callback);
-  a11y_high_contrast_enabled_.Init(prefs::kHighContrastEnabled,
-                                   prefs, callback);
-  a11y_screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
-                                      prefs, callback);
-  a11y_screen_magnifier_type_.Init(prefs::kScreenMagnifierType,
-                                   prefs, callback);
-  a11y_screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale,
-                                    prefs, callback);
-  a11y_virtual_keyboard_enabled_.Init(prefs::kVirtualKeyboardEnabled,
-                                      prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
-  use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, callback);
-  disable_drive_.Init(prefs::kDisableDrive, prefs, callback);
-  disable_drive_over_cellular_.Init(prefs::kDisableDriveOverCellular,
-                                    prefs, callback);
-  disable_drive_hosted_files_.Init(prefs::kDisableDriveHostedFiles,
+  primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
-  select_file_last_directory_.Init(prefs::kSelectFileLastDirectory,
-                                   prefs, callback);
-  save_file_default_directory_.Init(prefs::kSaveFileDefaultDirectory,
-                                    prefs, callback);
   touch_hud_projection_enabled_.Init(prefs::kTouchHudProjectionEnabled,
                                      prefs, callback);
-  primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
-                                   prefs, callback);
-  preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
-                            prefs, callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, callback);
   enabled_extension_imes_.Init(prefs::kLanguageEnabledExtensionImes,
                                prefs, callback);
@@ -371,21 +339,22 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatDelay, prefs, callback);
   xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
-
-  // TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
-  prefs->ClearPref(kEnableTouchpadThreeFingerSwipe);
 }
 
-void Preferences::Init(PrefServiceSyncable* prefs, bool is_primary_user) {
-  is_primary_user_prefs_ = is_primary_user;
+void Preferences::Init(PrefServiceSyncable* prefs, const User* user) {
+  DCHECK(user);
+  user_ = user;
+  user_is_primary_ = UserManager::Get()->GetPrimaryUser() == user_;
   InitUserPrefs(prefs);
+
+  UserManager::Get()->AddSessionStateObserver(this);
 
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);
 
   // Initialize preferences to currently saved state.
-  NotifyPrefChanged(NULL);
+  ApplyPreferences(REASON_INITIALIZATION, "");
 
   // If a guest is logged in, initialize the prefs as if this is the first
   // login.
@@ -394,7 +363,9 @@ void Preferences::Init(PrefServiceSyncable* prefs, bool is_primary_user) {
   }
 }
 
-void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs) {
+void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs,
+                                          const User* user) {
+  user_ = user;
   InitUserPrefs(prefs);
 }
 
@@ -403,163 +374,184 @@ void Preferences::SetInputMethodListForTesting() {
 }
 
 void Preferences::OnPreferenceChanged(const std::string& pref_name) {
-  NotifyPrefChanged(&pref_name);
+  ApplyPreferences(REASON_PREF_CHANGED, pref_name);
 }
 
-void Preferences::NotifyPrefChanged(const std::string* pref_name) {
+void Preferences::ApplyPreferences(ApplyReason reason,
+                                   const std::string& pref_name) {
+  DCHECK(reason != REASON_PREF_CHANGED || !pref_name.empty());
+  const bool user_is_owner =
+      UserManager::Get()->GetOwnerEmail() == user_->email();
+  const bool user_is_active = user_->is_active();
+
   system::TouchpadSettings touchpad_settings;
   system::MouseSettings mouse_settings;
-  if (!pref_name || *pref_name == prefs::kPerformanceTracingEnabled) {
+
+  if (user_is_primary_ && (reason == REASON_INITIALIZATION ||
+                           pref_name == prefs::kPerformanceTracingEnabled)) {
     const bool enabled = performance_tracing_enabled_.GetValue();
     if (enabled)
       tracing_manager_ = TracingManager::Create();
     else
       tracing_manager_.reset();
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kTapToClickEnabled)) {
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kTapToClickEnabled) {
     const bool enabled = tap_to_click_enabled_.GetValue();
-    touchpad_settings.SetTapToClick(enabled);
-    if (pref_name)
+    if (user_is_active)
+      touchpad_settings.SetTapToClick(enabled);
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started", enabled);
 
     // Save owner preference in local state to use on login screen.
-    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
       if (prefs->GetBoolean(prefs::kOwnerTapToClickEnabled) != enabled)
         prefs->SetBoolean(prefs::kOwnerTapToClickEnabled, enabled);
     }
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kTapDraggingEnabled)) {
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTapDraggingEnabled) {
     const bool enabled = tap_dragging_enabled_.GetValue();
-    touchpad_settings.SetTapDragging(enabled);
-    if (pref_name)
+    if (user_is_active)
+      touchpad_settings.SetTapDragging(enabled);
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Changed", enabled);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started", enabled);
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kEnableTouchpadThreeFingerClick)) {
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kEnableTouchpadThreeFingerClick) {
     const bool enabled = three_finger_click_enabled_.GetValue();
-    touchpad_settings.SetThreeFingerClick(enabled);
-    if (pref_name)
+    if (user_is_active)
+      touchpad_settings.SetThreeFingerClick(enabled);
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Changed", enabled);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kNaturalScroll)) {
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kNaturalScroll) {
     // Force natural scroll default if we've sync'd and if the cmd line arg is
     // set.
     ForceNaturalScrollDefault();
 
     const bool enabled = natural_scroll_.GetValue();
     DVLOG(1) << "Natural scroll set to " << enabled;
-    ui::SetNaturalScroll(enabled);
-    if (pref_name)
+    if (user_is_active)
+      ui::SetNaturalScroll(enabled);
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Changed", enabled);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Started", enabled);
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kMouseSensitivity)) {
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseSensitivity) {
     const int sensitivity = mouse_sensitivity_.GetValue();
-    mouse_settings.SetSensitivity(sensitivity);
-    if (pref_name) {
+    if (user_is_active)
+      mouse_settings.SetSensitivity(sensitivity);
+    if (reason == REASON_PREF_CHANGED) {
       UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Changed",
                                 sensitivity,
                                 system::kMaxPointerSensitivity + 1);
-    } else {
+    } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Started",
                                 sensitivity,
                                 system::kMaxPointerSensitivity + 1);
     }
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kTouchpadSensitivity)) {
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchpadSensitivity) {
     const int sensitivity = touchpad_sensitivity_.GetValue();
-    touchpad_settings.SetSensitivity(sensitivity);
-    if (pref_name) {
+    if (user_is_active)
+      touchpad_settings.SetSensitivity(sensitivity);
+    if (reason == REASON_PREF_CHANGED) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Changed",
                                 sensitivity,
                                 system::kMaxPointerSensitivity + 1);
-    } else {
+    } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Started",
                                 sensitivity,
                                 system::kMaxPointerSensitivity + 1);
     }
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kPrimaryMouseButtonRight)) {
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kPrimaryMouseButtonRight) {
     const bool right = primary_mouse_button_right_.GetValue();
-    mouse_settings.SetPrimaryButtonRight(right);
-    if (pref_name)
+    if (user_is_active)
+      mouse_settings.SetPrimaryButtonRight(right);
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Changed", right);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
-
     // Save owner preference in local state to use on login screen.
-    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
       if (prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight) != right)
         prefs->SetBoolean(prefs::kOwnerPrimaryMouseButtonRight, right);
     }
   }
-  if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kDownloadDefaultDirectory) {
     const bool default_download_to_drive = drive::util::IsUnderDriveMountPoint(
         download_default_directory_.GetValue());
-    if (pref_name)
+    if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN(
           "FileBrowser.DownloadDestination.IsGoogleDrive.Changed",
           default_download_to_drive);
-    else
+    else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN(
           "FileBrowser.DownloadDestination.IsGoogleDrive.Started",
           default_download_to_drive);
   }
-  if ((!pref_name && is_primary_user_prefs_) ||
-      (pref_name && *pref_name == prefs::kTouchHudProjectionEnabled)) {
-    const bool enabled = touch_hud_projection_enabled_.GetValue();
-    ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchHudProjectionEnabled) {
+    if (user_is_active) {
+      const bool enabled = touch_hud_projection_enabled_.GetValue();
+      ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
+    }
   }
 
-  if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
-    // Unlike kLanguagePreloadEngines and some other input method
-    // preferencs, we don't need to send this to ibus-daemon.
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
+    if (user_is_active) {
+      const bool enabled = xkb_auto_repeat_enabled_.GetValue();
+      input_method::InputMethodManager::Get()->GetXKeyboard()
+          ->SetAutoRepeatEnabled(enabled);
+    }
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kLanguageXkbAutoRepeatDelay ||
+      pref_name == prefs::kLanguageXkbAutoRepeatInterval) {
+    if (user_is_active)
+      UpdateAutoRepeatRate();
   }
 
-  if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
-    const bool enabled = xkb_auto_repeat_enabled_.GetValue();
-    input_method::InputMethodManager::Get()->GetXKeyboard()
-        ->SetAutoRepeatEnabled(enabled);
-  }
-  if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
-                     (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
-    UpdateAutoRepeatRate();
-  }
-
-  if (!pref_name) {
+  if (reason != REASON_PREF_CHANGED && user_is_active) {
     SetInputMethodList();
-  } else if (*pref_name == prefs::kLanguagePreloadEngines) {
+  } else if (pref_name == prefs::kLanguagePreloadEngines && user_is_active) {
     SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
                                      language_prefs::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
   }
 
-  if (!pref_name || *pref_name == prefs::kLanguageEnabledExtensionImes) {
-    std::string value(enabled_extension_imes_.GetValue());
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kLanguageEnabledExtensionImes) {
+    if (user_is_active) {
+      std::string value(enabled_extension_imes_.GetValue());
 
-    std::vector<std::string> split_values;
-    if (!value.empty())
-      base::SplitString(value, ',', &split_values);
+      std::vector<std::string> split_values;
+      if (!value.empty())
+        base::SplitString(value, ',', &split_values);
 
-    input_method_manager_->SetEnabledExtensionImes(&split_values);
+      input_method_manager_->SetEnabledExtensionImes(&split_values);
+    }
   }
-  system::InputDeviceSettings::Get()->UpdateTouchpadSettings(touchpad_settings);
-  system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
+
+  if (user_is_active) {
+    system::InputDeviceSettings::Get()->UpdateTouchpadSettings(
+        touchpad_settings);
+    system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
+  }
 }
 
 void Preferences::OnIsSyncingChanged() {
@@ -621,10 +613,6 @@ void Preferences::SetInputMethodList() {
 }
 
 void Preferences::UpdateAutoRepeatRate() {
-  // Avoid setting repeat rate on desktop dev environment.
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return;
-
   input_method::AutoRepeatRate rate;
   rate.initial_delay_in_ms = xkb_auto_repeat_delay_pref_.GetValue();
   rate.repeat_interval_in_ms = xkb_auto_repeat_interval_pref_.GetValue();
@@ -637,8 +625,15 @@ void Preferences::UpdateAutoRepeatRate() {
 void Preferences::OnTouchHudProjectionToggled(bool enabled) {
   if (touch_hud_projection_enabled_.GetValue() == enabled)
     return;
-
+  if (!user_->is_active())
+    return;
   touch_hud_projection_enabled_.SetValue(enabled);
+}
+
+void Preferences::ActiveUserChanged(const User* active_user) {
+  if (active_user != user_)
+    return;
+  ApplyPreferences(REASON_ACTIVE_USER_CHANGED, "");
 }
 
 }  // namespace chromeos

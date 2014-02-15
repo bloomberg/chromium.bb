@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 
 class PrefRegistrySimple;
@@ -26,6 +27,8 @@ class PrefRegistrySyncable;
 
 namespace chromeos {
 
+class User;
+
 namespace input_method {
 class InputMethodManager;
 }
@@ -35,7 +38,8 @@ class InputMethodManager;
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
 class Preferences : public PrefServiceSyncableObserver,
-                    public ash::ShellObserver {
+                    public ash::ShellObserver,
+                    public UserManager::UserSessionStateObserver {
  public:
   Preferences();
   explicit Preferences(
@@ -47,24 +51,32 @@ class Preferences : public PrefServiceSyncableObserver,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // This method will initialize Chrome OS settings to values in user prefs.
-  // |is_primary_user| is true if preferences are initialized for primary user
-  // in multi-profile session.
-  void Init(PrefServiceSyncable* prefs, bool is_primary_user);
+  // |user| is the user owning this preferences.
+  void Init(PrefServiceSyncable* prefs, const User* user);
 
-  void InitUserPrefsForTesting(PrefServiceSyncable* prefs);
+  void InitUserPrefsForTesting(PrefServiceSyncable* prefs, const User* user);
   void SetInputMethodListForTesting();
 
  private:
+  enum ApplyReason {
+    REASON_INITIALIZATION,
+    REASON_ACTIVE_USER_CHANGED,
+    REASON_PREF_CHANGED
+  };
+
   // Initializes all member prefs.
   void InitUserPrefs(PrefServiceSyncable* prefs);
 
   // Callback method for preference changes.
   void OnPreferenceChanged(const std::string& pref_name);
 
-  // This will set the OS settings when the preference changes.
-  // If this method is called with NULL, it will set all OS settings to what's
-  // stored in the preferences.
-  void NotifyPrefChanged(const std::string* pref_name);
+  // This will set the OS settings when the preference changed or user owning
+  // these preferences became active. Also this method is called on
+  // initialization. The reason of call is stored in |reason| parameter.
+  // |pref_name| keeps name of changed preference in |reason| is
+  // |REASON_PREF_CHANGED|, otherwise it is empty.
+  void ApplyPreferences(ApplyReason reason,
+                        const std::string& pref_name);
 
   // A variant of SetLanguageConfigStringList. You can pass comma-separated
   // values. Examples of |value|: "", "Control+space,Hiragana"
@@ -90,6 +102,9 @@ class Preferences : public PrefServiceSyncableObserver,
   // Overriden from ash::ShellObserver.
   virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
+  // Overriden form UserManager::UserSessionStateObserver.
+  virtual void ActiveUserChanged(const User* active_user) OVERRIDE;
+
   PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
@@ -101,27 +116,14 @@ class Preferences : public PrefServiceSyncableObserver,
   BooleanPrefMember three_finger_click_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
-  BooleanPrefMember a11y_spoken_feedback_enabled_;
-  BooleanPrefMember a11y_high_contrast_enabled_;
-  BooleanPrefMember a11y_screen_magnifier_enabled_;
-  IntegerPrefMember a11y_screen_magnifier_type_;
-  DoublePrefMember a11y_screen_magnifier_scale_;
-  BooleanPrefMember a11y_virtual_keyboard_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember mouse_sensitivity_;
   IntegerPrefMember touchpad_sensitivity_;
   BooleanPrefMember primary_mouse_button_right_;
-  BooleanPrefMember use_24hour_clock_;
-  BooleanPrefMember disable_drive_;
-  BooleanPrefMember disable_drive_over_cellular_;
-  BooleanPrefMember disable_drive_hosted_files_;
   FilePathPrefMember download_default_directory_;
-  FilePathPrefMember select_file_last_directory_;
-  FilePathPrefMember save_file_default_directory_;
   BooleanPrefMember touch_hud_projection_enabled_;
 
   // Input method preferences.
-  StringPrefMember preferred_languages_;
   StringPrefMember preload_engines_;
   StringPrefMember current_input_method_;
   StringPrefMember previous_input_method_;
@@ -131,8 +133,11 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
-  // True if this preferences instance is for primary user.
-  bool is_primary_user_prefs_;
+  // User owning these preferences.
+  const User* user_;
+
+  // Whether user is a primary user.
+  bool user_is_primary_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

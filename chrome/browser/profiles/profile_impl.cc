@@ -1156,10 +1156,9 @@ void ProfileImpl::OnLogin() {
 
 void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_.reset(new chromeos::Preferences());
-  bool is_primary_user = chromeos::UserManager::Get()->GetPrimaryUser() ==
-      chromeos::UserManager::Get()->GetUserByProfile(this);
-  chromeos_preferences_->Init(PrefServiceSyncable::FromProfile(this),
-                              is_primary_user);
+  chromeos_preferences_->Init(
+      PrefServiceSyncable::FromProfile(this),
+      chromeos::UserManager::Get()->GetUserByProfile(this));
 }
 
 #endif  // defined(OS_CHROMEOS)
