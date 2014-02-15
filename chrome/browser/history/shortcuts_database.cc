@@ -11,17 +11,10 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace {
-
-// Current version number. We write databases at the "current" version number,
-// but any previous version that can read the "compatible" one can make do with
-// our database without *too* many bad effects.
-const int kCurrentVersionNumber = 1;
-const int kCompatibleVersionNumber = 1;
 
 void BindShortcutToStatement(
     const history::ShortcutsBackend::Shortcut& shortcut,
@@ -184,7 +177,8 @@ bool ShortcutsDatabase::EnsureTable() {
     // Perform the upgrade in a transaction to ensure it doesn't happen
     // incompletely.
     sql::Transaction transaction(&db_);
-    if (!(transaction.Begin() &&
+    transaction.Begin();
+    return
         db_.Execute("ALTER TABLE omni_box_shortcuts "
             "ADD COLUMN fill_into_edit VARCHAR") &&
         db_.Execute("UPDATE omni_box_shortcuts SET fill_into_edit = url") &&
@@ -199,31 +193,9 @@ bool ShortcutsDatabase::EnsureTable() {
             static_cast<int>(AutocompleteMatchType::HISTORY_TITLE)).c_str()) &&
         db_.Execute("ALTER TABLE omni_box_shortcuts "
             "ADD COLUMN keyword VARCHAR") &&
-        transaction.Commit())) {
-      return false;
-    }
+        transaction.Commit();
   }
 
-  if (!sql::MetaTable::DoesTableExist(&db_)) {
-    meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber);
-    sql::Transaction transaction(&db_);
-    if (!(transaction.Begin() &&
-      // Migrate old SEARCH_OTHER_ENGINE values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-          "SET type = 13 WHERE type = 9").c_str()) &&
-      // Migrate old EXTENSION_APP values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 14 WHERE type = 10").c_str()) &&
-      // Migrate old CONTACT values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 15 WHERE type = 11").c_str()) &&
-      // Migrate old BOOKMARK_TITLE values to the new type value.
-      db_.Execute(base::StringPrintf("UPDATE omni_box_shortcuts "
-           "SET type = 16 WHERE type = 12").c_str()) &&
-      transaction.Commit())) {
-      return false;
-    }
-  }
   return true;
 }
 

@@ -257,11 +257,11 @@ TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
   EXPECT_EQ(0U, shortcuts.size());
 }
 
-TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
-  // Open the v0 test file and use it to create a test database in a temp dir.
+TEST(ShortcutsDatabaseMigrationTest, MigrateV1ToV2) {
+  // Open the v1 test file and use it to create a test database in a temp dir.
   base::FilePath sql_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v0.sql");
+  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v1.sql");
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
@@ -296,34 +296,6 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
               static_cast<AutocompleteMatch::Type>(statement.ColumnInt(3)));
     EXPECT_TRUE(statement.ColumnString(4).empty());
   }
-  EXPECT_TRUE(statement.Succeeded());
-}
-
-TEST(ShortcutsDatabaseMigrationTest, MigrateV0ToV1) {
-  // Open the v1 test file and use it to create a test database in a temp dir.
-  base::FilePath sql_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v1.sql");
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
-  ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
-
-  // Create a ShortcutsDatabase from the test database, which will migrate the
-  // test database to the current version.
-  {
-    scoped_refptr<ShortcutsDatabase> db(new ShortcutsDatabase(db_path));
-    db->Init();
-  }
-
-  // Check that all the old type values got converted to new values.
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(db_path));
-  sql::Statement statement(connection.GetUniqueStatement(
-      "SELECT count(1) FROM omni_box_shortcuts WHERE type in (9, 10, 11, 12)"));
-  ASSERT_TRUE(statement.is_valid());
-  while (statement.Step())
-    EXPECT_EQ(0, statement.ColumnInt(0));
   EXPECT_TRUE(statement.Succeeded());
 }
 
