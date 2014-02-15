@@ -97,23 +97,24 @@ PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> key
     return createUnsafe(element, keyframeDictionaryVector);
 }
 
-void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
+void Animation::setStartDelay(Timing& timing, double startDelay)
 {
-    // FIXME: This method needs to be refactored to handle invalid
-    // null, NaN, Infinity values better.
-    // See: http://www.w3.org/TR/WebIDL/#es-double
-    double startDelay = 0;
-    timingInputDictionary.get("delay", startDelay);
     if (std::isfinite(startDelay))
         timing.startDelay = startDelay;
+    else
+        timing.startDelay = 0;
+}
 
-    double endDelay = 0;
-    timingInputDictionary.get("endDelay", endDelay);
+void Animation::setEndDelay(Timing& timing, double endDelay)
+{
     if (std::isfinite(endDelay))
         timing.endDelay = endDelay;
+    else
+        timing.endDelay = 0;
+}
 
-    String fillMode;
-    timingInputDictionary.get("fill", fillMode);
+void Animation::setFillMode(Timing& timing, String fillMode)
+{
     if (fillMode == "none") {
         timing.fillMode = Timing::FillModeNone;
     } else if (fillMode == "backwards") {
@@ -122,48 +123,111 @@ void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
         timing.fillMode = Timing::FillModeBoth;
     } else if (fillMode == "forwards") {
         timing.fillMode = Timing::FillModeForwards;
+    } else {
+        timing.fillMode = Timing::FillModeAuto;
     }
+}
 
-    double iterationStart = 0;
-    timingInputDictionary.get("iterationStart", iterationStart);
+void Animation::setIterationStart(Timing& timing, double iterationStart)
+{
     if (!std::isnan(iterationStart) && !std::isinf(iterationStart))
         timing.iterationStart = std::max<double>(iterationStart, 0);
+    else
+        timing.iterationStart = 0;
+}
 
-    double iterationCount = 1;
-    timingInputDictionary.get("iterations", iterationCount);
+void Animation::setIterationCount(Timing& timing, double iterationCount)
+{
     if (!std::isnan(iterationCount))
         timing.iterationCount = std::max<double>(iterationCount, 0);
+    else
+        timing.iterationCount = 1;
+}
 
-    v8::Local<v8::Value> iterationDurationValue;
-    if (timingInputDictionary.get("duration", iterationDurationValue)) {
-        double iterationDuration = iterationDurationValue->NumberValue();
-        if (!std::isnan(iterationDuration) && iterationDuration >= 0)
-            timing.iterationDuration = iterationDuration;
-    }
+void Animation::setIterationDuration(Timing& timing, double iterationDuration)
+{
+    if (!std::isnan(iterationDuration) && iterationDuration >= 0)
+        timing.iterationDuration = iterationDuration;
+    else
+        timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+}
 
-    double playbackRate = 1;
-    timingInputDictionary.get("playbackRate", playbackRate);
+void Animation::setPlaybackRate(Timing& timing, double playbackRate)
+{
     if (!std::isnan(playbackRate) && !std::isinf(playbackRate))
         timing.playbackRate = playbackRate;
+    else
+        timing.playbackRate = 1;
+}
 
-    String direction;
-    timingInputDictionary.get("direction", direction);
+void Animation::setPlaybackDirection(Timing& timing, String direction)
+{
     if (direction == "reverse") {
         timing.direction = Timing::PlaybackDirectionReverse;
     } else if (direction == "alternate") {
         timing.direction = Timing::PlaybackDirectionAlternate;
     } else if (direction == "alternate-reverse") {
         timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    } else {
+        timing.direction = Timing::PlaybackDirectionNormal;
     }
+}
 
-    String timingFunctionString;
-    timingInputDictionary.get("easing", timingFunctionString);
+void Animation::setTimingFunction(Timing& timing, String timingFunctionString)
+{
     RefPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
     if (timingFunctionValue) {
         RefPtr<TimingFunction> timingFunction = CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false);
-        if (timingFunction)
+        if (timingFunction) {
             timing.timingFunction = timingFunction;
+            return;
+        }
     }
+    timing.timingFunction = LinearTimingFunction::create();
+}
+
+void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
+{
+    // FIXME: This method needs to be refactored to handle invalid
+    // null, NaN, Infinity values better.
+    // See: http://www.w3.org/TR/WebIDL/#es-double
+    double startDelay = 0;
+    timingInputDictionary.get("delay", startDelay);
+    setStartDelay(timing, startDelay);
+
+    double endDelay = 0;
+    timingInputDictionary.get("endDelay", endDelay);
+    setEndDelay(timing, endDelay);
+
+    String fillMode;
+    timingInputDictionary.get("fill", fillMode);
+    setFillMode(timing, fillMode);
+
+    double iterationStart = 0;
+    timingInputDictionary.get("iterationStart", iterationStart);
+    setIterationStart(timing, iterationStart);
+
+    double iterationCount = 1;
+    timingInputDictionary.get("iterations", iterationCount);
+    setIterationCount(timing, iterationCount);
+
+    v8::Local<v8::Value> iterationDurationValue;
+    if (timingInputDictionary.get("duration", iterationDurationValue)) {
+        double iterationDuration = iterationDurationValue->NumberValue();
+        setIterationDuration(timing, iterationDuration);
+    }
+
+    double playbackRate = 1;
+    timingInputDictionary.get("playbackRate", playbackRate);
+    setPlaybackRate(timing, playbackRate);
+
+    String direction;
+    timingInputDictionary.get("direction", direction);
+    setPlaybackDirection(timing, direction);
+
+    String timingFunctionString;
+    timingInputDictionary.get("easing", timingFunctionString);
+    setTimingFunction(timing, timingFunctionString);
 
     timing.assertValid();
 }

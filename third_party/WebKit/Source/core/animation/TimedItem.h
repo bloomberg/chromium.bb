@@ -92,6 +92,7 @@ public:
     Player* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specifiedTiming() const { return m_specified; }
     PassRefPtr<TimedItemTiming> specified() { return TimedItemTiming::create(this); }
+    void updateSpecifiedTiming(const Timing&);
 
     double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime; }
     double currentIteration(bool& isNull) const { isNull = !ensureCalculated().isInEffect; return ensureCalculated().currentIteration; }

@@ -20,10 +20,20 @@ public:
     String fill();
     double iterationStart();
     double iterations();
-    void duration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enambled, String& element1);
+    void getDuration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1);
     double playbackRate();
     String direction();
     String easing();
+
+    void setDelay(double);
+    void setEndDelay(double);
+    void setFill(String);
+    void setIterationStart(double);
+    void setIterations(double);
+    bool setDuration(String name, double duration);
+    void setPlaybackRate(double);
+    void setDirection(String);
+    void setEasing(String);
 private:
     RefPtr<TimedItem> m_parent;
     TimedItemTiming(TimedItem* parent);

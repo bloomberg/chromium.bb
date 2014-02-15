@@ -86,6 +86,14 @@ double TimedItem::activeDuration() const
     return result;
 }
 
+void TimedItem::updateSpecifiedTiming(const Timing& timing)
+{
+    m_specified = timing;
+    invalidate();
+    if (m_player)
+        m_player->setNeedsUpdate();
+}
+
 bool TimedItem::updateInheritedTime(double inheritedTime) const
 {
     bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));

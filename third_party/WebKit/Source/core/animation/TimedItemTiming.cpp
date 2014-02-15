@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/TimedItemTiming.h"
 
+#include "core/animation/Animation.h"
 #include "core/animation/TimedItem.h"
 #include "platform/animation/TimingFunction.h"
 
@@ -63,7 +64,7 @@ double TimedItemTiming::iterations()
 // and bindings/tests/results/V8TestInterface.cpp.
 // FIXME: It might be possible to have 'duration' defined as an attribute in the idl.
 // If possible, fix will be in a follow-up patch.
-void TimedItemTiming::duration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1)
+void TimedItemTiming::getDuration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1)
 {
     if (propertyName != "duration")
         return;
@@ -103,6 +104,72 @@ String TimedItemTiming::direction()
 String TimedItemTiming::easing()
 {
     return m_parent->specifiedTiming().timingFunction->toString();
+}
+
+void TimedItemTiming::setDelay(double delay)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setStartDelay(timing, delay);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setEndDelay(double endDelay)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setEndDelay(timing, endDelay);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setFill(String fill)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setFillMode(timing, fill);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setIterationStart(double iterationStart)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setIterationStart(timing, iterationStart);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setIterations(double iterations)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setIterationCount(timing, iterations);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+bool TimedItemTiming::setDuration(String name, double duration)
+{
+    if (name != "duration")
+        return false;
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setIterationDuration(timing, duration);
+    m_parent->updateSpecifiedTiming(timing);
+    return true;
+}
+
+void TimedItemTiming::setPlaybackRate(double playbackRate)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setPlaybackRate(timing, playbackRate);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setDirection(String direction)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setPlaybackDirection(timing, direction);
+    m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::setEasing(String easing)
+{
+    Timing timing = m_parent->specifiedTiming();
+    Animation::setTimingFunction(timing, easing);
+    m_parent->updateSpecifiedTiming(timing);
 }
 
 } // namespace WebCore

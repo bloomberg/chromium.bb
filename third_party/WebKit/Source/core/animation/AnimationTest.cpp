@@ -244,7 +244,7 @@ TEST_F(AnimationAnimationTest, SpecifiedDurationGetter)
     double numberDuration = std::numeric_limits<double>::quiet_NaN();
     bool isString = false;
     String stringDuration = "";
-    specifiedWithDuration->duration("duration", isNumber, numberDuration, isString, stringDuration);
+    specifiedWithDuration->getDuration("duration", isNumber, numberDuration, isString, stringDuration);
     EXPECT_TRUE(isNumber);
     EXPECT_EQ(2.5, numberDuration);
     EXPECT_FALSE(isString);
@@ -261,11 +261,94 @@ TEST_F(AnimationAnimationTest, SpecifiedDurationGetter)
     numberDuration = std::numeric_limits<double>::quiet_NaN();
     isString = false;
     stringDuration = "";
-    specifiedNoDuration->duration("duration", isNumber, numberDuration, isString, stringDuration);
+    specifiedNoDuration->getDuration("duration", isNumber, numberDuration, isString, stringDuration);
     EXPECT_FALSE(isNumber);
     EXPECT_TRUE(std::isnan(numberDuration));
     EXPECT_TRUE(isString);
     EXPECT_EQ("auto", stringDuration);
+}
+
+TEST_F(AnimationAnimationTest, SpecifiedSetters)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
+
+    RefPtr<TimedItemTiming> specified = animation->specified();
+
+    EXPECT_EQ(0, specified->delay());
+    specified->setDelay(2);
+    EXPECT_EQ(2, specified->delay());
+
+    EXPECT_EQ(0, specified->endDelay());
+    specified->setEndDelay(0.5);
+    EXPECT_EQ(0.5, specified->endDelay());
+
+    EXPECT_EQ("auto", specified->fill());
+    specified->setFill("backwards");
+    EXPECT_EQ("backwards", specified->fill());
+
+    EXPECT_EQ(0, specified->iterationStart());
+    specified->setIterationStart(2);
+    EXPECT_EQ(2, specified->iterationStart());
+
+    EXPECT_EQ(1, specified->iterations());
+    specified->setIterations(10);
+    EXPECT_EQ(10, specified->iterations());
+
+    EXPECT_EQ(1, specified->playbackRate());
+    specified->setPlaybackRate(2);
+    EXPECT_EQ(2, specified->playbackRate());
+
+    EXPECT_EQ("normal", specified->direction());
+    specified->setDirection("reverse");
+    EXPECT_EQ("reverse", specified->direction());
+
+    EXPECT_EQ("linear", specified->easing());
+    specified->setEasing("step-start");
+    EXPECT_EQ("step-start", specified->easing());
+}
+
+TEST_F(AnimationAnimationTest, SetSpecifiedDuration)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Vector<Dictionary, 0> jsKeyframes;
+    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
+
+    RefPtr<TimedItemTiming> specified = animation->specified();
+
+    bool isNumber = false;
+    double numberDuration = std::numeric_limits<double>::quiet_NaN();
+    bool isString = false;
+    String stringDuration = "";
+    specified->getDuration("duration", isNumber, numberDuration, isString, stringDuration);
+    EXPECT_FALSE(isNumber);
+    EXPECT_TRUE(std::isnan(numberDuration));
+    EXPECT_TRUE(isString);
+    EXPECT_EQ("auto", stringDuration);
+
+    specified->setDuration("duration", 2.5);
+    isNumber = false;
+    numberDuration = std::numeric_limits<double>::quiet_NaN();
+    isString = false;
+    stringDuration = "";
+    specified->getDuration("duration", isNumber, numberDuration, isString, stringDuration);
+    EXPECT_TRUE(isNumber);
+    EXPECT_EQ(2.5, numberDuration);
+    EXPECT_FALSE(isString);
+    EXPECT_EQ("", stringDuration);
 }
 
 TEST_F(AnimationAnimationTest, TimingInputStartDelay)

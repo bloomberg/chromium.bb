@@ -6,19 +6,23 @@
     RuntimeEnabled=WebAnimationsAPI,
     ImplementedAs=TimedItemTiming,
 ] interface Timing {
-    // FIXME: None of these are readonly in the spec. They need setters.
-    readonly attribute double delay;
-    readonly attribute double endDelay;
-    readonly attribute DOMString fill;
-    readonly attribute double iterationStart;
-    readonly attribute double iterations;
+    attribute double delay;
+    attribute double endDelay;
+    attribute DOMString fill;
+    attribute double iterationStart;
+    attribute double iterations;
 
     // FIXME: This uses a NamedPropertyGetter to implement the 'duration' attribute
     // because duration has a union type (which is tricky to do with an attribute).
     // Fix will be in a follow-up patch if there is a better solution.
-    [NotEnumerable, ImplementedAs=duration] getter (double or DOMString) (DOMString name);
+    [NotEnumerable, ImplementedAs=getDuration] getter (double or DOMString) (DOMString name);
 
-    readonly attribute double playbackRate;
-    readonly attribute DOMString direction;
-    readonly attribute DOMString easing;
+    // FIXME: If the user calls animation.specified.duration = "" (empty string) then duration
+    // gets set to 0 (This is correct behavior for IDL). Correct result is for duration to
+    // be set to 'auto'.
+    [StrictTypeChecking, ImplementedAs=setDuration] setter double (DOMString name, double duration);
+
+    attribute double playbackRate;
+    attribute DOMString direction;
+    attribute DOMString easing;
 };
