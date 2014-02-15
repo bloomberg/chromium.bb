@@ -51,7 +51,7 @@
 
 namespace {
 
-const int kAutoLaunchDefaultTimeoutSec = 3;
+const int kAutoLaunchDefaultTimeoutMilliSec = 50;
 
 #if defined(OS_WIN)
 void CreateShortcutInWebAppDir(
@@ -332,8 +332,8 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
                                          bool is_final) {
   speech_ui_->SetSpeechResult(result, is_final);
   if (is_final) {
-    auto_launch_timeout_ = base::TimeDelta::FromSeconds(
-        kAutoLaunchDefaultTimeoutSec);
+    auto_launch_timeout_ = base::TimeDelta::FromMilliseconds(
+        kAutoLaunchDefaultTimeoutMilliSec);
     model_->search_box()->SetText(result);
   }
 }
