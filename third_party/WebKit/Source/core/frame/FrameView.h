@@ -333,8 +333,6 @@ private:
     void applyOverflowToViewportAndSetRenderer(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
-    void paintControlTints();
-
     void updateCounters();
     void autoSizeIfEnabled();
     void forceLayoutParentViewIfNeeded();

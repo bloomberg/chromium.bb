@@ -2623,12 +2623,12 @@ void FrameView::updateControlTints()
     if (m_frame->document()->url().isEmpty())
         return;
 
-    if (RenderTheme::theme().supportsControlTints() || hasCustomScrollbars())
-        paintControlTints();
-}
+    // FIXME: Why do we need this for hasCustomScrollbars?
+    // FIXME: supportsControlTints is currently true for a bunch of platforms.
+    // It should only be for Mac 10.6.
+    if (!RenderTheme::theme().supportsControlTints() && !hasCustomScrollbars())
+        return;
 
-void FrameView::paintControlTints()
-{
     if (needsLayout())
         layout();
     // FIXME: The use of paint seems like overkill: crbug.com/236892

@@ -165,8 +165,6 @@ public:
     void setAutofilled(Element*, bool enabled, ExceptionState&);
     void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionState&);
 
-    void paintControlTints(Document*, ExceptionState&);
-
     PassRefPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState&);
     unsigned locationFromRange(Element* scope, const Range*, ExceptionState&);
     unsigned lengthFromRange(Element* scope, const Range*, ExceptionState&);

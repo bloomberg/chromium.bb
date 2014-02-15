@@ -1066,20 +1066,6 @@ void Internals::scrollElementToRect(Element* element, long x, long y, long w, lo
     frameView->scrollElementToRect(element, IntRect(x, y, w, h));
 }
 
-void Internals::paintControlTints(Document* document, ExceptionState& exceptionState)
-{
-    if (!document || !document->view()) {
-        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's view cannot be retrieved." : "The document provided is invalid.");
-        return;
-    }
-
-    // https://code.google.com/p/chromium/issues/detail?id=343760
-    DisableCompositingQueryAsserts disabler;
-
-    FrameView* frameView = document->view();
-    frameView->paintControlTints();
-}
-
 PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState& exceptionState)
 {
     if (!scope) {

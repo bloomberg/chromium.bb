@@ -120,8 +120,6 @@
     [RaisesException] void setEditingValue(Element inputElement, DOMString value);
     [RaisesException] void setAutofilled(Element inputElement, boolean enabled);
 
-    [RaisesException] void paintControlTints(Document document);
-
     [RaisesException] void scrollElementToRect(Element element, long x, long y, long w, long h);
 
     [RaisesException] Range rangeFromLocationAndLength(Element scope, long rangeLocation, long rangeLength);
