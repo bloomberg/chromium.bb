@@ -76,9 +76,9 @@ class NonHaltingBuilderStage(bs.BuilderStage):
 class ForgivingBuilderStage(bs.BuilderStage):
   """Build stage that turns a build step red but not a build."""
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    return self._HandleExceptionAsWarning(exception)
+    return self._HandleExceptionAsWarning(exc_info)
 
 
 class RetryStage(object):
@@ -1290,7 +1290,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if not commands.HaveCQHWTestsBeenAborted(version):
         commands.AbortCQHWTests(version, self._run.options.debug)
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
     # Besides the master, the completion stages also run on slaves, to report
     # their status back to the master. If the build failed, they throw an
@@ -1298,14 +1298,15 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # redundant, since the build itself would already be red. In this case,
     # report a warning instead.
     # pylint: disable=W0212
-    if (isinstance(exception, ImportantBuilderFailedException) and
+    exc_type = exc_info[0]
+    if (issubclass(exc_type, ImportantBuilderFailedException) and
         not self._run.config.master):
-      return self._HandleExceptionAsWarning(exception)
+      return self._HandleExceptionAsWarning(exc_info)
     else:
       # In all other cases, exceptions should be treated as fatal. To
       # implement this, we bypass ForgivingStage and call
       # bs.BuilderStage._HandleStageException explicitly.
-      return bs.BuilderStage._HandleStageException(self, exception)
+      return bs.BuilderStage._HandleStageException(self, exc_info)
 
   def HandleSuccess(self):
     """Handle a successful build.
@@ -2855,12 +2856,13 @@ class HWTestStage(ArchivingStage):
 
   # Disable complaint about calling _HandleStageException.
   # pylint: disable=W0212
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
+    exc_type, exc_value = exc_info[:2]
 
     # Deal with timeout errors specially.
-    if isinstance(exception, timeout_util.TimeoutError):
-      return self._HandleStageTimeoutException(exception)
+    if issubclass(exc_type, timeout_util.TimeoutError):
+      return self._HandleStageTimeoutException(exc_info)
 
     # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
     # returned by autotest_rpc_client.py. It is the former that we care about.
@@ -2868,28 +2870,28 @@ class HWTestStage(ArchivingStage):
     codes_handled_as_warning = (2, 11, 12, 13)
 
     if self.suite_config.critical:
-      return super(HWTestStage, self)._HandleStageException(exception)
-    is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
-                   isinstance(exception, lab_status.BoardIsDisabledException))
-    is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
-                       exception.result.returncode in codes_handled_as_warning)
+      return super(HWTestStage, self)._HandleStageException(exc_info)
+    is_lab_down = (issubclass(exc_type, lab_status.LabIsDownException) or
+                   issubclass(exc_type, lab_status.BoardIsDisabledException))
+    is_warning_code = (issubclass(exc_type, cros_build_lib.RunCommandError) and
+                       exc_value.result.returncode in codes_handled_as_warning)
     if is_lab_down:
       cros_build_lib.Warning('HWTest was skipped because the lab was down.')
-      return self._HandleExceptionAsWarning(exception)
+      return self._HandleExceptionAsWarning(exc_info)
     elif is_warning_code:
       cros_build_lib.Warning('HWTest failed with warning code.')
-      return self._HandleExceptionAsWarning(exception)
+      return self._HandleExceptionAsWarning(exc_info)
     elif self._CheckAborted():
       cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)
-      return self._HandleExceptionAsWarning(exception)
+      return self._HandleExceptionAsWarning(exc_info)
     else:
-      return super(HWTestStage, self)._HandleStageException(exception)
+      return super(HWTestStage, self)._HandleStageException(exc_info)
 
-  def _HandleStageTimeoutException(self, exception):
+  def _HandleStageTimeoutException(self, exc_info):
     if not self.suite_config.critical and not self.suite_config.fatal_timeouts:
-      return self._HandleExceptionAsWarning(exception)
+      return self._HandleExceptionAsWarning(exc_info)
 
-    return super(HWTestStage, self)._HandleStageException(exception)
+    return super(HWTestStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
     if self._CheckAborted():
@@ -2956,16 +2958,18 @@ class SignerResultsStage(ArchivingStage):
     super(SignerResultsStage, self).__init__(*args, **kwargs)
     self.signing_results = {}
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Convert SignerResultsException exceptions to WARNING (for now)."""
+    exc_type = exc_info[0]
+
     # If we raise an exception, make sure nobody keeps waiting on our results.
     self.archive_stage.AnnounceChannelSigned(None)
 
     # This stage is experimental, don't trust it yet.
-    if isinstance(exception, SignerResultsException):
-      return self._HandleExceptionAsWarning(exception)
+    if issubclass(exc_type, SignerResultsException):
+      return self._HandleExceptionAsWarning(exc_info)
 
-    return super(SignerResultsStage, self)._HandleStageException(exception)
+    return super(SignerResultsStage, self)._HandleStageException(exc_info)
 
   def _JsonFromUrl(self, gs_ctx, url):
     """Fetch a GS Url, and parse it as Json.
@@ -3110,13 +3114,15 @@ class PaygenStage(ArchivingStage):
   option_name = 'paygen'
   config_name = 'paygen'
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    # TODO(dgarrett): Constrain this to only expected exceptions.
-    if isinstance(exception, Exception):
-      return self._HandleExceptionAsWarning(exception)
+    exc_type = exc_info[0]
 
-    return super(PaygenStage, self)._HandleStageException(exception)
+    # TODO(dgarrett): Constrain this to only expected exceptions.
+    if issubclass(exc_type, Exception):
+      return self._HandleExceptionAsWarning(exc_info)
+
+    return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
     """Do the work of generating our release payloads."""
@@ -3664,13 +3670,13 @@ class ArchiveStage(ArchivingStage):
       commands.RemoveOldArchives(self.bot_archive_root,
                                  self._run.options.max_archive_builds)
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
     self._push_image_status_queue.put(None)
     self._wait_for_channel_signing.put(None)
-    return super(ArchiveStage, self)._HandleStageException(exception)
+    return super(ArchiveStage, self)._HandleStageException(exc_info)
 
 
 class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
@@ -3718,12 +3724,12 @@ class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
 
     commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
 
-  def _HandleStageException(self, exception):
+  def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self.board_runattrs.SetParallelDefault('breakpad_symbols_generated', False)
     self.board_runattrs.SetParallelDefault('debug_tarball_generated', False)
 
-    return super(DebugSymbolsStage, self)._HandleStageException(exception)
+    return super(DebugSymbolsStage, self)._HandleStageException(exc_info)
 
 
 class MasterUploadPrebuiltsStage(bs.BuilderStage):

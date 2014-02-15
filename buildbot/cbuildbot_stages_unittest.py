@@ -411,6 +411,34 @@ class BuilderStageTest(AbstractStageTest):
     self.assertTrue(isinstance(results.result, TestError))
     self.assertEqual(str(results.result), 'fail!')
 
+  def testHandleExceptionException(self):
+    """Verify exceptions in HandleException handlers are themselves handled."""
+    class TestError(Exception):
+      """Unique test exception"""
+
+    class BadStage(bs.BuilderStage):
+      """Stage that throws an exception when PerformStage is called."""
+
+      handled_exceptions = []
+
+      def PerformStage(self):
+        raise TestError('first fail')
+
+      def _HandleStageException(self, exc_info):
+        self.handled_exceptions.append(str(exc_info[1]))
+        raise TestError('nested')
+
+    stage = BadStage(self.run)
+    results_lib.Results.Clear()
+    self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
+
+    # Verify the results tracked the original exception.
+    results = results_lib.Results.Get()[0]
+    self.assertTrue(isinstance(results.result, TestError))
+    self.assertEqual(str(results.result), 'first fail')
+
+    self.assertEqual(stage.handled_exceptions, ['first fail'])
+
 
 class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
@@ -668,6 +696,18 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
     statuses = {'a' : status}
     no_stat = set()
     stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
+
+  def testExceptionHandler(self):
+    """Verify _HandleStageException is sane."""
+    stage = self.ConstructStage()
+    e = ValueError('foo')
+    try:
+      raise e
+    except ValueError:
+      ret = stage._HandleStageException(sys.exc_info())
+      self.assertTrue(isinstance(ret, tuple))
+      self.assertEqual(len(ret), 3)
+      self.assertEqual(ret[0], e)
 
 
 # pylint: disable=W0223
@@ -2006,8 +2046,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.stage = self.ConstructStage()
     try:
       self.stage.PerformStage()
-    except Exception as e:
-      self.stage._HandleStageException(e)
+    except Exception:
+      self.stage._HandleStageException(sys.exc_info())
       raise
 
   def testPerformStageWithSymbols(self):

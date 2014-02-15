@@ -240,47 +240,87 @@ class BuilderStage(object):
     to be done.
     """
 
-  def _HandleExceptionAsSuccess(self, _exception):
+  def _HandleExceptionAsSuccess(self, _exc_info):
     """Use instead of HandleStageException to ignore an exception."""
     return results_lib.Results.SUCCESS, None
 
   @staticmethod
-  def _StringifyException(exception):
+  def _StringifyException(exc_info):
     """Convert an exception into a string.
 
-    This can only be called as part of an except block.
-    """
-    if isinstance(exception, results_lib.StepFailure):
-      return str(exception)
-    else:
-      return traceback.format_exc()
+    Args:
+      exc_info: A (type, value, traceback) tuple as returned by sys.exc_info().
 
-  def _HandleExceptionAsWarning(self, exception, retrying=False):
+    Returns:
+      A string description of the exception.
+    """
+    exc_type, exc_value = exc_info[:2]
+    if issubclass(exc_type, results_lib.StepFailure):
+      return str(exc_value)
+    else:
+      return ''.join(traceback.format_exception(*exc_info))
+
+  @classmethod
+  def _HandleExceptionAsWarning(cls, exc_info, retrying=False):
     """Use instead of HandleStageException to treat an exception as a warning.
 
     This is used by the ForgivingBuilderStage's to treat any exceptions as
     warnings instead of stage failures.
     """
-    description = self._StringifyException(exception)
+    description = cls._StringifyException(exc_info)
     cros_build_lib.PrintBuildbotStepWarnings()
     cros_build_lib.Warning(description)
-    return results_lib.Results.FORGIVEN, description, retrying
+    return (results_lib.Results.FORGIVEN, description, retrying)
 
-  def _HandleStageException(self, exception):
+  @classmethod
+  def _HandleExceptionAsError(cls, exc_info):
+    """Handle an exception as an error, but ignore stage retry settings.
+
+    Meant as a helper for _HandleStageException code only.
+
+    Args:
+      exc_info: A (type, value, traceback) tuple as returned by sys.exc_info().
+
+    Returns:
+      Result tuple of (exception, description, retrying).
+    """
+    # Tell the user about the exception, and record it.
+    retrying = False
+    description = cls._StringifyException(exc_info)
+    cros_build_lib.PrintBuildbotStepFailure()
+    cros_build_lib.Error(description)
+    return (exc_info[1], description, retrying)
+
+  def _HandleStageException(self, exc_info):
     """Called when PerformStage throws an exception.  Can be overriden.
 
-    Should return result, description.  Description should be None if result
-    is not an exception.
+    Args:
+      exc_info: A (type, value, traceback) tuple as returned by sys.exc_info().
+
+    Returns:
+      Result tuple of (exception, description, retrying).  If it isn't an
+      exception, then description will be None.
     """
     if self._attempt and self._max_retry and self._attempt <= self._max_retry:
-      return self._HandleExceptionAsWarning(exception, retrying=True)
+      return self._HandleExceptionAsWarning(exc_info, retrying=True)
     else:
-      # Tell the user about the exception, and record it
-      retrying = False
-      description = self._StringifyException(exception)
-      cros_build_lib.PrintBuildbotStepFailure()
-      cros_build_lib.Error(description)
-      return exception, description, retrying
+      return self._HandleExceptionAsError(exc_info)
+
+  def _TopHandleStageException(self):
+    """Called when PerformStage throws an unhandled exception.
+
+    Should only be called by the Run function.  Provides a wrapper around
+    _HandleStageException to handle buggy handlers.  We must go deeper...
+    """
+    exc_info = sys.exc_info()
+    try:
+      return self._HandleStageException(exc_info)
+    except Exception:
+      cros_build_lib.Error(
+          'An exception was thrown while running _HandleStageException')
+      cros_build_lib.Error('The original exception was:', exc_info=exc_info)
+      cros_build_lib.Error('The new exception is:', exc_info=True)
+      return self._HandleExceptionAsError(exc_info)
 
   def HandleSkip(self):
     """Run if the stage is skipped."""
@@ -322,7 +362,7 @@ class BuilderStage(object):
       self.PerformStage()
     except SystemExit as e:
       if e.code != 0:
-        result, description, retrying = self._HandleStageException(e)
+        result, description, retrying = self._TopHandleStageException()
 
       raise
     except Exception as e:
@@ -330,14 +370,14 @@ class BuilderStage(object):
         raise
 
       # Tell the build bot this step failed for the waterfall.
-      result, description, retrying = self._HandleStageException(e)
+      result, description, retrying = self._TopHandleStageException()
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
         raise results_lib.StepFailure()
       elif retrying:
         raise results_lib.RetriableStepFailure()
-    except BaseException as e:
-      result, description, retrying = self._HandleStageException(e)
+    except BaseException:
+      result, description, retrying = self._TopHandleStageException()
       raise
     finally:
       elapsed_time = time.time() - start_time
