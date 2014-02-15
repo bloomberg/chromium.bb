@@ -29,7 +29,12 @@ const int64 kConnectionDelayMs = 500;
 // How long to periodically retry connecting after a brltty restart.
 // Some displays are slow to connect.
 const int64 kConnectRetryTimeout = 20000;
-}
+// Bitmask for all braille dots in a key command argument, which coincides
+// with the representation in the braille_dots member of the KeyEvent
+// class.
+const int kAllDots = BRLAPI_DOT1 | BRLAPI_DOT2 | BRLAPI_DOT3 | BRLAPI_DOT4 |
+                     BRLAPI_DOT5 | BRLAPI_DOT6 | BRLAPI_DOT7 | BRLAPI_DOT8;
+}  // namespace
 
 BrailleController::BrailleController() {
 }
@@ -298,8 +303,7 @@ scoped_ptr<KeyEvent> BrailleControllerImpl::MapKeyCode(brlapi_keyCode_t code) {
           break;
         case BRLAPI_KEY_CMD_PASSDOTS:
           result->command = KEY_COMMAND_DOTS;
-          // The 8 low-order bits in the argument contains the dots.
-          result->braille_dots.reset(new int(expanded.argument & 0xf));
+          result->braille_dots.reset(new int(expanded.argument & kAllDots));
           if ((expanded.argument & BRLAPI_DOTC) != 0)
             result->space_key.reset(new bool(true));
           break;
@@ -342,6 +346,7 @@ void BrailleControllerImpl::DispatchKeyEvent(scoped_ptr<KeyEvent> event) {
                                 base::Passed(&event)));
     return;
   }
+  VLOG(1) << "Dispatching key event: " << *event->ToValue();
   FOR_EACH_OBSERVER(BrailleObserver, observers_, OnKeyEvent(*event));
 }
 

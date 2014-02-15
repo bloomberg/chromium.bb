@@ -194,10 +194,25 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
   connection_data_.display_size = 11;
-  connection_data_.pending_keys.push_back(
-      BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_LNUP);
-  connection_data_.pending_keys.push_back(
-      BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_LNDN);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_LNUP);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_LNDN);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_FWINLT);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_FWINRT);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_TOP);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_BOT);
+  connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                          BRLAPI_KEY_CMD_ROUTE | 5);
+  // Space (0) and all combinations of dots.
+  for (int i = 0; i < 256; ++i) {
+    connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
+                                            BRLAPI_KEY_CMD_PASSDOTS | i);
+  }
   ASSERT_TRUE(RunComponentExtensionTest("braille_display_private/key_events"));
 }
 
