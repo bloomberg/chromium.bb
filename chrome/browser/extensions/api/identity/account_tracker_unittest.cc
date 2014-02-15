@@ -223,7 +223,6 @@ class IdentityAccountTrackerTest : public testing::Test {
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(test_profile_.get());
-    signin_manager->Initialize(test_profile_.get(), NULL);
     signin_manager->SetAuthenticatedUsername("foo@example.com");
 
     account_tracker_.reset(new AccountTracker(test_profile_.get()));

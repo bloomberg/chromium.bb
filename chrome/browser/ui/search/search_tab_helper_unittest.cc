@@ -71,7 +71,6 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), FakeSigninManagerBase::Build));
-    signin_manager->Initialize(profile(), NULL);
 
     if (!username.empty()) {
       ASSERT_TRUE(signin_manager);

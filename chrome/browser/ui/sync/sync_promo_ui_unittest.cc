@@ -31,7 +31,6 @@ class SyncPromoUITest : public testing::Test {
             SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile_.get(),
                 &FakeSigninManagerBase::Build));
-    signin_manager->Initialize(profile_.get(), NULL);
 
     if (!username.empty()) {
       ASSERT_TRUE(signin_manager);

@@ -75,6 +75,7 @@ class SigninManagerBase : public BrowserContextKeyedService {
 
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const std::string& username) {}
+
    protected:
     virtual ~Observer() {}
   };

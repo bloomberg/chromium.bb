@@ -2324,6 +2324,7 @@
             'browser/safe_browsing/download_protection_service_unittest.cc',
             'browser/shell_integration_linux_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
+            'browser/signin/signin_names_io_thread_unittest.cc',
             'browser/storage_monitor/storage_monitor_linux_unittest.cc',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',

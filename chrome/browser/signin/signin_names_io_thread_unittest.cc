@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/observer_list.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -17,8 +19,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class SigninNamesOnIOThreadTest : public testing::Test {
  public:
   SigninNamesOnIOThreadTest();
@@ -26,12 +26,13 @@ class SigninNamesOnIOThreadTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   void SimulateSignin(const base::string16& email);
-  void SimulateSignout(const base::string16& email);
   void AddNewProfile(const base::string16& name, const base::string16& email);
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
+  scoped_ptr<TestingProfile> profile_;
+  FakeSigninManager* signin_manager_;
   TestingProfileManager testing_profile_manager_;
   SigninNamesOnIOThread signin_names_;
 };
@@ -45,6 +46,12 @@ SigninNamesOnIOThreadTest::SigninNamesOnIOThreadTest()
 
 void SigninNamesOnIOThreadTest::SetUp() {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
+  TestingProfile::Builder builder;
+  builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                            FakeSigninManagerBase::Build);
+  profile_ = builder.Build();
+  signin_manager_ = static_cast<FakeSigninManager*>(
+      SigninManagerFactory::GetForProfile(profile_.get()));
 }
 
 void SigninNamesOnIOThreadTest::TearDown() {
@@ -52,20 +59,7 @@ void SigninNamesOnIOThreadTest::TearDown() {
 }
 
 void SigninNamesOnIOThreadTest::SimulateSignin(const base::string16& email) {
-  GoogleServiceSigninSuccessDetails details(
-      base::UTF16ToUTF8(email), "password");
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-      content::Source<Profile>(NULL),
-      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-}
-
-void SigninNamesOnIOThreadTest::SimulateSignout(const base::string16& email) {
-  GoogleServiceSignoutDetails details(base::UTF16ToUTF8(email));
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-      content::Source<Profile>(NULL),
-      content::Details<const GoogleServiceSignoutDetails>(&details));
+  signin_manager_->SignIn(base::UTF16ToUTF8(email), "password");
 }
 
 void SigninNamesOnIOThreadTest::AddNewProfile(const base::string16& name,
@@ -80,8 +74,6 @@ void SigninNamesOnIOThreadTest::AddNewProfile(const base::string16& name,
 #endif
   cache->AddProfileToCache(profile_dir, name, email, 0, std::string());
 }
-
-}  // namespace
 
 TEST_F(SigninNamesOnIOThreadTest, Basic) {
   ASSERT_EQ(0u, signin_names_.GetEmails().size());
@@ -99,20 +91,10 @@ TEST_F(SigninNamesOnIOThreadTest, Signin) {
 TEST_F(SigninNamesOnIOThreadTest, Signout) {
   const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
   SimulateSignin(email);
-  SimulateSignout(email);
+  signin_manager_->SignOut();
 
   const SigninNamesOnIOThread::EmailSet& emails = signin_names_.GetEmails();
   ASSERT_EQ(0u, emails.size());
-}
-
-TEST_F(SigninNamesOnIOThreadTest, HandleUnknownSignout) {
-  const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
-  SimulateSignin(email);
-  SimulateSignout(base::UTF8ToUTF16("bar@gmail.com"));
-
-  const SigninNamesOnIOThread::EmailSet& emails = signin_names_.GetEmails();
-  ASSERT_EQ(1u, emails.size());
-  ASSERT_EQ(1u, emails.count(email));
 }
 
 TEST_F(SigninNamesOnIOThreadTest, StartWithConnectedProfiles) {
