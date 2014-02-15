@@ -16,6 +16,8 @@ namespace cast {
 
 static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 
+typedef uint32 RtpTimestamp;
+
 struct CastLoggingConfig {
   // Constructs default config - all logging is disabled.
   CastLoggingConfig();
@@ -74,7 +76,10 @@ enum CastLoggingEvent {
 
 std::string CastLoggingToString(CastLoggingEvent event);
 
-typedef uint32 RtpTimestamp;
+// CastLoggingEvent are classified into one of three following types.
+enum EventMediaType { AUDIO_EVENT, VIDEO_EVENT, OTHER_EVENT };
+
+EventMediaType GetEventMediaType(CastLoggingEvent event);
 
 struct FrameEvent {
   FrameEvent();

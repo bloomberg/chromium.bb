@@ -73,6 +73,46 @@ std::string CastLoggingToString(CastLoggingEvent event) {
   return "";
 }
 
+EventMediaType GetEventMediaType(CastLoggingEvent event) {
+  switch (event) {
+    case kUnknown:
+    case kRttMs:
+    case kPacketLoss:
+    case kJitterMs:
+    case kRembBitrate:
+    // TODO(imcheng): These need to be split into video/audio events.
+    case kPacketSentToPacer:
+    case kPacketSentToNetwork:
+    case kPacketRetransmitted:
+      return OTHER_EVENT;
+    case kAudioAckSent:
+    case kAudioFrameReceived:
+    case kAudioFrameCaptured:
+    case kAudioFrameEncoded:
+    case kAudioPlayoutDelay:
+    case kAudioFrameDecoded:
+    case kAudioPacketReceived:
+    case kDuplicateAudioPacketReceived:
+      return AUDIO_EVENT;
+    case kVideoAckReceived:
+    case kVideoAckSent:
+    case kVideoFrameCaptured:
+    case kVideoFrameReceived:
+    case kVideoFrameSentToEncoder:
+    case kVideoFrameEncoded:
+    case kVideoFrameDecoded:
+    case kVideoRenderDelay:
+    case kVideoPacketReceived:
+    case kDuplicateVideoPacketReceived:
+      return VIDEO_EVENT;
+    case kNumOfLoggingEvents:
+      NOTREACHED();
+      return OTHER_EVENT;
+  }
+  NOTREACHED();
+  return OTHER_EVENT;
+}
+
 FrameEvent::FrameEvent()
     : rtp_timestamp(0u), frame_id(kFrameIdUnknown), size(0u), type(kUnknown) {}
 FrameEvent::~FrameEvent() {}
