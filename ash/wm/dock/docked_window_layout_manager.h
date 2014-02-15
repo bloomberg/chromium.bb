@@ -159,8 +159,8 @@ class ASH_EXPORT DockedWindowLayoutManager
       BackgroundAnimatorChangeType change_type) OVERRIDE;
 
   // wm::WindowStateObserver:
-  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
-                                       wm::WindowShowType old_type) OVERRIDE;
+  virtual void OnPreWindowShowTypeChange(wm::WindowState* window_state,
+                                          wm::WindowShowType old_type) OVERRIDE;
 
   // aura::WindowObserver:
   virtual void OnWindowBoundsChanged(aura::Window* window,
