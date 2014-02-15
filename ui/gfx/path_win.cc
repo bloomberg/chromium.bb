@@ -25,16 +25,10 @@ HRGN CreateHRGNFromSkRegion(const SkRegion& region) {
 }
 
 HRGN CreateHRGNFromSkPath(const SkPath& path) {
-  int point_count = path.getPoints(NULL, 0);
-  scoped_ptr<SkPoint[]> points(new SkPoint[point_count]);
-  path.getPoints(points.get(), point_count);
-  scoped_ptr<POINT[]> windows_points(new POINT[point_count]);
-  for (int i = 0; i < point_count; ++i) {
-    windows_points[i].x = SkScalarRoundToInt(points[i].fX);
-    windows_points[i].y = SkScalarRoundToInt(points[i].fY);
-  }
-
-  return ::CreatePolygonRgn(windows_points.get(), point_count, ALTERNATE);
+  SkRegion clip(SkIRect::MakeLTRB(INT_MIN, INT_MIN, INT_MAX, INT_MAX));
+  SkRegion region;
+  region.setPath(path, clip);
+  return CreateHRGNFromSkRegion(region);
 }
 
 // See path_aura.cc for Aura definition of these methods:
