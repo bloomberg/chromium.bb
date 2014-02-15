@@ -284,7 +284,7 @@ TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
 
   const SearchTestCase kTestCases[] = {
     {"chrome-search://local-ntp",      true,  "Local NTP"},
-    {"chrome-search://online-ntp",     true,  "Online NTP"},
+    {"chrome-search://remote-ntp",     true,  "Remote NTP"},
     {"invalid-scheme://local-ntp",     false, "Invalid Local NTP URL"},
     {"invalid-scheme://online-ntp",    false, "Invalid Online NTP URL"},
     {"chrome-search://foo.com",        false, "Search result page"},
@@ -327,10 +327,10 @@ const struct ProcessIsolationTestCase {
    "chrome-search://local-ntp",       true,
    "https://foo.com/other",           false,  false },
   {"Remote NTP -> SRP",
-   "https://foo.com/instant?strk",    true,
+   "https://foo.com/newtab?strk",     true,
    "https://foo.com/url?strk",        true,   false },
   {"Remote NTP -> Regular",
-   "https://foo.com/instant?strk",    true,
+   "https://foo.com/newtab?strk",     true,
    "https://foo.com/other",           false,  false },
   {"SRP -> SRP",
    "https://foo.com/url?strk",        true,

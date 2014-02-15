@@ -453,7 +453,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
   return ShouldAssignURLToInstantRenderer(url, profile) &&
       (url.host() == chrome::kChromeSearchLocalNtpHost ||
-       url.host() == chrome::kChromeSearchOnlineNtpHost);
+       url.host() == chrome::kChromeSearchRemoteNtpHost);
 }
 
 bool IsNTPURL(const GURL& url, Profile* profile) {
@@ -684,18 +684,14 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   replacements.SetScheme(search_scheme.data(),
                          url_parse::Component(0, search_scheme.length()));
 
-  // If the URL corresponds to an online NTP, replace the host with
-  // "online-ntp".
-  std::string online_ntp_host(chrome::kChromeSearchOnlineNtpHost);
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (template_url) {
-    const GURL instant_url = TemplateURLRefToGURL(
-        template_url->instant_url_ref(), kDisableStartMargin, false, false);
-    if (instant_url.is_valid() &&
-        search::MatchesOriginAndPath(url, instant_url)) {
-      replacements.SetHost(online_ntp_host.c_str(),
-                           url_parse::Component(0, online_ntp_host.length()));
-    }
+  // If this is the URL for a server-provided NTP, replace the host with
+  // "remote-ntp".
+  std::string remote_ntp_host(chrome::kChromeSearchRemoteNtpHost);
+  NewTabURLDetails details = NewTabURLDetails::ForProfile(profile);
+  if (details.state == NEW_TAB_URL_VALID &&
+      search::MatchesOriginAndPath(url, details.url)) {
+    replacements.SetHost(remote_ntp_host.c_str(),
+                         url_parse::Component(0, remote_ntp_host.length()));
   }
 
   effective_url = effective_url.ReplaceComponents(replacements);
