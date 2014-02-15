@@ -214,7 +214,8 @@ cr.define('cloudprint', function() {
     printer: function(printerId, origin) {
       var params = [
         new HttpParam('printerid', printerId),
-        new HttpParam('use_cdd', 'true')
+        new HttpParam('use_cdd', 'true'),
+        new HttpParam('printer_connection_status', 'true')
       ];
       var cpRequest =
           this.buildRequest_('GET', 'printer', params, origin,

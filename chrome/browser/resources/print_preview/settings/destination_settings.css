@@ -20,6 +20,10 @@
   margin-bottom: 10px;
 }
 
+.destination-settings-box.stale {
+  opacity: 0.4;
+}
+
 #destination-settings .destination-settings-change-button {
   margin-bottom: 10px;
 }
@@ -73,6 +77,11 @@
 
 .destination-settings-location {
   opacity: 0.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.destination-settings-offline-status {
   overflow: hidden;
   text-overflow: ellipsis;
 }

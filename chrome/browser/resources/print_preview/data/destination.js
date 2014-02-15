@@ -252,6 +252,7 @@ cr.define('print_preview', function() {
      */
     get location() {
       if (this.location_ == null) {
+        this.location_ = '';
         for (var tag, i = 0; tag = this.tags_[i]; i++) {
           if (tag.indexOf(Destination.LOCATION_TAG_PREFIX) == 0) {
             this.location_ = tag.substring(
@@ -300,6 +301,32 @@ cr.define('print_preview', function() {
      */
     set connectionStatus(status) {
       this.connectionStatus_ = status;
+    },
+
+    /** @return {boolean} Whether the destination is considered offline. */
+    get isOffline() {
+      return arrayContains([print_preview.Destination.ConnectionStatus.OFFLINE,
+                            print_preview.Destination.ConnectionStatus.DORMANT],
+                            this.connectionStatus_);
+    },
+
+    /** @return {string} Human readable status for offline destination. */
+    get offlineStatusText() {
+      if (!this.isOffline) {
+        return '';
+      }
+      var offlineDurationMs = Date.now() - this.lastAccessTime_;
+      var offlineMessageId;
+      if (offlineDurationMs > 31622400000.0) {  // One year.
+        offlineMessageId = 'offlineForYear';
+      } else if (offlineDurationMs > 2678400000.0) {  // One month.
+        offlineMessageId = 'offlineForMonth';
+      } else if (offlineDurationMs > 604800000.0) {  // One week.
+        offlineMessageId = 'offlineForWeek';
+      } else {
+        offlineMessageId = 'offline';
+      }
+      return localStrings.getString(offlineMessageId);
     },
 
     /**

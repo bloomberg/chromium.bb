@@ -95,23 +95,10 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeOfflineStatusElement_: function() {
-      if (arrayContains([print_preview.Destination.ConnectionStatus.OFFLINE,
-                         print_preview.Destination.ConnectionStatus.DORMANT],
-                        this.destination_.connectionStatus)) {
+      if (this.destination_.isOffline) {
         this.getElement().classList.add(DestinationListItem.Classes_.STALE);
-        var offlineDurationMs = Date.now() - this.destination_.lastAccessTime;
-        var offlineMessageId;
-        if (offlineDurationMs > 31622400000.0) { // One year.
-          offlineMessageId = 'offlineForYear';
-        } else if (offlineDurationMs > 2678400000.0) { // One month.
-          offlineMessageId = 'offlineForMonth';
-        } else if (offlineDurationMs > 604800000.0) { // One week.
-          offlineMessageId = 'offlineForWeek';
-        } else {
-          offlineMessageId = 'offline';
-        }
         var offlineStatusEl = this.getChildElement('.offline-status');
-        offlineStatusEl.textContent = localStrings.getString(offlineMessageId);
+        offlineStatusEl.textContent = this.destination_.offlineStatusText;
         setIsVisible(offlineStatusEl, true);
       }
     },
