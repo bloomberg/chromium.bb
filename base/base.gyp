@@ -737,9 +737,6 @@
               ]
             }],
           ],
-          'dependencies': [
-            '../build/linux/system.gyp:ssl',
-          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [
