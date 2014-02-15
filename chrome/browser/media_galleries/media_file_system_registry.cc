@@ -285,26 +285,6 @@ class ExtensionGalleriesHost
         base::Owned(device_ids), galleries, galleries_info, callback));
   }
 
-  void RevokeOldGalleries(const MediaGalleryPrefIdSet& new_galleries) {
-    if (new_galleries.size() == pref_id_map_.size())
-      return;
-
-    MediaGalleryPrefIdSet old_galleries;
-    for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
-         it != pref_id_map_.end();
-         ++it) {
-      old_galleries.insert(it->first);
-    }
-    MediaGalleryPrefIdSet invalid_galleries =
-        base::STLSetDifference<MediaGalleryPrefIdSet>(old_galleries,
-                                                      new_galleries);
-    for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
-         it != invalid_galleries.end();
-         ++it) {
-      RevokeGalleryByPrefId(*it);
-    }
-  }
-
   // Revoke the file system for |id| if this extension has created one for |id|.
   void RevokeGalleryByPrefId(MediaGalleryPrefId id) {
     PrefIdFsInfoMap::iterator gallery = pref_id_map_.find(id);
@@ -352,7 +332,6 @@ class ExtensionGalleriesHost
       return;
     }
 
-    MediaGalleryPrefIdSet new_galleries;
     for (std::set<MediaGalleryPrefId>::const_iterator pref_id_it =
              galleries.begin();
          pref_id_it != galleries.end();
@@ -368,7 +347,6 @@ class ExtensionGalleriesHost
           pref_id_map_.find(pref_id);
       if (existing_info != pref_id_map_.end()) {
         result.push_back(existing_info->second);
-        new_galleries.insert(pref_id);
         continue;
       }
 
@@ -390,17 +368,15 @@ class ExtensionGalleriesHost
           StorageInfo::IsRemovableDevice(device_id),
           StorageInfo::IsMediaDevice(device_id));
       result.push_back(new_entry);
-      new_galleries.insert(pref_id);
       pref_id_map_[pref_id] = new_entry;
     }
 
     if (result.size() == 0) {
       rph_refs_.Reset();
       CleanUp();
-    } else {
-      RevokeOldGalleries(new_galleries);
     }
 
+    DCHECK_EQ(pref_id_map_.size(), result.size());
     callback.Run(result);
   }
 

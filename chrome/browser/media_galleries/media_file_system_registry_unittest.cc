@@ -1046,3 +1046,32 @@ TEST_F(MediaFileSystemRegistryTest, TestNameConstruction) {
     profile_state->CheckGalleries("names", one_expectation, one_expectation);
   }
 }
+
+TEST_F(MediaFileSystemRegistryTest, PreferenceListener) {
+  CreateProfileState(1);
+  AssertAllAutoAddedGalleries();
+
+  // Add a user gallery to the regular permission extension.
+  std::string device_id = AddUserGallery(StorageInfo::FIXED_MASS_STORAGE,
+                                         empty_dir().AsUTF8Unsafe(),
+                                         empty_dir());
+  ProfileState* profile_state = GetProfileState(0);
+  SetGalleryPermission(profile_state,
+                       profile_state->regular_permission_extension(),
+                       device_id,
+                       true /*has access*/);
+
+  FSInfoMap fs_info = profile_state->GetGalleriesInfo(
+      profile_state->regular_permission_extension());
+  ASSERT_EQ(1U, fs_info.size());
+  EXPECT_FALSE(test_file_system_context()->GetPathForId(
+      fs_info.begin()->second.fsid).empty());
+
+  // Revoke permission and ensure that the file system is revoked.
+  SetGalleryPermission(profile_state,
+                       profile_state->regular_permission_extension(),
+                       device_id,
+                       false /*has access*/);
+  EXPECT_TRUE(test_file_system_context()->GetPathForId(
+      fs_info.begin()->second.fsid).empty());
+}
