@@ -288,6 +288,7 @@ class CoalescedWebTouchEvent {
 };
 
 TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
+                                 TouchScrollingMode mode,
                                  double touchmove_suppression_length_dips)
     : client_(client),
       dispatching_touch_ack_(NULL),
@@ -295,7 +296,9 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
       ack_timeout_enabled_(false),
       touchmove_slop_suppressor_(
-          new TouchMoveSlopSuppressor(touchmove_suppression_length_dips)) {
+          new TouchMoveSlopSuppressor(touchmove_suppression_length_dips)),
+      absorbing_touch_moves_(false),
+      touch_scrolling_mode_(mode) {
   DCHECK(client);
 }
 
@@ -398,6 +401,7 @@ void TouchEventQueue::ForwardToRenderer(
         ack_timeout_enabled_ ? FORWARD_TOUCHES_UNTIL_TIMEOUT
                              : FORWARD_ALL_TOUCHES;
     touch_ack_states_.clear();
+    absorbing_touch_moves_ = false;
   }
 
   // A synchronous ack will reset |dispatching_touch_|, in which case
@@ -415,6 +419,9 @@ void TouchEventQueue::ForwardToRenderer(
 void TouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.type != blink::WebInputEvent::GestureScrollBegin)
+    return;
+
+  if (touch_scrolling_mode_ != TOUCH_SCROLLING_MODE_TOUCHCANCEL)
     return;
 
   // We assume that scroll events are generated synchronously from
@@ -438,6 +445,25 @@ void TouchEventQueue::OnGestureScrollEvent(
   touch_queue_.push_front(new CoalescedWebTouchEvent(
       ObtainCancelEventForTouchEvent(
           dispatching_touch_ack_->coalesced_event()), true));
+}
+
+void TouchEventQueue::OnGestureEventAck(
+    const GestureEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
+  if (touch_scrolling_mode_ != TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE)
+    return;
+
+  if (event.event.type != blink::WebInputEvent::GestureScrollUpdate)
+    return;
+
+  // Suspend sending touchmove events as long as the scroll events are handled.
+  // Note that there's no guarantee that this ACK is for the most recent
+  // gesture event (or even part of the current sequence).  Worst case, the
+  // delay in updating the absorption state should only result in minor UI
+  // glitches.
+  // TODO(rbyers): Define precise timing requirements and potentially implement
+  // mitigations for races.
+  absorbing_touch_moves_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
 void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
@@ -548,6 +574,9 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
       return FORWARD_TO_RENDERER;
     return ACK_WITH_NOT_CONSUMED;
   }
+
+  if (absorbing_touch_moves_ && event.type == WebInputEvent::TouchMove)
+    return ACK_WITH_NOT_CONSUMED;
 
   // Touch press events should always be forwarded to the renderer.
   if (event.type == WebInputEvent::TouchStart)

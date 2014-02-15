@@ -28,14 +28,20 @@ class TouchEventQueueTest : public testing::Test,
   TouchEventQueueTest()
       : sent_event_count_(0),
         acked_event_count_(0),
-        last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+        last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
+        slop_length_dips_(0),
+        touch_scrolling_mode_(TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT) {}
 
   virtual ~TouchEventQueueTest() {}
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    queue_.reset(new TouchEventQueue(this, 0));
-    queue_->OnHasTouchEventHandlers(true);
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
+  }
+
+  virtual void SetTouchScrollingMode(TouchEventQueue::TouchScrollingMode mode) {
+    touch_scrolling_mode_ = mode;
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -78,8 +84,8 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
-    queue_.reset(new TouchEventQueue(this, slop_length_dips));
-    queue_->OnHasTouchEventHandlers(true);
+    slop_length_dips_ = slop_length_dips;
+    ResetQueueWithParameters(touch_scrolling_mode_, slop_length_dips_);
   }
 
   void SendTouchEvent(const WebTouchEvent& event) {
@@ -102,6 +108,7 @@ class TouchEventQueueTest : public testing::Test,
     blink::WebGestureEvent gesture_event;
     gesture_event.type = type;
     GestureEventWithLatencyInfo event(gesture_event, ui::LatencyInfo());
+    queue_->OnGestureEventAck(event, ack_result);
   }
 
   void SetFollowupEvent(const WebTouchEvent& event) {
@@ -192,6 +199,12 @@ class TouchEventQueueTest : public testing::Test,
     touch_event_.ResetPoints();
   }
 
+  void ResetQueueWithParameters(TouchEventQueue::TouchScrollingMode mode,
+                                double slop_length_dips) {
+    queue_.reset(new TouchEventQueue(this, mode, slop_length_dips));
+    queue_->OnHasTouchEventHandlers(true);
+  }
+
   scoped_ptr<TouchEventQueue> queue_;
   size_t sent_event_count_;
   size_t acked_event_count_;
@@ -202,6 +215,8 @@ class TouchEventQueueTest : public testing::Test,
   scoped_ptr<WebTouchEvent> followup_touch_event_;
   scoped_ptr<WebGestureEvent> followup_gesture_event_;
   scoped_ptr<InputEventAckState> sync_ack_result_;
+  double slop_length_dips_;
+  TouchEventQueue::TouchScrollingMode touch_scrolling_mode_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -1399,6 +1414,57 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+TEST_F(TouchEventQueueTest, SyncTouchMoveDoesntCancelTouchOnScroll) {
+ SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE);
+ // Queue a TouchStart.
+ PressTouchPoint(0, 1);
+ EXPECT_EQ(1U, GetAndResetSentEventCount());
+ SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+ EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+ MoveTouchPoint(0, 20, 5);
+ EXPECT_EQ(1U, queued_event_count());
+ EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+ // GestureScrollBegin doesn't insert a synthetic TouchCancel.
+ WebGestureEvent followup_scroll;
+ followup_scroll.type = WebInputEvent::GestureScrollBegin;
+ SetFollowupEvent(followup_scroll);
+ SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+ EXPECT_EQ(0U, GetAndResetSentEventCount());
+ EXPECT_EQ(1U, GetAndResetAckedEventCount());
+ EXPECT_EQ(0U, queued_event_count());
+}
+
+TEST_F(TouchEventQueueTest, TouchAbsorption) {
+ SetTouchScrollingMode(
+     TouchEventQueue::TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE);
+ // Queue a TouchStart.
+ PressTouchPoint(0, 1);
+ EXPECT_EQ(1U, GetAndResetSentEventCount());
+ SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+ EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+ for (int i = 0; i < 3; ++i) {
+   SendGestureEventAck(WebInputEvent::GestureScrollUpdate,
+                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+   MoveTouchPoint(0, 20, 5);
+   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+   EXPECT_EQ(0U, queued_event_count());
+   EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+   // Consuming a scroll event prevents the next touch moves from being
+   // dispatched.
+   SendGestureEventAck(WebInputEvent::GestureScrollUpdate,
+                       INPUT_EVENT_ACK_STATE_CONSUMED);
+   MoveTouchPoint(0, 20, 5);
+   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+   EXPECT_EQ(0U, queued_event_count());
+   EXPECT_EQ(0U, GetAndResetSentEventCount());
+ }
 }
 
 }  // namespace content

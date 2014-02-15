@@ -884,6 +884,11 @@ const char kTestSandbox[]                   = "test-sandbox";
 // If unspecified, touch timeout behavior will be disabled.
 const char kTouchAckTimeoutDelayMs[]        = "touch-ack-timeout-delay-ms";
 
+const char kTouchScrollingMode[]            = "touch-scrolling-mode";
+const char kTouchScrollingModeTouchcancel[] = "touchcancel";
+const char kTouchScrollingModeSyncTouchmove[] = "sync-touchmove";
+const char kTouchScrollingModeAbsorbTouchmove[] = "absorb-touchmove";
+
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
 // --trace-shutdown=base,net) otherwise, all events are recorded.

@@ -36,11 +36,30 @@ class CONTENT_EXPORT TouchEventQueueClient {
 // A queue for throttling and coalescing touch-events.
 class CONTENT_EXPORT TouchEventQueue {
  public:
+  // Different ways of dealing with touch events during scrolling.
+  // TODO(rbyers): Remove (or otherwise update) this once results of
+  // experiments are complete.  http://crbug.com/328503
+  enum TouchScrollingMode {
+    // Send a touchcancel on scroll start and no further touch events for the
+    // duration of the scroll.  Chrome Android's traditional behavior.
+    TOUCH_SCROLLING_MODE_TOUCHCANCEL,
+    // Send touchmove events throughout a scroll, blocking on each ACK and
+    // using the disposition to determine whether a scroll update should be
+    // sent.  Mobile Safari's default overflow scroll behavior.
+    TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE,
+    // Like sync, except that consumed scroll events cause subsequent touchmove
+    // events to be suppressed.  Unconsumed scroll events return touchmove
+    // events to being dispatched synchronously (so scrolling may be hijacked
+    // when a scroll limit is reached, and later resumed).
+    TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE,
+    TOUCH_SCROLLING_MODE_DEFAULT = TOUCH_SCROLLING_MODE_TOUCHCANCEL
+  };
 
   // The |client| must outlive the TouchEventQueue. If
   // |touchmove_suppression_length_dips| <= 0, touch move suppression is
   // disabled.
   TouchEventQueue(TouchEventQueueClient* client,
+                  TouchScrollingMode mode,
                   double touchmove_suppression_length_dips);
   ~TouchEventQueue();
 
@@ -61,6 +80,10 @@ class CONTENT_EXPORT TouchEventQueue {
   // ack for the touch cancel. When Gesture{ScrollEnd,FlingStart} is received,
   // resume the normal flow of sending touch events to the renderer.
   void OnGestureScrollEvent(const GestureEventWithLatencyInfo& gesture_event);
+
+  void OnGestureEventAck(
+      const GestureEventWithLatencyInfo& event,
+      InputEventAckState ack_result);
 
   // Notifies the queue whether the renderer has at least one touch handler.
   void OnHasTouchEventHandlers(bool has_handlers);
@@ -162,6 +185,18 @@ class CONTENT_EXPORT TouchEventQueue {
   // Suppression of TouchMove's within a slop region when a sequence has not yet
   // been preventDefaulted.
   scoped_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
+
+  // Whether touchmove events should be dropped due to the
+  // TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE mode.  Note that we can't use
+  // touch_filtering_state_ for this (without adding a few new states and
+  // complicating the code significantly) because it can occur with and without
+  // timeout, and shouldn't cause touchend to be dropped.
+  bool absorbing_touch_moves_;
+
+  // How touch events are handled during scrolling.  For now this is a global
+  // setting for experimentation, but we may evolve it into an app-controlled
+  // mode.
+  const TouchScrollingMode touch_scrolling_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };

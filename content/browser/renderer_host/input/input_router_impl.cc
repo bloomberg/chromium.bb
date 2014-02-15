@@ -85,6 +85,19 @@ double GetTouchMoveSlopSuppressionLengthDips() {
 }
 #endif
 
+TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
+  std::string modeString = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kTouchScrollingMode);
+  if (modeString == switches::kTouchScrollingModeSyncTouchmove)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE;
+  if (modeString == switches::kTouchScrollingModeAbsorbTouchmove)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE;
+  if (modeString != "" &&
+      modeString != switches::kTouchScrollingModeTouchcancel)
+    LOG(ERROR) << "Invalid --touch-scrolling-mode option: " << modeString;
+  return TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT;
+}
+
 GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
                                              double timestamp_seconds,
                                              int x,
@@ -136,8 +149,8 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);
-  touch_event_queue_.reset(
-      new TouchEventQueue(this, GetTouchMoveSlopSuppressionLengthDips()));
+  touch_event_queue_.reset(new TouchEventQueue(
+      this, GetTouchScrollingMode(), GetTouchMoveSlopSuppressionLengthDips()));
   touch_ack_timeout_enabled_ =
       GetTouchAckTimeoutDelayMs(&touch_ack_timeout_delay_ms_);
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled_,
@@ -328,6 +341,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
 void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
+  touch_event_queue_->OnGestureEventAck(event, ack_result);
   ProcessAckForOverscroll(event.event, ack_result);
   ack_handler_->OnGestureEventAck(event, ack_result);
 }
