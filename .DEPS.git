@@ -80,7 +80,7 @@ deps = {
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source/talk':
-        Var('git_url') + '/external/webrtc/trunk/talk.git@8a77f5bd83ba9386c19ff92f277c7268c1e9ef4a',
+        Var('git_url') + '/external/webrtc/trunk/talk.git@f5e5b3a9ce372d0e3cc594bf0036dda64a57d81d',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7220379786c6b814b6b887478fa440bb392e8251',
     'src/third_party/libphonenumber/src/phonenumbers':
