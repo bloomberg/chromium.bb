@@ -117,7 +117,6 @@ class MockDistillerPageFactory : public DistillerPageFactory {
   }
 };
 
-
 class DistillerTest : public testing::Test {
  public:
   virtual ~DistillerTest() {}
@@ -288,6 +287,119 @@ TEST_F(DistillerTest, DistillLinkLoop) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(article_proto_->pages_size(), 1);
+}
+
+TEST_F(DistillerTest, CheckMaxPageLimit) {
+  base::MessageLoopForUI loop;
+  const size_t kMaxPagesInArticle = 10;
+  string page_urls[kMaxPagesInArticle];
+  scoped_ptr<base::ListValue> list[kMaxPagesInArticle];
+
+  // Note: Next page url of the last page of article is set. So distiller will
+  // try to do kMaxPagesInArticle + 1 calls if the max article limit does not
+  // work.
+  string url_prefix = "http://a.com/";
+  for (size_t page_num = 0; page_num < kMaxPagesInArticle; ++page_num) {
+    page_urls[page_num] = url_prefix + base::IntToString(page_num + 1);
+    string content = "Content for page:" + base::IntToString(page_num);
+    string next_page_url = url_prefix + base::IntToString(page_num + 2);
+    list[page_num] = CreateDistilledValueReturnedFromJS(
+        kTitle, content, vector<int>(), next_page_url);
+  }
+
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPages(
+          list, page_urls, static_cast<int>(kMaxPagesInArticle)));
+
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+
+  distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
+
+  distiller_->Init();
+  distiller_->DistillPage(
+      GURL(page_urls[0]),
+      base::Bind(&DistillerTest::OnDistillPageDone, base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kTitle, article_proto_->title());
+  EXPECT_EQ(kMaxPagesInArticle,
+            static_cast<size_t>(article_proto_->pages_size()));
+
+  // Now check if distilling an article with exactly the page limit works by
+  // resetting the next page url of the last page of the article.
+  list[kMaxPagesInArticle - 1] =
+      CreateDistilledValueReturnedFromJS(kTitle, "Content", vector<int>(), "");
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPages(
+          list, page_urls, static_cast<int>(kMaxPagesInArticle)));
+
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
+
+  distiller_->Init();
+  distiller_->DistillPage(
+      GURL(page_urls[0]),
+      base::Bind(&DistillerTest::OnDistillPageDone, base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kTitle, article_proto_->title());
+  EXPECT_EQ(kMaxPagesInArticle,
+            static_cast<size_t>(article_proto_->pages_size()));
+}
+
+TEST_F(DistillerTest, SinglePageDistillationFailure) {
+  base::MessageLoopForUI loop;
+  // To simulate failure return a null value.
+  scoped_ptr<base::Value> nullValue(base::Value::CreateNullValue());
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPage(nullValue.get(), GURL(kURL)));
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_->Init();
+  distiller_->DistillPage(
+      GURL(kURL),
+      base::Bind(&DistillerTest::OnDistillPageDone, base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ("", article_proto_->title());
+  EXPECT_EQ(0, article_proto_->pages_size());
+}
+
+TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
+  base::MessageLoopForUI loop;
+  const int kNumPages = 8;
+  string content[kNumPages];
+  string page_urls[kNumPages];
+  scoped_ptr<base::Value> distilled_values[kNumPages];
+  // The page number of the failed page.
+  int failed_page_num = 3;
+  string url_prefix = "http://a.com/";
+  for (int page_num = 0; page_num < kNumPages; ++page_num) {
+    page_urls[page_num] = url_prefix + base::IntToString(page_num);
+    content[page_num] = "Content for page:" + base::IntToString(page_num);
+    string next_page_url = url_prefix + base::IntToString(page_num + 1);
+    if (page_num != failed_page_num) {
+      distilled_values[page_num] = CreateDistilledValueReturnedFromJS(
+          kTitle, content[page_num], vector<int>(), next_page_url);
+    } else {
+      distilled_values[page_num].reset(base::Value::CreateNullValue());
+    }
+  }
+
+  // Expect only calls till the failed page number.
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPages(
+          distilled_values, page_urls, failed_page_num + 1));
+
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_->Init();
+  distiller_->DistillPage(
+      GURL(page_urls[0]),
+      base::Bind(&DistillerTest::OnDistillPageDone, base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kTitle, article_proto_->title());
+  EXPECT_EQ(article_proto_->pages_size(), failed_page_num);
+  for (int page_num = 0; page_num < failed_page_num; ++page_num) {
+    const DistilledPageProto& page = article_proto_->pages(page_num);
+    EXPECT_EQ(content[page_num], page.html());
+    EXPECT_EQ(page_urls[page_num], page.url());
+  }
 }
 
 }  // namespace dom_distiller
