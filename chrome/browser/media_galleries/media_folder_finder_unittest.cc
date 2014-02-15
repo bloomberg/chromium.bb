@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
