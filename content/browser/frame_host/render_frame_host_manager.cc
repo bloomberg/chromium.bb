@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -37,20 +38,16 @@
 
 namespace content {
 
-RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams()
-    : is_transfer(false), frame_id(-1), should_replace_current_entry(false) {
-}
-
 RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams(
     const GlobalRequestID& global_request_id,
-    bool is_transfer,
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     Referrer referrer,
     PageTransition page_transition,
     int64 frame_id,
     bool should_replace_current_entry)
     : global_request_id(global_request_id),
-      is_transfer(is_transfer),
+      cross_site_transferring_request(cross_site_transferring_request.Pass()),
       transfer_url_chain(transfer_url_chain),
       referrer(referrer),
       page_transition(page_transition),
@@ -207,6 +204,15 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     }
   }
 
+  // If entry includes the request ID of a request that is being transferred,
+  // the destination render frame will take ownership, so release ownership of
+  // the request.
+  if (pending_nav_params_ &&
+      pending_nav_params_->global_request_id ==
+          entry.transferred_global_request_id()) {
+    pending_nav_params_->cross_site_transferring_request->ReleaseRequest();
+  }
+
   return dest_render_frame_host;
 }
 
@@ -279,7 +285,7 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
   // TODO(creis): The blank swapped out page is visible during this time, but
   // we can shorten this by delivering the response directly, rather than
   // forcing an identical request to be made.
-  if (pending_nav_params_->is_transfer) {
+  if (pending_nav_params_->cross_site_transferring_request) {
     // Treat the last URL in the chain as the destination and the remainder as
     // the redirect chain.
     CHECK(pending_nav_params_->transfer_url_chain.size());
@@ -328,7 +334,7 @@ void RenderFrameHostManager::SwappedOutFrame(
   // TODO(creis): The blank swapped out page is visible during this time, but
   // we can shorten this by delivering the response directly, rather than
   // forcing an identical request to be made.
-  if (pending_nav_params_->is_transfer) {
+  if (pending_nav_params_->cross_site_transferring_request) {
     // Treat the last URL in the chain as the destination and the remainder as
     // the redirect chain.
     CHECK(pending_nav_params_->transfer_url_chain.size());
@@ -480,7 +486,7 @@ void RenderFrameHostManager::ShouldClosePage(
 void RenderFrameHostManager::OnCrossSiteResponse(
     RenderViewHost* pending_render_view_host,
     const GlobalRequestID& global_request_id,
-    bool is_transfer,
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     PageTransition page_transition,
@@ -496,10 +502,12 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // here, but currently we pass information for a transfer if
   // ShouldSwapProcessesForRedirect returned true in the network stack.
   // In that case, we should set up a transfer after the unload handler runs.
-  // If is_transfer is false, we will just run the unload handler and resume.
+  // If |cross_site_transferring_request| is NULL, we will just run the unload
+  // handler and resume.
   pending_nav_params_.reset(new PendingNavigationParams(
-      global_request_id, is_transfer, transfer_url_chain, referrer,
-      page_transition, frame_id, should_replace_current_entry));
+      global_request_id, cross_site_transferring_request.Pass(),
+      transfer_url_chain, referrer, page_transition, frame_id,
+      should_replace_current_entry));
 
   // Run the unload handler of the current page.
   SwapOutOldPage();

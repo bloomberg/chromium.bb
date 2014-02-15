@@ -21,6 +21,7 @@
 namespace content {
 class BrowserContext;
 class CrossProcessFrameConnector;
+class CrossSiteTransferringRequest;
 class InterstitialPageImpl;
 class FrameTreeNode;
 class NavigationControllerImpl;
@@ -239,7 +240,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   virtual void OnCrossSiteResponse(
       RenderViewHost* pending_render_view_host,
       const GlobalRequestID& global_request_id,
-      bool is_transfer,
+      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,
@@ -280,44 +281,46 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Tracks information about a navigation while a cross-process transition is
   // in progress, in case we need to transfer it to a new RenderFrameHost.
+  // When a request is being transferred, deleting the PendingNavigationParams,
+  // and thus |cross_site_transferring_request|, will cancel the request being
+  // transferred, unless its ReleaseRequest method has been called.
   struct PendingNavigationParams {
-    PendingNavigationParams();
-    PendingNavigationParams(const GlobalRequestID& global_request_id,
-                            bool is_transfer,
-                            const std::vector<GURL>& transfer_url,
-                            Referrer referrer,
-                            PageTransition page_transition,
-                            int64 frame_id,
-                            bool should_replace_current_entry);
+    PendingNavigationParams(
+        const GlobalRequestID& global_request_id,
+        scoped_ptr<CrossSiteTransferringRequest>
+            cross_site_transferring_request,
+        const std::vector<GURL>& transfer_url,
+        Referrer referrer,
+        PageTransition page_transition,
+        int64 frame_id,
+        bool should_replace_current_entry);
     ~PendingNavigationParams();
 
     // The child ID and request ID for the pending navigation.  Present whether
-    // |is_transfer| is true or false.
+    // |request_transfer| is NULL or not.
     GlobalRequestID global_request_id;
 
-    // Whether this pending navigation needs to be transferred to another
-    // process than the one it was going to commit in.  If so, the
-    // |transfer_url|, |referrer|, and |frame_id| parameters will be set.
-    bool is_transfer;
+    // If a pending request needs to be transferred to another process, this
+    // owns the request until it's transferred to the new process, so it will be
+    // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request;
 
-    // If |is_transfer|, this is the URL chain of the request.  The first entry
-    // is the original request URL, and the last entry is the destination URL to
-    // request in the new process.
+    // If |request_transfer| is non-NULL, the values below are all set.
+
+    // The first entry is the original request URL, and the last entry is the
+    // destination URL to request in the new process.
     std::vector<GURL> transfer_url_chain;
 
-    // If |is_transfer|, this is the referrer to use for the request in the new
-    // process.
+    // This is the referrer to use for the request in the new process.
     Referrer referrer;
 
-    // If |is_transfer|, this is the transition type for the original
-    // navigation.
+    // This is the transition type for the original navigation.
     PageTransition page_transition;
 
-    // If |is_transfer|, this is the frame ID to use in RequestTransferURL.
+    // This is the frame ID to use in RequestTransferURL.
     int64 frame_id;
 
-    // If |is_transfer|, this is whether the navigation should replace the
-    // current history entry.
+    // This is whether the navigation should replace the current history entry.
     bool should_replace_current_entry;
   };
 

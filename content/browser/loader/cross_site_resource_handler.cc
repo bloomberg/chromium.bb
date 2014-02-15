@@ -13,6 +13,7 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,17 +31,20 @@ namespace content {
 
 namespace {
 
+bool leak_requests_for_testing_ = false;
+
 // The parameters to OnCrossSiteResponseHelper exceed the number of arguments
 // base::Bind supports.
 struct CrossSiteResponseParams {
-  CrossSiteResponseParams(int render_view_id,
-                          const GlobalRequestID& global_request_id,
-                          bool is_transfer,
-                          const std::vector<GURL>& transfer_url_chain,
-                          const Referrer& referrer,
-                          PageTransition page_transition,
-                          int64 frame_id,
-                          bool should_replace_current_entry)
+  CrossSiteResponseParams(
+      int render_view_id,
+      const GlobalRequestID& global_request_id,
+      bool is_transfer,
+      const std::vector<GURL>& transfer_url_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      int64 frame_id,
+      bool should_replace_current_entry)
       : render_view_id(render_view_id),
         global_request_id(global_request_id),
         is_transfer(is_transfer),
@@ -62,15 +66,25 @@ struct CrossSiteResponseParams {
 };
 
 void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
+  scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request;
+  if (params.is_transfer) {
+    cross_site_transferring_request.reset(new CrossSiteTransferringRequest(
+        params.global_request_id));
+  }
+
   RenderViewHostImpl* rvh =
       RenderViewHostImpl::FromID(params.global_request_id.child_id,
                                  params.render_view_id);
   if (rvh) {
     rvh->OnCrossSiteResponse(
-        params.global_request_id, params.is_transfer,
+        params.global_request_id, cross_site_transferring_request.Pass(),
         params.transfer_url_chain, params.referrer,
         params.page_transition, params.frame_id,
         params.should_replace_current_entry);
+  } else if (leak_requests_for_testing_ && cross_site_transferring_request) {
+    // Some unit tests expect requests to be leaked in this case, so they can
+    // pass them along manually.
+    cross_site_transferring_request->ReleaseRequest();
   }
 }
 
@@ -83,8 +97,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       has_started_response_(false),
       in_cross_site_transition_(false),
       completed_during_transition_(false),
-      did_defer_(false),
-      completed_status_() {
+      did_defer_(false) {
 }
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
@@ -261,6 +274,12 @@ void CrossSiteResourceHandler::ResumeResponse() {
     if (!defer)
       ResumeIfDeferred();
   }
+}
+
+// static
+void CrossSiteResourceHandler::SetLeakRequestsForTesting(
+    bool leak_requests_for_testing) {
+  leak_requests_for_testing_ = leak_requests_for_testing;
 }
 
 // Prepare to render the cross-site response in a new RenderViewHost, by

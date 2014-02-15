@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/common/content_export.h"
 #include "net/url_request/url_request_status.h"
 
 namespace net {
@@ -45,6 +46,11 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   // We can now send the response to the new renderer, which will cause
   // WebContentsImpl to swap in the new renderer and destroy the old one.
   void ResumeResponse();
+
+  // When set to true, requests are leaked when they can't be passed to a
+  // RenderViewHost, for unit tests.
+  CONTENT_EXPORT static void SetLeakRequestsForTesting(
+      bool leak_requests_for_testing);
 
  private:
   // Prepare to render the cross-site response in a new RenderViewHost, by

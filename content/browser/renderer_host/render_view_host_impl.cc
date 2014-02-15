@@ -34,6 +34,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -711,7 +712,7 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
 
 void RenderViewHostImpl::OnCrossSiteResponse(
     const GlobalRequestID& global_request_id,
-    bool is_transfer,
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     PageTransition page_transition,
@@ -727,7 +728,8 @@ void RenderViewHostImpl::OnCrossSiteResponse(
   // but today the frame_id is -1 for the main frame.
   RenderViewHostDelegate::RendererManagement* manager = node ?
       node->render_manager() : delegate_->GetRendererManagementDelegate();
-  manager->OnCrossSiteResponse(this, global_request_id, is_transfer,
+  manager->OnCrossSiteResponse(this, global_request_id,
+                               cross_site_transferring_request.Pass(),
                                transfer_url_chain, referrer, page_transition,
                                frame_id, should_replace_current_entry);
 }

@@ -3618,6 +3618,27 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   content::SetBrowserClientForTesting(original_browser_client);
 }
 
+// Checks that URLRequests for prerenders being aborted on cross-process
+// navigation from a server redirect are cleaned up, so they don't keep cache
+// entries locked.
+// See http://crbug.com/341134
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCrossProcessServerRedirectNoHang) {
+  const char kDestPath[] = "files/prerender/prerender_page.html";
+  // Force everything to be a process swap.
+  SwapProcessesContentBrowserClient test_browser_client;
+  content::ContentBrowserClient* original_browser_client =
+      content::SetBrowserClientForTesting(&test_browser_client);
+
+  PrerenderTestURL(CreateServerRedirect(kDestPath), FINAL_STATUS_OPEN_URL, 0);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      test_server()->GetURL(kDestPath));
+
+  content::SetBrowserClientForTesting(original_browser_client);
+}
+
 // Checks that prerenders are aborted on cross-process navigation from
 // a client redirect.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,

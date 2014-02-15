@@ -1383,6 +1383,13 @@ void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
   GetLoader(id)->MarkAsTransferring();
 }
 
+void ResourceDispatcherHostImpl::CancelTransferringNavigation(
+    const GlobalRequestID& id) {
+  // Request should still exist and be in the middle of a transfer.
+  DCHECK(IsTransferredNavigation(id));
+  RemovePendingRequest(id.child_id, id.request_id);
+}
+
 void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
     const GlobalRequestID& id) {
   ResourceLoader* loader = GetLoader(id);

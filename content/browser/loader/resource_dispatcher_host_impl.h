@@ -130,6 +130,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // redirected cross-site and needs to be resumed by a new render view.
   void MarkAsTransferredNavigation(const GlobalRequestID& id);
 
+  // Cancels a request previously marked as being transferred, for use when a
+  // navigation was cancelled.
+  void CancelTransferringNavigation(const GlobalRequestID& id);
+
   // Resumes the request without transferring it to a new render view.
   void ResumeDeferredNavigation(const GlobalRequestID& id);
 

@@ -60,6 +60,7 @@ namespace content {
 
 class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
+class CrossSiteTransferringRequest;
 class PageState;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
@@ -325,7 +326,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // needed.
   void OnCrossSiteResponse(
       const GlobalRequestID& global_request_id,
-      bool is_transfer,
+      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,

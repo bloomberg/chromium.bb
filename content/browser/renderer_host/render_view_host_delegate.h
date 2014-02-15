@@ -46,6 +46,7 @@ class Size;
 namespace content {
 
 class BrowserContext;
+class CrossSiteTransferringRequest;
 class FrameTree;
 class PageState;
 class RenderViewHost;
@@ -93,10 +94,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
     // The |pending_render_view_host| is ready to commit a page.  The delegate
     // should ensure that the old RenderViewHost runs its unload handler first
     // and determine whether a RenderViewHost transfer is needed.
+    // |cross_site_transferring_request| is NULL if a request is not being
+    // transferred between renderers.
     virtual void OnCrossSiteResponse(
         RenderViewHost* pending_render_view_host,
         const GlobalRequestID& global_request_id,
-        bool is_transfer,
+        scoped_ptr<CrossSiteTransferringRequest>
+            cross_site_transferring_request,
         const std::vector<GURL>& transfer_url_chain,
         const Referrer& referrer,
         PageTransition page_transition,

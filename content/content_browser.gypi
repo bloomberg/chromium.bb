@@ -824,6 +824,8 @@
     'browser/renderer_host/compositor_impl_android.h',
     'browser/renderer_host/compositor_resize_lock_aura.cc',
     'browser/renderer_host/compositor_resize_lock_aura.h',
+    'browser/renderer_host/cross_site_transferring_request.cc',
+    'browser/renderer_host/cross_site_transferring_request.h',
     'browser/renderer_host/database_message_filter.cc',
     'browser/renderer_host/database_message_filter.h',
     'browser/renderer_host/delegated_frame_evictor.cc',
