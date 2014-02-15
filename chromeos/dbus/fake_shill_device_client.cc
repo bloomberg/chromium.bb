@@ -32,15 +32,17 @@ void ErrorFunction(const std::string& device_path,
 
 void PostDeviceNotFoundError(
     const ShillDeviceClient::ErrorCallback& error_callback) {
-  std::string error_name("org.chromium.flimflam.Error.Failure");
   std::string error_message("Failed");
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(error_callback, error_name, error_message));
+      FROM_HERE,
+      base::Bind(error_callback, shill::kErrorResultNotFound, error_message));
 }
 
 }  // namespace
 
-FakeShillDeviceClient::FakeShillDeviceClient() : weak_ptr_factory_(this) {
+FakeShillDeviceClient::FakeShillDeviceClient()
+    : tdls_busy_count_(0),
+      weak_ptr_factory_(this) {
 }
 
 FakeShillDeviceClient::~FakeShillDeviceClient() {
@@ -200,6 +202,32 @@ void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,
     return;
   }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+}
+
+void FakeShillDeviceClient::PerformTDLSOperation(
+    const dbus::ObjectPath& device_path,
+    const std::string& operation,
+    const std::string& peer,
+    const StringCallback& callback,
+    const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
+  if (tdls_busy_count_) {
+    --tdls_busy_count_;
+    std::string error_message("In-Progress");
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   shill::kErrorResultInProgress, error_message));
+    return;
+  }
+  std::string result;
+  if (operation == shill::kTDLSStatusOperation)
+    result = shill::kTDLSConnectedState;
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, result));
 }
 
 ShillDeviceClient::TestInterface* FakeShillDeviceClient::GetTestInterface() {

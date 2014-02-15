@@ -76,6 +76,13 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   virtual void Reset(const dbus::ObjectPath& device_path,
                      const base::Closure& callback,
                      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void PerformTDLSOperation(
+      const dbus::ObjectPath& device_path,
+      const std::string& operation,
+      const std::string& peer,
+      const StringCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+
   virtual ShillDeviceClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillDeviceClient::TestInterface overrides.
@@ -88,6 +95,8 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
                                  const std::string& name,
                                  const base::Value& value) OVERRIDE;
   virtual std::string GetDevicePathForType(const std::string& type) OVERRIDE;
+
+  void set_tdls_busy_count(int count) { tdls_busy_count_ = count; }
 
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
@@ -109,6 +118,8 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   base::DictionaryValue stub_devices_;
   // Observer list for each device.
   std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
+
+  int tdls_busy_count_;  // Number of times to return InProgress for TDLS.
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

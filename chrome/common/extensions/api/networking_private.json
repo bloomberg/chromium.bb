@@ -353,6 +353,55 @@
             "description": "A callback function that receives base64-encoded encrypted data to send to a trusted device."
           }
         ]
+      },
+      {
+        "name": "setWifiTDLSEnabledState",
+        "description": "Enables TDLS for wifi traffic with a specified peer if available.",
+        "parameters": [
+          {
+            "name": "ip_or_mac_address",
+            "type": "string",
+            "description": "The IP or MAC address of the peer with which to enable a TDLS connection."
+          },
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "If true, enable TDLS, otherwise disable TDLS."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "status",
+                "type": "string"
+              }
+            ],
+            "description": "A callback function that receives a string with an error or the current TDLS status. 'Failed' indicates that the request failed (e.g. MAC address lookup failed). 'Timeout' indicates that the lookup timed out. Otherwise a valid status is returned (see getWifiTDLSStatus)."
+          }
+        ]
+      },
+      {
+        "name": "getWifiTDLSStatus",
+        "description": "Returns the current TDLS status for the specified peer.",
+        "parameters": [
+          {
+            "name": "ip_or_mac_address",
+            "type": "string",
+            "description": "The IP or MAC address of the peer."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "status",
+                "type": "string"
+              }
+            ],
+            "description": "A callback function that receives a string with the current TDLS status which can be 'Connected', 'Disabled', 'Disconnected', 'Nonexistent', or 'Unknown'"
+          }
+        ]
       }
     ],
     "events": [

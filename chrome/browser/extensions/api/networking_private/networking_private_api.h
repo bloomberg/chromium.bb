@@ -335,4 +335,48 @@ class NetworkingPrivateVerifyAndEncryptDataFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndEncryptDataFunction);
 };
 
+// Implements the chrome.networkingPrivate.setWifiTDLSEnabledState method.
+class NetworkingPrivateSetWifiTDLSEnabledStateFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  NetworkingPrivateSetWifiTDLSEnabledStateFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.setWifiTDLSEnabledState",
+                             NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE);
+
+ protected:
+  virtual ~NetworkingPrivateSetWifiTDLSEnabledStateFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  void Success(const std::string& result);
+  void Failure(const std::string& error_name,
+               scoped_ptr<base::DictionaryValue> error_data);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetWifiTDLSEnabledStateFunction);
+};
+
+// Implements the chrome.networkingPrivate.getWifiTDLSStatus method.
+class NetworkingPrivateGetWifiTDLSStatusFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  NetworkingPrivateGetWifiTDLSStatusFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getWifiTDLSStatus",
+                             NETWORKINGPRIVATE_GETWIFITDLSSTATUS);
+
+ protected:
+  virtual ~NetworkingPrivateGetWifiTDLSStatusFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  void Success(const std::string& result);
+  void Failure(const std::string& error_name,
+               scoped_ptr<base::DictionaryValue> error_data);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetWifiTDLSStatusFunction);
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_

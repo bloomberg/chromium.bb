@@ -18,6 +18,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -604,7 +605,86 @@ void NetworkingPrivateVerifyAndEncryptDataFunction::ResultCallback(
 }
 
 void NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback(
-    const std::string& error_name, const std::string& error) {
+    const std::string& error_name,
+    const std::string& error) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateSetWifiTDLSEnabledStateFunction
+
+NetworkingPrivateSetWifiTDLSEnabledStateFunction::
+  ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() {
+}
+
+bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunImpl() {
+  scoped_ptr<api::SetWifiTDLSEnabledState::Params> params =
+      api::SetWifiTDLSEnabledState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string ip_or_mac_address = params->ip_or_mac_address;
+  bool enable = params->enabled;
+
+  NetworkHandler::Get()->network_device_handler()->
+      SetWifiTDLSEnabled(
+          ip_or_mac_address,
+          enable,
+          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure,
+                     this));
+
+  return true;
+}
+
+void NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success(
+    const std::string& result) {
+  results_ = api::SetWifiTDLSEnabledState::Results::Create(result);
+  SendResponse(true);
+}
+
+void NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure(
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetWifiTDLSStatusFunction
+
+NetworkingPrivateGetWifiTDLSStatusFunction::
+  ~NetworkingPrivateGetWifiTDLSStatusFunction() {
+}
+
+bool NetworkingPrivateGetWifiTDLSStatusFunction::RunImpl() {
+  scoped_ptr<api::GetWifiTDLSStatus::Params> params =
+      api::GetWifiTDLSStatus::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string ip_or_mac_address = params->ip_or_mac_address;
+
+  NetworkHandler::Get()->network_device_handler()->
+      GetWifiTDLSStatus(
+          ip_or_mac_address,
+          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Failure,
+                     this));
+
+  return true;
+}
+
+void NetworkingPrivateGetWifiTDLSStatusFunction::Success(
+    const std::string& result) {
+  results_ = api::GetWifiTDLSStatus::Results::Create(result);
+  SendResponse(true);
+}
+
+void NetworkingPrivateGetWifiTDLSStatusFunction::Failure(
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
   error_ = error_name;
   SendResponse(false);
 }

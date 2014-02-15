@@ -39,6 +39,23 @@ class NetworkDeviceHandlerTest : public testing::Test {
         scoped_ptr<ShillDeviceClient>(fake_device_client_));
     DBusThreadManager::InitializeForTesting(dbus_manager);
 
+    success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
+                                   base::Unretained(this));
+    properties_success_callback_ =
+        base::Bind(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
+                   base::Unretained(this));
+    string_success_callback_ =
+        base::Bind(&NetworkDeviceHandlerTest::StringSuccessCallback,
+                   base::Unretained(this));
+    error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
+                                 base::Unretained(this));
+
+    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    NetworkDeviceHandlerImpl* device_handler = new NetworkDeviceHandlerImpl;
+    device_handler->Init(network_state_handler_.get());
+    network_device_handler_.reset(device_handler);
+
+    // Add devices after handlers have been initialized.
     ShillDeviceClient::TestInterface* device_test =
         fake_device_client_->GetTestInterface();
     device_test->AddDevice(
@@ -50,18 +67,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
     device_test->SetDeviceProperty(
         kDefaultWifiDevicePath, shill::kIPConfigsProperty, test_ip_configs);
 
-    success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
-                                   base::Unretained(this));
-    properties_success_callback_ =
-        base::Bind(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
-                   base::Unretained(this));
-    error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
-                                 base::Unretained(this));
-
-    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
-    NetworkDeviceHandlerImpl* device_handler = new NetworkDeviceHandlerImpl;
-    device_handler->Init(network_state_handler_.get());
-    network_device_handler_.reset(device_handler);
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -72,6 +78,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
   void ErrorCallback(const std::string& error_name,
                      scoped_ptr<base::DictionaryValue> error_data) {
+    LOG(ERROR) << "ErrorCallback: " << error_name;
     result_ = error_name;
   }
 
@@ -85,6 +92,11 @@ class NetworkDeviceHandlerTest : public testing::Test {
     properties_.reset(properties.DeepCopy());
   }
 
+  void StringSuccessCallback(const std::string& result) {
+    LOG(ERROR) << "StringSuccessCallback: " << result;
+    result_ = kResultSuccess;
+  }
+
  protected:
   std::string result_;
 
@@ -94,6 +106,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
   network_handler::DictionaryResultCallback properties_success_callback_;
+  network_handler::StringResultCallback string_success_callback_;
   network_handler::ErrorCallback error_callback_;
   scoped_ptr<base::DictionaryValue> properties_;
 
@@ -158,7 +171,7 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
                                              success_callback_,
                                              error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 
   // Setting a owner-protected device property through SetDeviceProperty must
   // fail.
@@ -209,6 +222,57 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
   EXPECT_FALSE(allow_roaming);
 }
 
+TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabled) {
+  // We add a wifi device by default, initial call should succeed.
+  network_device_handler_->SetWifiTDLSEnabled(
+      "fake_ip_address", true, string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+}
+
+TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledMissing) {
+  // Remove the wifi device. Call should fail with "device missing" error.
+  fake_device_client_->GetTestInterface()->RemoveDevice(kDefaultWifiDevicePath);
+  message_loop_.RunUntilIdle();
+  network_device_handler_->SetWifiTDLSEnabled(
+      "fake_ip_address", true, string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
+}
+
+TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledBusy) {
+  // Set the busy count, call should succeed after repeat attempt.
+  fake_device_client_->set_tdls_busy_count(1);
+  network_device_handler_->SetWifiTDLSEnabled(
+      "fake_ip_address", true, string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+
+  // Set the busy count to a large number, call should fail after max number
+  // of repeat attempt.
+  fake_device_client_->set_tdls_busy_count(100000);
+  network_device_handler_->SetWifiTDLSEnabled(
+      "fake_ip_address", true, string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkDeviceHandler::kErrorTimeout, result_);
+}
+
+TEST_F(NetworkDeviceHandlerTest, GetWifiTDLSStatus) {
+  // We add a wifi device by default, initial call should succeed.
+  network_device_handler_->GetWifiTDLSStatus(
+      "fake_ip_address", string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+
+  // Remove the wifi device. Call should fail with "device missing" error.
+  fake_device_client_->GetTestInterface()->RemoveDevice(kDefaultWifiDevicePath);
+  message_loop_.RunUntilIdle();
+  network_device_handler_->GetWifiTDLSStatus(
+      "fake_ip_address", string_success_callback_, error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
+}
+
 TEST_F(NetworkDeviceHandlerTest, RequestRefreshIPConfigs) {
   network_device_handler_->RequestRefreshIPConfigs(
       kDefaultWifiDevicePath, success_callback_, error_callback_);
@@ -231,7 +295,7 @@ TEST_F(NetworkDeviceHandlerTest, SetCarrier) {
   network_device_handler_->SetCarrier(
       kUnknownCellularDevicePath, kCarrier, success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, RequirePin) {
@@ -253,7 +317,7 @@ TEST_F(NetworkDeviceHandlerTest, RequirePin) {
                                       success_callback_,
                                       error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, EnterPin) {
@@ -269,7 +333,7 @@ TEST_F(NetworkDeviceHandlerTest, EnterPin) {
   network_device_handler_->EnterPin(
       kUnknownCellularDevicePath, kPin, success_callback_, error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, UnblockPin) {
@@ -292,7 +356,7 @@ TEST_F(NetworkDeviceHandlerTest, UnblockPin) {
                                       success_callback_,
                                       error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, ChangePin) {
@@ -315,7 +379,7 @@ TEST_F(NetworkDeviceHandlerTest, ChangePin) {
                                      success_callback_,
                                      error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 }  // namespace chromeos

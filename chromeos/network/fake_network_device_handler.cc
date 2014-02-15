@@ -73,4 +73,15 @@ void FakeNetworkDeviceHandler::ChangePin(
 
 void FakeNetworkDeviceHandler::SetCellularAllowRoaming(bool allow_roaming) {}
 
+void FakeNetworkDeviceHandler::SetWifiTDLSEnabled(
+    const std::string& ip_or_mac_address,
+    bool enabled,
+    const network_handler::StringResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback) {}
+
+void FakeNetworkDeviceHandler::GetWifiTDLSStatus(
+    const std::string& ip_or_mac_address,
+    const network_handler::StringResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback) {}
+
 }  // namespace chromeos

@@ -432,9 +432,21 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
 
+#if defined(OS_CHROMEOS)
+// Currently TDLS support is only enabled for Chrome OS.
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+                       SetWifiTDLSEnabledState) {
+  EXPECT_TRUE(RunNetworkingSubtest("setWifiTDLSEnabledState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+                       GetWifiTDLSStatus) {
+  EXPECT_TRUE(RunNetworkingSubtest("getWifiTDLSStatus")) << message_;
+}
+#endif
+
 INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
                         ExtensionNetworkingPrivateApiTest,
                         testing::Bool());
 
 }  // namespace
-

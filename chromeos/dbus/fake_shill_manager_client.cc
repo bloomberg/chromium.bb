@@ -536,6 +536,16 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
                       OnPropertyChanged(property, *(services.get())));
     return;
   }
+  if (property == shill::kDevicesProperty) {
+    base::ListValue* devices = NULL;
+    if (stub_properties_.GetListWithoutPathExpansion(
+            shill::kDevicesProperty, &devices)) {
+      FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
+                        observer_list_,
+                        OnPropertyChanged(property, *devices));
+    }
+    return;
+  }
   base::Value* value = NULL;
   if (!stub_properties_.GetWithoutPathExpansion(property, &value)) {
     LOG(ERROR) << "Notify for unknown property: " << property;

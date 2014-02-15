@@ -191,6 +191,21 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
+  virtual void PerformTDLSOperation(
+      const dbus::ObjectPath& device_path,
+      const std::string& operation,
+      const std::string& peer,
+      const StringCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
+                                 shill::kPerformTDLSOperationFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(operation);
+    writer.AppendString(peer);
+    GetHelper(device_path)->CallStringMethodWithErrorCallback(
+        &method_call, callback, error_callback);
+  }
+
   virtual TestInterface* GetTestInterface() OVERRIDE {
     return NULL;
   }

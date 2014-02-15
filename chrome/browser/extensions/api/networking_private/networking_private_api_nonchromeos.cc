@@ -450,3 +450,33 @@ void NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback(
   error_ = error_name;
   SendResponse(false);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateSetWifiTDLSEnabledStateFunction
+
+NetworkingPrivateSetWifiTDLSEnabledStateFunction::
+  ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() {
+}
+
+bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunImpl() {
+  scoped_ptr<api::SetWifiTDLSEnabledState::Params> params =
+      api::SetWifiTDLSEnabledState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  SetError("not-implemented");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetWifiTDLSStatusFunction
+
+NetworkingPrivateGetWifiTDLSStatusFunction::
+  ~NetworkingPrivateGetWifiTDLSStatusFunction() {
+}
+
+bool NetworkingPrivateGetWifiTDLSStatusFunction::RunImpl() {
+  scoped_ptr<api::GetWifiTDLSStatus::Params> params =
+      api::GetWifiTDLSStatus::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  SetError("not-implemented");
+  return false;
+}

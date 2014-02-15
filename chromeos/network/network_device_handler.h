@@ -33,12 +33,14 @@ namespace chromeos {
 class CHROMEOS_EXPORT NetworkDeviceHandler {
  public:
   // Constants for |error_name| from |error_callback|.
+  static const char kErrorDeviceMissing[];
   static const char kErrorFailure[];
   static const char kErrorIncorrectPin[];
   static const char kErrorNotFound[];
   static const char kErrorNotSupported[];
   static const char kErrorPinBlocked[];
   static const char kErrorPinRequired[];
+  static const char kErrorTimeout[];
   static const char kErrorUnknown[];
 
   NetworkDeviceHandler();
@@ -191,6 +193,21 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   // asychronously in the background and applies also to devices which become
   // available in the future.
   virtual void SetCellularAllowRoaming(bool allow_roaming) = 0;
+
+  // Attempts to enable or disable TDLS for the specified IP or MAC address for
+  // the active wifi device.
+  virtual void SetWifiTDLSEnabled(
+      const std::string& ip_or_mac_address,
+      bool enabled,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) = 0;
+
+  // Returns the TDLS status for the specified IP or MAC address for
+  // the active wifi device.
+  virtual void GetWifiTDLSStatus(
+      const std::string& ip_or_mac_address,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);

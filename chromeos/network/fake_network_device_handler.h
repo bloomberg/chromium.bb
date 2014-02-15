@@ -83,6 +83,17 @@ class CHROMEOS_EXPORT FakeNetworkDeviceHandler : public NetworkDeviceHandler {
 
   virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE;
 
+  virtual void SetWifiTDLSEnabled(
+      const std::string& ip_or_mac_address,
+      bool enabled,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+
+  virtual void GetWifiTDLSStatus(
+      const std::string& ip_or_mac_address,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);
 };

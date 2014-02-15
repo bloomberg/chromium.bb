@@ -6,11 +6,13 @@
 
 namespace chromeos {
 
+const char NetworkDeviceHandler::kErrorDeviceMissing[] = "device-missing";
 const char NetworkDeviceHandler::kErrorFailure[] = "failure";
 const char NetworkDeviceHandler::kErrorIncorrectPin[] = "incorrect-pin";
 const char NetworkDeviceHandler::kErrorNotSupported[] = "not-supported";
 const char NetworkDeviceHandler::kErrorPinBlocked[] = "pin-blocked";
 const char NetworkDeviceHandler::kErrorPinRequired[] = "pin-required";
+const char NetworkDeviceHandler::kErrorTimeout[] = "timeout";
 const char NetworkDeviceHandler::kErrorUnknown[] = "unknown";
 
 NetworkDeviceHandler::NetworkDeviceHandler() {

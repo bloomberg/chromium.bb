@@ -366,6 +366,21 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq("encrypted_data", result);
       }));
+  },
+  function setWifiTDLSEnabledState() {
+    chrome.networkingPrivate.setWifiTDLSEnabledState(
+      "aa:bb:cc:dd:ee:ff",
+      true,
+      callbackPass(function(result) {
+        assertEq("Connected", result);
+      }));
+  },
+  function getWifiTDLSStatus() {
+    chrome.networkingPrivate.getWifiTDLSStatus(
+      "aa:bb:cc:dd:ee:ff",
+      callbackPass(function(result) {
+        assertEq("Connected", result);
+      }));
   }
 ];
 

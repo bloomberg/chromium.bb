@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 #define CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -90,6 +91,17 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
 
   virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE;
 
+  virtual void SetWifiTDLSEnabled(
+      const std::string& ip_or_mac_address,
+      bool enabled,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+
+  virtual void GetWifiTDLSStatus(
+      const std::string& ip_or_mac_address,
+      const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) OVERRIDE;
+
   // NetworkStateHandlerObserver overrides
   virtual void DeviceListChanged() OVERRIDE;
 
@@ -106,7 +118,6 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   void ApplyCellularAllowRoamingToShill();
 
   NetworkStateHandler* network_state_handler_;
-
   bool cellular_allow_roaming_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);

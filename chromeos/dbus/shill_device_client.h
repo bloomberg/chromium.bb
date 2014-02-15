@@ -37,6 +37,7 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef ShillClientHelper::StringCallback StringCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
   // Interface for setting up devices for testing.
@@ -151,8 +152,16 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
   // Calls the Reset method.
   // |callback| is called after the method call finishes.
   virtual void Reset(const dbus::ObjectPath& device_path,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) = 0;
+
+  // Calls the PerformTDLSOperation method.
+  // |callback| is called after the method call finishes.
+  virtual void PerformTDLSOperation(const dbus::ObjectPath& device_path,
+                                    const std::string& operation,
+                                    const std::string& peer,
+                                    const StringCallback& callback,
+                                    const ErrorCallback& error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns NULL.
   virtual TestInterface* GetTestInterface() = 0;
