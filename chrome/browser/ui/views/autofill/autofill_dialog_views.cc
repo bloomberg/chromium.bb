@@ -2208,6 +2208,12 @@ void AutofillDialogViews::InputEditedOrActivated(ServerFieldType type,
 
   DecoratedTextfield* decorated = TextfieldForType(type);
   views::Combobox* combobox = ComboboxForType(type);
+
+  // Both views may be NULL if the event comes from an inactive section, which
+  // may occur when using an IME.
+  if (!combobox && !decorated)
+    return;
+
   DCHECK_NE(!!combobox, !!decorated);
   DetailsGroup* group = decorated ? GroupForView(decorated) :
                                     GroupForView(combobox);
