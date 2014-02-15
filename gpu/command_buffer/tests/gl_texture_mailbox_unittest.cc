@@ -130,7 +130,6 @@ TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
 
   GLbyte invalid_mailbox[GL_MAILBOX_SIZE_CHROMIUM];
   glGenMailboxCHROMIUM(invalid_mailbox);
-  ++invalid_mailbox[GL_MAILBOX_SIZE_CHROMIUM - 1];
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   glConsumeTextureCHROMIUM(GL_TEXTURE_2D, invalid_mailbox);

@@ -27,9 +27,6 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
  public:
   MailboxManager();
 
-  // Generate a unique unguessable mailbox name.
-  void GenerateMailbox(Mailbox* mailbox);
-
   // Look up the texture definition from the named mailbox.
   Texture* ConsumeTexture(unsigned target, const Mailbox& mailbox);
 

@@ -23,7 +23,6 @@
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
-#include "crypto/random.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -99,18 +98,11 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     DCHECK(channel_);
 
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(GpuChannelMessageFilter, message)
-      IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNames,
-                          OnGenerateMailboxNames)
-      IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNamesAsync,
-                          OnGenerateMailboxNamesAsync)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-
+    bool handled = false;
     if (message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) {
       // This message should not be sent explicitly by the renderer.
-      NOTREACHED();
+      DLOG(ERROR) << "Client should not send "
+                     "GpuCommandBufferMsg_RetireSyncPoint message";
       handled = true;
     }
 
@@ -168,22 +160,6 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
  private:
-  // Message handlers.
-  void OnGenerateMailboxNames(unsigned num, std::vector<gpu::Mailbox>* result) {
-    TRACE_EVENT1("gpu", "OnGenerateMailboxNames", "num", num);
-
-    result->resize(num);
-
-    for (unsigned i = 0; i < num; ++i)
-      crypto::RandBytes((*result)[i].name, sizeof((*result)[i].name));
-  }
-
-  void OnGenerateMailboxNamesAsync(unsigned num) {
-    std::vector<gpu::Mailbox> names;
-    OnGenerateMailboxNames(num, &names);
-    Send(new GpuChannelMsg_GenerateMailboxNamesReply(names));
-  }
-
   enum PreemptionState {
     // Either there's no other channel to preempt, there are no messages
     // pending processing, or we just finished preempting and have to wait

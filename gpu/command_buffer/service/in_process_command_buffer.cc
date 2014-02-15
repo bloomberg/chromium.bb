@@ -551,13 +551,6 @@ void InProcessCommandBuffer::DestroyGpuMemoryBuffer(int32 id) {
   QueueTask(task);
 }
 
-bool InProcessCommandBuffer::GenerateMailboxNames(
-    unsigned num, std::vector<gpu::Mailbox>* names) {
-  CheckSequencedThread();
-  base::AutoLock lock(command_buffer_lock_);
-  return gpu_control_->GenerateMailboxNames(num, names);
-}
-
 uint32 InProcessCommandBuffer::InsertSyncPoint() {
   return 0;
 }

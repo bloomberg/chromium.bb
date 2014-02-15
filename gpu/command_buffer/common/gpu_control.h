@@ -39,11 +39,6 @@ class GPU_EXPORT GpuControl {
   // Destroy a gpu memory buffer. The ID must be positive.
   virtual void DestroyGpuMemoryBuffer(int32 id) = 0;
 
-  // Generates n unique mailbox names that can be used with
-  // GL_texture_mailbox_CHROMIUM.
-  virtual bool GenerateMailboxNames(unsigned num,
-                                    std::vector<gpu::Mailbox>* names) = 0;
-
   // Inserts a sync point, returning its ID. Sync point IDs are global and can
   // be used for cross-context synchronization.
   virtual uint32 InsertSyncPoint() = 0;

@@ -38,10 +38,6 @@ class MessageLoop;
 class MessageLoopProxy;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -151,12 +147,6 @@ class GpuChannelHost : public IPC::Sender,
   base::SharedMemoryHandle ShareToGpuProcess(
       base::SharedMemoryHandle source_handle);
 
-  // Generates |num| unique mailbox names that can be used with
-  // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
-  // handled only on the GPU process' IO thread, and so is not effectively
-  // a finish.
-  bool GenerateMailboxNames(unsigned num, std::vector<gpu::Mailbox>* names);
-
   // Reserve one unused transfer buffer ID.
   int32 ReserveTransferBufferId();
 
@@ -200,17 +190,8 @@ class GpuChannelHost : public IPC::Sender,
     // Whether the channel is lost.
     bool IsLost() const;
 
-    // Gets mailboxes from the pool, and return the number of mailboxes to ask
-    // the GPU process to maintain a good pool size. The caller is responsible
-    // for sending the GpuChannelMsg_GenerateMailboxNamesAsync message.
-    size_t GetMailboxNames(size_t num, std::vector<gpu::Mailbox>* names);
-
    private:
     virtual ~MessageFilter();
-    bool OnControlMessageReceived(const IPC::Message& msg);
-
-    // Message handlers.
-    void OnGenerateMailboxNamesReply(const std::vector<gpu::Mailbox>& names);
 
     // Threading notes: |listeners_| is only accessed on the IO thread. Every
     // other field is protected by |lock_|.
@@ -222,12 +203,6 @@ class GpuChannelHost : public IPC::Sender,
 
     // Whether the channel has been lost.
     bool lost_;
-
-    // A pool of valid mailbox names.
-    std::vector<gpu::Mailbox> mailbox_name_pool_;
-
-    // Number of pending mailbox requested from the GPU process.
-    size_t requested_mailboxes_;
   };
 
   // Threading notes: all fields are constant during the lifetime of |this|

@@ -123,13 +123,4 @@ bool GpuControlService::RegisterGpuMemoryBuffer(
                                                              internalformat);
 }
 
-bool GpuControlService::GenerateMailboxNames(
-    unsigned num, std::vector<gpu::Mailbox>* names) {
-  DCHECK(names->empty());
-  names->resize(num);
-  for (unsigned i = 0; i < num; ++i)
-    mailbox_manager_->GenerateMailbox(&(*names)[i]);
-  return true;
-}
-
 }  // namespace gpu

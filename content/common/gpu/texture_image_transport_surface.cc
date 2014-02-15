@@ -384,7 +384,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
   TextureManager* texture_manager =
       decoder->GetContextGroup()->texture_manager();
   if (!backbuffer_.get()) {
-    mailbox_manager_->GenerateMailbox(&back_mailbox_);
+    back_mailbox_ = gpu::Mailbox::Generate();
     GLuint service_id;
     glGenTextures(1, &service_id);
     backbuffer_ = TextureRef::Create(texture_manager, 0, service_id);

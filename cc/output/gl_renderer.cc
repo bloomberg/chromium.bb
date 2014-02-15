@@ -2246,11 +2246,6 @@ void GLRenderer::GetFramebufferPixelsAsync(
     gpu::Mailbox mailbox;
     if (own_mailbox) {
       GLC(gl_, gl_->GenMailboxCHROMIUM(mailbox.name));
-      if (mailbox.IsZero()) {
-        gl_->DeleteTextures(1, &texture_id);
-        request->SendEmptyResult();
-        return;
-      }
     } else {
       mailbox = request->texture_mailbox().mailbox();
       DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),

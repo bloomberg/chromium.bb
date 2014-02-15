@@ -186,14 +186,6 @@ void CommandBufferClientImpl::DestroyGpuMemoryBuffer(int32 id) {
   NOTIMPLEMENTED();
 }
 
-bool CommandBufferClientImpl::GenerateMailboxNames(
-    unsigned num,
-    std::vector<gpu::Mailbox>* names) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-  return false;
-}
-
 uint32 CommandBufferClientImpl::InsertSyncPoint() {
   // TODO(piman)
   NOTIMPLEMENTED();

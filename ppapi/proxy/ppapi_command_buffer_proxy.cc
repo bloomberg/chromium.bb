@@ -250,15 +250,6 @@ void PpapiCommandBufferProxy::DestroyGpuMemoryBuffer(int32 id) {
   NOTREACHED();
 }
 
-bool PpapiCommandBufferProxy::GenerateMailboxNames(
-    unsigned num, std::vector<gpu::Mailbox>* names) {
-  // TODO(piman): implement this so we can expose mailboxes to pepper
-  // eventually.
-  NOTREACHED();
-  return false;
-}
-
-
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 

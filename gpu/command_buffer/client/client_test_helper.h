@@ -94,8 +94,6 @@ class MockClientGpuControl : public GpuControl {
                                      unsigned internalformat,
                                      int32* id));
   MOCK_METHOD1(DestroyGpuMemoryBuffer, void(int32 id));
-  MOCK_METHOD2(GenerateMailboxNames, bool(unsigned num,
-                                          std::vector<gpu::Mailbox>* names));
   MOCK_METHOD0(InsertSyncPoint, uint32());
   MOCK_METHOD2(SignalSyncPoint, void(uint32 id,
                                      const base::Closure& callback));

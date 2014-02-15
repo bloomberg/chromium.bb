@@ -7071,8 +7071,7 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
 }
 
 TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
-  Mailbox mailbox;
-  group().mailbox_manager()->GenerateMailbox(&mailbox);
+  Mailbox mailbox = Mailbox::Generate();
 
   memcpy(shared_memory_address_, mailbox.name, sizeof(mailbox.name));
 

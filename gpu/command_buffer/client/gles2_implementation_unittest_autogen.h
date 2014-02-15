@@ -1738,38 +1738,6 @@ TEST_F(GLES2ImplementationTest, VertexAttribDivisorANGLE) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for GenMailboxCHROMIUM
-
-TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
-  GLbyte data[64] = {0};
-  struct Cmds {
-    cmds::ProduceTextureCHROMIUMImmediate cmd;
-    GLbyte data[64];
-  };
-
-  for (int jj = 0; jj < 64; ++jj) {
-    data[jj] = static_cast<GLbyte>(jj);
-  }
-  Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, &data[0]);
-  gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, &data[0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
-  GLbyte data[64] = {0};
-  struct Cmds {
-    cmds::ConsumeTextureCHROMIUMImmediate cmd;
-    GLbyte data[64];
-  };
-
-  for (int jj = 0; jj < 64; ++jj) {
-    data[jj] = static_cast<GLbyte>(jj);
-  }
-  Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, &data[0]);
-  gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, &data[0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
 // TODO: Implement unit test for BindUniformLocationCHROMIUM
 
 TEST_F(GLES2ImplementationTest, BindTexImage2DCHROMIUM) {

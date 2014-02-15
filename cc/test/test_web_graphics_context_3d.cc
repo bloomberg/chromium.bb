@@ -52,7 +52,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
     : context_id_(s_context_id++),
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
-      times_gen_mailbox_succeeds_(-1),
       context_lost_(false),
       times_map_image_chromium_succeeds_(-1),
       times_map_buffer_chromium_succeeds_(-1),
@@ -428,18 +427,6 @@ void TestWebGraphicsContext3D::getShaderPrecisionFormat(GLenum shadertype,
 }
 
 void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
-  if (times_gen_mailbox_succeeds_ >= 0) {
-    if (!times_gen_mailbox_succeeds_) {
-      loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                          GL_INNOCENT_CONTEXT_RESET_ARB);
-    }
-    --times_gen_mailbox_succeeds_;
-  }
-  if (context_lost_) {
-    memset(mailbox, 0, GL_MAILBOX_SIZE_CHROMIUM);
-    return;
-  }
-
   static char mailbox_name1 = '1';
   static char mailbox_name2 = '1';
   mailbox[0] = mailbox_name1;

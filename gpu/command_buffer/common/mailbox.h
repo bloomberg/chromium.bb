@@ -22,6 +22,15 @@ struct GPU_EXPORT Mailbox {
   bool IsZero() const;
   void SetZero();
   void SetName(const int8* name);
+
+  // Generate a unique unguessable mailbox name.
+  static Mailbox Generate();
+
+  // Verify that the mailbox was created through Mailbox::Generate. This only
+  // works in Debug (always returns true in Release). This is not a secure
+  // check, only to catch bugs where clients forgot to call Mailbox::Generate.
+  bool Verify() const;
+
   int8 name[GL_MAILBOX_SIZE_CHROMIUM];
   bool operator<(const Mailbox& other) const {
     return memcmp(this, &other, sizeof other) < 0;

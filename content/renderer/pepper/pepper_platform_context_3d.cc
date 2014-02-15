@@ -100,13 +100,10 @@ bool PlatformContext3D::Init(const int32* attrib_list,
     return false;
   if (!command_buffer_->Initialize())
     return false;
-  std::vector<gpu::Mailbox> names;
-  if (!command_buffer_->GenerateMailboxNames(1, &names))
+  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
+  if (!command_buffer_->ProduceFrontBuffer(mailbox))
     return false;
-  DCHECK_EQ(names.size(), 1u);
-  if (!command_buffer_->ProduceFrontBuffer(names[0]))
-    return false;
-  mailbox_ = names[0];
+  mailbox_ = mailbox;
 
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3D::OnContextLost,

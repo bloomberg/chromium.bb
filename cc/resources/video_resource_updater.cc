@@ -213,16 +213,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
         GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
-        if (mailbox.IsZero()) {
-          resource_provider_->DeleteResource(resource_id);
-          resource_id = 0;
-        } else {
-          ResourceProvider::ScopedWriteLockGL lock(
-              resource_provider_, resource_id);
-          GLC(gl, gl->BindTexture(GL_TEXTURE_2D, lock.texture_id()));
-          GLC(gl, gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
-          GLC(gl, gl->BindTexture(GL_TEXTURE_2D, 0));
-        }
+        ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                                 resource_id);
+        GLC(gl, gl->BindTexture(GL_TEXTURE_2D, lock.texture_id()));
+        GLC(gl, gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+        GLC(gl, gl->BindTexture(GL_TEXTURE_2D, 0));
       }
 
       if (resource_id)

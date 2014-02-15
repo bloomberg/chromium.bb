@@ -1325,10 +1325,12 @@ _FUNCTION_INFO = {
   },
   'ConsumeTextureCHROMIUM': {
     'decoder_func': 'DoConsumeTextureCHROMIUM',
+    'impl_func': False,
     'type': 'PUT',
     'data_type': 'GLbyte',
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
+    'client_test': False,
     'extension': True,
     'chromium': True,
     'trace_level': 1,
@@ -1908,10 +1910,12 @@ _FUNCTION_INFO = {
   },
   'ProduceTextureCHROMIUM': {
     'decoder_func': 'DoProduceTextureCHROMIUM',
+    'impl_func': False,
     'type': 'PUT',
     'data_type': 'GLbyte',
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
+    'client_test': False,
     'extension': True,
     'chromium': True,
     'trace_level': 1,
@@ -4790,6 +4794,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
+    impl_func = func.GetInfo('impl_func')
+    if (impl_func != None and impl_func != True):
+      return;
     file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
@@ -4810,6 +4817,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationUnitTest(self, func, file):
     """Writes the GLES2 Implemention unit test."""
+    client_test = func.GetInfo('client_test')
+    if (client_test != None and client_test != True):
+      return;
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   %(type)s data[%(count)d] = {0};

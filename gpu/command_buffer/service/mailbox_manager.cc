@@ -21,10 +21,6 @@ MailboxManager::~MailboxManager() {
   DCHECK(textures_to_mailboxes_.empty());
 }
 
-void MailboxManager::GenerateMailbox(Mailbox* mailbox) {
-  crypto::RandBytes(mailbox->name, sizeof(mailbox->name));
-}
-
 Texture* MailboxManager::ConsumeTexture(unsigned target,
                                         const Mailbox& mailbox) {
   MailboxToTextureMap::iterator it =

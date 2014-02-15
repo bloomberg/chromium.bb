@@ -457,19 +457,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Generates n new unique mailbox names synchronously.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_GenerateMailboxNames,
-                            unsigned, /* num */
-                            std::vector<gpu::Mailbox> /* mailbox_names */)
-
-// Generates n new unique mailbox names asynchronously.
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesAsync,
-                     unsigned /* num */)
-
-// Reply to GpuChannelMsg_GenerateMailboxNamesAsync.
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesReply,
-                     std::vector<gpu::Mailbox> /* mailbox_names */)
-
 // Create a new GPU-accelerated video encoder.
 IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoEncoder,
                             int32 /* route_id */)

@@ -34,8 +34,7 @@ class MailboxManagerTest : public testing::Test {
 TEST_F(MailboxManagerTest, Basic) {
   Texture* texture = CreateTexture();
 
-  Mailbox name;
-  manager_->GenerateMailbox(&name);
+  Mailbox name = Mailbox::Generate();
   manager_->ProduceTexture(0, name, texture);
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name));
 
@@ -54,8 +53,7 @@ TEST_F(MailboxManagerTest, Basic) {
 TEST_F(MailboxManagerTest, ProduceMultipleMailbox) {
   Texture* texture = CreateTexture();
 
-  Mailbox name1;
-  manager_->GenerateMailbox(&name1);
+  Mailbox name1 = Mailbox::Generate();
 
   manager_->ProduceTexture(0, name1, texture);
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name1));
@@ -65,8 +63,7 @@ TEST_F(MailboxManagerTest, ProduceMultipleMailbox) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(0, name1));
 
   // Can produce again, with a different mailbox.
-  Mailbox name2;
-  manager_->GenerateMailbox(&name2);
+  Mailbox name2 = Mailbox::Generate();
   manager_->ProduceTexture(0, name2, texture);
 
   // Still available under all mailboxes.
@@ -85,8 +82,7 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
   Texture* texture1 = CreateTexture();
   Texture* texture2 = CreateTexture();
 
-  Mailbox name;
-  manager_->GenerateMailbox(&name);
+  Mailbox name = Mailbox::Generate();
 
   manager_->ProduceTexture(0, name, texture1);
   EXPECT_EQ(texture1, manager_->ConsumeTexture(0, name));
@@ -107,10 +103,8 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
 TEST_F(MailboxManagerTest, ProduceMultipleTextureMailbox) {
   Texture* texture1 = CreateTexture();
   Texture* texture2 = CreateTexture();
-  Mailbox name1;
-  manager_->GenerateMailbox(&name1);
-  Mailbox name2;
-  manager_->GenerateMailbox(&name2);
+  Mailbox name1 = Mailbox::Generate();
+  Mailbox name2 = Mailbox::Generate();
 
   // Put texture1 on name1 and name2.
   manager_->ProduceTexture(0, name1, texture1);

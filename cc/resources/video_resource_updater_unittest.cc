@@ -67,18 +67,5 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
 }
 
-TEST_F(VideoResourceUpdaterTest, LostContextForSoftwareFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider().get(),
-                               resource_provider3d_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
-
-  // Fail while creating the mailbox for the second YUV plane.
-  context3d_->set_times_gen_mailbox_succeeds(1);
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::NONE, resources.type);
-}
-
 }  // namespace
 }  // namespace cc

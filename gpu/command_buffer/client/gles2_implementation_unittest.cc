@@ -2845,6 +2845,31 @@ TEST_F(GLES2ImplementationTest, Enable) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 
+TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
+  struct Cmds {
+    cmds::ConsumeTextureCHROMIUMImmediate cmd;
+    GLbyte data[64];
+  };
+
+  Mailbox mailbox = Mailbox::Generate();
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_2D, mailbox.name);
+  gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
+  struct Cmds {
+    cmds::ProduceTextureCHROMIUMImmediate cmd;
+    GLbyte data[64];
+  };
+
+  Mailbox mailbox = Mailbox::Generate();
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_2D, mailbox.name);
+  gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
