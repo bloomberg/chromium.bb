@@ -31,6 +31,7 @@ const char kGoogleRestrictedPrefix[] = "google";
 const char kInvalidParameter[] =
     "Function was called with invalid parameters.";
 const char kNotSignedIn[] = "Profile was not signed in.";
+const char kCertificateMissing[] = "Manifest key was missing.";
 const char kAsyncOperationPending[] =
     "Asynchronous operation is pending.";
 const char kNetworkError[] = "Network error occurred.";
@@ -51,6 +52,8 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
       return kInvalidParameter;
     case gcm::GCMClient::NOT_SIGNED_IN:
       return kNotSignedIn;
+    case gcm::GCMClient::CERTIFICATE_MISSING:
+      return kCertificateMissing;
     case gcm::GCMClient::ASYNC_OPERATION_PENDING:
       return kAsyncOperationPending;
     case gcm::GCMClient::NETWORK_ERROR:
@@ -95,8 +98,7 @@ bool GcmApiFunction::RunImpl() {
 
 bool GcmApiFunction::IsGcmApiEnabled() const {
   return gcm::GCMProfileService::IsGCMEnabled(
-             Profile::FromBrowserContext(context())) &&
-         !GetExtension()->public_key().empty();
+             Profile::FromBrowserContext(context()));
 }
 
 gcm::GCMProfileService* GcmApiFunction::GCMProfileService() const {
@@ -112,6 +114,12 @@ bool GcmRegisterFunction::DoWork() {
   scoped_ptr<api::gcm::Register::Params> params(
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (GetExtension()->public_key().empty()) {
+    CompleteFunctionWithResult(std::string(),
+                               gcm::GCMClient::CERTIFICATE_MISSING);
+    return false;
+  }
 
   GCMProfileService()->Register(
       GetExtension()->id(),

@@ -101,6 +101,13 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
                   sender_ids.end());
 }
 
+IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterWithoutKey) {
+  if (ShouldSkipTest())
+    return;
+
+  ASSERT_TRUE(RunExtensionTest("gcm/functions/register_without_key"));
+}
+
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {
   if (ShouldSkipTest())
     return;

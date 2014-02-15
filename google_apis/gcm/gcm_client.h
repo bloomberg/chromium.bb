@@ -40,6 +40,8 @@ class GCM_EXPORT GCMClient {
     INVALID_PARAMETER,
     // Profile not signed in.
     NOT_SIGNED_IN,
+    // Certificate was missing. Certain operation, like register, requires it.
+    CERTIFICATE_MISSING,
     // Previous asynchronous operation is still pending to finish. Certain
     // operation, like register, is only allowed one at a time.
     ASYNC_OPERATION_PENDING,

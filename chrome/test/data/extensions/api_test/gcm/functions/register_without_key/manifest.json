@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "Tests GCM API",
   "background": {
-    "scripts": ["send.js"]
+    "scripts": ["register.js"]
   },
   "permissions": ["gcm"]
 }
