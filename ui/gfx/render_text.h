@@ -51,7 +51,9 @@ class SkiaTextRenderer {
   ~SkiaTextRenderer();
 
   void SetDrawLooper(SkDrawLooper* draw_looper);
-  void SetFontSmoothingSettings(bool enable_smoothing, bool enable_lcd_text);
+  void SetFontSmoothingSettings(bool antialiasing,
+                                bool subpixel_rendering,
+                                bool subpixel_positioning);
   void SetFontHinting(SkPaint::Hinting hinting);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(SkScalar size);

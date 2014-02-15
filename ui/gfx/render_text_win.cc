@@ -800,7 +800,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   GetCachedFontSmoothingSettings(&smoothing_enabled, &cleartype_enabled);
   // Note that |cleartype_enabled| corresponds to Skia's |enable_lcd_text|.
   renderer.SetFontSmoothingSettings(
-      smoothing_enabled, cleartype_enabled && !background_is_transparent());
+      smoothing_enabled, cleartype_enabled && !background_is_transparent(),
+      smoothing_enabled /* subpixel_positioning */);
 
   ApplyCompositionAndSelectionStyles();
 

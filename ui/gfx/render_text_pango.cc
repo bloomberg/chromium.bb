@@ -397,7 +397,8 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
           gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE;
   renderer.SetFontSmoothingSettings(
       render_params.antialiasing,
-      use_subpixel_rendering && !background_is_transparent());
+      use_subpixel_rendering && !background_is_transparent(),
+      render_params.subpixel_positioning);
 
   SkPaint::Hinting skia_hinting = SkPaint::kNormal_Hinting;
   switch (render_params.hinting) {
