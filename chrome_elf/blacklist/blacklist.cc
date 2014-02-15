@@ -60,6 +60,10 @@ enum WOW64Status {
   WOW64_UNKNOWN,
 };
 
+// Record if the blacklist was successfully initialized so processes can easily
+// determine if the blacklist is enabled for them.
+bool g_blacklist_initialized = false;
+
 WOW64Status GetWOW64StatusForCurrentProcess() {
   typedef BOOL (WINAPI* IsWow64ProcessFunc)(HANDLE, PBOOL);
   IsWow64ProcessFunc is_wow64_process = reinterpret_cast<IsWow64ProcessFunc>(
@@ -272,6 +276,10 @@ int BlacklistSize() {
   return size;
 }
 
+bool IsBlacklistInitialized() {
+  return g_blacklist_initialized;
+}
+
 bool AddDllToBlacklist(const wchar_t* dll_name) {
   int blacklist_size = BlacklistSize();
   // We need to leave one space at the end for the null pointer.
@@ -372,6 +380,9 @@ bool Initialize(bool force) {
     thunk = new sandbox::ServiceResolverThunk(current_process, kRelaxed);
   }
 #endif
+
+  // Record that we have initialized the blacklist.
+  g_blacklist_initialized = true;
 
   BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
 

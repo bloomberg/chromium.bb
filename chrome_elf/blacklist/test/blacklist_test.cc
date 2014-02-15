@@ -32,6 +32,7 @@ extern "C" {
 // functions on the test blacklist dll, not the ones linked into the test
 // executable itself.
 __declspec(dllimport) bool TestDll_AddDllToBlacklist(const wchar_t* dll_name);
+__declspec(dllimport) bool TestDLL_IsBlacklistInitialized();
 __declspec(dllimport) bool TestDll_RemoveDllFromBlacklist(
     const wchar_t* dll_name);
 }
@@ -119,6 +120,9 @@ TEST_F(BlacklistTest, AddAndRemoveModules) {
 TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
   base::FilePath current_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+
+  // Ensure that the blacklist is loaded.
+  ASSERT_TRUE(TestDLL_IsBlacklistInitialized());
 
   // Test that an un-blacklisted DLL can load correctly.
   base::ScopedNativeLibrary dll1(current_dir.Append(kTestDllName1));

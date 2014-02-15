@@ -116,6 +116,10 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome_elf/blacklist/blacklist.h"
+#endif  // OS_WIN
+
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
@@ -353,6 +357,19 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
+
+#if defined(OS_WIN)
+  // Report if the renderer process has been patched by chrome_elf.
+  // TODO(csharp): Remove once the renderer is no longer getting
+  // patched this way.
+  typedef bool(*IsBlacklistInitializedFunc)();
+  IsBlacklistInitializedFunc is_blacklist_initialized =
+      reinterpret_cast<IsBlacklistInitializedFunc>(
+          GetProcAddress(GetModuleHandle(L"chrome_elf.dll"),
+                         "IsBlacklistInitialized"));
+  if (is_blacklist_initialized && is_blacklist_initialized())
+    UMA_HISTOGRAM_BOOLEAN("Blacklist.PatchedInRenderer", true);
+#endif
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(

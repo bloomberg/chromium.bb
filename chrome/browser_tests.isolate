@@ -132,6 +132,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../native_client/build/build_nexe.py',
+          '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
