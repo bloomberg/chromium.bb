@@ -328,7 +328,7 @@
                 '../remoting/remoting.gyp:remoting_host_installation',
               ],
             }],
-            ['asan==1', {
+            ['syzyasan==1', {
               'variables': {
                 # Disable incremental linking for all modules.
                 # 0: inherit, 1: disabled, 2: enabled.
@@ -344,7 +344,7 @@
               ],
               'msvs_settings': {
                 'VCLinkerTool': {
-                  # Enable profile information (necessary for asan
+                  # Enable profile information (necessary for SyzyAsan
                   # instrumentation). This is incompatible with incremental
                   # linking.
                   'Profile': 'true',

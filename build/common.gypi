@@ -351,6 +351,10 @@
       # controls coverage granularity (experimental).
       'asan_coverage%': 0,
 
+      # Enable building with SyzyAsan.
+      # See https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
+      'syzyasan%': 0,
+
       # Enable building with LSan (Clang's -fsanitize=leak option).
       # -fsanitize=leak only works with clang, but lsan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/leaksanitizer
@@ -931,6 +935,7 @@
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
     'asan_coverage%': '<(asan_coverage)',
+    'syzyasan%': '<(syzyasan)',
     'lsan%': '<(lsan)',
     'msan%': '<(msan)',
     'msan_blacklist%': '<(msan_blacklist)',
@@ -1808,7 +1813,12 @@
         ],
       }],
 
+      ['asan==1 and OS=="win"', {
+        # TODO(hans): Remove once users set syzyasan (crbug.com/343960).
+        'syzyasan%': 1,
+      }],
       ['asan==1 and OS!="win"', {
+        # TODO(hans): Windows should use Clang-based ASan (crbug.com/343960).
         'clang%': 1,
       }],
       ['asan==1 and OS=="mac"', {
@@ -2355,9 +2365,8 @@
           'ENABLE_EGLIMAGE=1',
         ],
       }],
-      ['asan==1 and OS=="win"', {
-        # Since asan on windows uses Syzygy, we need /PROFILE turned on to
-        # produce appropriate pdbs.
+      ['syzyasan==1', {
+        # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
         'msvs_settings': {
           'VCLinkerTool': {
             'Profile': 'true',
@@ -2367,7 +2376,7 @@
             'ADDRESS_SANITIZER',
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
         ],
-      }],  # asan==1 and OS=="win"
+      }],
       ['OS=="win"', {
         'defines': [
           '__STD_C',
@@ -4829,7 +4838,7 @@
                   '/nxcompat',
                 ],
                 'conditions': [
-                  ['asan==0', {
+                  ['syzyasan==0', {
                     'AdditionalOptions': ['/largeaddressaware'],
                   }],
                 ],

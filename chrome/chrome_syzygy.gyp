@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="win" and asan==1', {
+    ['syzyasan==1', {
       'variables': {
         'dest_dir': '<(PRODUCT_DIR)/syzygy',
         'syzygy_exe_dir': '<(DEPTH)/third_party/syzygy/binaries/exe',
@@ -48,7 +48,7 @@
     }],
     # Note, not else.
     ['OS=="win" and fastbuild==0 and chrome_multiple_dll==1 and '
-        '(asan!=1 or buildtype!="Official")', {
+        '(syzyasan!=1 or buildtype!="Official")', {
       'variables': {
         'dll_name': 'chrome_child',
       },
@@ -65,7 +65,7 @@
     }, {
       'conditions': [
         ['OS=="win" and fastbuild==0 and chrome_multiple_dll==1 and '
-            'asan==1 and buildtype=="Official"', {
+            'syzyasan==1 and buildtype=="Official"', {
           'targets': [
           {
             'target_name': 'chrome_child_dll_syzygy',
