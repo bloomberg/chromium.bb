@@ -20,7 +20,7 @@
 namespace base {
 
 std::string HistogramTypeToString(HistogramType type) {
-  switch(type) {
+  switch (type) {
     case HISTOGRAM:
       return "HISTOGRAM";
     case LINEAR_HISTOGRAM:
@@ -65,6 +65,10 @@ HistogramBase::HistogramBase(const std::string& name)
       flags_(kNoFlags) {}
 
 HistogramBase::~HistogramBase() {}
+
+void HistogramBase::CheckName(const StringPiece& name) const {
+  DCHECK_EQ(histogram_name(), name);
+}
 
 void HistogramBase::SetFlags(int32 flags) {
   flags_ |= flags;
