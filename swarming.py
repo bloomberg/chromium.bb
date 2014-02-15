@@ -7,6 +7,7 @@
 
 __version__ = '0.4.1'
 
+import getpass
 import hashlib
 import json
 import logging
@@ -331,6 +332,7 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
     command = 'hashtable'
     flag = '--outdir'
 
+  print('Archiving: %s' % isolated)
   try:
     cmd = [
       sys.executable,
@@ -403,19 +405,20 @@ def process_manifest(
 def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
   """Archives a .isolated file if needed.
 
-  Returns the file hash to trigger.
+  Returns the file hash to trigger and a bool specifying if it was a file (True)
+  or a hash (False).
   """
   if arg.endswith('.isolated'):
     file_hash = archive(isolate_server, namespace, arg, algo, verbose)
     if not file_hash:
       tools.report_error('Archival failure %s' % arg)
-      return None
-    return file_hash
+      return None, True
+    return file_hash, True
   elif isolateserver.is_valid_hash(arg, algo):
-    return arg
+    return arg, False
   else:
     tools.report_error('Invalid hash %s' % arg)
-    return None
+    return None, False
 
 
 def trigger(
@@ -432,14 +435,26 @@ def trigger(
     profile,
     priority):
   """Sends off the hash swarming task requests."""
-  file_hash = isolated_to_hash(
+  file_hash, is_file = isolated_to_hash(
       isolate_server, namespace, file_hash_or_isolated, hashlib.sha1, verbose)
   if not file_hash:
-    return 1
+    return 1, ''
+  if not task_name:
+    # If a file name was passed, use its base name of the isolated hash.
+    # Otherwise, use user name as an approximation of a task name.
+    if is_file:
+      key = os.path.splitext(os.path.basename(file_hash_or_isolated))[0]
+    else:
+      key = getpass.getuser()
+    task_name = '%s/%s/%s' % (
+        key,
+        '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.iteritems())),
+        file_hash)
+
   env = googletest_setup(env, shards)
   # TODO(maruel): It should first create a request manifest object, then pass
   # it to a function to zip, archive and trigger.
-  return process_manifest(
+  result = process_manifest(
       swarming=swarming,
       isolate_server=isolate_server,
       namespace=namespace,
@@ -453,6 +468,7 @@ def trigger(
       profile=profile,
       priority=priority,
       algo=hashlib.sha1)
+  return result, task_name
 
 
 def decorate_shard_output(result, shard_exit_code):
@@ -524,7 +540,11 @@ def add_trigger_options(parser):
   parser.task_group.add_option(
       '--shards', type='int', default=1, help='number of shards to use')
   parser.task_group.add_option(
-      '-T', '--task-name', help='display name of the task')
+      '-T', '--task-name',
+      help='Display name of the task. It uniquely identifies the task. '
+           'Defaults to <base_name>/<dimensions>/<isolated hash> if an '
+           'isolated file is provided, if a hash is provided, it defaults to '
+           '<user>/<dimensions>/<isolated hash>')
   parser.add_option_group(parser.task_group)
   # TODO(maruel): This is currently written in a chromium-specific way.
   parser.group_logging.add_option(
@@ -535,9 +555,6 @@ def add_trigger_options(parser):
 
 def process_trigger_options(parser, options, args):
   isolateserver.process_isolate_server_options(parser, options)
-  if not options.task_name:
-    parser.error(
-        '--task-name is required. It should be <base_name>/<OS>/<isolated>')
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
   options.dimensions = dict(options.dimensions)
@@ -591,7 +608,7 @@ def CMDrun(parser, args):
   process_trigger_options(parser, options, args)
 
   try:
-    result = trigger(
+    result, task_name = trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
@@ -612,11 +629,12 @@ def CMDrun(parser, args):
   if result:
     tools.report_error('Failed to trigger the task.')
     return result
-
+  if task_name != options.task_name:
+    print('Triggered task: %s' % task_name)
   try:
     return collect(
         options.swarming,
-        options.task_name,
+        task_name,
         options.timeout,
         options.decorate)
   except Failure as e:
@@ -639,7 +657,7 @@ def CMDtrigger(parser, args):
   process_trigger_options(parser, options, args)
 
   try:
-    return trigger(
+    result, task_name = trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
@@ -652,6 +670,9 @@ def CMDtrigger(parser, args):
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority)
+    if task_name != options.task_name and not result:
+      print('Triggered task: %s' % task_name)
+    return result
   except Failure as e:
     tools.report_error(e)
     return 1

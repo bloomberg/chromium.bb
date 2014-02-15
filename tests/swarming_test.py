@@ -3,10 +3,12 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import getpass
 import hashlib
 import json
 import logging
 import os
+import shutil
 import StringIO
 import sys
 import tempfile
@@ -432,12 +434,12 @@ class TestGetSwarmResults(TestCase):
         '')
 
 
-def chromium_tasks(retrieval_url):
+def chromium_tasks(retrieval_url, file_hash):
   return [
     {
       u'action': [
         u'python', u'run_isolated.zip',
-        u'--hash', FILE_HASH,
+        u'--hash', file_hash,
         u'--namespace', u'default-gzip',
         u'--isolate-server', retrieval_url,
       ],
@@ -462,7 +464,9 @@ def generate_expected_json(
     env,
     working_dir,
     isolate_server,
-    profile):
+    profile,
+    test_case_name=TEST_NAME,
+    file_hash=FILE_HASH):
   expected = {
     u'cleanup': u'root',
     u'configurations': [
@@ -477,8 +481,8 @@ def generate_expected_json(
     u'encoding': u'UTF-8',
     u'env_vars': env.copy(),
     u'restart_on_failure': True,
-    u'test_case_name': TEST_NAME,
-    u'tests': chromium_tasks(isolate_server),
+    u'test_case_name': test_case_name,
+    u'tests': chromium_tasks(isolate_server, file_hash),
     u'working_dir': unicode(working_dir),
   }
   if shards > 1:
@@ -652,11 +656,12 @@ class ManifestTest(TestCase):
     try:
       with open(isolated, 'w') as f:
         f.write(content)
-      hash_value = swarming.isolated_to_hash(
+      hash_value, is_file = swarming.isolated_to_hash(
           'http://localhost:1', 'default', isolated, hashlib.sha1, False)
     finally:
       os.remove(isolated)
     self.assertEqual(expected_hash, hash_value)
+    self.assertEqual(True, is_file)
     expected_calls = [
         (
           [
@@ -672,9 +677,128 @@ class ManifestTest(TestCase):
         ),
     ]
     self.assertEqual(expected_calls, calls)
+    self._check_output('Archiving: %s\n' % isolated, '')
 
 
 class MainTest(TestCase):
+  def setUp(self):
+    super(MainTest, self).setUp()
+    self._tmpdir = None
+
+  def tearDown(self):
+    try:
+      if self._tmpdir:
+        shutil.rmtree(self._tmpdir)
+    finally:
+      super(MainTest, self).tearDown()
+
+  @property
+  def tmpdir(self):
+    if not self._tmpdir:
+      self._tmpdir = tempfile.mkdtemp(prefix='swarming')
+    return self._tmpdir
+
+  def test_run_hash(self):
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=False))
+
+    task_name = '%s/foo=bar_os=Mac/1111111111111111111111111111111111111111' % (
+        getpass.getuser())
+    j = generate_expected_json(
+        shards=1,
+        dimensions={'foo': 'bar', 'os': 'Mac'},
+        env={},
+        working_dir='swarm_tests',
+        isolate_server='https://host2',
+        profile=False,
+        test_case_name=task_name)
+    j['data'] = [['http://localhost:8081/fetch_url', 'swarm_data.zip']]
+    data = {
+      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
+    }
+    self.requests = [
+      (
+        'https://host1/test',
+        {'data': data},
+        # The actual output is ignored as long as it is valid json.
+        StringIO.StringIO('{}'),
+      ),
+    ]
+    ret = main([
+        'trigger',
+        '--swarming', 'https://host1',
+        '--isolate-server', 'https://host2',
+        '--shards', '1',
+        '--priority', '101',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'os', 'Mac',
+        FILE_HASH,
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output('Triggered task: %s\n' % task_name, '')
+
+  def test_run_isolated(self):
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=False))
+    calls = []
+    self.mock(swarming.subprocess, 'call', lambda *c: calls.append(c))
+
+    isolated = os.path.join(self.tmpdir, 'zaz.isolated')
+    content = '{}'
+    with open(isolated, 'wb') as f:
+      f.write(content)
+
+    isolated_hash = ALGO(content).hexdigest()
+    task_name = 'zaz/foo=bar_os=Mac/%s' % isolated_hash
+    j = generate_expected_json(
+        shards=1,
+        dimensions={'foo': 'bar', 'os': 'Mac'},
+        env={},
+        working_dir='swarm_tests',
+        isolate_server='https://host2',
+        profile=False,
+        test_case_name=task_name,
+        file_hash=isolated_hash)
+    j['data'] = [['http://localhost:8081/fetch_url', 'swarm_data.zip']]
+    data = {
+      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
+    }
+    self.requests = [
+      (
+        'https://host1/test',
+        {'data': data},
+        # The actual output is ignored as long as it is valid json.
+        StringIO.StringIO('{}'),
+      ),
+    ]
+    ret = main([
+        'trigger',
+        '--swarming', 'https://host1',
+        '--isolate-server', 'https://host2',
+        '--shards', '1',
+        '--priority', '101',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'os', 'Mac',
+        isolated,
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    expected = [
+      (
+        [
+          sys.executable,
+          os.path.join(ROOT_DIR, 'isolate.py'), 'archive',
+          '--isolate-server', 'https://host2',
+          '--namespace' ,'default-gzip',
+          '--isolated', isolated,
+        ],
+      0),
+    ]
+    self.assertEqual(expected, calls)
+    expected = 'Archiving: %s\nTriggered task: %s\n' % (isolated, task_name)
+    self._check_output(expected, '')
+
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):
       main([
@@ -736,8 +860,8 @@ class MainTest(TestCase):
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
-        'swarming.py: error: --task-name is required. It should be '
-        '<base_name>/<OS>/<isolated>\n')
+        'swarming.py: error: Please at least specify the dimension of the '
+        'swarming bot OS with --dimension os <something>.\n')
 
   def test_trigger_env(self):
     self.mock(swarming.isolateserver, 'get_storage',
