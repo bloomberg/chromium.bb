@@ -3144,6 +3144,11 @@ static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile(PP_Instance 
   return iface->CreateTemporaryFile(instance);
 }
 
+static int32_t Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors(void) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->GetNumberOfProcessors();
+}
+
 static int32_t Pnacl_M25_PPB_NaCl_Private_GetNexeFd(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool has_no_store_header, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback* callback) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetNexeFd(instance, pexe_url, abi_version, opt_level, last_modified, etag, has_no_store_header, is_hit, nexe_handle, *callback);
@@ -5045,6 +5050,7 @@ static struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .BrokerDuplicateHandle = (int32_t (*)(PP_FileHandle source_handle, uint32_t process_id, PP_FileHandle* target_handle, uint32_t desired_access, uint32_t options))&Pnacl_M25_PPB_NaCl_Private_BrokerDuplicateHandle,
     .GetReadonlyPnaclFd = (PP_FileHandle (*)(const char* filename))&Pnacl_M25_PPB_NaCl_Private_GetReadonlyPnaclFd,
     .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_CreateTemporaryFile,
+    .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
     .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool has_no_store_header, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_GetNexeFd,
     .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
     .ReportNaClError = (PP_ExternalPluginResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M25_PPB_NaCl_Private_ReportNaClError,

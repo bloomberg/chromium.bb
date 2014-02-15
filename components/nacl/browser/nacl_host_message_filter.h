@@ -54,6 +54,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
   void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
+  void OnNaClGetNumProcessors(int* num_processors);
   void OnGetNexeFd(int render_view_id,
                    int pp_instance,
                    const PnaclCacheInfo& cache_info);

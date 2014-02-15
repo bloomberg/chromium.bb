@@ -77,6 +77,9 @@ class TempFile;
 //   Complete when NexeReadDidOpen is invoked.
 class PnaclCoordinator: public CallbackSource<FileStreamData> {
  public:
+  // Maximum number of object files passable to the translator. Cannot be
+  // changed without changing the RPC signatures.
+  const static size_t kMaxTranslatorObjectFiles = 16;
   virtual ~PnaclCoordinator();
 
   // The factory method for translations.
@@ -202,7 +205,12 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   PnaclOptions pnacl_options_;
 
   // Object file, produced by the translator and consumed by the linker.
-  nacl::scoped_ptr<TempFile> obj_file_;
+  std::vector<TempFile*> obj_files_;
+  nacl::scoped_ptr<nacl::DescWrapper> invalid_desc_wrapper_;
+  // Number of split modules (threads) for llc
+  int split_module_count_;
+  int num_object_files_opened_;
+
   // Translated nexe file, produced by the linker.
   nacl::scoped_ptr<TempFile> temp_nexe_file_;
   // Passed to the browser, which sets it to true if there is a translation

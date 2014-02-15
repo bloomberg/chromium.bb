@@ -4,6 +4,8 @@
 
 #include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
 
+#include <iterator>
+
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
@@ -19,7 +21,7 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                done_(false),
                                                time_stats_(),
                                                manifest_(NULL),
-                                               obj_file_(NULL),
+                                               obj_files_(NULL),
                                                nexe_file_(NULL),
                                                coordinator_error_info_(NULL),
                                                resources_(NULL),
@@ -33,8 +35,9 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
 void PnaclTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
     const Manifest* manifest,
-    TempFile* obj_file,
+    const std::vector<TempFile*>* obj_files,
     TempFile* nexe_file,
+    nacl::DescWrapper* invalid_desc_wrapper,
     ErrorInfo* error_info,
     PnaclResources* resources,
     PnaclOptions* pnacl_options,
@@ -42,8 +45,9 @@ void PnaclTranslateThread::RunTranslate(
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
   manifest_ = manifest;
-  obj_file_ = obj_file;
+  obj_files_ = obj_files;
   nexe_file_ = nexe_file;
+  invalid_desc_wrapper_ = invalid_desc_wrapper;
   coordinator_error_info_ = error_info;
   resources_ = resources;
   pnacl_options_ = pnacl_options;
@@ -130,7 +134,14 @@ void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
 void PnaclTranslateThread::DoTranslate() {
   ErrorInfo error_info;
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
+  std::vector<nacl::DescWrapper*> llc_out_files;
+  size_t i;
+  for (i = 0; i < obj_files_->size(); i++) {
+    llc_out_files.push_back((*obj_files_)[i]->write_wrapper());
+  }
+  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++) {
+    llc_out_files.push_back(invalid_desc_wrapper_);
+  }
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
@@ -149,19 +160,60 @@ void PnaclTranslateThread::DoTranslate() {
     // Run LLC.
     PluginReverseInterface* llc_reverse =
         llc_subprocess_->service_runtime()->rev_interface();
-    llc_reverse->AddTempQuotaManagedFile(obj_file_->identifier());
+    for (size_t i = 0; i < obj_files_->size(); i++) {
+      llc_reverse->AddTempQuotaManagedFile((*obj_files_)[i]->identifier());
+    }
   }
 
   int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
   bool init_success;
   std::vector<char> options = pnacl_options_->GetOptCommandline();
+
+  // Try to init with splitting
+  // TODO(dschuff): This CL override is ugly. Change llc to default to using
+  // the number of modules specified in the first param, and ignore multiple
+  // uses of -split-module
+  std::vector<char> split_args;
+  nacl::stringstream ss;
+  ss << "-split-module=" << obj_files_->size();
+  nacl::string split_arg = ss.str();
+  std::copy(split_arg.begin(), split_arg.end(), std::back_inserter(split_args));
+  split_args.push_back('\x00');
+  std::copy(options.begin(), options.end(), std::back_inserter(split_args));
+  int modules_used = static_cast<int>(obj_files_->size());
   init_success = llc_subprocess_->InvokeSrpcMethod(
-      "StreamInitWithOverrides",
-      "hC",
+      "StreamInitWithSplit",
+      "ihhhhhhhhhhhhhhhhC",
       &params,
-      llc_out_file->desc(),
-      &options[0],
-      options.size());
+      modules_used,
+      llc_out_files[0]->desc(),
+      llc_out_files[1]->desc(),
+      llc_out_files[2]->desc(),
+      llc_out_files[3]->desc(),
+      llc_out_files[4]->desc(),
+      llc_out_files[5]->desc(),
+      llc_out_files[6]->desc(),
+      llc_out_files[7]->desc(),
+      llc_out_files[8]->desc(),
+      llc_out_files[9]->desc(),
+      llc_out_files[10]->desc(),
+      llc_out_files[11]->desc(),
+      llc_out_files[12]->desc(),
+      llc_out_files[13]->desc(),
+      llc_out_files[14]->desc(),
+      llc_out_files[15]->desc(),
+      &split_args[0],
+      split_args.size());
+  if (!init_success) {
+    init_success = llc_subprocess_->InvokeSrpcMethod(
+        "StreamInitWithOverrides",
+        "hC",
+        &params,
+        llc_out_files[0]->desc(),
+        &options[0],
+        options.size());
+    modules_used = 1;
+  }
 
   if (!init_success) {
     if (llc_subprocess_->srpc_client()->GetLastError() ==
@@ -256,25 +308,36 @@ void PnaclTranslateThread::DoTranslate() {
   llc_subprocess_.reset(NULL);
   NaClXMutexUnlock(&subprocess_mu_);
 
-  if(!RunLdSubprocess(is_shared_library, soname, lib_dependencies)) {
+  if(!RunLdSubprocess(
+         modules_used, is_shared_library, soname, lib_dependencies)) {
     return;
   }
   core->CallOnMainThread(0, report_translate_finished_, PP_OK);
 }
 
-bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
+bool PnaclTranslateThread::RunLdSubprocess(int modules_used,
+                                           int is_shared_library,
                                            const nacl::string& soname,
                                            const nacl::string& lib_dependencies
                                            ) {
   ErrorInfo error_info;
   SrpcParams params;
-  // Reset object file for reading first.
-  if (!obj_file_->Reset()) {
-    TranslateFailed(ERROR_PNACL_LD_SETUP,
-                    "Link process could not reset object file");
-    return false;
+
+  std::vector<nacl::DescWrapper*> ld_in_files;
+  size_t i;
+  for (i = 0; i < obj_files_->size(); i++) {
+    // Reset object file for reading first.
+    if (!(*obj_files_)[i]->Reset()) {
+      TranslateFailed(ERROR_PNACL_LD_SETUP,
+                      "Link process could not reset object file");
+      return false;
+    }
+    ld_in_files.push_back((*obj_files_)[i]->read_wrapper());
   }
-  nacl::DescWrapper* ld_in_file = obj_file_->read_wrapper();
+  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++) {
+    ld_in_files.push_back(invalid_desc_wrapper_);
+  }
+
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
 
   {
@@ -299,14 +362,41 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
 
   int64_t link_start_time = NaClGetTimeOfDayMicroseconds();
   // Run LD.
-  if (!ld_subprocess_->InvokeSrpcMethod("RunWithDefaultCommandLine",
-                                       "hhiss",
-                                       &params,
-                                       ld_in_file->desc(),
-                                       ld_out_file->desc(),
-                                       is_shared_library,
-                                       soname.c_str(),
-                                       lib_dependencies.c_str())) {
+  bool success;
+  // If we ran LLC with module splitting, we can't fall back here.
+  if (modules_used > 1) {
+    success = ld_subprocess_->InvokeSrpcMethod("RunWithSplit",
+                                               "ihhhhhhhhhhhhhhhhh",
+                                               &params,
+                                               modules_used,
+                                               ld_in_files[0]->desc(),
+                                               ld_in_files[1]->desc(),
+                                               ld_in_files[2]->desc(),
+                                               ld_in_files[3]->desc(),
+                                               ld_in_files[4]->desc(),
+                                               ld_in_files[5]->desc(),
+                                               ld_in_files[6]->desc(),
+                                               ld_in_files[7]->desc(),
+                                               ld_in_files[8]->desc(),
+                                               ld_in_files[9]->desc(),
+                                               ld_in_files[10]->desc(),
+                                               ld_in_files[11]->desc(),
+                                               ld_in_files[12]->desc(),
+                                               ld_in_files[13]->desc(),
+                                               ld_in_files[14]->desc(),
+                                               ld_in_files[15]->desc(),
+                                               ld_out_file->desc());
+  } else {
+    success = ld_subprocess_->InvokeSrpcMethod("RunWithDefaultCommandLine",
+                                               "hhiss",
+                                               &params,
+                                               ld_in_files[0]->desc(),
+                                               ld_out_file->desc(),
+                                               is_shared_library,
+                                               soname.c_str(),
+                                               lib_dependencies.c_str());
+  }
+  if (!success) {
     TranslateFailed(ERROR_PNACL_LD_INTERNAL,
                     "link failed.");
     return false;

@@ -256,6 +256,16 @@ PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
   return handle;
 }
 
+int32_t GetNumberOfProcessors() {
+  int32_t num_processors;
+  IPC::Sender* sender = content::RenderThread::Get();
+  DCHECK(sender);
+  if(!sender->Send(new NaClHostMsg_NaClGetNumProcessors(&num_processors))) {
+    return 1;
+  }
+  return num_processors;
+}
+
 int32_t GetNexeFd(PP_Instance instance,
                   const char* pexe_url,
                   uint32_t abi_version,
@@ -465,6 +475,7 @@ const PPB_NaCl_Private nacl_interface = {
   &BrokerDuplicateHandle,
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
+  &GetNumberOfProcessors,
   &GetNexeFd,
   &ReportTranslationFinished,
   &ReportNaClError,

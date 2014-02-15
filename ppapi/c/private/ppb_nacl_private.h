@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Feb 10 11:05:29 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Feb 13 15:50:26 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -127,6 +127,8 @@ struct PPB_NaCl_Private_1_0 {
    * returns a posix handle to that temporary file.
    */
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
+  /* Return the number of processors in the system as reported by the OS */
+  int32_t (*GetNumberOfProcessors)(void);
   /* Create a temporary file, which will be deleted by the time the
    * last handle is closed (or earlier on POSIX systems), to use for
    * the nexe with the cache information given by |pexe_url|,

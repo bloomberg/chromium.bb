@@ -110,6 +110,9 @@ interface PPB_NaCl_Private {
    */
   PP_FileHandle CreateTemporaryFile([in] PP_Instance instance);
 
+  /* Return the number of processors in the system as reported by the OS */
+  int32_t GetNumberOfProcessors();
+
   /* Create a temporary file, which will be deleted by the time the
    * last handle is closed (or earlier on POSIX systems), to use for
    * the nexe with the cache information given by |pexe_url|,

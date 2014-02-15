@@ -50,8 +50,9 @@ class PnaclTranslateThread {
   // as it is passed in with PutBytes.
   void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
-                    TempFile* obj_file,
+                    const std::vector<TempFile*>* obj_files,
                     TempFile* nexe_file,
+                    nacl::DescWrapper* invalid_desc_wrapper,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
                     PnaclOptions* pnacl_options,
@@ -85,7 +86,8 @@ class PnaclTranslateThread {
   void TranslateFailed(enum PluginErrorCode err_code,
                        const nacl::string& error_string);
   // Run the LD subprocess, returning true on success
-  bool RunLdSubprocess(int is_shared_library,
+  bool RunLdSubprocess(int modules_used,
+                       int is_shared_library,
                        const nacl::string& soname,
                        const nacl::string& lib_dependencies);
 
@@ -121,8 +123,9 @@ class PnaclTranslateThread {
 
   // Data about the translation files, owned by the coordinator
   const Manifest* manifest_;
-  TempFile* obj_file_;
+  const std::vector<TempFile*>* obj_files_;
   TempFile* nexe_file_;
+  nacl::DescWrapper* invalid_desc_wrapper_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
   PnaclOptions* pnacl_options_;

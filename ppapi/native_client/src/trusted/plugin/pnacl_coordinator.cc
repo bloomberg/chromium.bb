@@ -200,6 +200,9 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p, ",
                  reinterpret_cast<const void*>(coordinator->manifest_.get())));
 
+  int cpus = plugin->nacl_interface()->GetNumberOfProcessors();
+  coordinator->split_module_count_ = std::min(4, std::max(1, cpus));
+
   // First start a network request for the pexe, to tickle the component
   // updater's On-Demand resource throttler, and to get Last-Modified/ETag
   // cache information. We can cancel the request later if there's
@@ -220,6 +223,8 @@ PnaclCoordinator::PnaclCoordinator(
     manifest_(new PnaclManifest()),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
+    split_module_count_(1),
+    num_object_files_opened_(0),
     is_cache_hit_(PP_FALSE),
     error_already_reported_(false),
     pnacl_init_time_(0),
@@ -247,6 +252,9 @@ PnaclCoordinator::~PnaclCoordinator() {
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(),
         PP_FALSE);
+  }
+  for (int i = 0; i < num_object_files_opened_; i++) {
+    delete obj_files_[i];
   }
 }
 
@@ -531,10 +539,14 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
   } else {
     // Open an object file first so the translator can start writing to it
     // during streaming translation.
-    obj_file_.reset(new TempFile(plugin_));
-    pp::CompletionCallback obj_cb =
-        callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileDidOpen);
-    obj_file_->Open(obj_cb, true);
+    for (int i = 0; i < split_module_count_; i++) {
+      obj_files_.push_back(new TempFile(plugin_));
+
+      pp::CompletionCallback obj_cb =
+          callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileDidOpen);
+      obj_files_[i]->Open(obj_cb, true);
+    }
+    invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
 
     // Meanwhile, a miss means we know we need to stream the bitcode, so stream
     // the rest of it now. (Calling FinishStreaming means that the downloader
@@ -643,11 +655,14 @@ void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
                      "Failed to open scratch object file.");
     return;
   }
-  // Open the nexe file for connecting ld and sel_ldr.
-  // Start translation when done with this last step of setup!
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
-  temp_nexe_file_->Open(cb, true);
+  num_object_files_opened_++;
+  if (num_object_files_opened_ == split_module_count_) {
+    // Open the nexe file for connecting ld and sel_ldr.
+    // Start translation when done with this last step of setup!
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
+    temp_nexe_file_->Open(cb, true);
+  }
 }
 
 void PnaclCoordinator::RunTranslate(int32_t pp_error) {
@@ -661,8 +676,9 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   CHECK(translate_thread_ != NULL);
   translate_thread_->RunTranslate(report_translate_finished,
                                   manifest_.get(),
-                                  obj_file_.get(),
+                                  &obj_files_,
                                   temp_nexe_file_.get(),
+                                  invalid_desc_wrapper_.get(),
                                   &error_info_,
                                   resources_.get(),
                                   &pnacl_options_,
