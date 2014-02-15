@@ -36,11 +36,15 @@ def _ReadFile(filename):
     raise FileNotFoundError('Read failed for %s: %s' % (filename,
         traceback.format_exc()))
 
-def _ListDir(dir_name):
+def _ListDir(dir_name, recursive=False):
   AssertIsDirectory(dir_name)
   try:
-    files = cloudstorage_api.listbucket('/' + dir_name)
-    return [os_path.filename.lstrip('/') for os_path in files]
+    # The listbucket method uses a prefix approach to simulate hierarchy.
+    # Calling it with the "delimiter" argument set to '/' gets only files
+    # directly inside the directory, not all recursive content.
+    delimiter = None if recursive else '/'
+    files = cloudstorage_api.listbucket('/' + dir_name, delimiter=delimiter)
+    return [os_path.filename.lstrip('/')[len(dir_name):] for os_path in files]
   except errors.Error:
     raise FileNotFoundError('cloudstorage.listbucket failed for %s: %s' %
                             (dir_name, traceback.format_exc()))
@@ -51,14 +55,8 @@ def _CreateStatInfo(bucket, path):
   try:
     last_commit = _ReadFile(last_commit_file)
     if IsDirectory(full_path):
-      child_versions = dict()
-      # Fetching stats for all files under full_path, recursively. The
-      # listbucket method uses a prefix approach to simulate hierarchy,
-      # but calling it without the "delimiter" argument searches for prefix,
-      # which means, for directories, everything beneath it.
-      for _file in cloudstorage_api.listbucket('/' + full_path):
-        filename = _file.filename.lstrip('/')[len(full_path):]
-        child_versions[filename] = last_commit
+      child_versions = dict((filename, last_commit) 
+                            for filename in _ListDir(full_path)) 
     else:
       child_versions = None
     return StatInfo(last_commit, child_versions)
@@ -115,7 +113,7 @@ class CloudStorageFileSystem(FileSystem):
     return '@'.join((self.__class__.__name__, StringIdentity(self._bucket)))
 
   def __repr__(self):
-    return 'LocalFileSystem(%s)' % self._bucket
+    return 'CloudStorageFileSystem(%s)' % self._bucket
 
   def _warnAboutAuthError(self):
     logging.warn(('Authentication error on Cloud Storage. Check if your'
