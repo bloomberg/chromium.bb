@@ -439,6 +439,8 @@
         'trees/occlusion_tracker.h',
         'trees/proxy.cc',
         'trees/proxy.h',
+        'trees/proxy_timing_history.cc',
+        'trees/proxy_timing_history.h',
         'trees/quad_culler.cc',
         'trees/quad_culler.h',
         'trees/single_thread_proxy.cc',

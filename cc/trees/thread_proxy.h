@@ -12,11 +12,11 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/completion_event.h"
-#include "cc/base/rolling_time_delta_history.h"
 #include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
+#include "cc/trees/proxy_timing_history.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -298,15 +298,7 @@ class ThreadProxy : public Proxy,
     base::TimeTicks smoothness_takes_priority_expiration_time;
     bool renew_tree_priority_pending;
 
-    RollingTimeDeltaHistory draw_duration_history;
-    RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history;
-    RollingTimeDeltaHistory commit_to_activate_duration_history;
-
-    // Used for computing samples added to
-    // begin_main_frame_to_commit_duration_history_ and
-    // activation_duration_history_.
-    base::TimeTicks begin_main_frame_sent_time;
-    base::TimeTicks commit_complete_time;
+    ProxyTimingHistory timing_history;
 
     scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl;
     base::WeakPtrFactory<ThreadProxy> weak_factory;

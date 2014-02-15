@@ -33,11 +33,6 @@ namespace {
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
-const size_t kDurationHistorySize = 60;
-const double kCommitAndActivationDurationEstimationPercentile = 50.0;
-const double kDrawDurationEstimationPercentile = 100.0;
-const int kDrawDurationEstimatePaddingInMicroseconds = 0;
-
 class SwapPromiseChecker {
  public:
   explicit SwapPromiseChecker(cc::LayerTreeHost* layer_tree_host)
@@ -135,9 +130,6 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
       input_throttled_until_commit(false),
       animations_frozen_until_next_draw(false),
       renew_tree_priority_pending(false),
-      draw_duration_history(kDurationHistorySize),
-      begin_main_frame_to_commit_duration_history(kDurationHistorySize),
-      commit_to_activate_duration_history(kDurationHistorySize),
       weak_factory(proxy) {}
 
 ThreadProxy::CompositorThreadOnly::~CompositorThreadOnly() {}
@@ -790,7 +782,7 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
     impl().begin_main_frame_sent_completion_event->Signal();
     impl().begin_main_frame_sent_completion_event = NULL;
   }
-  impl().begin_main_frame_sent_time = base::TimeTicks::HighResNow();
+  impl().timing_history.DidBeginMainFrame();
 }
 
 void ThreadProxy::BeginMainFrame(
@@ -1096,9 +1088,7 @@ void ThreadProxy::ScheduledActionCommit() {
 
   impl().next_frame_is_newly_committed_frame = true;
 
-  impl().commit_complete_time = base::TimeTicks::HighResNow();
-  impl().begin_main_frame_to_commit_duration_history.InsertSample(
-      impl().commit_complete_time - impl().begin_main_frame_sent_time);
+  impl().timing_history.DidCommit();
 
   // SetVisible kicks off the next scheduler action, so this must be last.
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
@@ -1135,7 +1125,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   DCHECK(IsImplThread());
   DCHECK(impl().layer_tree_host_impl.get());
 
-  base::TimeTicks start_time = base::TimeTicks::HighResNow();
+  impl().timing_history.DidStartDrawing();
   base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
 
@@ -1245,8 +1235,8 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   if (draw_frame) {
     CheckOutputSurfaceStatusOnImplThread();
 
-    base::TimeDelta draw_duration = base::TimeTicks::HighResNow() - start_time;
-    impl().draw_duration_history.InsertSample(draw_duration);
+    base::TimeDelta draw_duration = impl().timing_history.DidFinishDrawing();
+
     base::TimeDelta draw_duration_overestimate;
     base::TimeDelta draw_duration_underestimate;
     if (draw_duration > draw_duration_estimate)
@@ -1353,21 +1343,15 @@ void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
 }
 
 base::TimeDelta ThreadProxy::DrawDurationEstimate() {
-  base::TimeDelta historical_estimate = impl().draw_duration_history.Percentile(
-      kDrawDurationEstimationPercentile);
-  base::TimeDelta padding = base::TimeDelta::FromMicroseconds(
-      kDrawDurationEstimatePaddingInMicroseconds);
-  return historical_estimate + padding;
+  return impl().timing_history.DrawDurationEstimate();
 }
 
 base::TimeDelta ThreadProxy::BeginMainFrameToCommitDurationEstimate() {
-  return impl().begin_main_frame_to_commit_duration_history.Percentile(
-      kCommitAndActivationDurationEstimationPercentile);
+  return impl().timing_history.BeginMainFrameToCommitDurationEstimate();
 }
 
 base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
-  return impl().commit_to_activate_duration_history.Percentile(
-      kCommitAndActivationDurationEstimationPercentile);
+  return impl().timing_history.CommitToActivateDurationEstimate();
 }
 
 void ThreadProxy::PostBeginImplFrameDeadline(const base::Closure& closure,
@@ -1711,8 +1695,7 @@ void ThreadProxy::DidActivatePendingTree() {
 
   UpdateBackgroundAnimateTicking();
 
-  impl().commit_to_activate_duration_history.InsertSample(
-      base::TimeTicks::HighResNow() - impl().commit_complete_time);
+  impl().timing_history.DidActivatePendingTree();
 }
 
 void ThreadProxy::DidManageTiles() {
