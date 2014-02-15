@@ -46,6 +46,17 @@ remoting.Toolbar = function(toolbar) {
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);
 
+  registerEventListener('new-connection', 'click',
+      function() {
+        chrome.app.window.create('main.html', { 'width': 800, 'height': 600 });
+      });
+  registerEventListener('send-ctrl-alt-del', 'click', remoting.sendCtrlAltDel);
+  registerEventListener('send-print-screen', 'click', remoting.sendPrintScreen);
+  registerEventListener('sign-out', 'click', remoting.signOut);
+  registerEventListener('toolbar-disconnect', 'click', remoting.disconnect);
+  registerEventListener('toolbar-stub', 'click',
+      function() { remoting.toolbar.toggle(); });
+
   // Prevent the preview canceling if the user is interacting with the tool-bar.
   /** @type {remoting.Toolbar} */
   var that = this;
