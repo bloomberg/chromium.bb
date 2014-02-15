@@ -64,6 +64,7 @@
   AudioClient.CommandFromPage = {
     SPEECH_START: 'ss',
     SPEECH_END: 'se',
+    SPEECH_RESET: 'sr',
     SHOWING_HOTWORD_START: 'shs',
     SHOWING_ERROR_MESSAGE: 'sem',
     SHOWING_TIMEOUT_MESSAGE: 'stm',
@@ -284,6 +285,10 @@
           this.sendCommandToExtension_(command);
           break;
         case AudioClient.CommandFromPage.SPEECH_END:
+          this.speechActive_ = false;
+          this.sendCommandToExtension_(command);
+          break;
+        case AudioClient.CommandFromPage.SPEECH_RESET:
           this.speechActive_ = false;
           this.sendCommandToExtension_(command);
           break;
