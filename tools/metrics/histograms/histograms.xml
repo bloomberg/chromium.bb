@@ -5606,6 +5606,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.UnregistrationRequestStatus"
+    enum="GCMUnregistrationRequestStatus">
+  <summary>Status code of the outcome of a GCM unregistration request.</summary>
+</histogram>
+
 <histogram name="GData.AuthSuccess" enum="GDataAuthResult">
   <summary>Result of the authentication for Drive.</summary>
 </histogram>
@@ -26571,6 +26576,19 @@ other types of suffix sets.
   <int value="3" label="Authentication failed"/>
   <int value="4" label="Device registration error"/>
   <int value="5" label="Unknown error"/>
+</enum>
+
+<enum name="GCMUnregistrationRequestStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="URL fetching failed"/>
+  <int value="2" label="No response body"/>
+  <int value="3" label="Response parsing failed"/>
+  <int value="4" label="Incorrect App Id"/>
+  <int value="5" label="Invalid parameters"/>
+  <int value="6" label="Service unavailable"/>
+  <int value="7" label="Internal server error"/>
+  <int value="8" label="HTTP reponse code not OK"/>
+  <int value="9" label="Unknown error"/>
 </enum>
 
 <enum name="GDataAuthResult" type="int">
