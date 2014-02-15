@@ -1263,7 +1263,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
 def UploadSymbols(buildroot, board, official, cnt, failed_list):
   """Upload debug symbols for this build."""
   ret = upload_symbols.UploadSymbols(
-      board=board, official=official, upload_count=cnt,
+      board=board, official=official, upload_limit=cnt,
       root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
       failed_list=failed_list)
   if ret:

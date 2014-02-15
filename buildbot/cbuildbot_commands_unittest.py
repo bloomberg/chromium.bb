@@ -302,7 +302,7 @@ ca-t3/pk-g4-4.0.1-r333
     self.assertEquals(sym_mock.call_count, 1)
     _, kwargs = sym_mock.call_args
     self.assertEquals(kwargs['official'], official)
-    self.assertEquals(kwargs['upload_count'], cnt)
+    self.assertEquals(kwargs['upload_limit'], cnt)
 
   def testOfficialUploadSymbols(self):
     """Test uploading symbols for official builds"""
