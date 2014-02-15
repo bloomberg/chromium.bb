@@ -213,9 +213,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       switches::IsUIDeadlineSchedulingEnabled();
   settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
-#if defined(OS_CHROMEOS)
-  settings.per_tile_painting_enabled = true;
-#endif
+  settings.per_tile_painting_enabled =
+      command_line->HasSwitch(cc::switches::kUIEnablePerTilePainting);
 
   // These flags should be mirrored by renderer versions in content/renderer/.
   settings.initial_debug_state.show_debug_borders =

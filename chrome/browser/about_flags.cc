@@ -877,6 +877,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableVp8AlphaPlayback)
   },
   {
+    "per-tile-painting",
+    IDS_FLAGS_PER_TILE_PAINTING_NAME,
+    IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,
+    kOsMac | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(cc::switches::kEnablePerTilePainting)
+  },
+  {
     "enable-javascript-harmony",
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME,
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION,

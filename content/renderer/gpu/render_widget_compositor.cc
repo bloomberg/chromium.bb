@@ -95,6 +95,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !cmd->HasSwitch(switches::kDisableDeadlineScheduling);
   settings.using_synchronous_renderer_compositor =
       widget->UsingSynchronousRendererCompositor();
+  settings.per_tile_painting_enabled =
+      cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.touch_hit_testing =

@@ -45,6 +45,8 @@ CC_EXPORT extern const char kDisableCompositorTouchHitTesting[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kUIDisablePartialSwap[];
+CC_EXPORT extern const char kEnablePerTilePainting[];
+CC_EXPORT extern const char kUIEnablePerTilePainting[];
 CC_EXPORT extern const char kEnableGpuBenchmarking[];
 
 // Debug visualizations.
