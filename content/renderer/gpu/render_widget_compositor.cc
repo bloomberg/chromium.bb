@@ -260,6 +260,20 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       base::android::SysUtils::IsLowEndDevice() &&
       !widget->UsingSynchronousRendererCompositor() &&
       !cmd->HasSwitch(cc::switches::kDisable4444Textures);
+  if (widget->UsingSynchronousRendererCompositor()) {
+    // TODO(boliu): Set this ratio for Webview.
+  } else if (base::android::SysUtils::IsLowEndDevice()) {
+    // On low-end we want to be very carefull about killing other
+    // apps. So initially we use 50% more memory to avoid flickering
+    // or raster-on-demand.
+    settings.max_memory_for_prepaint_percentage = 67;
+  } else {
+    // On other devices we have increased memory excessively to avoid
+    // raster-on-demand already, so now we reserve 50% _only_ to avoid
+    // raster-on-demand, and use 50% of the memory otherwise.
+    settings.max_memory_for_prepaint_percentage = 50;
+  }
+
 #elif !defined(OS_MACOSX)
   if (IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
