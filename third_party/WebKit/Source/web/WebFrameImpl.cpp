@@ -654,61 +654,76 @@ void WebFrameImpl::setOpener(const WebFrame* webFrame)
 
 void WebFrameImpl::appendChild(WebFrame* child)
 {
-    // FIXME: Implement after this revision rolls into Chrome.
+    // FIXME: Original code asserts that the frames have the same Page. We
+    // should add an equivalent check... figure out what.
+    WebFrameImpl* childImpl = toWebFrameImpl(child);
+    childImpl->m_parent = this;
+    WebFrameImpl* oldLast = m_lastChild;
+    m_lastChild = childImpl;
+
+    if (oldLast) {
+        childImpl->m_previousSibling = oldLast;
+        oldLast->m_nextSibling = childImpl;
+    } else {
+        m_firstChild = childImpl;
+    }
+    // FIXME: Not sure if this is a legitimate assert.
+    ASSERT(frame());
+    frame()->tree().invalidateScopedChildCount();
 }
 
 void WebFrameImpl::removeChild(WebFrame* child)
 {
-    // FIXME: Implement after this revision rolls into Chrome.
+    WebFrameImpl* childImpl = toWebFrameImpl(child);
+    childImpl->m_parent = 0;
+
+    if (m_firstChild == childImpl)
+        m_firstChild = childImpl->m_nextSibling;
+    else
+        childImpl->m_previousSibling->m_nextSibling = childImpl->m_nextSibling;
+
+    if (m_lastChild == childImpl)
+        m_lastChild = childImpl->m_previousSibling;
+    else
+        childImpl->m_nextSibling->m_previousSibling = childImpl->m_previousSibling;
+
+    childImpl->m_previousSibling = childImpl->m_nextSibling = 0;
+    // FIXME: Not sure if this is a legitimate assert.
+    ASSERT(frame());
+    frame()->tree().invalidateScopedChildCount();
 }
 
 WebFrame* WebFrameImpl::parent() const
 {
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().parent());
+    return m_parent;
 }
 
 WebFrame* WebFrameImpl::top() const
 {
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().top());
-}
-
-WebFrame* WebFrameImpl::firstChild() const
-{
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().firstChild());
-}
-
-WebFrame* WebFrameImpl::lastChild() const
-{
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().lastChild());
-}
-
-WebFrame* WebFrameImpl::nextSibling() const
-{
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().nextSibling());
+    WebFrameImpl* frame = const_cast<WebFrameImpl*>(this);
+    for (WebFrameImpl* parent = frame; parent; parent = parent->m_parent)
+        frame = parent;
+    return frame;
 }
 
 WebFrame* WebFrameImpl::previousSibling() const
 {
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().previousSibling());
+    return m_previousSibling;
 }
 
-WebFrame* WebFrameImpl::traverseNext(bool wrap) const
+WebFrame* WebFrameImpl::nextSibling() const
 {
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->tree().traverseNextWithWrap(wrap));
+    return m_nextSibling;
+}
+
+WebFrame* WebFrameImpl::firstChild() const
+{
+    return m_firstChild;
+}
+
+WebFrame* WebFrameImpl::lastChild() const
+{
+    return m_lastChild;
 }
 
 WebFrame* WebFrameImpl::traversePrevious(bool wrap) const
@@ -716,6 +731,13 @@ WebFrame* WebFrameImpl::traversePrevious(bool wrap) const
     if (!frame())
         return 0;
     return fromFrame(frame()->tree().traversePreviousWithWrap(wrap));
+}
+
+WebFrame* WebFrameImpl::traverseNext(bool wrap) const
+{
+    if (!frame())
+        return 0;
+    return fromFrame(frame()->tree().traverseNextWithWrap(wrap));
 }
 
 WebFrame* WebFrameImpl::findChildByName(const WebString& name) const
@@ -2100,6 +2122,11 @@ WebFrameImpl* WebFrameImpl::create(WebFrameClient* client, long long embedderIde
 
 WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     : m_frameInit(WebFrameInit::create(this, embedderIdentifier))
+    , m_parent(0)
+    , m_previousSibling(0)
+    , m_nextSibling(0)
+    , m_firstChild(0)
+    , m_lastChild(0)
     , m_client(client)
     , m_permissionClient(0)
     , m_currentActiveMatchFrame(0)
@@ -2158,8 +2185,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
 
     childFrame->tree().setName(request.frameName());
 
-    frame()->tree().appendChild(childFrame);
-
+    // FIXME: This comment is not quite accurate anymore.
     // Frame::init() can trigger onload event in the parent frame,
     // which may detach this frame and trigger a null-pointer access
     // in FrameTree::removeChild. Move init() after appendChild call

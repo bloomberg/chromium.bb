@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "wtf/Vector.h"
@@ -34,8 +35,21 @@ using std::swap;
 
 namespace WebCore {
 
+namespace {
+
+const unsigned invalidChildCount = ~0;
+
+} // namespace
+
+FrameTree::FrameTree(Frame* thisFrame)
+    : m_thisFrame(thisFrame)
+    , m_scopedChildCount(invalidChildCount)
+{
+}
+
 FrameTree::~FrameTree()
 {
+    // FIXME: Why is this here? Doesn't this parallel what we already do in ~Frame?
     for (Frame* child = firstChild(); child; child = child->tree().nextSibling())
         child->setView(0);
 }
@@ -53,45 +67,48 @@ void FrameTree::setName(const AtomicString& name)
 
 Frame* FrameTree::parent() const
 {
-    return m_parent;
+    if (!m_thisFrame->loader().client())
+        return 0;
+    return m_thisFrame->loader().client()->parent();
 }
 
-void FrameTree::appendChild(PassRefPtr<Frame> child)
+Frame* FrameTree::top() const
 {
-    ASSERT(child->page() == m_thisFrame->page());
-    child->tree().m_parent = m_thisFrame;
-    Frame* oldLast = m_lastChild;
-    m_lastChild = child.get();
-
-    if (oldLast) {
-        child->tree().m_previousSibling = oldLast;
-        oldLast->tree().m_nextSibling = child;
-    } else
-        m_firstChild = child;
-
-    m_scopedChildCount = invalidCount;
-
-    ASSERT(!m_lastChild->tree().m_nextSibling);
+    // FIXME: top() should never return null, so here are some hacks to deal
+    // with EmptyFrameLoaderClient and cases where the frame is detached
+    // already...
+    if (!m_thisFrame->loader().client())
+        return m_thisFrame;
+    Frame* candidate = m_thisFrame->loader().client()->top();
+    return candidate ? candidate : m_thisFrame;
 }
 
-void FrameTree::removeChild(Frame* child)
+Frame* FrameTree::previousSibling() const
 {
-    child->tree().m_parent = 0;
+    if (!m_thisFrame->loader().client())
+        return 0;
+    return m_thisFrame->loader().client()->previousSibling();
+}
 
-    // Slightly tricky way to prevent deleting the child until we are done with it, w/o
-    // extra refs. These swaps leave the child in a circular list by itself. Clearing its
-    // previous and next will then finally deref it.
+Frame* FrameTree::nextSibling() const
+{
+    if (!m_thisFrame->loader().client())
+        return 0;
+    return m_thisFrame->loader().client()->nextSibling();
+}
 
-    RefPtr<Frame>& newLocationForNext = m_firstChild == child ? m_firstChild : child->tree().m_previousSibling->tree().m_nextSibling;
-    Frame*& newLocationForPrevious = m_lastChild == child ? m_lastChild : child->tree().m_nextSibling->tree().m_previousSibling;
-    swap(newLocationForNext, child->tree().m_nextSibling);
-    // For some inexplicable reason, the following line does not compile without the explicit std:: namespace
-    std::swap(newLocationForPrevious, child->tree().m_previousSibling);
+Frame* FrameTree::firstChild() const
+{
+    if (!m_thisFrame->loader().client())
+        return 0;
+    return m_thisFrame->loader().client()->firstChild();
+}
 
-    child->tree().m_previousSibling = 0;
-    child->tree().m_nextSibling = 0;
-
-    m_scopedChildCount = invalidCount;
+Frame* FrameTree::lastChild() const
+{
+    if (!m_thisFrame->loader().client())
+        return 0;
+    return m_thisFrame->loader().client()->lastChild();
 }
 
 AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const
@@ -131,7 +148,7 @@ AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const
     }
 
     name.appendLiteral("/<!--frame");
-    name.appendNumber(childCount());
+    name.appendNumber(childCount() - 1);
     name.appendLiteral("-->-->");
 
     return name.toAtomicString();
@@ -183,9 +200,14 @@ inline unsigned FrameTree::scopedChildCount(TreeScope* scope) const
 
 unsigned FrameTree::scopedChildCount() const
 {
-    if (m_scopedChildCount == invalidCount)
+    if (m_scopedChildCount == invalidChildCount)
         m_scopedChildCount = scopedChildCount(m_thisFrame->document());
     return m_scopedChildCount;
+}
+
+void FrameTree::invalidateScopedChildCount()
+{
+    m_scopedChildCount = invalidChildCount;
 }
 
 unsigned FrameTree::childCount() const
@@ -334,14 +356,6 @@ Frame* FrameTree::deepLastChild() const
         result = last;
 
     return result;
-}
-
-Frame* FrameTree::top() const
-{
-    Frame* frame = m_thisFrame;
-    for (Frame* parent = m_thisFrame; parent; parent = parent->tree().parent())
-        frame = parent;
-    return frame;
 }
 
 } // namespace WebCore

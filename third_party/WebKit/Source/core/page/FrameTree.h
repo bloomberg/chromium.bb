@@ -30,46 +30,33 @@ namespace WebCore {
     class FrameTree {
         WTF_MAKE_NONCOPYABLE(FrameTree);
     public:
-        const static unsigned invalidCount = static_cast<unsigned>(-1);
-
-        FrameTree(Frame* thisFrame, Frame* parentFrame)
-            : m_thisFrame(thisFrame)
-            , m_parent(parentFrame)
-            , m_previousSibling(0)
-            , m_lastChild(0)
-            , m_scopedChildCount(invalidCount)
-        {
-        }
-
+        explicit FrameTree(Frame* thisFrame);
         ~FrameTree();
 
         const AtomicString& name() const { return m_name; }
         const AtomicString& uniqueName() const { return m_uniqueName; }
         void setName(const AtomicString&);
-        Frame* parent() const;
 
-        Frame* nextSibling() const { return m_nextSibling.get(); }
-        Frame* previousSibling() const { return m_previousSibling; }
-        Frame* firstChild() const { return m_firstChild.get(); }
-        Frame* lastChild() const { return m_lastChild; }
+        Frame* parent() const;
+        Frame* top() const;
+        Frame* previousSibling() const;
+        Frame* nextSibling() const;
+        Frame* firstChild() const;
+        Frame* lastChild() const;
 
         bool isDescendantOf(const Frame* ancestor) const;
+        Frame* traversePreviousWithWrap(bool) const;
         Frame* traverseNext(const Frame* stayWithin = 0) const;
         Frame* traverseNextWithWrap(bool) const;
-        Frame* traversePreviousWithWrap(bool) const;
-
-        void appendChild(PassRefPtr<Frame>);
-        void removeChild(Frame*);
 
         Frame* child(const AtomicString& name) const;
         Frame* find(const AtomicString& name) const;
         unsigned childCount() const;
 
-        Frame* top() const;
-
         Frame* scopedChild(unsigned index) const;
         Frame* scopedChild(const AtomicString& name) const;
         unsigned scopedChildCount() const;
+        void invalidateScopedChildCount();
 
     private:
         Frame* deepLastChild() const;
@@ -78,15 +65,9 @@ namespace WebCore {
 
         Frame* m_thisFrame;
 
-        Frame* m_parent;
         AtomicString m_name; // The actual frame name (may be empty).
         AtomicString m_uniqueName;
 
-        // FIXME: use ListRefPtr?
-        RefPtr<Frame> m_nextSibling;
-        Frame* m_previousSibling;
-        RefPtr<Frame> m_firstChild;
-        Frame* m_lastChild;
         mutable unsigned m_scopedChildCount;
     };
 

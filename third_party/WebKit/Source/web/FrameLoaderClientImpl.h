@@ -69,6 +69,12 @@ public:
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE;
 
     virtual bool hasWebView() const OVERRIDE;
+    virtual WebCore::Frame* parent() const OVERRIDE;
+    virtual WebCore::Frame* top() const OVERRIDE;
+    virtual WebCore::Frame* previousSibling() const OVERRIDE;
+    virtual WebCore::Frame* nextSibling() const OVERRIDE;
+    virtual WebCore::Frame* firstChild() const OVERRIDE;
+    virtual WebCore::Frame* lastChild() const OVERRIDE;
     virtual void detachedFromParent() OVERRIDE;
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&) OVERRIDE;
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse) OVERRIDE;

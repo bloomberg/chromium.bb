@@ -4719,13 +4719,22 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebFrame*, const WebString&)
+    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString&)
     {
         m_childFrameCreationCount++;
-        return WebFrame::create(m_client);
+        WebFrame* frame = WebFrame::create(m_client);
+        parent->appendChild(frame);
+        return frame;
     }
 
-    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&)
+    virtual void frameDetached(WebFrame* frame) OVERRIDE
+    {
+        if (frame->parent())
+            frame->parent()->removeChild(frame);
+        frame->close();
+    }
+
+    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) OVERRIDE
     {
         m_policy = request.cachePolicy();
         m_willSendRequestCallCount++;
@@ -4750,7 +4759,7 @@ TEST_F(WebFrameTest, ReloadIframe)
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
 
     WebFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
-    WebFrameImpl* childFrame = toWebFrameImpl(mainFrame->firstChild());
+    RefPtr<WebFrameImpl> childFrame = toWebFrameImpl(mainFrame->firstChild());
     ASSERT_EQ(childFrame->client(), &childClient);
     EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
@@ -4760,7 +4769,7 @@ TEST_F(WebFrameTest, ReloadIframe)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     // A new WebFrame should have been created, but the child WebFrameClient should be reused.
-    ASSERT_FALSE(childFrame == toWebFrameImpl(mainFrame->firstChild()));
+    ASSERT_NE(childFrame, toWebFrameImpl(mainFrame->firstChild()));
     ASSERT_EQ(toWebFrameImpl(mainFrame->firstChild())->client(), &childClient);
 
     EXPECT_EQ(mainClient.childFrameCreationCount(), 2);

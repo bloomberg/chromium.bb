@@ -179,6 +179,12 @@ public:
 
     virtual bool hasWebView() const OVERRIDE { return true; } // mainly for assertions
 
+    virtual Frame* parent() const OVERRIDE { return 0; }
+    virtual Frame* top() const OVERRIDE { return 0; }
+    virtual Frame* previousSibling() const OVERRIDE { return 0; }
+    virtual Frame* nextSibling() const OVERRIDE { return 0; }
+    virtual Frame* firstChild() const OVERRIDE { return 0; }
+    virtual Frame* lastChild() const OVERRIDE { return 0; }
     virtual void detachedFromParent() OVERRIDE { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }

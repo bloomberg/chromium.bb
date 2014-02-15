@@ -101,12 +101,12 @@ public:
     virtual void removeChild(WebFrame*) OVERRIDE;
     virtual WebFrame* parent() const OVERRIDE;
     virtual WebFrame* top() const OVERRIDE;
+    virtual WebFrame* previousSibling() const OVERRIDE;
+    virtual WebFrame* nextSibling() const OVERRIDE;
     virtual WebFrame* firstChild() const OVERRIDE;
     virtual WebFrame* lastChild() const OVERRIDE;
-    virtual WebFrame* nextSibling() const OVERRIDE;
-    virtual WebFrame* previousSibling() const OVERRIDE;
-    virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
     virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
+    virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
     virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
     virtual WebFrame* findChildByExpression(const WebString&) const OVERRIDE;
     virtual WebDocument document() const OVERRIDE;
@@ -442,6 +442,11 @@ private:
     // The embedder retains a reference to the WebCore Frame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     RefPtr<WebCore::Frame> m_frame;
+    WebFrameImpl* m_parent;
+    WebFrameImpl* m_previousSibling;
+    WebFrameImpl* m_nextSibling;
+    WebFrameImpl* m_firstChild;
+    WebFrameImpl* m_lastChild;
 
     // Indicate whether the current Frame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.

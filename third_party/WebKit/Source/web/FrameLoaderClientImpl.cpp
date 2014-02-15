@@ -234,6 +234,42 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
+Frame* FrameLoaderClientImpl::parent() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->parent());
+    return frame ? frame->frame() : 0;
+}
+
+Frame* FrameLoaderClientImpl::top() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->top());
+    return frame ? frame->frame() : 0;
+}
+
+Frame* FrameLoaderClientImpl::previousSibling() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->previousSibling());
+    return frame ? frame->frame() : 0;
+}
+
+Frame* FrameLoaderClientImpl::nextSibling() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->nextSibling());
+    return frame ? frame->frame() : 0;
+}
+
+Frame* FrameLoaderClientImpl::firstChild() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->firstChild());
+    return frame ? frame->frame() : 0;
+}
+
+Frame* FrameLoaderClientImpl::lastChild() const
+{
+    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->lastChild());
+    return frame ? frame->frame() : 0;
+}
+
 void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last

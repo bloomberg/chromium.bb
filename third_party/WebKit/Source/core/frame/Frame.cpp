@@ -79,13 +79,6 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
-static inline Frame* parentFromOwnerElement(HTMLFrameOwnerElement* ownerElement)
-{
-    if (!ownerElement)
-        return 0;
-    return ownerElement->document().frame();
-}
-
 static inline float parentPageZoomFactor(Frame* frame)
 {
     Frame* parent = frame->tree().parent();
@@ -104,7 +97,7 @@ static inline float parentTextZoomFactor(Frame* frame)
 
 inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
     : m_host(frameInit->frameHost())
-    , m_treeNode(this, parentFromOwnerElement(frameInit->ownerElement()))
+    , m_treeNode(this)
     , m_loader(this, frameInit->frameLoaderClient())
     , m_navigationScheduler(this)
     , m_script(adoptPtr(new ScriptController(this)))

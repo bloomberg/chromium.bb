@@ -91,6 +91,12 @@ class FetchRequest;
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
+        virtual Frame* parent() const = 0;
+        virtual Frame* top() const = 0;
+        virtual Frame* previousSibling() const = 0;
+        virtual Frame* nextSibling() const = 0;
+        virtual Frame* firstChild() const = 0;
+        virtual Frame* lastChild() const = 0;
         virtual void detachedFromParent() = 0;
 
         virtual void dispatchWillRequestAfterPreconnect(ResourceRequest&) { }

@@ -1039,8 +1039,6 @@ void FrameLoader::closeAndRemoveChild(Frame* child)
         child->page()->decrementSubframeCount();
     child->willDetachFrameHost();
     child->loader().detachClient();
-
-    m_frame->tree().removeChild(child);
 }
 
 // Called every time a resource is completely loaded or an error is received.

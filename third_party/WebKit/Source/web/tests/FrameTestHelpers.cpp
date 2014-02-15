@@ -147,11 +147,15 @@ void WebViewHelper::reset()
 
 WebFrame* TestWebFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
 {
-    return WebFrame::create(this);
+    WebFrame* frame = WebFrame::create(this);
+    parent->appendChild(frame);
+    return frame;
 }
 
 void TestWebFrameClient::frameDetached(WebFrame* frame)
 {
+    if (frame->parent())
+        frame->parent()->removeChild(frame);
     frame->close();
 }
 
