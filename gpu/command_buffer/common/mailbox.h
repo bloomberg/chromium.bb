@@ -21,6 +21,12 @@ struct GPU_EXPORT Mailbox {
   bool operator<(const Mailbox& other) const {
     return memcmp(this, &other, sizeof other) < 0;
   }
+  bool operator==(const Mailbox& other) const {
+    return memcmp(this, &other, sizeof other) == 0;
+  }
+  bool operator!=(const Mailbox& other) const {
+    return !operator==(other);
+  }
 };
 
 }  // namespace gpu

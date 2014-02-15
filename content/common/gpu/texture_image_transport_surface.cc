@@ -218,9 +218,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.size = backbuffer_size();
   params.scale_factor = scale_factor_;
-  params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&back_mailbox_),
-      sizeof(back_mailbox_));
+  params.mailbox = back_mailbox_;
 
   glFlush();
 
@@ -258,9 +256,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
   params.y = y;
   params.width = width;
   params.height = height;
-  params.mailbox_name.assign(
-      reinterpret_cast<const char*>(&back_mailbox_),
-      sizeof(back_mailbox_));
+  params.mailbox = back_mailbox_;
 
   glFlush();
 
@@ -294,18 +290,17 @@ unsigned TextureImageTransportSurface::GetFormat() {
 void TextureImageTransportSurface::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   if (params.sync_point == 0) {
-    BufferPresentedImpl(params.mailbox_name);
+    BufferPresentedImpl(params.mailbox);
   } else {
     helper_->manager()->sync_point_manager()->AddSyncPointCallback(
         params.sync_point,
         base::Bind(&TextureImageTransportSurface::BufferPresentedImpl,
                    this,
-                   params.mailbox_name));
+                   params.mailbox));
   }
 }
 
-void TextureImageTransportSurface::BufferPresentedImpl(
-    const std::string& mailbox_name) {
+void TextureImageTransportSurface::BufferPresentedImpl(const Mailbox& mailbox) {
   DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;
 
@@ -321,11 +316,8 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   DCHECK(backbuffer_.get());
 
   bool swap = true;
-  if (!mailbox_name.empty()) {
-    DCHECK(mailbox_name.length() == GL_MAILBOX_SIZE_CHROMIUM);
-    if (!memcmp(mailbox_name.data(),
-                &back_mailbox_,
-                mailbox_name.length())) {
+  if (!mailbox.IsZero()) {
+    if (mailbox == back_mailbox_) {
       // The browser has skipped the frame to unblock the GPU process, waiting
       // for one of the right size, and returned the back buffer, so don't swap.
       swap = false;

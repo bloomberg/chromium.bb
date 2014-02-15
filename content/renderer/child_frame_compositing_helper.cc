@@ -246,12 +246,10 @@ void ChildFrameCompositingHelper::MailboxReleased(SwapBuffersInfo mailbox,
   ack_pending_ = false;
   switch (mailbox.type) {
     case TEXTURE_IMAGE_TRANSPORT: {
-      std::string mailbox_name(reinterpret_cast<const char*>(mailbox.name.name),
-                               sizeof(mailbox.name.name));
       FrameHostMsg_BuffersSwappedACK_Params params;
       params.gpu_host_id = mailbox.host_id;
       params.gpu_route_id = mailbox.route_id;
-      params.mailbox_name = mailbox_name;
+      params.mailbox = mailbox.name;
       params.sync_point = sync_point;
       SendBuffersSwappedACKToBrowser(params);
       break;
@@ -378,12 +376,12 @@ void ChildFrameCompositingHelper::OnBuffersSwappedPrivate(
 
 void ChildFrameCompositingHelper::OnBuffersSwapped(
     const gfx::Size& size,
-    const std::string& mailbox_name,
+    const gpu::Mailbox& mailbox,
     int gpu_route_id,
     int gpu_host_id,
     float device_scale_factor) {
   SwapBuffersInfo swap_info;
-  swap_info.name.SetName(reinterpret_cast<const int8*>(mailbox_name.data()));
+  swap_info.name = mailbox;
   swap_info.type = TEXTURE_IMAGE_TRANSPORT;
   swap_info.size = size;
   swap_info.route_id = gpu_route_id;

@@ -67,6 +67,10 @@ namespace gfx {
 class Range;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace content {
 
 class BrowserPluginHostFactory;
@@ -286,7 +290,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // BrowserPluginGuest is already destroyed.
   static void AcknowledgeBufferPresent(int route_id,
                                        int gpu_host_id,
-                                       const std::string& mailbox_name,
+                                       const gpu::Mailbox& mailbox,
                                        uint32 sync_point);
 
   // Returns whether BrowserPluginGuest is interested in receiving the given

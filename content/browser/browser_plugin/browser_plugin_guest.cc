@@ -1157,10 +1157,10 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 void BrowserPluginGuest::AcknowledgeBufferPresent(
     int route_id,
     int gpu_host_id,
-    const std::string& mailbox_name,
+    const gpu::Mailbox& mailbox,
     uint32 sync_point) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox_name = mailbox_name;
+  ack_params.mailbox = mailbox;
   ack_params.sync_point = sync_point;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_host_id,
@@ -1610,7 +1610,7 @@ void BrowserPluginGuest::OnSwapBuffersACK(
     int instance_id,
     const FrameHostMsg_BuffersSwappedACK_Params& params) {
   AcknowledgeBufferPresent(params.gpu_route_id, params.gpu_host_id,
-                           params.mailbox_name, params.sync_point);
+                           params.mailbox, params.sync_point);
 
 // This is only relevant on MACOSX and WIN when threaded compositing
 // is not enabled. In threaded mode, above ACK is sufficient.

@@ -221,7 +221,7 @@ void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
     const FrameHostMsg_BuffersSwappedACK_Params& params) {
   BrowserPluginGuest::AcknowledgeBufferPresent(params.gpu_route_id,
                                                params.gpu_host_id,
-                                               params.mailbox_name,
+                                               params.mailbox,
                                                params.sync_point);
 }
 

@@ -25,7 +25,7 @@ class FakeTexture : public ui::Texture {
 
   virtual unsigned int PrepareTexture() OVERRIDE { return texture_; }
 
-  virtual void Consume(const std::string& mailbox_name,
+  virtual void Consume(const gpu::Mailbox& mailbox,
                        const gfx::Size& new_size) OVERRIDE {
     size_ = new_size;
   }
