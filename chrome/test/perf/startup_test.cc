@@ -110,11 +110,11 @@ class StartupTest : public UIPerfTest {
       return;
 
     const base::FilePath pref_template_path(user_data_dir().
-        AppendASCII("Default").
+        AppendASCII(chrome::kInitialProfile).
         AppendASCII("PreferencesTemplate"));
     const base::FilePath pref_path(user_data_dir().
         AppendASCII(TestingProfile::kTestUserProfileDir).
-        AppendASCII("Preferences"));
+        Append(chrome::kPreferencesFilename));
 
     // Read in preferences template.
     std::string pref_string;
