@@ -163,3 +163,24 @@ remoting.ViewerPlugin = function() { };
 
 /** @param {string} message The message to send to the host. */
 remoting.ViewerPlugin.prototype.postMessage = function(message) {};
+
+
+/** @constructor
+ */
+remoting.WcsIqClient = function() {};
+
+/** @param {function(Array.<string>): void} onMsg The function called when a
+ *      message is received.
+ *  @return {void} Nothing. */
+remoting.WcsIqClient.prototype.setOnMessage = function(onMsg) {};
+
+/** @return {void} Nothing. */
+remoting.WcsIqClient.prototype.connectChannel = function() {};
+
+/** @param {string} stanza An IQ stanza.
+ *  @return {void} Nothing. */
+remoting.WcsIqClient.prototype.sendIq = function(stanza) {};
+
+/** @param {string} token An OAuth2 access token.
+ *  @return {void} Nothing. */
+remoting.WcsIqClient.prototype.updateAccessToken = function(token) {};

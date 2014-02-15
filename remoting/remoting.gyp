@@ -218,15 +218,13 @@
               'inputs': [
                 '<@(remoting_webapp_js_files)',
                 '<@(remoting_webapp_js_proto_files)',
-                # Include zip as input so that this action is run after the build.
-                '<(zip_path)',
               ],
               'outputs': [
                 '<(success_stamp)',
               ],
               'action': [
-                'python', 'tools/htmlcompile.py',
-                '<(output_dir)/main.html',
+                'python', 'tools/jscompile.py',
+                '<@(remoting_webapp_js_files)',
                 '<@(remoting_webapp_js_proto_files)',
                 '--success-stamp',
                 '<(success_stamp)'
