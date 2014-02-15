@@ -64,9 +64,8 @@ public:
     void invalidate();
 
 private:
-    NodeType* nodeBeforeOrAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
-    bool isLastNodeCloserThanLastOrCachedNode(unsigned index) const;
-    bool isFirstNodeCloserThanCachedNode(unsigned index) const;
+    NodeType* nodeBeforeCachedNode(const Collection&, unsigned index, const ContainerNode& root);
+    NodeType* nodeAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
 
     ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
     ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
@@ -122,56 +121,81 @@ inline unsigned CollectionIndexCache<Collection, NodeType>::nodeCount(const Coll
 template <typename Collection, typename NodeType>
 inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collection& collection, unsigned index)
 {
-    if (cachedNode() && cachedNodeIndex() == index)
-        return cachedNode();
-
-    if (isCachedNodeCountValid() && cachedNodeCount() <= index)
+    if (isCachedNodeCountValid() && index >= cachedNodeCount())
         return 0;
 
     ContainerNode& root = collection.rootNode();
-    if (isCachedNodeCountValid() && collection.canTraverseBackward() && isLastNodeCloserThanLastOrCachedNode(index)) {
-        NodeType* lastNode = collection.itemBefore(0);
-        ASSERT(lastNode);
-        setCachedNode(lastNode, cachedNodeCount() - 1);
-    } else if (!cachedNode() || isFirstNodeCloserThanCachedNode(index) || (!collection.canTraverseBackward() && index < cachedNodeIndex())) {
-        NodeType* firstNode = collection.traverseToFirstElement(root);
-        if (!firstNode) {
-            setCachedNodeCount(0);
-            return 0;
-        }
-        setCachedNode(firstNode, 0);
-        ASSERT(!cachedNodeIndex());
+    if (cachedNode()) {
+        if (index > cachedNodeIndex())
+            return nodeAfterCachedNode(collection, index, root);
+        if (index < cachedNodeIndex())
+            return nodeBeforeCachedNode(collection, index, root);
+        return cachedNode();
     }
 
-    if (cachedNodeIndex() == index)
-        return cachedNode();
-
-    return nodeBeforeOrAfterCachedNode(collection, index, root);
+    // No valid cache yet, let's find the first matching element.
+    ASSERT(!isCachedNodeCountValid());
+    NodeType* firstNode = collection.traverseToFirstElement(root);
+    if (!firstNode) {
+        // The collection is empty.
+        setCachedNodeCount(0);
+        return 0;
+    }
+    setCachedNode(firstNode, 0);
+    return index ? nodeAfterCachedNode(collection, index, root) : firstNode;
 }
 
 template <typename Collection, typename NodeType>
-inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeOrAfterCachedNode(const Collection& collection, unsigned index, const ContainerNode &root)
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(const Collection& collection, unsigned index, const ContainerNode& root)
 {
+    ASSERT(cachedNode()); // Cache should be valid.
     unsigned currentIndex = cachedNodeIndex();
-    NodeType* currentNode = cachedNode();
-    ASSERT(currentNode);
-    ASSERT(currentIndex != index);
+    ASSERT(currentIndex > index);
 
-    if (index < cachedNodeIndex()) {
-        ASSERT(collection.canTraverseBackward());
-        while ((currentNode = collection.itemBefore(currentNode))) {
-            ASSERT(currentIndex);
-            currentIndex--;
-            if (currentIndex == index) {
-                setCachedNode(currentNode, currentIndex);
-                return currentNode;
-            }
-        }
-        ASSERT_NOT_REACHED();
-        return 0;
+    // Determine if we should traverse from the beginning of the collection instead of the cached node.
+    bool firstIsCloser = index < currentIndex - index;
+    if (firstIsCloser || !collection.canTraverseBackward()) {
+        NodeType* firstNode = collection.traverseToFirstElement(root);
+        ASSERT(firstNode);
+        setCachedNode(firstNode, 0);
+        return index ? nodeAfterCachedNode(collection, index, root) : firstNode;
     }
 
-    currentNode = collection.traverseForwardToOffset(index, *currentNode, currentIndex, root);
+    // Backward traversal from the cached node to the requested index.
+    NodeType* currentNode = cachedNode();
+    ASSERT(collection.canTraverseBackward());
+    while ((currentNode = collection.itemBefore(currentNode))) {
+        ASSERT(currentIndex);
+        --currentIndex;
+        if (currentIndex == index) {
+            setCachedNode(currentNode, currentIndex);
+            return currentNode;
+        }
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+template <typename Collection, typename NodeType>
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(const Collection& collection, unsigned index, const ContainerNode& root)
+{
+    ASSERT(cachedNode()); // Cache should be valid.
+    unsigned currentIndex = cachedNodeIndex();
+    ASSERT(currentIndex < index);
+
+    // Determine if we should traverse from the end of the collection instead of the cached node.
+    bool lastIsCloser = isCachedNodeCountValid() && cachedNodeCount() - index < index - currentIndex;
+    if (lastIsCloser && collection.canTraverseBackward()) {
+        NodeType* lastItem = collection.itemBefore(0);
+        ASSERT(lastItem);
+        setCachedNode(lastItem, cachedNodeCount() - 1);
+        if (index < cachedNodeCount() - 1)
+            return nodeBeforeCachedNode(collection, index, root);
+        return lastItem;
+    }
+
+    // Forward traversal from the cached node to the requested index.
+    NodeType* currentNode = collection.traverseForwardToOffset(index, *cachedNode(), currentIndex, root);
     if (!currentNode) {
         // Did not find the node. On plus side, we now know the length.
         setCachedNodeCount(currentIndex + 1);
@@ -179,27 +203,6 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeOrAfterCa
     }
     setCachedNode(currentNode, currentIndex);
     return currentNode;
-}
-
-template <typename Collection, typename NodeType>
-ALWAYS_INLINE bool CollectionIndexCache<Collection, NodeType>::isLastNodeCloserThanLastOrCachedNode(unsigned index) const
-{
-    ASSERT(isCachedNodeCountValid());
-    unsigned distanceFromLastNode = cachedNodeCount() - index;
-    if (!cachedNode())
-        return distanceFromLastNode < index;
-
-    return cachedNodeIndex() < index && distanceFromLastNode < index - cachedNodeIndex();
-}
-
-template <typename Collection, typename NodeType>
-ALWAYS_INLINE bool CollectionIndexCache<Collection, NodeType>::isFirstNodeCloserThanCachedNode(unsigned index) const
-{
-    if (cachedNodeIndex() < index)
-        return false;
-
-    unsigned distanceFromCachedNode = cachedNodeIndex() - index;
-    return index < distanceFromCachedNode;
 }
 
 } // namespace WebCore
