@@ -45,10 +45,11 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
 
   const base::string16 recipient_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, Name);
-  const base::string16 address_line_1 =
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address1);
-  const base::string16 address_line_2 =
-      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address2);
+  std::vector<base::string16> address_lines;
+  address_lines.push_back(
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address1));
+  address_lines.push_back(
+      FETCH_JSTRING(UTF16, env, address, ResultAddress, Address2));
   const base::string16 locality_name =
       FETCH_JSTRING(UTF16, env, address, ResultAddress, City);
   const base::string16 administrative_area_name =
@@ -61,14 +62,19 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
       FETCH_JSTRING(UTF8, env, address, ResultAddress, CountryCode);
   DCHECK(!country_name_code.empty());
 
+  // TODO(aruslan): get these from the JavaWalletAddress.
+  const base::string16 dependent_locality_name;
+  const base::string16 sorting_code;
+
   return scoped_ptr<wallet::Address>(new wallet::Address(
       country_name_code,
       recipient_name,
-      address_line_1,
-      address_line_2,
+      address_lines,
       locality_name,
+      dependent_locality_name,
       administrative_area_name,
       postal_code_number,
+      sorting_code,
       phone_number,
       std::string()));
 }

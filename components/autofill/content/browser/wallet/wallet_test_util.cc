@@ -74,16 +74,26 @@ scoped_ptr<GaiaAccount> GetTestGaiaAccount() {
                                        true);
 }
 
+std::vector<base::string16> StreetAddress(const std::string& line1,
+                                          const std::string& line2) {
+  std::vector<base::string16> street_address;
+  street_address.push_back(ASCIIToUTF16(line1));
+  street_address.push_back(ASCIIToUTF16(line2));
+  return street_address;
+}
+
 scoped_ptr<Address> GetTestAddress() {
-  return make_scoped_ptr(new Address("US",
-                                     ASCIIToUTF16("recipient_name"),
-                                     ASCIIToUTF16("address_line_1"),
-                                     ASCIIToUTF16("address_line_2"),
-                                     ASCIIToUTF16("locality_name"),
-                                     ASCIIToUTF16("admin_area_name"),
-                                     ASCIIToUTF16("postal_code_number"),
-                                     ASCIIToUTF16("phone_number"),
-                                     std::string()));
+  return make_scoped_ptr(
+      new Address("US",
+                  ASCIIToUTF16("recipient_name"),
+                  StreetAddress("address_line_1", "address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("dependent_locality_name"),
+                  ASCIIToUTF16("admin_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("sorting_code"),
+                  ASCIIToUTF16("phone_number"),
+                  std::string()));
 }
 
 scoped_ptr<Address> GetTestMinimalAddress() {
@@ -204,27 +214,31 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {
 }
 
 scoped_ptr<Address> GetTestSaveableAddress() {
-  return make_scoped_ptr(new Address("US",
-                                     ASCIIToUTF16("save_recipient_name"),
-                                     ASCIIToUTF16("save_address_line_1"),
-                                     ASCIIToUTF16("save_address_line_2"),
-                                     ASCIIToUTF16("save_locality_name"),
-                                     ASCIIToUTF16("save_admin_area_name"),
-                                     ASCIIToUTF16("save_postal_code_number"),
-                                     ASCIIToUTF16("save_phone_number"),
-                                     std::string()));
+  return make_scoped_ptr(
+      new Address("US",
+                  ASCIIToUTF16("save_recipient_name"),
+                  StreetAddress("save_address_line_1", "save_address_line_2"),
+                  ASCIIToUTF16("save_locality_name"),
+                  ASCIIToUTF16("save_dependent_locality_name"),
+                  ASCIIToUTF16("save_admin_area_name"),
+                  ASCIIToUTF16("save_postal_code_number"),
+                  ASCIIToUTF16("save_sorting_code"),
+                  ASCIIToUTF16("save_phone_number"),
+                  std::string()));
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
-  return make_scoped_ptr(new Address("US",
-                                     ASCIIToUTF16("ship_recipient_name"),
-                                     ASCIIToUTF16("ship_address_line_1"),
-                                     ASCIIToUTF16("ship_address_line_2"),
-                                     ASCIIToUTF16("ship_locality_name"),
-                                     ASCIIToUTF16("ship_admin_area_name"),
-                                     ASCIIToUTF16("ship_postal_code_number"),
-                                     ASCIIToUTF16("ship_phone_number"),
-                                     "default_address_id"));
+  return make_scoped_ptr(
+      new Address("US",
+                  ASCIIToUTF16("ship_recipient_name"),
+                  StreetAddress("ship_address_line_1", "ship_address_line_2"),
+                  ASCIIToUTF16("ship_locality_name"),
+                  ASCIIToUTF16("ship_dependent_locality_name"),
+                  ASCIIToUTF16("ship_admin_area_name"),
+                  ASCIIToUTF16("ship_postal_code_number"),
+                  ASCIIToUTF16("ship_sorting_code"),
+                  ASCIIToUTF16("ship_phone_number"),
+                  "default_address_id"));
 }
 
 scoped_ptr<Address> GetTestNonDefaultShippingAddress() {

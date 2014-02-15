@@ -19,6 +19,8 @@ class GaiaAccount;
 class Instrument;
 
 scoped_ptr<GaiaAccount> GetTestGaiaAccount();
+std::vector<base::string16> StreetAddress(const std::string& line1,
+                                          const std::string& line2);
 scoped_ptr<Address> GetTestAddress();
 scoped_ptr<Address> GetTestMinimalAddress();
 scoped_ptr<FullWallet> GetTestFullWallet();

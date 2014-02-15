@@ -5,6 +5,7 @@
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -44,19 +45,26 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DLOG(ERROR) << "Response from Google Wallet missing postal code number";
     return NULL;
   }
+  // TODO(estade): what about postal_code_number_extension?
+
+  base::string16 sorting_code;
+  if (!dictionary.GetString("postal_address.sorting_code",
+                            &sorting_code)) {
+    DVLOG(1) << "Response from Google Wallet missing sorting code";
+  }
 
   base::string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Response from Google Wallet missing phone number";
 
-  base::string16 address_line_1;
-  base::string16 address_line_2;
+  std::vector<base::string16> street_address;
   const base::ListValue* address_line_list;
   if (dictionary.GetList("postal_address.address_line", &address_line_list)) {
-    if (!address_line_list->GetString(0, &address_line_1))
-      DVLOG(1) << "Response from Google Wallet missing address line 1";
-    if (!address_line_list->GetString(1, &address_line_2))
-      DVLOG(1) << "Response from Google Wallet missing address line 2";
+    for (size_t i = 0; i < address_line_list->GetSize(); ++i) {
+      base::string16 line;
+      address_line_list->GetString(i, &line);
+      street_address.push_back(line);
+    }
   } else {
     DVLOG(1) << "Response from Google Wallet missing address lines";
   }
@@ -67,6 +75,12 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DVLOG(1) << "Response from Google Wallet missing locality name";
   }
 
+  base::string16 dependent_locality_name;
+  if (!dictionary.GetString("postal_address.dependent_locality_name",
+                            &dependent_locality_name)) {
+    DVLOG(1) << "Response from Google Wallet missing dependent locality name";
+  }
+
   base::string16 administrative_area_name;
   if (!dictionary.GetString("postal_address.administrative_area_name",
                             &administrative_area_name)) {
@@ -75,11 +89,12 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
 
   Address* address = new Address(country_name_code,
                                  recipient_name,
-                                 address_line_1,
-                                 address_line_2,
+                                 street_address,
                                  locality_name,
+                                 dependent_locality_name,
                                  administrative_area_name,
                                  postal_code_number,
+                                 sorting_code,
                                  phone_number,
                                  object_id);
 
@@ -100,33 +115,39 @@ Address::Address(const AutofillProfile& profile)
     : country_name_code_(
           UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))),
       recipient_name_(profile.GetRawInfo(NAME_FULL)),
-      address_line_1_(profile.GetRawInfo(ADDRESS_HOME_LINE1)),
-      address_line_2_(profile.GetRawInfo(ADDRESS_HOME_LINE2)),
       locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
+      dependent_locality_name_(
+          profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)),
       administrative_area_name_(profile.GetRawInfo(ADDRESS_HOME_STATE)),
       postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
+      sorting_code_(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)),
       phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
       is_complete_address_(true) {
+  base::SplitString(
+      profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS), '\n', &street_address_);
+
   if (!country_name_code_.empty())
     phone_object_ = i18n::PhoneObject(phone_number_, country_name_code_);
 }
 
 Address::Address(const std::string& country_name_code,
                  const base::string16& recipient_name,
-                 const base::string16& address_line_1,
-                 const base::string16& address_line_2,
+                 const std::vector<base::string16>& street_address,
                  const base::string16& locality_name,
+                 const base::string16& dependent_locality_name,
                  const base::string16& administrative_area_name,
                  const base::string16& postal_code_number,
+                 const base::string16& sorting_code,
                  const base::string16& phone_number,
                  const std::string& object_id)
     : country_name_code_(country_name_code),
       recipient_name_(recipient_name),
-      address_line_1_(address_line_1),
-      address_line_2_(address_line_2),
+      street_address_(street_address),
       locality_name_(locality_name),
+      dependent_locality_name_(dependent_locality_name),
       administrative_area_name_(administrative_area_name),
       postal_code_number_(postal_code_number),
+      sorting_code_(sorting_code),
       phone_number_(phone_number),
       phone_object_(phone_number, country_name_code),
       object_id_(object_id),
@@ -174,17 +195,35 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
     return scoped_ptr<Address>();
   }
 
+  base::string16 sorting_code;
+  if (!dictionary.GetString("sorting_code", &sorting_code)) {
+    DVLOG(1) << "Reponse from Google Wallet missing sorting code";
+  }
+
+  std::vector<base::string16> street_address;
   base::string16 address1;
-  if (!dictionary.GetString("address1", &address1))
+  if (dictionary.GetString("address1", &address1))
+    street_address.push_back(address1);
+  else
     DVLOG(1) << "Reponse from Google Wallet missing address1";
 
   base::string16 address2;
-  if (!dictionary.GetString("address2", &address2))
-    DVLOG(1) << "Reponse from Google Wallet missing address2";
+  if (dictionary.GetString("address2", &address2) && !address2.empty()) {
+    street_address.resize(2);
+    street_address[1] = address2;
+  } else {
+    DVLOG(1) << "Reponse from Google Wallet missing or empty address2";
+  }
 
   base::string16 city;
   if (!dictionary.GetString("city", &city))
     DVLOG(1) << "Reponse from Google Wallet missing city";
+
+  base::string16 dependent_locality_name;
+  if (!dictionary.GetString("dependent_locality_name",
+                            &dependent_locality_name)) {
+    DVLOG(1) << "Reponse from Google Wallet missing district";
+  }
 
   base::string16 state;
   if (!dictionary.GetString("state", &state))
@@ -201,11 +240,12 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
   scoped_ptr<Address> address(
       new Address(country_code,
                   name,
-                  address1,
-                  address2,
+                  street_address,
                   city,
+                  dependent_locality_name,
                   state,
                   postal_code,
+                  sorting_code,
                   phone_number,
                   std::string()));
   address->set_is_complete_address(address_state == kFullAddress);
@@ -228,17 +268,17 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   scoped_ptr<base::ListValue> address_lines(new base::ListValue());
-  address_lines->AppendString(address_line_1_);
-  if (!address_line_2_.empty())
-    address_lines->AppendString(address_line_2_);
+  address_lines->AppendStrings(street_address_);
   dict->Set("address_line", address_lines.release());
 
   dict->SetString("country_name_code", country_name_code_);
   dict->SetString("recipient_name", recipient_name_);
   dict->SetString("locality_name", locality_name_);
+  dict->SetString("dependent_locality_name", dependent_locality_name_);
   dict->SetString("administrative_area_name",
                   administrative_area_name_);
   dict->SetString("postal_code_number", postal_code_number_);
+  dict->SetString("sorting_code", sorting_code_);
 
   return dict.Pass();
 }
@@ -249,14 +289,14 @@ base::string16 Address::DisplayName() const {
   return recipient_name();
 #else
   // TODO(estade): improve this stub implementation + l10n.
-  return recipient_name() + base::ASCIIToUTF16(", ") + address_line_1();
+  return recipient_name() + base::ASCIIToUTF16(", ") + GetStreetAddressLine(0);
 #endif
 }
 
 base::string16 Address::DisplayNameDetail() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
-  return address_line_1();
+  return GetStreetAddressLine(0);
 #else
   return base::string16();
 #endif
@@ -282,18 +322,14 @@ base::string16 Address::GetInfo(const AutofillType& type,
     case NAME_FULL:
       return recipient_name();
 
-    case ADDRESS_HOME_STREET_ADDRESS: {
-      base::string16 address = address_line_1();
-      if (!address_line_2().empty())
-        address += base::ASCIIToUTF16("\n") + address_line_2();
-      return address;
-    }
+    case ADDRESS_HOME_STREET_ADDRESS:
+      return JoinString(street_address_, base::ASCIIToUTF16("\n"));
 
     case ADDRESS_HOME_LINE1:
-      return address_line_1();
+      return GetStreetAddressLine(0);
 
     case ADDRESS_HOME_LINE2:
-      return address_line_2();
+      return GetStreetAddressLine(1);
 
     case ADDRESS_HOME_CITY:
       return locality_name();
@@ -315,13 +351,15 @@ base::string16 Address::GetInfo(const AutofillType& type,
       return phone_object_.GetWholeNumber();
 
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return dependent_locality_name_;
+
     case ADDRESS_HOME_SORTING_CODE:
+      return sorting_code_;
+
     case COMPANY_NAME:
-      // Fields that some countries request but Wallet doesn't support.
-      // TODO(dbeam): can these be supported by Wallet?
+      // A field that Wallet doesn't support. TODO(dbeam): can it be supported?
       return base::string16();
 
-    // TODO(estade): implement more.
     default:
       NOTREACHED();
       return base::string16();
@@ -336,13 +374,19 @@ void Address::SetPhoneNumber(const base::string16& phone_number) {
 bool Address::EqualsIgnoreID(const Address& other) const {
   return country_name_code_ == other.country_name_code_ &&
          recipient_name_ == other.recipient_name_ &&
-         address_line_1_ == other.address_line_1_ &&
-         address_line_2_ == other.address_line_2_ &&
+         street_address_ == other.street_address_ &&
          locality_name_ == other.locality_name_ &&
+         dependent_locality_name_ == other.dependent_locality_name_ &&
          administrative_area_name_ == other.administrative_area_name_ &&
          postal_code_number_ == other.postal_code_number_ &&
+         sorting_code_ == other.sorting_code_ &&
          phone_number_ == other.phone_number_ &&
          is_complete_address_ == other.is_complete_address_;
+}
+
+base::string16 Address::GetStreetAddressLine(size_t line) const {
+  return street_address_.size() > line ? street_address_[line] :
+                                         base::string16();
 }
 
 bool Address::operator==(const Address& other) const {

@@ -10,6 +10,7 @@
 #include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -34,8 +35,10 @@ const char kMaskedInstrument[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
+    "    \"sorting_code\":\"sorting_code\","
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"US\","
     "    \"type\":\"FULL\""
@@ -61,8 +64,10 @@ const char kMaskedInstrumentMissingStatus[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
+    "    \"sorting_code\":\"sorting_code\","
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"US\""
     "  },"
@@ -86,8 +91,10 @@ const char kMaskedInstrumentMissingType[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
+    "    \"sorting_code\":\"sorting_code\","
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"US\""
     "  },"
@@ -111,8 +118,10 @@ const char kMaskedInstrumentMissingLastFourDigits[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
+    "    \"sorting_code\":\"sorting_code\","
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"US\""
     "  },"
@@ -151,6 +160,7 @@ const char kMaskedInstrumentMalformedAddress[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"US\""
@@ -176,6 +186,7 @@ const char kMaskedInstrumentMissingObjectId[] =
     "    \"address1\":\"address1\","
     "    \"address2\":\"address2\","
     "    \"city\":\"city\","
+    "    \"dependent_locality_name\":\"burough\","
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
@@ -313,8 +324,10 @@ const char kWalletItems[] =
     "        \"address1\":\"address1\","
     "        \"address2\":\"address2\","
     "        \"city\":\"city\","
+    "        \"dependent_locality_name\":\"burough\","
     "        \"state\":\"state\","
     "        \"postal_code\":\"postal_code\","
+    "        \"sorting_code\":\"sorting_code\","
     "        \"phone_number\":\"phone_number\","
     "        \"country_code\":\"US\","
     "        \"type\":\"FULL\""
@@ -338,8 +351,10 @@ const char kWalletItems[] =
     "          \"address_line_2\""
     "        ],"
     "        \"locality_name\":\"locality_name\","
+    "        \"dependent_locality_name\":\"dependent_locality_name\","
     "        \"administrative_area_name\":\"administrative_area_name\","
     "        \"postal_code_number\":\"postal_code_number\","
+    "        \"sorting_code\":\"sorting_code\","
     "        \"country_name_code\":\"US\""
     "      }"
     "    }"
@@ -441,15 +456,17 @@ TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingObjectId) {
 
 TEST_F(WalletItemsTest, CreateMaskedInstrument) {
   SetUpDictionary(kMaskedInstrument);
-  scoped_ptr<Address> address(new Address("US",
-                                          ASCIIToUTF16("name"),
-                                          ASCIIToUTF16("address1"),
-                                          ASCIIToUTF16("address2"),
-                                          ASCIIToUTF16("city"),
-                                          ASCIIToUTF16("state"),
-                                          ASCIIToUTF16("postal_code"),
-                                          ASCIIToUTF16("phone_number"),
-                                          std::string()));
+  scoped_ptr<Address> address(
+      new Address("US",
+                  ASCIIToUTF16("name"),
+                  StreetAddress("address1", "address2"),
+                  ASCIIToUTF16("city"),
+                  ASCIIToUTF16("burough"),
+                  ASCIIToUTF16("state"),
+                  ASCIIToUTF16("postal_code"),
+                  ASCIIToUTF16("sorting_code"),
+                  ASCIIToUTF16("phone_number"),
+                  std::string()));
   std::vector<base::string16> supported_currencies;
   supported_currencies.push_back(ASCIIToUTF16("currency"));
   WalletItems::MaskedInstrument masked_instrument(
@@ -568,15 +585,17 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
   expected.AddAccount(user2.Pass());
   EXPECT_EQ("123456789", expected.ObfuscatedGaiaId());
 
-  scoped_ptr<Address> billing_address(new Address("US",
-                                                  ASCIIToUTF16("name"),
-                                                  ASCIIToUTF16("address1"),
-                                                  ASCIIToUTF16("address2"),
-                                                  ASCIIToUTF16("city"),
-                                                  ASCIIToUTF16("state"),
-                                                  ASCIIToUTF16("postal_code"),
-                                                  ASCIIToUTF16("phone_number"),
-                                                  std::string()));
+  scoped_ptr<Address> billing_address(
+      new Address("US",
+                  ASCIIToUTF16("name"),
+                  StreetAddress("address1", "address2"),
+                  ASCIIToUTF16("city"),
+                  ASCIIToUTF16("burough"),
+                  ASCIIToUTF16("state"),
+                  ASCIIToUTF16("postal_code"),
+                  ASCIIToUTF16("sorting_code"),
+                  ASCIIToUTF16("phone_number"),
+                  std::string()));
   std::vector<base::string16> supported_currencies;
   supported_currencies.push_back(ASCIIToUTF16("currency"));
   scoped_ptr<WalletItems::MaskedInstrument> masked_instrument(
@@ -594,11 +613,12 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
   scoped_ptr<Address> shipping_address(
       new Address("US",
                   ASCIIToUTF16("recipient_name"),
-                  ASCIIToUTF16("address_line_1"),
-                  ASCIIToUTF16("address_line_2"),
+                  StreetAddress("address_line_1", "address_line_2"),
                   ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("dependent_locality_name"),
                   ASCIIToUTF16("administrative_area_name"),
                   ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
                   "id"));
   expected.AddAddress(shipping_address.Pass());

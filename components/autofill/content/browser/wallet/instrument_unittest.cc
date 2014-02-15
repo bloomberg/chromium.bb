@@ -45,10 +45,14 @@ TEST(Instrument, ToDictionary) {
                      "ship_recipient_name");
   expected.SetString("credit_card.address.locality_name",
                      "ship_locality_name");
+  expected.SetString("credit_card.address.dependent_locality_name",
+                     "ship_dependent_locality_name");
   expected.SetString("credit_card.address.administrative_area_name",
                      "ship_admin_area_name");
   expected.SetString("credit_card.address.postal_code_number",
                      "ship_postal_code_number");
+  expected.SetString("credit_card.address.sorting_code",
+                     "ship_sorting_code");
   base::ListValue* address_lines = new base::ListValue();
   address_lines->AppendString("ship_address_line_1");
   address_lines->AppendString("ship_address_line_2");

@@ -1637,7 +1637,7 @@ MATCHER(IsUpdatingExistingData, "updating existing Wallet data") {
 }
 
 MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
-  return arg->address_line_1() == ASCIIToUTF16(kEditedBillingAddress);
+  return arg->street_address()[0] == ASCIIToUTF16(kEditedBillingAddress);
 }
 
 // Tests that when using billing address for shipping, and there is no exact
