@@ -14,11 +14,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
-// From gl2/gl2ext.h.
-#ifndef GL_MAILBOX_SIZE_CHROMIUM
-#define GL_MAILBOX_SIZE_CHROMIUM 64
-#endif
-
 typedef signed char GLbyte;
 
 namespace gpu {

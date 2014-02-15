@@ -41,9 +41,9 @@ using ::testing::AnyNumber;
 namespace cc {
 namespace {
 
-gpu::Mailbox MailboxFromString(const std::string& string) {
+gpu::Mailbox MailboxFromChar(char value) {
   gpu::Mailbox mailbox;
-  mailbox.SetName(reinterpret_cast<const int8*>(string.data()));
+  memset(mailbox.name, value, sizeof(mailbox.name));
   return mailbox;
 }
 
@@ -322,7 +322,7 @@ TEST_F(TextureLayerTest, RateLimiter) {
 class MockMailboxCallback {
  public:
   MOCK_METHOD3(Release,
-               void(const std::string& mailbox,
+               void(const gpu::Mailbox& mailbox,
                     uint32 sync_point,
                     bool lost_resource));
   MOCK_METHOD3(Release2,
@@ -333,8 +333,8 @@ class MockMailboxCallback {
 
 struct CommonMailboxObjects {
   CommonMailboxObjects()
-      : mailbox_name1_(64, '1'),
-        mailbox_name2_(64, '2'),
+      : mailbox_name1_(MailboxFromChar('1')),
+        mailbox_name2_(MailboxFromChar('2')),
         sync_point1_(1),
         sync_point2_(2),
         shared_memory_(new base::SharedMemory) {
@@ -346,10 +346,8 @@ struct CommonMailboxObjects {
                                    mailbox_name2_);
     const uint32 arbitrary_target1 = 1;
     const uint32 arbitrary_target2 = 2;
-    mailbox1_ = TextureMailbox(
-        MailboxFromString(mailbox_name1_), arbitrary_target1, sync_point1_);
-    mailbox2_ = TextureMailbox(
-        MailboxFromString(mailbox_name2_), arbitrary_target2, sync_point2_);
+    mailbox1_ = TextureMailbox(mailbox_name1_, arbitrary_target1, sync_point1_);
+    mailbox2_ = TextureMailbox(mailbox_name2_, arbitrary_target2, sync_point2_);
     gfx::Size size(128, 128);
     EXPECT_TRUE(shared_memory_->CreateAndMapAnonymous(4 * size.GetArea()));
     release_mailbox3_ = base::Bind(&MockMailboxCallback::Release2,
@@ -358,8 +356,8 @@ struct CommonMailboxObjects {
     mailbox3_ = TextureMailbox(shared_memory_.get(), size);
   }
 
-  std::string mailbox_name1_;
-  std::string mailbox_name2_;
+  gpu::Mailbox mailbox_name1_;
+  gpu::Mailbox mailbox_name2_;
   MockMailboxCallback mock_callback_;
   ReleaseCallback release_mailbox1_;
   ReleaseCallback release_mailbox2_;
@@ -774,8 +772,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
             &TextureLayerImplWithMailboxThreadedCallback::ReleaseCallback,
             base::Unretained(this)));
     layer_->SetTextureMailbox(
-        TextureMailbox(
-            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        TextureMailbox(MailboxFromChar(mailbox_char), GL_TEXTURE_2D, 0),
         callback.Pass());
   }
 
@@ -993,8 +990,7 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
         base::Bind(
             &TextureLayerMailboxIsActivatedDuringCommit::ReleaseCallback));
     layer_->SetTextureMailbox(
-        TextureMailbox(
-            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        TextureMailbox(MailboxFromChar(mailbox_char), GL_TEXTURE_2D, 0),
         callback.Pass());
   }
 
@@ -1640,8 +1636,7 @@ class TextureLayerNoExtraCommitForMailboxTest
       return true;
     }
 
-    *texture_mailbox = TextureMailbox(
-        MailboxFromString(std::string(64, '1')), GL_TEXTURE_2D, 0);
+    *texture_mailbox = TextureMailbox(MailboxFromChar('1'), GL_TEXTURE_2D, 0);
     *release_callback = SingleReleaseCallback::Create(
         base::Bind(&TextureLayerNoExtraCommitForMailboxTest::MailboxReleased,
                    base::Unretained(this)));
@@ -1752,8 +1747,7 @@ class TextureLayerChangeInvisibleMailboxTest
   }
 
   TextureMailbox MakeMailbox(char name) {
-    return TextureMailbox(
-        MailboxFromString(std::string(64, name)), GL_TEXTURE_2D, 0);
+    return TextureMailbox(MailboxFromChar(name), GL_TEXTURE_2D, 0);
   }
 
   void MailboxReleased(uint32 sync_point, bool lost_resource) {
@@ -1886,8 +1880,7 @@ class TextureLayerReleaseResourcesBase
       TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
-    *mailbox = TextureMailbox(
-        MailboxFromString(std::string(64, '1')), GL_TEXTURE_2D, 0);
+    *mailbox = TextureMailbox(MailboxFromChar('1'), GL_TEXTURE_2D, 0);
     *release_callback = SingleReleaseCallback::Create(
         base::Bind(&TextureLayerReleaseResourcesBase::MailboxReleased,
                    base::Unretained(this)));
@@ -2043,8 +2036,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
             &TextureLayerWithMailboxMainThreadDeleted::ReleaseCallback,
             base::Unretained(this)));
     layer_->SetTextureMailbox(
-        TextureMailbox(
-            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        TextureMailbox(MailboxFromChar(mailbox_char), GL_TEXTURE_2D, 0),
         callback.Pass());
   }
 
@@ -2117,8 +2109,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
             &TextureLayerWithMailboxImplThreadDeleted::ReleaseCallback,
             base::Unretained(this)));
     layer_->SetTextureMailbox(
-        TextureMailbox(
-            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        TextureMailbox(MailboxFromChar(mailbox_char), GL_TEXTURE_2D, 0),
         callback.Pass());
   }
 

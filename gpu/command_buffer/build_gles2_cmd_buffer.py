@@ -1327,7 +1327,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoConsumeTextureCHROMIUM',
     'type': 'PUT',
     'data_type': 'GLbyte',
-    'count': 64,
+    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'extension': True,
     'chromium': True,
@@ -1910,7 +1910,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoProduceTextureCHROMIUM',
     'type': 'PUT',
     'data_type': 'GLbyte',
-    'count': 64,
+    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'extension': True,
     'chromium': True,

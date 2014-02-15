@@ -136,12 +136,10 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     TransferableResource resource;
     resource.id = resource_id;
     resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-    GLbyte arbitrary_mailbox[64] = {
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-      1, 2, 3, 4
-    };
+    GLbyte arbitrary_mailbox[GL_MAILBOX_SIZE_CHROMIUM] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2,
+        3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4,
+        5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4};
     resource.mailbox_holder.mailbox.SetName(arbitrary_mailbox);
     frame->resource_list.push_back(resource);
   }
