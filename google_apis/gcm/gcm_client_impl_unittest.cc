@@ -29,6 +29,7 @@ enum LastEvent {
   NONE,
   LOADING_COMPLETED,
   REGISTRATION_COMPLETED,
+  UNREGISTRATION_COMPLETED,
   MESSAGE_SEND_ERROR,
   MESSAGE_RECEIVED,
   MESSAGES_DELETED,
@@ -37,6 +38,7 @@ enum LastEvent {
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
 const char kRegistrationResponsePrefix[] = "token=";
+const char kUnregistrationResponsePrefix[] = "deleted=";
 
 // Helper for building arbitrary data messages.
 MCSMessage BuildDownstreamMessage(
@@ -123,11 +125,14 @@ class GCMClientImplTest : public testing::Test,
   void ReceiveMessageFromMCS(const MCSMessage& message);
   void CompleteCheckin(uint64 android_id, uint64 security_token);
   void CompleteRegistration(const std::string& registration_id);
+  void CompleteUnregistration(const std::string& app_id);
 
   // GCMClient::Delegate overrides (for verification).
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
+  virtual void OnUnregisterFinished(const std::string& app_id,
+                                    bool success) OVERRIDE;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
                               GCMClient::Result result) OVERRIDE {}
@@ -250,7 +255,17 @@ void GCMClientImplTest::CompleteRegistration(
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(response);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  url_fetcher_factory_.RemoveFetcherFromMap(0);
+}
+
+void GCMClientImplTest::CompleteUnregistration(
+    const std::string& app_id) {
+  std::string response(kUnregistrationResponsePrefix);
+  response.append(app_id);
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(response);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 void GCMClientImplTest::InitializeGCMClient() {
@@ -305,6 +320,13 @@ void GCMClientImplTest::OnRegisterFinished(const std::string& app_id,
   last_result_ = result;
 }
 
+void GCMClientImplTest::OnUnregisterFinished(const std::string& app_id,
+                                             bool success) {
+  last_event_ = UNREGISTRATION_COMPLETED;
+  last_app_id_ = app_id;
+  last_result_ = success ? GCMClient::SUCCESS : GCMClient::UNKNOWN_ERROR;
+}
+
 void GCMClientImplTest::OnMessagesDeleted(const std::string& app_id) {
   last_event_ = MESSAGES_DELETED;
   last_app_id_ = app_id;
@@ -344,6 +366,15 @@ TEST_F(GCMClientImplTest, RegisterApp) {
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ("app_id", last_app_id());
   EXPECT_EQ("reg_id", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+}
+
+TEST_F(GCMClientImplTest, UnregisterApp) {
+  gcm_client()->Unregister("app_id");
+  CompleteUnregistration("app_id");
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ("app_id", last_app_id());
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
 }
 

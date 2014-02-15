@@ -18,6 +18,7 @@
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
+#include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
@@ -115,6 +116,7 @@ GCMClientImpl::GCMClientImpl()
       clock_(new base::DefaultClock()),
       url_request_context_getter_(NULL),
       pending_registrations_deleter_(&pending_registrations_),
+      pending_unregistrations_deleter_(&pending_unregistrations_),
       weak_ptr_factory_(this) {
 }
 
@@ -305,8 +307,8 @@ void GCMClientImpl::Register(const std::string& app_id,
 }
 
 void GCMClientImpl::OnRegisterCompleted(const std::string& app_id,
-                                         RegistrationRequest::Status status,
-                                         const std::string& registration_id) {
+                                        RegistrationRequest::Status status,
+                                        const std::string& registration_id) {
   DCHECK(delegate_);
 
   Result result;
@@ -330,6 +332,39 @@ void GCMClientImpl::OnRegisterCompleted(const std::string& app_id,
 }
 
 void GCMClientImpl::Unregister(const std::string& app_id) {
+  DCHECK_EQ(state_, READY);
+  if (pending_unregistrations_.count(app_id) == 1)
+    return;
+
+  UnregistrationRequest::RequestInfo request_info(
+      device_checkin_info_.android_id,
+      device_checkin_info_.secret,
+      app_id);
+
+  UnregistrationRequest* unregistration_request =
+      new UnregistrationRequest(
+          request_info,
+          kDefaultBackoffPolicy,
+          base::Bind(&GCMClientImpl::OnUnregisterCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     app_id),
+          url_request_context_getter_);
+  pending_unregistrations_[app_id] = unregistration_request;
+  unregistration_request->Start();
+}
+
+void GCMClientImpl::OnUnregisterCompleted(const std::string& app_id,
+                                          bool status) {
+  DVLOG(1) << "Unregister completed for app: " << app_id
+           << " with " << (status ? "success." : "failure.");
+  delegate_->OnUnregisterFinished(app_id, status);
+
+  PendingUnregistrations::iterator iter = pending_unregistrations_.find(app_id);
+  if (iter == pending_unregistrations_.end())
+    return;
+
+  delete iter->second;
+  pending_unregistrations_.erase(iter);
 }
 
 void GCMClientImpl::Send(const std::string& app_id,

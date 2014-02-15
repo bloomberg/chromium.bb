@@ -239,6 +239,8 @@ class GCMProfileService::IOWorker
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
+  virtual void OnUnregisterFinished(const std::string& app_id,
+                                    bool success) OVERRIDE;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
                               GCMClient::Result result) OVERRIDE;
@@ -342,6 +344,12 @@ void GCMProfileService::IOWorker::OnRegisterFinished(
                  app_id,
                  registration_id,
                  result));
+}
+
+void GCMProfileService::IOWorker::OnUnregisterFinished(
+    const std::string& app_id,
+    bool success) {
+  // Nothing to do here.
 }
 
 void GCMProfileService::IOWorker::OnSendFinished(

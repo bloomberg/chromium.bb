@@ -35,7 +35,7 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
-class RegistrationRequest;
+class UnregistrationRequest;
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
 // with MCS) and other pieces of GCM infrastructure like Registration and
@@ -90,11 +90,17 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
     uint64 secret;
   };
 
-  // Collection of pending registration requests. Keys are app_id, while values
+  // Collection of pending registration requests. Keys are app IDs, while values
   // are pending registration requests to obtain a registration ID for
   // requesting application.
   typedef std::map<std::string, RegistrationRequest*>
       PendingRegistrations;
+
+  // Collection of pending unregistration requests. Keys are app IDs, while
+  // values are pending unregistration requests to disable the registration ID
+  // currently assigned to the application.
+  typedef std::map<std::string, UnregistrationRequest*>
+      PendingUnregistrations;
 
   friend class GCMClientImplTest;
 
@@ -139,6 +145,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   void OnRegisterCompleted(const std::string& app_id,
                            RegistrationRequest::Status status,
                            const std::string& registration_id);
+
+  // Completes the unregistration request.
+  void OnUnregisterCompleted(const std::string& app_id, bool status);
 
   // Handles incoming data message and dispatches it the a relevant user
   // delegate.
@@ -191,6 +200,11 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // RegistrationRequests.
   PendingRegistrations pending_registrations_;
   STLValueDeleter<PendingRegistrations> pending_registrations_deleter_;
+
+  // Currently pending unregistrations. GCMClientImpl owns the
+  // UnregistrationRequests.
+  PendingUnregistrations pending_unregistrations_;
+  STLValueDeleter<PendingUnregistrations> pending_unregistrations_deleter_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;
