@@ -282,7 +282,9 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
 }
 
 void PasswordGenerationAgent::FocusedNodeChanged(const blink::WebNode& node) {
-  // TODO(gcasto): Re-hide generation_element text.
+  if (!generation_element_.isNull())
+    generation_element_.setShouldRevealPassword(false);
+
   if (node.isNull() || !node.isElementNode())
     return;
 
@@ -295,7 +297,7 @@ void PasswordGenerationAgent::FocusedNodeChanged(const blink::WebNode& node) {
     return;
 
   if (password_is_generated_) {
-    // TODO(gcasto): Make characters visible.
+    generation_element_.setShouldRevealPassword(true);
     ShowEditingPopup();
   }
 
@@ -319,8 +321,11 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
           password_generation::PASSWORD_DELETED);
     }
 
+    // Do not treat the password as generated.
     // TODO(gcasto): Set PasswordForm::type in the browser to TYPE_NORMAL.
     password_is_generated_ = false;
+    generation_element_.setShouldRevealPassword(false);
+
     // Offer generation again.
     ShowGenerationPopup();
   } else if (!password_is_generated_) {
@@ -359,8 +364,10 @@ void PasswordGenerationAgent::ShowEditingPopup() {
       GetScaledBoundingBox(render_view_->GetWebView()->pageScaleFactor(),
                            &generation_element_);
 
-  Send(new AutofillHostMsg_ShowPasswordEditingPopup(routing_id(),
-                                                    bounding_box_scaled));
+  Send(new AutofillHostMsg_ShowPasswordEditingPopup(
+      routing_id(),
+      bounding_box_scaled,
+      *possible_account_creation_form_));
 
   password_generation::LogPasswordGenerationEvent(
       password_generation::EDITING_POPUP_SHOWN);

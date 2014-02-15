@@ -23,13 +23,15 @@ namespace {
 
 // Calculates the height of a line of text. Currently returns the height of
 // a label.
-int CalculateLineHeight() {
+int CalculateLineHeight(const gfx::FontList& font_list) {
   Label label;
+  label.SetFontList(font_list);
   return label.GetPreferredSize().height();
 }
 
 scoped_ptr<Label> CreateLabelRange(
     const base::string16& text,
+    const gfx::FontList& font_list,
     const StyledLabel::RangeStyleInfo& style_info,
     views::LinkListener* link_listener) {
   scoped_ptr<Label> result;
@@ -44,6 +46,7 @@ scoped_ptr<Label> CreateLabelRange(
   }
 
   result->SetEnabledColor(style_info.color);
+  result->SetFontList(font_list);
 
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
@@ -103,6 +106,11 @@ void StyledLabel::SetText(const base::string16& text) {
   text_ = text;
   style_ranges_.clear();
   RemoveAllChildViews(true);
+  PreferredSizeChanged();
+}
+
+void StyledLabel::SetBaseFontList(const gfx::FontList& font_list) {
+  font_list_ = font_list;
   PreferredSizeChanged();
 }
 
@@ -179,7 +187,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   if (width <= 0 || text_.empty())
     return gfx::Size();
 
-  const int line_height = CalculateLineHeight();
+  const int line_height = CalculateLineHeight(font_list_);
   // The index of the line we're on.
   int line = 0;
   // The x position (in pixels) of the line we're on, relative to content
@@ -205,7 +213,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
     const gfx::Rect chunk_bounds(x, 0, width - x, 2 * line_height);
     std::vector<base::string16> substrings;
-    gfx::FontList text_font_list;
+    gfx::FontList text_font_list = font_list_;
     // If the start of the remaining text is inside a styled range, the font
     // style may differ from the base font. The font specified by the range
     // should be used when eliding text.
@@ -255,7 +263,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
       chunk = chunk.substr(0, std::min(chunk.size(), range.end() - position));
 
-      label = CreateLabelRange(chunk, style_info, this);
+      label = CreateLabelRange(chunk, font_list_, style_info, this);
 
       if (style_info.is_link && !dry_run)
         link_targets_[label.get()] = range;
@@ -266,7 +274,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       // This chunk is normal text.
       if (position + chunk.size() > range.start())
         chunk = chunk.substr(0, range.start() - position);
-      label = CreateLabelRange(chunk, default_style_info_, this);
+      label = CreateLabelRange(chunk, font_list_, default_style_info_, this);
     }
 
     if (displayed_on_background_color_set_)

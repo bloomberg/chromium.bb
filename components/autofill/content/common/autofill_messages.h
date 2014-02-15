@@ -241,9 +241,11 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordGenerationPopup,
                     autofill::PasswordForm)
 
 // Instructs the browser to show the popup for editing a generated password.
-// The location should be specified in the renderers coordinate system.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_ShowPasswordEditingPopup,
-                    gfx::RectF /* source location */)
+// The location should be specified in the renderers coordinate system. Form
+// is the form associated with the password field.
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_ShowPasswordEditingPopup,
+                    gfx::RectF /* source location */,
+                    autofill::PasswordForm)
 
 // Instructs the browser to hide any password generation popups.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)

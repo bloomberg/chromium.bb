@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
@@ -56,8 +57,10 @@ class PasswordGenerationPopupControllerImpl
   virtual ~PasswordGenerationPopupControllerImpl();
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
-  // Does not update the view if one is already showing.
-  void Show();
+  // If |display_password| is true, a generated password is shown that can be
+  // selected by the user. Otherwise just the text explaining generated
+  // passwords is shown.
+  void Show(bool display_password);
 
   // Hides the popup and destroys |this|.
   void HideAndDestroy();
@@ -88,16 +91,19 @@ class PasswordGenerationPopupControllerImpl
   virtual void SelectionCleared() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
-  virtual void OnHelpLinkClicked() OVERRIDE;
+  virtual void OnSavedPasswordsLinkClicked() OVERRIDE;
   virtual gfx::NativeView container_view() OVERRIDE;
+  virtual const gfx::FontList& font_list() const OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;
   virtual const gfx::Rect& password_bounds() const OVERRIDE;
   virtual const gfx::Rect& divider_bounds() const OVERRIDE;
   virtual const gfx::Rect& help_bounds() const OVERRIDE;
+  virtual bool display_password() const OVERRIDE;
   virtual bool password_selected() const OVERRIDE;
   virtual base::string16 password() const OVERRIDE;
-  virtual base::string16 HelpText() OVERRIDE;
-  virtual base::string16 LearnMoreLink() OVERRIDE;
+  virtual base::string16 SuggestedText() OVERRIDE;
+  virtual const base::string16& HelpText() OVERRIDE;
+  virtual const gfx::Range& HelpTextLinkRange() OVERRIDE;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
 
@@ -122,6 +128,7 @@ class PasswordGenerationPopupControllerImpl
   PasswordForm form_;
   PasswordGenerator* generator_;
   PasswordManager* password_manager_;
+  // May be NULL.
   PasswordGenerationPopupObserver* observer_;
 
   // Contains common popup functionality.
@@ -131,10 +138,18 @@ class PasswordGenerationPopupControllerImpl
   PasswordGenerationPopupView* view_;
 
   // Font list used in the popup.
-  gfx::FontList font_list_;
+  const gfx::FontList& font_list_;
+
+  // Help text and the range in the text that corresponds to the saved passwords
+  // link.
+  base::string16 help_text_;
+  gfx::Range link_range_;
 
   base::string16 current_password_;
   bool password_selected_;
+
+  // If a password will be shown in this popup.
+  bool display_password_;
 
   // Bounds for all the elements of the popup.
   gfx::Rect popup_bounds_;

@@ -113,13 +113,29 @@ void PasswordGenerationManager::OnShowPasswordGenerationPopup(
           observer_,
           web_contents_,
           web_contents_->GetView()->GetNativeView());
-  popup_controller_->Show();
+  popup_controller_->Show(true /* display_password */);
 #endif  // #if defined(USE_AURA)
 }
 
 void PasswordGenerationManager::OnShowPasswordEditingPopup(
-    const gfx::RectF& bounds) {
-  // TODO(gcasto): Enable this.
+    const gfx::RectF& bounds,
+    const autofill::PasswordForm& form) {
+  // Only implemented for Aura right now.
+#if defined(USE_AURA)
+  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
+
+  popup_controller_ =
+      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
+          popup_controller_,
+          element_bounds_in_screen_space,
+          form,
+          password_generator_.get(),
+          driver_->GetPasswordManager(),
+          observer_,
+          web_contents_,
+          web_contents_->GetView()->GetNativeView());
+  popup_controller_->Show(false /* display_password */);
+#endif  // #if defined(USE_AURA)
 }
 
 void PasswordGenerationManager::OnHidePasswordGenerationPopup() {

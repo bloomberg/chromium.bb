@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/link_listener.h"
@@ -59,6 +60,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // Sets the text to be displayed, and clears any previous styling.
   void SetText(const base::string16& text);
+
+  // Sets the fonts used by all labels. Can be augemented by styling set by
+  // AddStyleRange and SetDefaultStyle.
+  void SetBaseFontList(const gfx::FontList& font_list);
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
@@ -113,6 +118,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // The text to display.
   base::string16 text_;
+
+  // Fonts used to display text. Can be augmented by RangeStyleInfo.
+  gfx::FontList font_list_;
 
   // The default style to use for any part of the text that isn't within
   // a range in |style_ranges_|.

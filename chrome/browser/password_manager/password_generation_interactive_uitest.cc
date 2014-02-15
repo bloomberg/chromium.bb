@@ -25,11 +25,13 @@ namespace {
 class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
  public:
   TestPopupObserver()
-      : popup_showing_(false) {}
+      : popup_showing_(false),
+        password_visible_(false) {}
   virtual ~TestPopupObserver() {}
 
-  virtual void OnPopupShown() OVERRIDE {
+  virtual void OnPopupShown(bool password_visible) OVERRIDE {
     popup_showing_ = true;
+    password_visible_ = password_visible;
   }
 
   virtual void OnPopupHidden() OVERRIDE {
@@ -37,9 +39,11 @@ class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
   }
 
   bool popup_showing() { return popup_showing_; }
+  bool password_visible() { return password_visible_; }
 
  private:
   bool popup_showing_;
+  bool password_visible_;
 };
 
 }  // namespace
@@ -57,7 +61,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Disable Autofill requesting access to AddressBook data. This will cause
-    // test tests to hang on Mac.
+    // the tests to hang on Mac.
     autofill::test::DisableSystemServices(browser()->profile());
 
     // Set observer for popup.
@@ -72,7 +76,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    // Cleanup UI.
+    // Clean up UI.
     PasswordGenerationManager* generation_manager =
         ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
             GetWebContents());
@@ -97,6 +101,16 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
     return value;
   }
 
+  std::string GetFocusedElement() {
+    std::string focused_element;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        GetRenderViewHost(),
+        "window.domAutomationController.send("
+        "    document.activeElement.id)",
+        &focused_element));
+    return focused_element;
+  }
+
   void FocusPasswordField() {
     ASSERT_TRUE(content::ExecuteScript(
         GetRenderViewHost(),
@@ -110,8 +124,12 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
     GetRenderViewHost()->ForwardKeyboardEvent(event);
   }
 
-  bool popup_showing() {
-    return observer_.popup_showing();
+  bool GenerationPopupShowing() {
+    return observer_.popup_showing() && observer_.password_visible();
+  }
+
+  bool EditingPopupShowing() {
+    return observer_.popup_showing() && !observer_.password_visible();
   }
 
  private:
@@ -119,7 +137,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 };
 
 #if defined(USE_AURA)
-// Enabled on these platforms
+// Enabled on these platforms.
 #define MAYBE_PopupShownAndPasswordSelected PopupShownAndPasswordSelected
 #define MAYBE_PopupShownAndDismissed PopupShownAndDismissed
 #else
@@ -131,20 +149,29 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        MAYBE_PopupShownAndPasswordSelected) {
   FocusPasswordField();
-  EXPECT_TRUE(popup_showing());
+  EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);
 
+  // Selecting the password should fill the field and move focus to the
+  // submit button.
   EXPECT_FALSE(GetFieldValue("password_field").empty());
+  EXPECT_FALSE(GenerationPopupShowing());
+  EXPECT_FALSE(EditingPopupShowing());
+  EXPECT_EQ("input_submit_button", GetFocusedElement());
+
+  // Re-focusing the password field should show the editing popup.
+  FocusPasswordField();
+  EXPECT_TRUE(EditingPopupShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        MAYBE_PopupShownAndDismissed) {
   FocusPasswordField();
-  EXPECT_TRUE(popup_showing());
+  EXPECT_TRUE(GenerationPopupShowing());
 
   SendKeyToPopup(ui::VKEY_ESCAPE);
 
   // Popup is dismissed.
-  EXPECT_FALSE(popup_showing());
+  EXPECT_FALSE(GenerationPopupShowing());
 }

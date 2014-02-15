@@ -73,7 +73,8 @@ class PasswordGenerationManager {
                                      const autofill::PasswordForm& form);
 
   // Causes the password editing UI to be shown anchored at |element_bounds|.
-  void OnShowPasswordEditingPopup(const gfx::RectF& element_bounds);
+  void OnShowPasswordEditingPopup(const gfx::RectF& element_bounds,
+                                  const autofill::PasswordForm& form);
 
   // Hides any visible UI.
   void OnHidePasswordGenerationPopup();

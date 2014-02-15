@@ -10,7 +10,7 @@ namespace autofill {
 // Observer for PasswordGenerationPopup events. Currently only used for testing.
 class PasswordGenerationPopupObserver {
  public:
-  virtual void OnPopupShown() = 0;
+  virtual void OnPopupShown(bool password_visible) = 0;
   virtual void OnPopupHidden() = 0;
 };
 

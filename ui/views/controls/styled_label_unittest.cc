@@ -381,6 +381,24 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
   EXPECT_EQ(ASCIIToUTF16("tooltip"), tooltip);
 }
 
+TEST_F(StyledLabelTest, SetBaseFontList) {
+  const std::string text("This is a test block of text.");
+  InitStyledLabel(text);
+  std::string font_name("arial");
+  gfx::Font font(font_name, 30);
+  styled()->SetBaseFontList(gfx::FontList(font));
+  Label label(ASCIIToUTF16(text), gfx::FontList(font));
+
+  styled()->SetBounds(0,
+                      0,
+                      label.GetPreferredSize().width(),
+                      label.GetPreferredSize().height());
+
+  // Make sure we have the same sizing as a label.
+  EXPECT_EQ(label.GetPreferredSize().height(), styled()->height());
+  EXPECT_EQ(label.GetPreferredSize().width(), styled()->width());
+}
+
 TEST_F(StyledLabelTest, HandleEmptyLayout) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);

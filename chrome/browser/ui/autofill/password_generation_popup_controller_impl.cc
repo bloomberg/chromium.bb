@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -22,14 +24,12 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
 
 namespace autofill {
-
-const int kMinimumWidth = 60;
-const int kDividerHeight = 1;
 
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetOrCreate(
@@ -45,7 +45,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
       previous->element_bounds() == bounds &&
       previous->web_contents() == web_contents &&
       previous->container_view() == container_view) {
-    // TODO(gcasto): Should we clear state here?
+    // TODO(gcasto): Any state that we should clear here?
     return previous;
   }
 
@@ -78,12 +78,24 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       observer_(observer),
       controller_common_(bounds, container_view, web_contents),
       view_(NULL),
-      current_password_(base::ASCIIToUTF16(generator->Generate())),
+      font_list_(ResourceBundle::GetSharedInstance().GetFontList(
+          ResourceBundle::SmallFont)),
       password_selected_(false),
+      display_password_(false),
       weak_ptr_factory_(this) {
   controller_common_.SetKeyPressCallback(
       base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
+
+  std::vector<base::string16> pieces;
+  base::SplitStringDontTrim(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT),
+      '|',  // separator
+      &pieces);
+  DCHECK_EQ(3u, pieces.size());
+  link_range_ = gfx::Range(pieces[0].size(),
+                           pieces[0].size() + pieces[1].size());
+  help_text_ = JoinString(pieces, base::string16());
 }
 
 PasswordGenerationPopupControllerImpl::~PasswordGenerationPopupControllerImpl()
@@ -124,11 +136,18 @@ bool PasswordGenerationPopupControllerImpl::PossiblyAcceptPassword() {
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
+  if (!display_password_)
+    return;
+
   password_selected_ = selected;
+  view_->PasswordSelectionUpdated();
   view_->UpdateBoundsAndRedrawPopup();
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
+  if (!display_password_)
+    return;
+
   web_contents()->GetRenderViewHost()->Send(
       new AutofillMsg_GeneratedPasswordAccepted(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
@@ -138,15 +157,22 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
 }
 
 int PasswordGenerationPopupControllerImpl::GetDesiredWidth() {
-  // Minimum width we want to display the password.
-  int minimum_length_for_text =
-      2 * kHorizontalPadding +
-      font_list_.GetExpectedTextWidth(kMinimumWidth) +
-      2 * kPopupBorderThickness;
+  // Minimum width in pixels.
+  const int minimum_required_width = 300;
 
   // If the width of the field is longer than the minimum, use that instead.
-  return std::max(minimum_length_for_text,
-                  controller_common_.RoundedElementBounds().width());
+  int width = std::max(minimum_required_width,
+                       controller_common_.RoundedElementBounds().width());
+
+  if (display_password_) {
+    // Make sure that the width will always be large enough to display the
+    // password and suggestion on one line.
+    width = std::max(width,
+                     gfx::GetStringWidth(current_password_ + SuggestedText(),
+                                         font_list_) + 2 * kHorizontalPadding);
+  }
+
+  return width;
 }
 
 int PasswordGenerationPopupControllerImpl::GetDesiredHeight(int width) {
@@ -154,16 +180,18 @@ int PasswordGenerationPopupControllerImpl::GetDesiredHeight(int width) {
   // line break in the middle of the link, but as long as the link isn't longer
   // than given width this shouldn't affect the height calculated here. The
   // default width should be wide enough to prevent this from being an issue.
-  int total_length = gfx::GetStringWidth(HelpText() + LearnMoreLink(),
-                                         font_list_);
+  int total_length = gfx::GetStringWidth(HelpText(), font_list_);
   int usable_width = width - 2 * kHorizontalPadding;
   int text_height =
       static_cast<int>(ceil(static_cast<double>(total_length)/usable_width)) *
-      font_list_.GetHeight();
+      font_list_.GetFontSize();
   int help_section_height = text_height + 2 * kHelpVerticalPadding;
 
-  int password_section_height =
-      font_list_.GetHeight() + 2 * kPasswordVerticalPadding;
+  int password_section_height = 0;
+  if (display_password_) {
+    password_section_height =
+        font_list_.GetFontSize() + 2 * kPasswordVerticalPadding;
+  }
 
   return (2 * kPopupBorderThickness +
           help_section_height +
@@ -175,41 +203,54 @@ void PasswordGenerationPopupControllerImpl::CalculateBounds() {
   int popup_height = GetDesiredHeight(popup_width);
 
   popup_bounds_ = controller_common_.GetPopupBounds(popup_height, popup_width);
+  int sub_view_width = popup_bounds_.width() - 2 * kPopupBorderThickness;
 
   // Calculate the bounds for the rest of the elements given the bounds of
   // the popup.
-  password_bounds_ =  gfx::Rect(
-      kPopupBorderThickness,
-      kPopupBorderThickness,
-      popup_bounds_.width() - 2 * kPopupBorderThickness,
-      font_list_.GetHeight() + 2 * kPasswordVerticalPadding);
+  if (display_password_) {
+    password_bounds_ =  gfx::Rect(
+        kPopupBorderThickness,
+        kPopupBorderThickness,
+        sub_view_width,
+        font_list_.GetFontSize() + 2 * kPasswordVerticalPadding);
 
-  divider_bounds_ = gfx::Rect(kPopupBorderThickness,
-                              password_bounds_.bottom(),
-                              password_bounds_.width(),
-                              kDividerHeight);
+    divider_bounds_ = gfx::Rect(kPopupBorderThickness,
+                                password_bounds_.bottom(),
+                                sub_view_width,
+                                1 /* divider heigth*/);
+  } else {
+    password_bounds_ = gfx::Rect();
+    divider_bounds_ = gfx::Rect();
+  }
 
+  int help_y = std::max(kPopupBorderThickness, divider_bounds_.bottom());
   int help_height =
-      popup_bounds_.height() - divider_bounds_.bottom() - kPopupBorderThickness;
+      popup_bounds_.height() - help_y - kPopupBorderThickness;
   help_bounds_ = gfx::Rect(
       kPopupBorderThickness,
-      divider_bounds_.bottom(),
-      password_bounds_.width(),
+      help_y,
+      sub_view_width,
       help_height);
 }
 
-void PasswordGenerationPopupControllerImpl::Show() {
+void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
+  display_password_ = display_password;
+  if (display_password_)
+    current_password_ = base::ASCIIToUTF16(generator_->Generate());
+
   CalculateBounds();
 
   if (!view_) {
     view_ = PasswordGenerationPopupView::Create(this);
     view_->Show();
+  } else {
+    view_->UpdateBoundsAndRedrawPopup();
   }
 
   controller_common_.RegisterKeyPressCallback();
 
   if (observer_)
-    observer_->OnPopupShown();
+    observer_->OnPopupShown(display_password_);
 }
 
 void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
@@ -234,7 +275,9 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
   Hide();
 }
 
-void PasswordGenerationPopupControllerImpl::OnHelpLinkClicked() {
+void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
+  // TODO(gcasto): Change this to navigate to account central once passwords
+  // are visible there.
   Browser* browser =
       chrome::FindBrowserWithWebContents(controller_common_.web_contents());
   content::OpenURLParams params(
@@ -273,6 +316,10 @@ gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
   return controller_common_.container_view();
 }
 
+const gfx::FontList& PasswordGenerationPopupControllerImpl::font_list() const {
+  return font_list_;
+}
+
 const gfx::Rect& PasswordGenerationPopupControllerImpl::popup_bounds() const {
   return popup_bounds_;
 }
@@ -291,6 +338,10 @@ const gfx::Rect& PasswordGenerationPopupControllerImpl::help_bounds() const {
   return help_bounds_;
 }
 
+bool PasswordGenerationPopupControllerImpl::display_password() const {
+  return display_password_;
+}
+
 bool PasswordGenerationPopupControllerImpl::password_selected() const {
   return password_selected_;
 }
@@ -299,12 +350,16 @@ base::string16 PasswordGenerationPopupControllerImpl::password() const {
   return current_password_;
 }
 
-base::string16 PasswordGenerationPopupControllerImpl::HelpText() {
-  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
+base::string16 PasswordGenerationPopupControllerImpl::SuggestedText() {
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_SUGGESTION);
 }
 
-base::string16 PasswordGenerationPopupControllerImpl::LearnMoreLink() {
-  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_LEARN_MORE_LINK);
+const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
+  return help_text_;
+}
+
+const gfx::Range& PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
+  return link_range_;
 }
 
 }  // namespace autofill

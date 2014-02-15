@@ -10,7 +10,8 @@
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
-class Label;
+class StyledLabel;
+class View;
 }
 
 namespace autofill {
@@ -29,20 +30,25 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
+  virtual void PasswordSelectionUpdated() OVERRIDE;
 
  private:
   virtual ~PasswordGenerationPopupViewViews();
 
+  // Helper function to create |password_view_|.
+  void CreatePasswordView();
+
   // views:Views implementation.
+  virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::StyledLabelListener implementation
   virtual void StyledLabelLinkClicked(const gfx::Range& range,
                                       int event_flags) OVERRIDE;
 
-  // Label for the generated password. Used to change the background color when
-  // the password is selected/deselected. Weak reference.
-  views::Label* password_label_;
+  // Sub views. Used to change bounds when updating. Weak references.
+  views::View* password_view_;
+  views::StyledLabel* help_label_;
 
   // Controller for this view. Weak reference.
   PasswordGenerationPopupController* controller_;
