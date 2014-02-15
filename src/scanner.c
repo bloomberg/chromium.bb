@@ -1165,11 +1165,13 @@ emit_code(struct protocol *protocol)
 	       "#include <stdint.h>\n"
 	       "#include \"wayland-util.h\"\n\n");
 
+	printf("#pragma GCC diagnostic push\n"
+	       "#pragma GCC diagnostic ignored \"-Wredundant-decls\"\n");
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		emit_types_forward_declarations(protocol, &i->request_list);
 		emit_types_forward_declarations(protocol, &i->event_list);
 	}
-	printf("\n");
+	printf("#pragma GCC diagnostic pop\n\n");
 
 	printf("static const struct wl_interface *types[] = {\n");
 	emit_null_run(protocol);
