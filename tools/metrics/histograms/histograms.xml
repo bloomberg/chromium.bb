@@ -5852,6 +5852,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Hotword.Enabled" enum="HotwordPrefState">
+  <summary>
+    The state of the hotword preference. This value is emitted during
+    HotwordService initialization which happens during Profile initialization.
+  </summary>
+</histogram>
+
+<histogram name="Hotword.ExtensionAvailability" enum="HotwordAvailability">
+  <summary>
+    Whether the external component hotword extension exists (i.e., not pending
+    download, disabled, etc.). This value is emitted each time the hotword
+    availability is requested by the extension which typically happens each time
+    a hotword search is initiated.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="milliseconds">
   <summary>
     The time spent waiting for write lock on a disk cache entry.
@@ -26859,6 +26875,19 @@ other types of suffix sets.
   <int value="11" label="RECOVERY_EVENT_INVARIANT_CONTIGUOUS">
     |url_rank| was renumbered due to missing rows.  Does not prevent recovery.
   </int>
+</enum>
+
+<enum name="HotwordAvailability" type="int">
+  <int value="0" label="Unavailable -- reason may be unknown"/>
+  <int value="1" label="Available"/>
+  <int value="2" label="Pending download"/>
+  <int value="3" label="Disabled"/>
+</enum>
+
+<enum name="HotwordPrefState" type="int">
+  <int value="0" label="Preference not set"/>
+  <int value="1" label="Hotwording enabled"/>
+  <int value="2" label="Hotwording disabled"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">

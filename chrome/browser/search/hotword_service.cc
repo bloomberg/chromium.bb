@@ -6,6 +6,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,7 +19,48 @@
 
 namespace {
 const int kMaxTimesToShowOptInPopup = 10;
+
+// Enum describing the state of the hotword preference.
+// This is used for UMA stats -- do not reorder or delete items; only add to
+// the end.
+enum HotwordEnabled {
+  UNSET = 0,  // The hotword preference has not been set.
+  ENABLED,    // The hotword preference is enabled.
+  DISABLED,   // The hotword preference is disabled.
+  NUM_HOTWORD_ENABLED_METRICS
+};
+
+// Enum describing the availability state of the hotword extension.
+// This is used for UMA stats -- do not reorder or delete items; only add to
+// the end.
+enum HotwordExtensionAvailability {
+  UNAVAILABLE = 0,
+  AVAILABLE,
+  PENDING_DOWNLOAD,
+  DISABLED_EXTENSION,
+  NUM_HOTWORD_EXTENSION_AVAILABILITY_METRICS
+};
+
+void RecordAvailabilityMetrics(
+    ExtensionService* service,
+    const extensions::Extension* extension) {
+  HotwordExtensionAvailability availability_state = UNAVAILABLE;
+  if (extension) {
+    availability_state = AVAILABLE;
+  } else if (service->pending_extension_manager() &&
+             service->pending_extension_manager()->IsIdPending(
+                 extension_misc::kHotwordExtensionId)) {
+    availability_state = PENDING_DOWNLOAD;
+  } else if (!service->IsExtensionEnabled(
+      extension_misc::kHotwordExtensionId)) {
+    availability_state = DISABLED_EXTENSION;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Hotword.HotwordExtensionAvailability",
+                            availability_state,
+                            NUM_HOTWORD_EXTENSION_AVAILABILITY_METRICS);
 }
+
+}  // namespace
 
 namespace hotword_internal {
 // Constants for the hotword field trial.
@@ -43,6 +85,17 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile) {
+  // This will be called during profile initialization which is a good time
+  // to check the user's hotword state.
+  HotwordEnabled enabled_state = UNSET;
+  if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled)) {
+    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
+      enabled_state = ENABLED;
+    else
+      enabled_state = DISABLED;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
+                            NUM_HOTWORD_ENABLED_METRICS);
 }
 
 HotwordService::~HotwordService() {
@@ -81,6 +134,9 @@ bool HotwordService::IsServiceAvailable() {
   // extension is disabled, it's not available.
   const extensions::Extension* extension =
       service->GetExtensionById(extension_misc::kHotwordExtensionId, false);
+
+  RecordAvailabilityMetrics(service, extension);
+
   return extension && IsHotwordAllowed();
 }
 
