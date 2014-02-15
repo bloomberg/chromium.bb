@@ -287,6 +287,7 @@
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
                 'remoting_host_messages',
+                'remoting_lib_idl',
               ],
               'msvs_settings': {
                 'VCCLCompilerTool': {
