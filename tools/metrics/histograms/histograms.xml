@@ -18001,6 +18001,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferencesNoEnforcementOnDomain"
+    enum="BooleanEnabled">
+  <summary>
+    Whether settings enforcement was cancelled for a machine joined to a domain.
+    Reported once per session on browser startup.
+  </summary>
+</histogram>
+
 <histogram name="Settings.TrackedPreferenceTrustedInitialized"
     enum="TrackedPreference">
   <summary>

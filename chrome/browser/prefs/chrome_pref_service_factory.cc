@@ -55,9 +55,12 @@
 #include "chrome/browser/managed_mode/supervised_user_pref_store.h"
 #endif
 
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#if defined(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
-#endif
+#endif  // defined(ENABLE_RLZ)
+#endif  // defined(OS_WIN)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -158,6 +161,18 @@ enum SettingsEnforcementGroup {
 };
 
 SettingsEnforcementGroup GetSettingsEnforcementGroup() {
+# if defined(OS_WIN)
+  static bool first_call = true;
+  static const bool is_enrolled_to_domain = base::win::IsEnrolledToDomain();
+  if (first_call) {
+    UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
+                          is_enrolled_to_domain);
+    first_call = false;
+  }
+  if (is_enrolled_to_domain)
+    return GROUP_NO_ENFORCEMENT;
+#endif
+
   struct {
     const char* group_name;
     SettingsEnforcementGroup group;
