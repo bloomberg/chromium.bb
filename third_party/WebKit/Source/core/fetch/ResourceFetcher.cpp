@@ -337,7 +337,7 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(Fetch
         memoryCache()->remove(existing);
     }
 
-    request.setOptions(ResourceLoaderOptions(SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
+    request.setOptions(ResourceLoaderOptions(SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
 }
 
@@ -1370,7 +1370,7 @@ void ResourceFetcher::printPreloadStats()
 
 const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {
-    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
+    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     return options;
 }
 

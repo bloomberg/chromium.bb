@@ -95,7 +95,7 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
         void preflightSuccess();
         void preflightFailure(const String& url, const String& errorDescription);
 
-        void loadRequest(const ResourceRequest&, SecurityCheckPolicy);
+        void loadRequest(const ResourceRequest&);
         bool isAllowedRedirect(const KURL&) const;
         bool isAllowedByPolicy(const KURL&) const;
 

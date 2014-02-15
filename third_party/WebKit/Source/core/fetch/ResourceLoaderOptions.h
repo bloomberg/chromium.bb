@@ -46,16 +46,6 @@ enum DataBufferingPolicy {
     DoNotBufferData
 };
 
-enum ClientCrossOriginCredentialPolicy {
-    AskClientForCrossOriginCredentials,
-    DoNotAskClientForCrossOriginCredentials
-};
-
-enum SecurityCheckPolicy {
-    SkipSecurityCheck,
-    DoSecurityCheck
-};
-
 enum ContentSecurityPolicyCheck {
     CheckContentSecurityPolicy,
     DoNotCheckContentSecurityPolicy
@@ -105,8 +95,6 @@ struct ResourceLoaderOptions {
         , dataBufferingPolicy(BufferData)
         , allowCredentials(DoNotAllowStoredCredentials)
         , credentialsRequested(ClientDidNotRequestCredentials)
-        , crossOriginCredentialPolicy(DoNotAskClientForCrossOriginCredentials)
-        , securityCheck(DoSecurityCheck)
         , contentSecurityPolicyOption(CheckContentSecurityPolicy)
         , requestInitiatorContext(DocumentContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
@@ -120,16 +108,12 @@ struct ResourceLoaderOptions {
         DataBufferingPolicy dataBufferingPolicy,
         StoredCredentials allowCredentials,
         CredentialRequest credentialsRequested,
-        ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy,
-        SecurityCheckPolicy securityCheck,
         ContentSecurityPolicyCheck contentSecurityPolicyOption,
         RequestInitiatorContext requestInitiatorContext)
         : sniffContent(sniffContent)
         , dataBufferingPolicy(dataBufferingPolicy)
         , allowCredentials(allowCredentials)
         , credentialsRequested(credentialsRequested)
-        , crossOriginCredentialPolicy(crossOriginCredentialPolicy)
-        , securityCheck(securityCheck)
         , contentSecurityPolicyOption(contentSecurityPolicyOption)
         , requestInitiatorContext(requestInitiatorContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
@@ -142,8 +126,6 @@ struct ResourceLoaderOptions {
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
     CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.
-    ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy; // Whether we will ask the client for credentials (if we allow credentials at all).
-    SecurityCheckPolicy securityCheck;
     ContentSecurityPolicyCheck contentSecurityPolicyOption;
     FetchInitiatorInfo initiatorInfo;
     RequestInitiatorContext requestInitiatorContext;

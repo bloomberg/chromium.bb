@@ -82,7 +82,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document* document, Threadabl
     ASSERT(m_async || request.httpReferrer().isEmpty());
 
     if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
-        loadRequest(request, DoSecurityCheck);
+        loadRequest(request);
         return;
     }
 
@@ -127,13 +127,13 @@ void DocumentThreadableLoader::makeSimpleCrossOriginAccessRequest(const Resource
         return;
     }
 
-    loadRequest(request, DoSecurityCheck);
+    loadRequest(request);
 }
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequestWithPreflight(const ResourceRequest& request)
 {
     ResourceRequest preflightRequest = createAccessControlPreflightRequest(request, securityOrigin());
-    loadRequest(preflightRequest, DoSecurityCheck);
+    loadRequest(preflightRequest);
 }
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
@@ -367,8 +367,7 @@ void DocumentThreadableLoader::preflightSuccess()
 
     clearResource();
 
-    // It should be ok to skip the security check since we already asked about the preflight request.
-    loadRequest(*actualRequest, SkipSecurityCheck);
+    loadRequest(*actualRequest);
 }
 
 void DocumentThreadableLoader::preflightFailure(const String& url, const String& errorDescription)
@@ -378,17 +377,15 @@ void DocumentThreadableLoader::preflightFailure(const String& url, const String&
     m_client->didFailAccessControlCheck(error);
 }
 
-void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, SecurityCheckPolicy securityCheck)
+void DocumentThreadableLoader::loadRequest(const ResourceRequest& request)
 {
     // Any credential should have been removed from the cross-site requests.
     const KURL& requestURL = request.url();
-    m_options.securityCheck = securityCheck;
     ASSERT(m_sameOriginRequest || requestURL.user().isEmpty());
     ASSERT(m_sameOriginRequest || requestURL.pass().isEmpty());
 
     ThreadableLoaderOptions options = m_options;
     if (m_async) {
-        options.crossOriginCredentialPolicy = DoNotAskClientForCrossOriginCredentials;
         if (m_actualRequest) {
             options.sniffContent = DoNotSniffContent;
             options.dataBufferingPolicy = BufferData;
