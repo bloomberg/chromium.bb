@@ -116,6 +116,7 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
       fullscreen_player_id_(-1),
       pending_fullscreen_player_id_(-1),
+      fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
       weak_ptr_factory_(this) {
 }
@@ -156,6 +157,10 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
 void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
+    if (fullscreen_player_is_released_) {
+      video_view_->OpenVideo();
+      fullscreen_player_is_released_ = false;
+    }
     player->Start();
     Send(new MediaPlayerMsg_DidMediaPlayerPlay(
         routing_id(), fullscreen_player_id_));
@@ -205,19 +210,6 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
     ReleaseFullscreenPlayer(player);
   else
     player->SetVideoSurface(gfx::ScopedJavaSurface());
-}
-
-void BrowserMediaPlayerManager::SuspendFullscreen() {
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player)
-    player->SetVideoSurface(gfx::ScopedJavaSurface());
-}
-
-void BrowserMediaPlayerManager::ResumeFullscreen(
-    gfx::ScopedJavaSurface surface) {
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player)
-    player->SetVideoSurface(surface.Pass());
 }
 
 void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
@@ -576,6 +568,8 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Release();
+  if (player_id == fullscreen_player_id_)
+    fullscreen_player_is_released_ = true;
 
 #if defined(VIDEO_HOLE)
   WebContentsViewAndroid* view =

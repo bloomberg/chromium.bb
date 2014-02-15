@@ -29,11 +29,6 @@ class ContentVideoView {
  public:
   // Construct a ContentVideoView object. The |manager| will handle all the
   // playback controls from the Java class.
-  ContentVideoView(
-      const base::android::ScopedJavaLocalRef<jobject>& context,
-      const base::android::ScopedJavaLocalRef<jobject>& client,
-      BrowserMediaPlayerManager* manager);
-
   explicit ContentVideoView(BrowserMediaPlayerManager* manager);
 
   ~ContentVideoView();
@@ -59,15 +54,6 @@ class ContentVideoView {
   // |release_media_player| is true, |manager_| needs to release the player
   // as we are quitting the app.
   void ExitFullscreen(JNIEnv*, jobject, jboolean release_media_player);
-
-  // Supposed to be called when the application paused or stopped.
-  // Destroys the fullscreen view in a way that it can be recreated
-  // via ResumeFullscreenIfSuspended.
-  void SuspendFullscreen();
-
-  // Supposed to be called when the application switches back to foreground.
-  // Recreates the fullscreen view if it was suspended via SuspendFullscreen.
-  void ResumeFullscreenIfSuspended();
 
   // Media control method called by the Java class.
   void SeekTo(JNIEnv*, jobject obj, jint msec);
@@ -116,12 +102,6 @@ class ContentVideoView {
 
   // Weak reference of corresponding Java object.
   JavaObjectWeakGlobalRef j_content_video_view_;
-
-  enum FullscreenState {
-    ENTERED,
-    SUSPENDED,
-    RESUME
-  } fullscreen_state_;
 
   // Weak pointer for posting tasks.
   base::WeakPtrFactory<ContentVideoView> weak_factory_;

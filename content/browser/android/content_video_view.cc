@@ -45,7 +45,6 @@ ContentVideoView* ContentVideoView::GetInstance() {
 ContentVideoView::ContentVideoView(
     BrowserMediaPlayerManager* manager)
     : manager_(manager),
-      fullscreen_state_(ENTERED),
       weak_factory_(this) {
   DCHECK(!g_content_video_view);
   j_content_video_view_ = CreateJavaObject();
@@ -171,42 +170,14 @@ void ContentVideoView::Pause(JNIEnv*, jobject obj) {
 void ContentVideoView::ExitFullscreen(
     JNIEnv*, jobject, jboolean release_media_player) {
   power_save_blocker_.reset();
-  if (fullscreen_state_ == SUSPENDED)
-    return;
   j_content_video_view_.reset();
   manager_->ExitFullscreen(release_media_player);
 }
 
-void ContentVideoView::SuspendFullscreen() {
-  power_save_blocker_.reset();
-  if (fullscreen_state_ != ENTERED)
-    return;
-  fullscreen_state_ = SUSPENDED;
-  DestroyContentVideoView(false);
-  manager_->SuspendFullscreen();
-}
-
-void ContentVideoView::ResumeFullscreenIfSuspended() {
-  if (fullscreen_state_ != SUSPENDED)
-    return;
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(!GetJavaObject(env).obj());
-  fullscreen_state_ = RESUME;
-  j_content_video_view_ = CreateJavaObject();
-  CreatePowerSaveBlocker();
-}
-
 void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
                                   jobject surface) {
-  gfx::ScopedJavaSurface scoped_surface =
-      gfx::ScopedJavaSurface::AcquireExternalSurface(surface);
-  if (fullscreen_state_ == RESUME) {
-    DCHECK(surface);
-    manager_->ResumeFullscreen(scoped_surface.Pass());
-    fullscreen_state_ = ENTERED;
-  } else {
-    manager_->SetVideoSurface(scoped_surface.Pass());
-  }
+  manager_->SetVideoSurface(
+      gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
 }
 
 void ContentVideoView::RequestMediaMetadata(JNIEnv* env, jobject obj) {

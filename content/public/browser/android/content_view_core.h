@@ -63,7 +63,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) = 0;
   virtual void PauseVideo() = 0;
-  virtual void ResumeVideo() = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
   // Observer callback for frame metadata updates.
