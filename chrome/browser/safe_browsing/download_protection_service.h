@@ -139,6 +139,8 @@ class DownloadProtectionService {
   class CheckClientDownloadRequest;  // Per-request state
   friend class DownloadProtectionServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientDownloadWhitelistedUrl);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadValidateRequest);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadSuccess);

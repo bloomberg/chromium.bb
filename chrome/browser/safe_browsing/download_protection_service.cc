@@ -570,21 +570,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (!database_manager_.get()) {
       reason = REASON_SB_DISABLED;
     } else {
-      for (size_t i = 0; i < url_chain_.size(); ++i) {
-        const GURL& url = url_chain_[i];
-        if (url.is_valid() &&
-            database_manager_->MatchDownloadWhitelistUrl(url)) {
-          VLOG(2) << url << " is on the download whitelist.";
-          reason = REASON_WHITELISTED_URL;
-          break;
-        }
-      }
-      if (referrer_url_.is_valid() && reason == REASON_MAX &&
-          database_manager_->MatchDownloadWhitelistUrl(
-              referrer_url_)) {
-        VLOG(2) << "Referrer url " << referrer_url_
-                << " is on the download whitelist.";
-        reason = REASON_WHITELISTED_REFERRER;
+      const GURL& url = url_chain_.back();
+      if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
+        VLOG(2) << url << " is on the download whitelist.";
+        reason = REASON_WHITELISTED_URL;
       }
       if (reason != REASON_MAX || signature_info_.trusted()) {
         UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
