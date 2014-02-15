@@ -4038,5 +4038,62 @@ TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
 
 }
 
+TEST_F(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(dispatcher()));
+  TimedEvents tes;
+  const int kWindowWidth = 3000;
+  const int kWindowHeight = 3000;
+  const int kTouchId = 2;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+
+  int x = 0;
+  int y = 0;
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(x, y),
+                        kTouchId, tes.Now());
+  DispatchEventUsingWindowDispatcher(&press1);
+  delegate->ReceivedAck();
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  delegate->Reset();
+
+  x += 100;
+  y += 100;
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
+                       kTouchId, tes.Now());
+  DispatchEventUsingWindowDispatcher(&move1);
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  delegate->Reset();
+
+  for (int i = 0; i < 3; ++i) {
+    x += 10;
+    y += 10;
+    ui::TouchEvent move2(
+        ui::ET_TOUCH_MOVED, gfx::Point(x, y), kTouchId, tes.Now());
+    DispatchEventUsingWindowDispatcher(&move2);
+    delegate->ReceivedAck();
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_TRUE(delegate->scroll_update());
+    delegate->Reset();
+
+    x -= 10;
+    y += 10;
+    ui::TouchEvent move3(
+        ui::ET_TOUCH_MOVED, gfx::Point(x, y), kTouchId, tes.Now());
+    DispatchEventUsingWindowDispatcher(&move3);
+    delegate->ReceivedAckPreventDefaulted();
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_FALSE(delegate->scroll_update());
+    delegate->Reset();
+  }
+}
+
 }  // namespace test
 }  // namespace aura

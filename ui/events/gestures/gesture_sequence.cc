@@ -138,9 +138,11 @@ enum EdgeStateSignatureType {
   GST_SCROLL_FIRST_RELEASED =
       G(GS_SCROLL, 0, TS_RELEASED, TSI_ALWAYS),
 
-  // Once scroll has started, process all touch-move events.
   GST_SCROLL_FIRST_MOVED =
-      G(GS_SCROLL, 0, TS_MOVED, TSI_ALWAYS),
+      G(GS_SCROLL, 0, TS_MOVED, TSI_NOT_PROCESSED),
+
+  GST_SCROLL_FIRST_MOVED_HANDLED =
+      G(GS_SCROLL, 0, TS_MOVED, TSI_PROCESSED),
 
   GST_SCROLL_FIRST_CANCELLED =
       G(GS_SCROLL, 0, TS_CANCELLED, TSI_ALWAYS),
@@ -352,6 +354,7 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
     case GST_SYNTHETIC_CLICK_ABORTED_SECOND_PRESSED:
     case GST_SCROLL_FIRST_RELEASED:
     case GST_SCROLL_FIRST_MOVED:
+    case GST_SCROLL_FIRST_MOVED_HANDLED:
     case GST_SCROLL_FIRST_CANCELLED:
     case GST_SCROLL_SECOND_PRESSED:
     case GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED:
@@ -607,6 +610,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
         BreakRailScroll(event, point, gestures.get());
       if (ScrollUpdate(event, point, gestures.get(), FS_NOT_FIRST_SCROLL))
         point.UpdateForScroll();
+      break;
+    case GST_SCROLL_FIRST_MOVED_HANDLED:
       break;
     case GST_SCROLL_FIRST_RELEASED:
     case GST_SCROLL_FIRST_CANCELLED:

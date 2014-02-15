@@ -211,18 +211,24 @@ TEST_F(TouchDispositionGestureFilterTest, BasicGestures) {
   // Multiple gestures can be queued for a single event.
   PushGesture(WebInputEvent::GestureFlingStart);
   PushGesture(WebInputEvent::GestureFlingCancel);
-  MoveTouchPoint(0, 1, 1);
+  ReleaseTouchPoint(0);
   EXPECT_FALSE(GesturesSent());
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureFlingStart,
                                      WebInputEvent::GestureFlingCancel),
                             GetAndResetSentGestures()));
+}
 
+TEST_F(TouchDispositionGestureFilterTest, BasicGesturesConsumed) {
   // A consumed touch's gesture should not be sent.
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
   PushGesture(WebInputEvent::GestureFlingStart);
   PushGesture(WebInputEvent::GestureFlingCancel);
   ReleaseTouchPoint(0);
-  EXPECT_FALSE(GesturesSent());
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(GesturesSent());
 }
@@ -247,6 +253,69 @@ TEST_F(TouchDispositionGestureFilterTest, ConsumedThenNotConsumed) {
   EXPECT_FALSE(GesturesSent());
 }
 
+TEST_F(TouchDispositionGestureFilterTest, NotConsumedThenConsumed) {
+  // A not consumed touch's gesture should be sent.
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
+
+  // A newly consumed gesture should not be sent.
+  PushGesture(WebInputEvent::GesturePinchBegin);
+  PressTouchPoint(10, 10);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  // And subsequent non-consumed pinch updates should not be sent.
+  PushGesture(WebInputEvent::GestureScrollUpdate);
+  PushGesture(WebInputEvent::GesturePinchUpdate);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollUpdate),
+                            GetAndResetSentGestures()));
+
+  // End events dispatched only when their start events were.
+  PushGesture(WebInputEvent::GesturePinchEnd);
+  ReleaseTouchPoint(1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, ScrollAlternatelyConsumed) {
+  // A consumed touch's gesture should not be sent.
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
+
+  for (size_t i = 0; i < 3; ++i) {
+    PushGesture(WebInputEvent::GestureScrollUpdate);
+    MoveTouchPoint(0, 2, 2);
+    SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+    EXPECT_FALSE(GesturesSent());
+
+    PushGesture(WebInputEvent::GestureScrollUpdate);
+    MoveTouchPoint(0, 3, 3);
+    SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollUpdate),
+                              GetAndResetSentGestures()));
+  }
+
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+}
+
 TEST_F(TouchDispositionGestureFilterTest, NotConsumedThenNoConsumer) {
   // An unconsumed touch's gesture should be sent.
   PushGesture(WebInputEvent::GestureScrollBegin);
@@ -263,11 +332,156 @@ TEST_F(TouchDispositionGestureFilterTest, NotConsumedThenNoConsumer) {
   EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchBegin),
                             GetAndResetSentGestures()));
 
-  // If the subsequent touch is consumed, then the remaining gesture sequence
-  // should be dropped, regardless of subsequent touch ack disposition.
+  // End events should be dispatched when their start events were, independent
+  // of the ack state.
+  PushGesture(WebInputEvent::GesturePinchEnd);
+  ReleaseTouchPoint(1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchEnd),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, EndingEventsSent) {
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GesturePinchBegin);
+  PressTouchPoint(2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchBegin),
+                            GetAndResetSentGestures()));
+
+  // Consuming the touchend event can't suppress the match end gesture.
+  PushGesture(WebInputEvent::GesturePinchEnd);
+  ReleaseTouchPoint(1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchEnd),
+                            GetAndResetSentGestures()));
+
+  // But other events in the same packet are still suppressed.
   PushGesture(WebInputEvent::GestureScrollUpdate);
-  PushGesture(WebInputEvent::GesturePinchUpdate);
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+
+  // GestureScrollEnd and GestureFlingStart behave the same in this regard.
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GestureFlingStart);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureFlingStart),
+                            GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, EndingEventsNotSent) {
+  // Consuming a begin event ensures no end events are sent.
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GesturePinchBegin);
+  PressTouchPoint(2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GesturePinchEnd);
+  ReleaseTouchPoint(1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, UpdateEventsSuppressedPerEvent) {
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
+
+  // Consuming a single scroll or pinch update should suppress only that event.
+  PushGesture(WebInputEvent::GestureScrollUpdate);
   MoveTouchPoint(0, 2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GesturePinchBegin);
+  PressTouchPoint(2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchBegin),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GesturePinchUpdate);
+  MoveTouchPoint(1, 2, 3);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  // Subsequent updates should not be affected.
+  PushGesture(WebInputEvent::GestureScrollUpdate);
+  MoveTouchPoint(0, 4, 4);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollUpdate),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GesturePinchUpdate);
+  MoveTouchPoint(0, 4, 5);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchUpdate),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GesturePinchEnd);
+  ReleaseTouchPoint(1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GesturePinchEnd),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, UpdateEventsDependOnBeginEvents) {
+  PushGesture(WebInputEvent::GestureScrollBegin);
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  // Scroll and pinch gestures depend on the scroll begin gesture being
+  // dispatched.
+  PushGesture(WebInputEvent::GestureScrollUpdate);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GesturePinchBegin);
+  PressTouchPoint(2, 2);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(WebInputEvent::GesturePinchUpdate);
+  MoveTouchPoint(1, 2, 3);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(GesturesSent());
 
@@ -278,19 +492,19 @@ TEST_F(TouchDispositionGestureFilterTest, NotConsumedThenNoConsumer) {
 
   PushGesture(WebInputEvent::GestureScrollEnd);
   ReleaseTouchPoint(0);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(GesturesSent());
 }
 
 TEST_F(TouchDispositionGestureFilterTest, MultipleTouchSequences) {
   // Queue two touch-to-gestures sequences.
-  PushGesture(WebInputEvent::GestureFlingStart);
+  PushGesture(WebInputEvent::GestureTapDown);
   PressTouchPoint(1, 1);
-  PushGesture(WebInputEvent::GestureFlingCancel);
+  PushGesture(WebInputEvent::GestureTap);
   ReleaseTouchPoint(0);
-  PushGesture(WebInputEvent::GestureFlingStart);
+  PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
-  PushGesture(WebInputEvent::GestureFlingCancel);
+  PushGesture(WebInputEvent::GestureScrollEnd);
   ReleaseTouchPoint(0);
 
   // The first gesture sequence should not be allowed.
@@ -301,15 +515,18 @@ TEST_F(TouchDispositionGestureFilterTest, MultipleTouchSequences) {
   // The subsequent sequence should "reset" allowance.
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureFlingStart,
-                                     WebInputEvent::GestureFlingCancel),
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin,
+                                     WebInputEvent::GestureScrollEnd),
                             GetAndResetSentGestures()));
 }
 
 TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
   // Simulate a fling.
+  PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin),
+                            GetAndResetSentGestures()));
   PushGesture(WebInputEvent::GestureFlingStart);
   ReleaseTouchPoint(0);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -318,10 +535,12 @@ TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
 
   // A new touch seqeuence should cancel the outstanding fling.
   PressTouchPoint(1, 1);
-  ReleaseTouchPoint(0);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureFlingCancel),
                             GetAndResetSentGestures()));
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_FALSE(GesturesSent());
 }
 
 TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnScrollBegin) {
@@ -347,19 +566,24 @@ TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnScrollBegin) {
 
 TEST_F(TouchDispositionGestureFilterTest, FlingNotCancelledIfGFCEventReceived) {
   // Simulate a fling that is started then cancelled.
-  PushGesture(WebInputEvent::GestureFlingStart);
+  PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  PushGesture(WebInputEvent::GestureFlingStart);
+  MoveTouchPoint(0, 1, 1);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   PushGesture(WebInputEvent::GestureFlingCancel);
   ReleaseTouchPoint(0);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureFlingStart,
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin,
+                                     WebInputEvent::GestureFlingStart,
                                      WebInputEvent::GestureFlingCancel),
                             GetAndResetSentGestures()));
 
   // A new touch sequence will not inject a GestureFlingCancel, as the fling
   // has already been cancelled.
   PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   ReleaseTouchPoint(0);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_FALSE(GesturesSent());
@@ -468,12 +692,12 @@ TEST_F(TouchDispositionGestureFilterTest, SpuriousAcksIgnored) {
 
   PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
-  PushGesture(WebInputEvent::GestureScrollEnd);
-  ReleaseTouchPoint(0);
+  PushGesture(WebInputEvent::GestureScrollUpdate);
+  MoveTouchPoint(0, 3,3);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureScrollBegin,
-                                     WebInputEvent::GestureScrollEnd),
+                                     WebInputEvent::GestureScrollUpdate),
                             GetAndResetSentGestures()));
 
   // Even if all packets have been dispatched, the filter may not be empty as
@@ -498,10 +722,44 @@ TEST_F(TouchDispositionGestureFilterTest, PacketsWithInvalidOrderIgnored) {
 
   WebTouchEvent touch;
   touch.type = WebInputEvent::TouchCancel;
-  EXPECT_EQ(TouchDispositionGestureFilter::INVALID_PACKET_ORDER,
+  EXPECT_EQ(TouchDispositionGestureFilter::INVALID_PACKET_TYPE,
             SendTouchGestures(WebInputEvent::GestureShowPress,
                               GestureEventPacket()));
   EXPECT_TRUE(IsEmpty());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, ConsumedTouchCancel) {
+  // An unconsumed touch's gesture should be sent.
+  PushGesture(WebInputEvent::GestureTapDown);
+  PressTouchPoint(1, 1);
+  EXPECT_FALSE(GesturesSent());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureTapDown),
+                            GetAndResetSentGestures()));
+
+  PushGesture(WebInputEvent::GestureTapCancel);
+  PushGesture(WebInputEvent::GestureScrollEnd);
+  CancelTouchPoint(0);
+  EXPECT_FALSE(GesturesSent());
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureTapCancel,
+                                     WebInputEvent::GestureScrollEnd),
+                            GetAndResetSentGestures()));
+}
+
+TEST_F(TouchDispositionGestureFilterTest, TimeoutEventAfterRelease) {
+  PressTouchPoint(1, 1);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(GesturesSent());
+  PushGesture(WebInputEvent::GestureTapUnconfirmed);
+  ReleaseTouchPoint(0);
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureTapUnconfirmed),
+                            GetAndResetSentGestures()));
+
+  SendTimeoutGesture(WebInputEvent::GestureTap);
+  EXPECT_TRUE(GesturesMatch(Gestures(WebInputEvent::GestureTap),
+                            GetAndResetSentGestures()));
 }
 
 }  // namespace content

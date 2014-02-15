@@ -15,10 +15,14 @@ namespace content {
 class CONTENT_EXPORT GestureEventPacket {
  public:
   enum GestureSource {
-    INVALID = -1,  // Used only for a default-constructed packet..
-    TOUCH_BEGIN,   // The start of a new gesture sequence.
-    TOUCH,         // Continuation of an existing gesture sequence.
-    TOUCH_TIMEOUT, // Timeout from an existing gesture sequence.
+    UNDEFINED = -1,        // Used only for a default-constructed packet.
+    INVALID,               // The source of the gesture was invalid.
+    TOUCH_SEQUENCE_BEGIN,  // The start of a new gesture sequence.
+    TOUCH_SEQUENCE_END,    // The end of gesture sequence.
+    TOUCH_BEGIN,           // A touch down occured during a gesture sequence.
+    TOUCH_MOVE,            // A touch move occured during a gesture sequence.
+    TOUCH_END,             // A touch up occured during a gesture sequence.
+    TOUCH_TIMEOUT,         // Timeout from an existing gesture sequence.
   };
 
   GestureEventPacket();

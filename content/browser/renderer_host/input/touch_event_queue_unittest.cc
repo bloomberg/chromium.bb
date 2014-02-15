@@ -48,7 +48,7 @@ class TouchEventQueueTest : public testing::Test,
     ++sent_event_count_;
     last_sent_event_ = event.event;
     if (sync_ack_result_)
-      SendTouchEventACK(*sync_ack_result_.Pass());
+      SendTouchEventAck(*sync_ack_result_.Pass());
   }
 
   virtual void OnTouchEventAck(
@@ -93,8 +93,15 @@ class TouchEventQueueTest : public testing::Test,
         GestureEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
 
-  void SendTouchEventACK(InputEventAckState ack_result) {
+  void SendTouchEventAck(InputEventAckState ack_result) {
     queue_->ProcessTouchAck(ack_result, ui::LatencyInfo());
+  }
+
+  void SendGestureEventAck(WebInputEvent::Type type,
+                           InputEventAckState ack_result) {
+    blink::WebGestureEvent gesture_event;
+    gesture_event.type = type;
+    GestureEventWithLatencyInfo event(gesture_event, ui::LatencyInfo());
   }
 
   void SetFollowupEvent(const WebTouchEvent& event) {
@@ -211,14 +218,14 @@ TEST_F(TouchEventQueueTest, Basic) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
   // Receive an ACK for the first touch-event.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
 
   // Receive an ACK for the second touch-event.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -249,7 +256,7 @@ TEST_F(TouchEventQueueTest, QueueFlushedWhenHandlersRemoved) {
 
   // Receive an ACK for the first touch-event. One of the queued touch-event
   // should be forwarded.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(31U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -310,7 +317,7 @@ TEST_F(TouchEventQueueTest, ActiveSequenceDroppedWhenHandlersRemoved) {
   EXPECT_EQ(0U, queued_event_count());
 
   // The ack should be ignored as the touch queue is now empty.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -352,7 +359,7 @@ TEST_F(TouchEventQueueTest, Coalesce) {
   EXPECT_EQ(3U, queued_event_count());
 
   // ACK the press.  Coalesced touch-move events should be sent.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -360,14 +367,14 @@ TEST_F(TouchEventQueueTest, Coalesce) {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
 
   // ACK the moves.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(10U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
 
   // ACK the release.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -389,7 +396,7 @@ TEST_F(TouchEventQueueTest, SentTouchEventDoesNotCoalesce) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
@@ -451,7 +458,7 @@ TEST_F(TouchEventQueueTest, AckAfterQueueFlushed) {
 
   // Receive an ACK for the press. This should cause the queued touch-move to
   // be sent to the renderer.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
@@ -460,7 +467,7 @@ TEST_F(TouchEventQueueTest, AckAfterQueueFlushed) {
   EXPECT_EQ(0U, queued_event_count());
 
   // Now receive an ACK for the move.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
 }
@@ -482,7 +489,7 @@ TEST_F(TouchEventQueueTest, NoConsumer) {
 
   // Receive an ACK for the first touch-event. This should release the queued
   // touch-event, but it should not be sent to the renderer.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
@@ -511,14 +518,14 @@ TEST_F(TouchEventQueueTest, NoConsumer) {
   // touch-move event, the touch-end event and the second touch-press event.
   EXPECT_EQ(4U, queued_event_count());
 
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(WebInputEvent::TouchEnd, acked_event().type);
   EXPECT_EQ(4U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
   // ACK the second press event as NO_CONSUMER too.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -558,12 +565,12 @@ TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {
 
   // ACK the first press as CONSUMED. This should cause the first touch-move of
   // the first touch-point to be dispatched.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(3U, queued_event_count());
 
   // ACK the first move as CONSUMED.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
@@ -571,12 +578,12 @@ TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {
   // touch-move event (which contains both touch points). Although the second
   // touch-point does not need to be sent to the renderer, the first touch-point
   // did move, and so the coalesced touch-event will be sent to the renderer.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
   // ACK the coalesced move as NOT_CONSUMED.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -597,11 +604,11 @@ TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {
   MoveTouchPoints(0, 15, 15, 1, 25, 25);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -623,14 +630,14 @@ TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(4U, queued_event_count());
 
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
 
   // ACK the press with NO_CONSUMED_EXISTS. This should release the queued
   // touch-move events to the view.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
@@ -660,7 +667,7 @@ TEST_F(TouchEventQueueTest, AckWithFollowupEvents) {
 
   // Receive an ACK for the press. This should cause the followup touch-move to
   // be sent to the renderer.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -673,7 +680,7 @@ TEST_F(TouchEventQueueTest, AckWithFollowupEvents) {
 
   // Receive an ACK for the touch-move followup event. This should cause the
   // subsequent touch move event be sent to the renderer.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -704,7 +711,7 @@ TEST_F(TouchEventQueueTest, SynchronousAcks) {
 
   // TouchCancel (first inserting a TouchStart so the TouchCancel will be sent)
   PressTouchPoint(1, 1);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -767,17 +774,17 @@ TEST_F(TouchEventQueueTest, NoTouchBasic) {
 
   PressTouchPoint(80, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 80, 20);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -786,7 +793,7 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 20, 5);
@@ -803,7 +810,7 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   WebGestureEvent followup_scroll;
   followup_scroll.type = WebInputEvent::GestureScrollBegin;
   SetFollowupEvent(followup_scroll);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
@@ -811,7 +818,7 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
 
   // Acking the TouchCancel will result in dispatch of the next TouchStart.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   // The synthetic TouchCancel should not reach client, only the TouchStart.
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -840,17 +847,17 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   // Touch events from a new gesture sequence should be forwarded normally.
   PressTouchPoint(80, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 80, 20);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -860,7 +867,7 @@ TEST_F(TouchEventQueueTest, NoTouchCancelOnScrollIfNoConsumer) {
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
 
@@ -894,7 +901,7 @@ TEST_F(TouchEventQueueTest, NoTouchCancelOnScrollIfNoConsumer) {
   // Touch events from a new gesture sequence should be forwarded normally.
   PressTouchPoint(80, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -914,7 +921,7 @@ TEST_F(TouchEventQueueTest, PendingStart) {
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart (#1).
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_FALSE(IsPendingAckTouchStart());
 
@@ -924,7 +931,7 @@ TEST_F(TouchEventQueueTest, PendingStart) {
   EXPECT_FALSE(IsPendingAckTouchStart());
 
   // Ack the touchmove (#2).
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(IsPendingAckTouchStart());
 
@@ -934,12 +941,12 @@ TEST_F(TouchEventQueueTest, PendingStart) {
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart for the second point (#3).
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart for the third point (#4).
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(IsPendingAckTouchStart());
 }
@@ -951,28 +958,28 @@ TEST_F(TouchEventQueueTest, TouchTimeoutTypes) {
   // Sending a TouchStart will start the timeout.
   PressTouchPoint(0, 1);
   EXPECT_TRUE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchMove should start the timeout.
   MoveTouchPoint(0, 5, 5);
   EXPECT_TRUE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchEnd should not start the timeout.
   ReleaseTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchCancel should not start the timeout.
   PressTouchPoint(0, 1);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_FALSE(IsTimeoutRunning());
   CancelTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
 }
 
@@ -1005,7 +1012,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Ack'ing the original event should trigger a cancel event.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1021,7 +1028,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
 
   // The synthetic TouchCancel ack should not reach the client, but should
   // resume touch forwarding.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
@@ -1042,23 +1049,23 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfRendererIsConsumingGesture) {
 
   // Mark the event as consumed. This should prevent the timeout from
   // being activated on subsequent TouchEvents in this gesture.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchMove should not start the timeout.
   MoveTouchPoint(0, 5, 5);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // A secondary TouchStart should not start the timeout.
   PressTouchPoint(1, 0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // A TouchEnd should not start the timeout.
   ReleaseTouchPoint(1);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // A TouchCancel should not start the timeout.
   CancelTouchPoint(0);
@@ -1118,14 +1125,14 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Ack the original event, triggering a TouchCancel.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Ack the cancel event.  Normally, this would resume touch forwarding,
   // but we're still within a scroll gesture so it remains disabled.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1194,12 +1201,12 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGestureAndDelayedAck) {
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
 
   // Ack the original event, triggering a cancel.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Ack the cancel event, resuming touch forwarding.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
@@ -1240,7 +1247,7 @@ TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
 
   // Ack'ing the original event should not trigger a cancel event, as the
   // TouchStart had no consumer.  However, it should re-enable touch forwarding.
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1260,7 +1267,7 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1294,7 +1301,7 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Even TouchMove's within the original slop region should now be forwarded.
@@ -1302,14 +1309,14 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // A new touch sequence should reset suppression.
   ReleaseTouchPoint(0);
   PressTouchPoint(0, 0);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(2U, GetAndResetSentEventCount());
   ASSERT_EQ(2U, GetAndResetAckedEventCount());
   ASSERT_EQ(0U, queued_event_count());
@@ -1335,7 +1342,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1357,7 +1364,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1369,7 +1376,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
 
   // Simulate a secondary pointer press.
   PressTouchPoint(kDoubleSlopLengthDips, 0);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1377,12 +1384,12 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   MoveTouchPoint(1, kDoubleSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Release the secondary pointer.
   ReleaseTouchPoint(0);
-  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 

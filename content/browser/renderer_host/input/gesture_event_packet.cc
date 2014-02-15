@@ -14,34 +14,42 @@ using blink::WebTouchPoint;
 namespace content {
 namespace {
 
-bool IsTouchSequenceStart(const WebTouchEvent& event) {
-  if (event.type != WebInputEvent::TouchStart)
-    return false;
+GestureEventPacket::GestureSource ToGestureSource(const WebTouchEvent& event) {
   if (!event.touchesLength)
-    return false;
-  for (size_t i = 0; i < event.touchesLength; i++) {
-    if (event.touches[i].state != WebTouchPoint::StatePressed)
-      return false;
+    return GestureEventPacket::INVALID;
+  switch (event.type) {
+    case WebInputEvent::TouchStart:
+      for (size_t i = 0; i < event.touchesLength; i++) {
+        if (event.touches[i].state != WebTouchPoint::StatePressed)
+          return GestureEventPacket::TOUCH_BEGIN;
+      }
+      return GestureEventPacket::TOUCH_SEQUENCE_BEGIN;
+    case WebInputEvent::TouchMove:
+      return GestureEventPacket::TOUCH_MOVE;
+    case WebInputEvent::TouchEnd:
+    case WebInputEvent::TouchCancel:
+      for (size_t i = 0; i < event.touchesLength; i++) {
+        if (event.touches[i].state != WebTouchPoint::StateReleased &&
+            event.touches[i].state != WebTouchPoint::StateCancelled) {
+          return GestureEventPacket::TOUCH_END;
+        }
+      }
+      return GestureEventPacket::TOUCH_SEQUENCE_END;
+    default:
+      return GestureEventPacket::INVALID;
   }
-  return true;
-}
-
-GestureEventPacket::GestureSource
-ToGestureSource(const WebTouchEvent& event) {
-  return IsTouchSequenceStart(event) ? GestureEventPacket::TOUCH_BEGIN
-                                     : GestureEventPacket::TOUCH;
 }
 
 }  // namespace
 
 GestureEventPacket::GestureEventPacket()
     : gesture_count_(0),
-      gesture_source_(INVALID) {}
+      gesture_source_(UNDEFINED) {}
 
 GestureEventPacket::GestureEventPacket(GestureSource source)
     : gesture_count_(0),
       gesture_source_(source) {
-  DCHECK_NE(gesture_source_, INVALID);
+  DCHECK_NE(gesture_source_, UNDEFINED);
 }
 
 GestureEventPacket::~GestureEventPacket() {}
