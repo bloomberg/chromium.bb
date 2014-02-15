@@ -92,10 +92,7 @@ if [[ -e "${BUILT_PRODUCTS_DIR}/PDF.plugin" ]]; then
   SRC_NAMES[${#SRC_NAMES[@]}]="PDF.plugin"
 fi
 
-# libpeerconnection.so is optional. Currently only built when branding=Chrome
-# but will in the future also be built for Chromium, so we do a simple check.
-# TODO(tommi): Remove this check and move libpeerconnection.so into the required
-# section when libpeerconnection.so is built for all configs.
+# libpeerconnection.so is optional. Only include it if present.
 if [[ -e "${BUILT_PRODUCTS_DIR}/libpeerconnection.so" ]]; then
   SRC_NAMES[${#SRC_NAMES[@]}]="libpeerconnection.so"
 fi
