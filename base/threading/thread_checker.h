@@ -20,9 +20,7 @@
 #define ENABLE_THREAD_CHECKER 0
 #endif
 
-#if ENABLE_THREAD_CHECKER
 #include "base/threading/thread_checker_impl.h"
-#endif
 
 namespace base {
 

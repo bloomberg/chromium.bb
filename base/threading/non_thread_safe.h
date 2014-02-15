@@ -18,9 +18,7 @@
 #define ENABLE_NON_THREAD_SAFE 0
 #endif
 
-#if ENABLE_NON_THREAD_SAFE
 #include "base/threading/non_thread_safe_impl.h"
-#endif
 
 namespace base {
 
@@ -70,4 +68,4 @@ typedef NonThreadSafeDoNothing NonThreadSafe;
 
 }  // namespace base
 
-#endif  // BASE_NON_THREAD_SAFE_H_
+#endif  // BASE_THREADING_NON_THREAD_SAFE_H_
