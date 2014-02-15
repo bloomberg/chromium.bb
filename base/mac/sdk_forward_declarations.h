@@ -15,6 +15,7 @@
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
 enum {
   NSEventPhaseNone        = 0, // event not associated with a phase.
   NSEventPhaseBegan       = 0x1 << 0,
@@ -74,6 +75,12 @@ typedef NSInteger NSWindowAnimationBehavior;
 - (NSWindowAnimationBehavior)animationBehavior;
 - (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 @end
+
+@interface NSAnimationContext (LionSDK)
++ (void)runAnimationGroup:(void (^)(NSAnimationContext *context))changes
+        completionHandler:(void (^)(void))completionHandler;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_7
 
 #if !defined(MAC_OS_X_VERSION_10_8) || \

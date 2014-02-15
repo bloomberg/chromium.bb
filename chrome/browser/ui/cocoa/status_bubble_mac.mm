@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_block.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -38,9 +40,6 @@ const int kMousePadding = 20;
 
 const int kTextPadding = 3;
 
-// The animation key used for fade-in and fade-out transitions.
-NSString* const kFadeAnimationKey = @"alphaValue";
-
 // The status bubble's maximum opacity, when fully faded in.
 const CGFloat kBubbleOpacity = 1.0;
 
@@ -65,15 +64,10 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 @interface StatusBubbleAnimationDelegate : NSObject {
  @private
-  StatusBubbleMac* statusBubble_;  // weak; owns us indirectly
+  base::mac::ScopedBlock<void (^)(void)> completionHandler_;
 }
 
-- (id)initWithStatusBubble:(StatusBubbleMac*)statusBubble;
-
-// Invalidates this object so that no further calls will be made to
-// statusBubble_.  This should be called when statusBubble_ is released, to
-// prevent attempts to call into the released object.
-- (void)invalidate;
+- (id)initWithCompletionHandler:(void (^)(void))completionHandler;
 
 // CAAnimation delegate method
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished;
@@ -81,21 +75,69 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 @implementation StatusBubbleAnimationDelegate
 
-- (id)initWithStatusBubble:(StatusBubbleMac*)statusBubble {
+- (id)initWithCompletionHandler:(void (^)(void))completionHandler {
   if ((self = [super init])) {
-    statusBubble_ = statusBubble;
+    completionHandler_.reset(completionHandler, base::scoped_policy::RETAIN);
   }
 
   return self;
 }
 
-- (void)invalidate {
-  statusBubble_ = NULL;
+- (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
+  completionHandler_.get()();
 }
 
-- (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
-  if (statusBubble_)
-    statusBubble_->AnimationDidStop(animation, finished);
+@end
+
+@interface StatusBubbleWindow : NSWindow {
+ @private
+  void (^completionHandler_)(void);
+}
+
+- (id)animationForKey:(NSString *)key;
+- (void)runAnimationGroup:(void (^)(NSAnimationContext *context))changes
+        completionHandler:(void (^)(void))completionHandler;
+@end
+
+@implementation StatusBubbleWindow
+
+- (id)animationForKey:(NSString *)key {
+  CAAnimation* animation = [super animationForKey:key];
+  // If completionHandler_ isn't nil, then this is the first of (potentially)
+  // multiple animations in a grouping; give it the completion handler. If
+  // completionHandler_ is nil, then some other animation was tagged with the
+  // completion handler.
+  if (completionHandler_) {
+    DCHECK(![NSAnimationContext respondsToSelector:
+               @selector(runAnimationGroup:completionHandler:)]);
+    StatusBubbleAnimationDelegate* animation_delegate =
+        [[StatusBubbleAnimationDelegate alloc]
+             initWithCompletionHandler:completionHandler_];
+    [animation setDelegate:animation_delegate];
+    completionHandler_ = nil;
+  }
+  return animation;
+}
+
+- (void)runAnimationGroup:(void (^)(NSAnimationContext *context))changes
+        completionHandler:(void (^)(void))completionHandler {
+  if ([NSAnimationContext respondsToSelector:
+          @selector(runAnimationGroup:completionHandler:)]) {
+    [NSAnimationContext runAnimationGroup:changes
+                        completionHandler:completionHandler];
+  } else {
+    // Mac OS 10.6 does not have completion handler callbacks at the Cocoa
+    // level, only at the CoreAnimation level. So intercept calls made to
+    // -animationForKey: and tag one of the animations with a delegate that will
+    // execute the completion handler.
+    completionHandler_ = completionHandler;
+    [NSAnimationContext beginGrouping];
+    changes([NSAnimationContext currentContext]);
+    // At this point, -animationForKey should have been called by CoreAnimation
+    // to set up the animation to run. Verify this.
+    DCHECK(completionHandler_ == nil);
+    [NSAnimationContext endGrouping];
+  }
 }
 
 @end
@@ -103,6 +145,7 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : timer_factory_(this),
       expand_timer_factory_(this),
+      completion_handler_factory_(this),
       parent_(parent),
       delegate_(delegate),
       window_(nil),
@@ -120,7 +163,7 @@ StatusBubbleMac::~StatusBubbleMac() {
 
   Hide();
 
-  [[[window_ animationForKey:kFadeAnimationKey] delegate] invalidate];
+  completion_handler_factory_.InvalidateWeakPtrs();
   Detach();
   [window_ release];
   window_ = nil;
@@ -237,10 +280,7 @@ void StatusBubbleMac::Hide() {
       // An animation is in progress.  Cancel it by starting a new animation.
       // Use kMinimumTimeInterval to set the opacity as rapidly as possible.
       fade_out = true;
-      [NSAnimationContext beginGrouping];
-      [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
-      [[window_ animator] setAlphaValue:0.0];
-      [NSAnimationContext endGrouping];
+      AnimateWindowAlpha(0.0, kMinimumTimeInterval);
     }
   }
 
@@ -364,10 +404,11 @@ void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
 void StatusBubbleMac::Create() {
   DCHECK(!window_);
 
-  window_ = [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                        styleMask:NSBorderlessWindowMask
-                                          backing:NSBackingStoreBuffered
-                                            defer:YES];
+  window_ = [[StatusBubbleWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:YES];
   [window_ setMovableByWindowBackground:NO];
   [window_ setBackgroundColor:[NSColor clearColor]];
   [window_ setLevel:NSNormalWindowLevel];
@@ -387,21 +428,6 @@ void StatusBubbleMac::Create() {
   // TODO(dtseng): Ignore until we provide NSAccessibility support.
   [window_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
                             forAttribute:NSAccessibilityRoleAttribute];
-
-  // Set a delegate for the fade-in and fade-out transitions to be notified
-  // when fades are complete.  The ownership model is for window_ to own
-  // animation_dictionary, which owns animation, which owns
-  // animation_delegate.
-  CAAnimation* animation = [[window_ animationForKey:kFadeAnimationKey] copy];
-  [animation autorelease];
-  StatusBubbleAnimationDelegate* animation_delegate =
-      [[StatusBubbleAnimationDelegate alloc] initWithStatusBubble:this];
-  [animation_delegate autorelease];
-  [animation setDelegate:animation_delegate];
-  NSMutableDictionary* animation_dictionary =
-      [NSMutableDictionary dictionaryWithDictionary:[window_ animations]];
-  [animation_dictionary setObject:animation forKey:kFadeAnimationKey];
-  [window_ setAnimations:animation_dictionary];
 
   [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved(gfx::Point(), false);
@@ -427,23 +453,17 @@ void StatusBubbleMac::Detach() {
   [[window_ contentView] setThemeProvider:nil];
 }
 
-void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
+void StatusBubbleMac::AnimationDidStop() {
   DCHECK([NSThread isMainThread]);
   DCHECK(state_ == kBubbleShowingFadeIn || state_ == kBubbleHidingFadeOut);
   DCHECK(is_attached());
 
-  if (finished) {
-    // Because of the mechanism used to interrupt animations, this is never
-    // actually called with finished set to false.  If animations ever become
-    // directly interruptible, the check will ensure that state_ remains
-    // properly synchronized.
-    if (state_ == kBubbleShowingFadeIn) {
-      DCHECK_EQ([[window_ animator] alphaValue], kBubbleOpacity);
-      SetState(kBubbleShown);
-    } else {
-      DCHECK_EQ([[window_ animator] alphaValue], 0.0);
-      SetState(kBubbleHidden);
-    }
+  if (state_ == kBubbleShowingFadeIn) {
+    DCHECK_EQ([[window_ animator] alphaValue], kBubbleOpacity);
+    SetState(kBubbleShown);
+  } else {
+    DCHECK_EQ([[window_ animator] alphaValue], 0.0);
+    SetState(kBubbleHidden);
   }
 }
 
@@ -506,13 +526,24 @@ void StatusBubbleMac::Fade(bool show) {
   if (duration == 0.0)
     duration = kMinimumTimeInterval;
 
-  // This will cancel an in-progress transition and replace it with this fade.
-  [NSAnimationContext beginGrouping];
-  // Don't use the GTM additon for the "Steve" slowdown because this can happen
-  // async from user actions and the effects could be a surprise.
-  [[NSAnimationContext currentContext] setDuration:duration];
-  [[window_ animator] setAlphaValue:opacity];
-  [NSAnimationContext endGrouping];
+  // Cancel an in-progress transition and replace it with this fade.
+  AnimateWindowAlpha(opacity, duration);
+}
+
+void StatusBubbleMac::AnimateWindowAlpha(CGFloat alpha,
+                                         NSTimeInterval duration) {
+  completion_handler_factory_.InvalidateWeakPtrs();
+  base::WeakPtr<StatusBubbleMac> weak_ptr(
+      completion_handler_factory_.GetWeakPtr());
+  [window_
+      runAnimationGroup:^(NSAnimationContext* context) {
+          [context setDuration:duration];
+          [[window_ animator] setAlphaValue:alpha];
+      }
+      completionHandler:^{
+          if (weak_ptr)
+            weak_ptr->AnimationDidStop();
+      }];
 }
 
 void StatusBubbleMac::StartTimer(int64 delay_ms) {

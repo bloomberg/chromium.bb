@@ -17,6 +17,7 @@
 #include "url/gurl.h"
 
 class StatusBubbleMacTest;
+@class StatusBubbleWindow;
 
 class StatusBubbleMac : public StatusBubble {
  public:
@@ -50,11 +51,6 @@ class StatusBubbleMac : public StatusBubble {
   // Mac-specific method: Change the parent window of the status bubble. Safe to
   // call even when the status bubble does not exist.
   void SwitchParentWindow(NSWindow* parent);
-
-  // Delegate method called when a fade-in or fade-out transition has
-  // completed.  This is public so that it may be visible to the CAAnimation
-  // delegate, which is an Objective-C object.
-  void AnimationDidStop(CAAnimation* animation, bool finished);
 
   // Expand the bubble to fit a URL too long for the standard bubble size.
   void ExpandBubble();
@@ -97,6 +93,14 @@ class StatusBubbleMac : public StatusBubble {
   // reverse a transition before it has completed.
   void Fade(bool show);
 
+  // Starts an animation of the bubble window to a specific alpha value over a
+  // specific period of time.
+  void AnimateWindowAlpha(CGFloat alpha, NSTimeInterval duration);
+
+  // Method called from the completion callbacks when a fade-in or fade-out
+  // transition has completed.
+  void AnimationDidStop();
+
   // One-shot timer operations to manage the delays associated with the
   // kBubbleShowingTimer and kBubbleHidingTimer states.  StartTimer and
   // TimerFired must be called from one of these states.  StartTimer may be
@@ -126,6 +130,10 @@ class StatusBubbleMac : public StatusBubble {
   // The factory used to generate weak pointers for the expansion delay timer.
   base::WeakPtrFactory<StatusBubbleMac> expand_timer_factory_;
 
+  // The factory used to generate weak pointers for the CAAnimation completion
+  // handlers.
+  base::WeakPtrFactory<StatusBubbleMac> completion_handler_factory_;
+
   // Calculate the appropriate frame for the status bubble window. If
   // |expanded_width|, use entire width of parent frame.
   NSRect CalculateWindowFrame(bool expanded_width);
@@ -148,7 +156,7 @@ class StatusBubbleMac : public StatusBubble {
   id delegate_;  // WEAK
 
   // The window we own.
-  NSWindow* window_;
+  StatusBubbleWindow* window_;
 
   // The status text we want to display when there are no URLs to display.
   NSString* status_text_;
