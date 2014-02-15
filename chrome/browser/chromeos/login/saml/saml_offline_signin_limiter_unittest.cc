@@ -84,12 +84,7 @@ void SAMLOfflineSigninLimiterTest::CreateLimiter() {
 }
 
 void SAMLOfflineSigninLimiterTest::SetUp() {
-  const UserList user_list;
-  EXPECT_CALL(*user_manager_, GetLoggedInUsers())
-      .Times(1)
-      .WillOnce(ReturnRef(user_list));
   profile_.reset(new TestingProfile);
-  Mock::VerifyAndClearExpectations(user_manager_);
 
   SAMLOfflineSigninLimiterFactory::SetClockForTesting(&clock_);
   user_manager_->AddUser(kTestUser);

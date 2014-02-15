@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -59,7 +58,6 @@ class AccountsOptionsTest : public LoginManagerTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kMultiProfiles);
-    command_line->AppendSwitch(switches::kForceMultiProfileInTests);
   }
 
  protected:

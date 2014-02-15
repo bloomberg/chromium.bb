@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +38,6 @@ class UserAddingScreenTest : public LoginManagerTest,
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kMultiProfiles);
-    command_line->AppendSwitch(switches::kForceMultiProfileInTests);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
