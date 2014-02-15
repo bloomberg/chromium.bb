@@ -263,6 +263,15 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   request_scheduler_->Start();
 }
 
+// TODO(rkaplow): Handle this and the similar event in metrics_service by
+// observing an 'OnAppEnterForeground' event in RequestScheduler instead of
+// requiring the frontend code to notify each service individually. Since the
+// scheduler will handle it directly the VariationService shouldn't need to
+// know details of this anymore.
+void VariationsService::OnAppEnterForeground() {
+  request_scheduler_->OnAppEnterForeground();
+}
+
 // static
 GURL VariationsService::GetVariationsServerURL(
     PrefService* policy_pref_service) {

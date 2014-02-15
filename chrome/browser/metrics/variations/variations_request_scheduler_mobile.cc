@@ -11,6 +11,9 @@ namespace chrome_variations {
 
 namespace {
 
+// Time before attempting a seed fetch after a ScheduleFetch(), in seconds.
+const int kScheduleFetchDelaySeconds = 5;
+
 // Time between seed fetches, in hours.
 const int kSeedFetchPeriodHours = 5;
 
@@ -34,11 +37,31 @@ void VariationsRequestSchedulerMobile::Start() {
       local_state_->GetInt64(prefs::kVariationsLastFetchTime));
   if (base::Time::Now() >
       last_fetch_time + base::TimeDelta::FromHours(kSeedFetchPeriodHours)) {
+    last_request_time_ = base::Time::Now();
     task().Run();
   }
 }
 
 void VariationsRequestSchedulerMobile::Reset() {
+}
+
+void VariationsRequestSchedulerMobile::OnAppEnterForeground() {
+  // Verify we haven't just attempted a fetch (which has not completed). This
+  // is mainly used to verify we don't trigger a second fetch for the
+  // OnAppEnterForeground right after startup.
+  if (base::Time::Now() <
+      last_request_time_ + base::TimeDelta::FromHours(kSeedFetchPeriodHours)) {
+    return;
+  }
+
+  // Since Start() launches a one-off execution, we can reuse it here. Also
+  // note that since Start() verifies that the seed needs to be refreshed, we
+  // do not verify here.
+  schedule_fetch_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kScheduleFetchDelaySeconds),
+      this,
+      &VariationsRequestSchedulerMobile::Start);
 }
 
 // static

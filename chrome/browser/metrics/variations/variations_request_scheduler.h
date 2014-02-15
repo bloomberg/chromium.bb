@@ -19,7 +19,7 @@ class VariationsRequestScheduler {
  public:
   virtual ~VariationsRequestScheduler();
 
-  // Starts the task on a schedule.
+  // Starts the task. This can be a repeated event or a one-off.
   virtual void Start();
 
   // Resets the scheduler if it is currently on a timer.
@@ -28,6 +28,10 @@ class VariationsRequestScheduler {
   // Schedules a fetch shortly, for example to re-try the initial request which
   // may have failed.
   void ScheduleFetchShortly();
+
+  // Called when the application has been foregrounded. This may fetch a new
+  // seed.
+  virtual void OnAppEnterForeground();
 
   // Factory method for this class.
   static VariationsRequestScheduler* Create(const base::Closure& task,

@@ -36,6 +36,10 @@ void VariationsRequestScheduler::ScheduleFetchShortly() {
                         task_);
 }
 
+void VariationsRequestScheduler::OnAppEnterForeground() {
+  NOTREACHED() << "Attempted to OnAppEnterForeground on non-mobile device";
+}
+
 base::Closure VariationsRequestScheduler::task() const {
   return task_;
 }

@@ -25,10 +25,24 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
   // Base class overrides.
   virtual void Start() OVERRIDE;
   virtual void Reset() OVERRIDE;
+  virtual void OnAppEnterForeground() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerMobileTest,
+                           OnAppEnterForegroundNoRun);
+  FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerMobileTest,
+                           OnAppEnterForegroundRun);
+  FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerMobileTest,
+                           OnAppEnterForegroundOnStartup);
+
   // The local state instance that provides the last fetch time.
   PrefService* local_state_;
+
+  // Timer used for triggering a delayed fetch for ScheduleFetch().
+  base::OneShotTimer<VariationsRequestSchedulerMobile> schedule_fetch_timer_;
+
+  // The time the last seed request was initiated.
+  base::Time last_request_time_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsRequestSchedulerMobile);
 };

@@ -57,6 +57,13 @@ class VariationsService
   // static for test purposes.
   static GURL GetVariationsServerURL(PrefService* local_prefs);
 
+  // Called when the application enters foreground. This may trigger a
+  // FetchVariationsSeed call.
+  // TODO(rkaplow): Handle this and the similar event in metrics_service by
+  // observing an 'OnAppEnterForeground' event instead of requiring the frontend
+  // code to notify each service individually.
+  void OnAppEnterForeground();
+
 #if defined(OS_WIN)
   // Starts syncing Google Update Variation IDs with the registry.
   void StartGoogleUpdateRegistrySync();
