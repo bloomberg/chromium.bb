@@ -821,10 +821,6 @@ void GraphicsLayer::setShouldFlattenTransform(bool shouldFlatten)
 
     m_shouldFlattenTransform = shouldFlatten;
 
-    // FIXME: once cc has transitioned to rendering-context/should-flatten-transform
-    // this can be removed.
-    m_layer->layer()->setPreserves3D(!shouldFlatten);
-
     m_layer->layer()->setShouldFlattenTransform(shouldFlatten);
 }
 

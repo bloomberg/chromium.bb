@@ -221,9 +221,6 @@ public:
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
 
-    // TODO(vollick) Remove after https://codereview.chromium.org/147833003/ lands.
-    virtual void setPreserves3D(bool) { }
-
     // TODO(vollick) remove these.
     virtual void setSublayerTransform(const SkMatrix44&) { }
     virtual SkMatrix44 sublayerTransform() const { return SkMatrix44(); }
