@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_CHROME_ENCRYPTOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_CHROME_ENCRYPTOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_
+#define COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_
 
 #include "base/compiler_specific.h"
 #include "sync/util/encryptor.h"
@@ -11,9 +11,9 @@
 namespace browser_sync {
 
 // Encryptor that uses the Chrome password manager's encryptor.
-class ChromeEncryptor : public syncer::Encryptor {
+class SystemEncryptor : public syncer::Encryptor {
  public:
-  virtual ~ChromeEncryptor();
+  virtual ~SystemEncryptor();
 
   virtual bool EncryptString(const std::string& plaintext,
                              std::string* ciphertext) OVERRIDE;
@@ -24,4 +24,4 @@ class ChromeEncryptor : public syncer::Encryptor {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_CHROME_ENCRYPTOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_

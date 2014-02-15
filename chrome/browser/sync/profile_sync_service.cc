@@ -38,7 +38,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
@@ -63,6 +62,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -1645,7 +1645,7 @@ const browser_sync::user_selectable_type::UserSelectableSyncType
 #if defined(OS_CHROMEOS)
 void ProfileSyncService::RefreshSpareBootstrapToken(
     const std::string& passphrase) {
-  browser_sync::ChromeEncryptor encryptor;
+  browser_sync::SystemEncryptor encryptor;
   syncer::Cryptographer temp_cryptographer(&encryptor);
   // The first 2 params (hostname and username) doesn't have any effect here.
   syncer::KeyParams key_params = {"localhost", "dummy", passphrase};

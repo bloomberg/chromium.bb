@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 
 #include "base/timer/timer.h"
-#include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
+#include "components/sync_driver/system_encryptor.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "url/gurl.h"
@@ -259,7 +259,7 @@ class SyncBackendHostCore
   scoped_ptr<base::RepeatingTimer<SyncBackendHostCore> > save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
-  ChromeEncryptor encryptor_;
+  SystemEncryptor encryptor_;
 
   // A special ChangeProcessor that tracks the DEVICE_INFO type for us.
   scoped_ptr<SyncedDeviceTracker> synced_device_tracker_;

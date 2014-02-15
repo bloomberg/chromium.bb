@@ -47,6 +47,7 @@
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/webdata/token_service_table_unittest.cc',
             'sync_driver/model_association_manager_unittest.cc',
+            'sync_driver/system_encryptor_unittest.cc',
             'test/run_all_unittests.cc',
             'translate/core/browser/language_state_unittest.cc',
             'translate/core/browser/translate_browser_metrics_unittest.cc',

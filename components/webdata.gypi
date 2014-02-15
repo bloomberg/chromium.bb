@@ -31,6 +31,14 @@
           ],
         }],
       ],
+      'target_conditions': [
+        ['OS=="ios"', {
+          'sources/': [
+            ['include', '^webdata/encryptor/encryptor_mac\\.mm$'],
+            ['include', '^webdata/encryptor/encryptor_password_mac\\.mm$'],
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'webdata_common',
