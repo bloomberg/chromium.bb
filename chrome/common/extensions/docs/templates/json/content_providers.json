@@ -69,15 +69,15 @@
       "dir": "chrome/common/extensions/docs/static"
     },
     "serveFrom": "static"
-  },
-  "cr-native-client": {
-    "chromium": {
-      "dir": "native_client_sdk/doc_generated"
-    },
-    "defaultExtensions": [".html", ".md"],
-    "serveFrom": "native-client",
-    "supportsTemplates": true
   }
+  //"cr-native-client": {
+  //  "chromium": {
+  //    "dir": "native_client_sdk/doc_generated"
+  //  },
+  //  "defaultExtensions": [".html", ".md"],
+  //  "serveFrom": "native-client",
+  //  "supportsTemplates": true
+  //},
   //"devtools-docs": {
   //  "defaultExtensions": [".html", ".md"],
   //  "gcs": {

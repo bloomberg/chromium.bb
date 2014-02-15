@@ -124,8 +124,10 @@ class ServerInstance(object):
       app_samples_fs = EmptyDirFileSystem()
     else:
       extension_samples_fs = host_fs_at_trunk
-      app_samples_fs = github_file_system_provider.Create(
-          'GoogleChrome', 'chrome-app-samples')
+      # TODO(kalman): Re-enable the apps samples, see http://crbug.com/344097.
+      app_samples_fs = EmptyDirFileSystem()
+      #app_samples_fs = github_file_system_provider.Create(
+      #    'GoogleChrome', 'chrome-app-samples')
     self.samples_data_source_factory = SamplesDataSource.Factory(
         extension_samples_fs,
         app_samples_fs,
