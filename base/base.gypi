@@ -930,11 +930,6 @@
           ['OS == "win" and >(nacl_untrusted_build)==1', {
               'sources/': [ ['exclude', '\\.h$'] ],
           }],
-          ['<(use_system_nspr)==1 and >(nacl_untrusted_build)==0', {
-            'sources/': [
-              ['exclude', '^third_party/nspr/'],
-            ],
-          }],
           ['<(toolkit_uses_gtk) == 1', {
             'sources!': [
               'x11/x11_error_tracker.cc',

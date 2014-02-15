@@ -997,9 +997,6 @@
     'use_goma%': '<(use_goma)',
     'gomadir%': '<(gomadir)',
 
-    # Use system nspr instead of the bundled one.
-    'use_system_nspr%': 0,
-
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
 

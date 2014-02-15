@@ -234,11 +234,6 @@
             }],
           ],
         }],
-        ['use_system_nspr==1', {
-          'dependencies': [
-            'third_party/nspr/nspr.gyp:nspr',
-          ],
-        }],
       ],
       'sources': [
         'third_party/nspr/prcpucfg.h',
@@ -809,11 +804,6 @@
         ['use_aura==1 and use_x11==1',  {
           'sources': [
             'x11/edid_parser_x11_unittest.cc',
-          ],
-        }],
-        ['use_system_nspr==1', {
-          'dependencies': [
-            'third_party/nspr/nspr.gyp:nspr',
           ],
         }],
       ],  # conditions

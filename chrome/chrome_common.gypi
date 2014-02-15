@@ -536,11 +536,6 @@
             'common/pepper_permission_util.cc',
           ],
         }],
-        ['use_system_nspr==1', {
-          'dependencies': [
-            '<(DEPTH)/base/third_party/nspr/nspr.gyp:nspr',
-          ],
-        }],
         ['enable_webrtc==0', {
           'sources!': [
             'common/media/webrtc_logging_messages.h',
