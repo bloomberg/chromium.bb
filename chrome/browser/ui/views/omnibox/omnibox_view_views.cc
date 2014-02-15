@@ -494,8 +494,8 @@ void OmniboxViewViews::Update() {
     // change it right before the permanent URL is changed.  Since the new URL
     // is still fully selected, the user's typing will replace the edit contents
     // as they'd intended.
-    const gfx::Range range(GetSelectedRange());
-    const bool was_select_all = (range.length() == text().length());
+    const bool was_select_all = !text().empty() && IsSelectAll();
+    const bool was_reversed = GetSelectedRange().is_reversed();
 
     RevertAll();
 
@@ -508,7 +508,7 @@ void OmniboxViewViews::Update() {
     // and address cases like this, but it seems better to just not muck with
     // things when the omnibox isn't focused to begin with.
     if (was_select_all && model()->has_focus())
-      SelectAll(range.is_reversed());
+      SelectAll(was_reversed);
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
