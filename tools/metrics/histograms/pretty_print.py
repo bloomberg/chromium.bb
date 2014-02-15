@@ -322,13 +322,17 @@ def main():
   histograms_filename = 'histograms.xml'
   histograms_backup_filename = 'histograms.before.pretty-print.xml'
 
-  script_dir = path_utils.ScriptDir()
+  # If there is a histograms.xml in the current working directory, use that.
+  # Otherwise, use the one residing in the same directory as this script.
+  histograms_dir = os.getcwd()
+  if not os.path.isfile(os.path.join(histograms_dir, histograms_filename)):
+    histograms_dir = path_utils.ScriptDir()
 
-  histograms_pathname = os.path.join(script_dir, histograms_filename)
-  histograms_backup_pathname = os.path.join(script_dir,
+  histograms_pathname = os.path.join(histograms_dir, histograms_filename)
+  histograms_backup_pathname = os.path.join(histograms_dir,
                                             histograms_backup_filename)
 
-  logging.info('Loading %s...' % histograms_filename)
+  logging.info('Loading %s...' % os.path.relpath(histograms_pathname))
   with open(histograms_pathname, 'rb') as f:
     xml = f.read()
 
