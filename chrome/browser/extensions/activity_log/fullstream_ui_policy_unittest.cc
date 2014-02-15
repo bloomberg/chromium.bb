@@ -229,9 +229,19 @@ class FullStreamUIPolicyTest : public testing::Test {
       const std::vector<int64>& action_ids,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
 
+    // Use a mock clock to ensure that events are not recorded on the wrong day
+    // when the test is run close to local midnight.
+    base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+    mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                       base::TimeDelta::FromHours(12));
+    policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
     // Record some actions
-    scoped_refptr<Action> action = new Action(
-        "punky1", base::Time::Now(), Action::ACTION_DOM_ACCESS, "lets1");
+    scoped_refptr<Action> action =
+        new Action("punky1",
+                   mock_clock->Now() - base::TimeDelta::FromMinutes(40),
+                   Action::ACTION_DOM_ACCESS,
+                   "lets1");
     action->mutable_args()->AppendString("vamoose1");
     action->set_page_url(GURL("http://www.google1.com"));
     action->set_page_title("Google1");
@@ -241,8 +251,10 @@ class FullStreamUIPolicyTest : public testing::Test {
     // database.
     policy->ProcessAction(action);
 
-    action = new Action(
-        "punky2", base::Time::Now(), Action::ACTION_API_CALL, "lets2");
+    action = new Action("punky2",
+                        mock_clock->Now() - base::TimeDelta::FromMinutes(30),
+                        Action::ACTION_API_CALL,
+                        "lets2");
     action->mutable_args()->AppendString("vamoose2");
     action->set_page_url(GURL("http://www.google2.com"));
     action->set_page_title("Google2");
