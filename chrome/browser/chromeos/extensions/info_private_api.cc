@@ -68,6 +68,9 @@ const char kPropertyScreenMagnifierEnabled[] = "a11yScreenMagnifierEnabled";
 // Key which corresponds to the auto click A11Y property in JS.
 const char kPropertyAutoclickEnabled[] = "a11yAutoClickEnabled";
 
+// Key which corresponds to the auto click A11Y property in JS.
+const char kPropertyVirtualKeyboardEnabled[] = "a11yVirtualKeyboardEnabled";
+
 // Key which corresponds to the send-function-keys property in JS.
 const char kPropertySendFunctionsKeys[] = "sendFunctionKeys";
 
@@ -78,14 +81,14 @@ const struct {
   const char* api_name;
   const char* preference_name;
 } kPreferencesMap[] = {
-    { kPropertyLargeCursorEnabled, prefs::kLargeCursorEnabled },
-    { kPropertyStickyKeysEnabled, prefs::kStickyKeysEnabled },
-    { kPropertySpokenFeedbackEnabled, prefs::kSpokenFeedbackEnabled },
-    { kPropertyHighContrastEnabled, prefs::kHighContrastEnabled },
-    { kPropertyScreenMagnifierEnabled, prefs::kScreenMagnifierEnabled },
-    { kPropertyAutoclickEnabled, prefs::kAutoclickEnabled },
-    { kPropertySendFunctionsKeys, prefs::kLanguageSendFunctionKeys }
-};
+      {kPropertyLargeCursorEnabled, prefs::kLargeCursorEnabled},
+      {kPropertyStickyKeysEnabled, prefs::kStickyKeysEnabled},
+      {kPropertySpokenFeedbackEnabled, prefs::kSpokenFeedbackEnabled},
+      {kPropertyHighContrastEnabled, prefs::kHighContrastEnabled},
+      {kPropertyScreenMagnifierEnabled, prefs::kScreenMagnifierEnabled},
+      {kPropertyAutoclickEnabled, prefs::kAutoclickEnabled},
+      {kPropertyVirtualKeyboardEnabled, prefs::kVirtualKeyboardEnabled},
+      {kPropertySendFunctionsKeys, prefs::kLanguageSendFunctionKeys}};
 
 const char* GetBoolPrefNameForApiProperty(const char* api_name) {
   for (size_t i = 0;

@@ -445,6 +445,9 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
 
   // Component extensions needed for kiosk apps.
   AddFileManagerExtension();
+
+  // Add virtual keyboard.
+  AddKeyboardApp();
 }
 
 void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(

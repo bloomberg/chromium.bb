@@ -75,6 +75,7 @@ function prefsTest() {
   chrome.chromeosInfoPrivate.set('a11yHighContrastEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yScreenMagnifierEnabled', true);
   chrome.chromeosInfoPrivate.set('a11yAutoClickEnabled', true);
+  chrome.chromeosInfoPrivate.set('a11yVirtualKeyboardEnabled', true);
   chrome.chromeosInfoPrivate.set('sendFunctionKeys', true);
   chrome.chromeosInfoPrivate.get(
       ['a11yLargeCursorEnabled',
@@ -83,6 +84,7 @@ function prefsTest() {
        'a11yHighContrastEnabled',
        'a11yScreenMagnifierEnabled',
        'a11yAutoClickEnabled',
+       'a11yVirtualKeyboardEnabled',
        'sendFunctionKeys'],
       pass(
         function(values) {
@@ -92,6 +94,7 @@ function prefsTest() {
           chrome.test.assertEq(values['a11yHighContrastEnabled'], true);
           chrome.test.assertEq(values['a11yScreenMagnifierEnabled'], true);
           chrome.test.assertEq(values['a11yAutoClickEnabled'], true);
+          chrome.test.assertEq(values['a11yVirtualKeyboardEnabled'], true);
           chrome.test.assertEq(values['sendFunctionKeys'], true);
         }
       ));
@@ -109,6 +112,7 @@ var tests = generateTestsForKeys(['hwid',
                                   'a11yHighContrastEnabled',
                                   'a11yScreenMagnifierEnabled',
                                   'a11yAutoClickEnabled',
+                                  'a11yVirtualKeyboardEnabled',
                                   'sendFunctionKeys',
                                   'timezone',
                                   'supportedTimezones'])
