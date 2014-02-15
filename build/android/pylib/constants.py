@@ -128,6 +128,8 @@ SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 ANDROID_SDK_VERSION = 19
 ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/sdk')
+ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,
+                                 'build-tools/%d.0.0' % ANDROID_SDK_VERSION)
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/ndk')
 
