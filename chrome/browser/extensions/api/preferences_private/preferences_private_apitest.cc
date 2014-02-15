@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
@@ -158,9 +159,9 @@ PreferencesPrivateApiTest::TestGetSyncCategoriesWithoutPassphraseFunction() {
   const base::ListValue* categories = NULL;
   ASSERT_TRUE(result->GetList(0, &categories));
   EXPECT_NE(categories->end(),
-           categories->Find(base::StringValue("Bookmarks")));
+            categories->Find(base::StringValue(chrome::kBookmarksFileName)));
   EXPECT_NE(categories->end(),
-           categories->Find(base::StringValue("Preferences")));
+            categories->Find(base::StringValue(chrome::kPreferencesFilename)));
   EXPECT_EQ(categories->end(),
            categories->Find(base::StringValue("Autofill"))) <<
                "Encrypted categories should not be present";

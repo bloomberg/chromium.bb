@@ -560,7 +560,7 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   EXPECT_TRUE(base::DeleteFile(path, true));
   base::File::Error error = base::File::FILE_OK;
   EXPECT_TRUE(base::CreateDirectoryAndGetError(path, &error)) << error;
-  base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
+  base::FilePath temp_prefs = path.Append(chrome::kPreferencesFilename);
   EXPECT_TRUE(base::CopyFile(prefs_file, temp_prefs));
 
   base::FilePath extensions_install_dir =
@@ -580,9 +580,8 @@ void ExtensionServiceTestBase::InitializeGoodInstalledExtensionService() {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 }
 
@@ -1428,9 +1427,8 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("bad")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
@@ -1505,9 +1503,8 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
@@ -1539,9 +1536,8 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
@@ -1581,9 +1577,8 @@ TEST_F(ExtensionServiceTest, PendingImports) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates_with_imports")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
@@ -5215,7 +5210,8 @@ TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   // Initialize the test dir with a good Preferences/extensions.
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("l10n");
-  base::FilePath pref_path = source_install_dir.AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.Append(chrome::kPreferencesFilename);
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   service_->Init();
@@ -5541,9 +5537,8 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   InitializeExtensionSyncService();
@@ -5579,9 +5574,8 @@ TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
   base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  base::FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   InitializeExtensionSyncService();

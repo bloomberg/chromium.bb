@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -65,7 +66,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
     base::CreateDirectory(profile_dir);
 
-    preferences_file_ = profile_dir.AppendASCII("Preferences");
+    preferences_file_ = profile_dir.Append(chrome::kPreferencesFilename);
     user_scripts_dir_ = profile_dir.AppendASCII("User Scripts");
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
@@ -74,7 +75,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
-      base::CopyFile(src_dir.AppendASCII("Preferences"), preferences_file_);
+      base::CopyFile(src_dir.Append(chrome::kPreferencesFilename),
+                     preferences_file_);
       base::CopyDirectory(src_dir.AppendASCII("Extensions"),
                           profile_dir, true);  // recursive
     }

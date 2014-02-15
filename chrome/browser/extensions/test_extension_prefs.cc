@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -61,7 +62,7 @@ class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
 TestExtensionPrefs::TestExtensionPrefs(base::SequencedTaskRunner* task_runner)
     : task_runner_(task_runner), extensions_disabled_(false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
+  preferences_file_ = temp_dir_.path().Append(chrome::kPreferencesFilename);
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");
   EXPECT_TRUE(base::CreateDirectory(extensions_dir_));
 
