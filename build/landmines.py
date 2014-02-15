@@ -15,7 +15,6 @@ build is clobbered.
 """
 
 import difflib
-import gyp_helper
 import logging
 import optparse
 import os
@@ -113,7 +112,9 @@ def process_options():
 
 def main():
   landmine_scripts = process_options()
-  gyp_helper.apply_chromium_gyp_env()
+
+  if landmine_utils.builder() == 'dump_dependency_json':
+    return 0
 
   for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
     landmines = []
