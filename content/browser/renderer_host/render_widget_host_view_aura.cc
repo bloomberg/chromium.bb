@@ -37,7 +37,6 @@
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -369,8 +368,8 @@ void AcknowledgeBufferForGpu(
 
 // We need to watch for mouse events outside a Web Popup or its parent
 // and dismiss the popup for certain events.
-class RenderWidgetHostViewAura::EventFilterForPopupExit :
-    public ui::EventHandler {
+class RenderWidgetHostViewAura::EventFilterForPopupExit
+    : public ui::EventHandler {
  public:
   explicit EventFilterForPopupExit(RenderWidgetHostViewAura* rwhva)
       : rwhva_(rwhva) {

@@ -21,7 +21,6 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
 using base::ASCIIToUTF16;
@@ -700,6 +699,7 @@ struct IndexedDBDatabase::PutOperationParams {
   scoped_refptr<IndexedDBCallbacks> callbacks;
   std::vector<IndexKeys> index_keys;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PutOperationParams);
 };
 
@@ -963,6 +963,7 @@ struct IndexedDBDatabase::OpenCursorOperationParams {
   IndexedDBDatabase::TaskType task_type;
   scoped_refptr<IndexedDBCallbacks> callbacks;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(OpenCursorOperationParams);
 };
 

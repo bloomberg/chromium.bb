@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 using base::UserDataAdapter;
 

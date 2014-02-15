@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_STREAMS_STREAM_HANDLE_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/stream_handle.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace content {
 

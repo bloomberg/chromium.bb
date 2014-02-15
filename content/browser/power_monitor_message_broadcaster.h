@@ -6,13 +6,11 @@
 #define CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace IPC {
-  class Sender;
+class Sender;
 }
 
 namespace content {
@@ -36,6 +34,6 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcaster);
 };
 
-}  // namespace base
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_

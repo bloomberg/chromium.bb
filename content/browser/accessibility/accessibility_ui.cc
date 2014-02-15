@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -171,11 +170,10 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK(args->GetSize() == 2);
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
-  CHECK(base::StringToInt(process_id_str,
-                          &process_id));
+  CHECK(base::StringToInt(process_id_str, &process_id));
   CHECK(base::StringToInt(route_id_str, &route_id));
 
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
@@ -206,7 +204,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK(args->GetSize() == 2);
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
   CHECK(base::StringToInt(process_id_str, &process_id));

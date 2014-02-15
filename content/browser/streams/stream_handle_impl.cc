@@ -4,8 +4,10 @@
 
 #include "content/browser/streams/stream_handle_impl.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/streams/stream.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
