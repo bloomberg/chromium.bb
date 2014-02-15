@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Clear Key Playback</title>
+        <title>Waiting for a key.</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../w3c-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
@@ -10,7 +10,6 @@
     <body>
         <video id="testVideo"></video>
         <div id="log"></div>
-        <p>Test playback of encrypted media using Clear Key key system.</p>
         <script>
             async_test(function(test)
             {
@@ -19,6 +18,7 @@
                 var mediaKeySession = null;
                 var sessionReadyReceived = false;
 
+                var keyId = null;
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
 
@@ -42,7 +42,23 @@
                     assert_equals(event.target, mediaKeySession);
                     assert_equals(event.type, "message");
 
-                    var keyId = event.message;
+                    keyId = event.message;
+                    setTimeout(verifyWaitingForKey, 250);
+                }
+
+                function verifyWaitingForKey()
+                {
+                    // Make sure the video is NOT paused and not progressing before the session is updated.
+                    // TODO(xhwang): Check "waiting" event after it's implemented. See http://crbug.com/337975
+                    assert_false(video.paused);
+                    assert_equals(video.currentTime, 0);
+
+                    updateSession();
+                }
+
+                function updateSession()
+                {
+                    assert_not_equals(keyId, null);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     mediaKeySession.update(jwkSet);
                     waitForEventAndRunStep("ready", mediaKeySession, onReady, test);
@@ -64,7 +80,7 @@
 
                 function onTimeUpdate(event)
                 {
-                    if (event.target.currentTime < 0.2 || !sessionReadyReceived)
+                    if (event.target.currentTime < 0.5 || !sessionReadyReceived)
                         return;
 
                     test.done();
@@ -76,7 +92,7 @@
                 video.src = "../content/test-encrypted.webm";
                 video.setMediaKeys(mediaKeys);
                 video.play();
-            }, "Playback using Clear Key key system.");
+            }, "Waiting for a key.");
         </script>
     </body>
 </html>
