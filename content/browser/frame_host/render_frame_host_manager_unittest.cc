@@ -756,7 +756,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   test_process_host2->sink().ClearMessages();
   host2->render_view_host()->NavigateToURL(kUrl2);
   EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
-      ViewMsg_Navigate::ID));
+      FrameMsg_Navigate::ID));
 
   // Allow closing the current Render View (precondition for swapping out
   // the RVH): Simulate response from RenderView for ViewMsg_ShouldClose sent by
@@ -783,7 +783,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   EXPECT_EQ(host2, manager->pending_frame_host());
   // There should be still no navigation messages being sent.
   EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
-      ViewMsg_Navigate::ID));
+      FrameMsg_Navigate::ID));
 
   // 3) Cross-site navigate to next site before 2) has committed. --------------
   const GURL kUrl3("http://webkit.org/");

@@ -131,20 +131,22 @@ Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
     // it is unknown what will happen.
     //
     // There are a few cases (perhaps more):
-    // 1 The RenderViewHost has already queued ViewMsg_Navigate and loading
+    // 1 The RenderFrameHost has already queued FrameMsg_Navigate and loading
     //   will start shortly.
-    // 2 The RenderViewHost has already queued ViewMsg_Navigate and loading
+    // 2 The RenderFrameHost has already queued FrameMsg_Navigate and loading
     //   will never start because it is just an in-page fragment navigation.
-    // 3 The RenderViewHost is suspended and hasn't queued ViewMsg_Navigate
-    //   yet. This happens for cross-site navigations. The RenderViewHost
-    //   will not queue ViewMsg_Navigate until it is ready to unload the
+    // 3 The RenderFrameHost is suspended and hasn't queued FrameMsg_Navigate
+    //   yet. This happens for cross-site navigations. The RenderFrameHost
+    //   will not queue FrameMsg_Navigate until it is ready to unload the
     //   previous page (after running unload handlers and such).
+    // TODO(nasko): Revisit case 3, since now unload handlers are run in the
+    // background. http://crbug.com/323528.
     //
     // To determine whether a load is expected, do a round trip to the
     // renderer to ask what the URL is.
     // If case #1, by the time the command returns, the frame started to load
     // event will also have been received, since the DevTools command will
-    // be queued behind ViewMsg_Navigate.
+    // be queued behind FrameMsg_Navigate.
     // If case #2, by the time the command returns, the navigation will
     // have already happened, although no frame start/stop events will have
     // been received.
