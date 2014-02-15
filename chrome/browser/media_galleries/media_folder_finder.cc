@@ -9,6 +9,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
@@ -35,18 +36,17 @@ bool IsValidScanPath(const base::FilePath& path) {
   return !path.empty() && path.IsAbsolute();
 }
 
-MediaGalleryScanFileType FilterPath(MediaPathFilter* filter,
-                                    const base::FilePath& path) {
-  DCHECK(IsValidScanPath(path));
-  return filter->GetType(path);
+void CountScanResult(MediaGalleryScanFileType type,
+                     MediaGalleryScanResult* scan_result) {
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE)
+    scan_result->image_count += 1;
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_AUDIO)
+    scan_result->audio_count += 1;
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO)
+    scan_result->video_count += 1;
 }
 
-bool FileMeetsSizeRequirement(bool requirement_met,
-                              MediaGalleryScanFileType type,
-                              int64 size) {
-  if (requirement_met)
-    return true;
-
+bool FileMeetsSizeRequirement(MediaGalleryScanFileType type, int64 size) {
   if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE)
     if (size >= kMinimumImageSize)
       return true;
@@ -57,58 +57,6 @@ bool FileMeetsSizeRequirement(bool requirement_met,
     if (size >= kMinimumVideoSize)
       return true;
   return false;
-}
-
-void ScanFolderOnBlockingPool(
-    const base::FilePath& path,
-    const MediaFolderFinder::FilterCallback& filter_callback_,
-    MediaGalleryScanResult* scan_result,
-    std::vector<base::FilePath>* new_folders) {
-  CHECK(IsValidScanPath(path));
-  DCHECK(scan_result);
-  DCHECK(new_folders);
-  DCHECK(IsEmptyScanResult(*scan_result));
-
-  bool folder_meets_size_requirement = false;
-  base::FileEnumerator enumerator(
-      path,
-      false, /* recursive? */
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES
-#if defined(OS_POSIX)
-      | base::FileEnumerator::SHOW_SYM_LINKS  // show symlinks, not follow.
-#endif
-      );
-  while (!enumerator.Next().empty()) {
-    base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
-    base::FilePath full_path = path.Append(file_info.GetName());
-    if (MediaPathFilter::ShouldSkip(full_path))
-      continue;
-
-    if (file_info.IsDirectory()) {
-      new_folders->push_back(full_path);
-      continue;
-    }
-    MediaGalleryScanFileType type = filter_callback_.Run(full_path);
-    if (type == MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN)
-      continue;
-
-    // Make sure there is at least 1 file above a size threshold.
-    if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE)
-      scan_result->image_count += 1;
-    if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_AUDIO)
-      scan_result->audio_count += 1;
-    if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO)
-      scan_result->video_count += 1;
-    folder_meets_size_requirement =
-        FileMeetsSizeRequirement(folder_meets_size_requirement,
-                                 type,
-                                 file_info.GetSize());
-  }
-  if (!folder_meets_size_requirement) {
-    scan_result->image_count = 0;
-    scan_result->audio_count = 0;
-    scan_result->video_count = 0;
-  }
 }
 
 // Return true if |path| should not be considered as the starting point for a
@@ -189,17 +137,97 @@ void GetDefaultScanRoots(const DefaultScanRootsCallback& callback,
 
 }  // namespace
 
+MediaFolderFinder::WorkerReply::WorkerReply() {}
+
+MediaFolderFinder::WorkerReply::~WorkerReply() {}
+
+// The Worker is created on the UI thread, but does all its work on a blocking
+// SequencedTaskRunner.
+class MediaFolderFinder::Worker {
+ public:
+  Worker();
+  ~Worker();
+
+  // Scans |path| and return the results.
+  WorkerReply ScanFolder(const base::FilePath& path);
+
+ private:
+  scoped_ptr<MediaPathFilter> filter_;
+
+  base::SequenceChecker sequence_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(Worker);
+};
+
+MediaFolderFinder::Worker::Worker() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  filter_.reset(new MediaPathFilter);
+  sequence_checker_.DetachFromSequence();
+}
+
+MediaFolderFinder::Worker::~Worker() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+}
+
+MediaFolderFinder::WorkerReply MediaFolderFinder::Worker::ScanFolder(
+    const base::FilePath& path) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  CHECK(IsValidScanPath(path));
+
+  WorkerReply reply;
+  bool folder_meets_size_requirement = false;
+  base::FileEnumerator enumerator(
+      path,
+      false, /* recursive? */
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES
+#if defined(OS_POSIX)
+      | base::FileEnumerator::SHOW_SYM_LINKS  // show symlinks, not follow.
+#endif
+      );
+  while (!enumerator.Next().empty()) {
+    base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
+    base::FilePath full_path = path.Append(file_info.GetName());
+    if (MediaPathFilter::ShouldSkip(full_path))
+      continue;
+
+    if (file_info.IsDirectory()) {
+      reply.new_folders.push_back(full_path);
+      continue;
+    }
+    MediaGalleryScanFileType type = filter_->GetType(full_path);
+    if (type == MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN)
+      continue;
+
+    CountScanResult(type, &reply.scan_result);
+    if (!folder_meets_size_requirement) {
+      folder_meets_size_requirement =
+          FileMeetsSizeRequirement(type, file_info.GetSize());
+    }
+  }
+  // Make sure there is at least 1 file above a size threshold.
+  if (!folder_meets_size_requirement)
+    reply.scan_result = MediaGalleryScanResult();
+  return reply;
+}
+
 MediaFolderFinder::MediaFolderFinder(
     const MediaFolderFinderResultsCallback& callback)
     : results_callback_(callback),
       scan_state_(SCAN_STATE_NOT_STARTED),
+      worker_(new Worker()),
       has_roots_for_testing_(false),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  worker_task_runner_ = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 }
 
 MediaFolderFinder::~MediaFolderFinder() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  worker_task_runner_->DeleteSoon(FROM_HERE, worker_);
+
   if (scan_state_ == SCAN_STATE_FINISHED)
     return;
 
@@ -232,8 +260,6 @@ void MediaFolderFinder::SetRootsForTesting(
 void MediaFolderFinder::OnInitialized(
     const std::vector<base::FilePath>& roots) {
   DCHECK_EQ(SCAN_STATE_STARTED, scan_state_);
-  DCHECK(!token_.IsValid());
-  DCHECK(filter_callback_.is_null());
 
   std::set<base::FilePath> valid_roots;
   for (size_t i = 0; i < roots.size(); ++i) {
@@ -268,9 +294,6 @@ void MediaFolderFinder::OnInitialized(
 
   std::copy(valid_roots.begin(), valid_roots.end(),
             std::back_inserter(folders_to_scan_));
-  token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
-  filter_callback_ = base::Bind(&FilterPath,
-                                base::Owned(new MediaPathFilter()));
   ScanFolder();
 }
 
@@ -284,45 +307,30 @@ void MediaFolderFinder::ScanFolder() {
     return;
   }
 
-  DCHECK(token_.IsValid());
-  DCHECK(!filter_callback_.is_null());
-
   base::FilePath folder_to_scan = folders_to_scan_.back();
   folders_to_scan_.pop_back();
-  MediaGalleryScanResult* scan_result = new MediaGalleryScanResult();
-  std::vector<base::FilePath>* new_folders = new std::vector<base::FilePath>();
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(token_);
-  task_runner->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ScanFolderOnBlockingPool,
-                 folder_to_scan,
-                 filter_callback_,
-                 base::Unretained(scan_result),
-                 base::Unretained(new_folders)),
+  base::PostTaskAndReplyWithResult(
+      worker_task_runner_, FROM_HERE,
+      base::Bind(&Worker::ScanFolder,
+                 base::Unretained(worker_),
+                 folder_to_scan),
       base::Bind(&MediaFolderFinder::GotScanResults,
                  weak_factory_.GetWeakPtr(),
-                 folder_to_scan,
-                 base::Owned(scan_result),
-                 base::Owned(new_folders)));
+                 folder_to_scan));
 }
 
-void MediaFolderFinder::GotScanResults(
-    const base::FilePath& path,
-    const MediaGalleryScanResult* scan_result,
-    const std::vector<base::FilePath>* new_folders) {
+void MediaFolderFinder::GotScanResults(const base::FilePath& path,
+                                       const WorkerReply& reply) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(SCAN_STATE_STARTED, scan_state_);
   DCHECK(!path.empty());
-  DCHECK(scan_result);
-  DCHECK(new_folders);
   CHECK(!ContainsKey(results_, path));
 
-  if (!IsEmptyScanResult(*scan_result))
-    results_[path] = *scan_result;
+  if (!IsEmptyScanResult(reply.scan_result))
+    results_[path] = reply.scan_result;
 
   // Push new folders to the |folders_to_scan_| in reverse order.
-  std::copy(new_folders->rbegin(), new_folders->rend(),
+  std::copy(reply.new_folders.rbegin(), reply.new_folders.rend(),
             std::back_inserter(folders_to_scan_));
 
   ScanFolder();

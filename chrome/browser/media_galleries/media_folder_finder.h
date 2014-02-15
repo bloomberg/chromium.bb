@@ -10,8 +10,9 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 
 // MediaFolderFinder scans local hard drives and look for folders that contain
@@ -23,8 +24,6 @@ class MediaFolderFinder {
   typedef base::Callback<void(bool /*success*/,
                               const MediaFolderFinderResults& /*results*/)>
       MediaFolderFinderResultsCallback;
-  typedef base::Callback<MediaGalleryScanFileType(const base::FilePath&)>
-      FilterCallback;
 
   // |callback| will get called when the scan finishes. If the object is deleted
   // before it finishes, the scan will stop and |callback| will get called with
@@ -40,6 +39,15 @@ class MediaFolderFinder {
  private:
   friend class MediaFolderFinderTest;
 
+  class Worker;
+  struct WorkerReply {
+    WorkerReply();
+    ~WorkerReply();
+
+    MediaGalleryScanResult scan_result;
+    std::vector<base::FilePath> new_folders;
+  };
+
   enum ScanState {
     SCAN_STATE_NOT_STARTED,
     SCAN_STATE_STARTED,
@@ -53,11 +61,8 @@ class MediaFolderFinder {
   // Scan a folder from |folders_to_scan_|.
   void ScanFolder();
 
-  // Callback that returns the |scan_result| for |path| and the |new_folders|
-  // to scan in future calls to ScanFolder().
-  void GotScanResults(const base::FilePath& path,
-                      const MediaGalleryScanResult* scan_result,
-                      const std::vector<base::FilePath>* new_folders);
+  // Callback that handles the |reply| from |worker_| for a scanned |path|.
+  void GotScanResults(const base::FilePath& path, const WorkerReply& reply);
 
   const MediaFolderFinderResultsCallback results_callback_;
   MediaFolderFinderResults results_;
@@ -65,12 +70,10 @@ class MediaFolderFinder {
   std::vector<base::FilePath> folders_to_scan_;
   ScanState scan_state_;
 
-  // Token to make sure all calls with |filter_callback_| are on the same
-  // sequence.
-  base::SequencedWorkerPool::SequenceToken token_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
-  // Callback used to filter through files and make sure they are media files.
-  FilterCallback filter_callback_;
+  // Owned by MediaFolderFinder, but lives on |worker_task_runner_|.
+  Worker* worker_;
 
   // Set of roots to scan for testing.
   bool has_roots_for_testing_;
