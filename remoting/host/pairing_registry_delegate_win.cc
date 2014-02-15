@@ -149,6 +149,8 @@ bool PairingRegistryDelegateWin::DeleteAll() {
     return false;
   }
 
+  // Enumerate and delete the values in the privileged and unprivileged keys
+  // separately in case they get out of sync.
   bool success = true;
   DWORD count = unprivileged_.GetValueCount();
   while (count > 0) {
@@ -160,6 +162,18 @@ bool PairingRegistryDelegateWin::DeleteAll() {
 
     success = success && (result == ERROR_SUCCESS);
     count = unprivileged_.GetValueCount();
+  }
+
+  count = privileged_.GetValueCount();
+  while (count > 0) {
+    // presubmit: allow wstring
+    std::wstring value_name;
+    LONG result = privileged_.GetValueNameAt(0, &value_name);
+    if (result == ERROR_SUCCESS)
+      result = privileged_.DeleteValue(value_name.c_str());
+
+    success = success && (result == ERROR_SUCCESS);
+    count = privileged_.GetValueCount();
   }
 
   return success;
