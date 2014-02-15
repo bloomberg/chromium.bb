@@ -218,15 +218,8 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_ManyPopupNotifications) {
   EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_ManuallyCloseMessageCenter DISABLED_ManuallyCloseMessageCenter
-#else
-#define MAYBE_ManuallyCloseMessageCenter ManuallyCloseMessageCenter
-#endif
-
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
-                       MAYBE_ManuallyCloseMessageCenter) {
+                       ManuallyCloseMessageCenter) {
   NotificationUIManager* manager = g_browser_process->notification_ui_manager();
   ASSERT_TRUE(manager->DelegatesToMessageCenter());
   MessageCenterNotificationManager* mc_manager =
