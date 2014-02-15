@@ -208,8 +208,7 @@ int RsaMethodFinish(RSA* rsa) {
   jobject key = reinterpret_cast<jobject>(RSA_get_app_data(rsa));
   if (key != NULL) {
     RSA_set_app_data(rsa, NULL);
-    JNIEnv* env = base::android::AttachCurrentThread();
-    env->DeleteGlobalRef(key);
+    ReleaseKey(key);
   }
   // Actual return value is ignored by OpenSSL. There are no docs
   // explaining what this is supposed to be.
@@ -413,8 +412,7 @@ int DsaMethodFinish(DSA* dsa) {
   jobject key = reinterpret_cast<jobject>(DSA_get_ex_data(dsa,0));
   if (key != NULL) {
     DSA_set_ex_data(dsa, 0, NULL);
-    JNIEnv* env = base::android::AttachCurrentThread();
-    env->DeleteGlobalRef(key);
+    ReleaseKey(key);
   }
   // Actual return value is ignored by OpenSSL. There are no docs
   // explaining what this is supposed to be.
@@ -493,9 +491,7 @@ void ExDataFree(void* parent,
     return;
 
   CRYPTO_set_ex_data(ad, idx, NULL);
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  env->DeleteGlobalRef(private_key);
+  ReleaseKey(private_key);
 }
 
 int ExDataDup(CRYPTO_EX_DATA* to,

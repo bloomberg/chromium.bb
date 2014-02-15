@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "net/android/android_private_key.h"
 #include "net/android/gurl_utils.h"
 #include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
@@ -19,6 +20,7 @@ namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
   { "AndroidCertVerifyResult", net::android::RegisterCertVerifyResult },
+  { "AndroidPrivateKey", net::android::RegisterAndroidPrivateKey},
   { "AndroidKeyStore", net::android::RegisterKeyStore },
   { "AndroidNetworkLibrary", net::android::RegisterNetworkLibrary },
   { "GURLUtils", net::RegisterGURLUtils },

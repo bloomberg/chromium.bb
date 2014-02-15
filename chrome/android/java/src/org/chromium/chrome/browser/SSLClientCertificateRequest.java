@@ -16,9 +16,10 @@ import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.net.AndroidPrivateKey;
+import org.chromium.net.DefaultAndroidKeyStore;
 
 import java.security.Principal;
-import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
@@ -34,8 +35,11 @@ import javax.security.auth.x500.X500Principal;
  * finally pass the results back to the UI thread, which will return to the native code.
  */
 @JNINamespace("chrome::android")
-class SSLClientCertificateRequest {
+public class SSLClientCertificateRequest {
     static final String TAG = "SSLClientCertificateRequest";
+
+    private static final DefaultAndroidKeyStore sLocalKeyStore =
+            new DefaultAndroidKeyStore();
 
     /**
      * Common implementation for anynchronous task of handling the certificate request. This
@@ -47,7 +51,7 @@ class SSLClientCertificateRequest {
         // These fields will store the results computed in doInBackground so that they can be posted
         // back in onPostExecute.
         private byte[][] mEncodedChain;
-        private PrivateKey mPrivateKey;
+        private AndroidPrivateKey mAndroidPrivateKey;
 
         // Pointer to the native certificate request needed to return the results.
         private final int mNativePtr;
@@ -58,7 +62,7 @@ class SSLClientCertificateRequest {
 
         // These overriden methods will be used to access the key store.
         abstract String getAlias();
-        abstract PrivateKey getPrivateKey(String alias);
+        abstract AndroidPrivateKey getPrivateKey(String alias);
         abstract X509Certificate[] getCertificateChain(String alias);
 
         @Override
@@ -66,8 +70,9 @@ class SSLClientCertificateRequest {
             String alias = getAlias();
             if (alias == null) return null;
 
-            PrivateKey key = getPrivateKey(alias);
+            AndroidPrivateKey key = getPrivateKey(alias);
             X509Certificate[] chain = getCertificateChain(alias);
+
             if (key == null || chain == null || chain.length == 0) {
                 Log.w(TAG, "Empty client certificate chain?");
                 return null;
@@ -85,14 +90,14 @@ class SSLClientCertificateRequest {
             }
 
             mEncodedChain = encodedChain;
-            mPrivateKey = key;
+            mAndroidPrivateKey = key;
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
             ThreadUtils.assertOnUiThread();
-            nativeOnSystemRequestCompletion(mNativePtr, mEncodedChain, mPrivateKey);
+            nativeOnSystemRequestCompletion(mNativePtr, mEncodedChain, mAndroidPrivateKey);
         }
     }
 
@@ -114,9 +119,9 @@ class SSLClientCertificateRequest {
         }
 
         @Override
-        PrivateKey getPrivateKey(String alias) {
+        AndroidPrivateKey getPrivateKey(String alias) {
             try {
-                return KeyChain.getPrivateKey(mContext, alias);
+                return sLocalKeyStore.createKey(KeyChain.getPrivateKey(mContext, alias));
             } catch (KeyChainException e) {
                 Log.w(TAG, "KeyChainException when looking for '" + alias + "' certificate");
                 return null;
@@ -160,7 +165,7 @@ class SSLClientCertificateRequest {
         }
 
         @Override
-        PrivateKey getPrivateKey(String alias) {
+        AndroidPrivateKey getPrivateKey(String alias) {
             return mPKCS11AuthManager.getPrivateKey(alias);
         }
 
@@ -290,5 +295,5 @@ class SSLClientCertificateRequest {
 
     // Called to pass request results to native side.
     private static native void nativeOnSystemRequestCompletion(
-            int requestPtr, byte[][] certChain, PrivateKey privateKey);
+            int requestPtr, byte[][] certChain, AndroidPrivateKey androidKey);
 }

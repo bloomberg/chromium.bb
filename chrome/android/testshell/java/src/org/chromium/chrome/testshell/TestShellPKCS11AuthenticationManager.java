@@ -7,8 +7,8 @@ package org.chromium.chrome.testshell;
 import android.content.Context;
 
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
+import org.chromium.net.AndroidPrivateKey;
 
-import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
@@ -36,7 +36,7 @@ public class TestShellPKCS11AuthenticationManager implements PKCS11Authenticatio
     }
 
     @Override
-    public PrivateKey getPrivateKey(String alias) {
+    public AndroidPrivateKey getPrivateKey(String alias) {
         return null;
     }
 }

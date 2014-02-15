@@ -9,8 +9,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/logging.h"
-
 #include "jni/AndroidKeyStore_jni.h"
+#include "net/android/android_private_key.h"
 
 using base::android::AttachCurrentThread;
 using base::android::HasException;
@@ -28,7 +28,9 @@ bool GetRSAKeyModulus(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> modulus_ref =
-      Java_AndroidKeyStore_getRSAKeyModulus(env, private_key_ref);
+      Java_AndroidKeyStore_getRSAKeyModulus(env,
+                                            GetKeyStore(private_key_ref).obj(),
+                                            private_key_ref);
   if (modulus_ref.is_null())
     return false;
 
@@ -41,7 +43,10 @@ bool GetDSAKeyParamQ(jobject private_key_ref,
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> q_ref =
-      Java_AndroidKeyStore_getDSAKeyParamQ(env, private_key_ref);
+      Java_AndroidKeyStore_getDSAKeyParamQ(
+          env,
+          GetKeyStore(private_key_ref).obj(),
+          private_key_ref);
   if (q_ref.is_null())
     return false;
 
@@ -54,7 +59,11 @@ bool GetECKeyOrder(jobject private_key_ref,
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> order_ref =
-      Java_AndroidKeyStore_getECKeyOrder(env, private_key_ref);
+      Java_AndroidKeyStore_getECKeyOrder(
+          env,
+          GetKeyStore(private_key_ref).obj(),
+          private_key_ref);
+
   if (order_ref.is_null())
     return false;
 
@@ -62,12 +71,15 @@ bool GetECKeyOrder(jobject private_key_ref,
   return true;
 }
 
-bool GetPrivateKeyEncodedBytes(jobject private_key,
+bool GetPrivateKeyEncodedBytes(jobject private_key_ref,
                                std::vector<uint8>* result) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> encoded_ref =
-      Java_AndroidKeyStore_getPrivateKeyEncodedBytes(env, private_key);
+      Java_AndroidKeyStore_getPrivateKeyEncodedBytes(
+          env,
+          GetKeyStore(private_key_ref).obj(),
+          private_key_ref);
   if (encoded_ref.is_null())
     return false;
 
@@ -91,7 +103,10 @@ bool RawSignDigestWithPrivateKey(
   // Invoke platform API
   ScopedJavaLocalRef<jbyteArray> signature_ref =
       Java_AndroidKeyStore_rawSignDigestWithPrivateKey(
-          env, private_key_ref, digest_ref.obj());
+          env,
+          GetKeyStore(private_key_ref).obj(),
+          private_key_ref,
+          digest_ref.obj());
   if (HasException(env) || signature_ref.is_null())
     return false;
 
@@ -100,14 +115,16 @@ bool RawSignDigestWithPrivateKey(
   return true;
 }
 
-PrivateKeyType GetPrivateKeyType(jobject private_key) {
+PrivateKeyType GetPrivateKeyType(jobject private_key_ref) {
   JNIEnv* env = AttachCurrentThread();
   int type = Java_AndroidKeyStore_getPrivateKeyType(
-      env, private_key);
+      env,
+      GetKeyStore(private_key_ref).obj(),
+      private_key_ref);
   return static_cast<PrivateKeyType>(type);
 }
 
-EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key) {
+EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key_ref) {
   JNIEnv* env = AttachCurrentThread();
   // Note: the pointer is passed as a jint here because that's how it
   // is stored in the Java object. Java doesn't have a primitive type
@@ -117,9 +134,19 @@ EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key) {
   // Given that this routine shall only be called on Android < 4.2,
   // this won't be a problem in the far future (e.g. when Android gets
   // ported to 64-bit environments, if ever).
-  int pkey =
-      Java_AndroidKeyStore_getOpenSSLHandleForPrivateKey(env, private_key);
+  int pkey = Java_AndroidKeyStore_getOpenSSLHandleForPrivateKey(
+      env,
+      GetKeyStore(private_key_ref).obj(),
+      private_key_ref);
   return reinterpret_cast<EVP_PKEY*>(pkey);
+}
+
+void ReleaseKey(jobject private_key_ref) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AndroidKeyStore_releaseKey(env,
+                                  GetKeyStore(private_key_ref).obj(),
+                                  private_key_ref);
+  env->DeleteGlobalRef(private_key_ref);
 }
 
 bool RegisterKeyStore(JNIEnv* env) {

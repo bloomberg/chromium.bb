@@ -6,7 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 
-import java.security.PrivateKey;
+import org.chromium.net.AndroidPrivateKey;
+
 import java.security.cert.X509Certificate;
 
 /**
@@ -34,13 +35,13 @@ public interface PKCS11AuthenticationManager {
     public X509Certificate[] getCertificateChain(String alias);
 
     /**
-     * Returns the PrivateKey for the requested alias, or null if no there is no result.
-     */
-    public PrivateKey getPrivateKey(String alias);
-
-    /**
      * Performs necessary initializing for using a PKCS11-based KeysStore. Note that this can
      * perform expensive operations and cannot be done on the UI thread.
      */
     public void initialize(Context context);
+
+    /**
+     * Returns the AndroidPrivateKey for the requested alias, or null if there is no result.
+     */
+    public AndroidPrivateKey getPrivateKey(String alias);
 }
