@@ -41,6 +41,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeRareData.h"
@@ -2546,6 +2547,16 @@ void Node::setCustomElementState(CustomElementState newState)
 
     if (oldState == NotCustomElement || newState == Upgraded)
         setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
+}
+
+Element* Node::previousElementSibling() const
+{
+    return ElementTraversal::previousSibling(*this);
+}
+
+Element* Node::nextElementSibling() const
+{
+    return ElementTraversal::nextSibling(*this);
 }
 
 } // namespace WebCore

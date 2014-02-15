@@ -28,6 +28,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -65,8 +66,8 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
         return false;
 
     // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
-    RefPtr<Element> previousList = selectedListItem->previousElementSibling();
-    RefPtr<Element> nextList = selectedListItem->nextElementSibling();
+    RefPtr<Element> previousList = ElementTraversal::previousSibling(*selectedListItem);
+    RefPtr<Element> nextList = ElementTraversal::nextSibling(*selectedListItem);
 
     // We should calculate visible range in list item because inserting new
     // list element will change visibility of list item, e.g. :first-child

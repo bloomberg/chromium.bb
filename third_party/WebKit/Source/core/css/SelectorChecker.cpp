@@ -32,6 +32,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
@@ -265,7 +266,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (Element* parent = parentElement(context))
                 parent->setChildrenAffectedByDirectAdjacentRules();
         }
-        nextContext.element = context.element->previousElementSibling();
+        nextContext.element = ElementTraversal::previousSibling(*context.element);
         if (!nextContext.element)
             return SelectorFailsAllSiblings;
         nextContext.isSubSelector = false;
@@ -277,10 +278,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (Element* parent = parentElement(context))
                 parent->setChildrenAffectedByForwardPositionalRules();
         }
-        nextContext.element = context.element->previousElementSibling();
+        nextContext.element = ElementTraversal::previousSibling(*context.element);
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
-        for (; nextContext.element; nextContext.element = nextContext.element->previousElementSibling()) {
+        for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
             Match match = this->match(nextContext, siblingTraversalStrategy, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
                 return match;

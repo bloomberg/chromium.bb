@@ -1885,7 +1885,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
         RenderStyle* newFirstChildStyle = newFirstChild ? newFirstChild->renderStyle() : 0;
 
         // Find the first element node following |afterChange|
-        Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : afterChange->nextElementSibling();
+        Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : ElementTraversal::nextSibling(*afterChange);
         RenderStyle* firstElementAfterInsertionStyle = firstElementAfterInsertion ? firstElementAfterInsertion->renderStyle() : 0;
 
         // This is the insert/append case.
@@ -1905,7 +1905,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
         RenderStyle* newLastChildStyle = newLastChild ? newLastChild->renderStyle() : 0;
 
         // Find the last element node going backwards from |beforeChange|
-        Node* lastElementBeforeInsertion = beforeChange->isElementNode() ? beforeChange : beforeChange->previousElementSibling();
+        Node* lastElementBeforeInsertion = beforeChange->isElementNode() ? beforeChange : ElementTraversal::previousSibling(*beforeChange);
         RenderStyle* lastElementBeforeInsertionStyle = lastElementBeforeInsertion ? lastElementBeforeInsertion->renderStyle() : 0;
 
         if (newLastChild != lastElementBeforeInsertion && lastElementBeforeInsertionStyle && lastElementBeforeInsertionStyle->lastChildState())
@@ -1920,7 +1920,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     // The + selector.  We need to invalidate the first element following the insertion point.  It is the only possible element
     // that could be affected by this DOM change.
     if (childrenAffectedByDirectAdjacentRules() && afterChange) {
-        if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : afterChange->nextElementSibling())
+        if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : ElementTraversal::nextSibling(*afterChange))
             firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }

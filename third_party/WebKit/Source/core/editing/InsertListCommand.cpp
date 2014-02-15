@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -59,14 +60,18 @@ HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
 PassRefPtr<HTMLElement> InsertListCommand::mergeWithNeighboringLists(PassRefPtr<HTMLElement> passedList)
 {
     RefPtr<HTMLElement> list = passedList;
-    Element* previousList = list->previousElementSibling();
+    Element* previousList = ElementTraversal::previousSibling(*list);
     if (canMergeLists(previousList, list.get()))
         mergeIdenticalElements(previousList, list);
 
-    if (!list || !list->nextElementSibling() || !list->nextElementSibling()->isHTMLElement())
+    if (!list)
+        return 0;
+
+    Element* nextSibling = ElementTraversal::nextSibling(*list);
+    if (!nextSibling || !nextSibling->isHTMLElement())
         return list.release();
 
-    RefPtr<HTMLElement> nextList = toHTMLElement(list->nextElementSibling());
+    RefPtr<HTMLElement> nextList = toHTMLElement(nextSibling);
     if (canMergeLists(list.get(), nextList.get())) {
         mergeIdenticalElements(list, nextList);
         return nextList.release();
