@@ -23,6 +23,7 @@
 #include "cc/resources/tile.h"
 
 namespace cc {
+class RasterWorkerPoolDelegate;
 class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
@@ -100,9 +101,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       ++resources_releasable_;
     }
   }
-  RasterWorkerPool* RasterWorkerPoolForTesting() {
-    return raster_worker_pool_.get();
-  }
 
   void SetGlobalStateForTesting(
       const GlobalStateThatImpactsTilePriority& state) {
@@ -121,7 +119,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
  protected:
   TileManager(TileManagerClient* client,
               ResourceProvider* resource_provider,
+              ContextProvider* context_provider,
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
+              scoped_ptr<RasterWorkerPool> direct_raster_worker_pool,
               size_t max_raster_usage_bytes,
               RenderingStatsInstrumentation* rendering_stats_instrumentation,
               bool use_rasterize_on_demand);
@@ -152,6 +152,12 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
 
  private:
+  enum RasterWorkerPoolType {
+    RASTER_WORKER_POOL_TYPE_DEFAULT,
+    RASTER_WORKER_POOL_TYPE_DIRECT,
+    NUM_RASTER_WORKER_POOL_TYPES
+  };
+
   void OnImageDecodeTaskCompleted(int layer_id,
                                   SkPixelRef* pixel_ref,
                                   bool was_canceled);
@@ -177,8 +183,11 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   void UpdatePrioritizedTileSetIfNeeded();
 
   TileManagerClient* client_;
+  ContextProvider* context_provider_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
+  scoped_ptr<RasterWorkerPoolDelegate> raster_worker_pool_delegate_;
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
@@ -218,8 +227,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   bool use_rasterize_on_demand_;
 
-  // Queue used when scheduling raster tasks.
-  RasterWorkerPool::RasterTask::Queue raster_tasks_;
+  // Queues used when scheduling raster tasks.
+  RasterWorkerPool::RasterTask::Queue
+      raster_queue_[NUM_RASTER_WORKER_POOL_TYPES];
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

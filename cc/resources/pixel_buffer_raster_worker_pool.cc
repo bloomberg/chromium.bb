@@ -30,21 +30,18 @@ bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
 // static
 scoped_ptr<RasterWorkerPool> PixelBufferRasterWorkerPool::Create(
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
     size_t max_transfer_buffer_usage_bytes) {
   return make_scoped_ptr<RasterWorkerPool>(
       new PixelBufferRasterWorkerPool(GetTaskGraphRunner(),
                                       resource_provider,
-                                      context_provider,
                                       max_transfer_buffer_usage_bytes));
 }
 
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
     internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
     size_t max_transfer_buffer_usage_bytes)
-    : RasterWorkerPool(task_graph_runner, resource_provider, context_provider),
+    : RasterWorkerPool(task_graph_runner, resource_provider),
       shutdown_(false),
       scheduled_raster_task_count_(0),
       bytes_pending_upload_(0),
@@ -104,15 +101,9 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
   // Build new raster task state map.
   RasterTaskStateMap new_raster_task_states;
-  RasterTaskVector gpu_raster_tasks;
   for (RasterTaskQueueIterator it(queue); it; ++it) {
     internal::RasterWorkerPoolTask* task = *it;
     DCHECK(new_raster_task_states.find(task) == new_raster_task_states.end());
-
-    if (task->use_gpu_rasterization()) {
-      gpu_raster_tasks.push_back(task);
-      continue;
-    }
 
     RasterTaskStateMap::iterator state_it = raster_task_states_.find(task);
     if (state_it != raster_task_states_.end()) {
@@ -175,9 +166,6 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   check_for_completed_raster_tasks_time_ = base::TimeTicks();
   ScheduleCheckForCompletedRasterTasks();
 
-  if (!gpu_raster_tasks.empty())
-    RunGpuRasterTasks(gpu_raster_tasks);
-
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc",
       "ScheduledTasks",
@@ -223,15 +211,10 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
 
     completed_raster_tasks_.pop_front();
   }
-
-  CheckForCompletedGpuRasterTasks();
 }
 
 SkCanvas* PixelBufferRasterWorkerPool::AcquireCanvasForRaster(
     internal::RasterWorkerPoolTask* task) {
-  if (task->use_gpu_rasterization())
-    return resource_provider()->MapDirectRasterBuffer(task->resource()->id());
-
   resource_provider()->AcquirePixelRasterBuffer(task->resource()->id());
   return resource_provider()->MapPixelRasterBuffer(task->resource()->id());
 }
@@ -239,11 +222,6 @@ SkCanvas* PixelBufferRasterWorkerPool::AcquireCanvasForRaster(
 void PixelBufferRasterWorkerPool::OnRasterCompleted(
     internal::RasterWorkerPoolTask* task,
     const PicturePileImpl::Analysis& analysis) {
-  if (task->use_gpu_rasterization()) {
-    resource_provider()->UnmapDirectRasterBuffer(task->resource()->id());
-    return;
-  }
-
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc"),
                "PixelBufferRasterWorkerPool::OnRasterCompleted",
                "was_canceled",

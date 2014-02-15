@@ -13,14 +13,14 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "cc/debug/traced_value.h"
+#include "cc/resources/direct_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
+#include "cc/resources/raster_worker_pool_delegate.h"
 #include "cc/resources/tile.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
-
 namespace {
 
 // Memory limit policy works by mapping some bin states to the NEVER bin.
@@ -157,13 +157,12 @@ scoped_ptr<TileManager> TileManager::Create(
   return make_scoped_ptr(new TileManager(
       client,
       resource_provider,
-      use_map_image
-          ? ImageRasterWorkerPool::Create(
-                resource_provider, context_provider, map_image_texture_target)
-          : PixelBufferRasterWorkerPool::Create(
-                resource_provider,
-                context_provider,
-                max_transfer_buffer_usage_bytes),
+      context_provider,
+      use_map_image ? ImageRasterWorkerPool::Create(resource_provider,
+                                                    map_image_texture_target)
+                    : PixelBufferRasterWorkerPool::Create(
+                          resource_provider, max_transfer_buffer_usage_bytes),
+      DirectRasterWorkerPool::Create(resource_provider, context_provider),
       max_raster_usage_bytes,
       rendering_stats_instrumentation,
       use_rasterize_on_demand));
@@ -172,7 +171,9 @@ scoped_ptr<TileManager> TileManager::Create(
 TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
+    scoped_ptr<RasterWorkerPool> direct_raster_worker_pool,
     size_t max_raster_usage_bytes,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_rasterize_on_demand)
@@ -182,6 +183,7 @@ TileManager::TileManager(
                                raster_worker_pool->GetResourceTarget(),
                                raster_worker_pool->GetResourceFormat())),
       raster_worker_pool_(raster_worker_pool.Pass()),
+      direct_raster_worker_pool_(direct_raster_worker_pool.Pass()),
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
@@ -195,7 +197,12 @@ TileManager::TileManager(
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       use_rasterize_on_demand_(use_rasterize_on_demand) {
-  raster_worker_pool_->SetClient(this);
+  RasterWorkerPool* raster_worker_pools[NUM_RASTER_WORKER_POOL_TYPES] = {
+      raster_worker_pool_.get(),        // RASTER_WORKER_POOL_TYPE_DEFAULT
+      direct_raster_worker_pool_.get()  // RASTER_WORKER_POOL_TYPE_DIRECT
+  };
+  raster_worker_pool_delegate_ = RasterWorkerPoolDelegate::Create(
+      this, raster_worker_pools, arraysize(raster_worker_pools));
 }
 
 TileManager::~TileManager() {
@@ -206,13 +213,13 @@ TileManager::~TileManager() {
   CleanUpReleasedTiles();
   DCHECK_EQ(0u, tiles_.size());
 
-  RasterWorkerPool::RasterTask::Queue empty;
-  raster_worker_pool_->ScheduleTasks(&empty);
+  RasterWorkerPool::RasterTask::Queue empty[NUM_RASTER_WORKER_POOL_TYPES];
+  raster_worker_pool_delegate_->ScheduleTasks(empty);
 
   // This should finish all pending tasks and release any uninitialized
   // resources.
-  raster_worker_pool_->Shutdown();
-  raster_worker_pool_->CheckForCompletedTasks();
+  raster_worker_pool_delegate_->Shutdown();
+  raster_worker_pool_delegate_->CheckForCompletedTasks();
 
   DCHECK_EQ(0u, bytes_releasable_);
   DCHECK_EQ(0u, resources_releasable_);
@@ -275,7 +282,7 @@ void TileManager::DidFinishRunningTasks() {
   if (all_tiles_that_need_to_be_rasterized_have_memory_)
     return;
 
-  raster_worker_pool_->CheckForCompletedTasks();
+  raster_worker_pool_delegate_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TileVector tiles_that_need_to_be_rasterized;
@@ -472,7 +479,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
   if (!did_check_for_completed_tasks_since_last_schedule_tasks_) {
-    raster_worker_pool_->CheckForCompletedTasks();
+    raster_worker_pool_delegate_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
 
@@ -501,7 +508,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
 bool TileManager::UpdateVisibleTiles() {
   TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
 
-  raster_worker_pool_->CheckForCompletedTasks();
+  raster_worker_pool_delegate_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TRACE_EVENT_INSTANT1(
@@ -795,7 +802,8 @@ void TileManager::ScheduleTasks(
 
   DCHECK(did_check_for_completed_tasks_since_last_schedule_tasks_);
 
-  raster_tasks_.Reset();
+  for (size_t i = 0; i < NUM_RASTER_WORKER_POOL_TYPES; ++i)
+    raster_queue_[i].Reset();
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -813,8 +821,12 @@ void TileManager::ScheduleTasks(
     if (tile_version.raster_task_.is_null())
       tile_version.raster_task_ = CreateRasterTask(tile);
 
-    raster_tasks_.Append(tile_version.raster_task_,
-                         tile->required_for_activation());
+    size_t pool_type = tile->use_gpu_rasterization()
+                           ? RASTER_WORKER_POOL_TYPE_DIRECT
+                           : RASTER_WORKER_POOL_TYPE_DEFAULT;
+
+    raster_queue_[pool_type]
+        .Append(tile_version.raster_task_, tile->required_for_activation());
   }
 
   // We must reduce the amount of unused resoruces before calling
@@ -824,7 +836,7 @@ void TileManager::ScheduleTasks(
   // Schedule running of |raster_tasks_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_tasks_|.
-  raster_worker_pool_->ScheduleTasks(&raster_tasks_);
+  raster_worker_pool_delegate_->ScheduleTasks(raster_queue_);
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
@@ -882,14 +894,14 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       tile->layer_id(),
       static_cast<const void*>(tile),
       tile->source_frame_number(),
-      tile->use_gpu_rasterization(),
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  tile->id(),
                  base::Passed(&resource),
                  mts.raster_mode),
-      &decode_tasks);
+      &decode_tasks,
+      context_provider_);
 }
 
 void TileManager::OnImageDecodeTaskCompleted(int layer_id,

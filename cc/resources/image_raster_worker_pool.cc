@@ -15,21 +15,18 @@ namespace cc {
 // static
 scoped_ptr<RasterWorkerPool> ImageRasterWorkerPool::Create(
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
     unsigned texture_target) {
   return make_scoped_ptr<RasterWorkerPool>(
       new ImageRasterWorkerPool(GetTaskGraphRunner(),
                                 resource_provider,
-                                context_provider,
                                 texture_target));
 }
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
     unsigned texture_target)
-    : RasterWorkerPool(task_graph_runner, resource_provider, context_provider),
+    : RasterWorkerPool(task_graph_runner, resource_provider),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {}
@@ -56,28 +53,17 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
       CreateRasterFinishedTask());
 
-  size_t raster_required_for_activation_finished_dependency_count = 0u;
-  size_t raster_finished_dependency_count = 0u;
-
-  RasterTaskVector gpu_raster_tasks;
   for (RasterTaskQueueIterator it(queue); it; ++it) {
     internal::RasterWorkerPoolTask* task = *it;
     DCHECK(!task->HasCompleted());
 
-    if (task->use_gpu_rasterization()) {
-      gpu_raster_tasks.push_back(task);
-      continue;
-    }
-
     if (it.required_for_activation()) {
-      ++raster_required_for_activation_finished_dependency_count;
       graph_.edges.push_back(internal::TaskGraph::Edge(
           task, new_raster_required_for_activation_finished_task.get()));
     }
 
     InsertNodeForRasterTask(&graph_, task, task->dependencies(), priority++);
 
-    ++raster_finished_dependency_count;
     graph_.edges.push_back(
         internal::TaskGraph::Edge(task, new_raster_finished_task.get()));
   }
@@ -85,11 +71,11 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   InsertNodeForTask(&graph_,
                     new_raster_required_for_activation_finished_task.get(),
                     kRasterRequiredForActivationFinishedTaskPriority,
-                    raster_required_for_activation_finished_dependency_count);
+                    queue->required_for_activation_count());
   InsertNodeForTask(&graph_,
                     new_raster_finished_task.get(),
                     kRasterFinishedTaskPriority,
-                    raster_finished_dependency_count);
+                    queue->count());
 
   raster_tasks_.Swap(queue);
 
@@ -98,9 +84,6 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   set_raster_finished_task(new_raster_finished_task);
   set_raster_required_for_activation_finished_task(
       new_raster_required_for_activation_finished_task);
-
-  if (!gpu_raster_tasks.empty())
-    RunGpuRasterTasks(gpu_raster_tasks);
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc",
@@ -136,30 +119,18 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
     task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
-
-  CheckForCompletedGpuRasterTasks();
 }
 
 SkCanvas* ImageRasterWorkerPool::AcquireCanvasForRaster(
     internal::RasterWorkerPoolTask* task) {
-  if (task->use_gpu_rasterization())
-    return resource_provider()->MapDirectRasterBuffer(task->resource()->id());
-
   return resource_provider()->MapImageRasterBuffer(task->resource()->id());
 }
 
 void ImageRasterWorkerPool::OnRasterCompleted(
     internal::RasterWorkerPoolTask* task,
     const PicturePileImpl::Analysis& analysis) {
-  if (task->use_gpu_rasterization()) {
-    resource_provider()->UnmapDirectRasterBuffer(task->resource()->id());
-    return;
-  }
   resource_provider()->UnmapImageRasterBuffer(task->resource()->id());
 }
-
-void ImageRasterWorkerPool::OnImageDecodeCompleted(
-    internal::WorkerPoolTask* task) {}
 
 void ImageRasterWorkerPool::OnRasterTasksFinished() {
   DCHECK(raster_tasks_pending_);

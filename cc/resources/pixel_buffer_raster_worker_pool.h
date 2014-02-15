@@ -29,7 +29,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
-      ContextProvider* context_provider,
       size_t max_transfer_buffer_usage_bytes);
 
   // Overridden from RasterWorkerPool:
@@ -50,7 +49,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
  protected:
   PixelBufferRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
                               ResourceProvider* resource_provider,
-                              ContextProvider* context_provider,
                               size_t max_transfer_buffer_usage_bytes);
 
  private:

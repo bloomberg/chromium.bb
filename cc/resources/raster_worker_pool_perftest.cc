@@ -5,6 +5,7 @@
 #include "cc/resources/raster_worker_pool.h"
 
 #include "base/time/time.h"
+#include "cc/resources/direct_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/resource_provider.h"
@@ -22,7 +23,8 @@ namespace {
 
 enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-  RASTER_WORKER_POOL_TYPE_IMAGE
+  RASTER_WORKER_POOL_TYPE_IMAGE,
+  RASTER_WORKER_POOL_TYPE_DIRECT
 };
 
 static const int kTimeLimitMillis = 2000;
@@ -39,6 +41,7 @@ class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {}
+  virtual void RunOnOriginThread() OVERRIDE {}
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE { Reset(); }
@@ -58,8 +61,8 @@ class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 class PerfRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  public:
   PerfRasterWorkerPoolTaskImpl(scoped_ptr<ScopedResource> resource,
-                               internal::Task::Vector* dependencies)
-      : internal::RasterWorkerPoolTask(resource.get(), dependencies, false),
+                               internal::WorkerPoolTask::Vector* dependencies)
+      : internal::RasterWorkerPoolTask(resource.get(), dependencies),
         resource_(resource.Pass()) {}
 
   // Overridden from internal::Task:
@@ -70,15 +73,12 @@ class PerfRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
       OVERRIDE {
     client->AcquireCanvasForRaster(this);
   }
+  virtual void RunOnOriginThread() OVERRIDE {}
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
     client->OnRasterCompleted(this, PicturePileImpl::Analysis());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE { Reset(); }
-
-  // Overridden from internal::RasterWorkerPoolTask:
-  virtual void RunOnOriginThread(ResourceProvider* resource_provider,
-                                 ContextProvider* context_provider) OVERRIDE {}
 
   void Reset() {
     did_run_ = false;
@@ -106,7 +106,6 @@ class PerfPixelBufferRasterWorkerPoolImpl : public PixelBufferRasterWorkerPool {
       ResourceProvider* resource_provider)
       : PixelBufferRasterWorkerPool(task_graph_runner,
                                     resource_provider,
-                                    NULL,
                                     std::numeric_limits<size_t>::max()) {}
 };
 
@@ -116,8 +115,14 @@ class PerfImageRasterWorkerPoolImpl : public ImageRasterWorkerPool {
                                 ResourceProvider* resource_provider)
       : ImageRasterWorkerPool(task_graph_runner,
                               resource_provider,
-                              NULL,
                               GL_TEXTURE_2D) {}
+};
+
+class PerfDirectRasterWorkerPoolImpl : public DirectRasterWorkerPool {
+ public:
+  PerfDirectRasterWorkerPoolImpl(ResourceProvider* resource_provider,
+                                 ContextProvider* context_provider)
+      : DirectRasterWorkerPool(resource_provider, context_provider) {}
 };
 
 class RasterWorkerPoolPerfTest
@@ -130,7 +135,7 @@ class RasterWorkerPoolPerfTest
 
     static Task Create() { return Task(new PerfWorkerPoolTaskImpl); }
 
-    void AppendTo(internal::Task::Vector* dependencies) const {
+    void AppendTo(internal::WorkerPoolTask::Vector* dependencies) const {
       dependencies->push_back(internal_);
     }
 
@@ -145,7 +150,7 @@ class RasterWorkerPoolPerfTest
 
     static RasterTask Create(scoped_ptr<ScopedResource> resource,
                              const Task::Vector& image_decode_tasks) {
-      internal::Task::Vector dependencies;
+      internal::WorkerPoolTask::Vector dependencies;
       for (Task::Vector::const_iterator it = image_decode_tasks.begin();
            it != image_decode_tasks.end();
            ++it)
@@ -181,6 +186,10 @@ class RasterWorkerPoolPerfTest
         raster_worker_pool_.reset(new PerfImageRasterWorkerPoolImpl(
             task_graph_runner_.get(), resource_provider_.get()));
         break;
+      case RASTER_WORKER_POOL_TYPE_DIRECT:
+        raster_worker_pool_.reset(new PerfDirectRasterWorkerPoolImpl(
+            resource_provider_.get(), context_provider_));
+        break;
     }
 
     DCHECK(raster_worker_pool_);
@@ -199,8 +208,17 @@ class RasterWorkerPoolPerfTest
       const OVERRIDE {
     return false;
   }
-  virtual void DidFinishRunningTasks() OVERRIDE {}
+  virtual void DidFinishRunningTasks() OVERRIDE {
+    raster_worker_pool_->CheckForCompletedTasks();
+    base::MessageLoop::current()->Quit();
+  }
   virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
+
+  void RunMessageLoopUntilAllTasksHaveCompleted() {
+    while (task_graph_runner_->RunTaskForTesting())
+      continue;
+    base::MessageLoop::current()->Run();
+  }
 
   void CreateImageDecodeTasks(unsigned num_image_decode_tasks,
                               Task::Vector* image_decode_tasks) {
@@ -223,8 +241,8 @@ class RasterWorkerPoolPerfTest
     }
   }
 
-  void AppendRasterTasks(RasterWorkerPool::RasterTask::Queue* tasks,
-                         const RasterTask::Vector& raster_tasks) {
+  void BuildTaskQueue(RasterWorkerPool::RasterTask::Queue* tasks,
+                      const RasterTask::Vector& raster_tasks) {
     for (RasterTask::Vector::const_iterator it = raster_tasks.begin();
          it != raster_tasks.end();
          ++it)
@@ -240,20 +258,20 @@ class RasterWorkerPoolPerfTest
     CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same queue.
-    RasterWorkerPool::RasterTask::Queue tasks;
+    RasterWorkerPool::RasterTask::Queue queue;
 
     timer_.Reset();
     do {
-      tasks.Reset();
-      AppendRasterTasks(&tasks, raster_tasks);
-      raster_worker_pool_->ScheduleTasks(&tasks);
+      queue.Reset();
+      BuildTaskQueue(&queue, raster_tasks);
+      raster_worker_pool_->ScheduleTasks(&queue);
       raster_worker_pool_->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     RasterWorkerPool::RasterTask::Queue empty;
     raster_worker_pool_->ScheduleTasks(&empty);
-    raster_worker_pool_->CheckForCompletedTasks();
+    RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_tasks",
                            "",
@@ -276,14 +294,14 @@ class RasterWorkerPoolPerfTest
     }
 
     // Avoid unnecessary heap allocations by reusing the same queue.
-    RasterWorkerPool::RasterTask::Queue tasks;
+    RasterWorkerPool::RasterTask::Queue queue;
 
     size_t count = 0;
     timer_.Reset();
     do {
-      tasks.Reset();
-      AppendRasterTasks(&tasks, raster_tasks[count % kNumVersions]);
-      raster_worker_pool_->ScheduleTasks(&tasks);
+      queue.Reset();
+      BuildTaskQueue(&queue, raster_tasks[count % kNumVersions]);
+      raster_worker_pool_->ScheduleTasks(&queue);
       raster_worker_pool_->CheckForCompletedTasks();
       ++count;
       timer_.NextLap();
@@ -291,7 +309,7 @@ class RasterWorkerPoolPerfTest
 
     RasterWorkerPool::RasterTask::Queue empty;
     raster_worker_pool_->ScheduleTasks(&empty);
-    raster_worker_pool_->CheckForCompletedTasks();
+    RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_alternate_tasks",
                            "",
@@ -310,22 +328,20 @@ class RasterWorkerPoolPerfTest
     CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same queue.
-    RasterWorkerPool::RasterTask::Queue tasks;
+    RasterWorkerPool::RasterTask::Queue queue;
 
     timer_.Reset();
     do {
-      tasks.Reset();
-      AppendRasterTasks(&tasks, raster_tasks);
-      raster_worker_pool_->ScheduleTasks(&tasks);
-      while (task_graph_runner_->RunTaskForTesting())
-        continue;
-      raster_worker_pool_->CheckForCompletedTasks();
+      queue.Reset();
+      BuildTaskQueue(&queue, raster_tasks);
+      raster_worker_pool_->ScheduleTasks(&queue);
+      RunMessageLoopUntilAllTasksHaveCompleted();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     RasterWorkerPool::RasterTask::Queue empty;
     raster_worker_pool_->ScheduleTasks(&empty);
-    raster_worker_pool_->CheckForCompletedTasks();
+    RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_and_execute_tasks",
                            "",
@@ -342,7 +358,6 @@ class RasterWorkerPoolPerfTest
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
-  std::vector<RasterWorkerPool::RasterTask> tasks_;
   LapTimer timer_;
 };
 
@@ -376,7 +391,8 @@ TEST_P(RasterWorkerPoolPerfTest, ScheduleAndExecuteTasks) {
 INSTANTIATE_TEST_CASE_P(RasterWorkerPoolPerfTests,
                         RasterWorkerPoolPerfTest,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-                                          RASTER_WORKER_POOL_TYPE_IMAGE));
+                                          RASTER_WORKER_POOL_TYPE_IMAGE,
+                                          RASTER_WORKER_POOL_TYPE_DIRECT));
 
 }  // namespace
 }  // namespace cc

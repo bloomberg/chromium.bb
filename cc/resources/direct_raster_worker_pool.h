@@ -1,21 +1,21 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_IMAGE_RASTER_WORKER_POOL_H_
-#define CC_RESOURCES_IMAGE_RASTER_WORKER_POOL_H_
+#ifndef CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_
+#define CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_
 
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
 
-class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
+class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
  public:
-  virtual ~ImageRasterWorkerPool();
+  virtual ~DirectRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
-      unsigned texture_target);
+      ContextProvider* context_provider);
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
@@ -33,32 +33,33 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   }
 
  protected:
-  ImageRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
-                        ResourceProvider* resource_provider,
-                        unsigned texture_target);
+  DirectRasterWorkerPool(ResourceProvider* resource_provider,
+                         ContextProvider* context_provider);
 
  private:
   // Overridden from RasterWorkerPool:
   virtual void OnRasterTasksFinished() OVERRIDE;
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
-  scoped_ptr<base::Value> StateAsValue() const;
+  void ScheduleRunTasksOnOriginThread();
+  void RunTasksOnOriginThread();
 
-  const unsigned texture_target_;
+  ContextProvider* context_provider_;
+
+  bool run_tasks_on_origin_thread_pending_;
 
   RasterTask::Queue raster_tasks_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;
 
-  // Task graph used when scheduling tasks and vector used to gather
-  // completed tasks.
-  internal::TaskGraph graph_;
-  internal::Task::Vector completed_tasks_;
+  internal::WorkerPoolTask::Vector completed_tasks_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageRasterWorkerPool);
+  base::WeakPtrFactory<DirectRasterWorkerPool> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectRasterWorkerPool);
 };
 
 }  // namespace cc
 
-#endif  // CC_RESOURCES_IMAGE_RASTER_WORKER_POOL_H_
+#endif  // CC_RESOURCES_DIRECT_RASTER_WORKER_POOL_H_

@@ -13,17 +13,9 @@ namespace cc {
 
 namespace {
 
-class FakeTaskGraphRunner : public internal::TaskGraphRunner {
- public:
-  FakeTaskGraphRunner() : internal::TaskGraphRunner(0, "CompositorRaster") {}
-};
-base::LazyInstance<FakeTaskGraphRunner> g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
 class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
-  FakeRasterWorkerPool()
-      : RasterWorkerPool(g_task_graph_runner.Pointer(), NULL, NULL) {}
+  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
@@ -36,9 +28,6 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
-    internal::Task::Vector completed_tasks;
-    CollectCompletedWorkerPoolTasks(&completed_tasks);
-
     while (!completed_tasks_.empty()) {
       internal::WorkerPoolTask* task = completed_tasks_.front().get();
 
@@ -80,6 +69,8 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   NULL,
+                  NULL,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   std::numeric_limits<unsigned>::max(),
                   NULL,
@@ -89,6 +80,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
     : TileManager(client,
                   resource_provider,
+                  NULL,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   std::numeric_limits<unsigned>::max(),
                   NULL,
@@ -99,6 +92,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  bool allow_on_demand_raster)
     : TileManager(client,
                   resource_provider,
+                  NULL,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   std::numeric_limits<unsigned>::max(),
                   NULL,
@@ -109,6 +104,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  size_t raster_task_limit_bytes)
     : TileManager(client,
                   resource_provider,
+                  NULL,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   raster_task_limit_bytes,
                   NULL,
@@ -130,10 +127,6 @@ bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
   return std::find(tiles_for_raster.begin(),
                    tiles_for_raster.end(),
                    tile) != tiles_for_raster.end();
-}
-
-void FakeTileManager::CheckForCompletedTasks() {
-  RasterWorkerPoolForTesting()->CheckForCompletedTasks();
 }
 
 void FakeTileManager::DidFinishRunningTasksForTesting() {

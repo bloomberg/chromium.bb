@@ -155,7 +155,7 @@ class TileManagerPerfTest : public testing::Test {
       }
 
       tile_manager_->ManageTiles(GlobalStateForTest());
-      tile_manager_->CheckForCompletedTasks();
+      tile_manager_->UpdateVisibleTiles();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

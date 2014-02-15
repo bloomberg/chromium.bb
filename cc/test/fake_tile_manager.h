@@ -29,8 +29,6 @@ class FakeTileManager : public TileManager {
   void AssignMemoryToTiles(
       const GlobalStateThatImpactsTilePriority& state);
 
-  void CheckForCompletedTasks();
-
   void DidFinishRunningTasksForTesting();
 
   virtual void Release(Tile* tile) OVERRIDE;
