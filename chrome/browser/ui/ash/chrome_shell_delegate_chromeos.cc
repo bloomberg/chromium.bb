@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "ash/accelerators/magnifier_key_scroller.h"
+#include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility_delegate.h"
-#include "ash/magnifier/magnifier_key_scroller.h"
 #include "ash/media_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -54,9 +55,13 @@ void InitAfterSessionStart() {
   if (!mru_list.empty())
     mru_list.front()->Focus();
 
-  // Enable magnifier accelerators as there may be no mouse cursor in
+  // Enable magnifier scroll keys as there may be no mouse cursor in
   // kiosk mode.
   ash::MagnifierKeyScroller::SetEnabled(chrome::IsRunningInForcedAppMode());
+
+  // Enable long press action to toggle spoken feedback with hotrod
+  // remote which can't handle shortcut.
+  ash::SpokenFeedbackToggler::SetEnabled(chrome::IsRunningInForcedAppMode());
 }
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {

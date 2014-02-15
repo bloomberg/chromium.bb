@@ -116,12 +116,13 @@
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
+#include "ash/accelerators/magnifier_key_scroller.h"
+#include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
 #include "ash/display/projecting_observer_chromeos.h"
-#include "ash/magnifier/magnifier_key_scroller.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
@@ -620,8 +621,11 @@ Shell::~Shell() {
   if (window_modality_controller_)
     window_modality_controller_.reset();
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  RemovePreTargetHandler(magnifier_key_scroller_.get());
-  magnifier_key_scroller_.reset();
+  RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
+  magnifier_key_scroll_handler_.reset();
+
+  RemovePreTargetHandler(speech_feedback_handler_.get());
+  speech_feedback_handler_.reset();
 #endif
   RemovePreTargetHandler(event_rewriter_filter_.get());
   RemovePreTargetHandler(user_activity_detector_.get());
@@ -829,8 +833,10 @@ void Shell::Init() {
   accelerator_controller_.reset(new AcceleratorController);
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  magnifier_key_scroller_.reset(new MagnifierKeyScroller);
-  AddPreTargetHandler(magnifier_key_scroller_.get());
+  magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler().Pass();
+  AddPreTargetHandler(magnifier_key_scroll_handler_.get());
+  speech_feedback_handler_ = SpokenFeedbackToggler::CreateHandler().Pass();
+  AddPreTargetHandler(speech_feedback_handler_.get());
 #endif
 
   // The order in which event filters are added is significant.

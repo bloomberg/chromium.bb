@@ -2,46 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/magnifier/magnifier_key_scroller.h"
+#include "ash/accelerators/key_hold_detector.h"
 
 #include <X11/Xlib.h>
 
 #undef RootWindow
 #undef Status
 
-#include "ash/ash_switches.h"
-#include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/events/event_dispatcher.h"
 
 namespace ash {
 namespace {
-
-bool magnifier_key_scroller_enabled = false;
-
-void ScrollScreen(ui::KeyEvent* event) {
-  MagnificationController* controller =
-      Shell::GetInstance()->magnification_controller();
-  switch (event->key_code()) {
-    case ui::VKEY_UP:
-      controller->SetScrollDirection(MagnificationController::SCROLL_UP);
-      break;
-    case ui::VKEY_DOWN:
-      controller->SetScrollDirection(MagnificationController::SCROLL_DOWN);
-      break;
-    case ui::VKEY_LEFT:
-      controller->SetScrollDirection(MagnificationController::SCROLL_LEFT);
-      break;
-    case ui::VKEY_RIGHT:
-      controller->SetScrollDirection(MagnificationController::SCROLL_RIGHT);
-      break;
-    default:
-      NOTREACHED() << "Unknown keyboard_code:" << event->key_code();
-  }
-}
 
 void DispatchPressedEvent(XEvent native_event,
                           scoped_ptr<aura::WindowTracker> tracker) {
@@ -70,38 +45,17 @@ void PostPressedEvent(ui::KeyEvent* event) {
 
 }  // namespace
 
-// static
-bool MagnifierKeyScroller::IsEnabled() {
-  return (magnifier_key_scroller_enabled ||
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableMagnifierKeyScroller)) &&
-      ash::Shell::GetInstance()->magnification_controller()->IsEnabled();
-}
+KeyHoldDetector::KeyHoldDetector(scoped_ptr<Delegate> delegate)
+    : state_(INITIAL),
+      delegate_(delegate.Pass()) {}
 
-// static
-void MagnifierKeyScroller::SetEnabled(bool enabled) {
-  magnifier_key_scroller_enabled = enabled;
-}
+KeyHoldDetector::~KeyHoldDetector() {}
 
-MagnifierKeyScroller::MagnifierKeyScroller()
-    : state_(INITIAL) {}
-
-MagnifierKeyScroller::~MagnifierKeyScroller() {}
-
-void MagnifierKeyScroller::OnKeyEvent(
-    ui::KeyEvent* event) {
-  if (!IsEnabled())
+void KeyHoldDetector::OnKeyEvent(ui::KeyEvent* event) {
+  if (!delegate_->ShouldProcessEvent(event))
     return;
 
-  if (event->key_code() != ui::VKEY_UP &&
-      event->key_code() != ui::VKEY_DOWN &&
-      event->key_code() != ui::VKEY_LEFT &&
-      event->key_code() != ui::VKEY_RIGHT) {
-    return;
-  }
-
-  if (event->type() == ui::ET_KEY_PRESSED &&
-      event->flags() & ui::EF_SHIFT_DOWN) {
+  if (delegate_->IsStartEvent(event)) {
     switch (state_) {
       case INITIAL:
         // Pass through posted event.
@@ -118,7 +72,7 @@ void MagnifierKeyScroller::OnKeyEvent(
         state_ = HOLD;
         // pass through
       case HOLD:
-        ScrollScreen(event);
+        delegate_->OnKeyHold(event);
         event->StopPropagation();
         break;
       }
@@ -132,9 +86,7 @@ void MagnifierKeyScroller::OnKeyEvent(
         break;
       }
       case HOLD: {
-        MagnificationController* controller =
-            Shell::GetInstance()->magnification_controller();
-        controller->SetScrollDirection(MagnificationController::SCROLL_NONE);
+        delegate_->OnKeyUnhold(event);
         event->StopPropagation();
         break;
       }

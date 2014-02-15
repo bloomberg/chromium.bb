@@ -87,7 +87,6 @@ class GPUSupport;
 class HighContrastController;
 class LockStateController;
 class MagnificationController;
-class MagnifierKeyScroller;
 class MediaDelegate;
 class MruWindowTracker;
 class NestedDispatcherController;
@@ -706,7 +705,8 @@ class ASH_EXPORT Shell
   // Listens for output changes and updates the display manager.
   scoped_ptr<internal::DisplayChangeObserver> display_change_observer_;
 
-  scoped_ptr<MagnifierKeyScroller> magnifier_key_scroller_;
+  scoped_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
+  scoped_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
 
