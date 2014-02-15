@@ -608,6 +608,7 @@
               ],
             }],
             ['OS=="win"', {
+              'product_name': 'remote_assistance_host',
               'msvs_settings': {
                 'VCManifestTool': {
                   'EmbedManifest': 'true',
@@ -634,7 +635,7 @@
             [ 'OS == "win"', {
               'variables': {
                 'me2me_host_path': 'remoting_native_messaging_host.exe',
-                'it2me_host_path': 'remoting_assistance_host.exe',
+                'it2me_host_path': 'remote_assistance_host.exe',
               },
             }],
             [ 'OS == "mac"', {

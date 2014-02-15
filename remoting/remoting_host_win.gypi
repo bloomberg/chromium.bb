@@ -465,16 +465,19 @@
             'remoting_core',
             'remoting_desktop',
             'remoting_host_exe',
+            'remoting_it2me_native_messaging_host',
             'remoting_me2me_native_messaging_host',
             'remoting_native_messaging_manifests',
           ],
           'compiled_inputs': [
+            '<(PRODUCT_DIR)/remote_assistance_host.exe',
             '<(PRODUCT_DIR)/remoting_core.dll',
             '<(PRODUCT_DIR)/remoting_desktop.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
             '<(PRODUCT_DIR)/remoting_native_messaging_host.exe',
           ],
           'compiled_inputs_dst': [
+            'files/remote_assistance_host.exe',
             'files/remoting_core.dll',
             'files/remoting_desktop.exe',
             'files/remoting_host.exe',
@@ -500,6 +503,7 @@
           'generated_files': [
             '<@(_compiled_inputs)',
             '<(sas_dll_path)/sas.dll',
+            '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_assistance.json',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
             'resources/chromoting.ico',
             '<(PRODUCT_DIR)/icudtl.dat',
@@ -507,6 +511,7 @@
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
             'files/sas.dll',
+            'files/com.google.chrome.remote_assistance.json',
             'files/com.google.chrome.remote_desktop.json',
             'files/chromoting.ico',
             'files/icudtl.dat',
