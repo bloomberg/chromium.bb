@@ -50,7 +50,6 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListViewDelegate* view_delegate)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
-      view_delegate_(view_delegate),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
@@ -66,7 +65,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
   view_model_->Add(apps_container_view_, kIndexAppsContainer);
 
   SearchResultListView* search_results_view = new SearchResultListView(
-      app_list_main_view);
+      app_list_main_view, view_delegate);
   AddChildView(search_results_view);
   view_model_->Add(search_results_view, kIndexSearchResults);
 
@@ -95,13 +94,12 @@ void ContentsView::SetShowState(ShowState show_state) {
 }
 
 void ContentsView::ShowStateChanged() {
-  if (show_state_ == SHOW_SEARCH_RESULTS) {
-    // TODO(xiyuan): Highlight default match instead of the first.
-    SearchResultListView* results_view =
-        GetSearchResultListView(view_model_.get());
-    if (results_view->visible())
-      results_view->SetSelectedIndex(0);
-  }
+  SearchResultListView* results_view =
+      GetSearchResultListView(view_model_.get());
+  // TODO(xiyuan): Highlight default match instead of the first.
+  if (show_state_ == SHOW_SEARCH_RESULTS && results_view->visible())
+    results_view->SetSelectedIndex(0);
+  results_view->UpdateAutoLaunchState();
 
   AnimateToIdealBounds();
 }
@@ -144,21 +142,10 @@ void ContentsView::AnimateToIdealBounds() {
 
 void ContentsView::ShowSearchResults(bool show) {
   SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
-  SearchResultListView* results_view =
-      GetSearchResultListView(view_model_.get());
-  if (show)
-    results_view->SetAutoLaunchTimeout(view_delegate_->GetAutoLaunchTimeout());
-  else
-    results_view->CancelAutoLaunchTimeout();
 }
 
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
   apps_container_view_->ShowActiveFolder(item);
-}
-
-void ContentsView::CancelAutoLaunch() {
-  GetSearchResultListView(view_model_.get())->CancelAutoLaunchTimeout();
-  view_delegate_->AutoLaunchCanceled();
 }
 
 void ContentsView::Prerender() {
@@ -183,7 +170,6 @@ void ContentsView::Layout() {
 }
 
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
-  CancelAutoLaunch();
   switch (show_state_) {
     case SHOW_APPS:
       return GetAppsContainerView(view_model_.get())->OnKeyPressed(event);

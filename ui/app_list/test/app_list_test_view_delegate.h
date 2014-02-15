@@ -32,6 +32,10 @@ class AppListTestViewDelegate : public AppListViewDelegate {
     users_ = users;
   }
 
+  void set_auto_launch_timeout(const base::TimeDelta& timeout) {
+    auto_launch_timeout_ = timeout;
+  }
+
   // Sets the signin status of the signin delegate, creating one if there isn't
   // one already.
   void SetSignedIn(bool signed_in);
@@ -54,7 +58,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
                                         int action_index,
                                         int event_flags) OVERRIDE {}
   virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE;
-  virtual void AutoLaunchCanceled() OVERRIDE {}
+  virtual void AutoLaunchCanceled() OVERRIDE;
   virtual void ViewInitialized() OVERRIDE {}
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE {}
@@ -85,6 +89,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   scoped_ptr<AppListTestModel> model_;
   ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
+  base::TimeDelta auto_launch_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };

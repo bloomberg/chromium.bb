@@ -5,11 +5,13 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_DELEGATE_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_DELEGATE_H_
 
+#include "ui/app_list/app_list_export.h"
+
 namespace app_list {
 
 class SearchResultView;
 
-class SearchResultViewDelegate {
+class APP_LIST_EXPORT SearchResultViewDelegate {
  public:
   // Called when the search result is activated.
   virtual void SearchResultActivated(SearchResultView* view,

@@ -18,34 +18,44 @@ class LinearAnimation;
 }
 
 namespace app_list {
+namespace test {
+class SearchResultListViewTest;
+}
 
+class AppListViewDelegate;
 class SearchResultListViewDelegate;
 class SearchResultView;
 
 // SearchResultListView displays SearchResultList with a list of
 // SearchResultView.
-class SearchResultListView : public views::View,
-                             public gfx::AnimationDelegate,
-                             public ui::ListModelObserver,
-                             public SearchResultViewDelegate {
+class APP_LIST_EXPORT SearchResultListView : public views::View,
+                                             public gfx::AnimationDelegate,
+                                             public ui::ListModelObserver,
+                                             public SearchResultViewDelegate {
  public:
-  explicit SearchResultListView(SearchResultListViewDelegate* delegate);
+  SearchResultListView(SearchResultListViewDelegate* delegate,
+                       AppListViewDelegate* view_delegate);
   virtual ~SearchResultListView();
 
   void SetResults(AppListModel::SearchResults* results);
 
   void SetSelectedIndex(int selected_index);
 
-  bool IsResultViewSelected(const SearchResultView* result_view) const;
+  void UpdateAutoLaunchState();
 
-  void SetAutoLaunchTimeout(const base::TimeDelta& timeout);
-  void CancelAutoLaunchTimeout();
+  bool IsResultViewSelected(const SearchResultView* result_view) const;
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
+  friend class test::SearchResultListViewTest;
+
+  // Updates the auto launch states.
+  void SetAutoLaunchTimeout(const base::TimeDelta& timeout);
+  void CancelAutoLaunchTimeout();
+
   // Helper function to get SearchResultView at given |index|.
   SearchResultView* GetResultViewAt(int index);
 
@@ -55,6 +65,9 @@ class SearchResultListView : public views::View,
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.
   void ScheduleUpdate();
+
+  // Forcibly auto-launch for test if it is in auto-launching state.
+  void ForceAutoLaunchForTest();
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -82,6 +95,7 @@ class SearchResultListView : public views::View,
   virtual void OnSearchResultUninstalled(SearchResultView* view) OVERRIDE;
 
   SearchResultListViewDelegate* delegate_;  // Not owned.
+  AppListViewDelegate* view_delegate_;  // Not owned.
   AppListModel::SearchResults* results_;  // Owned by AppListModel.
 
   views::View* results_container_;

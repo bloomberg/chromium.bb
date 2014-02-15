@@ -12,7 +12,6 @@
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_menu_views.h"
-#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -98,6 +97,7 @@ bool SearchBoxView::HasSearch() const {
 
 void SearchBoxView::ClearSearch() {
   search_box_->SetText(base::string16());
+  view_delegate_->AutoLaunchCanceled();
   // Updates model and fires query changed manually because SetText() above
   // does not generate ContentsChanged() notification.
   UpdateModel();
@@ -179,7 +179,7 @@ void SearchBoxView::NotifyQueryChanged() {
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
   UpdateModel();
-  contents_view_->CancelAutoLaunch();
+  view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
 }
 

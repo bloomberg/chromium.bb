@@ -25,7 +25,6 @@ namespace app_list {
 class AppListMenuViews;
 class AppListModel;
 class AppListViewDelegate;
-class ContentsView;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
 
@@ -33,12 +32,12 @@ class SearchBoxViewDelegate;
 // model that controls what icon to display, what placeholder text to use for
 // Textfield. The text and selection model part could be set to change the
 // contents and selection model of the Textfield.
-class SearchBoxView : public views::View,
-                      public views::TextfieldController,
-                      public views::ButtonListener,
-                      public views::MenuButtonListener,
-                      public SearchBoxModelObserver,
-                      public SpeechUIModelObserver {
+class APP_LIST_EXPORT SearchBoxView : public views::View,
+                                      public views::TextfieldController,
+                                      public views::ButtonListener,
+                                      public views::MenuButtonListener,
+                                      public SearchBoxModelObserver,
+                                      public SpeechUIModelObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate);
@@ -51,7 +50,7 @@ class SearchBoxView : public views::View,
 
   views::Textfield* search_box() { return search_box_; }
 
-  void set_contents_view(ContentsView* contents_view) {
+  void set_contents_view(views::View* contents_view) {
     contents_view_ = contents_view;
   }
 
@@ -102,7 +101,7 @@ class SearchBoxView : public views::View,
   views::ImageButton* speech_button_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
-  ContentsView* contents_view_;  // Owned by views hierarchy.
+  views::View* contents_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

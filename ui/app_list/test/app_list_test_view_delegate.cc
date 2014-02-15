@@ -95,7 +95,11 @@ void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
 }
 
 base::TimeDelta AppListTestViewDelegate::GetAutoLaunchTimeout() {
-  return base::TimeDelta();
+  return auto_launch_timeout_;
+}
+
+void AppListTestViewDelegate::AutoLaunchCanceled() {
+  auto_launch_timeout_ = base::TimeDelta();
 }
 
 void AppListTestViewDelegate::Dismiss() {

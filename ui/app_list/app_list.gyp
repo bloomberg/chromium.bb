@@ -219,6 +219,8 @@
         'test/run_all_unittests.cc',
         'views/app_list_main_view_unittest.cc',
         'views/apps_grid_view_unittest.cc',
+        'views/search_box_view_unittest.cc',
+        'views/search_result_list_view_unittest.cc',
         'views/test/apps_grid_view_test_api.cc',
         'views/test/apps_grid_view_test_api.h',
       ],

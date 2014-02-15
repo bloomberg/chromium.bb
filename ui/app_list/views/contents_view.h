@@ -52,7 +52,6 @@ class ContentsView : public views::View {
 
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
-  void CancelAutoLaunch();
 
   void Prerender();
 
@@ -87,8 +86,6 @@ class ContentsView : public views::View {
   PaginationModel* pagination_model_;  // Owned by AppListController.
 
   AppsContainerView* apps_container_view_;  // Owned by the views hierarchy.
-
-  AppListViewDelegate* view_delegate_;  // Owned by AppListView
 
   scoped_ptr<views::ViewModel> view_model_;
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
