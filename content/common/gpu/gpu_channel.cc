@@ -411,8 +411,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   channel_id_ = IPC::Channel::GenerateVerifiedChannelID("gpu");
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
-  disallowed_features_.multisampling =
-      command_line->HasSwitch(switches::kDisableGLMultisampling);
 }
 
 

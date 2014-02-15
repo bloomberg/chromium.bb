@@ -689,7 +689,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "value": "Qualcomm"
       },
       "features": [
-        "disable_framebuffer_multisample"
+        "disable_multisampling"
       ]
     },
     {
@@ -705,7 +705,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "value": "Mali"
       },
       "features": [
-        "disable_framebuffer_multisample"
+        "disable_multisampling"
       ]
     },
     {
@@ -755,6 +755,83 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "init_varyings_without_static_use"
+      ]
+    },
+    {
+      "id": 58,
+      "description": "Multisampling is buggy in ATI cards on older MacOSX",
+      "cr_bugs": [67752, 83153],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.7.2"
+        }
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_multisampling"
+      ]
+    },
+    {
+      "id": 59,
+      "description": "Multisampling is buggy in Intel IvyBridge",
+      "cr_bugs": [116370],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
+      "features": [
+        "disable_multisampling"
+      ]
+    },
+    {
+      "id": 60,
+      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3",
+      "cr_bugs": [137303],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.8.3"
+        }
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "disable_multisampling"
+      ]
+    },
+    {
+      "id": 61,
+      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3",
+      "cr_bugs": [137303],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.8.3"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_multisampling"
+      ]
+    },
+    {
+      "id": 62,
+      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3",
+      "cr_bugs": [162466],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.8.3"
+        }
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_multisampling"
       ]
     }
   ]

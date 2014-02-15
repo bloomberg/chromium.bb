@@ -305,18 +305,11 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
 #define MAYBE_MultisamplingAllowed MultisamplingAllowed
 #endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_MultisamplingAllowed) {
-  bool expect_blacklisted = false;
   if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
-    expect_blacklisted = true;
-
-  EXPECT_EQ(expect_blacklisted,
-            GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-                gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
-
+    return;
   // Multisampling is not supported if running on top of osmesa.
   if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
     return;
-
   // Linux Intel uses mesa driver, where multisampling is not supported.
   // Multisampling is also not supported on virtualized mac os.
   std::vector<std::string> configs;
@@ -327,32 +320,6 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_MultisamplingAllowed) {
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"TRUE\"", true);
-}
-
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
-  // Multisampling fails on virtualized mac os.
-  if (gpu::GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
-    return;
-
-  const std::string json_blacklist =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"features\": [\n"
-      "        \"multisampling\"\n"
-      "      ]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-  SetupBlacklist(json_blacklist);
-  EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
-
-  const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
-  RunTest(url, "\"FALSE\"", true);
 }
 
 class WebGLMultisamplingTest : public GpuFeatureTest {

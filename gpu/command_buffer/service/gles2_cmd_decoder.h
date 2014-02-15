@@ -42,11 +42,9 @@ struct ContextState;
 
 struct DisallowedFeatures {
   DisallowedFeatures()
-      : multisampling(false),
-        gpu_memory_manager(false) {
+      : gpu_memory_manager(false) {
   }
 
-  bool multisampling;
   bool gpu_memory_manager;
 };
 

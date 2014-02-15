@@ -97,8 +97,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // flags into the renderer process command line.
   void AppendRendererCommandLine(CommandLine* command_line) const;
 
-  // Insert switches into gpu process command line: kUseGL,
-  // kDisableGLMultisampling.
+  // Insert switches into gpu process command line: kUseGL, etc.
   void AppendGpuCommandLine(CommandLine* command_line) const;
 
   // Insert switches into plugin process command line:

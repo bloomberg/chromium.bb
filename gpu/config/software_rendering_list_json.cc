@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.25",
+  "version": "7.0",
   "entries": [
     {
       "id": 1,
@@ -148,22 +148,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ],
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 16,
-      "description": "Multisampling is buggy in ATI cards on older MacOSX",
-      "cr_bugs": [67752, 83153],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.7.2"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "multisampling"
       ]
     },
     {
@@ -366,19 +350,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ],
       "features": [
         "accelerated_2d_canvas"
-      ]
-    },
-    {
-      "id": 33,
-      "description": "Multisampling is buggy in Intel IvyBridge",
-      "cr_bugs": [116370],
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
-      "features": [
-          "multisampling"
       ]
     },
     {
@@ -692,38 +663,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 60,
-      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3",
-      "cr_bugs": [137303],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "vendor_id": "0x10de",
-      "features": [
-        "multisampling"
-      ]
-    },
-    {
-      "id": 61,
-      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3",
-      "cr_bugs": [137303],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "multisampling"
-      ]
-    },
-    {
       "id": 62,
       "description": "Accelerated 2D canvas buggy on old Qualcomm Adreno",
       "cr_bugs": [161575],
@@ -740,22 +679,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "accelerated_2d_canvas"
-      ]
-    },
-    {
-      "id": 63,
-      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3",
-      "cr_bugs": [162466],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "multisampling"
       ]
     },
     {

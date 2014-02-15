@@ -20,6 +20,7 @@ const char kAuxAttributes[] = "auxAttributes";
 const char kDeviceId[] = "deviceId";
 const char kDeviceString[] = "deviceString";
 const char kDevices[] = "devices";
+const char kDriverBugWorkarounds[] = "driverBugWorkarounds";
 const char kFeatureStatus[] = "featureStatus";
 const char kGPU[] = "gpu";
 const char kModelName[] = "modelName";
@@ -117,6 +118,8 @@ DevToolsSystemInfoHandler::OnGetInfo(
   gpu_dict->Set(kAuxAttributes, aux_attributes);
 
   gpu_dict->Set(kFeatureStatus,  GetFeatureStatus());
+
+  gpu_dict->Set(kDriverBugWorkarounds, GetDriverBugWorkarounds());
 
   base::DictionaryValue* system_dict = new base::DictionaryValue;
   system_dict->SetString(kModelName, gpu_info.machine_model);

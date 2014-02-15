@@ -78,14 +78,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           false
       },
       {
-          "multisampling",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_MULTISAMPLING),
-          command_line.HasSwitch(switches::kDisableGLMultisampling),
-          "Multisampling has been disabled, either via about:flags or command"
-          " line.",
-          false
-      },
-      {
           "flash_3d",
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
           command_line.HasSwitch(switches::kDisableFlash3d),

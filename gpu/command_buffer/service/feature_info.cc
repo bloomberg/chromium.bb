@@ -552,8 +552,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check for multisample support
-  if (!disallowed_features_.multisampling &&
-      !workarounds_.disable_framebuffer_multisample) {
+  if (!workarounds_.disable_multisampling) {
     bool ext_has_multisample =
         extensions.Contains("GL_EXT_framebuffer_multisample") || is_es3;
     if (feature_flags_.is_angle) {

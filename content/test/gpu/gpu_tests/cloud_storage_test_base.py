@@ -91,7 +91,8 @@ class ValidatorBase(page_test.PageTest):
       self.device_string = device.device_string
     else:
       raise Exception('GPU device information was incomplete')
-    self.msaa = system_info.gpu.feature_status['multisampling'] == 'enabled'
+    self.msaa = not (
+        'disable_multisampling' in system_info.gpu.driver_bug_workarounds)
 
   def _FormatGpuInfo(self, tab):
     self._ComputeGpuInfo(tab)

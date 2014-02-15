@@ -99,10 +99,6 @@ GPU_BLACKLIST_FEATURE_TEST(WebGL,
                            "webgl",
                            GPU_FEATURE_TYPE_WEBGL)
 
-GPU_BLACKLIST_FEATURE_TEST(Multisampling,
-                           "multisampling",
-                           GPU_FEATURE_TYPE_MULTISAMPLING)
-
 GPU_BLACKLIST_FEATURE_TEST(Flash3D,
                            "flash_3d",
                            GPU_FEATURE_TYPE_FLASH3D)

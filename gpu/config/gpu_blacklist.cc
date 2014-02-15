@@ -24,8 +24,6 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
   list->AddSupportedFeature("webgl",
                             GPU_FEATURE_TYPE_WEBGL);
-  list->AddSupportedFeature("multisampling",
-                            GPU_FEATURE_TYPE_MULTISAMPLING);
   list->AddSupportedFeature("flash_3d",
                             GPU_FEATURE_TYPE_FLASH3D);
   list->AddSupportedFeature("flash_stage3d",
