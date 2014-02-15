@@ -14,6 +14,7 @@
 #include "cc/test/lap_timer.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -29,7 +30,8 @@ class OcclusionTrackerPerfTest : public testing::Test {
   OcclusionTrackerPerfTest()
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
-               kTimeCheckInterval) {}
+               kTimeCheckInterval),
+        impl_(&proxy_) {}
   void CreateHost() {
     LayerTreeSettings settings;
     host_impl_ = LayerTreeHostImpl::Create(
@@ -60,11 +62,11 @@ class OcclusionTrackerPerfTest : public testing::Test {
   std::string test_name_;
   FakeLayerTreeHostImplClient client_;
   FakeProxy proxy_;
+  DebugScopedSetImplThread impl_;
   FakeRenderingStatsInstrumentation stats_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 
-// Simulates a page with several large, transformed and animated layers.
 TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   SetTestName("unoccluded_content_rect_fully_occluded");
 
@@ -117,6 +119,80 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
             query_content_rect.bottom() + 96 <= viewport_rect.height();
         CHECK_EQ(expect_empty, unoccluded.IsEmpty())
             << query_content_rect.ToString();
+      }
+    }
+
+    timer_.NextLap();
+  } while (!timer_.HasTimeLimitExpired());
+
+  ++begin;
+  LayerIteratorPosition<LayerImpl> next = begin;
+  EXPECT_EQ(active_tree()->root_layer(), next.current_layer);
+
+  ++begin;
+  EXPECT_EQ(end, begin);
+
+  PrintResults();
+}
+
+TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
+  static const int kNumOpaqueLayers = 10;
+  SetTestName("unoccluded_content_rect_10_opaque_layers");
+
+  gfx::Rect viewport_rect(768, 1038);
+  OcclusionTrackerBase<LayerImpl, LayerImpl::RenderSurfaceType> tracker(
+      viewport_rect, false);
+
+  CreateHost();
+  host_impl_->SetViewportSize(viewport_rect.size());
+
+  for (int i = 0; i < kNumOpaqueLayers; ++i) {
+    scoped_ptr<SolidColorLayerImpl> opaque_layer =
+        SolidColorLayerImpl::Create(active_tree(), 2 + i);
+    opaque_layer->SetBackgroundColor(SK_ColorRED);
+    opaque_layer->SetContentsOpaque(true);
+    opaque_layer->SetDrawsContent(true);
+    opaque_layer->SetBounds(
+        gfx::Size(viewport_rect.width() / 2, viewport_rect.height() / 2));
+    opaque_layer->SetContentBounds(
+        gfx::Size(viewport_rect.width() / 2, viewport_rect.height() / 2));
+    opaque_layer->SetPosition(gfx::Point(i, i));
+    active_tree()->root_layer()->AddChild(opaque_layer.PassAs<LayerImpl>());
+  }
+
+  active_tree()->UpdateDrawProperties();
+  const LayerImplList& rsll = active_tree()->RenderSurfaceLayerList();
+  ASSERT_EQ(1u, rsll.size());
+  EXPECT_EQ(static_cast<size_t>(kNumOpaqueLayers),
+            rsll[0]->render_surface()->layer_list().size());
+
+  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
+  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+
+  // The opaque_layers add occlusion.
+  for (int i = 0; i < kNumOpaqueLayers - 1; ++i) {
+    LayerIteratorPosition<LayerImpl> pos = begin;
+    tracker.EnterLayer(pos);
+    tracker.LeaveLayer(pos);
+    ++begin;
+  }
+  LayerIteratorPosition<LayerImpl> pos = begin;
+  tracker.EnterLayer(pos);
+  tracker.LeaveLayer(pos);
+
+  gfx::Transform transform_to_target;
+  transform_to_target.Translate(0, 96);
+  bool impl_draw_transform_is_unknown = false;
+
+  do {
+    for (int x = 0; x < viewport_rect.width(); x += 256) {
+      for (int y = 0; y < viewport_rect.height(); y += 256) {
+        gfx::Rect query_content_rect(x, y, 256, 256);
+        gfx::Rect unoccluded =
+            tracker.UnoccludedContentRect(pos.target_render_surface_layer,
+                                          query_content_rect,
+                                          transform_to_target,
+                                          impl_draw_transform_is_unknown);
       }
     }
 
