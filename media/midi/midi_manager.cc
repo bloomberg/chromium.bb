@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 
 namespace media {
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
-    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+    !defined(OS_ANDROID)
+// TODO(toyoshim): implement MidiManager for other platforms.
 MidiManager* MidiManager::Create() {
-  LOG(ERROR) << "Platform specific MIDIManager is not implemented.";
   return new MidiManager;
 }
 #endif
