@@ -180,6 +180,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
 
     updateClippingLayers(false, false);
     updateOverflowControlsLayers(false, false, false);
+    updateChildTransformLayer(false);
     updateForegroundLayer(false);
     updateBackgroundLayer(false);
     updateMaskLayer(false);
@@ -231,6 +232,7 @@ void CompositedLayerMapping::destroyGraphicsLayers()
     m_foregroundLayer = nullptr;
     m_backgroundLayer = nullptr;
     m_childContainmentLayer = nullptr;
+    m_childTransformLayer = nullptr;
     m_maskLayer = nullptr;
     m_childClippingMaskLayer = nullptr;
 
@@ -461,6 +463,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         if (m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorCompositedScrollingLayer())
             needsAncestorClip = false;
     }
+
     if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer))
         layerConfigChanged = true;
 
@@ -468,6 +471,13 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         layerConfigChanged = true;
 
     if (updateScrollingLayers(m_owningLayer->needsCompositedScrolling()))
+        layerConfigChanged = true;
+
+    bool hasPerspective = false;
+    if (RenderStyle* style = renderer->style())
+        hasPerspective = style->hasPerspective();
+    bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get());
+    if (updateChildTransformLayer(needsChildTransformLayer))
         layerConfigChanged = true;
 
     updateScrollParent(scrollParent);
@@ -712,6 +722,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             m_childClippingMaskLayer->setSize(clipLayer->size());
             m_childClippingMaskLayer->setOffsetFromRenderer(clipLayer->offsetFromRenderer());
         }
+    } else if (m_childTransformLayer) {
+        m_childTransformLayer->setSize(contentsSize);
     }
 
     if (m_maskLayer) {
@@ -737,7 +749,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             relativeCompositingBounds.height() ? (layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y()) / relativeCompositingBounds.height() : 0.5f,
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
-
     } else {
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
@@ -890,10 +901,19 @@ void CompositedLayerMapping::updateInternalHierarchy()
 
     if (m_childContainmentLayer)
         m_graphicsLayer->addChild(m_childContainmentLayer.get());
+    else if (m_childTransformLayer)
+        m_graphicsLayer->addChild(m_childTransformLayer.get());
 
     if (m_scrollingLayer) {
-        GraphicsLayer* superlayer = m_childContainmentLayer ? m_childContainmentLayer.get() : m_graphicsLayer.get();
-        superlayer->addChild(m_scrollingLayer.get());
+        GraphicsLayer* superLayer = m_graphicsLayer.get();
+
+        if (m_childContainmentLayer)
+            superLayer = m_childContainmentLayer.get();
+
+        if (m_childTransformLayer)
+            superLayer = m_childTransformLayer.get();
+
+        superLayer->addChild(m_scrollingLayer.get());
     }
 
     // The clip for child layers does not include space for overflow controls, so they exist as
@@ -971,27 +991,24 @@ void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
         m_backgroundLayer->setDrawsContent(hasPaintedContent);
 }
 
-static void updateChildrenTransformForLayer(GraphicsLayer* layer, GraphicsLayer* target, const TransformationMatrix& perspective)
-{
-    if (layer)
-        layer->setChildrenTransform(layer == target ? perspective : TransformationMatrix());
-}
-
 void CompositedLayerMapping::updateChildrenTransform()
 {
-    GraphicsLayer* target = layerForChildrenTransform();
-    TransformationMatrix perspective = m_owningLayer->perspectiveTransform(); // Identity if style has no perspective.
-    updateChildrenTransformForLayer(clippingLayer(), target, perspective);
-    updateChildrenTransformForLayer(m_graphicsLayer.get(), target, perspective);
-    updateChildrenTransformForLayer(m_scrollingLayer.get(), target, perspective);
+    if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
+        childTransformLayer->setTransform(owningLayer()->perspectiveTransform());
+        bool hasPerspective = false;
+        if (RenderStyle* style = m_owningLayer->renderer()->style())
+            hasPerspective = style->hasPerspective();
+        if (hasPerspective)
+            childTransformLayer->setShouldFlattenTransform(false);
 
-    // Note, if the target is the scrolling layer, we need to ensure that the
-    // scrolling content layer doesn't flatten the transform. (It would be nice
-    // if we could apply transform to the scrolling content layer, but that's
-    // too late, we need the children transform to be applied _before_ the
-    // scrolling offset.)
-    if (target == m_scrollingLayer.get())
-        m_scrollingContentsLayer->setShouldFlattenTransform(false);
+        // Note, if the target is the scrolling layer, we need to ensure that the
+        // scrolling content layer doesn't flatten the transform. (It would be nice
+        // if we could apply transform to the scrolling content layer, but that's
+        // too late, we need the children transform to be applied _before_ the
+        // scrolling offset.)
+        if (childTransformLayer == m_scrollingLayer.get())
+            m_scrollingContentsLayer->setShouldFlattenTransform(false);
+    }
 }
 
 // Return true if the layers changed.
@@ -1022,6 +1039,26 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool n
     } else if (hasClippingLayer()) {
         m_childContainmentLayer->removeFromParent();
         m_childContainmentLayer = nullptr;
+        layersChanged = true;
+    }
+
+    return layersChanged;
+}
+
+bool CompositedLayerMapping::updateChildTransformLayer(bool needsChildTransformLayer)
+{
+    bool layersChanged = false;
+
+    if (needsChildTransformLayer) {
+        if (!m_childTransformLayer) {
+            m_childTransformLayer = createGraphicsLayer(CompositingReasonPerspective);
+            m_childTransformLayer->setDrawsContent(false);
+            m_childTransformLayer->setShouldFlattenTransform(false);
+            layersChanged = true;
+        }
+    } else if (m_childTransformLayer) {
+        m_childTransformLayer->removeFromParent();
+        m_childTransformLayer = nullptr;
         layersChanged = true;
     }
 
@@ -1129,6 +1166,8 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
 
     if ((mode & ApplyToCoreLayers) && mapping->squashingContainmentLayer())
         f(mapping->squashingContainmentLayer());
+    if ((mode & ApplyToCoreLayers) && mapping->childTransformLayer())
+        f(mapping->childTransformLayer());
     if ((mode & ApplyToCoreLayers) && mapping->ancestorClippingLayer())
         f(mapping->ancestorClippingLayer());
     if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->mainGraphicsLayer())
@@ -1171,6 +1210,7 @@ void CompositedLayerMapping::updateRenderingContext()
     // All layers but the squashing layer (which contains 'alien' content) should be included in this
     // rendering context.
     int id = 0;
+
     // NB, it is illegal at this point to query an ancestor's compositing state. Some compositing
     // reasons depend on the compositing state of ancestors. So if we want a rendering context id
     // for the context root, we cannot ask for the id of its associated WebLayer now; it may not have
@@ -1739,7 +1779,13 @@ GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
     if (m_scrollingContentsLayer)
         return m_scrollingContentsLayer.get();
 
-    return m_childContainmentLayer ? m_childContainmentLayer.get() : m_graphicsLayer.get();
+    if (m_childContainmentLayer)
+        return m_childContainmentLayer.get();
+
+    if (m_childTransformLayer)
+        return m_childTransformLayer.get();
+
+    return m_graphicsLayer.get();
 }
 
 GraphicsLayer* CompositedLayerMapping::localRootForOwningLayer() const
@@ -1764,7 +1810,7 @@ GraphicsLayer* CompositedLayerMapping::layerForChildrenTransform() const
         return clipLayer;
     if (m_scrollingLayer)
         return m_scrollingLayer.get();
-    return m_graphicsLayer.get();
+    return m_childTransformLayer.get();
 }
 
 bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestorLayer)
@@ -2122,6 +2168,8 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
         name = m_owningLayer->debugName() + " (background) Layer";
     } else if (graphicsLayer == m_childContainmentLayer.get()) {
         name = "Child Containment Layer";
+    } else if (graphicsLayer == m_childTransformLayer.get()) {
+        name = "Child Transform Layer";
     } else if (graphicsLayer == m_maskLayer.get()) {
         name = "Mask Layer";
     } else if (graphicsLayer == m_childClippingMaskLayer.get()) {

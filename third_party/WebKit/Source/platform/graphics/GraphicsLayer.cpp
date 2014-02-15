@@ -648,17 +648,6 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << "[" << m_transform.m41() << " " << m_transform.m42() << " " << m_transform.m43() << " " << m_transform.m44() << "])\n";
     }
 
-    // Avoid dumping the sublayer transform on the root layer, because it's used for geometry flipping, whose behavior
-    // differs between platforms.
-    if (parent() && !m_childrenTransform.isIdentity()) {
-        writeIndent(ts, indent + 1);
-        ts << "(childrenTransform ";
-        ts << "[" << m_childrenTransform.m11() << " " << m_childrenTransform.m12() << " " << m_childrenTransform.m13() << " " << m_childrenTransform.m14() << "] ";
-        ts << "[" << m_childrenTransform.m21() << " " << m_childrenTransform.m22() << " " << m_childrenTransform.m23() << " " << m_childrenTransform.m24() << "] ";
-        ts << "[" << m_childrenTransform.m31() << " " << m_childrenTransform.m32() << " " << m_childrenTransform.m33() << " " << m_childrenTransform.m34() << "] ";
-        ts << "[" << m_childrenTransform.m41() << " " << m_childrenTransform.m42() << " " << m_childrenTransform.m43() << " " << m_childrenTransform.m44() << "])\n";
-    }
-
     if (m_replicaLayer) {
         writeIndent(ts, indent + 1);
         ts << "(replica layer";
@@ -823,12 +812,6 @@ void GraphicsLayer::setTransform(const TransformationMatrix& transform)
 {
     m_transform = transform;
     platformLayer()->setTransform(TransformationMatrix::toSkMatrix44(m_transform));
-}
-
-void GraphicsLayer::setChildrenTransform(const TransformationMatrix& transform)
-{
-    m_childrenTransform = transform;
-    platformLayer()->setSublayerTransform(TransformationMatrix::toSkMatrix44(m_childrenTransform));
 }
 
 void GraphicsLayer::setShouldFlattenTransform(bool shouldFlatten)

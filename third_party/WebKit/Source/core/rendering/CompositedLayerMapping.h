@@ -136,9 +136,11 @@ public:
     // localRootForOwningLayer does not include the m_squashingContainmentLayer, which is technically not associated with this CLM's owning layer.
     GraphicsLayer* localRootForOwningLayer() const;
 
+    GraphicsLayer* childTransformLayer() const { return m_childTransformLayer.get(); }
+
     GraphicsLayer* squashingContainmentLayer() const { return m_squashingContainmentLayer.get(); }
     GraphicsLayer* squashingLayer() const { return m_squashingLayer.get(); }
-    // Contains the bottommost layer in the hierarchy tha can contain the children transform.
+    // Contains the bottommost layer in the hierarchy that can contain the children transform.
     GraphicsLayer* layerForChildrenTransform() const;
 
     // Returns true for a composited layer that has no backing store of its own, so
@@ -218,6 +220,7 @@ private:
 
     void updateInternalHierarchy();
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
+    bool updateChildTransformLayer(bool needsChildTransformLayer);
     bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer);
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
@@ -288,7 +291,7 @@ private:
     //
     //  + m_ancestorClippingLayer [OPTIONAL]
     //     + m_graphicsLayer
-    //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
+    //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL] <-OR-> m_childTransformLayer
     //                                                     + m_scrollingContentsLayer [OPTIONAL]
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
@@ -314,6 +317,7 @@ private:
     OwnPtr<GraphicsLayer> m_ancestorClippingLayer; // Only used if we are clipped by an ancestor which is not a stacking context.
     OwnPtr<GraphicsLayer> m_graphicsLayer;
     OwnPtr<GraphicsLayer> m_childContainmentLayer; // Only used if we have clipping on a stacking context with compositing children.
+    OwnPtr<GraphicsLayer> m_childTransformLayer; // Only used if we have perspective and no m_childContainmentLayer.
     OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
     OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
 

@@ -26,6 +26,9 @@
 #ifndef WebLayer_h
 #define WebLayer_h
 
+// TODO(vollick) Remove when sublayerTransform is removed.
+#include "SkMatrix44.h"
+
 #include "WebAnimation.h"
 #include "WebBlendMode.h"
 #include "WebColor.h"
@@ -97,9 +100,6 @@ public:
 
     virtual void setPosition(const WebFloatPoint&) = 0;
     virtual WebFloatPoint position() const = 0;
-
-    virtual void setSublayerTransform(const SkMatrix44&) = 0;
-    virtual SkMatrix44 sublayerTransform() const = 0;
 
     virtual void setTransform(const SkMatrix44&) = 0;
     virtual SkMatrix44 transform() const = 0;
@@ -223,6 +223,11 @@ public:
 
     // TODO(vollick) Remove after https://codereview.chromium.org/147833003/ lands.
     virtual void setPreserves3D(bool) { }
+
+    // TODO(vollick) remove these.
+    virtual void setSublayerTransform(const SkMatrix44&) { }
+    virtual SkMatrix44 sublayerTransform() const { return SkMatrix44(); }
+
 };
 
 } // namespace blink

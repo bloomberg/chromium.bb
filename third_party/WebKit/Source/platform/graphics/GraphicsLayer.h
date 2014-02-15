@@ -162,9 +162,6 @@ public:
     const TransformationMatrix& transform() const { return m_transform; }
     void setTransform(const TransformationMatrix&);
 
-    const TransformationMatrix& childrenTransform() const { return m_childrenTransform; }
-    void setChildrenTransform(const TransformationMatrix&);
-
     bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
     void setShouldFlattenTransform(bool);
 
@@ -344,7 +341,6 @@ private:
     FloatPoint m_boundsOrigin;
 
     TransformationMatrix m_transform;
-    TransformationMatrix m_childrenTransform;
 
     Color m_backgroundColor;
     float m_opacity;

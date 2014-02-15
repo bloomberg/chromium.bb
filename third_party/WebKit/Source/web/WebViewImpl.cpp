@@ -3887,7 +3887,7 @@ void WebViewImpl::updateRootLayerTransform()
         WebCore::TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
-        m_rootGraphicsLayer->setChildrenTransform(transform);
+        m_rootGraphicsLayer->setTransform(transform);
     }
 }
 
