@@ -1272,7 +1272,7 @@ cr.define('options', function() {
    * @param {string} languageCode The newly selected language to use.
    */
   LanguageOptions.uiLanguageSaved = function(languageCode) {
-    this.prospectiveUiLanguageCode_ = languageCode;
+    this.getInstance().prospectiveUiLanguageCode_ = languageCode;
 
     // If the user is no longer on the same language code, ignore.
     if ($('language-options-list').getSelectedLanguageCode() != languageCode)
