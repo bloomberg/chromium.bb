@@ -14,14 +14,14 @@
 namespace message_center {
 
 // Callback block for when the status item is clicked.
-typedef void(^StatusItemClickedCallack)();
+typedef void(^StatusItemClickedCallback)();
 
 }  // namespace message_center
 
 // This view is meant to be used with a NSStatusItem. It will fire a callback
 // when it is clicked. It draws a small icon and the unread count, if greater
 // than zero, to the icon's right. It can also paint the highlight background
-// pattern outisde of a mouse event sequence, for when an attached window is
+// pattern outside of a mouse event sequence, for when an attached window is
 // open.
 MESSAGE_CENTER_EXPORT
 @interface MCStatusItemView : NSView {
@@ -30,7 +30,7 @@ MESSAGE_CENTER_EXPORT
   base::scoped_nsobject<NSStatusItem> statusItem_;
 
   // Callback issued when the status item is clicked.
-  base::mac::ScopedBlock<message_center::StatusItemClickedCallack> callback_;
+  base::mac::ScopedBlock<message_center::StatusItemClickedCallback> callback_;
 
   // The unread count number to be drawn next to the icon.
   size_t unreadCount_;
@@ -46,7 +46,7 @@ MESSAGE_CENTER_EXPORT
   BOOL inMouseEventSequence_;
 }
 
-@property(copy, nonatomic) message_center::StatusItemClickedCallack callback;
+@property(copy, nonatomic) message_center::StatusItemClickedCallback callback;
 @property(nonatomic) BOOL highlight;
 
 // Designated initializer. Creates a new NSStatusItem in the system menubar.

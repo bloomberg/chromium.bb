@@ -50,12 +50,12 @@ const CGFloat kMargin = 5;
   return unreadCount_;
 }
 
-- (message_center::StatusItemClickedCallack)callback {
+- (message_center::StatusItemClickedCallback)callback {
   return callback_.get();
 }
 
-- (void)setCallback:(message_center::StatusItemClickedCallack)callback {
-  callback_.reset(Block_copy(callback));
+- (void)setCallback:(message_center::StatusItemClickedCallback)callback {
+  callback_.reset(callback, base::scoped_policy::RETAIN);
 }
 
 - (void)setUnreadCount:(size_t)unreadCount withQuietMode:(BOOL)quietMode {
