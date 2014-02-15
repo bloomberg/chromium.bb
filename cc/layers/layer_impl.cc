@@ -109,6 +109,10 @@ LayerImpl::~LayerImpl() {
 
   if (clip_parent_)
     clip_parent_->RemoveClipChild(this);
+
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      LayerTypeAsString(), this);
 }
 
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
@@ -1405,7 +1409,9 @@ void LayerImpl::RemoveDependentNeedsPushProperties() {
 }
 
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
-  TracedValue::MakeDictIntoImplicitSnapshot(state, LayerTypeAsString(), this);
+  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      state, LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());
