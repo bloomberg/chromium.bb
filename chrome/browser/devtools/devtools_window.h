@@ -326,6 +326,9 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void SearchInPath(int request_id,
                             const std::string& file_system_path,
                             const std::string& query) OVERRIDE;
+  virtual void ZoomIn() OVERRIDE;
+  virtual void ZoomOut() OVERRIDE;
+  virtual void ResetZoom() OVERRIDE;
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);

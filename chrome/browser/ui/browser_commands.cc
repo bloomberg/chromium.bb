@@ -878,16 +878,8 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
 }
 
 void Zoom(Browser* browser, content::PageZoom zoom) {
-  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
-  DevToolsWindow* devtools =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
-  if (devtools && devtools->web_contents()->GetRenderWidgetHostView() &&
-      devtools->web_contents()->GetRenderWidgetHostView()->HasFocus()) {
-    chrome_page_zoom::Zoom(devtools->web_contents(), zoom);
-    return;
-  }
-
-  chrome_page_zoom::Zoom(contents, zoom);
+  chrome_page_zoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
+                         zoom);
 }
 
 void FocusToolbar(Browser* browser) {

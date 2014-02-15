@@ -54,6 +54,9 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void SearchInPath(int request_id,
                               const std::string& file_system_path,
                               const std::string& query) = 0;
+    virtual void ZoomIn() = 0;
+    virtual void ZoomOut() = 0;
+    virtual void ResetZoom() = 0;
   };
 
   explicit DevToolsEmbedderMessageDispatcher(Delegate* delegate);

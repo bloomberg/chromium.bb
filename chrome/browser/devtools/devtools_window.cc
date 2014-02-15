@@ -1227,6 +1227,18 @@ void DevToolsWindow::SearchInPath(int request_id,
                                           file_system_path));
 }
 
+void DevToolsWindow::ZoomIn() {
+  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
+}
+
+void DevToolsWindow::ZoomOut() {
+  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
+}
+
+void DevToolsWindow::ResetZoom() {
+  chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
+}
+
 void DevToolsWindow::FileSavedAs(const std::string& url) {
   base::StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value, NULL, NULL);

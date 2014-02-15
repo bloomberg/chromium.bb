@@ -234,6 +234,15 @@ DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
   RegisterHandler("searchInPath",
       BindToListParser(base::Bind(&Delegate::SearchInPath,
                                   base::Unretained(delegate))));
+  RegisterHandler("zoomIn",
+      BindToListParser(base::Bind(&Delegate::ZoomIn,
+                                  base::Unretained(delegate))));
+  RegisterHandler("zoomOut",
+      BindToListParser(base::Bind(&Delegate::ZoomOut,
+                                  base::Unretained(delegate))));
+  RegisterHandler("resetZoom",
+      BindToListParser(base::Bind(&Delegate::ResetZoom,
+                                  base::Unretained(delegate))));
 }
 
 DevToolsEmbedderMessageDispatcher::~DevToolsEmbedderMessageDispatcher() {}
