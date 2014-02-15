@@ -116,7 +116,8 @@ void DecryptingDemuxerStream::Stop(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
 
-  // Invalidate all weak pointers so that pending callbacks won't fire.
+  // Invalidate all weak pointers so that pending callbacks won't be fired into
+  // this object.
   weak_factory_.InvalidateWeakPtrs();
 
   // At this point the render thread is likely paused (in WebMediaPlayerImpl's
@@ -124,6 +125,9 @@ void DecryptingDemuxerStream::Stop(const base::Closure& closure) {
   // render thread to process messages to complete (such as PPAPI methods).
   if (decryptor_) {
     // Clear the callback.
+    // TODO(xhwang): Since we invalidate all weak pointers during Stop(),
+    // canceling NewKeyCB seems unnecessary. Clean this up in all Decrypting*
+    // classes.
     decryptor_->RegisterNewKeyCB(GetDecryptorStreamType(),
                                  Decryptor::NewKeyCB());
     decryptor_->CancelDecrypt(GetDecryptorStreamType());

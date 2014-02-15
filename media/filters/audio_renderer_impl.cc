@@ -216,6 +216,19 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
     sink_ = NULL;
   }
 
+  if (decrypting_demuxer_stream_) {
+    decrypting_demuxer_stream_->Stop(
+        base::Bind(&AudioRendererImpl::StopDecoder, weak_this_));
+    return;
+  }
+
+  StopDecoder();
+}
+
+void AudioRendererImpl::StopDecoder() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!stop_cb_.is_null());
+
   if (decoder_) {
     decoder_->Stop(base::ResetAndReturn(&stop_cb_));
     return;

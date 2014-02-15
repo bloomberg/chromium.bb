@@ -184,6 +184,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
+  // Stops the |decoder_| if present. Ensures |stop_cb_| is called.
+  void StopDecoder();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
   base::WeakPtr<AudioRendererImpl> weak_this_;
