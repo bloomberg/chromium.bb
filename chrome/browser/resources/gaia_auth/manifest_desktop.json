@@ -4,29 +4,29 @@
   "name": "GaiaAuthExtension",
   "version": "0.0.1",
   "manifest_version": 2,
+  "background" : {
+    "scripts": ["background.js", "channel.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["channel.js", "desktop_injected.js"],
+      "all_frames": true
+    }
+  ],
   "content_security_policy": "default-src 'self'; script-src 'self'; frame-src *; style-src 'self' 'unsafe-inline'",
   "description": "GAIA Component Extension",
   "web_accessible_resources": [
     "main.css",
-    "inline_main.html",
+    "main.html",
     "main.js",
-    "offline.css",
-    "offline.html",
-    "offline.js",
-    "success.html",
-    "success.js",
     "util.js"
   ],
-  // <all_urls> for intercepting all URL requests in the main frame, and
-  //     switching to a full tab if needed.
-  // cookies for getting hash passed back from GAIA on login success.
-  // tabs for calling current webui's login. This might not be needed once
-  //     we have extension API.
-  // webview for interacting with the GAIA sign in page loaded in a webview.
   "permissions": [
-      "<all_urls>",
-      "cookies",
-      "tabs",
-      "webview"
+    "<all_urls>",
+    "tabs",
+    "webRequest"
   ]
 }

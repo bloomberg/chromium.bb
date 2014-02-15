@@ -22,7 +22,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   enum AuthMode {
     kDefaultAuthMode = 0,
     kOfflineAuthMode = 1,
-    kInlineAuthMode = 2
+    kDesktopAuthMode = 2
   };
 
  private:

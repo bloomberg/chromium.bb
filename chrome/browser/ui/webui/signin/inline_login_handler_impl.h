@@ -43,9 +43,8 @@ class InlineLoginHandlerImpl : public GaiaAuthConsumer,
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string email_;
   std::string password_;
+  std::string session_index_;
   bool choose_what_to_sync_;
-  // Partition id for the gaia webview;
-  std::string partition_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerImpl);
 };
