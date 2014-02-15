@@ -24,19 +24,24 @@ void CloudDeviceDescription::Reset() {
   root_->SetString(json::kVersion, json::kVersion10);
 }
 
-bool CloudDeviceDescription::InitFromString(const std::string& json) {
+bool CloudDeviceDescription::InitFromDictionary(
+    scoped_ptr<base::DictionaryValue> root) {
+  if (!root)
+    return false;
   Reset();
+  root_ = root.Pass();
+  std::string version;
+  root_->GetString(json::kVersion, &version);
+  return version == json::kVersion10;
+}
 
+bool CloudDeviceDescription::InitFromString(const std::string& json) {
   scoped_ptr<base::Value> parsed(base::JSONReader::Read(json));
   base::DictionaryValue* description = NULL;
   if (!parsed || !parsed->GetAsDictionary(&description))
     return false;
-  root_.reset(description);
   ignore_result(parsed.release());
-
-  std::string version;
-  description->GetString(json::kVersion, &version);
-  return version == json::kVersion10;
+  return InitFromDictionary(make_scoped_ptr(description));
 }
 
 std::string CloudDeviceDescription::ToString() const {

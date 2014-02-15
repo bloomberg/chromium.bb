@@ -13,7 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
+#include "components/cloud_devices/printer_description.h"
 #include "net/base/url_util.h"
+#include "printing/units.h"
 #include "url/gurl.h"
 
 namespace local_discovery {
@@ -38,11 +40,6 @@ const char kPrivetContentTypeCJT[] = "application/json";
 const char kPrivetStorageListPath[] = "/privet/storage/list";
 const char kPrivetStorageContentPath[] = "/privet/storage/content";
 const char kPrivetStorageParamPathFormat[] = "path=%s";
-
-const char kPrivetCDDKeySupportedContentTypes[] =
-    "printer.supported_content_type";
-
-const char kPrivetCDDKeyContentType[] = "content_type";
 
 const char kPrivetKeyJobID[] = "job_id";
 
@@ -455,9 +452,15 @@ bool PrivetDataReadOperationImpl::OnRawData(PrivetURLFetcher* fetcher,
 PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetHTTPClientImpl* privet_client,
     PrivetLocalPrintOperation::Delegate* delegate)
-    : privet_client_(privet_client), delegate_(delegate),
-      use_pdf_(false), has_capabilities_(false), has_extended_workflow_(false),
-      started_(false), offline_(false), invalid_job_retries_(0),
+    : privet_client_(privet_client),
+      delegate_(delegate),
+      use_pdf_(false),
+      has_capabilities_(false),
+      has_extended_workflow_(false),
+      started_(false),
+      offline_(false),
+      dpi_(printing::kDefaultPdfDpi),
+      invalid_job_retries_(0),
       weak_factory_(this) {
 }
 
@@ -514,7 +517,7 @@ void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   if (has_capabilities_) {
     GetCapabilities();
   } else {
-    // Since we have no capabiltties, the only reasonable format we can
+    // Since we have no capabilities, the only reasonable format we can
     // request is PWG Raster.
     use_pdf_ = false;
     StartConvertToPWG();
@@ -606,9 +609,14 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
 void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
+  double scale = dpi_;
+  scale /= printing::kPointsPerInch;
+  // Make vertical rectangle to optimize streaming to printer. Fix orientation
+  // by autorotate.
+  gfx::Rect area(std::min(page_size_.width(), page_size_.height()) * scale,
+                 std::max(page_size_.width(), page_size_.height()) * scale);
   pwg_raster_converter_->Start(
-      data_,
-      conversion_settings_,
+      data_, printing::PdfRenderSettings(area, dpi_, true),
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  base::Unretained(this)));
 }
@@ -621,28 +629,26 @@ void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
     return;
   }
 
-  const base::ListValue* supported_content_types;
+  cloud_devices::CloudDeviceDescription description;
+  if (!description.InitFromDictionary(make_scoped_ptr(value->DeepCopy()))) {
+    delegate_->OnPrivetPrintingError(this, 200);
+    return;
+  }
+
   use_pdf_ = false;
-
-  if (value->GetList(kPrivetCDDKeySupportedContentTypes,
-                     &supported_content_types)) {
-    for (size_t i = 0; i < supported_content_types->GetSize(); i++) {
-      const base::DictionaryValue* content_type_value;
-      std::string content_type;
-
-      if (supported_content_types->GetDictionary(i, &content_type_value) &&
-          content_type_value->GetString(kPrivetCDDKeyContentType,
-                                        &content_type) &&
-          (content_type == kPrivetContentTypePDF ||
-           content_type == kPrivetContentTypeAny) ) {
-        use_pdf_ = true;
-      }
-    }
+  cloud_devices::printer::ContentTypesCapability content_types;
+  if (content_types.LoadFrom(description)) {
+    use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
+               content_types.Contains(kPrivetContentTypeAny);
   }
 
   if (use_pdf_) {
     StartPrinting();
   } else {
+    cloud_devices::printer::DpiCapability dpis;
+    if (dpis.LoadFrom(description)) {
+      dpi_ = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
+    }
     StartConvertToPWG();
   }
 }
@@ -767,10 +773,9 @@ void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
   offline_ = offline;
 }
 
-void PrivetLocalPrintOperationImpl::SetConversionSettings(
-    const printing::PdfRenderSettings& conversion_settings) {
+void PrivetLocalPrintOperationImpl::SetPageSize(const gfx::Size& page_size) {
   DCHECK(!started_);
-  conversion_settings_ = conversion_settings;
+  page_size_ = page_size;
 }
 
 void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(

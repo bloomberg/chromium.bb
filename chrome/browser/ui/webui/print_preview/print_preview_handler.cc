@@ -1450,19 +1450,8 @@ void PrintPreviewHandler::StartPrivetLocalPrint(
     return;
   }
 
-  privet_local_print_operation_->SetJobname(
-      base::UTF16ToUTF8(title));
-
-  const int dpi = printing::kDefaultPdfDpi;
-  double scale = dpi;
-  scale /= printing::kPointsPerInch;
-  // Make vertical rectangle to optimize streaming to printer. Fix orientation
-  // by autorotate.
-  gfx::Rect area(std::min(page_size.width(), page_size.height()) * scale,
-                 std::max(page_size.width(), page_size.height()) * scale);
-  privet_local_print_operation_->SetConversionSettings(
-      printing::PdfRenderSettings(area, dpi, true));
-
+  privet_local_print_operation_->SetJobname(base::UTF16ToUTF8(title));
+  privet_local_print_operation_->SetPageSize(page_size);
   privet_local_print_operation_->SetData(data);
 
   Profile* profile = Profile::FromWebUI(web_ui());

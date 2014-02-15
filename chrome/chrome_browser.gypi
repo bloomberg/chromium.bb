@@ -29,6 +29,7 @@
         'suggestions_proto',
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:autofill_core_browser',
+        '../components/components.gyp:cloud_devices',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:password_manager_core_common',

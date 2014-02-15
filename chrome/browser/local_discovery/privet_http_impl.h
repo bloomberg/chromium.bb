@@ -212,8 +212,7 @@ class PrivetLocalPrintOperationImpl
 
   virtual void SetOffline(bool offline) OVERRIDE;
 
-  virtual void SetConversionSettings(
-      const printing::PdfRenderSettings& conversion_settings) OVERRIDE;
+  virtual void SetPageSize(const gfx::Size& page_size) OVERRIDE;
 
   virtual void SetPWGRasterConverterForTesting(
       scoped_ptr<PWGRasterConverter> pwg_raster_converter) OVERRIDE;
@@ -264,7 +263,8 @@ class PrivetLocalPrintOperationImpl
   bool has_extended_workflow_;
   bool started_;
   bool offline_;
-  printing::PdfRenderSettings conversion_settings_;
+  gfx::Size page_size_;
+  int dpi_;
 
   std::string user_;
   std::string jobname_;

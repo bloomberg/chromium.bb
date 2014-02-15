@@ -148,8 +148,7 @@ class PrivetLocalPrintOperation {
   // to Google Cloud Print.
   virtual void SetOffline(bool offline) = 0;
   // Document page size.
-  virtual void SetConversionSettings(
-      const printing::PdfRenderSettings& conversion_settings) = 0;
+  virtual void SetPageSize(const gfx::Size& page_size) = 0;
 
   // For testing, inject an alternative PWG raster converter.
   virtual void SetPWGRasterConverterForTesting(

@@ -26,6 +26,7 @@ class CloudDeviceDescription {
 
   void Reset();
 
+  bool InitFromDictionary(scoped_ptr<base::DictionaryValue> root);
   bool InitFromString(const std::string& json);
 
   std::string ToString() const;
