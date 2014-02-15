@@ -1523,6 +1523,7 @@ void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
 
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateAecDumpFileForProcess, file, GetHandle()),
@@ -1531,6 +1532,7 @@ void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
 }
 
 void RenderProcessHostImpl::DisableAecDump() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Posting on the FILE thread and then replying back on the UI thread is only
   // for avoiding races between enable and disable. Nothing is done on the FILE
   // thread.

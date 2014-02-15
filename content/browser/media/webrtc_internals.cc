@@ -231,6 +231,9 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
 
 void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
 #if defined(ENABLE_WEBRTC)
+#if defined(OS_ANDROID)
+  EnableAecDumpOnAllRenderProcessHosts();
+#else
   select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
@@ -241,6 +244,7 @@ void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
       FILE_PATH_LITERAL(""),
       web_contents->GetView()->GetTopLevelNativeWindow(),
       NULL);
+#endif
 #endif
 }
 
@@ -253,6 +257,14 @@ void WebRTCInternals::DisableAecDump() {
     i.GetCurrentValue()->DisableAecDump();
   }
 #endif
+}
+
+void WebRTCInternals::ResetForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observers_.Clear();
+  peer_connection_data_.Clear();
+  get_user_media_requests_.Clear();
+  aec_dump_enabled_ = false;
 }
 
 void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
@@ -281,13 +293,8 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
                                    int /* unused_index */,
                                    void* /*unused_params */) {
 #if defined(ENABLE_WEBRTC)
-  aec_dump_enabled_ = true;
   aec_dump_file_path_ = path;
-  for (RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->EnableAecDump(aec_dump_file_path_);
-  }
+  EnableAecDumpOnAllRenderProcessHosts();
 #endif
 }
 
@@ -339,12 +346,15 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   }
 }
 
-void WebRTCInternals::ResetForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observers_.Clear();
-  peer_connection_data_.Clear();
-  get_user_media_requests_.Clear();
-  aec_dump_enabled_ = false;
+#if defined(ENABLE_WEBRTC)
+void WebRTCInternals::EnableAecDumpOnAllRenderProcessHosts() {
+  aec_dump_enabled_ = true;
+  for (RenderProcessHost::iterator i(
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->EnableAecDump(aec_dump_file_path_);
+  }
 }
+#endif
 
 }  // namespace content

@@ -127,6 +127,11 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);
 
+#if defined(ENABLE_WEBRTC)
+  // Enables AEC dump on all render process hosts using |aec_dump_file_path_|.
+  void EnableAecDumpOnAllRenderProcessHosts();
+#endif
+
   ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
