@@ -891,7 +891,7 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_FORCE_INSTANT_RESULTS:
         DCHECK(!i->is_post_param);
         HandleReplacement(std::string(),
-                          search_terms_data.ForceInstantResultsParam(
+                          chrome::ForceInstantResultsParam(
                               search_terms_args.force_instant_results),
                           *i,
                           &url);

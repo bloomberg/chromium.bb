@@ -239,8 +239,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   virtual std::string GetApplicationLocale() const OVERRIDE;
   virtual base::string16 GetRlzParameterValue() const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
-  virtual std::string ForceInstantResultsParam(
-      bool for_prerender) const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
 
  private:
@@ -248,7 +246,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string application_locale_;
   base::string16 rlz_parameter_value_;
   std::string search_client_;
-  std::string force_instant_results_param_;
   std::string ntp_is_themed_param_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
@@ -260,8 +257,6 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       application_locale_(search_terms_data.GetApplicationLocale()),
       rlz_parameter_value_(search_terms_data.GetRlzParameterValue()),
       search_client_(search_terms_data.GetSearchClient()),
-      force_instant_results_param_(
-          search_terms_data.ForceInstantResultsParam(false)),
       ntp_is_themed_param_(search_terms_data.NTPIsThemedParam()) {}
 
 SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
@@ -281,11 +276,6 @@ base::string16 SearchTermsDataSnapshot::GetRlzParameterValue() const {
 
 std::string SearchTermsDataSnapshot::GetSearchClient() const {
   return search_client_;
-}
-
-std::string SearchTermsDataSnapshot::ForceInstantResultsParam(
-    bool for_prerender) const {
-  return force_instant_results_param_;
 }
 
 std::string SearchTermsDataSnapshot::NTPIsThemedParam() const {

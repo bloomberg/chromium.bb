@@ -370,6 +370,11 @@ std::string InstantExtendedEnabledParam(bool for_search) {
       base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
 }
 
+std::string ForceInstantResultsParam(bool for_prerender) {
+  return (for_prerender || !IsInstantExtendedAPIEnabled()) ?
+      "ion=1&" : std::string();
+}
+
 bool IsQueryExtractionEnabled() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   return true;

@@ -86,6 +86,16 @@ uint64 EmbeddedSearchPageVersion();
 // returns a non-empty string only if query extraction is enabled.
 std::string InstantExtendedEnabledParam(bool for_search);
 
+// Returns a string that will cause the search results page to update
+// incrementally. Currently, Instant Extended passes a different param to
+// search results pages that also has this effect, so by default this function
+// returns the empty string when Instant Extended is enabled. However, when
+// doing instant search result prerendering, we still need to pass this param,
+// as Instant Extended does not cause incremental updates by default for the
+// prerender page. Callers should set |for_prerender| in this case to force
+// the returned string to be non-empty.
+std::string ForceInstantResultsParam(bool for_prerender);
+
 // Returns whether query extraction is enabled.
 bool IsQueryExtractionEnabled();
 

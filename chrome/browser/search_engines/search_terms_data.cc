@@ -78,11 +78,6 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
-std::string SearchTermsData::ForceInstantResultsParam(
-    bool for_prerender) const {
-  return std::string();
-}
-
 std::string SearchTermsData::NTPIsThemedParam() const {
   return std::string();
 }
@@ -170,14 +165,6 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
 #else
   return "chrome-ext";
 #endif
-}
-
-std::string UIThreadSearchTermsData::ForceInstantResultsParam(
-    bool for_prerender) const {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return (for_prerender || !chrome::IsInstantExtendedAPIEnabled()) ? "ion=1&" :
-      std::string();
 }
 
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {

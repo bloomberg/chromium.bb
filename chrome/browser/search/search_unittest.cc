@@ -800,6 +800,14 @@ TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
             GetSearchResultPrefetchBaseURL(profile()));
 }
 
+TEST_F(SearchTest, ForceInstantResultsParam) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 espv:2"));
+  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
+  EXPECT_EQ("ion=1&", ForceInstantResultsParam(true));
+  EXPECT_EQ(std::string(), ForceInstantResultsParam(false));
+}
+
 struct ExtractSearchTermsTestCase {
   const char* url;
   const char* expected_result;
