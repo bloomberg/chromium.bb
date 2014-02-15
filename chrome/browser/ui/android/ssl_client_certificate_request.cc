@@ -17,10 +17,12 @@
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/android/keystore_openssl.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
+
 
 namespace chrome {
 
@@ -193,6 +195,21 @@ static void OnSystemRequestCompletion(
                  client_cert,
                  base::Passed(&private_key)),
       base::Bind(*callback, client_cert));
+}
+
+static void NotifyClientCertificatesChanged() {
+  net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
+}
+
+static void NotifyClientCertificatesChangedOnIOThread(JNIEnv* env, jclass) {
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    NotifyClientCertificatesChanged();
+  } else {
+    content::BrowserThread::PostTask(
+         content::BrowserThread::IO,
+         FROM_HERE,
+         base::Bind(&NotifyClientCertificatesChanged));
+  }
 }
 
 bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {

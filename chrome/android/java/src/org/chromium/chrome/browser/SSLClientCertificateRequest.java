@@ -293,6 +293,15 @@ public class SSLClientCertificateRequest {
         return true;
     }
 
+    // TODO(yfriedman): Java code doesn't have a global for the IO thread so it's exposed here.
+    // X509Util helper function could probably move here (as it's still in net/)
+    public static void notifyClientCertificatesChangedOnIOThread() {
+        Log.d(TAG, "ClientCertificatesChanged!");
+        nativeNotifyClientCertificatesChangedOnIOThread();
+    }
+
+    private static native void nativeNotifyClientCertificatesChangedOnIOThread();
+
     // Called to pass request results to native side.
     private static native void nativeOnSystemRequestCompletion(
             int requestPtr, byte[][] certChain, AndroidPrivateKey androidKey);
