@@ -6,6 +6,7 @@
 
 #include "apps/app_shim/app_shim_messages.h"
 #include "chrome/common/benchmarking_messages.h"
+#include "chrome/common/cast_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/prerender_messages.h"

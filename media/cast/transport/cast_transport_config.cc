@@ -69,6 +69,11 @@ RtcpDlrrReportBlock::RtcpDlrrReportBlock()
     : last_rr(0), delay_since_last_rr(0) {}
 RtcpDlrrReportBlock::~RtcpDlrrReportBlock() {}
 
+SendRtcpFromRtpSenderData::SendRtcpFromRtpSenderData()
+    : packet_type_flags(0),
+      sending_ssrc(0) {}
+SendRtcpFromRtpSenderData::~SendRtcpFromRtpSenderData() {}
+
 }  // namespace transport
 }  // namespace cast
 }  // namespace media

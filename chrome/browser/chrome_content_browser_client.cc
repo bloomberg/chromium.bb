@@ -46,6 +46,7 @@
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
+#include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -912,6 +913,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_PLUGINS)
   host->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif
+  host->AddFilter(new cast::CastTransportHostFilter);
 #if defined(ENABLE_PRINTING)
   host->AddFilter(new PrintingMessageFilter(id, profile));
 #endif

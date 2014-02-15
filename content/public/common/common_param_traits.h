@@ -38,6 +38,7 @@ class Vector2d;
 
 namespace net {
 class HostPortPair;
+class IPEndPoint;
 }
 
 namespace IPC {
@@ -55,6 +56,14 @@ struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
+  typedef net::IPEndPoint param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

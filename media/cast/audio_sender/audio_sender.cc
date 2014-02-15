@@ -69,7 +69,7 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
     sender_info->send_octet_count = sender_info_.send_octet_count;
   }
 
-  void StoreStatistics(transport::RtcpSenderInfo& sender_info,
+  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
                        base::TimeTicks time_sent,
                        uint32 rtp_timestamp) {
     sender_info_ = sender_info;

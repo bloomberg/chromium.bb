@@ -5,7 +5,6 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 #define MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 
-#include <list>
 #include <map>
 #include <set>
 

@@ -47,16 +47,12 @@ class RtcpBuilder {
   };
 
  private:
-  void BuildSR(const RtcpSenderInfo& sender_info,
-               Packet* packet) const;
-
-  void BuildSdec(Packet* packet) const;
-
-  void BuildBye(Packet* packet) const;
-
-  void BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
+  bool BuildSR(const RtcpSenderInfo& sender_info, Packet* packet) const;
+  bool BuildSdec(Packet* packet) const;
+  bool BuildBye(Packet* packet) const;
+  bool BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                    Packet* packet) const;
-  void BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
+  bool BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
                       Packet* packet) const;
 
   PacedSender* const transport_;  // Not owned by this class.

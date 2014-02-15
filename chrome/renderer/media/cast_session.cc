@@ -51,3 +51,14 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                  config,
                  media::BindToCurrentLoop(callback)));
 }
+
+void CastSession::StartUDP(const net::IPEndPoint& local_endpoint,
+                           const net::IPEndPoint& remote_endpoint) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &CastSessionDelegate::StartUDP,
+          base::Unretained(delegate_.get()),
+          local_endpoint,
+          remote_endpoint));
+}

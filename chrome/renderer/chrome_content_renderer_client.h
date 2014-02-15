@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "ipc/ipc_channel_proxy.h"
 
 class ChromeRenderProcessObserver;
 class PrescientNetworkingDispatcher;

@@ -134,7 +134,7 @@ void RtpSender::SubscribeRtpStatsCallback(
 void RtpSender::ScheduleNextStatsReport() {
   transport_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&RtpSender::RtpStatistics, base::Unretained(this)),
+      base::Bind(&RtpSender::RtpStatistics, base::AsWeakPtr(this)),
       base::TimeDelta::FromMilliseconds(kStatsCallbackIntervalMs));
 }
 

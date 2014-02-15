@@ -29,14 +29,6 @@ class IPEndPoint;
 namespace IPC {
 
 template <>
-struct ParamTraits<net::IPEndPoint> {
-  typedef net::IPEndPoint param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<gfx::Range> {
   typedef gfx::Range param_type;
   static void Write(Message* m, const param_type& p);

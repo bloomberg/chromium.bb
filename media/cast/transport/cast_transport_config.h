@@ -113,7 +113,7 @@ struct RtcpSenderFrameLogMessage {
   uint32 rtp_timestamp;
 };
 
-typedef std::list<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
+typedef std::vector<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
 
 struct RtcpSenderInfo {
   RtcpSenderInfo();
@@ -145,6 +145,16 @@ struct RtcpDlrrReportBlock {
   ~RtcpDlrrReportBlock();
   uint32 last_rr;
   uint32 delay_since_last_rr;
+};
+
+// This is only needed because IPC messages don't support more than
+// 5 arguments.
+struct SendRtcpFromRtpSenderData {
+  SendRtcpFromRtpSenderData();
+  ~SendRtcpFromRtpSenderData();
+  uint32 packet_type_flags;
+  uint32 sending_ssrc;
+  std::string c_name;
 };
 
 inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {

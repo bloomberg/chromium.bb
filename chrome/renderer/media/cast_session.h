@@ -26,7 +26,7 @@ struct VideoSenderConfig;
 }  // namespace cast
 }  // namespace media
 
-namespace content{
+namespace content {
 class P2PSocketClient;
 }  // namespace content
 
@@ -53,6 +53,8 @@ class CastSession : public base::RefCounted<CastSession> {
                   const FrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
+  void StartUDP(const net::IPEndPoint& local_endpoint,
+                const net::IPEndPoint& remote_endpoint);
 
  private:
   friend class base::RefCounted<CastSession>;

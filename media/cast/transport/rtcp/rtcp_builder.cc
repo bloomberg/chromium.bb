@@ -55,17 +55,17 @@ void RtcpBuilder::SendRtcpFromRtpSender(
   Packet packet;
   packet.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
-    BuildSR(sender_info, &packet);
-    BuildSdec(&packet);
+    if (!BuildSR(sender_info, &packet)) return;
+    if (!BuildSdec(&packet)) return;
   }
   if (packet_type_flags & kRtcpBye) {
-    BuildBye(&packet);
+    if (!BuildBye(&packet)) return;
   }
   if (packet_type_flags & kRtcpDlrr) {
-    BuildDlrrRb(dlrr, &packet);
+    if (!BuildDlrrRb(dlrr, &packet)) return;
   }
   if (packet_type_flags & kRtcpSenderLog) {
-    BuildSenderLog(sender_log, &packet);
+    if (!BuildSenderLog(sender_log, &packet)) return;
   }
   if (packet.empty())
     return;  // Sanity - don't send empty packets.
@@ -73,12 +73,14 @@ void RtcpBuilder::SendRtcpFromRtpSender(
   transport_->SendRtcpPacket(packet);
 }
 
-void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
+bool RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
                           Packet* packet) const {
   // Sender report.
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 52, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 52 > kMaxIpPacketSize) return;
+  if (start_size + 52 > kMaxIpPacketSize) {
+    DLOG(FATAL) << "Not enough buffer space";
+    return false;
+  }
 
   uint16 number_of_rows = 6;
   packet->resize(start_size + 28);
@@ -93,13 +95,15 @@ void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
   big_endian_writer.WriteU32(sender_info.rtp_timestamp);
   big_endian_writer.WriteU32(sender_info.send_packet_count);
   big_endian_writer.WriteU32(static_cast<uint32>(sender_info.send_octet_count));
+  return true;
 }
 
-void RtcpBuilder::BuildSdec(Packet* packet) const {
+bool RtcpBuilder::BuildSdec(Packet* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size +  12 + c_name_.length(), kMaxIpPacketSize)
-      << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  if (start_size + 12 + c_name_.length() > kMaxIpPacketSize) {
+    DLOG(FATAL) << "Not enough buffer space";
+    return false;
+  }
 
   // SDES Source Description.
   packet->resize(start_size + 10);
@@ -136,12 +140,15 @@ void RtcpBuilder::BuildSdec(Packet* packet) const {
   // In 32-bit words minus one and we don't count the header.
   uint8 buffer_length = static_cast<uint8>((sdes_length / 4) - 1);
   (*packet)[sdes_length_position] = buffer_length;
+  return true;
 }
 
-void RtcpBuilder::BuildBye(Packet* packet) const {
+bool RtcpBuilder::BuildBye(Packet* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 8 > kMaxIpPacketSize) return;
+  if (start_size + 8 > kMaxIpPacketSize) {
+    DLOG(FATAL) << "Not enough buffer space";
+    return false;
+  }
 
   packet->resize(start_size + 8);
 
@@ -150,6 +157,7 @@ void RtcpBuilder::BuildBye(Packet* packet) const {
   big_endian_writer.WriteU8(kPacketTypeBye);
   big_endian_writer.WriteU16(1);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
+  return true;
 }
 
 /*
@@ -169,11 +177,13 @@ void RtcpBuilder::BuildBye(Packet* packet) const {
   |                   delay since last RR (DLRR)                  |
   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 */
-void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
+bool RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                               Packet* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  if (start_size + 24 > kMaxIpPacketSize) {
+    DLOG(FATAL) << "Not enough buffer space";
+    return false;
+  }
 
   packet->resize(start_size + 24);
 
@@ -188,17 +198,18 @@ void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
   big_endian_writer.WriteU32(ssrc_);  // Add the media (received RTP) SSRC.
   big_endian_writer.WriteU32(dlrr.last_rr);
   big_endian_writer.WriteU32(dlrr.delay_since_last_rr);
+  return true;
 }
 
-void RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
+bool RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
                                  Packet* packet) const {
   DCHECK(packet);
   size_t start_size = packet->size();
   size_t remaining_space = kMaxIpPacketSize - start_size;
-  DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)
-       << "Not enough buffer space";
-  if (remaining_space < kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)
-    return;
+  if (remaining_space < kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize) {
+    DLOG(FATAL) << "Not enough buffer space";
+    return false;
+  }
 
   size_t space_for_x_messages =
       (remaining_space - kRtcpCastLogHeaderSize) / kRtcpSenderFrameLogSize;
@@ -216,7 +227,7 @@ void RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(kCast);
 
-  std::list<RtcpSenderFrameLogMessage>::const_iterator it =
+  std::vector<RtcpSenderFrameLogMessage>::const_iterator it =
       sender_log_message.begin();
   for (; number_of_messages > 0; --number_of_messages) {
     DCHECK(!sender_log_message.empty());
@@ -228,6 +239,7 @@ void RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
     big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp));
     ++it;
   }
+  return true;
 }
 
 }  // namespace transport

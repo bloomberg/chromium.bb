@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/renderer/media/cast_transport_sender_ipc.h"
 #include "content/public/renderer/p2p_socket_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/cast/cast_config.h"
@@ -20,56 +21,13 @@ using media::cast::CastEnvironment;
 using media::cast::CastSender;
 using media::cast::VideoSenderConfig;
 
-namespace {
-
-// This is a dummy class that does nothing. This is needed temporarily
-// to enable tests for cast.streaming extension APIs.
-// The real implementation of CastTransportSender is to use IPC to send
-// data to the browser process.
-// See crbug.com/327482 for more details.
-class DummyTransport : public media::cast::transport::CastTransportSender {
- public:
-  DummyTransport() {}
-  virtual ~DummyTransport() {}
-
-  // CastTransportSender implementations.
-  virtual void SetPacketReceiver(
-      const media::cast::transport::PacketReceiverCallback& packet_receiver)
-      OVERRIDE {}
-  virtual void InsertCodedAudioFrame(
-      const media::cast::transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time) OVERRIDE {}
-  virtual void InsertCodedVideoFrame(
-      const media::cast::transport::EncodedVideoFrame* video_frame,
-      const base::TimeTicks& capture_time) OVERRIDE {}
-  virtual void SendRtcpFromRtpSender(
-      uint32 packet_type_flags,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
-      const media::cast::transport::RtcpDlrrReportBlock& dlrr,
-      const media::cast::transport::RtcpSenderLogMessage& sender_log,
-      uint32 sending_ssrc,
-      const std::string& c_name) OVERRIDE {}
-  virtual void ResendPackets(
-      bool is_audio,
-      const media::cast::transport::MissingFramesAndPacketsMap& missing_packets)
-      OVERRIDE {}
-  virtual void SubscribeAudioRtpStatsCallback(
-      const media::cast::transport::CastTransportRtpStatistics& callback)
-      OVERRIDE {}
-  virtual void SubscribeVideoRtpStatsCallback(
-      const media::cast::transport::CastTransportRtpStatistics& callback)
-      OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyTransport);
-};
-}  // namespace
-
 CastSessionDelegate::CastSessionDelegate()
     : audio_encode_thread_("CastAudioEncodeThread"),
       video_encode_thread_("CastVideoEncodeThread"),
+      transport_configured_(false),
       io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()) {
+  DCHECK(io_message_loop_proxy_);
 }
 
 CastSessionDelegate::~CastSessionDelegate() {
@@ -80,7 +38,6 @@ void CastSessionDelegate::Initialize() {
   if (cast_environment_)
     return;  // Already initialized.
 
-  cast_transport_.reset(new DummyTransport());
   audio_encode_thread_.Start();
   video_encode_thread_.Start();
 
@@ -105,32 +62,71 @@ void CastSessionDelegate::StartAudio(
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   audio_config_.reset(new AudioSenderConfig(config));
-  StartSendingInternal(callback, true);
+  video_frame_input_available_callback_ = callback;
+  StartSendingInternal();
 }
 
 void CastSessionDelegate::StartVideo(
     const VideoSenderConfig& config,
     const FrameInputAvailableCallback& callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  audio_frame_input_available_callback_ = callback;
 
   video_config_.reset(new VideoSenderConfig(config));
-  StartSendingInternal(callback, false);
+  StartSendingInternal();
 }
 
-void CastSessionDelegate::StartSendingInternal(
-    const FrameInputAvailableCallback& callback,
-    bool is_audio) {
+void CastSessionDelegate::StartUDP(
+    const net::IPEndPoint& local_endpoint,
+    const net::IPEndPoint& remote_endpoint) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  transport_configured_ = true;
+  local_endpoint_ = local_endpoint;
+  remote_endpoint_ = remote_endpoint;
+  StartSendingInternal();
+}
+
+void CastSessionDelegate::StatusNotificationCB(
+    media::cast::transport::CastTransportStatus unused_status) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  // TODO(hubbe): Call javascript UDPTransport error function.
+}
+
+void CastSessionDelegate::StartSendingInternal() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  // No transport, wait.
+  if (!transport_configured_)
+    return;
+
+  // No audio or video, wait.
+  if (!audio_config_ && !video_config_)
+    return;
 
   Initialize();
 
-  if (is_audio) {
-    audio_frame_input_available_callback_.reset(
-        new FrameInputAvailableCallback(callback));
-  } else {
-    video_frame_input_available_callback_.reset(
-        new FrameInputAvailableCallback(callback));
+  media::cast::transport::CastTransportConfig config;
+
+  // TODO(hubbe): set config.aes_key and config.aes_iv_mask.
+  config.local_endpoint = local_endpoint_;
+  config.receiver_endpoint = remote_endpoint_;
+  if (audio_config_) {
+    config.audio_ssrc = audio_config_->sender_ssrc;
+    config.audio_codec = audio_config_->codec;
+    config.audio_rtp_config = audio_config_->rtp_config;
+    config.audio_frequency = audio_config_->frequency;
+    config.audio_channels = audio_config_->channels;
   }
+  if (video_config_) {
+    config.video_ssrc = video_config_->sender_ssrc;
+    config.video_codec = video_config_->codec;
+    config.video_rtp_config = video_config_->rtp_config;
+  }
+
+  cast_transport_.reset(new CastTransportSenderIPC(
+      config,
+      base::Bind(&CastSessionDelegate::StatusNotificationCB,
+                 base::Unretained(this))));
 
   cast_sender_.reset(CastSender::CreateCastSender(
       cast_environment_,
@@ -140,6 +136,7 @@ void CastSessionDelegate::StartSendingInternal(
       base::Bind(&CastSessionDelegate::InitializationResult,
                  base::Unretained(this)),
       cast_transport_.get()));
+  cast_transport_->SetPacketReceiver(cast_sender_->packet_receiver());
 }
 
 void CastSessionDelegate::InitializationResult(
@@ -148,11 +145,11 @@ void CastSessionDelegate::InitializationResult(
 
   // TODO(pwestin): handle the error codes.
   if (result == media::cast::STATUS_INITIALIZED) {
-    if (audio_frame_input_available_callback_) {
-      audio_frame_input_available_callback_->Run(cast_sender_->frame_input());
+    if (!audio_frame_input_available_callback_.is_null()) {
+      audio_frame_input_available_callback_.Run(cast_sender_->frame_input());
     }
-    if (video_frame_input_available_callback_) {
-      video_frame_input_available_callback_->Run(cast_sender_->frame_input());
+    if (!video_frame_input_available_callback_.is_null()) {
+      video_frame_input_available_callback_.Run(cast_sender_->frame_input());
     }
   }
 }

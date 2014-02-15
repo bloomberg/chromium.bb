@@ -9,6 +9,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -106,6 +107,25 @@ bool ParamTraits<net::HostPortPair>::Read(const Message* m,
 
 void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
   l->append(p.ToString());
+}
+
+void ParamTraits<net::IPEndPoint>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.address());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<net::IPEndPoint>::Read(const Message* m, PickleIterator* iter,
+                                        param_type* p) {
+  net::IPAddressNumber address;
+  int port;
+  if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
+    return false;
+  *p = net::IPEndPoint(address, port);
+  return true;
+}
+
+void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
+  LogParam("IPEndPoint:" + p.ToString(), l);
 }
 
 void ParamTraits<content::PageState>::Write(

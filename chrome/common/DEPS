@@ -10,6 +10,7 @@ include_rules = [
   "+components/translate/core/common",
   "+extensions/common",
   "+grit",  # For generated headers
+  "+media",
   "+ppapi/shared_impl",
   "+remoting/client/plugin",
   "+webkit/common/user_agent",

@@ -28,6 +28,8 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsFromInstantProcess) {
 // to potentially Instant URLs get bounced back to the browser to be rebucketed
 // into an Instant renderer if necessary.
 TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
+  chrome_render_thread_->set_io_message_loop_proxy(
+      base::MessageLoopProxy::current());
   chrome_content_renderer_client_.RenderThreadStarted();
   std::vector<GURL> search_urls;
   search_urls.push_back(GURL("http://example.com/search"));

@@ -94,6 +94,7 @@ enum IPCMessageStart {
   MessagePortMsgStart,
   EmbeddedWorkerMsgStart,
   EmbeddedWorkerContextMsgStart,
+  CastMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

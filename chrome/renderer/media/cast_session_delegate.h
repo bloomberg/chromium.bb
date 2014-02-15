@@ -53,6 +53,8 @@ class CastSessionDelegate {
                   const FrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
+  void StartUDP(const net::IPEndPoint& local_endpoint,
+                const net::IPEndPoint& remote_endpoint);
 
  protected:
   // Callback with the result of the initialization.
@@ -66,8 +68,10 @@ class CastSessionDelegate {
 
   // Configure CastSender. It is ready to accept audio / video frames after
   // receiving a successful call to InitializationResult.
-  void StartSendingInternal(const FrameInputAvailableCallback& callback,
-                            bool is_audio);
+  void StartSendingInternal();
+
+  void StatusNotificationCB(
+      media::cast::transport::CastTransportStatus status);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
@@ -85,8 +89,12 @@ class CastSessionDelegate {
   scoped_ptr<media::cast::AudioSenderConfig> audio_config_;
   scoped_ptr<media::cast::VideoSenderConfig> video_config_;
 
-  scoped_ptr<FrameInputAvailableCallback> audio_frame_input_available_callback_;
-  scoped_ptr<FrameInputAvailableCallback> video_frame_input_available_callback_;
+  FrameInputAvailableCallback audio_frame_input_available_callback_;
+  FrameInputAvailableCallback video_frame_input_available_callback_;
+
+  net::IPEndPoint local_endpoint_;
+  net::IPEndPoint remote_endpoint_;
+  bool transport_configured_;
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

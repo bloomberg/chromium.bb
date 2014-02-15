@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/transport/cast_transport_defines.h"
@@ -29,7 +30,7 @@ namespace transport {
 // This class handles splitting encoded audio and video frames into packets and
 // add an RTP header to each packet. The sent packets are stored until they are
 // acknowledged by the remote peer or timed out.
-class RtpSender {
+class RtpSender : public base::SupportsWeakPtr<RtpSender>{
  public:
   RtpSender(base::TickClock* clock,
             const CastTransportConfig& config,

@@ -38,7 +38,7 @@ namespace transport {
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
-typedef base::Callback<void(RtcpSenderInfo& sender_info,
+typedef base::Callback<void(const RtcpSenderInfo& sender_info,
                             base::TimeTicks time_sent,
                             uint32 rtp_timestamp)> CastTransportRtpStatistics;
 
