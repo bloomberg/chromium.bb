@@ -17,8 +17,6 @@ common_vars_defines() {
   # Add Android SDK tools to system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
-  export PATH=$PATH:${ANDROID_SDK_ROOT}/build-tools/\
-${ANDROID_SDK_BUILD_TOOLS_VERSION}
 
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
