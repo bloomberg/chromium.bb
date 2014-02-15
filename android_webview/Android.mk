@@ -23,11 +23,14 @@ LOCAL_SRC_FILES += \
 # contentview and its dependencies
 LOCAL_AIDL_INCLUDES := \
     $(LOCAL_PATH)/../content/public/android/java/src \
+    $(LOCAL_PATH)/../net/android/java/src \
     $(LOCAL_PATH)/../third_party/eyesfree/src/android/java/src
 LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../content/public/android/java/src) \
     ../content/public/android/java/src/org/chromium/content/common/IChildProcessCallback.aidl \
     ../content/public/android/java/src/org/chromium/content/common/IChildProcessService.aidl \
+    ../net/android/java/src/org/chromium/net/IRemoteAndroidKeyStoreCallbacks.aidl \
+    ../net/android/java/src/org/chromium/net/IRemoteAndroidKeyStore.aidl \
     $(call all-java-files-under, ../base/android/java/src) \
     $(call all-java-files-under, ../media/base/android/java/src) \
     $(call all-java-files-under, ../net/android/java/src) \
