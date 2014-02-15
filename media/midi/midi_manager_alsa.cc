@@ -145,12 +145,12 @@ bool MidiManagerAlsa::Initialize() {
     snd_ctl_t* handle;
     int err = snd_ctl_open(&handle, id.c_str(), 0);
     if (err != 0) {
-      DLOG(ERROR) << "snd_ctl_open fails: " << snd_strerror(err);
+      LOG(ERROR) << "snd_ctl_open fails: " << snd_strerror(err);
       continue;
     }
     err = snd_ctl_card_info(handle, card);
     if (err != 0) {
-      DLOG(ERROR) << "snd_ctl_card_info fails: " << snd_strerror(err);
+      LOG(ERROR) << "snd_ctl_card_info fails: " << snd_strerror(err);
       snd_ctl_close(handle);
       continue;
     }
@@ -171,7 +171,7 @@ bool MidiManagerAlsa::Initialize() {
       scoped_refptr<MidiDeviceInfo> port = new MidiDeviceInfo(
           this, id, card, output ? midi_out : midi_in, device);
       if (!port->IsOpened()) {
-        DLOG(ERROR) << "MidiDeviceInfo open fails";
+        LOG(ERROR) << "MidiDeviceInfo open fails";
         continue;
       }
       if (input) {
@@ -187,7 +187,7 @@ bool MidiManagerAlsa::Initialize() {
   }
 
   if (pipe(pipe_fd_) < 0) {
-    DPLOG(ERROR) << "pipe() failed";
+    PLOG(ERROR) << "pipe() failed";
     return false;
   }
   event_thread_.Start();
@@ -266,7 +266,7 @@ void MidiManagerAlsa::EventReset() {
 
 void MidiManagerAlsa::EventLoop() {
   if (HANDLE_EINTR(poll(&poll_fds_[0], poll_fds_.size(), -1)) < 0) {
-    DPLOG(ERROR) << "Couldn't poll(). Stop to poll input MIDI devices.";
+    PLOG(ERROR) << "Couldn't poll(). Stop to poll input MIDI devices.";
     // TODO(toyoshim): Handle device disconnection, and try to reconnect?
     return;
   }
