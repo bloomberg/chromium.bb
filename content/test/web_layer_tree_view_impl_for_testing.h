@@ -50,7 +50,6 @@ class WebLayerTreeViewImplForTesting
                                        double duration_sec);
   virtual void setNeedsAnimate();
   virtual bool commitRequested() const;
-  virtual void composite();
   virtual void didStopFlinging();
   virtual bool compositeAndReadback(void* pixels, const blink::WebRect& rect);
   virtual void finishAllRendering();

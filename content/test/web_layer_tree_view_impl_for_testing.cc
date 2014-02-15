@@ -120,10 +120,6 @@ bool WebLayerTreeViewImplForTesting::commitRequested() const {
   return layer_tree_host_->CommitRequested();
 }
 
-void WebLayerTreeViewImplForTesting::composite() {
-  layer_tree_host_->Composite(gfx::FrameTime::Now());
-}
-
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
 bool WebLayerTreeViewImplForTesting::compositeAndReadback(
