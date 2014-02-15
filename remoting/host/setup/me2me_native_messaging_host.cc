@@ -174,7 +174,8 @@ void Me2MeNativeMessagingHost::ProcessClearPairedClients(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
-    DelegateToElevatedHost(message.Pass(), response.Pass());
+    if (!DelegateToElevatedHost(message.Pass()))
+      SendBooleanResult(response.Pass(), false);
     return;
   }
 
@@ -193,7 +194,8 @@ void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (needs_elevation_) {
-    DelegateToElevatedHost(message.Pass(), response.Pass());
+    if (!DelegateToElevatedHost(message.Pass()))
+      SendBooleanResult(response.Pass(), false);
     return;
   }
 
@@ -501,15 +503,17 @@ void Me2MeNativeMessagingHost::Stop() {
 
 #if defined(OS_WIN)
 
-void Me2MeNativeMessagingHost::DelegateToElevatedHost(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
+    scoped_ptr<base::DictionaryValue> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   EnsureElevatedHostCreated();
 
-  DCHECK(elevated_channel_);
-  elevated_channel_->SendMessage(message.Pass());
+  // elevated_channel_ will be null if user rejects the UAC request.
+  if (elevated_channel_)
+    elevated_channel_->SendMessage(message.Pass());
+
+  return elevated_channel_ != NULL;
 }
 
 void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
@@ -549,7 +553,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   std::string input_pipe_name(kChromePipeNamePrefix);
   input_pipe_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
 
-  delegate_write_handle_.Set(CreateNamedPipe(
+  base::win::ScopedHandle delegate_write_handle(::CreateNamedPipe(
       base::ASCIIToUTF16(input_pipe_name).c_str(),
       PIPE_ACCESS_OUTBOUND,
       PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_REJECT_REMOTE_CLIENTS,
@@ -559,7 +563,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
       kTimeOutMilliseconds,
       &security_attributes));
 
-  if (!delegate_write_handle_.IsValid()) {
+  if (!delegate_write_handle.IsValid()) {
     LOG_GETLASTERROR(ERROR) <<
         "Failed to create named pipe '" << input_pipe_name << "'";
     OnError();
@@ -570,7 +574,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   std::string output_pipe_name(kChromePipeNamePrefix);
   output_pipe_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
 
-  delegate_read_handle_.Set(CreateNamedPipe(
+  base::win::ScopedHandle delegate_read_handle(::CreateNamedPipe(
       base::ASCIIToUTF16(output_pipe_name).c_str(),
       PIPE_ACCESS_INBOUND,
       PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_REJECT_REMOTE_CLIENTS,
@@ -580,7 +584,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
       kTimeOutMilliseconds,
       &security_attributes));
 
-  if (!delegate_read_handle_.IsValid()) {
+  if (!delegate_read_handle.IsValid()) {
     LOG_GETLASTERROR(ERROR) <<
         "Failed to create named pipe '" << output_pipe_name << "'";
     OnError();
@@ -622,33 +626,38 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   info.nShow = SW_SHOWNORMAL;
 
   if (!ShellExecuteEx(&info)) {
+    DWORD error = ::GetLastError();
     LOG_GETLASTERROR(ERROR) << "Unable to launch '" << binary.value() << "'";
-    OnError();
+    if (error != ERROR_CANCELLED) {
+      OnError();
+    }
     return;
   }
 
-  if (!ConnectNamedPipe(delegate_write_handle_.Get(), NULL)) {
+  if (!::ConnectNamedPipe(delegate_write_handle.Get(), NULL)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
-      LOG(ERROR) << "Unable to connect '" << input_pipe_name << "': " << error;
+      LOG_GETLASTERROR(ERROR) << "Unable to connect '"
+                              << input_pipe_name << "'";
       OnError();
-    return;
+      return;
     }
   }
 
-  if (!ConnectNamedPipe(delegate_read_handle_.Get(), NULL)) {
+  if (!::ConnectNamedPipe(delegate_read_handle.Get(), NULL)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
-      LOG(ERROR) << "Unable to connect '" << output_pipe_name << "': " << error;
+      LOG_GETLASTERROR(ERROR) << "Unable to connect '"
+                              << output_pipe_name << "'";
       OnError();
-    return;
+      return;
     }
   }
 
   // Set up the native messaging channel to talk to the elevated host.
   // Note that input for the elevate channel is output forthe elevated host.
   elevated_channel_.reset(new NativeMessagingChannel(
-      delegate_read_handle_.Get(), delegate_write_handle_.Get()));
+      delegate_read_handle.Take(), delegate_write_handle.Take()));
 
   elevated_channel_->Start(
       base::Bind(&Me2MeNativeMessagingHost::ProcessDelegateResponse, weak_ptr_),
@@ -665,10 +674,10 @@ void Me2MeNativeMessagingHost::ProcessDelegateResponse(
 
 #else  // defined(OS_WIN)
 
-void Me2MeNativeMessagingHost::DelegateToElevatedHost(
-    scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+bool Me2MeNativeMessagingHost::DelegateToElevatedHost(
+    scoped_ptr<base::DictionaryValue> message) {
   NOTREACHED();
+  return false;
 }
 
 #endif  // !defined(OS_WIN)

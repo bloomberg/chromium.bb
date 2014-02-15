@@ -48,6 +48,8 @@ class Me2MeNativeMessagingHost {
   void Start(const base::Closure& quit_closure);
 
  private:
+  // Callback to process messages from the native messaging client through
+  // |channel_|.
   void ProcessRequest(scoped_ptr<base::DictionaryValue> message);
 
   // These "Process.." methods handle specific request types. The |response|
@@ -122,21 +124,29 @@ class Me2MeNativeMessagingHost {
 
   void Stop();
 
-  void DelegateToElevatedHost(scoped_ptr<base::DictionaryValue> message,
-                              scoped_ptr<base::DictionaryValue> response);
+  // Returns true if the request was successfully delegated to the elevated
+  // host and false otherwise.
+  bool DelegateToElevatedHost(scoped_ptr<base::DictionaryValue> message);
 
 #if defined(OS_WIN)
+  // Create and connect to an elevated host process if necessary.
+  // |elevated_channel_| will contain the native messaging channel to the
+  // elevated host if the function succeeds.
   void Me2MeNativeMessagingHost::EnsureElevatedHostCreated();
+
+  // Callback to process messages from the elevated host through
+  // |elevated_channel_|.
   void ProcessDelegateResponse(scoped_ptr<base::DictionaryValue> message);
 
-  // input/output handles for the channel to the elevated host.
-  base::win::ScopedHandle delegate_write_handle_;
-  base::win::ScopedHandle delegate_read_handle_;
+  // Native messaging channel used to communicate with the elevated host.
   scoped_ptr<NativeMessagingChannel> elevated_channel_;
 #endif  // defined(OS_WIN)
 
   bool needs_elevation_;
   base::Closure quit_closure_;
+
+  // Native messaging channel used to communicate with the native message
+  // client.
   scoped_ptr<NativeMessagingChannel> channel_;
   scoped_refptr<DaemonController> daemon_controller_;
 
