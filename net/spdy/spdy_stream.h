@@ -395,9 +395,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Returns whether this stream is IDLE: request and response headers
   // have neither been sent nor receieved.
-  // TODO(jgraettinger): Renamed to force compilation error & semantics
-  // update at call sites. Undo this.
-  bool IsIdleTemporaryRename() const;
+  bool IsIdle() const;
 
   // Returns whether or not this stream is fully open: that request and
   // response headers are complete, and it is not in a half-closed state.
@@ -444,13 +442,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // a remote SYN_STREAM (the client can only initate streams).
   // TODO(jgraettinger): RESERVED_REMOTE must be added to the state
   // machine when PUSH_PROMISE is implemented.
-  // TODO(jgraettinger): HALF_CLOSED_REMOTE must be added to the state
-  // machine to support remotely closed, ongoing sends.
   enum State {
     STATE_IDLE,
     STATE_OPEN,
     STATE_HALF_CLOSED_LOCAL_UNCLAIMED,
     STATE_HALF_CLOSED_LOCAL,
+    STATE_HALF_CLOSED_REMOTE,
     STATE_CLOSED,
   };
 

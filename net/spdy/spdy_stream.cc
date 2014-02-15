@@ -403,9 +403,8 @@ int SpdyStream::OnInitialResponseHeadersReceived(
 
     case SPDY_REQUEST_RESPONSE_STREAM:
       // For a request/response stream, we're ready for the response
-      // headers once we've finished sending the request headers and
-      // the request body (if we have one).
-      if (io_state_ != STATE_HALF_CLOSED_LOCAL) {
+      // headers once we've finished sending the request headers.
+      if (io_state_ == STATE_IDLE) {
         session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
                               "Response received before request sent");
         return ERR_SPDY_PROTOCOL_ERROR;
@@ -485,16 +484,15 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   if (!buffer) {
     metrics_.StopStream();
-    // TODO(jgraettinger): Closing from OPEN preserves current SpdyStream
-    // behavior, but is incorrect HTTP/2 behavior. |io_state_| should be
-    // HALF_CLOSED_REMOTE. To be changed in a subsequent CL.
-    if (io_state_ == STATE_OPEN || io_state_ == STATE_HALF_CLOSED_LOCAL) {
+    if (io_state_ == STATE_OPEN) {
+      io_state_ = STATE_HALF_CLOSED_REMOTE;
+    } else if (io_state_ == STATE_HALF_CLOSED_LOCAL) {
       io_state_ = STATE_CLOSED;
       // Deletes |this|.
       session_->CloseActiveStream(stream_id_, OK);
-      return;
+    } else {
+      NOTREACHED() << io_state_;
     }
-    NOTREACHED() << io_state_;
     return;
   }
 
@@ -535,18 +533,29 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
   }
 
   if (pending_send_status_ == NO_MORE_DATA_TO_SEND) {
-    // TODO(jgraettinger): Once HALF_CLOSED_REMOTE is added,
-    // we'll need to handle transitions to fully closed here.
-    CHECK_EQ(io_state_, STATE_OPEN);
-    io_state_ = STATE_HALF_CLOSED_LOCAL;
+    if(io_state_ == STATE_OPEN) {
+      io_state_ = STATE_HALF_CLOSED_LOCAL;
+    } else if(io_state_ == STATE_HALF_CLOSED_REMOTE) {
+      io_state_ = STATE_CLOSED;
+    } else {
+      NOTREACHED() << io_state_;
+    }
+  }
+  // Notify delegate of write completion. Must not destroy |this|.
+  CHECK(delegate_);
+  {
+    base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
+    if (frame_type == SYN_STREAM) {
+      delegate_->OnRequestHeadersSent();
+    } else {
+      delegate_->OnDataSent();
+    }
+    CHECK(weak_this);
   }
 
-  // Notify delegate of write completion. May destroy |this|.
-  CHECK(delegate_);
-  if (frame_type == SYN_STREAM) {
-    delegate_->OnRequestHeadersSent();
-  } else {
-    delegate_->OnDataSent();
+  if (io_state_ == STATE_CLOSED) {
+    // Deletes |this|.
+    session_->CloseActiveStream(stream_id_, OK);
   }
 }
 
@@ -559,7 +568,8 @@ int SpdyStream::OnRequestHeadersSent() {
 }
 
 int SpdyStream::OnDataSent(size_t frame_size) {
-  CHECK_EQ(io_state_, STATE_OPEN);
+  CHECK(io_state_ == STATE_OPEN ||
+        io_state_ == STATE_HALF_CLOSED_REMOTE) << io_state_;
 
   size_t frame_payload_size = frame_size - session_->GetDataFrameMinimumSize();
 
@@ -654,7 +664,8 @@ void SpdyStream::SendData(IOBuffer* data,
                           SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
-  CHECK_EQ(io_state_, STATE_OPEN);
+  CHECK(io_state_ == STATE_OPEN ||
+        io_state_ == STATE_HALF_CLOSED_REMOTE) << io_state_;
   CHECK(!pending_send_data_.get());
   pending_send_data_ = new DrainableIOBuffer(data, length);
   pending_send_status_ = send_status;
@@ -696,7 +707,7 @@ bool SpdyStream::IsLocallyClosed() const {
       io_state_ == STATE_CLOSED;
 }
 
-bool SpdyStream::IsIdleTemporaryRename() const {
+bool SpdyStream::IsIdle() const {
   return io_state_ == STATE_IDLE;
 }
 
@@ -762,7 +773,8 @@ void SpdyStream::UpdateHistograms() {
 void SpdyStream::QueueNextDataFrame() {
   // Until the request has been completely sent, we cannot be sure
   // that our stream_id is correct.
-  CHECK_EQ(io_state_, STATE_OPEN);
+  CHECK(io_state_ == STATE_OPEN ||
+        io_state_ == STATE_HALF_CLOSED_REMOTE) << io_state_;
   CHECK_GT(stream_id_, 0u);
   CHECK(pending_send_data_.get());
   CHECK_GT(pending_send_data_->BytesRemaining(), 0);

@@ -2059,57 +2059,50 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
-// While we're doing a post, the server sends back a SYN_REPLY.
-TEST_P(SpdyNetworkTransactionTest, PostWithEarlySynReply) {
-  static const char upload[] = { "hello!" };
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(
-      new UploadBytesElementReader(upload, sizeof(upload)));
-  UploadDataStream stream(element_readers.Pass(), 0);
-
-  // Setup the request
-  HttpRequestInfo request;
-  request.method = "POST";
-  request.url = GURL(kRequestUrl);
-  request.upload_data_stream = &stream;
-
-  scoped_ptr<SpdyFrame> stream_reply(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+// While we're doing a post, the server sends the reply before upload completes.
+TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*body, 3),
+  };
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-    CreateMockRead(*stream_reply, 1),
+    CreateMockRead(*resp, 1),
+    CreateMockRead(*body, 2),
     MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyPost(
-          kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
-  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
-  MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*body, 2),
-    CreateMockWrite(*rst, 3)
-  };
-
+  // Write the request headers, and read the complete response
+  // while still waiting for chunked request data.
   DeterministicSocketData data(reads, arraysize(reads),
                                writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreatePostRequest(), DEFAULT_PRIORITY,
+  NormalSpdyTransactionHelper helper(CreateChunkedPostRequest(),
+                                     DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
   helper.SetDeterministic();
   helper.RunPreTestSetup();
   helper.AddDeterministicData(&data);
-  HttpNetworkTransaction* trans = helper.trans();
 
-  TestCompletionCallback callback;
-  int rv = trans->Start(
-      &CreatePostRequest(), callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+  ASSERT_TRUE(helper.StartDefaultTest());
 
-  data.RunFor(4);
-  rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, rv);
-  data.RunFor(1);
+  // Process the request headers, SYN_REPLY, and response body.
+  // The request body is still in flight.
+  data.RunFor(3);
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  // Finish sending the request body.
+  helper.request().upload_data_stream->AppendChunk(
+      kUploadData, kUploadDataSize, true);
+  data.RunFor(2);
+
+  std::string response_body;
+  EXPECT_EQ(OK, ReadTransaction(helper.trans(), &response_body));
+  EXPECT_EQ(kUploadData, response_body);
+  helper.VerifyDataConsumed();
 }
 
 // The client upon cancellation tries to send a RST_STREAM frame. The mock
