@@ -252,9 +252,11 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
     dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
   }
 
-  dict->SetInteger(kMediaGalleriesScanAudioCountKey, gallery.audio_count);
-  dict->SetInteger(kMediaGalleriesScanImageCountKey, gallery.image_count);
-  dict->SetInteger(kMediaGalleriesScanVideoCountKey, gallery.video_count);
+  if (gallery.audio_count || gallery.image_count || gallery.video_count) {
+    dict->SetInteger(kMediaGalleriesScanAudioCountKey, gallery.audio_count);
+    dict->SetInteger(kMediaGalleriesScanImageCountKey, gallery.image_count);
+    dict->SetInteger(kMediaGalleriesScanVideoCountKey, gallery.video_count);
+  }
 
   // Version 0 of the prefs format was that the display_name was always
   // used to show the user-visible name of the gallery. Version 1 means

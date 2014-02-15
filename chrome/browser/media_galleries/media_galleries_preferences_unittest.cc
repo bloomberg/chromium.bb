@@ -18,6 +18,7 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_system.h"
@@ -132,10 +133,13 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     }
 
     std::vector<std::string> all_permissions;
-    all_permissions.push_back("allAutoDetected");
-    all_permissions.push_back("read");
+    all_permissions.push_back(
+        extensions::MediaGalleriesPermission::kReadPermission);
+    all_permissions.push_back(
+        extensions::MediaGalleriesPermission::kAllAutoDetectedPermission);
     std::vector<std::string> read_permissions;
-    read_permissions.push_back("read");
+    read_permissions.push_back(
+        extensions::MediaGalleriesPermission::kReadPermission);
 
     all_permission_extension =
         AddMediaGalleriesApp("all", all_permissions, profile_.get());

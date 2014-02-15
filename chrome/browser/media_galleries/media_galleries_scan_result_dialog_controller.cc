@@ -223,12 +223,13 @@ void MediaGalleriesScanResultDialogController::UpdateScanResultsFromPreferences(
       preferences->GalleriesForExtension(*extension);
 
   // Add or update any scan results that the extension doesn't already have
-  // access to or isn't in |results_to_remove_|.
+  // access to or isn't in |ignore_list|.
   for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
        it != galleries.end();
        ++it) {
     const MediaGalleryPrefInfo& gallery = it->second;
-    if (gallery.type == MediaGalleryPrefInfo::kScanResult &&
+    if ((gallery.audio_count || gallery.image_count || gallery.video_count) &&
+        !gallery.IsBlackListedType() &&
         !ContainsKey(permitted, gallery.pref_id) &&
         !ContainsKey(ignore_list, gallery.pref_id)) {
       ScanResults::iterator existing = scan_results->find(gallery.pref_id);
@@ -242,7 +243,7 @@ void MediaGalleriesScanResultDialogController::UpdateScanResultsFromPreferences(
     }
   }
 
-  // Remove anything from |scan_results_| that's no longer valid or the user
+  // Remove anything from |scan_results| that's no longer valid or the user
   // already has access to.
   std::list<ScanResults::iterator> to_remove;
   for (ScanResults::iterator it = scan_results->begin();
@@ -251,8 +252,8 @@ void MediaGalleriesScanResultDialogController::UpdateScanResultsFromPreferences(
     MediaGalleriesPrefInfoMap::const_iterator pref_gallery =
         galleries.find(it->first);
     if (pref_gallery == galleries.end() ||
-        pref_gallery->second.type != MediaGalleryPrefInfo::kScanResult ||
-        permitted.find(it->first) != permitted.end()) {
+        pref_gallery->second.IsBlackListedType() ||
+        ContainsKey(permitted, it->first)) {
       to_remove.push_back(it);
     }
   }
@@ -278,17 +279,11 @@ void MediaGalleriesScanResultDialogController::OnPreferencesInitialized() {
 }
 
 void MediaGalleriesScanResultDialogController::OnPreferenceUpdate(
-    const std::string& extension_id, MediaGalleryPrefId pref_id) {
+    const std::string& extension_id) {
   if (extension_id == extension_->id()) {
-    const MediaGalleriesPrefInfoMap::const_iterator it =
-        preferences_->known_galleries().find(pref_id);
-    if (it == preferences_->known_galleries().end() ||
-        it->second.type == MediaGalleryPrefInfo::kScanResult ||
-        it->second.type == MediaGalleryPrefInfo::kRemovedScan) {
-      UpdateScanResultsFromPreferences(preferences_, extension_,
-                                       results_to_remove_, &scan_results_);
-      dialog_->UpdateResults();
-    }
+    UpdateScanResultsFromPreferences(preferences_, extension_,
+                                     results_to_remove_, &scan_results_);
+    dialog_->UpdateResults();
   }
 }
 
@@ -319,35 +314,35 @@ void MediaGalleriesScanResultDialogController::OnRemovableStorageDetached(
 }
 
 void MediaGalleriesScanResultDialogController::OnPermissionAdded(
-    MediaGalleriesPreferences* /* pref */,
+    MediaGalleriesPreferences* /*pref*/,
     const std::string& extension_id,
-    MediaGalleryPrefId pref_id) {
-  OnPreferenceUpdate(extension_id, pref_id);
+    MediaGalleryPrefId /*pref_id*/) {
+  OnPreferenceUpdate(extension_id);
 }
 
 void MediaGalleriesScanResultDialogController::OnPermissionRemoved(
-    MediaGalleriesPreferences* /* pref */,
+    MediaGalleriesPreferences* /*pref*/,
     const std::string& extension_id,
-    MediaGalleryPrefId pref_id) {
-  OnPreferenceUpdate(extension_id, pref_id);
+    MediaGalleryPrefId /*pref_id*/) {
+  OnPreferenceUpdate(extension_id);
 }
 
 void MediaGalleriesScanResultDialogController::OnGalleryAdded(
-    MediaGalleriesPreferences* /* prefs */,
-    MediaGalleryPrefId pref_id) {
-  OnPreferenceUpdate(extension_->id(), pref_id);
+    MediaGalleriesPreferences* /*prefs*/,
+    MediaGalleryPrefId /*pref_id*/) {
+  OnPreferenceUpdate(extension_->id());
 }
 
 void MediaGalleriesScanResultDialogController::OnGalleryRemoved(
-    MediaGalleriesPreferences* /* prefs */,
-    MediaGalleryPrefId pref_id) {
-  OnPreferenceUpdate(extension_->id(), pref_id);
+    MediaGalleriesPreferences* /*prefs*/,
+    MediaGalleryPrefId /*pref_id*/) {
+  OnPreferenceUpdate(extension_->id());
 }
 
 void MediaGalleriesScanResultDialogController::OnGalleryInfoUpdated(
-    MediaGalleriesPreferences* /* prefs */,
-    MediaGalleryPrefId pref_id) {
-  OnPreferenceUpdate(extension_->id(), pref_id);
+    MediaGalleriesPreferences* /*prefs*/,
+    MediaGalleryPrefId /*pref_id*/) {
+  OnPreferenceUpdate(extension_->id());
 }
 
 // MediaGalleriesScanResultDialog ---------------------------------------------

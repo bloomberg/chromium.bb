@@ -31,24 +31,6 @@
 
 namespace {
 
-MediaGalleryPrefId AddScanResult(MediaGalleriesPreferences* gallery_prefs,
-                                 const std::string& path, int audio_count,
-                                 int image_count, int video_count) {
-  MediaGalleryPrefInfo gallery_info;
-  gallery_prefs->LookUpGalleryByPath(
-      MakeMediaGalleriesTestingPath(path), &gallery_info);
-  return gallery_prefs->AddGallery(
-      gallery_info.device_id,
-      gallery_info.path,
-      MediaGalleryPrefInfo::kScanResult,
-      gallery_info.volume_label,
-      gallery_info.vendor_name,
-      gallery_info.model_name,
-      gallery_info.total_size_in_bytes,
-      gallery_info.last_attach_time,
-      audio_count, image_count, video_count);
-}
-
 class MockMediaGalleriesScanResultDialog
     : public MediaGalleriesScanResultDialog {
  public:
@@ -157,6 +139,31 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
     return gallery_prefs_.get();
   }
 
+  MediaGalleryPrefId AddGallery(const std::string& path,
+                                MediaGalleryPrefInfo::Type type,
+                                int audio_count, int image_count,
+                                int video_count) {
+    MediaGalleryPrefInfo gallery_info;
+    gallery_prefs_->LookUpGalleryByPath(MakeMediaGalleriesTestingPath(path),
+                                        &gallery_info);
+    return gallery_prefs_->AddGallery(
+        gallery_info.device_id,
+        gallery_info.path,
+        type,
+        gallery_info.volume_label,
+        gallery_info.vendor_name,
+        gallery_info.model_name,
+        gallery_info.total_size_in_bytes,
+        gallery_info.last_attach_time,
+        audio_count, image_count, video_count);
+  }
+
+  MediaGalleryPrefId AddScanResult(const std::string& path, int audio_count,
+                                   int image_count, int video_count) {
+    return AddGallery(path, MediaGalleryPrefInfo::kScanResult, audio_count,
+                      image_count, video_count);
+  }
+
  private:
   MediaGalleriesScanResultDialog* CreateMockDialog(
       MediaGalleriesScanResultDialogController* controller) {
@@ -223,12 +230,9 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, EmptyDialog) {
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
   // Start with two scan results.
-  MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
-                                        MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId scan_id = AddScanResult("scan_id", 1, 0, 0);
+  MediaGalleryPrefId auto_id =
+      AddGallery("auto_id", MediaGalleryPrefInfo::kAutoDetected, 2, 0, 0);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Show the dialog, but cancel it.
@@ -240,38 +244,35 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
   // Show the dialog, unselect both and accept it.
   StartDialog();
   EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan1, false);
-  controller()->DidToggleGalleryId(scan2, false);
+  controller()->DidToggleGalleryId(scan_id, false);
+  controller()->DidToggleGalleryId(auto_id, false);
   controller()->DialogFinished(true);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Show the dialog, leave one selected and accept it.
   StartDialog();
   EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan1, false);
+  controller()->DidToggleGalleryId(scan_id, false);
   controller()->DialogFinished(true);
   MediaGalleryPrefIdSet permitted =
       gallery_prefs()->GalleriesForExtension(*extension());
   ASSERT_EQ(1U, permitted.size());
-  EXPECT_EQ(scan2, *permitted.begin());
+  EXPECT_EQ(auto_id, *permitted.begin());
 
   // Show the dialog, toggle the remaining entry twice and then accept it.
   StartDialog();
   EXPECT_EQ(1U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan1, false);
-  controller()->DidToggleGalleryId(scan1, true);
+  controller()->DidToggleGalleryId(scan_id, false);
+  controller()->DidToggleGalleryId(scan_id, true);
   controller()->DialogFinished(true);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 }
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
   // Start with two scan results.
-  MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
-                                        MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId scan_id = AddScanResult("scan_id", 1, 0, 0);
+  MediaGalleryPrefId auto_id =
+      AddGallery("auto_id", MediaGalleryPrefInfo::kAutoDetected, 2, 0, 0);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Show the dialog, but cancel it.
@@ -281,52 +282,39 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Blacklist one and try again.
-  gallery_prefs()->ForgetGalleryById(scan2);
+  gallery_prefs()->ForgetGalleryById(scan_id);
   StartDialog();
   EXPECT_EQ(1U, controller()->GetGalleryList().size());
   controller()->DialogFinished(false);
 
   // Adding it as a user gallery should change its type.
-  gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
-                                    MediaGalleryPrefInfo::kUserAdded);
+  AddGallery("scan_id", MediaGalleryPrefInfo::kUserAdded, 1, 0, 0);
   StartDialog();
-  EXPECT_EQ(1U, controller()->GetGalleryList().size());
+  EXPECT_EQ(2U, controller()->GetGalleryList().size());
 
   // Blacklisting the other while the dialog is open should remove it.
-  gallery_prefs()->ForgetGalleryById(scan1);
-  EXPECT_EQ(0U, controller()->GetGalleryList().size());
+  gallery_prefs()->ForgetGalleryById(auto_id);
+  EXPECT_EQ(1U, controller()->GetGalleryList().size());
   controller()->DialogFinished(false);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
   EXPECT_EQ(1, dialog_update_count_at_destruction());
 }
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
-  MediaGalleryPrefId selected = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("selected"),
-      MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("unselected"),
-      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId selected = AddScanResult("selected", 1, 0, 0);
+  MediaGalleryPrefId unselected = AddScanResult("unselected", 1, 0, 0);
   MediaGalleryPrefId selected_add_permission =
-      gallery_prefs()->AddGalleryByPath(
-          MakeMediaGalleriesTestingPath("selected_add_permission"),
-          MediaGalleryPrefInfo::kScanResult);
+      AddScanResult("selected_add_permission", 1, 0, 0);
   MediaGalleryPrefId unselected_add_permission =
-      gallery_prefs()->AddGalleryByPath(
-          MakeMediaGalleriesTestingPath("unselected_add_permission"),
-          MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId selected_removed = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("selected_removed"),
-      MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected_removed = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("unselected_removed"),
-      MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId selected_update = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("selected_update"),
-      MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId unselected_update = gallery_prefs()->AddGalleryByPath(
-      MakeMediaGalleriesTestingPath("unselected_update"),
-      MediaGalleryPrefInfo::kScanResult);
+      AddScanResult("unselected_add_permission", 1, 0, 0);
+  MediaGalleryPrefId selected_removed =
+      AddScanResult("selected_removed", 1, 0, 0);
+  MediaGalleryPrefId unselected_removed =
+      AddScanResult("unselected_removed", 1, 0, 0);
+  MediaGalleryPrefId selected_update =
+      AddScanResult("selected_update", 1, 0, 0);
+  MediaGalleryPrefId unselected_update =
+      AddScanResult("unselected_update", 1, 0, 0);
 
   gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("user"),
                                     MediaGalleryPrefInfo::kUserAdded);
@@ -412,12 +400,8 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
   // Start with two scan results.
-  MediaGalleryPrefId scan1 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan1"),
-                                        MediaGalleryPrefInfo::kScanResult);
-  MediaGalleryPrefId scan2 =
-      gallery_prefs()->AddGalleryByPath(MakeMediaGalleriesTestingPath("scan2"),
-                                        MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId scan1 = AddScanResult("scan1", 1, 0, 0);
+  MediaGalleryPrefId scan2 = AddScanResult("scan2", 2, 0, 0);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Remove one and then cancel.
@@ -452,12 +436,13 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
 }
 
 TEST_F(MediaGalleriesScanResultDialogControllerTest, SortOrder) {
-  // Intentionally our of order numerically and alphabetically.
-  MediaGalleryPrefId third = AddScanResult(gallery_prefs(), "third", 2, 2, 2);
-  MediaGalleryPrefId second = AddScanResult(gallery_prefs(), "second", 9, 0, 0);
-  MediaGalleryPrefId first = AddScanResult(gallery_prefs(), "first", 8, 2, 3);
-  MediaGalleryPrefId fifth = AddScanResult(gallery_prefs(), "abb", 3, 0, 0);
-  MediaGalleryPrefId fourth = AddScanResult(gallery_prefs(), "aaa", 3, 0, 0);
+  // Intentionally out of order numerically and alphabetically.
+  MediaGalleryPrefId third = AddScanResult("third", 2, 2, 2);
+  MediaGalleryPrefId second =
+      AddGallery("second", MediaGalleryPrefInfo::kAutoDetected, 9, 0, 0);
+  MediaGalleryPrefId first = AddScanResult("first", 8, 2, 3);
+  MediaGalleryPrefId fifth = AddScanResult("abb", 3, 0, 0);
+  MediaGalleryPrefId fourth = AddScanResult("aaa", 3, 0, 0);
 
   StartDialog();
   MediaGalleriesScanResultDialogController::OrderedScanResults results =

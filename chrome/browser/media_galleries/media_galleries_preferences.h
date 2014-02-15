@@ -105,9 +105,8 @@ struct MediaGalleryPrefInfo {
   bool volume_metadata_valid;
 
   // The following fields are populated with the audio, image, and video file
-  // counts from the last scan if |type| is kScanResult. For files where it is
-  // hard to determine the exact type, the file should be counted in all
-  // possible counts.
+  // counts from the last scan. For files where it is hard to determine the
+  // exact type, the file should be counted in all possible counts.
   int audio_count;
   int image_count;
   int video_count;

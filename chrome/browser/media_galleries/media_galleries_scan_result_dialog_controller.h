@@ -104,8 +104,8 @@ class MediaGalleriesScanResultDialogController
       MediaGalleriesScanResultDialogController*)> CreateDialogCallback;
   typedef std::map<MediaGalleryPrefId, ScanResult> ScanResults;
 
-  // Updates |results| from |preferences|. Will not add galleries from
-  // |ignore_list| onto |results|.
+  // Updates |scan_results| from |preferences|. Will not add galleries from
+  // |ignore_list| onto |scan_results|.
   static void UpdateScanResultsFromPreferences(
       MediaGalleriesPreferences* preferences,
       const extensions::Extension* extension,
@@ -129,8 +129,7 @@ class MediaGalleriesScanResultDialogController
   void OnPreferencesInitialized();
 
   // Used to keep the dialog in sync with the preferences.
-  void OnPreferenceUpdate(const std::string& extension_id,
-                          MediaGalleryPrefId pref_id);
+  void OnPreferenceUpdate(const std::string& extension_id);
 
   // Used to keep the dialog in sync with attached and detached devices.
   void OnRemovableDeviceUpdate(const std::string device_id);
