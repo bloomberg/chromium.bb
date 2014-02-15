@@ -86,7 +86,7 @@ TEST(AlignedMemoryTest, DynamicAllocation) {
 }
 
 TEST(AlignedMemoryTest, ScopedDynamicAllocation) {
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> p(
+  scoped_ptr<float, base::AlignedFreeDeleter> p(
       static_cast<float*>(base::AlignedAlloc(8, 8)));
   EXPECT_TRUE(p.get());
   EXPECT_ALIGNED(p.get(), 8);

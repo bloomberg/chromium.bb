@@ -101,9 +101,9 @@ inline void AlignedFree(void* ptr) {
 #endif
 }
 
-// Helper class for use with scoped_ptr_malloc.
-class BASE_EXPORT ScopedPtrAlignedFree {
- public:
+// Deleter for use with scoped_ptr. E.g., use as
+//   scoped_ptr<Foo, base::AlignedFreeDeleter> foo;
+struct AlignedFreeDeleter {
   inline void operator()(void* ptr) const {
     AlignedFree(ptr);
   }

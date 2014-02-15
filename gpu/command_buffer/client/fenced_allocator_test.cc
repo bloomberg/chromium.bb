@@ -420,7 +420,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
   }
 
   scoped_ptr<FencedAllocatorWrapper> allocator_;
-  scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
+  scoped_ptr<char, base::AlignedFreeDeleter> buffer_;
 };
 
 // Checks basic alloc and free.

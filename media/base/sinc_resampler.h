@@ -121,12 +121,12 @@ class MEDIA_EXPORT SincResampler {
   // Contains kKernelOffsetCount kernels back-to-back, each of size kKernelSize.
   // The kernel offsets are sub-sample shifts of a windowed sinc shifted from
   // 0.0 to 1.0 sample.
-  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_storage_;
-  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_pre_sinc_storage_;
-  scoped_ptr<float[], base::ScopedPtrAlignedFree> kernel_window_storage_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_storage_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_pre_sinc_storage_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_window_storage_;
 
   // Data from the source is copied into this buffer for each processing pass.
-  scoped_ptr<float[], base::ScopedPtrAlignedFree> input_buffer_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> input_buffer_;
 
   // Pointers to the various regions inside |input_buffer_|.  See the diagram at
   // the top of the .cc file for more information.

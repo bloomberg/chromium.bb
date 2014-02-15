@@ -48,8 +48,8 @@ class VectorMathTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_vector_;
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> output_vector_;
+  scoped_ptr<float, base::AlignedFreeDeleter> input_vector_;
+  scoped_ptr<float, base::AlignedFreeDeleter> output_vector_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorMathTest);
 };
@@ -241,7 +241,7 @@ class EWMATestScenario {
 
  private:
   float initial_value_;
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data_;
+  scoped_ptr<float, base::AlignedFreeDeleter> data_;
   int data_len_;
   float smoothing_factor_;
   float expected_final_avg_;

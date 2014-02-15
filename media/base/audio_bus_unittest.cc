@@ -138,7 +138,7 @@ TEST_F(AudioBusTest, WrapMemory) {
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
       kFrameCount);
   int data_size = AudioBus::CalculateMemorySize(params);
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data(static_cast<float*>(
+  scoped_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
       base::AlignedAlloc(data_size, AudioBus::kChannelAlignment)));
 
   // Fill the memory with a test value we can check for after wrapping.
@@ -188,7 +188,7 @@ TEST_F(AudioBusTest, CopyTo) {
   {
     SCOPED_TRACE("Wrapped Memory");
     // Try a copy to an AudioBus wrapping a memory block.
-    scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data(
+    scoped_ptr<float, base::AlignedFreeDeleter> data(
         static_cast<float*>(base::AlignedAlloc(
             AudioBus::CalculateMemorySize(params),
             AudioBus::kChannelAlignment)));

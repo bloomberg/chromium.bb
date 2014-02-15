@@ -308,7 +308,7 @@ TEST(WebSocketFrameTest, MaskPayloadAlignment) {
   };
   COMPILE_ASSERT(arraysize(kTestInput) == arraysize(kTestOutput),
                  output_and_input_arrays_have_the_same_length);
-  scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> scratch(
+  scoped_ptr<char, base::AlignedFreeDeleter> scratch(
       static_cast<char*>(
           base::AlignedAlloc(kScratchBufferSize, kMaxVectorAlignment)));
   WebSocketMaskingKey masking_key;

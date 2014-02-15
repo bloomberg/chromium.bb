@@ -74,8 +74,8 @@ class VectorMathPerfTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_vector_;
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> output_vector_;
+  scoped_ptr<float, base::AlignedFreeDeleter> input_vector_;
+  scoped_ptr<float, base::AlignedFreeDeleter> output_vector_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorMathPerfTest);
 };

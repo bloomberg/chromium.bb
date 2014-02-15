@@ -130,7 +130,7 @@ class MEDIA_EXPORT AudioBuffer
   base::TimeDelta duration_;
 
   // Contiguous block of channel data.
-  scoped_ptr_malloc<uint8, base::ScopedPtrAlignedFree> data_;
+  scoped_ptr<uint8, base::AlignedFreeDeleter> data_;
 
   // For planar data, points to each channels data.
   std::vector<uint8*> channel_data_;

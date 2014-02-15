@@ -118,7 +118,7 @@ class MEDIA_EXPORT AudioBus {
   void BuildChannelData(int channels, int aligned_frame, float* data);
 
   // Contiguous block of channel memory.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data_;
+  scoped_ptr<float, base::AlignedFreeDeleter> data_;
 
   std::vector<float*> channel_data_;
   int frames_;

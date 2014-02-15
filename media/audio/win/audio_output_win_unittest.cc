@@ -597,7 +597,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
  private:
   base::SyncSocket* socket_;
   int data_size_;
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data_;
+  scoped_ptr<float, base::AlignedFreeDeleter> data_;
   scoped_ptr<AudioBus> audio_bus_;
 };
 
@@ -620,7 +620,7 @@ DWORD __stdcall SyncSocketThread(void* context) {
   SyncThreadContext& ctx = *(reinterpret_cast<SyncThreadContext*>(context));
 
   // Setup AudioBus wrapping data we'll pass over the sync socket.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> data(static_cast<float*>(
+  scoped_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
       base::AlignedAlloc(ctx.packet_size_bytes, AudioBus::kChannelAlignment)));
   scoped_ptr<AudioBus> audio_bus = AudioBus::WrapMemory(
       ctx.channels, ctx.frames, data.get());

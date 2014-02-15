@@ -148,9 +148,9 @@ class MEDIA_EXPORT DecoderBuffer
   base::TimeDelta duration_;
 
   int size_;
-  scoped_ptr<uint8, base::ScopedPtrAlignedFree> data_;
+  scoped_ptr<uint8, base::AlignedFreeDeleter> data_;
   int side_data_size_;
-  scoped_ptr<uint8, base::ScopedPtrAlignedFree> side_data_;
+  scoped_ptr<uint8, base::AlignedFreeDeleter> side_data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
   base::TimeDelta discard_padding_;
 

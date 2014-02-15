@@ -70,7 +70,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   void MarkDataAsConsumedNoLock(size_t num_bytes);
 
   // The members below are protected by |DataPipe|'s |lock_|:
-  scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
+  scoped_ptr<char, base::AlignedFreeDeleter> buffer_;
   // Circular buffer.
   size_t start_index_;
   size_t current_num_bytes_;
