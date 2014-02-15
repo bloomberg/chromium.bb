@@ -35,14 +35,14 @@ talk_base::SocketAddress FakeUDPPacketSocket::GetRemoteAddress() const {
 }
 
 int FakeUDPPacketSocket::Send(const void *data, size_t data_size,
-                              talk_base::DiffServCodePoint dscp) {
+                              const talk_base::PacketOptions& options) {
   DCHECK(CalledOnValidThread());
-  return SendTo(data, data_size, remote_address_, dscp);
+  return SendTo(data, data_size, remote_address_, options);
 }
 
 int FakeUDPPacketSocket::SendTo(const void *data, size_t data_size,
                                 const talk_base::SocketAddress& address,
-                                talk_base::DiffServCodePoint dscp) {
+                                const talk_base::PacketOptions& options) {
   DCHECK(CalledOnValidThread());
 
   if (state_ == IS_CLOSED) {

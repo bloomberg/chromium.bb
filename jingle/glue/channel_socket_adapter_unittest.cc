@@ -36,7 +36,7 @@ class MockTransportChannel : public cricket::TransportChannel {
 
   MOCK_METHOD4(SendPacket, int(const char* data,
                                size_t len,
-                               talk_base::DiffServCodePoint dscp,
+                               const talk_base::PacketOptions& options,
                                int flags));
   MOCK_METHOD2(SetOption, int(talk_base::Socket::Option opt, int value));
   MOCK_METHOD0(GetError, int());
@@ -111,8 +111,7 @@ TEST_F(TransportChannelSocketAdapterTest, ReadClose) {
 TEST_F(TransportChannelSocketAdapterTest, Write) {
   scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
-  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize,
-                                   talk_base::DSCP_NO_CHANGE, 0))
+  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize, _, 0))
       .WillOnce(Return(kTestDataSize));
 
   int result = target_->Write(buffer.get(), kTestDataSize, callback_);
@@ -124,8 +123,7 @@ TEST_F(TransportChannelSocketAdapterTest, Write) {
 TEST_F(TransportChannelSocketAdapterTest, WritePending) {
   scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
-  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize,
-                                   talk_base::DSCP_NO_CHANGE, 0))
+  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize, _, 0))
       .Times(1)
       .WillOnce(Return(SOCKET_ERROR));
 

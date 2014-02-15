@@ -76,9 +76,9 @@ int TransportChannelSocketAdapter::Write(
   }
 
   int result;
+  talk_base::PacketOptions options;
   if (channel_->writable()) {
-    result = channel_->SendPacket(buffer->data(), buffer_size,
-                                  talk_base::DSCP_NO_CHANGE);
+    result = channel_->SendPacket(buffer->data(), buffer_size, options);
     if (result < 0) {
       result = net::MapSystemError(channel_->GetError());
 
@@ -172,9 +172,10 @@ void TransportChannelSocketAdapter::OnWritableState(
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   // Try to send the packet if there is a pending write.
   if (!write_callback_.is_null()) {
+    talk_base::PacketOptions options;
     int result = channel_->SendPacket(write_buffer_->data(),
                                       write_buffer_size_,
-                                      talk_base::DSCP_NO_CHANGE);
+                                      options);
     if (result < 0)
       result = net::MapSystemError(channel_->GetError());
 

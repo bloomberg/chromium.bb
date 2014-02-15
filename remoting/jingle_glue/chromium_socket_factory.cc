@@ -47,10 +47,10 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
   virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void* data, size_t data_size,
-                   talk_base::DiffServCodePoint dscp) OVERRIDE;
+                   const talk_base::PacketOptions& options) OVERRIDE;
   virtual int SendTo(const void* data, size_t data_size,
                      const talk_base::SocketAddress& address,
-                     talk_base::DiffServCodePoint dscp) OVERRIDE;
+                     const talk_base::PacketOptions& options) OVERRIDE;
   virtual int Close() OVERRIDE;
   virtual State GetState() const OVERRIDE;
   virtual int GetOption(talk_base::Socket::Option option, int* value) OVERRIDE;
@@ -163,7 +163,7 @@ talk_base::SocketAddress UdpPacketSocket::GetRemoteAddress() const {
 }
 
 int UdpPacketSocket::Send(const void* data, size_t data_size,
-                          talk_base::DiffServCodePoint dscp) {
+                          const talk_base::PacketOptions& options) {
   // UDP sockets are not connected - this method should never be called.
   NOTREACHED();
   return EWOULDBLOCK;
@@ -171,7 +171,7 @@ int UdpPacketSocket::Send(const void* data, size_t data_size,
 
 int UdpPacketSocket::SendTo(const void* data, size_t data_size,
                             const talk_base::SocketAddress& address,
-                            talk_base::DiffServCodePoint dscp) {
+                            const talk_base::PacketOptions& options) {
   if (state_ != STATE_BOUND) {
     NOTREACHED();
     return EINVAL;

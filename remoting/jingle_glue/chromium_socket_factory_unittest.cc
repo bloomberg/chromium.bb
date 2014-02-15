@@ -65,10 +65,10 @@ TEST_F(ChromiumSocketFactoryTest, SendAndReceive) {
 
   std::string test_packet("TEST PACKET");
   int attempts = 0;
+  talk_base::PacketOptions options;
   while (last_packet_.empty() && attempts++ < kMaxAttempts) {
     sending_socket->SendTo(test_packet.data(), test_packet.size(),
-                           socket_->GetLocalAddress(),
-                           talk_base::DSCP_NO_CHANGE);
+                           socket_->GetLocalAddress(), options);
     message_loop_.PostDelayedTask(FROM_HERE, run_loop_.QuitClosure(),
                                   kAttemptPeriod);
     run_loop_.Run();

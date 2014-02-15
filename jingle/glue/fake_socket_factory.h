@@ -39,10 +39,10 @@ class FakeUDPPacketSocket : public talk_base::AsyncPacketSocket,
   virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
   virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void *pv, size_t cb,
-                   talk_base::DiffServCodePoint dscp) OVERRIDE;
+                   const talk_base::PacketOptions& options) OVERRIDE;
   virtual int SendTo(const void *pv, size_t cb,
                      const talk_base::SocketAddress& addr,
-                     talk_base::DiffServCodePoint dscp) OVERRIDE;
+                     const talk_base::PacketOptions& options) OVERRIDE;
   virtual int Close() OVERRIDE;
   virtual State GetState() const OVERRIDE;
   virtual int GetOption(talk_base::Socket::Option opt, int* value) OVERRIDE;
