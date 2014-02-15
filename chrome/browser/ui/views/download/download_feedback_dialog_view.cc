@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,6 +92,8 @@ bool DownloadFeedbackDialogView::OnButtonClicked(bool accepted) {
      static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
   DCHECK(data);
   data->set_currently_shown(false);
+
+  UMA_HISTOGRAM_BOOLEAN("Download.FeedbackDialogEnabled", accepted);
 
   callback_.Run(accepted);
   return true;

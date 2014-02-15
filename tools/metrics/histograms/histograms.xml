@@ -3203,6 +3203,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.FeedbackDialogEnabled" enum="BooleanEnabled">
+  <summary>
+    Whether the user enables dangerous download feedback reporting after viewing
+    the opt-in dialog.
+  </summary>
+</histogram>
+
 <histogram name="Download.FilePickerResult" enum="DownloadFilePickerResult">
   <summary>
     How the user interacts with the file chooser when doing a &quot;Save
