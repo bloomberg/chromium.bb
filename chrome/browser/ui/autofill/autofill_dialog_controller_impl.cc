@@ -3326,9 +3326,9 @@ bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
   if (!autofill::IsValidCreditCardExpirationDate(year, month, now))
     return false;
 
-  if (IsPayingWithWallet() && IsEditingExistingData(SECTION_CC_BILLING)) {
-    const wallet::WalletItems::MaskedInstrument* instrument =
-        ActiveInstrument();
+  const wallet::WalletItems::MaskedInstrument* instrument =
+      ActiveInstrument();
+  if (instrument) {
     const std::string& locale = g_browser_process->GetApplicationLocale();
     int month_int;
     if (base::StringToInt(month, &month_int) &&
