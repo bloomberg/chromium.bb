@@ -140,7 +140,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 // static
 void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      content::WebContents* web_contents,
-                                     TranslateBubbleModel::ViewState type,
+                                     TranslateTabHelper::TranslateStep step,
                                      TranslateErrors::Type error_type) {
   if (IsShowing()) {
     // When the user reads the advanced setting panel, the bubble should not be
@@ -150,10 +150,13 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
       return;
     }
-    if (type != TranslateBubbleModel::VIEW_STATE_ERROR)
-      translate_bubble_view_->SwitchView(type);
-    else
+    if (step != TranslateTabHelper::TRANSLATE_ERROR) {
+      TranslateBubbleModel::ViewState state =
+          TranslateBubbleModelImpl::TranslateStepToViewState(step);
+      translate_bubble_view_->SwitchView(state);
+    } else {
       translate_bubble_view_->SwitchToErrorView(error_type);
+    }
     return;
   }
 
@@ -164,7 +167,7 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
   scoped_ptr<TranslateUIDelegate> ui_delegate(
       new TranslateUIDelegate(web_contents, source_language, target_language));
   scoped_ptr<TranslateBubbleModel> model(
-      new TranslateBubbleModelImpl(type, ui_delegate.Pass()));
+      new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,
                                                       model.Pass(),
                                                       error_type,

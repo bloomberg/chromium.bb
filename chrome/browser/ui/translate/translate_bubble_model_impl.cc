@@ -9,13 +9,31 @@
 #include "components/translate/core/browser/language_state.h"
 
 TranslateBubbleModelImpl::TranslateBubbleModelImpl(
-    TranslateBubbleModel::ViewState view_type,
+    TranslateTabHelper::TranslateStep step,
     scoped_ptr<TranslateUIDelegate> ui_delegate)
     : ui_delegate_(ui_delegate.Pass()),
-      view_state_transition_(view_type) {
-}
+      view_state_transition_(TranslateStepToViewState(step)) {}
 
 TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {
+}
+
+// static
+TranslateBubbleModel::ViewState
+TranslateBubbleModelImpl::TranslateStepToViewState(
+    TranslateTabHelper::TranslateStep step) {
+  switch (step) {
+    case TranslateTabHelper::BEFORE_TRANSLATE:
+      return TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE;
+    case TranslateTabHelper::TRANSLATING:
+      return TranslateBubbleModel::VIEW_STATE_TRANSLATING;
+    case TranslateTabHelper::AFTER_TRANSLATE:
+      return TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
+    case TranslateTabHelper::TRANSLATE_ERROR:
+      return TranslateBubbleModel::VIEW_STATE_ERROR;
+  }
+
+  NOTREACHED();
+  return TranslateBubbleModel::VIEW_STATE_ERROR;
 }
 
 TranslateBubbleModel::ViewState TranslateBubbleModelImpl::GetViewState() const {

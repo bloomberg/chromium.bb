@@ -56,26 +56,27 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 // static
 void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
                                       content::WebContents* web_contents,
-                                      Type infobar_type,
+                                      TranslateTabHelper::TranslateStep step,
                                       const std::string& original_language,
                                       const std::string& target_language,
                                       TranslateErrors::Type error_type,
                                       PrefService* prefs) {
   // Check preconditions.
-  if (infobar_type != TRANSLATION_ERROR) {
+  if (step != TranslateTabHelper::TRANSLATE_ERROR) {
     DCHECK(TranslateDownloadManager::IsSupportedLanguage(target_language));
     if (!TranslateDownloadManager::IsSupportedLanguage(original_language)) {
       // The original language can only be "unknown" for the "translating"
       // infobar, which is the case when the user started a translation from the
       // context menu.
-      DCHECK(infobar_type == TRANSLATING || infobar_type == AFTER_TRANSLATE);
+      DCHECK(step == TranslateTabHelper::TRANSLATING ||
+             step == TranslateTabHelper::AFTER_TRANSLATE);
       DCHECK_EQ(translate::kUnknownLanguageCode, original_language);
     }
   }
 
   // Do not create the after translate infobar if we are auto translating.
-  if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
-      (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
+  if ((step == TranslateTabHelper::AFTER_TRANSLATE) ||
+      (step == TranslateTabHelper::TRANSLATING)) {
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents);
     if (!translate_tab_helper ||
@@ -101,7 +102,7 @@ void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
   // Add the new delegate.
   scoped_ptr<InfoBar> infobar(CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
-          web_contents, infobar_type, old_delegate, original_language,
+          web_contents, step, old_delegate, original_language,
           target_language, error_type, prefs))));
   if (old_delegate)
     infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
@@ -193,14 +194,14 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
 }
 
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
-  if (infobar_type_ == TRANSLATING) {
+  if (step_ == TranslateTabHelper::TRANSLATING) {
     base::string16 target_language_name =
         language_name_at(target_language_index());
     return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
                                       target_language_name);
   }
 
-  DCHECK_EQ(TRANSLATION_ERROR, infobar_type_);
+  DCHECK_EQ(TranslateTabHelper::TRANSLATE_ERROR, step_);
   UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar",
                             error_type_,
                             TranslateErrors::TRANSLATE_ERROR_MAX);
@@ -231,8 +232,8 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
 }
 
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
-  if (infobar_type_ != TRANSLATION_ERROR) {
-    DCHECK_EQ(TRANSLATING, infobar_type_);
+  if (step_ != TranslateTabHelper::TRANSLATE_ERROR) {
+    DCHECK_EQ(TranslateTabHelper::TRANSLATING, step_);
   } else if ((error_type_ != TranslateErrors::IDENTICAL_LANGUAGES) &&
              (error_type_ != TranslateErrors::UNKNOWN_LANGUAGE)) {
     return l10n_util::GetStringUTF16(
@@ -243,7 +244,7 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
 }
 
 void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
-  DCHECK_EQ(TRANSLATION_ERROR, infobar_type_);
+  DCHECK_EQ(TranslateTabHelper::TRANSLATE_ERROR, step_);
   if (error_type_ == TranslateErrors::UNSUPPORTED_LANGUAGE) {
     RevertTranslation();
     return;
@@ -258,14 +259,14 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 }
 
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
-  DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
+  DCHECK_EQ(TranslateTabHelper::BEFORE_TRANSLATE, step_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_->GetTranslationDeniedCount(original_language_code()) >=
           kNeverTranslateMinCount);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
-  DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
+  DCHECK_EQ(TranslateTabHelper::BEFORE_TRANSLATE, step_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_->GetTranslationAcceptedCount(original_language_code()) >=
           kAlwaysTranslateMinCount);
@@ -315,19 +316,19 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     content::WebContents* web_contents,
-    Type infobar_type,
+    TranslateTabHelper::TranslateStep step,
     TranslateInfoBarDelegate* old_delegate,
     const std::string& original_language,
     const std::string& target_language,
     TranslateErrors::Type error_type,
     PrefService* prefs)
     : InfoBarDelegate(),
-      infobar_type_(infobar_type),
+      step_(step),
       background_animation_(NONE),
       ui_delegate_(web_contents, original_language, target_language),
       error_type_(error_type),
       prefs_(TranslateTabHelper::CreateTranslatePrefs(prefs)) {
-  DCHECK_NE((infobar_type_ == TRANSLATION_ERROR),
+  DCHECK_NE((step_ == TranslateTabHelper::TRANSLATE_ERROR),
             (error_type_ == TranslateErrors::NONE));
 
   if (old_delegate && (old_delegate->is_error() != is_error()))
@@ -338,7 +339,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
 // files.
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
-  if (infobar_type_ != BEFORE_TRANSLATE)
+  if (step_ != TranslateTabHelper::BEFORE_TRANSLATE)
     return;
 
   // The user closed the infobar without clicking the translate button.

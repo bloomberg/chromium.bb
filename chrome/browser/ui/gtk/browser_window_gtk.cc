@@ -1035,7 +1035,7 @@ void BrowserWindowGtk::ShowBookmarkAppBubble(
 
 void BrowserWindowGtk::ShowTranslateBubble(
     content::WebContents* contents,
-    TranslateBubbleModel::ViewState view_state,
+    TranslateTabHelper::TranslateStep step,
     TranslateErrors::Type error_type) {
   NOTIMPLEMENTED();
 }

@@ -140,10 +140,9 @@ class BrowserWindowGtk
   virtual void ShowBookmarkAppBubble(
       const WebApplicationInfo& web_app_info,
       const std::string& extension_id) OVERRIDE;
-  virtual void ShowTranslateBubble(
-      content::WebContents* contents,
-      TranslateBubbleModel::ViewState view_state,
-      TranslateErrors::Type error_type) OVERRIDE;
+  virtual void ShowTranslateBubble(content::WebContents* contents,
+                                   TranslateTabHelper::TranslateStep step,
+                                   TranslateErrors::Type error_type) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,

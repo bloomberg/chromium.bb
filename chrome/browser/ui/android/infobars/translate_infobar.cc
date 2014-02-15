@@ -45,7 +45,7 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ToJavaArrayOfStrings(env, languages);
   return Java_TranslateInfoBarDelegate_showTranslateInfoBar(
       env, java_translate_delegate_.obj(), reinterpret_cast<intptr_t>(this),
-      delegate->infobar_type(), delegate->original_language_index(),
+      delegate->translate_step(), delegate->original_language_index(),
       delegate->target_language_index(), delegate->ShouldAlwaysTranslate(),
       ShouldDisplayNeverTranslateInfoBarOnCancel(), java_languages.obj());
 }
@@ -73,13 +73,12 @@ void TranslateInfoBar::ProcessButton(int action,
 
 void TranslateInfoBar::PassJavaInfoBar(InfoBarAndroid* source) {
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  DCHECK_NE(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
-            delegate->infobar_type());
+  DCHECK_NE(TranslateTabHelper::BEFORE_TRANSLATE, delegate->translate_step());
 
   // Ask the former bar to transfer ownership to us.
   DCHECK(source != NULL);
   static_cast<TranslateInfoBar*>(source)->TransferOwnership(
-      this, delegate->infobar_type());
+      this, delegate->translate_step());
 }
 
 void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
@@ -105,7 +104,7 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
 
 void TranslateInfoBar::TransferOwnership(
     TranslateInfoBar* destination,
-    TranslateInfoBarDelegate::Type new_type) {
+    TranslateTabHelper::TranslateStep new_type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (Java_TranslateInfoBarDelegate_changeTranslateInfoBarTypeAndPointer(
       env, java_translate_delegate_.obj(),
@@ -122,10 +121,8 @@ void TranslateInfoBar::SetJavaDelegate(jobject delegate) {
 
 bool TranslateInfoBar::ShouldDisplayNeverTranslateInfoBarOnCancel() {
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  return
-      (delegate->infobar_type() ==
-          TranslateInfoBarDelegate::BEFORE_TRANSLATE) &&
-      delegate->ShouldShowNeverTranslateShortcut();
+  return (delegate->translate_step() == TranslateTabHelper::BEFORE_TRANSLATE) &&
+         delegate->ShouldShowNeverTranslateShortcut();
 }
 
 TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() {

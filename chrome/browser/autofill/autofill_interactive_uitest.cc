@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -840,8 +841,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
       InfoBarService::FromWebContents(GetWebContents())->infobar_at(0)->
           delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
-  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
-            delegate->infobar_type());
+  EXPECT_EQ(TranslateTabHelper::BEFORE_TRANSLATE, delegate->translate_step());
 
   // Simulate translation button press.
   delegate->Translate();

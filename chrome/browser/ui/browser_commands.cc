@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -699,16 +698,15 @@ void Translate(Browser* browser) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
 
-  TranslateBubbleModel::ViewState view_state =
-      TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE;
+  TranslateTabHelper::TranslateStep step = TranslateTabHelper::BEFORE_TRANSLATE;
   if (translate_tab_helper) {
     if (translate_tab_helper->GetLanguageState().translation_pending())
-      view_state = TranslateBubbleModel::VIEW_STATE_TRANSLATING;
+      step = TranslateTabHelper::TRANSLATING;
     else if (translate_tab_helper->GetLanguageState().IsPageTranslated())
-      view_state = TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
+      step = TranslateTabHelper::AFTER_TRANSLATE;
   }
-  browser->window()->ShowTranslateBubble(web_contents, view_state,
-                                         TranslateErrors::NONE);
+  browser->window()->ShowTranslateBubble(
+      web_contents, step, TranslateErrors::NONE);
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {

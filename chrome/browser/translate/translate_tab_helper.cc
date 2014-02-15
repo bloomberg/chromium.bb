@@ -23,62 +23,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
-namespace {
-
-// Converts from TranslateTabHelper::TranslateStep to
-// TranslateBubbleModel::ViewState.
-TranslateBubbleModel::ViewState BubbleViewStateFromStep(
-    TranslateTabHelper::TranslateStep step,
-    TranslateErrors::Type error_type) {
-  if (error_type != TranslateErrors::NONE)
-    return TranslateBubbleModel::VIEW_STATE_ERROR;
-
-  switch (step) {
-    case TranslateTabHelper::BEFORE_TRANSLATE:
-      return TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE;
-    case TranslateTabHelper::TRANSLATING:
-      return TranslateBubbleModel::VIEW_STATE_TRANSLATING;
-    case TranslateTabHelper::AFTER_TRANSLATE:
-      return TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
-    case TranslateTabHelper::TRANSLATE_ERROR:
-      NOTREACHED() << "error_type should not be NONE";
-      return TranslateBubbleModel::VIEW_STATE_ERROR;
-  }
-
-  // This return statement is here to avoid some compilers to incorrectly
-  // complain about reaching the end of a non-void function.
-  NOTREACHED();
-  return TranslateBubbleModel::VIEW_STATE_ERROR;
-}
-
-// Converts from TranslateTabHelper::TranslateStep to
-// TranslateInfoBarDelegate::Type.
-TranslateInfoBarDelegate::Type InfobarTypeFromStep(
-    TranslateTabHelper::TranslateStep step,
-    TranslateErrors::Type error_type) {
-  if (error_type != TranslateErrors::NONE)
-    return TranslateInfoBarDelegate::TRANSLATION_ERROR;
-
-  switch (step) {
-    case TranslateTabHelper::BEFORE_TRANSLATE:
-      return TranslateInfoBarDelegate::BEFORE_TRANSLATE;
-    case TranslateTabHelper::TRANSLATING:
-      return TranslateInfoBarDelegate::TRANSLATING;
-    case TranslateTabHelper::AFTER_TRANSLATE:
-      return TranslateInfoBarDelegate::AFTER_TRANSLATE;
-    case TranslateTabHelper::TRANSLATE_ERROR:
-      NOTREACHED() << "error_type should not be NONE";
-      return TranslateInfoBarDelegate::TRANSLATION_ERROR;
-  }
-
-  // This return statement is here to avoid some compilers to incorrectly
-  // complain about reaching the end of a non-void function.
-  NOTREACHED();
-  return TranslateInfoBarDelegate::TRANSLATION_ERROR;
-}
-
-}  // namespace
-
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 
 TranslateTabHelper::TranslateTabHelper(content::WebContents* web_contents)
@@ -116,17 +60,18 @@ void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
                                          const std::string source_language,
                                          const std::string target_language,
                                          TranslateErrors::Type error_type) {
+  if (error_type != TranslateErrors::NONE)
+    step = TranslateTabHelper::TRANSLATE_ERROR;
+
   if (TranslateService::IsTranslateBubbleEnabled()) {
     // Bubble UI.
-    TranslateBubbleModel::ViewState view_state =
-        BubbleViewStateFromStep(step, error_type);
-    if (view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
+    if (step == BEFORE_TRANSLATE) {
       // TODO: Move this logic out of UI code.
       GetLanguageState().SetTranslateEnabled(true);
       if (!GetLanguageState().HasLanguageChanged())
         return;
     }
-    ShowBubble(web_contents, view_state, error_type);
+    ShowBubble(web_contents, step, error_type);
     return;
   }
 
@@ -134,20 +79,13 @@ void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
-  PrefService* prefs = original_profile->GetPrefs();
-
-  TranslateInfoBarDelegate::Type infobar_type =
-      InfobarTypeFromStep(step, error_type);
-  bool replace_existing =
-      infobar_type != TranslateInfoBarDelegate::BEFORE_TRANSLATE;
-
-  TranslateInfoBarDelegate::Create(replace_existing,
+  TranslateInfoBarDelegate::Create(step != BEFORE_TRANSLATE,
                                    web_contents,
-                                   infobar_type,
+                                   step,
                                    source_language,
                                    target_language,
                                    error_type,
-                                   prefs);
+                                   original_profile->GetPrefs());
 }
 
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
@@ -198,7 +136,7 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
 }
 
 void TranslateTabHelper::ShowBubble(content::WebContents* web_contents,
-                                    TranslateBubbleModel::ViewState view_state,
+                                    TranslateTabHelper::TranslateStep step,
                                     TranslateErrors::Type error_type) {
 // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -207,7 +145,7 @@ void TranslateTabHelper::ShowBubble(content::WebContents* web_contents,
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    TranslateBubbleFactory::Show(NULL, web_contents, view_state, error_type);
+    TranslateBubbleFactory::Show(NULL, web_contents, step, error_type);
     return;
   }
 
@@ -225,14 +163,14 @@ void TranslateTabHelper::ShowBubble(content::WebContents* web_contents,
   }
 
   // During auto-translating, the bubble should not be shown.
-  if (view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
-      view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
+  if (step == TranslateTabHelper::TRANSLATING ||
+      step == TranslateTabHelper::AFTER_TRANSLATE) {
     if (GetLanguageState().InTranslateNavigation())
       return;
   }
 
   TranslateBubbleFactory::Show(
-      browser->window(), web_contents, view_state, error_type);
+      browser->window(), web_contents, step, error_type);
 #else
   NOTREACHED();
 #endif

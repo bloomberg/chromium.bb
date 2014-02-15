@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
@@ -23,9 +24,9 @@
 // static
 scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  if (delegate->infobar_type() == BEFORE_TRANSLATE)
+  if (delegate->translate_step() == TranslateTabHelper::BEFORE_TRANSLATE)
     return scoped_ptr<InfoBar>(new BeforeTranslateInfoBar(delegate.Pass()));
-  if (delegate->infobar_type() == AFTER_TRANSLATE)
+  if (delegate->translate_step() == TranslateTabHelper::AFTER_TRANSLATE)
     return scoped_ptr<InfoBar>(new AfterTranslateInfoBar(delegate.Pass()));
   return scoped_ptr<InfoBar>(new TranslateMessageInfoBar(delegate.Pass()));
 }

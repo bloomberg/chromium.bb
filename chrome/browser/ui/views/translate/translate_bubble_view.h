@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/translate/language_combobox_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -19,7 +20,6 @@
 #include "ui/views/controls/link_listener.h"
 
 class PrefService;
-class TranslateBubbleModel;
 
 namespace views {
 class Checkbox;
@@ -40,7 +40,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   // Shows the Translate bubble.
   static void ShowBubble(views::View* anchor_view,
                          content::WebContents* web_contents,
-                         TranslateBubbleModel::ViewState type,
+                         TranslateTabHelper::TranslateStep step,
                          TranslateErrors::Type error_type);
 
   // If true, the Translate bubble is being shown.

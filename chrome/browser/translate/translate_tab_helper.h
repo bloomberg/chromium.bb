@@ -80,7 +80,7 @@ class TranslateTabHelper
 
   // Shows the translate bubble.
   void ShowBubble(content::WebContents* web_contents,
-                  TranslateBubbleModel::ViewState view_state,
+                  TranslateStep step,
                   TranslateErrors::Type error_type);
 
   ContentTranslateDriver translate_driver_;

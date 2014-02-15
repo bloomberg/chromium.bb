@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/after_translate_infobar_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/before_translate_infobar_gtk.h"
@@ -24,9 +25,9 @@
 // static
 scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  if (delegate->infobar_type() == BEFORE_TRANSLATE)
+  if (delegate->translate_step() == TranslateTabHelper::BEFORE_TRANSLATE)
     return scoped_ptr<InfoBar>(new BeforeTranslateInfoBar(delegate.Pass()));
-  if (delegate->infobar_type() == AFTER_TRANSLATE)
+  if (delegate->translate_step() == TranslateTabHelper::AFTER_TRANSLATE)
     return scoped_ptr<InfoBar>(new AfterTranslateInfoBar(delegate.Pass()));
   return scoped_ptr<InfoBar>(new TranslateMessageInfoBar(delegate.Pass()));
 }

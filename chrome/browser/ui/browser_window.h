@@ -7,12 +7,12 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
-#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
@@ -230,10 +230,9 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowBookmarkPrompt() {}
 
   // Shows the translate bubble.
-  virtual void ShowTranslateBubble(
-      content::WebContents* contents,
-      TranslateBubbleModel::ViewState view_state,
-      TranslateErrors::Type error_type) = 0;
+  virtual void ShowTranslateBubble(content::WebContents* contents,
+                                   TranslateTabHelper::TranslateStep step,
+                                   TranslateErrors::Type error_type) = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {

@@ -1222,17 +1222,17 @@ void BrowserView::ShowBookmarkPrompt() {
   GetLocationBarView()->ShowBookmarkPrompt();
 }
 
-void BrowserView::ShowTranslateBubble(
-    content::WebContents* web_contents,
-    TranslateBubbleModel::ViewState view_state,
-    TranslateErrors::Type error_type) {
+void BrowserView::ShowTranslateBubble(content::WebContents* web_contents,
+                                      TranslateTabHelper::TranslateStep step,
+                                      TranslateErrors::Type error_type) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
   LanguageState& language_state = translate_tab_helper->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
-  TranslateBubbleView::ShowBubble(GetToolbarView()->GetTranslateBubbleAnchor(),
-                                  web_contents, view_state, error_type);
+  TranslateBubbleView::ShowBubble(
+      GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
+      error_type);
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

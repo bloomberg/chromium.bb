@@ -485,9 +485,9 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
 }
 
 void BrowserWindowCocoa::ShowTranslateBubble(
-      content::WebContents* contents,
-      TranslateBubbleModel::ViewState view_state,
-      TranslateErrors::Type error_type) {
+    content::WebContents* contents,
+    TranslateTabHelper::TranslateStep step,
+    TranslateErrors::Type error_type) {
   NOTIMPLEMENTED();
 }
 
