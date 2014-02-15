@@ -2621,8 +2621,6 @@ bool RenderLayer::hitTest(const HitTestRequest& request, HitTestResult& result)
 
 bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
 {
-    // https://code.google.com/p/chromium/issues/detail?id=343775
-    DisableCompositingQueryAsserts disabler;
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
     // RenderView should make sure to update layout before entering hit testing
