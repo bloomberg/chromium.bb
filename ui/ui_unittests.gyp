@@ -247,11 +247,6 @@
                  '../base/allocator/allocator.gyp:allocator',
                ],
             }],
-            ['toolkit_views==1', {
-              'sources!': [
-                'browser/ui/gtk/gtk_expanded_container_unittest.cc',
-              ],
-            }],
           ],
         }],
         ['use_x11==1', {
@@ -300,7 +295,6 @@
         }],
         ['use_aura==1', {
           'sources!': [
-            'base/dialogs/select_file_dialog_win_unittest.cc',
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'gfx/screen_unittest.cc',
           ],
