@@ -178,6 +178,7 @@ TileManager::TileManager(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_rasterize_on_demand)
     : client_(client),
+      context_provider_(context_provider),
       resource_pool_(
           ResourcePool::Create(resource_provider,
                                raster_worker_pool->GetResourceTarget(),
