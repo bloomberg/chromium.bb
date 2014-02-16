@@ -287,8 +287,6 @@
         'browser/ui/ash/chrome_shell_delegate.h',
         'browser/ui/ash/chrome_shell_delegate_chromeos.cc',
         'browser/ui/ash/chrome_shell_delegate_views.cc',
-        'browser/ui/ash/event_rewriter.cc',
-        'browser/ui/ash/event_rewriter.h',
         'browser/ui/ash/ime_controller_chromeos.cc',
         'browser/ui/ash/ime_controller_chromeos.h',
         'browser/ui/ash/launcher/app_shortcut_launcher_item_controller.cc',

@@ -7,9 +7,7 @@
 
 #include "base/basictypes.h"
 
-namespace ui {
-class KeyEvent;
-}
+typedef union _XEvent XEvent;
 
 namespace chromeos {
 
@@ -24,13 +22,13 @@ class KeyboardDrivenEventRewriter {
   // Calls RewriteEvent to modify |event| if it is on login screen and the
   // keyboard driven flag is enabled. Returns true if the event is changed
   // and no further changes should happen.
-  bool RewriteIfKeyboardDrivenOnLoginScreen(ui::KeyEvent* event);
+  bool RewriteIfKeyboardDrivenOnLoginScreen(XEvent* event);
 
   // Calls RewriteEvent for testing.
-  bool RewriteForTesting(ui::KeyEvent* event);
+  bool RewriteForTesting(XEvent* event);
 
  private:
-  bool RewriteEvent(ui::KeyEvent* event);
+  bool RewriteEvent(XEvent* event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };

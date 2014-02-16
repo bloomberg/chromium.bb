@@ -15,7 +15,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/event_rewriter_event_filter.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -93,16 +92,7 @@ uint32_t AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
     return POST_DISPATCH_PERFORM_DEFAULT;
 
   if (IsKeyEvent(event)) {
-    // Modifiers can be changed by the user preference, so we need to rewrite
-    // the event explicitly.
     ui::KeyEvent key_event(event, false);
-    ui::EventHandler* event_rewriter =
-        ash::Shell::GetInstance()->event_rewriter_filter();
-    DCHECK(event_rewriter);
-    event_rewriter->OnKeyEvent(&key_event);
-    if (key_event.stopped_propagation())
-      return POST_DISPATCH_NONE;
-
     if (IsPossibleAcceleratorNotForMenu(key_event)) {
       if (views::MenuController* menu_controller =
           views::MenuController::GetActiveInstance()) {

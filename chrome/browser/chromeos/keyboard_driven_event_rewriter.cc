@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 namespace chromeos {
 
@@ -35,35 +35,34 @@ KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {}
 KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {}
 
 bool KeyboardDrivenEventRewriter::RewriteIfKeyboardDrivenOnLoginScreen(
-    ui::KeyEvent* event) {
+    XEvent* event) {
   if (!ShouldStripModifiersForArrowKeysAndEnter())
     return false;
 
   return RewriteEvent(event);
 }
 
-bool KeyboardDrivenEventRewriter::RewriteForTesting(ui::KeyEvent* event) {
+bool KeyboardDrivenEventRewriter::RewriteForTesting(XEvent* event) {
   return RewriteEvent(event);
 }
 
-bool KeyboardDrivenEventRewriter::RewriteEvent(ui::KeyEvent* event) {
-  if ((event->flags() & kModifierMask) != kModifierMask)
+bool KeyboardDrivenEventRewriter::RewriteEvent(XEvent* event) {
+  int flags = ui::EventFlagsFromNative(event);
+  if ((flags & kModifierMask) != kModifierMask)
     return false;
+  ui::KeyboardCode key_code = ui::KeyboardCodeFromNative(event);
 
-  if (event->key_code() != ui::VKEY_LEFT &&
-      event->key_code() != ui::VKEY_RIGHT &&
-      event->key_code() != ui::VKEY_UP &&
-      event->key_code() != ui::VKEY_DOWN &&
-      event->key_code() != ui::VKEY_RETURN &&
-      event->key_code() != ui::VKEY_F6) {
+  if (key_code != ui::VKEY_LEFT &&
+      key_code != ui::VKEY_RIGHT &&
+      key_code != ui::VKEY_UP &&
+      key_code != ui::VKEY_DOWN &&
+      key_code != ui::VKEY_RETURN &&
+      key_code != ui::VKEY_F6) {
     return false;
   }
 
-  XEvent* xev = event->native_event();
-  XKeyEvent* xkey = &(xev->xkey);
+  XKeyEvent* xkey = &(event->xkey);
   xkey->state &= ~(ControlMask | Mod1Mask | ShiftMask);
-  event->set_flags(event->flags() & ~kModifierMask);
-  event->NormalizeFlags();
   return true;
 }
 

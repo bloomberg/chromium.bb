@@ -58,7 +58,6 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/event_client_impl.h"
-#include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
@@ -627,7 +626,6 @@ Shell::~Shell() {
   RemovePreTargetHandler(speech_feedback_handler_.get());
   speech_feedback_handler_.reset();
 #endif
-  RemovePreTargetHandler(event_rewriter_filter_.get());
   RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
@@ -840,8 +838,6 @@ void Shell::Init() {
 #endif
 
   // The order in which event filters are added is significant.
-  event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
-  AddPreTargetHandler(event_rewriter_filter_.get());
 
 #if defined(OS_CHROMEOS)
   // The StickyKeysController also rewrites events and must be added
