@@ -60,7 +60,7 @@ def _WebGLTestMessages(tab):
 
 class WebglConformanceValidator(page_test.PageTest):
   def __init__(self):
-    super(WebglConformanceValidator, self).__init__('ValidatePage')
+    super(WebglConformanceValidator, self).__init__('ValidatePage', attempts=1)
 
   def ValidatePage(self, page, tab, results):
     if not _DidWebGLTestSucceed(tab):
