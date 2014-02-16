@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/synchronization/lock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -55,7 +56,8 @@ class TaskGraphRunnerTestBase {
     }
   }
 
-  void RunTask(int namespace_index, unsigned id) {
+  void RunTaskOnWorkerThread(int namespace_index, unsigned id) {
+    base::AutoLock lock(run_task_ids_lock_);
     run_task_ids_[namespace_index].push_back(id);
   }
 
@@ -113,7 +115,7 @@ class TaskGraphRunnerTestBase {
 
     // Overridden from internal::Task:
     virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
-      test_->RunTask(namespace_index_, id_);
+      test_->RunTaskOnWorkerThread(namespace_index_, id_);
     }
 
     virtual void CompleteOnOriginThread() {
@@ -152,6 +154,7 @@ class TaskGraphRunnerTestBase {
   internal::Task::Vector tasks_[kNamespaceCount];
   internal::Task::Vector dependents_[kNamespaceCount];
   std::vector<unsigned> run_task_ids_[kNamespaceCount];
+  base::Lock run_task_ids_lock_;
   std::vector<unsigned> on_task_completed_ids_[kNamespaceCount];
 };
 
