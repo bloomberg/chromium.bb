@@ -33,7 +33,8 @@ namespace content {
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IndexedDBContextImpl* indexed_db_context)
-    : indexed_db_context_(indexed_db_context),
+    : BrowserMessageFilter(IndexedDBMsgStart),
+      indexed_db_context_(indexed_db_context),
       database_dispatcher_host_(new DatabaseDispatcherHost(this)),
       cursor_dispatcher_host_(new CursorDispatcherHost(this)) {
   DCHECK(indexed_db_context_);

@@ -16,7 +16,7 @@
 namespace content {
 
 TextInputClientMessageFilter::TextInputClientMessageFilter(int child_id)
-    : BrowserMessageFilter(),
+    : BrowserMessageFilter(TextInputClientMsgStart),
       child_process_id_(child_id) {
 }
 

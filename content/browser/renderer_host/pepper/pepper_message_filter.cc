@@ -11,7 +11,9 @@
 
 namespace content {
 
-PepperMessageFilter::PepperMessageFilter() {}
+PepperMessageFilter::PepperMessageFilter()
+    : BrowserMessageFilter(PpapiMsgStart) {}
+
 PepperMessageFilter::~PepperMessageFilter() {}
 
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,

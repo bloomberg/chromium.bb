@@ -43,6 +43,11 @@ using blink::WebCache;
 
 namespace {
 
+const uint32 kFilteredMessageClasses[] = {
+  ChromeMsgStart,
+  ExtensionMsgStart,
+};
+
 // Logs an action to the extension activity log for the specified profile.  Can
 // be called from any thread.
 void AddActionToExtensionActivityLog(
@@ -76,7 +81,9 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
     Profile* profile,
     net::URLRequestContextGetter* request_context)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      render_process_id_(render_process_id),
       profile_(profile),
       off_the_record_(profile_->IsOffTheRecord()),
       predictor_(profile_->GetNetworkPredictor()),

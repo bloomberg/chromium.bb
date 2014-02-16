@@ -91,7 +91,8 @@ PluginInfoMessageFilter::Context::~Context() {
 PluginInfoMessageFilter::PluginInfoMessageFilter(
     int render_process_id,
     Profile* profile)
-    : context_(render_process_id, profile),
+    : BrowserMessageFilter(ChromeMsgStart),
+      context_(render_process_id, profile),
       weak_ptr_factory_(this) {
 }
 

@@ -187,7 +187,8 @@ void SpellingRequest::OnLocalCheckCompleted(
 
 
 SpellCheckMessageFilterMac::SpellCheckMessageFilterMac(int render_process_id)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(SpellCheckMsgStart),
+      render_process_id_(render_process_id),
       client_(new SpellingServiceClient) {
 }
 

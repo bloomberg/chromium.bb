@@ -15,7 +15,8 @@ namespace content {
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
     int process_id)
-    : appcache_service_(appcache_service),
+    : BrowserMessageFilter(AppCacheMsgStart),
+      appcache_service_(appcache_service),
       frontend_proxy_(this),
       process_id_(process_id) {
 }

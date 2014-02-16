@@ -20,7 +20,9 @@ namespace extensions {
 
 ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
                                                content::BrowserContext* context)
-    : render_process_id_(render_process_id), browser_context_(context) {
+    : BrowserMessageFilter(ExtensionMsgStart),
+      render_process_id_(render_process_id),
+      browser_context_(context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

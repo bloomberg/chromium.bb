@@ -16,7 +16,8 @@ namespace content {
 
 MidiDispatcherHost::MidiDispatcherHost(int render_process_id,
                                        BrowserContext* browser_context)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(MidiMsgStart),
+      render_process_id_(render_process_id),
       browser_context_(browser_context) {
 }
 

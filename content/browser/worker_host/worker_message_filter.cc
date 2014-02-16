@@ -17,7 +17,8 @@ WorkerMessageFilter::WorkerMessageFilter(
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
     MessagePortMessageFilter* message_port_message_filter)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(ViewMsgStart),
+      render_process_id_(render_process_id),
       resource_context_(resource_context),
       partition_(partition),
       message_port_message_filter_(message_port_message_filter) {

@@ -9,7 +9,8 @@
 
 namespace content {
 
-MimeRegistryMessageFilter::MimeRegistryMessageFilter() {
+MimeRegistryMessageFilter::MimeRegistryMessageFilter()
+    : BrowserMessageFilter(MimeRegistryMsgStart) {
 }
 
 MimeRegistryMessageFilter::~MimeRegistryMessageFilter() {

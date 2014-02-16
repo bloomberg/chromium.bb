@@ -9,11 +9,12 @@
 
 namespace content {
 
-TraceMessageFilter::TraceMessageFilter() :
-    has_child_(false),
-    is_awaiting_end_ack_(false),
-    is_awaiting_capture_monitoring_snapshot_ack_(false),
-    is_awaiting_buffer_percent_full_ack_(false) {
+TraceMessageFilter::TraceMessageFilter()
+    : BrowserMessageFilter(TracingMsgStart),
+      has_child_(false),
+      is_awaiting_end_ack_(false),
+      is_awaiting_capture_monitoring_snapshot_ack_(false),
+      is_awaiting_buffer_percent_full_ack_(false) {
 }
 
 TraceMessageFilter::~TraceMessageFilter() {}

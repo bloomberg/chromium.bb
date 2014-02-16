@@ -25,7 +25,8 @@ typedef WebSocketDispatcherHost::WebSocketHostState WebSocketHostState;
 
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     const GetRequestContextCallback& get_context_callback)
-    : get_context_callback_(get_context_callback),
+    : BrowserMessageFilter(WebSocketMsgStart),
+      get_context_callback_(get_context_callback),
       websocket_host_factory_(
           base::Bind(&WebSocketDispatcherHost::CreateWebSocketHost,
                      base::Unretained(this))) {}
@@ -33,7 +34,8 @@ WebSocketDispatcherHost::WebSocketDispatcherHost(
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     const GetRequestContextCallback& get_context_callback,
     const WebSocketHostFactory& websocket_host_factory)
-    : get_context_callback_(get_context_callback),
+    : BrowserMessageFilter(WebSocketMsgStart),
+      get_context_callback_(get_context_callback),
       websocket_host_factory_(websocket_host_factory) {}
 
 WebSocketHost* WebSocketDispatcherHost::CreateWebSocketHost(int routing_id) {

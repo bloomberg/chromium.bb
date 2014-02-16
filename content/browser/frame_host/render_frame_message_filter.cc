@@ -36,7 +36,8 @@ void CreateChildFrameOnUI(int process_id,
 RenderFrameMessageFilter::RenderFrameMessageFilter(
     int render_process_id,
     RenderWidgetHelper* render_widget_helper)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(FrameMsgStart),
+      render_process_id_(render_process_id),
       render_widget_helper_(render_widget_helper) {
 }
 

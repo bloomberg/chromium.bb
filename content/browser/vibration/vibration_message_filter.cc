@@ -18,7 +18,8 @@ namespace content {
 // Minimum duration of a vibration is 1 millisecond.
 const int64 kMinimumVibrationDurationMs = 1;
 
-VibrationMessageFilter::VibrationMessageFilter() {
+VibrationMessageFilter::VibrationMessageFilter()
+    : BrowserMessageFilter(ViewMsgStart) {
   provider_.reset(GetContentClient()->browser()->OverrideVibrationProvider());
   if (!provider_.get())
     provider_.reset(CreateProvider());

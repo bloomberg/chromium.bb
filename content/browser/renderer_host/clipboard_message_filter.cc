@@ -34,7 +34,8 @@ void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
 }  // namespace
 
 
-ClipboardMessageFilter::ClipboardMessageFilter() {}
+ClipboardMessageFilter::ClipboardMessageFilter()
+    : BrowserMessageFilter(ClipboardMsgStart) {}
 
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {

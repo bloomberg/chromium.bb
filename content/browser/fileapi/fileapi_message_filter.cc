@@ -53,6 +53,11 @@ namespace content {
 
 namespace {
 
+const uint32 kFilteredMessageClasses[] = {
+  BlobMsgStart,
+  FileSystemMsgStart,
+};
+
 void RevokeFilePermission(int child_id, const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
     child_id, path);
@@ -66,7 +71,9 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     fileapi::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context,
     StreamContext* stream_context)
-    : process_id_(process_id),
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       request_context_getter_(request_context_getter),
@@ -85,7 +92,9 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     fileapi::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context,
     StreamContext* stream_context)
-    : process_id_(process_id),
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
       request_context_(request_context),

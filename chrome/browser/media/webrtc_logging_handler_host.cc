@@ -109,7 +109,8 @@ void FormatMetaDataAsLogMessage(
 }  // namespace
 
 WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(Profile* profile)
-    : profile_(profile),
+    : BrowserMessageFilter(WebRtcLoggingMsgStart),
+      profile_(profile),
       logging_state_(CLOSED),
       upload_log_on_render_close_(false) {
   DCHECK(profile_);
