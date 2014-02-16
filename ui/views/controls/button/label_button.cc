@@ -204,7 +204,7 @@ gfx::Size LabelButton::GetPreferredSize() {
   size.Enlarge(image_size.width() + insets.width(), insets.height());
 
   // Make the size at least as large as the minimum size needed by the border.
-  size.SetToMax(border()->GetMinimumSize());
+  size.SetToMax(border() ? border()->GetMinimumSize() : gfx::Size());
 
   // Increase the minimum size monotonically with the preferred size.
   size.SetToMax(min_size_);
@@ -228,8 +228,7 @@ void LabelButton::Layout() {
   child_area.Inset(GetInsets());
 
   gfx::Size image_size(image_->GetPreferredSize());
-  image_size.set_width(std::min(image_size.width(), child_area.width()));
-  image_size.set_height(std::min(image_size.height(), child_area.height()));
+  image_size.SetToMin(child_area.size());
 
   // The label takes any remaining width after sizing the image, unless both
   // views are centered. In that case, using the tighter preferred label width
