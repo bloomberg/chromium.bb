@@ -152,7 +152,8 @@ int PerformQuery(HANDLE adapter_handle,
                  BYTE* buffer,
                  DWORD buffer_size,
                  DWORD* bytes_out);
-bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer);
+bool ResizeBuffer(int requested_size,
+                  scoped_ptr<BYTE, base::FreeDeleter>* buffer);
 // Gets the system directory and appends a trailing slash if not already
 // present.
 bool GetSystemDirectory(base::string16* path);
@@ -468,8 +469,8 @@ bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
                                           WifiData::AccessPointDataSet* data) {
   DCHECK(data);
 
-  scoped_ptr_malloc<BYTE> buffer(
-      reinterpret_cast<BYTE*>(malloc(oid_buffer_size_)));
+  scoped_ptr<BYTE, base::FreeDeleter> buffer(
+      static_cast<BYTE*>(malloc(oid_buffer_size_)));
   if (buffer == NULL) {
     return false;
   }
@@ -597,7 +598,8 @@ int PerformQuery(HANDLE adapter_handle,
   return ERROR_SUCCESS;
 }
 
-bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer) {
+bool ResizeBuffer(int requested_size,
+                  scoped_ptr<BYTE, base::FreeDeleter>* buffer) {
   DCHECK_GT(requested_size, 0);
   DCHECK(buffer);
   if (requested_size > kMaximumBufferSize) {

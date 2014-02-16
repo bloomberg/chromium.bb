@@ -50,7 +50,7 @@ class FileVersionInfoWin : public FileVersionInfo {
   VS_FIXEDFILEINFO* fixed_file_info() { return fixed_file_info_; }
 
  private:
-  scoped_ptr_malloc<char> data_;
+  scoped_ptr<char, base::FreeDeleter> data_;
   int language_;
   int code_page_;
   // This is a pointer into the data_ if it exists. Otherwise NULL.

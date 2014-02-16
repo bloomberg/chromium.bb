@@ -26,9 +26,9 @@
 //   // ... later, to release the memory:
 //   AlignedFree(my_array);
 //
-// Or using scoped_ptr_malloc:
+// Or using scoped_ptr:
 //
-//   scoped_ptr_malloc<float, ScopedPtrAlignedFree> my_array(
+//   scoped_ptr<float, AlignedFreeDeleter> my_array(
 //       static_cast<float*>(AlignedAlloc(size, alignment)));
 
 #ifndef BASE_MEMORY_ALIGNED_MEMORY_H_

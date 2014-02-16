@@ -221,8 +221,9 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
 
   size_t device_id_size = pnp_device_id.size() * sizeof(base::char16);
   size_t size = sizeof(DEV_BROADCAST_DEVICEINTERFACE) + device_id_size;
-  scoped_ptr_malloc<DEV_BROADCAST_DEVICEINTERFACE> dev_interface_broadcast(
-      static_cast<DEV_BROADCAST_DEVICEINTERFACE*>(malloc(size)));
+  scoped_ptr<DEV_BROADCAST_DEVICEINTERFACE, base::FreeDeleter>
+      dev_interface_broadcast(
+          static_cast<DEV_BROADCAST_DEVICEINTERFACE*>(malloc(size)));
   DCHECK(dev_interface_broadcast.get());
   ZeroMemory(dev_interface_broadcast.get(), size);
   dev_interface_broadcast->dbcc_size = size;

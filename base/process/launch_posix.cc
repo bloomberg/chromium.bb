@@ -181,16 +181,16 @@ void ResetChildSignalHandlersToDefaults(void) {
 
 }  // anonymous namespace
 
-// A class to handle auto-closing of DIR*'s.
-class ScopedDIRClose {
- public:
+// Functor for |ScopedDIR| (below).
+struct ScopedDIRClose {
   inline void operator()(DIR* x) const {
-    if (x) {
+    if (x)
       closedir(x);
-    }
   }
 };
-typedef scoped_ptr_malloc<DIR, ScopedDIRClose> ScopedDIR;
+
+// Automatically closes |DIR*|s.
+typedef scoped_ptr<DIR, ScopedDIRClose> ScopedDIR;
 
 #if defined(OS_LINUX)
 static const char kFDDir[] = "/proc/self/fd";

@@ -602,5 +602,3 @@ TEST(ScopedPtrTest, OverloadedNewAndDelete) {
   EXPECT_EQ(1, OverloadedNewAndDelete::delete_count());
   EXPECT_EQ(1, OverloadedNewAndDelete::new_count());
 }
-
-// TODO scoped_ptr_malloc

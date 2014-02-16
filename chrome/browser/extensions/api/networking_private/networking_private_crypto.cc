@@ -90,11 +90,10 @@ bool NetworkingPrivateCrypto::VerifyCredentials(
   der_cert.len = cert_data.length();
 
   // Parse into a certificate structure.
-  typedef scoped_ptr_malloc<
+  typedef scoped_ptr<
       CERTCertificate,
-      crypto::NSSDestroyer<CERTCertificate,
-                          CERT_DestroyCertificate> >
-      ScopedCERTCertificate;
+      crypto::NSSDestroyer<CERTCertificate, CERT_DestroyCertificate> >
+          ScopedCERTCertificate;
   ScopedCERTCertificate cert(CERT_NewTempCertificate(
       CERT_GetDefaultCertDB(), &der_cert, NULL, PR_FALSE, PR_TRUE));
   if (!cert.get()) {

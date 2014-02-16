@@ -86,7 +86,7 @@ void DemangleSymbols(std::string* text) {
 
     // Try to demangle the mangled symbol candidate.
     int status = 0;
-    scoped_ptr_malloc<char> demangled_symbol(
+    scoped_ptr<char, base::FreeDeleter> demangled_symbol(
         abi::__cxa_demangle(mangled_symbol.c_str(), NULL, 0, &status));
     if (status == 0) {  // Demangling is successful.
       // Remove the mangled symbol.

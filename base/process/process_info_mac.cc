@@ -21,7 +21,7 @@ const Time CurrentProcessInfo::CreationTime() {
   if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) < 0)
     return Time();
 
-  scoped_ptr_malloc<struct kinfo_proc>
+  scoped_ptr<struct kinfo_proc, base::FreeDeleter>
       proc(static_cast<struct kinfo_proc*>(malloc(len)));
   if (sysctl(mib, arraysize(mib), proc.get(), &len, NULL, 0) < 0)
     return Time();

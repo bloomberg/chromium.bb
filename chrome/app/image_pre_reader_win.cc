@@ -35,7 +35,7 @@ void StaticAssertions() {
 
 // This struct provides a deallocation functor for use with scoped_ptr<T>
 // allocated with ::VirtualAlloc().
-struct ScopedPtrVirtualFree {
+struct VirtualFreeDeleter {
   void operator() (void* ptr) {
     ::VirtualFree(ptr, 0, MEM_RELEASE);
   }
@@ -252,8 +252,8 @@ bool ImagePreReader::PartialPreReadImageOnDisk(const wchar_t* file_path,
   CHECK(pe_image.VerifyMagic());
 
   // Allocate a buffer to hold the pre-read bytes.
-  scoped_ptr_malloc<uint8, ScopedPtrVirtualFree> buffer(
-      reinterpret_cast<uint8*>(
+  scoped_ptr<uint8, VirtualFreeDeleter> buffer(
+      static_cast<uint8*>(
           ::VirtualAlloc(NULL, max_chunk_size, MEM_COMMIT, PAGE_READWRITE)));
   if (buffer.get() == NULL)
     return false;

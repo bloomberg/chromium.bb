@@ -133,17 +133,14 @@ TEST_F(MacDirAccessSandboxTest, RegexEscape) {
 }
 
 // A class to handle auto-deleting a directory.
-class ScopedDirectoryDelete {
- public:
+struct ScopedDirectoryDelete {
   inline void operator()(base::FilePath* x) const {
-    if (x) {
+    if (x)
       base::DeleteFile(*x, true);
-    }
   }
 };
 
-typedef scoped_ptr_malloc<base::FilePath, ScopedDirectoryDelete>
-    ScopedDirectory;
+typedef scoped_ptr<base::FilePath, ScopedDirectoryDelete> ScopedDirectory;
 
 TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
   using base::CreateDirectory;

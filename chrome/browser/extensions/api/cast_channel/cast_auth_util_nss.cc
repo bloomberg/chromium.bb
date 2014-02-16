@@ -44,10 +44,10 @@ static const unsigned char kCAPublicKeyDER[] = {
     0x61, 0x47, 0x9e, 0xab, 0x80, 0xb7, 0xe4, 0x48, 0x80, 0x2a, 0x92, 0xc5,
     0x1b, 0x02, 0x03, 0x01, 0x00, 0x01 };
 
-typedef scoped_ptr_malloc<
+typedef scoped_ptr<
     CERTCertificate,
     crypto::NSSDestroyer<CERTCertificate, CERT_DestroyCertificate> >
-ScopedCERTCertificate;
+        ScopedCERTCertificate;
 
 // Parses out DeviceAuthMessage from CastMessage
 static bool ParseAuthMessage(

@@ -232,7 +232,8 @@ NSBundle* OuterAppBundle() {
 
 bool GetUserDataDirectoryForBrowserBundle(NSBundle* bundle,
                                           base::FilePath* result) {
-  scoped_ptr_malloc<char> product_dir_name(ProductDirNameForBundle(bundle));
+  scoped_ptr<char, base::FreeDeleter>
+      product_dir_name(ProductDirNameForBundle(bundle));
   return GetDefaultUserDataDirectoryForProduct(product_dir_name.get(), result);
 }
 

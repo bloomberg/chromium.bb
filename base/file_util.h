@@ -391,22 +391,20 @@ BASE_EXPORT bool VerifyPathControlledByAdmin(const base::FilePath& path);
 // the directory |path|, in the number of FilePath::CharType, or -1 on failure.
 BASE_EXPORT int GetMaximumPathComponentLength(const base::FilePath& path);
 
-// A class to handle auto-closing of FILE*'s.
-class ScopedFILEClose {
- public:
+// Functor for |ScopedFILE| (below).
+struct ScopedFILEClose {
   inline void operator()(FILE* x) const {
-    if (x) {
+    if (x)
       fclose(x);
-    }
   }
 };
 
-typedef scoped_ptr_malloc<FILE, ScopedFILEClose> ScopedFILE;
+// Automatically closes |FILE*|s.
+typedef scoped_ptr<FILE, ScopedFILEClose> ScopedFILE;
 
 #if defined(OS_POSIX)
-// A class to handle auto-closing of FDs.
-class ScopedFDClose {
- public:
+// Functor for |ScopedFD| (below).
+struct ScopedFDClose {
   inline void operator()(int* x) const {
     if (x && *x >= 0) {
       if (IGNORE_EINTR(close(*x)) < 0)
@@ -415,7 +413,11 @@ class ScopedFDClose {
   }
 };
 
-typedef scoped_ptr_malloc<int, ScopedFDClose> ScopedFD;
+// Automatically closes FDs (note: doesn't store the FD).
+// TODO(viettrungluu): This is a very odd API, since (unlike |FILE*|s, you'll
+// need to store the FD separately and keep its memory alive). This should
+// probably be called |ScopedFDCloser| or something like that.
+typedef scoped_ptr<int, ScopedFDClose> ScopedFD;
 #endif  // OS_POSIX
 
 #if defined(OS_LINUX)

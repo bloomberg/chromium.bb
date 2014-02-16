@@ -16,7 +16,7 @@
 
 #ifdef GL_VARIANT_GLX
 typedef GLXWindow NativeWindowType;
-struct ScopedPtrXFree {
+struct XFreeDeleter {
   void operator()(void* x) const { ::XFree(x); }
 };
 #else  // EGL
@@ -124,7 +124,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     GL_NONE,
   };
   int num_fbconfigs;
-  scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> glx_fb_configs(
+  scoped_ptr<GLXFBConfig, XFreeDeleter> glx_fb_configs(
       glXChooseFBConfig(x_display_, DefaultScreen(x_display_), fbconfig_attr,
                         &num_fbconfigs));
   CHECK(glx_fb_configs.get());

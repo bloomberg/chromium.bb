@@ -74,14 +74,12 @@ std::string ProcessExtension(
 ////////////////////////////////////////////////////////////////////////////////
 // NSS certificate export functions.
 
-class FreeNSSCMSMessage {
- public:
+struct NSSCMSMessageDeleter {
   inline void operator()(NSSCMSMessage* x) const {
     NSS_CMSMessage_Destroy(x);
   }
 };
-typedef scoped_ptr_malloc<NSSCMSMessage, FreeNSSCMSMessage>
-    ScopedNSSCMSMessage;
+typedef scoped_ptr<NSSCMSMessage, NSSCMSMessageDeleter> ScopedNSSCMSMessage;
 
 class FreeNSSCMSSignedData {
  public:

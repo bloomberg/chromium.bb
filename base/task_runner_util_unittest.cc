@@ -45,20 +45,20 @@ void ExpectFoo(scoped_ptr<Foo> foo) {
   EXPECT_FALSE(foo.get());
 }
 
-struct FreeFooFunctor {
+struct FooDeleter {
   void operator()(Foo* foo) const {
     ++g_foo_free_count;
     delete foo;
   };
 };
 
-scoped_ptr_malloc<Foo, FreeFooFunctor> CreateScopedFoo() {
-  return scoped_ptr_malloc<Foo, FreeFooFunctor>(new Foo);
+scoped_ptr<Foo, FooDeleter> CreateScopedFoo() {
+  return scoped_ptr<Foo, FooDeleter>(new Foo);
 }
 
-void ExpectScopedFoo(scoped_ptr_malloc<Foo, FreeFooFunctor> foo) {
+void ExpectScopedFoo(scoped_ptr<Foo, FooDeleter> foo) {
   EXPECT_TRUE(foo.get());
-  scoped_ptr_malloc<Foo, FreeFooFunctor> local_foo(foo.Pass());
+  scoped_ptr<Foo, FooDeleter> local_foo(foo.Pass());
   EXPECT_TRUE(local_foo.get());
   EXPECT_FALSE(foo.get());
 }

@@ -263,7 +263,7 @@ VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 }
 
-class ScopedPtrXFree {
+class XFreeDeleter {
  public:
   void operator()(void* x) const {
     ::XFree(x);
@@ -280,7 +280,7 @@ bool VaapiVideoDecodeAccelerator::InitializeFBConfig() {
   };
 
   int num_fbconfigs;
-  scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> glx_fb_configs(
+  scoped_ptr<GLXFBConfig, XFreeDeleter> glx_fb_configs(
       glXChooseFBConfig(x_display_, DefaultScreen(x_display_), fbconfig_attr,
                         &num_fbconfigs));
   if (!glx_fb_configs)
