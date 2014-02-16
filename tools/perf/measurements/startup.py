@@ -5,6 +5,7 @@
 from metrics import startup_metric
 from telemetry.page import page_measurement
 
+
 class Startup(page_measurement.PageMeasurement):
   """Performs a measurement of Chromium's startup performance.
 

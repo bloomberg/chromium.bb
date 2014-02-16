@@ -6,6 +6,7 @@ from telemetry import test
 from measurements import startup
 
 
+@test.Disabled('snowleopard') # crbug.com/336913
 class StartupColdBlankPage(test.Test):
   tag = 'cold'
   test = startup.Startup
@@ -21,6 +22,7 @@ class StartupWarmBlankPage(test.Test):
   options = {'warm': True,
              'pageset_repeat_iters': 20}
 
+@test.Disabled('snowleopard') # crbug.com/336913
 class StartupColdTheme(test.Test):
   tag = 'theme_cold'
   test = startup.Startup
@@ -38,6 +40,7 @@ class StartupWarmTheme(test.Test):
   options = {'warm': True,
              'pageset_repeat_iters': 20}
 
+@test.Disabled('snowleopard') # crbug.com/336913
 class StartupColdManyExtensions(test.Test):
   tag = 'many_extensions_cold'
   test = startup.Startup

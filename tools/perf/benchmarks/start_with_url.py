@@ -6,6 +6,7 @@ from telemetry import test
 from measurements import startup
 
 
+@test.Disabled('snowleopard') # crbug.com/336913
 class StartWithUrlCold(test.Test):
   """Measure time to start Chrome cold with startup URLs"""
   tag = 'cold'
