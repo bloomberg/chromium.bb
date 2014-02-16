@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/runner.js"></script>
+<style>
+  .root .child {}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+function insertStyleSheet(css)
+{
+    var styleElement = document.createElement("style");
+    styleElement.textContent = css;
+    document.head.appendChild(styleElement);
+    return styleElement;
+}
+
+function cssStr(count) {
+    var selector = '.a' + count + ' .b' + count + ' { color: red } ';
+    // Intentionally repeat the same classes many times, to test duplicate optimizations.
+    return selector + selector + selector + selector + selector + selector + selector;
+}
+
+function runFunction()
+{
+    var numRules = 1000;
+    var arr = new Array(numRules);
+    for (var i = 0 ; i < numRules; i++) {
+        arr[i] = cssStr(i);
+    }
+    var styleElement = insertStyleSheet(arr.join(' '));
+
+    // Force style recalc.
+    document.body.offsetTop;
+    
+    styleElement.parentNode.removeChild(styleElement);
+}
+
+PerfTestRunner.measureRunsPerSecond({run: runFunction});
+
+</script>
+</body>
+</html>

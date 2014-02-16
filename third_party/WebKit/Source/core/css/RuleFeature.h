@@ -74,7 +74,8 @@ public:
     inline bool hasSelectorForClass(const AtomicString& classValue) const
     {
         ASSERT(!classValue.isEmpty());
-        return m_metadata.classesInRules.contains(classValue);
+        return m_classInvalidationSets.get(classValue);
+
     }
 
     inline bool hasSelectorForId(const AtomicString& idValue) const
@@ -116,7 +117,6 @@ private:
         bool foundSiblingSelector;
         unsigned maxDirectAdjacentSelectors;
         HashSet<AtomicString> idsInRules;
-        HashSet<AtomicString> classesInRules;
         HashSet<AtomicString> attrsInRules;
     };
 
@@ -124,9 +124,15 @@ private:
     bool computeInvalidationSetsForClassChange(const SpaceSplitString& changedClasses, Element*);
     bool computeInvalidationSetsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
 
-    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
-    void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&);
+    enum SelectorFeatureCollectionMode {
+        ProcessClasses,
+        DontProcessClasses
+    };
 
+    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
+    void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
+
+    bool classInvalidationRequiresSubtreeRecalc(const AtomicString& className);
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
     bool updateClassInvalidationSets(const CSSSelector&);
 
