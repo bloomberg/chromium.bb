@@ -162,16 +162,6 @@ void WebLayerImpl::setPosition(const WebFloatPoint& position) {
 
 WebFloatPoint WebLayerImpl::position() const { return layer_->position(); }
 
-void WebLayerImpl::setSublayerTransform(const SkMatrix44& matrix) {
-  gfx::Transform sub_layer_transform;
-  sub_layer_transform.matrix() = matrix;
-  layer_->SetSublayerTransform(sub_layer_transform);
-}
-
-SkMatrix44 WebLayerImpl::sublayerTransform() const {
-  return layer_->sublayer_transform().matrix();
-}
-
 void WebLayerImpl::setTransform(const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;

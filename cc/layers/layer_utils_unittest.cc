@@ -187,7 +187,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspective) {
 
   gfx::Transform perspective;
   perspective.ApplyPerspectiveDepth(100.f);
-  parent()->SetSublayerTransform(perspective);
+  parent()->SetTransform(perspective);
 
   gfx::Size bounds(100, 100);
   child()->SetDrawsContent(true);

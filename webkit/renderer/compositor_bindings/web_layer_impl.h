@@ -85,8 +85,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual bool opaque() const;
   virtual void setPosition(const blink::WebFloatPoint& position);
   virtual blink::WebFloatPoint position() const;
-  virtual void setSublayerTransform(const SkMatrix44&);
-  virtual SkMatrix44 sublayerTransform() const;
   virtual void setTransform(const SkMatrix44& transform);
   virtual SkMatrix44 transform() const;
   virtual void setDrawsContent(bool draws_content);

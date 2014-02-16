@@ -63,8 +63,6 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
   //      transform is animated.
   //   3) We undo the translation from step 1 and apply a second translation
   //      to account for the layer's position.
-  //   4) We apply the sublayer transform from our parent (about the parent's
-  //      anchor point).
   //
   gfx::BoxF box(layer_in.bounds().width(), layer_in.bounds().height(), 0.f);
 
@@ -86,13 +84,6 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
       // because post-multiplication appears a bit more expensive, so we want
       // to do it only once.
       gfx::Transform composite_layer_transform;
-
-      if (!layer->parent()->sublayer_transform().IsIdentity()) {
-        LayerTreeHostCommon::ApplySublayerTransformAboutAnchor(
-            *layer->parent(),
-            layer->parent()->bounds(),
-            &composite_layer_transform);
-      }
 
       composite_layer_transform.Translate3d(anchor_x + position.x(),
                                             anchor_y + position.y(),
@@ -137,14 +128,6 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
     box.set_origin(box.origin() + gfx::Vector3dF(anchor_x + position.x(),
                                                  anchor_y + position.y(),
                                                  layer->anchor_point_z()));
-
-    // Even for layers with animations, we have to tack in the sublayer
-    // transform of our parent. *Every* layer is repsonsible for including the
-    // sublayer transform of its parent (see step 4 above).
-    if (layer->parent()) {
-      LayerTreeHostCommon::ApplySublayerTransformAboutAnchor(
-          *layer->parent(), layer->parent()->bounds(), &coalesced_transform);
-    }
   }
 
   // If we've got an unapplied coalesced transform at this point, it must still

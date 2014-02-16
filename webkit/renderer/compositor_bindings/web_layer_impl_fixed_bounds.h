@@ -28,8 +28,6 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
   virtual void setAnchorPoint(const blink::WebFloatPoint& anchor_point);
   virtual void setBounds(const blink::WebSize& bounds);
   virtual blink::WebSize bounds() const;
-  virtual void setSublayerTransform(const SkMatrix44& transform);
-  virtual SkMatrix44 sublayerTransform() const;
   virtual void setTransform(const SkMatrix44& transform);
   virtual SkMatrix44 transform() const;
 
@@ -37,10 +35,8 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
 
  protected:
   void SetTransformInternal(const gfx::Transform& transform);
-  void SetSublayerTransformInternal(const gfx::Transform& transform);
   void UpdateLayerBoundsAndTransform();
 
-  gfx::Transform original_sublayer_transform_;
   gfx::Transform original_transform_;
   gfx::Size original_bounds_;
   gfx::Size fixed_bounds_;

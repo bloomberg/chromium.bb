@@ -46,7 +46,6 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
   EXPECT_EQ(bounds, layer->bounds());
   EXPECT_EQ(fixed_bounds, layer->layer()->bounds());
   EXPECT_TRUE(layer->transform().isIdentity());
-  EXPECT_TRUE(layer->sublayerTransform().isIdentity());
 
   // An arbitrary point to check the scale and transforms.
   gfx::Point3F original_point(10, 20, 1);
@@ -54,14 +53,10 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
       original_point.x() * bounds.width / fixed_bounds.width(),
       original_point.y() * bounds.height / fixed_bounds.height(),
       original_point.z());
-  // Test if the bounds scale is correctly applied in transform and
-  // sublayerTransform.
+  // Test if the bounds scale is correctly applied in transform.
   EXPECT_POINT3F_EQ(scaled_point,
                     TransformPoint(layer->layer()->transform(),
                                    original_point));
-  EXPECT_POINT3F_EQ(original_point,
-                    TransformPoint(layer->layer()->sublayer_transform(),
-                                   scaled_point));
 }
 
 TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
@@ -84,46 +79,32 @@ void ExpectEqualLayerRectsInTarget(cc::Layer* layer1, cc::Layer* layer2) {
   EXPECT_FLOAT_RECT_EQ(layer1_rect_in_target, layer2_rect_in_target);
 }
 
-void CompareFixedBoundsLayerAndNormalLayer(
-    const WebFloatPoint& anchor_point,
-    const gfx::Transform& transform,
-    const gfx::Transform& sublayer_transform) {
+void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
+                                           const gfx::Transform& transform) {
   const gfx::Size kDeviceViewportSize(800, 600);
   const float kDeviceScaleFactor = 2.f;
   const float kPageScaleFactor = 1.5f;
 
   WebSize bounds(150, 200);
   WebFloatPoint position(20, 30);
-  WebSize sublayer_bounds(88, 99);
-  WebFloatPoint sublayer_position(50, 60);
   gfx::Size fixed_bounds(160, 70);
 
   scoped_ptr<WebLayerImplFixedBounds> root_layer(new WebLayerImplFixedBounds());
 
   WebLayerImplFixedBounds* fixed_bounds_layer =
       new WebLayerImplFixedBounds(cc::PictureImageLayer::Create());
-  WebLayerImpl* sublayer_under_fixed_bounds_layer = new WebLayerImpl();
-  sublayer_under_fixed_bounds_layer->setBounds(sublayer_bounds);
-  sublayer_under_fixed_bounds_layer->setPosition(sublayer_position);
-  fixed_bounds_layer->addChild(sublayer_under_fixed_bounds_layer);
   fixed_bounds_layer->setBounds(bounds);
   fixed_bounds_layer->SetFixedBounds(fixed_bounds);
   fixed_bounds_layer->setAnchorPoint(anchor_point);
   fixed_bounds_layer->setTransform(transform.matrix());
-  fixed_bounds_layer->setSublayerTransform(sublayer_transform.matrix());
   fixed_bounds_layer->setPosition(position);
   root_layer->addChild(fixed_bounds_layer);
 
   WebLayerImpl* normal_layer(new WebLayerImpl(cc::PictureImageLayer::Create()));
-  WebLayerImpl* sublayer_under_normal_layer = new WebLayerImpl();
-  sublayer_under_normal_layer->setBounds(sublayer_bounds);
-  sublayer_under_normal_layer->setPosition(sublayer_position);
 
-  normal_layer->addChild(sublayer_under_normal_layer);
   normal_layer->setBounds(bounds);
   normal_layer->setAnchorPoint(anchor_point);
   normal_layer->setTransform(transform.matrix());
-  normal_layer->setSublayerTransform(sublayer_transform.matrix());
   normal_layer->setPosition(position);
   root_layer->addChild(normal_layer);
 
@@ -141,8 +122,6 @@ void CompareFixedBoundsLayerAndNormalLayer(
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());
-    ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
-                                  sublayer_under_fixed_bounds_layer->layer());
   }
 
   // Change of fixed bounds should not affect the target geometries.
@@ -160,8 +139,6 @@ void CompareFixedBoundsLayerAndNormalLayer(
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());
-    ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
-                                  sublayer_under_fixed_bounds_layer->layer());
   }
 }
 
@@ -169,7 +146,6 @@ void CompareFixedBoundsLayerAndNormalLayer(
 // geometries. Simple case: identity transforms and zero anchor point.
 TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplSimple) {
   CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0, 0),
-                                        gfx::Transform(),
                                         gfx::Transform());
 }
 
@@ -182,21 +158,11 @@ TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplComplex) {
   transform.Scale3d(2, 3, 4);
   transform.RotateAbout(gfx::Vector3dF(33, 44, 55), 99);
 
-  gfx::Transform sublayer_transform;
-  // These are arbitrary values that should not affect the results.
-  sublayer_transform.Scale3d(1.1f, 2.2f, 3.3f);
-  sublayer_transform.Translate3d(11, 22, 33);
-  sublayer_transform.RotateAbout(gfx::Vector3dF(10, 30, 20), 88);
-
-  CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0, 0),
-                                        transform,
-                                        sublayer_transform);
+  CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0, 0), transform);
 
   // With non-zero anchor point, WebLayerImplFixedBounds will fall back to
   // WebLayerImpl.
-  CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0.4f, 0.6f),
-                                        transform,
-                                        sublayer_transform);
+  CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0.4f, 0.6f), transform);
 }
 
 }  // namespace

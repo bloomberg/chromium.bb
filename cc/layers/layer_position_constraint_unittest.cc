@@ -18,14 +18,12 @@ namespace {
 
 void SetLayerPropertiesForTesting(LayerImpl* layer,
                                   const gfx::Transform& transform,
-                                  const gfx::Transform& sublayer_transform,
                                   const gfx::PointF& anchor,
                                   const gfx::PointF& position,
                                   const gfx::Size& bounds,
                                   bool flatten_transform,
                                   bool is_3d_sorted) {
   layer->SetTransform(transform);
-  layer->SetSublayerTransform(sublayer_transform);
   layer->SetAnchorPoint(anchor);
   layer->SetPosition(position);
   layer->SetBounds(bounds);
@@ -95,14 +93,12 @@ class LayerPositionConstraintTest : public testing::Test {
     gfx::Size clip_bounds(100, 100);
     SetLayerPropertiesForTesting(scroll_layer.get(),
                                  IdentityMatrix,
-                                 IdentityMatrix,
                                  anchor,
                                  position,
                                  bounds,
                                  true,
                                  false);
     SetLayerPropertiesForTesting(child.get(),
-                                 IdentityMatrix,
                                  IdentityMatrix,
                                  anchor,
                                  position,
@@ -111,14 +107,12 @@ class LayerPositionConstraintTest : public testing::Test {
                                  false);
     SetLayerPropertiesForTesting(grand_child.get(),
                                  IdentityMatrix,
-                                 IdentityMatrix,
                                  anchor,
                                  position,
                                  bounds,
                                  true,
                                  false);
     SetLayerPropertiesForTesting(great_grand_child.get(),
-                                 IdentityMatrix,
                                  IdentityMatrix,
                                  anchor,
                                  position,
@@ -730,7 +724,6 @@ TEST_F(LayerPositionConstraintTest,
     scoped_ptr<LayerImpl> fixed_position_child =
         LayerImpl::Create(host_impl_.active_tree(), 5);
     SetLayerPropertiesForTesting(fixed_position_child.get(),
-                                 identity,
                                  identity,
                                  gfx::PointF(),
                                  gfx::PointF(),

@@ -60,16 +60,6 @@ namespace {
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
-#define EXECUTE_AND_VERIFY_ONLY_DESCENDANTS_CHANGED(code_to_test)              \
-  root->ResetAllChangeTrackingForSubtree();                                    \
-  code_to_test;                                                                \
-  EXPECT_TRUE(root->needs_push_properties());                                  \
-  EXPECT_FALSE(child->needs_push_properties());                                \
-  EXPECT_FALSE(grand_child->needs_push_properties());                          \
-  EXPECT_FALSE(root->LayerPropertyChanged());                                  \
-  EXPECT_TRUE(child->LayerPropertyChanged());                                  \
-  EXPECT_TRUE(grand_child->LayerPropertyChanged());
-
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                      \
   root->ResetAllChangeTrackingForSubtree();                                    \
   host_impl.ForcePrepareToDraw();                                              \
@@ -183,11 +173,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
       root->SetBackgroundFilters(arbitrary_filters));
 
-  // Changing these properties affects all layer's descendants,
-  // but not the layer itself.
-  EXECUTE_AND_VERIFY_ONLY_DESCENDANTS_CHANGED(
-      root->SetSublayerTransform(arbitrary_transform));
-
   // Special case: check that SetBounds changes behavior depending on
   // masksToBounds.
   root->SetMasksToBounds(false);
@@ -247,8 +232,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetIsRootForIsolatedGroup(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetSublayerTransform(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollParent(scroll_parent.get()));
@@ -339,8 +322,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBlendMode(arbitrary_blend_mode));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetTransform(arbitrary_transform));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetSublayerTransform(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 
   // Unrelated functions, set to the same values, no needs update.
@@ -371,8 +352,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->SetIsRootForIsolatedGroup(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetTransform(arbitrary_transform));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetSublayerTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 }
 

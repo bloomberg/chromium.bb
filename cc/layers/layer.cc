@@ -595,17 +595,9 @@ void Layer::SetPosition(const gfx::PointF& position) {
 bool Layer::IsContainerForFixedPositionLayers() const {
   if (!transform_.IsIdentityOrTranslation())
     return true;
-  if (parent_ && !parent_->sublayer_transform_.IsIdentityOrTranslation())
+  if (parent_ && !parent_->transform_.IsIdentityOrTranslation())
     return true;
   return is_container_for_fixed_position_layers_;
-}
-
-void Layer::SetSublayerTransform(const gfx::Transform& sublayer_transform) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (sublayer_transform_ == sublayer_transform)
-    return;
-  sublayer_transform_ = sublayer_transform;
-  SetNeedsCommit();
 }
 
 void Layer::SetTransform(const gfx::Transform& transform) {
@@ -958,7 +950,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
-  layer->SetSublayerTransform(sublayer_transform_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransform(transform_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));

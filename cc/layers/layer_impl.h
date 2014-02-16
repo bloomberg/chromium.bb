@@ -275,11 +275,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return use_parent_backface_visibility_;
   }
 
-  void SetSublayerTransform(const gfx::Transform& sublayer_transform);
-  const gfx::Transform& sublayer_transform() const {
-    return sublayer_transform_;
-  }
-
   bool ShowDebugBorders() const;
 
   // These invalidate the host's render surface layer list.  The caller
@@ -615,7 +610,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   float opacity_;
   SkXfermode::Mode blend_mode_;
   gfx::PointF position_;
-  gfx::Transform sublayer_transform_;
   gfx::Transform transform_;
 
   // This property is effective when

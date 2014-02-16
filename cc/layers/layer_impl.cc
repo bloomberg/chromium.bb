@@ -558,7 +558,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
-  layer->SetSublayerTransform(sublayer_transform_);
   layer->SetTransform(transform_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_ ? scroll_clip_layer_->id()
@@ -978,16 +977,6 @@ void LayerImpl::SetIs3dSorted(bool sorted) {
 
   is_3d_sorted_ = sorted;
   NoteLayerPropertyChangedForSubtree();
-}
-
-void LayerImpl::SetSublayerTransform(const gfx::Transform& sublayer_transform) {
-  if (sublayer_transform_ == sublayer_transform)
-    return;
-
-  sublayer_transform_ = sublayer_transform;
-  // Sublayer transform does not affect the current layer; it affects only its
-  // children.
-  NoteLayerPropertyChangedForDescendants();
 }
 
 void LayerImpl::SetTransform(const gfx::Transform& transform) {

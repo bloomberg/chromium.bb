@@ -176,11 +176,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return position_constraint_;
   }
 
-  void SetSublayerTransform(const gfx::Transform& sublayer_transform);
-  const gfx::Transform& sublayer_transform() const {
-    return sublayer_transform_;
-  }
-
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
@@ -605,7 +600,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   scoped_ptr<std::set<Layer*> > clip_children_;
 
   gfx::Transform transform_;
-  gfx::Transform sublayer_transform_;
 
   // Replica layer used for reflections.
   scoped_refptr<Layer> replica_layer_;

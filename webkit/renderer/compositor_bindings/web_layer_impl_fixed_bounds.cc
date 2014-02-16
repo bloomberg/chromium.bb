@@ -49,16 +49,6 @@ blink::WebSize WebLayerImplFixedBounds::bounds() const {
   return original_bounds_;
 }
 
-void WebLayerImplFixedBounds::setSublayerTransform(const SkMatrix44& matrix) {
-  gfx::Transform transform;
-  transform.matrix() = matrix;
-  SetSublayerTransformInternal(transform);
-}
-
-SkMatrix44 WebLayerImplFixedBounds::sublayerTransform() const {
-  return original_sublayer_transform_.matrix();
-}
-
 void WebLayerImplFixedBounds::setTransform(const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;
@@ -72,14 +62,6 @@ SkMatrix44 WebLayerImplFixedBounds::transform() const {
 void WebLayerImplFixedBounds::SetFixedBounds(gfx::Size fixed_bounds) {
   if (fixed_bounds_ != fixed_bounds) {
     fixed_bounds_ = fixed_bounds;
-    UpdateLayerBoundsAndTransform();
-  }
-}
-
-void WebLayerImplFixedBounds::SetSublayerTransformInternal(
-    const gfx::Transform& transform) {
-  if (original_sublayer_transform_ != transform) {
-    original_sublayer_transform_ = transform;
     UpdateLayerBoundsAndTransform();
   }
 }
@@ -100,7 +82,6 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
       anchorPoint().x || anchorPoint().y) {
     layer_->SetBounds(original_bounds_);
     layer_->SetTransform(original_transform_);
-    layer_->SetSublayerTransform(original_sublayer_transform_);
     return;
   }
 
@@ -114,15 +95,6 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
       static_cast<float>(original_bounds_.height()) / fixed_bounds_.height();
   transform_with_bounds_scale.Scale(bounds_scale_x, bounds_scale_y);
   layer_->SetTransform(transform_with_bounds_scale);
-
-  // As we apply extra scale transform on this layer which will propagate to the
-  // sublayers, here undo the scale on sublayers.
-  gfx::Transform sublayer_transform_with_inverse_bounds_scale;
-  sublayer_transform_with_inverse_bounds_scale.Scale(1.f / bounds_scale_x,
-                                                     1.f / bounds_scale_y);
-  sublayer_transform_with_inverse_bounds_scale.PreconcatTransform(
-      original_sublayer_transform_);
-  layer_->SetSublayerTransform(sublayer_transform_with_inverse_bounds_scale);
 }
 
 }  // namespace webkit

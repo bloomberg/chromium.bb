@@ -1331,18 +1331,12 @@ static void CalculateDrawPropertiesInternal(
   //
   //        M[layer] is the layer's matrix (applied at the anchor point)
   //
-  //        M[sublayer] is the layer's sublayer transform (also applied at the
-  //        layer's anchor point)
-  //
   //        S[layer2content] is the ratio of a layer's content_bounds() to its
   //        Bounds().
   //
   //    Some composite transforms can help in understanding the sequence of
   //    transforms:
   //        composite_layer_transform = Tr[origin2anchor] * M[layer] *
-  //        Tr[origin2anchor].inverse()
-  //
-  //        composite_sublayer_transform = Tr[origin2anchor] * M[sublayer] *
   //        Tr[origin2anchor].inverse()
   //
   // 4. When a layer (or render surface) is drawn, it is drawn into a "target
@@ -1377,10 +1371,9 @@ static void CalculateDrawPropertiesInternal(
   // The transform hierarchy that is passed on to children (i.e. the child's
   // parent_matrix) is:
   //        M[parent]_for_child = M[parent] * Tr[origin] *
-  //            composite_layer_transform * composite_sublayer_transform
+  //            composite_layer_transform
   //                            = M[parent] * Tr[layer->position() + anchor] *
-  //                              M[layer] * Tr[anchor2origin] *
-  //                              composite_sublayer_transform
+  //                              M[layer] * Tr[anchor2origin]
   //
   //        and a similar matrix for the full hierarchy with respect to the
   //        root.
@@ -1880,18 +1873,6 @@ static void CalculateDrawPropertiesInternal(
     // Flatten to 2D if the layer doesn't preserve 3D.
     if (layer->should_flatten_transform())
       data_for_children.parent_matrix.FlattenTo2d();
-
-    // Apply the sublayer transform at the anchor point of the layer.
-    if (!layer->sublayer_transform().IsIdentity()) {
-      data_for_children.parent_matrix.Translate(
-          layer->anchor_point().x() * bounds.width(),
-          layer->anchor_point().y() * bounds.height());
-      data_for_children.parent_matrix.PreconcatTransform(
-          layer->sublayer_transform());
-      data_for_children.parent_matrix.Translate(
-          -layer->anchor_point().x() * bounds.width(),
-          -layer->anchor_point().y() * bounds.height());
-    }
 
     data_for_children.scroll_compensation_matrix =
         ComputeScrollCompensationMatrixForChildren(
