@@ -3064,6 +3064,9 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame, int world_id) {
   if (world_id)
     return;
 
+  if (enabled_bindings_& BINDINGS_POLICY_WEB_UI)
+    WebUIExtension::Install(frame);
+
   if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION)
     DomAutomationController::Install(this, frame);
 
@@ -4099,7 +4102,6 @@ void RenderViewImpl::OnCSSInsertRequest(const base::string16& frame_xpath,
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   if ((enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    RenderThread::Get()->RegisterExtension(WebUIExtension::Get());
     new WebUIExtensionData(this);
   }
 

@@ -5,21 +5,28 @@
 #ifndef CONTENT_RENDERER_WEBUI_EXTENSION_H_
 #define CONTENT_RENDERER_WEBUI_EXTENSION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 
-namespace v8 {
-class Extension;
+namespace blink {
+class WebFrame;
+}
+
+namespace gin {
+class Arguments;
 }
 
 namespace content {
 
 class WebUIExtension {
  public:
-  // Returns the v8::Extension object handling WebUI bindings. Caller takes
-  // ownership of returned object.
-  static v8::Extension* Get();
+  static void Install(blink::WebFrame* frame);
 
  private:
+  static void Send(gin::Arguments* args);
+  static std::string GetVariableValue(const std::string& name);
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebUIExtension);
 };
 
