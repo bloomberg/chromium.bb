@@ -1163,17 +1163,22 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   LayerTreeHostImpl::FrameData frame;
   bool draw_frame = false;
 
-  if (impl().layer_tree_host_impl->CanDraw() &&
-      (!drawing_for_readback || can_do_readback)) {
-    // If it is for a readback, make sure we draw the portion being read back.
-    gfx::Rect readback_rect;
-    if (drawing_for_readback)
-      readback_rect = impl().readback_request->rect;
+  if (impl().layer_tree_host_impl->CanDraw()) {
+    if (!drawing_for_readback || can_do_readback) {
+      // If it is for a readback, make sure we draw the portion being read back.
+      gfx::Rect readback_rect;
+      if (drawing_for_readback)
+        readback_rect = impl().readback_request->rect;
 
-    result.draw_result =
-        impl().layer_tree_host_impl->PrepareToDraw(&frame, readback_rect);
-    draw_frame = forced_draw ||
-                 result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS;
+      result.draw_result =
+          impl().layer_tree_host_impl->PrepareToDraw(&frame, readback_rect);
+      draw_frame = forced_draw ||
+                   result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS;
+    } else {
+      result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CANT_READBACK;
+    }
+  } else {
+    result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CANT_DRAW;
   }
 
   if (draw_frame) {
@@ -1205,10 +1210,14 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   if (drawing_for_readback) {
     DCHECK(!swap_requested);
     result.did_readback = false;
-    if (draw_frame && !impl().layer_tree_host_impl->IsContextLost()) {
-      impl().layer_tree_host_impl->Readback(impl().readback_request->pixels,
-                                            impl().readback_request->rect);
-      result.did_readback = true;
+    if (draw_frame) {
+      if (!impl().layer_tree_host_impl->IsContextLost()) {
+        impl().layer_tree_host_impl->Readback(impl().readback_request->pixels,
+                                              impl().readback_request->rect);
+        result.did_readback = true;
+      } else {
+        result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CONTEXT_LOST;
+      }
     }
     impl().readback_request->success = result.did_readback;
     impl().readback_request->completion.Signal();
@@ -1232,9 +1241,10 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
         base::Bind(&ThreadProxy::DidCommitAndDrawFrame, main_thread_weak_ptr_));
   }
 
-  if (draw_frame) {
+  if (draw_frame)
     CheckOutputSurfaceStatusOnImplThread();
 
+  if (result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS) {
     base::TimeDelta draw_duration = impl().timing_history.DidFinishDrawing();
 
     base::TimeDelta draw_duration_overestimate;
@@ -1260,6 +1270,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
                                50);
   }
 
+  DCHECK_NE(DrawSwapReadbackResult::INVALID_RESULT, result.draw_result);
   return result;
 }
 
@@ -1312,6 +1323,12 @@ void ThreadProxy::ScheduledActionManageTiles() {
 
 DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwap");
+
+  // SchedulerStateMachine::DidDrawIfPossibleCompleted isn't set up to
+  // handle DRAW_ABORTED_CANT_DRAW.  Moreover, the scheduler should
+  // never generate this call when it can't draw.
+  DCHECK(impl().layer_tree_host_impl->CanDraw());
+
   bool forced_draw = false;
   bool swap_requested = true;
   bool readback_requested = false;

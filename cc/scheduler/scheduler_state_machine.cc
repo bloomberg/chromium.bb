@@ -1038,6 +1038,12 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(
     case DrawSwapReadbackResult::INVALID_RESULT:
       NOTREACHED() << "Uninitialized DrawSwapReadbackResult.";
       break;
+    case DrawSwapReadbackResult::DRAW_ABORTED_CANT_DRAW:
+    case DrawSwapReadbackResult::DRAW_ABORTED_CANT_READBACK:
+    case DrawSwapReadbackResult::DRAW_ABORTED_CONTEXT_LOST:
+      NOTREACHED() << "Invalid return value from DrawAndSwapIfPossible:"
+                   << result;
+      break;
     case DrawSwapReadbackResult::DRAW_SUCCESS:
       consecutive_checkerboard_animations_ = 0;
       forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;

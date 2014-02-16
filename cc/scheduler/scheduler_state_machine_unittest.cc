@@ -207,7 +207,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.CommitPending());
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawForMissingHighResDoesNothing) {
+TEST(SchedulerStateMachineTest, TestFailedDrawForMissingHighResNeedsCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
