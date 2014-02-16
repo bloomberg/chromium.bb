@@ -158,16 +158,6 @@ gfx::Point WindowTreeHostWin::GetLocationOnNativeScreen() const {
 }
 
 
-void WindowTreeHostWin::SetCursor(gfx::NativeCursor native_cursor) {
-  // Custom web cursors are handled directly.
-  if (native_cursor == ui::kCursorCustom)
-    return;
-
-  ui::CursorLoaderWin cursor_loader;
-  cursor_loader.SetPlatformCursor(&native_cursor);
-  ::SetCursor(native_cursor.platform());
-}
-
 void WindowTreeHostWin::SetCapture() {
   if (!has_capture_) {
     has_capture_ = true;
@@ -211,12 +201,22 @@ void WindowTreeHostWin::UnConfineCursor() {
   ClipCursor(NULL);
 }
 
-void WindowTreeHostWin::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
+void WindowTreeHostWin::SetCursorNative(gfx::NativeCursor native_cursor) {
+  // Custom web cursors are handled directly.
+  if (native_cursor == ui::kCursorCustom)
+    return;
+
+  ui::CursorLoaderWin cursor_loader;
+  cursor_loader.SetPlatformCursor(&native_cursor);
+  ::SetCursor(native_cursor.platform());
 }
 
-void WindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
+void WindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
   // Deliberately not implemented.
+}
+
+void WindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
+  NOTIMPLEMENTED();
 }
 
 void WindowTreeHostWin::PostNativeEvent(const base::NativeEvent& native_event) {

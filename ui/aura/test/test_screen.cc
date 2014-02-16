@@ -36,7 +36,7 @@ RootWindow* TestScreen::CreateRootWindowForPrimaryDisplay() {
   root_window_ = new RootWindow(
       RootWindow::CreateParams(gfx::Rect(display_.GetSizeInPixel())));
   root_window_->window()->AddObserver(this);
-  root_window_->Init();
+  root_window_->host()->InitHost();
   return root_window_;
 }
 

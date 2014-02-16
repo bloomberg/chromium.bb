@@ -71,10 +71,6 @@ void WindowTreeHostMac::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMac::SetCursor(gfx::NativeCursor cursor_type) {
-  NOTIMPLEMENTED();
-}
-
 bool WindowTreeHostMac::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED();
   return false;
@@ -88,11 +84,15 @@ void WindowTreeHostMac::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMac::OnCursorVisibilityChanged(bool show) {
+void WindowTreeHostMac::SetCursorNative(gfx::NativeCursor cursor_type) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMac::MoveCursorTo(const gfx::Point& location) {
+void WindowTreeHostMac::MoveCursorToNative(const gfx::Point& location) {
+  NOTIMPLEMENTED();
+}
+
+void WindowTreeHostMac::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 

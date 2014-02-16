@@ -85,6 +85,24 @@ class AURA_EXPORT WindowTreeHost {
   // root window's.
   void ConvertPointFromHost(gfx::Point* point) const;
 
+  // Cursor.
+  // Sets the currently-displayed cursor. If the cursor was previously hidden
+  // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
+  // called, at which point the cursor that was last set via SetCursor() will be
+  // used.
+  void SetCursor(gfx::NativeCursor cursor);
+
+  // Invoked when the cursor's visibility has changed.
+  void OnCursorVisibilityChanged(bool visible);
+
+  // Moves the cursor to the specified location relative to the root window.
+  void MoveCursorTo(const gfx::Point& location);
+
+  // Moves the cursor to the |host_location| given in host coordinates.
+  void MoveCursorToHostLocation(const gfx::Point& host_location);
+
+  gfx::NativeCursor last_cursor() const { return last_cursor_; }
+
   virtual RootWindow* GetRootWindow() = 0;
 
   // Returns the accelerated widget.
@@ -114,9 +132,6 @@ class AURA_EXPORT WindowTreeHost {
   // Releases OS capture of the root window.
   virtual void ReleaseCapture() = 0;
 
-  // Sets the currently displayed cursor.
-  virtual void SetCursor(gfx::NativeCursor cursor) = 0;
-
   // Queries the mouse's current position relative to the host window and sets
   // it in |location_return|. Returns true if the cursor is within the host
   // window. The position set to |location_return| is constrained within the
@@ -132,12 +147,6 @@ class AURA_EXPORT WindowTreeHost {
   // being used in fullscreen mode, so root_window bounds = window bounds.
   virtual bool ConfineCursorToRootWindow() = 0;
   virtual void UnConfineCursor() = 0;
-
-  // Called when the cursor visibility has changed.
-  virtual void OnCursorVisibilityChanged(bool show) = 0;
-
-  // Moves the cursor to the specified location relative to the root window.
-  virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
@@ -161,12 +170,29 @@ class AURA_EXPORT WindowTreeHost {
 
   void NotifyHostResized(const gfx::Size& new_size);
 
+  // Sets the currently displayed cursor.
+  virtual void SetCursorNative(gfx::NativeCursor cursor) = 0;
+
+  // Moves the cursor to the specified location relative to the root window.
+  virtual void MoveCursorToNative(const gfx::Point& location) = 0;
+
+  // kCalled when the cursor visibility has changed.
+  virtual void OnCursorVisibilityChangedNative(bool show) = 0;
+
   WindowTreeHostDelegate* delegate_;
 
  private:
+  // Moves the cursor to the specified location. This method is internally used
+  // by MoveCursorTo() and MoveCursorToHostLocation().
+  void MoveCursorToInternal(const gfx::Point& root_location,
+                            const gfx::Point& host_location);
+
   scoped_ptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowTransformer> transformer_;
+
+  // Last cursor set.  Used for testing.
+  gfx::NativeCursor last_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

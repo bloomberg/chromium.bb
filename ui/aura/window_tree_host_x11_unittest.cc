@@ -32,6 +32,8 @@ class TestWindowTreeHostDelegate : public aura::WindowTreeHostDelegate,
   virtual void OnHostLostMouseGrab() OVERRIDE {}
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE {}
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE {}
+  virtual void OnCursorMovedToRootLocation(
+      const gfx::Point& root_location) OVERRIDE {}
   virtual aura::RootWindow* AsRootWindow() OVERRIDE { return NULL; }
   virtual const aura::RootWindow* AsRootWindow() const OVERRIDE { return NULL; }
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE {

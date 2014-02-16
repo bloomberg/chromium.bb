@@ -45,6 +45,8 @@ class AURA_EXPORT WindowTreeHostDelegate {
   virtual void OnHostMoved(const gfx::Point& origin) = 0;
   virtual void OnHostResized(const gfx::Size& size) = 0;
 
+  virtual void OnCursorMovedToRootLocation(const gfx::Point& root_location) = 0;
+
   virtual RootWindow* AsRootWindow() = 0;
   virtual const RootWindow* AsRootWindow() const = 0;
 

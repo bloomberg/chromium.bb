@@ -678,13 +678,6 @@ void WindowTreeHostX11::ReleaseCapture() {
   // TODO(oshima): Release x input.
 }
 
-void WindowTreeHostX11::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor == current_cursor_)
-    return;
-  current_cursor_ = cursor;
-  SetCursorInternal(cursor);
-}
-
 bool WindowTreeHostX11::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
       client::GetCursorClient(GetRootWindow()->window());
@@ -757,16 +750,6 @@ void WindowTreeHostX11::UnConfineCursor() {
 #endif
 }
 
-void WindowTreeHostX11::OnCursorVisibilityChanged(bool show) {
-  SetCrOSTapPaused(!show);
-}
-
-void WindowTreeHostX11::MoveCursorTo(const gfx::Point& location) {
-  XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
-               bounds_.x() + location.x(),
-               bounds_.y() + location.y());
-}
-
 void WindowTreeHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
@@ -806,6 +789,23 @@ void WindowTreeHostX11::OnDeviceScaleFactorChanged(
 
 void WindowTreeHostX11::PrepareForShutdown() {
   base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
+}
+
+void WindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
+  if (cursor == current_cursor_)
+    return;
+  current_cursor_ = cursor;
+  SetCursorInternal(cursor);
+}
+
+void WindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
+  XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
+               bounds_.x() + location.x(),
+               bounds_.y() + location.y());
+}
+
+void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
+  SetCrOSTapPaused(!show);
 }
 
 void WindowTreeHostX11::OnWindowInitialized(Window* window) {

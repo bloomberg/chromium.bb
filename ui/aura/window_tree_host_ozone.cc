@@ -76,10 +76,6 @@ void WindowTreeHostOzone::SetCapture() { NOTIMPLEMENTED(); }
 
 void WindowTreeHostOzone::ReleaseCapture() { NOTIMPLEMENTED(); }
 
-void WindowTreeHostOzone::SetCursor(gfx::NativeCursor cursor) {
-  gfx::SurfaceFactoryOzone::GetInstance()->SetCursorImage(*cursor.platform());
-}
-
 bool WindowTreeHostOzone::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED();
   return false;
@@ -92,14 +88,6 @@ bool WindowTreeHostOzone::ConfineCursorToRootWindow() {
 
 void WindowTreeHostOzone::UnConfineCursor() { NOTIMPLEMENTED(); }
 
-void WindowTreeHostOzone::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
-}
-
-void WindowTreeHostOzone::MoveCursorTo(const gfx::Point& location) {
-  gfx::SurfaceFactoryOzone::GetInstance()->MoveCursorTo(location);
-}
-
 void WindowTreeHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
@@ -111,6 +99,18 @@ void WindowTreeHostOzone::OnDeviceScaleFactorChanged(
 }
 
 void WindowTreeHostOzone::PrepareForShutdown() { NOTIMPLEMENTED(); }
+
+void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
+  gfx::SurfaceFactoryOzone::GetInstance()->SetCursorImage(*cursor.platform());
+}
+
+void WindowTreeHostOzone::MoveCursorToNative(const gfx::Point& location) {
+  gfx::SurfaceFactoryOzone::GetInstance()->MoveCursorTo(location);
+}
+
+void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
+  NOTIMPLEMENTED();
+}
 
 ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {
   return delegate_->GetEventProcessor();

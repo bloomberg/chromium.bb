@@ -511,7 +511,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
 
   // Cursor starts as a pointer (set during Shell::Init()).
-  EXPECT_EQ(ui::kCursorPointer, dispatcher->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorPointer,
+            dispatcher->host()->last_cursor().native_type());
 
   {
     // Resize edges and corners show proper cursors.
@@ -519,7 +520,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::kCursorSouthResize, dispatcher->last_cursor().native_type());
+    EXPECT_EQ(ui::kCursorSouthResize,
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -528,7 +530,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(ui::kCursorSouthWestResize,
-              dispatcher->last_cursor().native_type());
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -537,7 +539,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(ui::kCursorSouthEastResize,
-              dispatcher->last_cursor().native_type());
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -545,7 +547,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::kCursorWestResize, dispatcher->last_cursor().native_type());
+    EXPECT_EQ(ui::kCursorWestResize,
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -553,7 +556,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::kCursorEastResize, dispatcher->last_cursor().native_type());
+    EXPECT_EQ(ui::kCursorEastResize,
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -561,7 +565,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0, 0);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::kCursorNorthResize, dispatcher->last_cursor().native_type());
+    EXPECT_EQ(ui::kCursorNorthResize,
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -570,7 +575,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(ui::kCursorNorthWestResize,
-              dispatcher->last_cursor().native_type());
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -579,7 +584,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(ui::kCursorNorthEastResize,
-              dispatcher->last_cursor().native_type());
+              dispatcher->host()->last_cursor().native_type());
   }
 
   {
@@ -588,7 +593,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0, 0);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::kCursorNull, dispatcher->last_cursor().native_type());
+    EXPECT_EQ(ui::kCursorNull, dispatcher->host()->last_cursor().native_type());
   }
 }
 

@@ -21,7 +21,7 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
       Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->GetDispatcher()->SetCursor(cursor);
+    (*iter)->GetDispatcher()->host()->SetCursor(cursor);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->
       cursor_window_controller()->SetCursor(cursor);
@@ -33,7 +33,7 @@ void NotifyCursorVisibilityChange(bool visible) {
       Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->GetDispatcher()->OnCursorVisibilityChanged(visible);
+    (*iter)->GetDispatcher()->host()->OnCursorVisibilityChanged(visible);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->cursor_window_controller()->
       SetVisibility(visible);

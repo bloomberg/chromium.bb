@@ -844,7 +844,7 @@ TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
   filter->Reset();
 
   // Hide the cursor and verify a mouse exit was dispatched.
-  dispatcher()->OnCursorVisibilityChanged(false);
+  dispatcher()->host()->OnCursorVisibilityChanged(false);
   EXPECT_FALSE(filter->events().empty());
   EXPECT_EQ("MOUSE_EXITED", EventTypesToString(filter->events()));
 
@@ -1305,7 +1305,7 @@ TEST_F(RootWindowTest, MAYBE_ValidRootDuringDestruction) {
   {
     scoped_ptr<RootWindow> root_window(
         new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100))));
-    root_window->Init();
+    root_window->host()->InitHost();
     // Owned by RootWindow.
     Window* w1 = CreateNormalWindow(1, root_window->window(), NULL);
     w1->AddObserver(&observer);
@@ -1420,7 +1420,7 @@ TEST_F(RootWindowTest, MAYBE_DeleteRootFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
   RootWindow* r2 =
       new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100)));
-  r2->Init();
+  r2->host()->InitHost();
   DeleteRootFromHeldMouseEventDelegate delegate(r2);
   // Owned by |r2|.
   Window* w1 = CreateNormalWindow(1, r2->window(), &delegate);

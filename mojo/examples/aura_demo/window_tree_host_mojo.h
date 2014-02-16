@@ -45,15 +45,15 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
-  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
-  virtual void OnCursorVisibilityChanged(bool show) OVERRIDE;
-  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+  virtual void SetCursorNative(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
+  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
 
   // ui::EventSource:
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;

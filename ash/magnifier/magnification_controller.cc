@@ -48,7 +48,7 @@ void MoveCursorTo(aura::RootWindow* root_window,
                   const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
   root_window->host()->GetRootTransform().TransformPoint(&host_location_3f);
-  root_window->MoveCursorToHostLocation(
+  root_window->host()->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
 

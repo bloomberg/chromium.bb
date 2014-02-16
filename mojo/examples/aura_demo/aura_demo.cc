@@ -139,7 +139,7 @@ class AuraDemo : public Application {
     params.host = window_tree_host_.get();
     root_window_.reset(new aura::RootWindow(params));
     window_tree_host_->set_delegate(root_window_.get());
-    root_window_->Init();
+    root_window_->host()->InitHost();
 
     window_tree_client_.reset(new DemoWindowTreeClient(root_window_->window()));
 

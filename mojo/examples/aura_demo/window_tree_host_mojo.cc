@@ -109,10 +109,6 @@ void WindowTreeHostMojo::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
-}
-
 bool WindowTreeHostMojo::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED() << "QueryMouseLocation";
   return false;
@@ -124,14 +120,6 @@ bool WindowTreeHostMojo::ConfineCursorToRootWindow() {
 }
 
 void WindowTreeHostMojo::UnConfineCursor() {
-  NOTIMPLEMENTED();
-}
-
-void WindowTreeHostMojo::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
-}
-
-void WindowTreeHostMojo::MoveCursorTo(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }
 
@@ -147,6 +135,21 @@ void WindowTreeHostMojo::OnDeviceScaleFactorChanged(float device_scale_factor) {
 void WindowTreeHostMojo::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
+
+void WindowTreeHostMojo::SetCursorNative(gfx::NativeCursor cursor) {
+  NOTIMPLEMENTED();
+}
+
+void WindowTreeHostMojo::MoveCursorToNative(const gfx::Point& location) {
+  NOTIMPLEMENTED();
+}
+
+void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
+  NOTIMPLEMENTED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMojo, ui::EventSource implementation:
 
 ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
   return delegate_->GetEventProcessor();

@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_tree_host.h"
 
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_transformer.h"
@@ -160,11 +161,44 @@ void WindowTreeHost::ConvertPointFromHost(gfx::Point* point) const {
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
+void WindowTreeHost::SetCursor(gfx::NativeCursor cursor) {
+  last_cursor_ = cursor;
+  // A lot of code seems to depend on NULL cursors actually showing an arrow,
+  // so just pass everything along to the host.
+  SetCursorNative(cursor);
+}
+
+void WindowTreeHost::OnCursorVisibilityChanged(bool show) {
+  // Clear any existing mouse hover effects when the cursor becomes invisible.
+  // Note we do not need to dispatch a mouse enter when the cursor becomes
+  // visible because that can only happen in response to a mouse event, which
+  // will trigger its own mouse enter.
+  if (!show) {
+    delegate_->AsRootWindow()->DispatchMouseExitAtPoint(
+        delegate_->AsRootWindow()->GetLastMouseLocationInRoot());
+  }
+
+  OnCursorVisibilityChangedNative(show);
+}
+
+void WindowTreeHost::MoveCursorTo(const gfx::Point& location_in_dip) {
+  gfx::Point host_location(location_in_dip);
+  ConvertPointToHost(&host_location);
+  MoveCursorToInternal(location_in_dip, host_location);
+}
+
+void WindowTreeHost::MoveCursorToHostLocation(const gfx::Point& host_location) {
+  gfx::Point root_location(host_location);
+  ConvertPointFromHost(&root_location);
+  MoveCursorToInternal(root_location, host_location);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
 WindowTreeHost::WindowTreeHost()
-    : delegate_(NULL) {
+    : delegate_(NULL),
+      last_cursor_(ui::kCursorNull) {
 }
 
 void WindowTreeHost::DestroyCompositor() {
@@ -189,6 +223,18 @@ void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);
   delegate_->OnHostResized(layer_size);
+}
+
+void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
+                                          const gfx::Point& host_location) {
+  MoveCursorToNative(host_location);
+  client::CursorClient* cursor_client = client::GetCursorClient(window());
+  if (cursor_client) {
+    const gfx::Display& display =
+        gfx::Screen::GetScreenFor(window())->GetDisplayNearestWindow(window());
+    cursor_client->SetDisplay(display);
+  }
+  delegate_->OnCursorMovedToRootLocation(root_location);
 }
 
 #if defined(OS_ANDROID)

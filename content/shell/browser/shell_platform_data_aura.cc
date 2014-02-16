@@ -115,7 +115,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   aura::Env::CreateInstance();
   root_window_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(gfx::Rect(initial_size))));
-  root_window_->Init();
+  root_window_->host()->InitHost();
   root_window_->window()->SetLayoutManager(new FillLayout(root_window_.get()));
 
   focus_client_.reset(new aura::test::TestFocusClient());

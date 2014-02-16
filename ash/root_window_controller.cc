@@ -657,7 +657,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
   Shell* shell = Shell::GetInstance();
   shell->InitRootWindow(root_window());
 
-  root_window_->SetCursor(ui::kCursorPointer);
+  root_window_->host()->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window_->window());
 
   if (root_window_type == VIRTUAL_KEYBOARD) {

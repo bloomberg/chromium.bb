@@ -59,7 +59,7 @@ void DesktopNativeCursorManager::SetCursor(
     for (RootWindows::const_iterator i = root_windows_.begin();
          i != root_windows_.end();
          ++i) {
-      (*i)->SetCursor(new_cursor);
+      (*i)->host()->SetCursor(new_cursor);
     }
   }
 }
@@ -77,14 +77,14 @@ void DesktopNativeCursorManager::SetVisibility(
     for (RootWindows::const_iterator i = root_windows_.begin();
          i != root_windows_.end();
          ++i) {
-      (*i)->SetCursor(invisible_cursor);
+      (*i)->host()->SetCursor(invisible_cursor);
     }
   }
 
   for (RootWindows::const_iterator i = root_windows_.begin();
        i != root_windows_.end();
        ++i) {
-    (*i)->OnCursorVisibilityChanged(visible);
+    (*i)->host()->OnCursorVisibilityChanged(visible);
   }
 }
 

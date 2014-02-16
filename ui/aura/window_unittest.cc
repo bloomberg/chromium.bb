@@ -372,7 +372,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   transform.Rotate(90.0);
   transform.Scale(2.0, 5.0);
   dispatcher()->host()->SetTransform(transform);
-  dispatcher()->MoveCursorTo(gfx::Point(10, 10));
+  dispatcher()->host()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
   EXPECT_TRUE(dispatcher()->host()->QueryMouseLocation(&mouse_location));

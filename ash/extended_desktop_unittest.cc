@@ -254,11 +254,13 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::WindowEventDispatcher* dispatcher0 = root_windows[0]->GetDispatcher();
   aura::WindowEventDispatcher* dispatcher1 = root_windows[1]->GetDispatcher();
-  EXPECT_EQ(ui::kCursorPointer, dispatcher0->last_cursor().native_type());
-  EXPECT_EQ(ui::kCursorPointer, dispatcher1->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorPointer,
+            dispatcher0->host()->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorPointer,
+            dispatcher1->host()->last_cursor().native_type());
   Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, dispatcher0->last_cursor().native_type());
-  EXPECT_EQ(ui::kCursorCopy, dispatcher1->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorCopy, dispatcher0->host()->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorCopy, dispatcher1->host()->last_cursor().native_type());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {

@@ -416,13 +416,6 @@ gfx::Point RemoteWindowTreeHostWin::GetLocationOnNativeScreen() const {
   return gfx::Point(0, 0);
 }
 
-void RemoteWindowTreeHostWin::SetCursor(gfx::NativeCursor native_cursor) {
-  if (!host_)
-    return;
-  host_->Send(
-      new MetroViewerHostMsg_SetCursor(uint64(native_cursor.platform())));
-}
-
 void RemoteWindowTreeHostWin::SetCapture() {
 }
 
@@ -450,11 +443,14 @@ bool RemoteWindowTreeHostWin::ConfineCursorToRootWindow() {
 void RemoteWindowTreeHostWin::UnConfineCursor() {
 }
 
-void RemoteWindowTreeHostWin::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
+void RemoteWindowTreeHostWin::SetCursorNative(gfx::NativeCursor native_cursor) {
+  if (!host_)
+    return;
+  host_->Send(
+    new MetroViewerHostMsg_SetCursor(uint64(native_cursor.platform())));
 }
 
-void RemoteWindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
+void RemoteWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
   VLOG(1) << "In MoveCursorTo: " << location.x() << ", " << location.y();
   if (!host_)
     return;
@@ -477,6 +473,10 @@ void RemoteWindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
   ignore_mouse_moves_until_set_cursor_ack_ = true;
   VLOG(1) << "In MoveCursorTo. Sending IPC";
   host_->Send(new MetroViewerHostMsg_SetCursorPos(location.x(), location.y()));
+}
+
+void RemoteWindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
+  NOTIMPLEMENTED();
 }
 
 void RemoteWindowTreeHostWin::PostNativeEvent(

@@ -718,7 +718,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
   root_window->AddRootWindowObserver(this);
   internal::InitRootWindowSettings(root_window->window())->display_id =
       display.id();
-  root_window->Init();
+  root_window->host()->InitHost();
 
   root_windows_[display.id()] = root_window->window();
   SetDisplayPropertiesOnHostWindow(root_window, display);

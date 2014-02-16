@@ -55,8 +55,8 @@ class WindowTargeter;
 class AURA_EXPORT RootWindow : public ui::EventProcessor,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
-                               public aura::client::CaptureDelegate,
-                               public aura::WindowTreeHostDelegate {
+                               public client::CaptureDelegate,
+                               public WindowTreeHostDelegate {
  public:
   struct AURA_EXPORT CreateParams {
     // CreateParams with initial_bounds and default host in pixel.
@@ -86,12 +86,8 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
         const_cast<const RootWindow*>(this)->host());
   }
   const WindowTreeHost* host() const { return host_.get(); }
-  gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
-
-  // Initializes the root window.
-  void Init();
 
   // Stop listening events in preparation for shutdown.
   void PrepareForShutdown();
@@ -103,23 +99,8 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   WindowTreeHostDelegate* AsWindowTreeHostDelegate();
 
-  // Sets the currently-displayed cursor. If the cursor was previously hidden
-  // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
-  // called, at which point the cursor that was last set via SetCursor() will be
-  // used.
-  void SetCursor(gfx::NativeCursor cursor);
-
-  // Invoked when the cursor's visibility has changed.
-  void OnCursorVisibilityChanged(bool visible);
-
   // Invoked when the mouse events get enabled or disabled.
   void OnMouseEventsEnableStateChanged(bool enabled);
-
-  // Moves the cursor to the specified location relative to the root window.
-  void MoveCursorTo(const gfx::Point& location);
-
-  // Moves the cursor to the |host_location| given in host coordinates.
-  void MoveCursorToHostLocation(const gfx::Point& host_location);
 
   // Returns a target window for the given gesture event.
   Window* GetGestureTarget(ui::GestureEvent* event);
@@ -210,11 +191,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // received from the host.
   void TransformEventForDeviceScaleFactor(ui::LocatedEvent* event);
 
-  // Moves the cursor to the specified location. This method is internally used
-  // by MoveCursorTo() and MoveCursorToHostLocation().
-  void MoveCursorToInternal(const gfx::Point& root_location,
-                            const gfx::Point& host_location);
-
   // Dispatches the specified event type (intended for enter/exit) to the
   // |mouse_moved_handler_|.
   ui::EventDispatchDetails DispatchMouseEnterOrExit(
@@ -275,6 +251,8 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   virtual void OnHostLostMouseGrab() OVERRIDE;
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
+  virtual void OnCursorMovedToRootLocation(
+      const gfx::Point& root_location) OVERRIDE;
   virtual RootWindow* AsRootWindow() OVERRIDE;
   virtual const RootWindow* AsRootWindow() const OVERRIDE;
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
@@ -309,9 +287,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   // Touch ids that are currently down.
   uint32 touch_ids_down_;
-
-  // Last cursor set.  Used for testing.
-  gfx::NativeCursor last_cursor_;
 
   ObserverList<RootWindowObserver> observers_;
 

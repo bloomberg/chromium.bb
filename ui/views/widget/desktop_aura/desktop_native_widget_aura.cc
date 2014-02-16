@@ -399,7 +399,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   desktop_window_tree_host_->Init(content_window_, params, &rw_params);
 
   root_window_.reset(new aura::RootWindow(rw_params));
-  root_window_->Init();
+  root_window_->host()->InitHost();
   root_window_->window()->AddChild(content_window_container_);
   root_window_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);
 

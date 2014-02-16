@@ -102,7 +102,6 @@ RootWindow::RootWindow(const CreateParams& params)
     : window_(new Window(NULL)),
       host_(CreateHost(this, params)),
       touch_ids_down_(0),
-      last_cursor_(ui::kCursorNull),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       event_dispatch_target_(NULL),
@@ -151,10 +150,6 @@ RootWindow* RootWindow::GetForAcceleratedWidget(
       ui::ViewProp::GetValue(widget, kRootWindowForAcceleratedWidget));
 }
 
-void RootWindow::Init() {
-  host()->InitHost();
-}
-
 void RootWindow::PrepareForShutdown() {
   host_->PrepareForShutdown();
   // discard synthesize event request as well.
@@ -188,41 +183,11 @@ WindowTreeHostDelegate* RootWindow::AsWindowTreeHostDelegate() {
   return this;
 }
 
-void RootWindow::SetCursor(gfx::NativeCursor cursor) {
-  last_cursor_ = cursor;
-  // A lot of code seems to depend on NULL cursors actually showing an arrow,
-  // so just pass everything along to the host.
-  host_->SetCursor(cursor);
-}
-
-void RootWindow::OnCursorVisibilityChanged(bool show) {
-  // Clear any existing mouse hover effects when the cursor becomes invisible.
-  // Note we do not need to dispatch a mouse enter when the cursor becomes
-  // visible because that can only happen in response to a mouse event, which
-  // will trigger its own mouse enter.
-  if (!show)
-    DispatchMouseExitAtPoint(GetLastMouseLocationInRoot());
-
-  host_->OnCursorVisibilityChanged(show);
-}
-
 void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
   // Send entered / exited so that visual state can be updated to match
   // mouse events state.
   PostMouseMoveEventAfterWindowChange();
   // TODO(mazda): Add code to disable mouse events when |enabled| == false.
-}
-
-void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
-  gfx::Point host_location(location_in_dip);
-  host()->ConvertPointToHost(&host_location);
-  MoveCursorToInternal(location_in_dip, host_location);
-}
-
-void RootWindow::MoveCursorToHostLocation(const gfx::Point& host_location) {
-  gfx::Point root_location(host_location);
-  host()->ConvertPointFromHost(&root_location);
-  MoveCursorToInternal(root_location, host_location);
 }
 
 Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
@@ -380,19 +345,6 @@ gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
 
 void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
   event->UpdateForRootTransform(host()->GetInverseRootTransform());
-}
-
-void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
-                                      const gfx::Point& host_location) {
-  host_->MoveCursorTo(host_location);
-  SetLastMouseLocation(window(), root_location);
-  client::CursorClient* cursor_client = client::GetCursorClient(window());
-  if (cursor_client) {
-    const gfx::Display& display =
-        gfx::Screen::GetScreenFor(window())->GetDisplayNearestWindow(window());
-    cursor_client->SetDisplay(display);
-  }
-  synthesize_mouse_move_ = false;
 }
 
 ui::EventDispatchDetails RootWindow::DispatchMouseEnterOrExit(
@@ -723,6 +675,11 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
     SetLastMouseLocation(window(),
                          ui::ConvertPointToDIP(window()->layer(), point));
   }
+  synthesize_mouse_move_ = false;
+}
+
+void RootWindow::OnCursorMovedToRootLocation(const gfx::Point& root_location) {
+  SetLastMouseLocation(window(), root_location);
   synthesize_mouse_move_ = false;
 }
 

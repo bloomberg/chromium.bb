@@ -56,7 +56,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
         Shell::GetInstance()->display_controller());
     InitRootWindowSettings(root_window->window())->display_id =
         display_info.id();
-    root_window->Init();
+    root_window->host()->InitHost();
     RootWindowController::CreateForVirtualKeyboardDisplay(root_window);
     root_window_controller_.reset(GetRootWindowController(
         root_window->window()));

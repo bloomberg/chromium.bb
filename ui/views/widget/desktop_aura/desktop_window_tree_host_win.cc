@@ -531,13 +531,6 @@ void DesktopWindowTreeHostWin::ReleaseCapture() {
   message_handler_->ReleaseCapture();
 }
 
-void DesktopWindowTreeHostWin::SetCursor(gfx::NativeCursor cursor) {
-  ui::CursorLoaderWin cursor_loader;
-  cursor_loader.SetPlatformCursor(&cursor);
-
-  message_handler_->SetCursor(cursor.platform());
-}
-
 bool DesktopWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_->window());
@@ -562,19 +555,6 @@ void DesktopWindowTreeHostWin::UnConfineCursor() {
   ::ClipCursor(NULL);
 }
 
-void DesktopWindowTreeHostWin::OnCursorVisibilityChanged(bool show) {
-  if (is_cursor_visible_ == show)
-    return;
-  is_cursor_visible_ = show;
-  ::ShowCursor(!!show);
-}
-
-void DesktopWindowTreeHostWin::MoveCursorTo(const gfx::Point& location) {
-  POINT cursor_location = location.ToPOINT();
-  ::ClientToScreen(GetHWND(), &cursor_location);
-  ::SetCursorPos(cursor_location.x, cursor_location.y);
-}
-
 void DesktopWindowTreeHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }
@@ -586,6 +566,25 @@ void DesktopWindowTreeHostWin::OnDeviceScaleFactorChanged(
 void DesktopWindowTreeHostWin::PrepareForShutdown() {
 }
 
+void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
+  ui::CursorLoaderWin cursor_loader;
+  cursor_loader.SetPlatformCursor(&cursor);
+
+  message_handler_->SetCursor(cursor.platform());
+}
+
+void DesktopWindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
+  if (is_cursor_visible_ == show)
+    return;
+  is_cursor_visible_ = show;
+  ::ShowCursor(!!show);
+}
+
+void DesktopWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
+  POINT cursor_location = location.ToPOINT();
+  ::ClientToScreen(GetHWND(), &cursor_location);
+  ::SetCursorPos(cursor_location.x, cursor_location.y);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, ui::EventSource implementation:

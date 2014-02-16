@@ -834,10 +834,6 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     g_current_capture->OnCaptureReleased();
 }
 
-void DesktopWindowTreeHostX11::SetCursor(gfx::NativeCursor cursor) {
-  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
-}
-
 bool DesktopWindowTreeHostX11::QueryMouseLocation(
     gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
@@ -873,14 +869,18 @@ void DesktopWindowTreeHostX11::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
-void DesktopWindowTreeHostX11::OnCursorVisibilityChanged(bool show) {
-  // TODO(erg): Conditional on us enabling touch on desktop linux builds, do
-  // the same tap-to-click disabling here that chromeos does.
+void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
+  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
-void DesktopWindowTreeHostX11::MoveCursorTo(const gfx::Point& location) {
+void DesktopWindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());
+}
+
+void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
+  // TODO(erg): Conditional on us enabling touch on desktop linux builds, do
+  // the same tap-to-click disabling here that chromeos does.
 }
 
 void DesktopWindowTreeHostX11::PostNativeEvent(

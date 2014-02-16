@@ -98,7 +98,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     // TODO(oshima): TouchHUD is using idkey.
     InitRootWindowSettings(root_window_->window())->display_id =
         display_info.id();
-    root_window_->Init();
+    root_window_->host()->InitHost();
 #if defined(USE_X11)
     DisableInput(root_window_->host()->GetAcceleratedWidget());
 #endif

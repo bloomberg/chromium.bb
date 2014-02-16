@@ -19,7 +19,7 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   root_window_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(
           gfx::Rect(default_window_size))));
-  root_window_->Init();
+  root_window_->host()->InitHost();
   aura::client::SetWindowTreeClient(root_window_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
