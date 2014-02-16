@@ -360,7 +360,10 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  wallpaper_manager->SetWallpaperFromImageSkia(user_id_, wallpaper, layout);
+  bool update_wallpaper =
+      user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
+  wallpaper_manager->SetWallpaperFromImageSkia(
+      user_id_, wallpaper, layout, update_wallpaper);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
@@ -462,9 +465,11 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
-  wallpaper_manager->SetWallpaperFromImageSkia(user_id_,
-                                               *wallpaper.get(),
-                                               layout);
+  bool update_wallpaper =
+      user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
+  wallpaper_manager->SetWallpaperFromImageSkia(
+      user_id_, *wallpaper.get(), layout, update_wallpaper);
+
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
@@ -488,8 +493,8 @@ bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
       chromeos::WallpaperManager::Get();
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
 
-  std::string email = user_manager->GetActiveUser()->email();
-  wallpaper_manager->RemoveUserWallpaperInfo(email);
+  std::string user_id = user_manager->GetActiveUser()->email();
+  wallpaper_manager->RemoveUserWallpaperInfo(user_id);
 
   chromeos::WallpaperInfo info = {
       "",
@@ -499,8 +504,9 @@ bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
   };
   bool is_persistent =
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
-  wallpaper_manager->SetDefaultWallpaperNow(email);
+  wallpaper_manager->SetUserWallpaperInfo(user_id, info, is_persistent);
+
+  wallpaper_manager->SetDefaultWallpaperNow(user_id);
   return true;
 }
 
@@ -544,12 +550,15 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
+  bool update_wallpaper =
+      user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
   wallpaper_manager->SetCustomWallpaper(user_id_,
                                         user_id_hash_,
                                         params->file_name,
                                         layout,
                                         chromeos::User::CUSTOMIZED,
-                                        image);
+                                        image,
+                                        update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   if (params->generate_thumbnail) {

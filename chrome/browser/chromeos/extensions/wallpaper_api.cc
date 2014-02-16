@@ -92,7 +92,7 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   // Gets email address and username hash while at UI thread.
-  email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   user_id_hash_ =
       chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
 
@@ -134,12 +134,15 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       set_wallpaper::Params::Details::ToString(params_->details.layout));
-  wallpaper_manager->SetCustomWallpaper(email_,
+  bool update_wallpaper =
+      user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
+  wallpaper_manager->SetCustomWallpaper(user_id_,
                                         user_id_hash_,
                                         params_->details.name,
                                         layout,
                                         chromeos::User::CUSTOMIZED,
-                                        image);
+                                        image,
+                                        update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   if (params_->details.thumbnail) {

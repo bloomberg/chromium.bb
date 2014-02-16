@@ -235,13 +235,15 @@ class WallpaperManager: public content::NotificationObserver {
                               int preferred_height);
 
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
-  // local state preferences.
+  // local state preferences. If |update_wallpaper| is false, don't change
+  // wallpaper but only update cache.
   void SetCustomWallpaper(const std::string& user_id,
                           const std::string& user_id_hash,
                           const std::string& file,
                           ash::WallpaperLayout layout,
                           User::WallpaperType type,
-                          const UserImage& wallpaper);
+                          const UserImage& wallpaper,
+                          bool update_wallpaper);
 
   // Sets wallpaper to default wallpaper (asynchronously with zero delay).
   void SetDefaultWallpaperNow(const std::string& user_id);
@@ -269,10 +271,12 @@ class WallpaperManager: public content::NotificationObserver {
   // Sets |user_id|'s wallpaper (asynchronously with default delay).
   void SetUserWallpaperDelayed(const std::string& user_id);
 
-  // Sets wallpaper to |wallpaper| (asynchronously with zero delay).
+  // Sets wallpaper to |wallpaper| (asynchronously with zero delay). If
+  // |update_wallpaper| is false, skip change wallpaper but only update cache.
   void SetWallpaperFromImageSkia(const std::string& user_id,
                                  const gfx::ImageSkia& wallpaper,
-                                 ash::WallpaperLayout layout);
+                                 ash::WallpaperLayout layout,
+                                 bool update_wallpaper);
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
   // current display's resolution. (asynchronously with zero delay)

@@ -523,7 +523,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   gfx::ImageSkia red_wallpaper = CreateTestImage(SK_ColorRED);
   wallpaper_manager->SetWallpaperFromImageSkia(kTestUser1,
                                                red_wallpaper,
-                                               WALLPAPER_LAYOUT_CENTER);
+                                               WALLPAPER_LAYOUT_CENTER,
+                                               true);
   WaitAsyncWallpaperLoadFinished();
   // SetWallpaperFromImageSkia should update wallpaper cache when multi-profile
   // is turned on.
@@ -537,7 +538,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
                                         "dummy",  // dummy file name
                                         WALLPAPER_LAYOUT_CENTER,
                                         User::CUSTOMIZED,
-                                        image);
+                                        image,
+                                        true);
   WaitAsyncWallpaperLoadFinished();
   // SetCustomWallpaper should also update wallpaper cache when multi-profile is
   // turned on.

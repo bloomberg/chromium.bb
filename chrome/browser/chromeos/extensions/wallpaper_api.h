@@ -51,8 +51,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   // Unique file name of the custom wallpaper.
   std::string file_name_;
 
-  // Email address of logged in user.
-  std::string email_;
+  // User id of the user who initiate this API call.
+  std::string user_id_;
 
   // User id hash of the logged in user.
   std::string user_id_hash_;

@@ -595,8 +595,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
                                           const std::string& file,
                                           ash::WallpaperLayout layout,
                                           User::WallpaperType type,
-                                          const UserImage& wallpaper) {
+                                          const UserImage& wallpaper,
+                                          bool update_wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(UserManager::Get()->IsUserLoggedIn());
 
   // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
@@ -651,8 +653,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
       base::Time::Now().LocalMidnight()
   };
   SetUserWallpaperInfo(user_id, info, is_persistent);
-  GetPendingWallpaper(user_id, false)->ResetSetWallpaperImage(
-      wallpaper.image(), info);
+  if (update_wallpaper) {
+    GetPendingWallpaper(user_id, false)
+        ->ResetSetWallpaperImage(wallpaper.image(), info);
+  }
 
   if (UserManager::IsMultipleProfilesAllowed())
     wallpaper_cache_[user_id] = wallpaper.image();
@@ -806,7 +810,10 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
 void WallpaperManager::SetWallpaperFromImageSkia(
     const std::string& user_id,
     const gfx::ImageSkia& wallpaper,
-    ash::WallpaperLayout layout) {
+    ash::WallpaperLayout layout,
+    bool update_wallpaper) {
+  DCHECK(UserManager::Get()->IsUserLoggedIn());
+
   // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
@@ -814,8 +821,11 @@ void WallpaperManager::SetWallpaperFromImageSkia(
   info.layout = layout;
   if (UserManager::IsMultipleProfilesAllowed())
     wallpaper_cache_[user_id] = wallpaper;
-  GetPendingWallpaper(last_selected_user_, false /* Not delayed */)->
-      ResetSetWallpaperImage(wallpaper, info);
+
+  if (update_wallpaper) {
+    GetPendingWallpaper(last_selected_user_, false /* Not delayed */)
+        ->ResetSetWallpaperImage(wallpaper, info);
+  }
 }
 
 void WallpaperManager::UpdateWallpaper() {
