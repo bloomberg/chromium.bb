@@ -132,6 +132,34 @@ class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
   webrtc::ObserverInterface* observer_;
 };
 
+class MockMediaStream : public webrtc::MediaStreamInterface {
+ public:
+  explicit MockMediaStream(const std::string& label);
+
+  virtual bool AddTrack(webrtc::AudioTrackInterface* track) OVERRIDE;
+  virtual bool AddTrack(webrtc::VideoTrackInterface* track) OVERRIDE;
+  virtual bool RemoveTrack(webrtc::AudioTrackInterface* track) OVERRIDE;
+  virtual bool RemoveTrack(webrtc::VideoTrackInterface* track) OVERRIDE;
+  virtual std::string label() const OVERRIDE;
+  virtual webrtc::AudioTrackVector GetAudioTracks() OVERRIDE;
+  virtual webrtc::VideoTrackVector GetVideoTracks() OVERRIDE;
+  virtual talk_base::scoped_refptr<webrtc::AudioTrackInterface>
+      FindAudioTrack(const std::string& track_id) OVERRIDE;
+  virtual talk_base::scoped_refptr<webrtc::VideoTrackInterface>
+      FindVideoTrack(const std::string& track_id) OVERRIDE;
+  virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+
+ protected:
+  virtual ~MockMediaStream();
+
+ private:
+  std::string label_;
+  webrtc::AudioTrackVector audio_track_vector_;
+  webrtc::VideoTrackVector video_track_vector_;
+  webrtc::ObserverInterface* observer_;
+};
+
 // A mock factory for creating different objects for
 // RTC MediaStreams and PeerConnections.
 class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {

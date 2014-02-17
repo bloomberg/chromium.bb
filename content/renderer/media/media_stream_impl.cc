@@ -246,6 +246,15 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(web_stream.extraData());
 
+  // TODO(tommi): MediaStreams do not have a 'local or not' concept.
+  // Tracks _might_, but even so, we need to fix the data flow so that
+  // it works the same way for all track implementations, local, remote or what
+  // have you.
+  // In this function, we should simply create a renderer object that receives
+  // and mixes audio from all the tracks that belong to the media stream.
+  // We need to remove the |is_local| property from MediaStreamExtraData since
+  // this concept is peerconnection specific (is a previously recorded stream
+  // local or remote?).
   if (extra_data->is_local()) {
     // Create the local audio renderer if the stream contains audio tracks.
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
@@ -253,7 +262,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
     if (audio_tracks.isEmpty())
       return NULL;
 
-    // TODO(xians): Add support for the case that the media stream contains
+    // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id);
   }
@@ -262,21 +271,21 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
   if (!stream || stream->GetAudioTracks().empty())
     return NULL;
 
-  // This is a remote media stream.
+  // This is a remote WebRTC media stream.
   WebRtcAudioDeviceImpl* audio_device =
       dependency_factory_->GetWebRtcAudioDevice();
 
   // Share the existing renderer if any, otherwise create a new one.
   scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
   if (!renderer.get()) {
-    renderer = CreateRemoteAudioRenderer(
-        extra_data->stream().get(), render_frame_id);
+    renderer = CreateRemoteAudioRenderer(stream, render_frame_id);
 
     if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
       renderer = NULL;
   }
 
-  return renderer.get() ? renderer->CreateSharedAudioRendererProxy() : NULL;
+  return renderer.get() ?
+      renderer->CreateSharedAudioRendererProxy(stream) : NULL;
 }
 
 // Callback from MediaStreamDispatcher.
@@ -761,7 +770,7 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
   }
 
   return new WebRtcAudioRenderer(
-      RenderViewObserver::routing_id(), render_frame_id,  session_id,
+      stream, RenderViewObserver::routing_id(), render_frame_id,  session_id,
       sample_rate, buffer_size);
 }
 

@@ -211,6 +211,11 @@ void MAYBE_WebRTCAudioDeviceTest::SetUp() {
 
   sandbox_was_enabled_ =
       RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(false);
+  // TODO(tommi): RenderThreadImpl no longer supports being instantiated in
+  // tests like this.  Right now it initializes DiscardableMemory which can
+  // only be initialized once.  Since all WebRTCAudioDeviceTest have been
+  // disabled, they are starting to bit rot :-(
+  // We should use a mocked render thread.
   render_thread_ = new RenderThreadImpl(kThreadName);
 }
 
@@ -257,14 +262,14 @@ void MAYBE_WebRTCAudioDeviceTest::SetAudioHardwareConfig(
 
 scoped_refptr<WebRtcAudioRenderer>
 MAYBE_WebRTCAudioDeviceTest::CreateDefaultWebRtcAudioRenderer(
-    int render_view_id) {
+    int render_view_id,
+    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream) {
   media::AudioHardwareConfig* hardware_config =
       RenderThreadImpl::current()->GetAudioHardwareConfig();
   int sample_rate = hardware_config->GetOutputSampleRate();
   int frames_per_buffer = hardware_config->GetOutputBufferSize();
-
-  return new WebRtcAudioRenderer(render_view_id, MSG_ROUTING_NONE, 0,
-                                 sample_rate, frames_per_buffer);
+  return new WebRtcAudioRenderer(media_stream, render_view_id, MSG_ROUTING_NONE,
+                                 0, sample_rate, frames_per_buffer);
 }
 
 void MAYBE_WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {

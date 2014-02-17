@@ -31,6 +31,7 @@ class URLRequestContext;
 }
 
 namespace webrtc {
+class MediaStreamInterface;
 class VoENetwork;
 }
 
@@ -133,7 +134,8 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   void SetAudioHardwareConfig(media::AudioHardwareConfig* hardware_config);
 
   scoped_refptr<WebRtcAudioRenderer> CreateDefaultWebRtcAudioRenderer(
-      int render_view_id);
+      int render_view_id,
+      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream);
 
  protected:
   void InitializeIOThread(const char* thread_name);

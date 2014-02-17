@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
+#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -538,11 +539,14 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
   EXPECT_EQ(0, external_media->RegisterExternalMediaProcessing(
       ch, webrtc::kPlaybackPerChannel, *media_process.get()));
 
+  scoped_refptr<webrtc::MediaStreamInterface> media_stream(
+      new talk_base::RefCountedObject<MockMediaStream>("label"));
+
   EXPECT_EQ(0, base->StartPlayout(ch));
   scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
-      renderer->CreateSharedAudioRendererProxy());
+      renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   proxy->Start();
   proxy->Play();
@@ -708,10 +712,12 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
   EXPECT_EQ(0, base->StartPlayout(ch));
+  scoped_refptr<webrtc::MediaStreamInterface> media_stream(
+      new talk_base::RefCountedObject<MockMediaStream>("label"));
   scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
-      renderer->CreateSharedAudioRendererProxy());
+      renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   proxy->Start();
   proxy->Play();
@@ -814,10 +820,12 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));
   EXPECT_EQ(0, base->StartPlayout(ch));
   EXPECT_EQ(0, base->StartSend(ch));
+  scoped_refptr<webrtc::MediaStreamInterface> media_stream(
+      new talk_base::RefCountedObject<MockMediaStream>("label"));
   scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
-      renderer->CreateSharedAudioRendererProxy());
+      renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   proxy->Start();
   proxy->Play();
@@ -921,11 +929,13 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
   scoped_ptr<MockWebRtcAudioRendererSource> renderer_source(
       new MockWebRtcAudioRendererSource(&event));
 
+  scoped_refptr<webrtc::MediaStreamInterface> media_stream(
+      new talk_base::RefCountedObject<MockMediaStream>("label"));
   scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
   renderer->Initialize(renderer_source.get());
   scoped_refptr<MediaStreamAudioRenderer> proxy(
-      renderer->CreateSharedAudioRendererProxy());
+      renderer->CreateSharedAudioRendererProxy(media_stream));
   proxy->Start();
 
   // Start the timer and playout.

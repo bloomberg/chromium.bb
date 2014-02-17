@@ -42,79 +42,82 @@ static typename V::iterator FindTrack(V* vector,
   return it;
 };
 
-class MockMediaStream : public webrtc::MediaStreamInterface {
- public:
-  explicit MockMediaStream(const std::string& label)
-      : label_(label),
-        observer_(NULL) {
-  }
-  virtual bool AddTrack(AudioTrackInterface* track) OVERRIDE {
-    audio_track_vector_.push_back(track);
-    if (observer_)
-      observer_->OnChanged();
-    return true;
-  }
-  virtual bool AddTrack(VideoTrackInterface* track) OVERRIDE {
-    video_track_vector_.push_back(track);
-    if (observer_)
-      observer_->OnChanged();
-    return true;
-  }
-  virtual bool RemoveTrack(AudioTrackInterface* track) OVERRIDE {
-    AudioTrackVector::iterator it = FindTrack(&audio_track_vector_,
-                                              track->id());
-    if (it == audio_track_vector_.end())
-      return false;
-    audio_track_vector_.erase(it);
-    if (observer_)
-      observer_->OnChanged();
-    return true;
-  }
-  virtual bool RemoveTrack(VideoTrackInterface* track) OVERRIDE {
-    VideoTrackVector::iterator it = FindTrack(&video_track_vector_,
-                                              track->id());
-    if (it == video_track_vector_.end())
-      return false;
-    video_track_vector_.erase(it);
-    if (observer_)
-      observer_->OnChanged();
-    return true;
-  }
-  virtual std::string label() const OVERRIDE { return label_; }
-  virtual AudioTrackVector GetAudioTracks() OVERRIDE {
-    return audio_track_vector_;
-  }
-  virtual VideoTrackVector GetVideoTracks() OVERRIDE {
-    return video_track_vector_;
-  }
-  virtual talk_base::scoped_refptr<AudioTrackInterface>
-      FindAudioTrack(const std::string& track_id) OVERRIDE {
-    AudioTrackVector::iterator it = FindTrack(&audio_track_vector_, track_id);
-    return it == audio_track_vector_.end() ? NULL : *it;
-  }
-  virtual talk_base::scoped_refptr<VideoTrackInterface>
-      FindVideoTrack(const std::string& track_id) OVERRIDE {
-    VideoTrackVector::iterator it = FindTrack(&video_track_vector_, track_id);
-    return it == video_track_vector_.end() ? NULL : *it;
-  }
-  virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE {
-    DCHECK(!observer_);
-    observer_ = observer;
-  }
-  virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE {
-    DCHECK(observer_ == observer);
-    observer_ = NULL;
-  }
+MockMediaStream::MockMediaStream(const std::string& label)
+    : label_(label),
+      observer_(NULL) {
+}
 
- protected:
-  virtual ~MockMediaStream() {}
+bool MockMediaStream::AddTrack(AudioTrackInterface* track) {
+  audio_track_vector_.push_back(track);
+  if (observer_)
+    observer_->OnChanged();
+  return true;
+}
 
- private:
-  std::string label_;
-  AudioTrackVector audio_track_vector_;
-  VideoTrackVector video_track_vector_;
-  webrtc::ObserverInterface* observer_;
-};
+bool MockMediaStream::AddTrack(VideoTrackInterface* track) {
+  video_track_vector_.push_back(track);
+  if (observer_)
+    observer_->OnChanged();
+  return true;
+}
+
+bool MockMediaStream::RemoveTrack(AudioTrackInterface* track) {
+  AudioTrackVector::iterator it = FindTrack(&audio_track_vector_,
+                                            track->id());
+  if (it == audio_track_vector_.end())
+    return false;
+  audio_track_vector_.erase(it);
+  if (observer_)
+    observer_->OnChanged();
+  return true;
+}
+
+bool MockMediaStream::RemoveTrack(VideoTrackInterface* track) {
+  VideoTrackVector::iterator it = FindTrack(&video_track_vector_,
+                                            track->id());
+  if (it == video_track_vector_.end())
+    return false;
+  video_track_vector_.erase(it);
+  if (observer_)
+    observer_->OnChanged();
+  return true;
+}
+
+std::string MockMediaStream::label() const {
+  return label_;
+}
+
+AudioTrackVector MockMediaStream::GetAudioTracks() {
+  return audio_track_vector_;
+}
+
+VideoTrackVector MockMediaStream::GetVideoTracks() {
+  return video_track_vector_;
+}
+
+talk_base::scoped_refptr<AudioTrackInterface> MockMediaStream::FindAudioTrack(
+    const std::string& track_id) {
+  AudioTrackVector::iterator it = FindTrack(&audio_track_vector_, track_id);
+  return it == audio_track_vector_.end() ? NULL : *it;
+}
+
+talk_base::scoped_refptr<VideoTrackInterface> MockMediaStream::FindVideoTrack(
+    const std::string& track_id) {
+  VideoTrackVector::iterator it = FindTrack(&video_track_vector_, track_id);
+  return it == video_track_vector_.end() ? NULL : *it;
+}
+
+void MockMediaStream::RegisterObserver(ObserverInterface* observer) {
+  DCHECK(!observer_);
+  observer_ = observer;
+}
+
+void MockMediaStream::UnregisterObserver(ObserverInterface* observer) {
+  DCHECK(observer_ == observer);
+  observer_ = NULL;
+}
+
+MockMediaStream::~MockMediaStream() {}
 
 MockVideoRenderer::MockVideoRenderer()
     : width_(0),

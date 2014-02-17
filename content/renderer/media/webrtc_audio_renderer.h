@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -17,7 +18,12 @@
 
 namespace media {
 class AudioOutputDevice;
-}
+}  // namespace media
+
+namespace webrtc {
+class AudioSourceInterface;
+class MediaStreamInterface;
+}  // namespace webrtc
 
 namespace content {
 
@@ -29,11 +35,47 @@ class CONTENT_EXPORT WebRtcAudioRenderer
     : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
  public:
-  WebRtcAudioRenderer(int source_render_view_id,
-                      int source_render_frame_id,
-                      int session_id,
-                      int sample_rate,
-                      int frames_per_buffer);
+  // This is a little utility class that holds the configured state of an audio
+  // stream.
+  // It is used by both WebRtcAudioRenderer and SharedAudioRenderer (see cc
+  // file) so a part of why it exists is to avoid code duplication and track
+  // the state in the same way in WebRtcAudioRenderer and SharedAudioRenderer.
+  class PlayingState : public base::NonThreadSafe {
+   public:
+    PlayingState() : playing_(false), volume_(1.0f) {}
+
+    bool playing() const {
+      DCHECK(CalledOnValidThread());
+      return playing_;
+    }
+
+    void set_playing(bool playing) {
+      DCHECK(CalledOnValidThread());
+      playing_ = playing;
+    }
+
+    float volume() const {
+      DCHECK(CalledOnValidThread());
+      return volume_;
+    }
+
+    void set_volume(float volume) {
+      DCHECK(CalledOnValidThread());
+      volume_ = volume;
+    }
+
+   private:
+    bool playing_;
+    float volume_;
+  };
+
+  WebRtcAudioRenderer(
+      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+      int source_render_view_id,
+      int source_render_frame_id,
+      int session_id,
+      int sample_rate,
+      int frames_per_buffer);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.
@@ -48,7 +90,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // When Stop() is called or when the proxy goes out of scope, the proxy
   // will ensure that Pause() is called followed by a call to Stop(), which
   // is the usage pattern that WebRtcAudioRenderer requires.
-  scoped_refptr<MediaStreamAudioRenderer> CreateSharedAudioRendererProxy();
+  scoped_refptr<MediaStreamAudioRenderer> CreateSharedAudioRendererProxy(
+      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream);
 
   // Used to DCHECK on the expected state.
   bool IsStarted() const;
@@ -65,6 +108,16 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE;
   virtual bool IsLocalRenderer() const OVERRIDE;
 
+  // Called when an audio renderer, either the main or a proxy, starts playing.
+  // Here we maintain a reference count of how many renderers are currently
+  // playing so that the shared play state of all the streams can be reflected
+  // correctly.
+  void EnterPlayState();
+
+  // Called when an audio renderer, either the main or a proxy, is paused.
+  // See EnterPlayState for more details.
+  void EnterPauseState();
+
  protected:
   virtual ~WebRtcAudioRenderer();
 
@@ -74,6 +127,14 @@ class CONTENT_EXPORT WebRtcAudioRenderer
     PLAYING,
     PAUSED,
   };
+
+  // Holds raw pointers to PlaingState objects.  Ownership is managed outside
+  // of this type.
+  typedef std::vector<PlayingState*> PlayingStates;
+  // Maps an audio source to a list of playing states that collectively hold
+  // volume information for that source.
+  typedef std::map<webrtc::AudioSourceInterface*, PlayingStates>
+      SourcePlayingStates;
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
@@ -91,6 +152,30 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // This method is called on the AudioOutputDevice worker thread.
   void SourceCallback(int fifo_frame_delay, media::AudioBus* audio_bus);
 
+  // Goes through all renderers for the |source| and applies the proper
+  // volume scaling for the source based on the volume(s) of the renderer(s).
+  void UpdateSourceVolume(webrtc::AudioSourceInterface* source);
+
+  // Tracks a playing state.  The state must be playing when this method
+  // is called.
+  // Returns true if the state was added, false if it was already being tracked.
+  bool AddPlayingState(webrtc::AudioSourceInterface* source,
+                       PlayingState* state);
+  // Removes a playing state for an audio source.
+  // Returns true if the state was removed from the internal map, false if
+  // it had already been removed or if the source isn't being rendered.
+  bool RemovePlayingState(webrtc::AudioSourceInterface* source,
+                          PlayingState* state);
+
+  // Called whenever the Play/Pause state changes of any of the renderers
+  // or if the volume of any of them is changed.
+  // Here we update the shared Play state and apply volume scaling to all audio
+  // sources associated with the |media_stream| based on the collective volume
+  // of playing renderers.
+  void OnPlayStateChanged(
+      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+      PlayingState* state);
+
   // The render view and frame in which the audio is rendered into |sink_|.
   const int source_render_view_id_;
   const int source_render_frame_id_;
@@ -98,6 +183,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;
+
+  // The media stream that holds the audio tracks that this renderer renders.
+  const scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
 
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;
@@ -126,9 +214,19 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Delay due to the FIFO in milliseconds.
   int fifo_delay_milliseconds_;
 
+  // Saved volume and playing state of the root renderer.
+  PlayingState playing_state_;
+
   // The preferred sample rate and buffer sizes provided via the ctor.
   const int sample_rate_;
   const int frames_per_buffer_;
+
+  // Maps audio sources to a list of active audio renderers.
+  // Pointers to PlayingState objects are only kept in this map while the
+  // associated renderer is actually playing the stream.  Ownership of the
+  // state objects lies with the renderers and they must leave the playing state
+  // before being destructed (PlayingState object goes out of scope).
+  SourcePlayingStates source_playing_states_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };

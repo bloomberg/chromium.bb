@@ -14,6 +14,9 @@
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
+
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -94,8 +97,20 @@ void AddHistogramFramesPerBuffer(int param) {
 // (see the play reference count).
 class SharedAudioRenderer : public MediaStreamAudioRenderer {
  public:
-  SharedAudioRenderer(const scoped_refptr<MediaStreamAudioRenderer>& delegate)
-      : delegate_(delegate), started_(false), playing_(false) {
+  // Callback definition for a callback that is called when when Play(), Pause()
+  // or SetVolume are called (whenever the internal |playing_state_| changes).
+  typedef base::Callback<
+      void(const scoped_refptr<webrtc::MediaStreamInterface>&,
+           WebRtcAudioRenderer::PlayingState*)> OnPlayStateChanged;
+
+  SharedAudioRenderer(
+      const scoped_refptr<MediaStreamAudioRenderer>& delegate,
+      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+      const OnPlayStateChanged& on_play_state_changed)
+      : delegate_(delegate), media_stream_(media_stream), started_(false),
+        on_play_state_changed_(on_play_state_changed) {
+    DCHECK(!on_play_state_changed_.is_null());
+    DCHECK(media_stream_.get());
   }
 
  protected:
@@ -116,19 +131,19 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   virtual void Play() OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
-    if (playing_)
+    if (playing_state_.playing())
       return;
-    playing_ = true;
-    delegate_->Play();
+    playing_state_.set_playing(true);
+    on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
   virtual void Pause() OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
-    if (!playing_)
+    if (!playing_state_.playing())
       return;
-    playing_ = false;
-    delegate_->Pause();
+    playing_state_.set_playing(false);
+    on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
   virtual void Stop() OVERRIDE {
@@ -142,7 +157,9 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
   virtual void SetVolume(float volume) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return delegate_->SetVolume(volume);
+    DCHECK(volume >= 0.0f && volume <= 1.0f);
+    playing_state_.set_volume(volume);
+    on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
   virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE {
@@ -157,22 +174,27 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 
  private:
   base::ThreadChecker thread_checker_;
-  scoped_refptr<MediaStreamAudioRenderer> delegate_;
+  const scoped_refptr<MediaStreamAudioRenderer> delegate_;
+  const scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
   bool started_;
-  bool playing_;
+  WebRtcAudioRenderer::PlayingState playing_state_;
+  OnPlayStateChanged on_play_state_changed_;
 };
 
 }  // namespace
 
-WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id,
-                                         int source_render_frame_id,
-                                         int session_id,
-                                         int sample_rate,
-                                         int frames_per_buffer)
+WebRtcAudioRenderer::WebRtcAudioRenderer(
+    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+    int source_render_view_id,
+    int source_render_frame_id,
+    int session_id,
+    int sample_rate,
+    int frames_per_buffer)
     : state_(UNINITIALIZED),
       source_render_view_id_(source_render_view_id),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
+      media_stream_(media_stream),
       source_(NULL),
       play_ref_count_(0),
       start_ref_count_(0),
@@ -340,8 +362,11 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
-WebRtcAudioRenderer::CreateSharedAudioRendererProxy() {
-  return new SharedAudioRenderer(this);
+WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
+    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream) {
+  content::SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
+      base::Bind(&WebRtcAudioRenderer::OnPlayStateChanged, this);
+  return new SharedAudioRenderer(this, media_stream, on_play_state_changed);
 }
 
 bool WebRtcAudioRenderer::IsStarted() const {
@@ -357,6 +382,18 @@ void WebRtcAudioRenderer::Start() {
 
 void WebRtcAudioRenderer::Play() {
   DVLOG(1) << "WebRtcAudioRenderer::Play()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (playing_state_.playing())
+    return;
+
+  playing_state_.set_playing(true);
+
+  OnPlayStateChanged(media_stream_, &playing_state_);
+}
+
+void WebRtcAudioRenderer::EnterPlayState() {
+  DVLOG(1) << "WebRtcAudioRenderer::EnterPlayState()";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(start_ref_count_, 0) << "Did you forget to call Start()?";
   base::AutoLock auto_lock(lock_);
@@ -378,6 +415,17 @@ void WebRtcAudioRenderer::Play() {
 
 void WebRtcAudioRenderer::Pause() {
   DVLOG(1) << "WebRtcAudioRenderer::Pause()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!playing_state_.playing())
+    return;
+
+  playing_state_.set_playing(false);
+
+  OnPlayStateChanged(media_stream_, &playing_state_);
+}
+
+void WebRtcAudioRenderer::EnterPauseState() {
+  DVLOG(1) << "WebRtcAudioRenderer::EnterPauseState()";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(start_ref_count_, 0) << "Did you forget to call Start()?";
   base::AutoLock auto_lock(lock_);
@@ -416,11 +464,10 @@ void WebRtcAudioRenderer::Stop() {
 
 void WebRtcAudioRenderer::SetVolume(float volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  if (state_ == UNINITIALIZED)
-    return;
+  DCHECK(volume >= 0.0f && volume <= 1.0f);
 
-  sink_->SetVolume(volume);
+  playing_state_.set_volume(volume);
+  OnPlayStateChanged(media_stream_, &playing_state_);
 }
 
 base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {
@@ -484,6 +531,90 @@ void WebRtcAudioRenderer::SourceCallback(
   audio_bus->FromInterleaved(buffer_.get(),
                              audio_bus->frames(),
                              sizeof(buffer_[0]));
+}
+
+void WebRtcAudioRenderer::UpdateSourceVolume(
+    webrtc::AudioSourceInterface* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Note: If there are no playing audio renderers, then the volume will be
+  // set to 0.0.
+  float volume = 0.0f;
+
+  SourcePlayingStates::iterator entry = source_playing_states_.find(source);
+  if (entry != source_playing_states_.end()) {
+    PlayingStates& states = entry->second;
+    for (PlayingStates::const_iterator it = states.begin();
+         it != states.end(); ++it) {
+      if ((*it)->playing())
+        volume += (*it)->volume();
+    }
+  }
+
+  // The valid range for volume scaling of a remote webrtc source is
+  // 0.0-10.0 where 1.0 is no attenuation/boost.
+  DCHECK(volume >= 0.0f);
+  if (volume > 10.0f)
+    volume = 10.0f;
+
+  DVLOG(1) << "Setting remote source volume: " << volume;
+  source->SetVolume(volume);
+}
+
+bool WebRtcAudioRenderer::AddPlayingState(
+    webrtc::AudioSourceInterface* source,
+    PlayingState* state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(state->playing());
+  // Look up or add the |source| to the map.
+  PlayingStates& array = source_playing_states_[source];
+  if (std::find(array.begin(), array.end(), state) != array.end())
+    return false;
+
+  array.push_back(state);
+
+  return true;
+}
+
+bool WebRtcAudioRenderer::RemovePlayingState(
+    webrtc::AudioSourceInterface* source,
+    PlayingState* state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!state->playing());
+  SourcePlayingStates::iterator found = source_playing_states_.find(source);
+  if (found == source_playing_states_.end())
+    return false;
+
+  PlayingStates& array = found->second;
+  PlayingStates::iterator state_it =
+      std::find(array.begin(), array.end(), state);
+  if (state_it == array.end())
+    return false;
+
+  array.erase(state_it);
+
+  if (array.empty())
+    source_playing_states_.erase(found);
+
+  return true;
+}
+
+void WebRtcAudioRenderer::OnPlayStateChanged(
+    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+    PlayingState* state) {
+  webrtc::AudioTrackVector tracks(media_stream->GetAudioTracks());
+  for (webrtc::AudioTrackVector::iterator it = tracks.begin();
+       it != tracks.end(); ++it) {
+    webrtc::AudioSourceInterface* source = (*it)->GetSource();
+    DCHECK(source);
+    if (!state->playing()) {
+      if (RemovePlayingState(source, state))
+        EnterPauseState();
+    } else if (AddPlayingState(source, state)) {
+      EnterPlayState();
+    }
+    UpdateSourceVolume(source);
+  }
 }
 
 }  // namespace content
