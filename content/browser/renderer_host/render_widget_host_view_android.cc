@@ -104,18 +104,6 @@ void CopyFromCompositingSurfaceFinished(
   callback.Run(result, *bitmap);
 }
 
-bool UsingDelegatedRenderer() {
-  bool using_delegated_renderer = false;
-
-  using_delegated_renderer |= CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDelegatedRenderer);
-
-  using_delegated_renderer &= !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDelegatedRenderer);
-
-  return using_delegated_renderer;
-}
-
 ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
@@ -155,8 +143,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
                                         widget_host->GetProcess()->GetID(),
                                         widget_host->GetRoutingID()) != NULL),
-      frame_evictor_(new DelegatedFrameEvictor(this)) {
-  if (!UsingDelegatedRenderer()) {
+      frame_evictor_(new DelegatedFrameEvictor(this)),
+      using_delegated_renderer_(CommandLine::ForCurrentProcess()->HasSwitch(
+                                    switches::kEnableDelegatedRenderer) &&
+                                !CommandLine::ForCurrentProcess()->HasSwitch(
+                                    switches::kDisableDelegatedRenderer)) {
+  if (!using_delegated_renderer_) {
     texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
   }
@@ -324,7 +316,7 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (texture_size_in_layer_.IsEmpty())
     return false;
 
-  if (UsingDelegatedRenderer()) {
+  if (using_delegated_renderer_) {
     if (!delegated_renderer_layer_.get())
       return false;
   } else {
@@ -853,7 +845,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   }
 
   if (frame->delegated_frame_data) {
-    DCHECK(UsingDelegatedRenderer());
+    DCHECK(using_delegated_renderer_);
 
     DCHECK(frame->delegated_frame_data);
     DCHECK(!frame->delegated_frame_data->render_pass_list.empty());
@@ -868,7 +860,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     return;
   }
 
-  DCHECK(!UsingDelegatedRenderer());
+  DCHECK(!using_delegated_renderer_);
 
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
