@@ -22,6 +22,7 @@ struct DistilledPageInfo {
   std::string title;
   std::string html;
   std::string next_page_url;
+  std::string prev_page_url;
   std::vector<std::string> image_urls;
   DistilledPageInfo();
   ~DistilledPageInfo();

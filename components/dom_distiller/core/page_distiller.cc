@@ -74,10 +74,12 @@ void PageDistiller::OnExecuteJavaScriptDone(const GURL& page_url,
         case 1:
           page_info->html = item;
           break;
-        case 2: {
+        case 2:
           page_info->next_page_url = item;
           break;
-        }
+        case 3:
+          page_info->prev_page_url = item;
+          break;
         default:
           page_info->image_urls.push_back(item);
       }

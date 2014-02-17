@@ -151,6 +151,12 @@ void DistillerImpl::OnPageDistillationFinished(
       AddToDistillationQueue(page_num + 1, next_page_url);
     }
 
+    GURL prev_page_url(distilled_page->prev_page_url);
+    if (prev_page_url.is_valid()) {
+      DCHECK_EQ(prev_page_url.GetOrigin(), page_url.GetOrigin());
+      AddToDistillationQueue(page_num - 1, prev_page_url);
+    }
+
     for (size_t img_num = 0; img_num < distilled_page->image_urls.size();
          ++img_num) {
       std::string image_id =

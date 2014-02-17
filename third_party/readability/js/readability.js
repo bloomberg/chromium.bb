@@ -1744,10 +1744,12 @@ var readability = {
 // corresponds to a URL listed at index k in the array returned.
 (function () {
     readability.init();
-    var result = new Array(3);
+    var result = new Array(4);
     result[0] = readability.getArticleTitle();
     result[1] = readability.getDistilledArticleHTML();
     result[2] = readability.getNextPageLink();
+    // TODO(shashishekhar): Add actual previous page link here.
+    result[3] = '';
     return result.concat(readability.getImages());
 }())
 
