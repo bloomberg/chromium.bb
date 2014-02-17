@@ -61,8 +61,6 @@ GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGl
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor
-# FIXME: We should remove this extended attribute once the needed refactoring is complete.
-LegacyImplementedInBaseClass
 MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject

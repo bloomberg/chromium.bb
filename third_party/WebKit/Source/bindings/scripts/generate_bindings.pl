@@ -115,7 +115,7 @@ foreach my $idlFile (@dependencyIdlFiles) {
             # Support for attributes of partial interfaces.
             foreach my $attribute (@{$interface->attributes}) {
                 # Record that this attribute is implemented by $interfaceName.
-                $attribute->extendedAttributes->{"ImplementedBy"} = $interfaceName unless $interface->extendedAttributes->{"LegacyImplementedInBaseClass"};
+                $attribute->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each attribute.
                 applyInterfaceExtendedAttributes($interface, $attribute->extendedAttributes);
@@ -126,7 +126,7 @@ foreach my $idlFile (@dependencyIdlFiles) {
             # Support for methods of partial interfaces.
             foreach my $function (@{$interface->functions}) {
                 # Record that this method is implemented by $interfaceName.
-                $function->extendedAttributes->{"ImplementedBy"} = $interfaceName unless $interface->extendedAttributes->{"LegacyImplementedInBaseClass"};
+                $function->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each method.
                 applyInterfaceExtendedAttributes($interface, $function->extendedAttributes);
@@ -137,7 +137,7 @@ foreach my $idlFile (@dependencyIdlFiles) {
             # Support for constants of partial interfaces.
             foreach my $constant (@{$interface->constants}) {
                 # Record that this constant is implemented by $interfaceName.
-                $constant->extendedAttributes->{"ImplementedBy"} = $interfaceName unless $interface->extendedAttributes->{"LegacyImplementedInBaseClass"};
+                $constant->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each constant.
                 applyInterfaceExtendedAttributes($interface, $constant->extendedAttributes);

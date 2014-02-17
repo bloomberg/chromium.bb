@@ -170,10 +170,7 @@ def merge_dependency_interface(target_interface, dependency_interface, dependenc
     def merge_lists(source_list, target_list):
         for member in source_list:
             member.extended_attributes.update(merged_extended_attributes)
-            # FIXME: remove check for LegacyImplementedInBaseClass when this
-            # attribute is removed
-            if 'LegacyImplementedInBaseClass' not in dependency_interface.extended_attributes:
-                member.extended_attributes['ImplementedBy'] = implemented_by
+            member.extended_attributes['ImplementedBy'] = implemented_by
             target_list.append(member)
 
     merge_lists(dependency_interface.attributes, target_interface.attributes)

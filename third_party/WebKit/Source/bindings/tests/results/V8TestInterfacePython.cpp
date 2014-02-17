@@ -41,6 +41,7 @@
 #include "V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestImplements2Implementation.h"
+#include "bindings/tests/idls/TestImplements3.h"
 #include "bindings/tests/idls/TestPartialInterfacePython.h"
 #include "bindings/tests/idls/TestPartialInterfacePythonImplementation.h"
 #include "bindings/v8/ExceptionState.h"
@@ -453,7 +454,7 @@ static void implements2StringAttributeAttributeSetterCallback(v8::Local<v8::Stri
 static void implements3StringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->implements3StringAttribute(), info.GetIsolate());
+    v8SetReturnValueString(info, TestImplements3::implements3StringAttribute(imp), info.GetIsolate());
 }
 
 static void implements3StringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -467,7 +468,7 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> jsVal
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setImplements3StringAttribute(cppValue);
+    TestImplements3::setImplements3StringAttribute(imp, cppValue);
 }
 
 static void implements3StringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -479,7 +480,7 @@ static void implements3StringAttributeAttributeSetterCallback(v8::Local<v8::Stri
 
 static void implements3StaticStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueString(info, TestInterfacePythonImplementation::implements3StaticStringAttribute(), info.GetIsolate());
+    v8SetReturnValueString(info, TestImplements3::implements3StaticStringAttribute(), info.GetIsolate());
 }
 
 static void implements3StaticStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -492,7 +493,7 @@ static void implements3StaticStringAttributeAttributeGetterCallback(v8::Local<v8
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    TestInterfacePythonImplementation::setImplements3StaticStringAttribute(cppValue);
+    TestImplements3::setImplements3StaticStringAttribute(cppValue);
 }
 
 static void implements3StaticStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -810,7 +811,7 @@ static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    imp->implements3VoidMethod();
+    TestImplements3::implements3VoidMethod(imp);
 }
 
 static void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -822,7 +823,7 @@ static void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void implements3StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfacePythonImplementation::implements3StaticVoidMethod();
+    TestImplements3::implements3StaticVoidMethod();
 }
 
 static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

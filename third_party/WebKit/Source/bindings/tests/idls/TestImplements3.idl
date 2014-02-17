@@ -29,7 +29,6 @@
  */
 
 [
-    LegacyImplementedInBaseClass,
     NoInterfaceObject,
 ] interface TestImplements3 {
     attribute DOMString implements3StringAttribute;

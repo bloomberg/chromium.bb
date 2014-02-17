@@ -332,11 +332,7 @@ def generate_dependencies(idl_filename):
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = (
-        include_path(idl_filename, implemented_as)
-        # implemented interfaces with [LegacyImplementedInBaseClass] have no
-        # header of their own, as they just use the header of the base class
-        if 'LegacyImplementedInBaseClass' not in extended_attributes else None)
+    this_include_path = include_path(idl_filename, implemented_as)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
