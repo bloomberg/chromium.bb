@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/remote_media_stream_impl.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
@@ -554,10 +555,22 @@ bool RTCPeerConnectionHandler::addStream(
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   stream.audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
+    MediaStreamTrackExtraData* extra_data =
+        static_cast<MediaStreamTrackExtraData*>(audio_tracks[i].extraData());
+    if (!extra_data->is_local_track()) {
+      // We don't support connecting remote audio tracks to PeerConnection yet.
+      // See issue http://crbug/344303.
+      // TODO(xians): Remove this after we support connecting remote audio track
+      // to PeerConnection.
+      DLOG(ERROR) << "addStream() failed because we don't support connecting"
+                  << " remote audio track to PeerConnection";
+      return false;
+    }
+
+    // This is a local audio track.
     const blink::WebMediaStreamSource& source = audio_tracks[i].source();
     MediaStreamAudioSource* audio_source =
         static_cast<MediaStreamAudioSource*>(source.extraData());
-    // |audio_source| is NULL if the track is a remote audio track.
     if (audio_source && audio_source->GetAudioCapturer())
       audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
   }
