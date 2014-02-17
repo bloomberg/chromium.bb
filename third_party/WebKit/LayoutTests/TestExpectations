@@ -366,8 +366,10 @@ crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scale
 crbug.com/341682 editing/selection/4960116.html [ ImageOnlyFailure Pass ]
 
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
-crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+
+# Crash due to lost_context_callback_proxy_. When this is fixed, this test shoud be re-marked as ImageOnlyFailure with due to crbug.com/231357.
+crbug.com/344237 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure Crash ]
 
 # Will pass once http://crrev.com/26442004 lands
 crbug.com/285976 http/tests/serviceworker/registration.html [ NeedsManualRebaseline ]
