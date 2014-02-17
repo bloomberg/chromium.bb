@@ -1,6 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import glob
 import os
 
 from telemetry.page import page_measurement
@@ -21,6 +22,10 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
                                     '--force-compositing-mode'])
 
   def MeasurePage(self, page, tab, results):
+    if tab.browser.platform.GetOSName() in ['android', 'chromeos']:
+      raise page_measurement.MeasurementFailure(
+          'SkPicture printing not supported on this platform')
+
     skp_outdir = self.options.skp_outdir
     if not skp_outdir:
       raise Exception('Please specify --skp-outdir')
@@ -30,4 +35,5 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
     # Replace win32 path separator char '\' with '\\'.
     js = _JS.format(outpath.replace('\\', '\\\\'))
     tab.EvaluateJavaScript(js)
-    results.Add('output_path', 'path', outpath)
+    pictures = glob.glob(os.path.join(outpath, '*.skp'))
+    results.Add('saved_picture_count', 'count', len(pictures))
