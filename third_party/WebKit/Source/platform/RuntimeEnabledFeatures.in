@@ -89,6 +89,7 @@ RegionBasedColumns status=experimental
 RepaintAfterLayout
 
 RequestAutocomplete status=test
+ScreenOrientation status=test
 ScriptedSpeech status=stable
 
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left

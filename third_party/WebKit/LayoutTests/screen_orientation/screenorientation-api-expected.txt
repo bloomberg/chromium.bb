@@ -1,0 +1,17 @@
+Validates the Screen Orientation API is exposed.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS screen.lockOrientation is defined.
+PASS screen.unlockOrientation is defined.
+PASS screen.orientation is defined.
+PASS screen.onorientationchange is defined.
+PASS screen.__proto__.__proto__ is EventTarget.prototype
+PASS screen.addEventListener is defined.
+PASS screen.removeEventListener is defined.
+PASS screen.dispatchEvent is defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

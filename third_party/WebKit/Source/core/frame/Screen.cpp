@@ -120,4 +120,16 @@ unsigned Screen::availWidth() const
     return static_cast<unsigned>(screenAvailableRect(m_frame->view()).width());
 }
 
+const AtomicString& Screen::interfaceName() const
+{
+    return EventTargetNames::Screen;
+}
+
+ExecutionContext* Screen::executionContext() const
+{
+    if (!m_frame)
+        return 0;
+    return m_frame->document();
+}
+
 } // namespace WebCore

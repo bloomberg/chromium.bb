@@ -13,6 +13,7 @@ core/html/track/TextTrackList
 core/loader/appcache/ApplicationCache
 core/page/EventSource
 core/timing/Performance
+core/frame/Screen
 core/frame/Window ImplementedAs=DOMWindow
 core/svg/SVGElementInstance
 core/workers/DedicatedWorkerGlobalScope
