@@ -715,6 +715,7 @@ crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
+crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass Timeout ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
 crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
