@@ -67,11 +67,9 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
 
 DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
 {
-    ASSERT(isolate->InContext());
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-    if (!toDOMWindow(context))
+    if (context.IsEmpty() || !contextHasCorrectPrototype(context))
         return 0;
-    ASSERT(isMainThread());
     if (DOMWrapperWorld* world = isolatedWorld(context))
         return world;
     return mainWorld();

@@ -3109,7 +3109,7 @@ END
         #    and thus passing it around would cause leakage.
         # 2) Errors cannot be cloned (or serialized):
         # http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data
-        $implementation{nameSpaceInternal}->add("    if (isolatedWorldForIsolate(info.GetIsolate())) {\n");
+        $implementation{nameSpaceInternal}->add("    if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {\n");
         foreach my $attrName (@anyAttributeNames) {
             my $setter = "setSerialized" . FirstLetterToUpperCase($attrName);
             $implementation{nameSpaceInternal}->add(<<END);
@@ -5138,9 +5138,10 @@ END
         $code .= <<END;
     if (wrapper.IsEmpty())
         return wrapper;
-    if (!isolatedWorldForEnteredContext(isolate)) {
+    DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
+    if (world->isMainWorld()) {
         if (Frame* frame = impl->frame())
-            frame->script().windowShell(DOMWrapperWorld::mainWorld())->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }
 END
     }
