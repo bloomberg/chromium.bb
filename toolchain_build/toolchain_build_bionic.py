@@ -547,7 +547,7 @@ def main(argv):
 
   if options.buildbot or options.upload:
     zipname = 'naclsdk_linux_arm_bionic.tgz'
-    ArchiveAndUpload(version, zipname, 'linux_x86_bionic')
+    ArchiveAndUpload(version, zipname, 'linux_arm_bionic')
 
 
 if __name__ == '__main__':
