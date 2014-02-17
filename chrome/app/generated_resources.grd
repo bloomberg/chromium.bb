@@ -6305,10 +6305,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
       </message>
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME" desc="Title for the flag to disable drag and drop from the app list menu to the launcher.">
-        Drag and drop from the app list menu to the shelf.
+        Drag and drop from the App Launcher menu to the shelf.
       </message>
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION" desc="Description for the flag to disable drag and drop opertions from the app list menu to the launcher.">
-        Disallow drag and drop from the app list menu to the shelf.
+        Disallow drag and drop from the App Launcher menu to the shelf.
       </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
@@ -6502,7 +6502,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable contacts integration.
       </message>
       <message name="IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION" desc="Description of the 'Enable contacts' lab.">
-        Enables downloading Google contacts and displaying them in the App List.
+        Enables downloading Google contacts and displaying them in the App Launcher.
       </message>
       <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_NAME" desc="Name of the flag to turn on viewport meta tag support.">
         Enable viewport meta tag.
@@ -6625,10 +6625,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable experimental Synchronized Notifications.
       </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
-        Enable App Launcher Sync
+        Enable App Launcher sync
       </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
-        Enable experimental App Launcher Sync.
+        Enable experimental App Launcher sync.
       </message>
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
         Enable screen capture support in getUserMedia().
@@ -6818,38 +6818,38 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable Translate settings in chrome://settings/languages where the user can configure which language should be translated.
       </message>
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME" desc="Name of the flag to reset the app launcher install state.">
-        Reset the app launcher install state on every restart.
+        Reset the App Launcher install state on every restart.
       </message>
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION" desc="Description of the flag to reset the app launcher install state.">
-        Reset the app launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the app launcher install flow.
+        Reset the App Launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the App Launcher install flow.
       </message>
       <if expr="pp_ifdef('enable_app_list')">
         <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">
-          Enable the app launcher.
+          Enable the App Launcher.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
-          Enable the app launcher. Upon enabling, creates operating system shortcuts to the app launcher.
+          Enable the App Launcher. Upon enabling, creates operating system shortcuts to the App Launcher.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_NAME" desc="Name of the flag to enable the start page of app launcher.">
-          Enable the app launcher start page.
+          Enable the App Launcher start page.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_DESCRIPTION" desc="Description of the flag to enable the start page of app launcher.">
-          Enable the app launcher start page. If enabled, app launcher will show a start page in addition to the apps grid.
+          Enable the App Launcher start page. If enabled, App Launcher will show a start page in addition to the apps grid.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_FOLDER" desc="Name of the flag to enable app list folder.">
-          Enable the app list folder.
+          Enable App Launcher folders.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION" desc="Description of the flag to enable the app list folder.">
-          Enable the app list folder. If enabled, user will be able to create app list folder by drag-and-drop.
+          Enable App Launcher folders. If enabled, the user will be able to create folders in the App Launcher by dragging an app on top of another app.
         </message>
         <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH" desc="Name of the flag to disable voice search in the app list.">
-          Disable voice search in the app list.
+          Disable voice search in the App Launcher.
         </message>
         <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION" desc="Description of the flag to disable voice search in the app list.">
-          Disable voice search in the app list. If disabled, user won't be able to search by speech.
+          Disable voice search in the App Launcher. If disabled, the user won't be able to search by speech.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST" desc="Name of the flag to enable the app info context menu option in the app list.">
-          Enable app info dialog.
+          Enable the app info dialog.
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the app info context menu option in the app list.">
           Enable the app info dialog. If enabled, the user will be able to select the 'App Info' context menu in the App Launcher to show the app info dialog for the selected app.
