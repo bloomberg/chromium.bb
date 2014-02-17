@@ -21,11 +21,10 @@ Blink's needs change.
 Organization
 ------------
 
-The API is organized into three parts:
+The API is organized into two parts:
 
   - public/platform
   - public/web
-  - public/testing
 
 The public/platform directory defines an abstract platform upon which Blink
 runs. Rather than communicating directly with the underlying operating system,
@@ -40,10 +39,6 @@ in this part of the API is WebView, which is a good starting point for
 exploring the API.
 
 Note that public/platform should not depend on public/web.
-
-The public/testing directory defines an interface for testing Blink. You can
-use this part of the API to load the TestRunner module used in Blink's test
-suite.
 
 Basic Types
 -----------
