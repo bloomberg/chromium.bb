@@ -31,7 +31,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
 class SVGTransformListPropertyTearOff;
 
 class SVGViewSpec FINAL : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
@@ -58,11 +57,6 @@ public:
     void setViewTargetString(const String& string) { m_viewTargetString = string; }
     String viewTargetString() const { return m_viewTargetString; }
 
-    SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
-    void setZoomAndPan(unsigned short zoomAndPan) { setZoomAndPanBaseValue(zoomAndPan); }
-    void setZoomAndPan(unsigned short, ExceptionState&);
-    void setZoomAndPanBaseValue(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
-
     SVGElement* contextElement() const { return m_contextElement; }
     void detachContextElement();
 
@@ -87,8 +81,6 @@ private:
 
     // FIXME(oilpan): This is back-ptr to be cleared from contextElement.
     SVGSVGElement* m_contextElement;
-
-    SVGZoomAndPanType m_zoomAndPan;
     SVGTransformList m_transform;
     RefPtr<SVGAnimatedRect> m_viewBox;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;

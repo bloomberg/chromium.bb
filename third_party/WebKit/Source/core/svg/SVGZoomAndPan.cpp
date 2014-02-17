@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,12 +20,23 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGZoomAndPan.h"
 
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/svg/SVGParserUtilities.h"
 
 namespace WebCore {
+
+SVGZoomAndPan::SVGZoomAndPan()
+    : m_zoomAndPan(SVGZoomAndPanMagnify)
+{
+}
+
+void SVGZoomAndPan::resetZoomAndPan()
+{
+    m_zoomAndPan = SVGZoomAndPanMagnify;
+}
 
 bool SVGZoomAndPan::isKnownAttribute(const QualifiedName& attrName)
 {
@@ -53,29 +65,20 @@ static bool parseZoomAndPanInternal(const CharType*& start, const CharType* end,
     return false;
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end, SVGZoomAndPanType& zoomAndPan)
+bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end)
 {
-    return parseZoomAndPanInternal(start, end, zoomAndPan);
+    return parseZoomAndPanInternal(start, end, m_zoomAndPan);
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end, SVGZoomAndPanType& zoomAndPan)
+bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end)
 {
-    return parseZoomAndPanInternal(start, end, zoomAndPan);
+    return parseZoomAndPanInternal(start, end, m_zoomAndPan);
 }
 
-NO_RETURN_DUE_TO_ASSERT void SVGZoomAndPan::ref()
+void SVGZoomAndPan::setZoomAndPan(SVGViewSpec*, unsigned short, ExceptionState& exceptionState)
 {
-    ASSERT_NOT_REACHED();
-}
-
-NO_RETURN_DUE_TO_ASSERT void SVGZoomAndPan::deref()
-{
-    ASSERT_NOT_REACHED();
-}
-
-NO_RETURN_DUE_TO_ASSERT void SVGZoomAndPan::setZoomAndPan(unsigned short)
-{
-    ASSERT_NOT_REACHED();
+    // SVGViewSpec and all of its content is read-only.
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 }

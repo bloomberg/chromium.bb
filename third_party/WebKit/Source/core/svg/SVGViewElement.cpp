@@ -35,7 +35,6 @@ inline SVGViewElement::SVGViewElement(Document& document)
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
-    , m_zoomAndPan(SVGZoomAndPanMagnify)
 {
     ScriptWrappable::init(this);
 
@@ -70,7 +69,7 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 
     if (SVGFitToViewBox::parseAttribute(this, name, value))
         return;
-    if (SVGZoomAndPan::parseAttribute(this, name, value))
+    if (SVGZoomAndPan::parseAttribute(name, value))
         return;
 
     SVGParsingError parseError = NoError;

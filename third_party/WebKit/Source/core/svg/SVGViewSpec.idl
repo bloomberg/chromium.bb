@@ -30,10 +30,7 @@ interface SVGViewSpec {
       readonly attribute DOMString preserveAspectRatioString;
       readonly attribute DOMString transformString;
       readonly attribute DOMString viewTargetString;
-
-      // SVGZoomAndPan
-      [RaisesException=Setter] attribute unsigned short zoomAndPan;
 };
 
 SVGViewSpec implements SVGFitToViewBox;
-
+SVGViewSpec implements SVGZoomAndPan;

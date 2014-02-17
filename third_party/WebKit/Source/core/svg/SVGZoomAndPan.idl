@@ -25,12 +25,11 @@
  */
 
 [
-    LegacyImplementedInBaseClass,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface SVGZoomAndPan {
     const unsigned short SVG_ZOOMANDPAN_UNKNOWN = 0;
     const unsigned short SVG_ZOOMANDPAN_DISABLE = 1;
     const unsigned short SVG_ZOOMANDPAN_MAGNIFY = 2;
 
-    attribute unsigned short zoomAndPan;
+    [RaisesException=Setter] attribute unsigned short zoomAndPan;
 };

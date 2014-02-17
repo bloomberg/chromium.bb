@@ -21,8 +21,6 @@
 #include "core/svg/SVGViewSpec.h"
 
 #include "SVGNames.h"
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -46,7 +44,6 @@ const SVGPropertyInfo* SVGViewSpec::transformPropertyInfo()
 
 SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     : m_contextElement(contextElement)
-    , m_zoomAndPan(SVGZoomAndPanMagnify)
     // Note: We make |viewBox| and |preserveAspectRatio|'s contextElement the target element of SVGViewSpec.
     // This contextElement will be only used for keeping this alive from the tearoff.
     // SVGSVGElement holds a strong-ref to this SVGViewSpec, so this is kept alive as:
@@ -66,12 +63,6 @@ const AtomicString& SVGViewSpec::transformIdentifier()
 {
     DEFINE_STATIC_LOCAL(AtomicString, s_identifier, ("SVGViewSpecTransformAttribute", AtomicString::ConstructFromLiteral));
     return s_identifier;
-}
-
-void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& exceptionState)
-{
-    // SVGViewSpec and all of its content is read-only.
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 String SVGViewSpec::preserveAspectRatioString() const
@@ -137,7 +128,7 @@ void SVGViewSpec::detachContextElement()
 
 void SVGViewSpec::reset()
 {
-    m_zoomAndPan = SVGZoomAndPanMagnify;
+    resetZoomAndPan();
     m_transform.clear();
     ASSERT(m_viewBox);
     m_viewBox->baseValue()->setValue(FloatRect());
@@ -198,7 +189,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
             if (ptr >= end || *ptr != '(')
                 return false;
             ptr++;
-            if (!parseZoomAndPan(ptr, end, m_zoomAndPan))
+            if (!parseZoomAndPan(ptr, end))
                 return false;
             if (ptr >= end || *ptr != ')')
                 return false;

@@ -126,9 +126,6 @@ public:
     bool widthAttributeEstablishesViewport() const;
     bool heightAttributeEstablishesViewport() const;
 
-    SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
-    void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
-
     bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }
 
     SVGAnimatedLength* x() const { return m_x.get(); }
@@ -179,7 +176,6 @@ private:
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;
 
     bool m_useCurrentView;
-    SVGZoomAndPanType m_zoomAndPan;
     RefPtr<SMILTimeContainer> m_timeContainer;
     RefPtr<SVGPoint> m_translation;
     RefPtr<SVGViewSpec> m_viewSpec;

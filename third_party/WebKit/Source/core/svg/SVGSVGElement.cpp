@@ -77,7 +77,6 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_useCurrentView(false)
-    , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
     , m_translation(SVGPoint::create())
 {
@@ -272,22 +271,22 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
             return;
     }
 
-    if (name == HTMLNames::onabortAttr)
+    if (name == HTMLNames::onabortAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::abort, createAttributeEventListener(document().frame(), name, value));
-    else if (name == HTMLNames::onerrorAttr)
+    } else if (name == HTMLNames::onerrorAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value));
-    else if (name == SVGNames::xAttr)
+    } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::yAttr)
+    } else if (name == SVGNames::yAttr) {
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::widthAttr)
+    } else if (name == SVGNames::widthAttr) {
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::heightAttr)
+    } else if (name == SVGNames::heightAttr) {
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (SVGFitToViewBox::parseAttribute(this, name, value)
-            || SVGZoomAndPan::parseAttribute(this, name, value)) {
-    } else
+    } else if (SVGFitToViewBox::parseAttribute(this, name, value) || SVGZoomAndPan::parseAttribute(name, value)) {
+    } else {
         SVGGraphicsElement::parseAttribute(name, value);
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
@@ -760,9 +759,9 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     }
 
     if (viewElement->hasAttribute(SVGNames::zoomAndPanAttr))
-        view->setZoomAndPanBaseValue(viewElement->zoomAndPan());
+        view->setZoomAndPan(viewElement->zoomAndPan());
     else
-        view->setZoomAndPanBaseValue(zoomAndPan());
+        view->setZoomAndPan(zoomAndPan());
 }
 
 // getElementById on SVGSVGElement is restricted to only the child subtree defined by the <svg> element.
