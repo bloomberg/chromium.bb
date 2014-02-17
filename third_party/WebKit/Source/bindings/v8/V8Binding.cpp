@@ -584,7 +584,8 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* w
 
 v8::Local<v8::Context> toV8Context(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld* world)
 {
-    ASSERT(frame);
+    if (!frame)
+        return v8::Local<v8::Context>();
     v8::Local<v8::Context> context = frame->script().windowShell(world)->context();
     if (context.IsEmpty())
         return v8::Local<v8::Context>();

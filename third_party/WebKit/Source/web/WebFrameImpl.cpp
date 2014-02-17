@@ -112,6 +112,7 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -919,9 +920,7 @@ v8::Handle<v8::Value> WebFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<
 
 v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
 {
-    if (!frame())
-        return v8::Local<v8::Context>();
-    return ScriptController::mainWorldContext(frame());
+    return toV8Context(V8PerIsolateData::mainThreadIsolate(), frame(), DOMWrapperWorld::mainWorld());
 }
 
 v8::Handle<v8::Value> WebFrameImpl::createFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)

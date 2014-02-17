@@ -122,11 +122,6 @@ public:
 
     bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 
-    // Returns V8 Context. If none exists, creates a new context.
-    // It is potentially slow and consumes memory.
-    static v8::Local<v8::Context> mainWorldContext(Frame*);
-    v8::Local<v8::Context> mainWorldContext();
-
     TextPosition eventHandlerPosition() const;
 
     void clearWindowShell();

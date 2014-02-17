@@ -623,8 +623,9 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
         return;
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -648,8 +649,9 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
         return;
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -674,8 +676,9 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     }
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
@@ -778,8 +781,9 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
         return;
 
     // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::HandleScope handleScope(toIsolate(frame));
-    v8::Handle<v8::Context> context = document->frame()->script().mainWorldContext();
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
