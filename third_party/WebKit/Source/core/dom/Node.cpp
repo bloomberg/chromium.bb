@@ -2549,16 +2549,6 @@ void Node::setCustomElementState(CustomElementState newState)
         setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
 }
 
-Element* Node::previousElementSibling() const
-{
-    return ElementTraversal::previousSibling(*this);
-}
-
-Element* Node::nextElementSibling() const
-{
-    return ElementTraversal::nextSibling(*this);
-}
-
 } // namespace WebCore
 
 #ifndef NDEBUG

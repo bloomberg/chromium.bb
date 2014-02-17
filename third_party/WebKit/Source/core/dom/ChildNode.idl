@@ -21,8 +21,7 @@
  */
 
 [
-    NoInterfaceObject,
-    LegacyImplementedInBaseClass
+    NoInterfaceObject
 ] interface ChildNode {
     [PerWorldBindings] readonly attribute Element previousElementSibling;
     [PerWorldBindings] readonly attribute Element nextElementSibling;

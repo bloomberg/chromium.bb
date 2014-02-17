@@ -178,9 +178,6 @@ public:
     Node* firstChild() const;
     Node* lastChild() const;
 
-    // ChildNode interface API
-    Element* previousElementSibling() const;
-    Element* nextElementSibling() const;
     void remove(ExceptionState&);
 
     Node* pseudoAwareNextSibling() const;
