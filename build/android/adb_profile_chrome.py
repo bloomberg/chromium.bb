@@ -328,7 +328,9 @@ def _CaptureAndPullTrace(controllers, interval, output, compress, write_html):
 
 def _ComputeChromeCategories(options):
   categories = []
-  if options.trace_cc:
+  if options.trace_frame_viewer:
+    categories.append('disabled-by-default-cc.debug')
+  if options.trace_ubercompositor:
     categories.append('disabled-by-default-cc.debug*')
   if options.trace_gpu:
     categories.append('disabled-by-default-gpu.debug*')
@@ -380,8 +382,15 @@ def main():
                         'available categories. Systrace is disabled by '
                         'default.', metavar='SYS_CATEGORIES',
                         dest='systrace_categories', default='')
-  categories.add_option('--trace-cc', help='Enable extra trace categories for '
-                        'compositor frame viewer data.', action='store_true')
+  categories.add_option('--trace-cc',
+                        help='Deprecated, use --trace-frame-viewer.',
+                        action='store_true')
+  categories.add_option('--trace-frame-viewer',
+                        help='Enable enough trace categories for '
+                        'compositor frame viewing.', action='store_true')
+  categories.add_option('--trace-ubercompositor',
+                        help='Enable enough trace categories for '
+                        'ubercompositor frame data.', action='store_true')
   categories.add_option('--trace-gpu', help='Enable extra trace categories for '
                         'GPU data.', action='store_true')
   parser.add_option_group(categories)
@@ -404,6 +413,14 @@ def main():
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
   options, args = parser.parse_args()
+  if options.trace_cc:
+    parser.parse_error("""--trace-cc is deprecated.
+
+For basic jank busting uses, use  --trace-frame-viewer
+For detailed study of ubercompositor, pass --trace-ubercompositor.
+
+When in doubt, just try out --trace-frame-viewer.
+""")
 
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
