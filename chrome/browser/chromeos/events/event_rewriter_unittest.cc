@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/event_rewriter.h"
+#include "chrome/browser/chromeos/events/event_rewriter.h"
 
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>

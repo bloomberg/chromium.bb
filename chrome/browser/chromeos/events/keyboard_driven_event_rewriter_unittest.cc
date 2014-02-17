@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
+#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"

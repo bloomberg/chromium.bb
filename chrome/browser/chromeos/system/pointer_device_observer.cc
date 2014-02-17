@@ -7,8 +7,8 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

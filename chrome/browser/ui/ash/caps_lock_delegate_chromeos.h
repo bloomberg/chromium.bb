@@ -8,7 +8,7 @@
 #include "ash/caps_lock_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 
 namespace chromeos {
 namespace input_method {

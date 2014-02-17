@@ -16,7 +16,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chromeos/dbus/session_manager_client.h"

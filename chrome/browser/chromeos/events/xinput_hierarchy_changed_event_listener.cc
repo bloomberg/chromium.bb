@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
+#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 
-#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xlib.h>
 
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
@@ -73,7 +73,7 @@ XInputHierarchyChangedEventListener::GetInstance() {
 XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()
     : stopped_(false),
       xiopcode_(GetXInputOpCode()) {
-  Init();
+  base::MessageLoopForUI::current()->AddObserver(this);
 }
 
 XInputHierarchyChangedEventListener::~XInputHierarchyChangedEventListener() {
@@ -84,7 +84,7 @@ void XInputHierarchyChangedEventListener::Stop() {
   if (stopped_)
     return;
 
-  StopImpl();
+  base::MessageLoopForUI::current()->RemoveObserver(this);
   stopped_ = true;
   xiopcode_ = -1;
 }
@@ -97,6 +97,19 @@ void XInputHierarchyChangedEventListener::AddObserver(
 void XInputHierarchyChangedEventListener::RemoveObserver(
     DeviceHierarchyObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+base::EventStatus XInputHierarchyChangedEventListener::WillProcessEvent(
+    const base::NativeEvent& event) {
+  // There may be multiple listeners for the XI_HierarchyChanged event. So
+  // always return EVENT_CONTINUE to make sure all the listeners receive the
+  // event.
+  ProcessedXEvent(event);
+  return base::EVENT_CONTINUE;
+}
+
+void XInputHierarchyChangedEventListener::DidProcessEvent(
+    const base::NativeEvent& event) {
 }
 
 bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {

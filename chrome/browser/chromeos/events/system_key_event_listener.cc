@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 
 #define XK_MISCELLANY 1
 #include <X11/keysymdef.h>
