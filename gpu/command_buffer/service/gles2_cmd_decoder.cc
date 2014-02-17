@@ -3898,7 +3898,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
     }
     renderbuffer->MarkAsValid();
   }
-  LogClientServiceForInfo(renderbuffer, client_id, "glBindRenerbuffer");
+  LogClientServiceForInfo(renderbuffer, client_id, "glBindRenderbuffer");
   state_.bound_renderbuffer = renderbuffer;
   glBindRenderbufferEXT(target, service_id);
 }
@@ -5017,7 +5017,7 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
   if (!framebuffer) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glFramebufferAttachmentParameteriv", "no framebuffer bound");
+        "glGetFramebufferAttachmentParameteriv", "no framebuffer bound");
     return;
   }
   if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME) {
@@ -5159,14 +5159,14 @@ bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
            width, height, samples, internalformat, &estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
-        "glRenderbufferStorageMultsample", "dimensions too large");
+        "glRenderbufferStorageMultisample", "dimensions too large");
     return false;
   }
 
   if (!EnsureGPUMemoryAvailable(estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
-        "glRenderbufferStorageMultsample", "out of memory");
+        "glRenderbufferStorageMultisample", "out of memory");
     return false;
   }
 
@@ -5694,7 +5694,7 @@ void GLES2DecoderImpl::DoUniform1i(GLint fake_location, GLint v0) {
   GLsizei count = 1;
   GLint real_location = -1;
   if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform1iv", valid_int_vec1_base_info,
+      fake_location, "glUniform1i", valid_int_vec1_base_info,
       &real_location, &type, &count)) {
     return;
   }
@@ -6694,7 +6694,7 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
   Shader* shader = GetShaderInfoNotProgram(
-      shader_id, "glTranslatedGetShaderSourceANGLE");
+      shader_id, "glGetTranslatedShaderSourceANGLE");
   if (!shader) {
     bucket->SetSize(0);
     return error::kNoError;
@@ -7304,7 +7304,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixel");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
 
@@ -7396,7 +7396,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
     case GL_UNPACK_ALIGNMENT:
         if (!validators_->pixel_store_alignment.IsValid(param)) {
             LOCAL_SET_GL_ERROR(
-                GL_INVALID_VALUE, "glPixelStore", "param GL_INVALID_VALUE");
+                GL_INVALID_VALUE, "glPixelStorei", "param GL_INVALID_VALUE");
             return error::kNoError;
         }
         break;
@@ -7525,7 +7525,7 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     return error::kNoError;
   }
   Program* program = GetProgramInfoNotShader(
-      client_id, "glUniformLocation");
+      client_id, "glGetUniformLocation");
   if (!program) {
     return error::kNoError;
   }
@@ -7902,7 +7902,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
     case GL_ETC1_RGB8_OES: {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION, function_name,
-          "TexsubImage2d not supported for ECT1_RGB8_OES textures");
+          "not supported for ECT1_RGB8_OES textures");
       return false;
     }
     default:
@@ -9139,7 +9139,7 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
     uint32 num = util_.GLGetNumValuesReturned(enums[ii]);
     if (num == 0) {
       LOCAL_SET_GL_ERROR_INVALID_ENUM(
-          "glGetMulitpleCHROMIUM", enums[ii], "pname");
+          "glGetMultipleCHROMIUM", enums[ii], "pname");
       return error::kNoError;
     }
     // Num will never be more than 4.
@@ -9157,7 +9157,7 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
   if (result_size != static_cast<uint32>(c.size)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
-        "glGetMulitpleCHROMIUM", "bad size GL_INVALID_VALUE");
+        "glGetMultipleCHROMIUM", "bad size GL_INVALID_VALUE");
     return error::kNoError;
   }
 
