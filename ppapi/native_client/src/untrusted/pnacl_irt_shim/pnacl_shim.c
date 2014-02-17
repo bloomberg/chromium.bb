@@ -86,6 +86,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppb_display_color_profile_private.h"
 #include "ppapi/c/private/ppb_ext_crx_file_system_private.h"
 #include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
@@ -198,6 +199,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_10;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1;
@@ -2533,6 +2535,30 @@ static void Pnacl_M34_PPB_ContentDecryptor_Private_DeliverSamples(PP_Instance in
 }
 
 /* End wrapper methods for PPB_ContentDecryptor_Private_0_10 */
+
+/* Begin wrapper methods for PPB_DisplayColorProfile_Private_0_1 */
+
+static PP_Resource Pnacl_M33_PPB_DisplayColorProfile_Private_Create(PP_Instance instance) {
+  const struct PPB_DisplayColorProfile_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M33_PPB_DisplayColorProfile_Private_IsDisplayColorProfile(PP_Resource resource) {
+  const struct PPB_DisplayColorProfile_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1.real_iface;
+  return iface->IsDisplayColorProfile(resource);
+}
+
+static int32_t Pnacl_M33_PPB_DisplayColorProfile_Private_GetColorProfile(PP_Resource display_color_profile_res, struct PP_ArrayOutput* color_profile, struct PP_CompletionCallback* callback) {
+  const struct PPB_DisplayColorProfile_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1.real_iface;
+  return iface->GetColorProfile(display_color_profile_res, *color_profile, *callback);
+}
+
+static int32_t Pnacl_M33_PPB_DisplayColorProfile_Private_RegisterColorProfileChangeCallback(PP_Resource display_color_profile_res, struct PP_CompletionCallback* callback) {
+  const struct PPB_DisplayColorProfile_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1.real_iface;
+  return iface->RegisterColorProfileChangeCallback(display_color_profile_res, *callback);
+}
+
+/* End wrapper methods for PPB_DisplayColorProfile_Private_0_1 */
 
 /* Begin wrapper methods for PPB_Ext_CrxFileSystem_Private_0_1 */
 
@@ -4882,6 +4908,13 @@ static struct PPB_ContentDecryptor_Private_0_10 Pnacl_Wrappers_PPB_ContentDecryp
     .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource audio_frames, const struct PP_DecryptedSampleInfo* decrypted_sample_info))&Pnacl_M34_PPB_ContentDecryptor_Private_DeliverSamples
 };
 
+static struct PPB_DisplayColorProfile_Private_0_1 Pnacl_Wrappers_PPB_DisplayColorProfile_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M33_PPB_DisplayColorProfile_Private_Create,
+    .IsDisplayColorProfile = (PP_Bool (*)(PP_Resource resource))&Pnacl_M33_PPB_DisplayColorProfile_Private_IsDisplayColorProfile,
+    .GetColorProfile = (int32_t (*)(PP_Resource display_color_profile_res, struct PP_ArrayOutput color_profile, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_DisplayColorProfile_Private_GetColorProfile,
+    .RegisterColorProfileChangeCallback = (int32_t (*)(PP_Resource display_color_profile_res, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_DisplayColorProfile_Private_RegisterColorProfileChangeCallback
+};
+
 static struct PPB_Ext_CrxFileSystem_Private_0_1 Pnacl_Wrappers_PPB_Ext_CrxFileSystem_Private_0_1 = {
     .Open = (int32_t (*)(PP_Instance instance, PP_Resource* file_system, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_Ext_CrxFileSystem_Private_Open
 };
@@ -5683,6 +5716,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1 = {
+  .iface_macro = PPB_DISPLAYCOLORPROFILE_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_DisplayColorProfile_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1 = {
   .iface_macro = PPB_EXT_CRXFILESYSTEM_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Ext_CrxFileSystem_Private_0_1,
@@ -5995,6 +6034,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,
   &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_10,
+  &Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1,
   &Pnacl_WrapperInfo_PPB_FileIO_Private_0_1,
   &Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1,

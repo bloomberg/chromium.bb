@@ -109,6 +109,7 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/pp_video_frame_private.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppb_display_color_profile_private.h"
 #include "ppapi/c/private/ppb_ext_crx_file_system_private.h"
 #include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_flash.h"
