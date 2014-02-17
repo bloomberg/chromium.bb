@@ -432,13 +432,9 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   request.page_id = entry->GetPageID();
   request.source_lang = source_lang;
   request.target_lang = target_lang;
-  pending_requests_.push_back(request);
-
-  if (script->HasPendingRequest())
-    return;
 
   script->Request(base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
-                             base::Unretained(this)));
+                             weak_method_factory_.GetWeakPtr(), request));
 }
 
 void TranslateManager::RevertTranslation(WebContents* web_contents) {
@@ -536,52 +532,45 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
   }
 }
 
-void TranslateManager::OnTranslateScriptFetchComplete(
-    bool success, const std::string& data) {
-  std::vector<PendingRequest>::const_iterator iter;
-  for (iter = pending_requests_.begin(); iter != pending_requests_.end();
-       ++iter) {
-    const PendingRequest& request = *iter;
-    WebContents* web_contents =
-        tab_util::GetWebContentsByID(request.render_process_id,
-                                     request.render_view_id);
-    if (!web_contents) {
-      // The tab went away while we were retrieving the script.
-      continue;
-    }
-    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-    if (!entry || entry->GetPageID() != request.page_id) {
-      // We navigated away from the page the translation was triggered on.
-      continue;
-    }
+void TranslateManager::OnTranslateScriptFetchComplete(PendingRequest request,
+                                                      bool success,
+                                                      const std::string& data) {
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      request.render_process_id, request.render_view_id);
+  if (!web_contents) {
+    // The tab went away while we were retrieving the script.
+    return;
+  }
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+  if (!entry || entry->GetPageID() != request.page_id) {
+    // We navigated away from the page the translation was triggered on.
+    return;
+  }
 
-    if (success) {
-      // Translate the page.
-      TranslateScript* translate_script =
-          TranslateDownloadManager::GetInstance()->script();
-      DCHECK(translate_script);
-      DoTranslatePage(web_contents, translate_script->data(),
-                      request.source_lang, request.target_lang);
-    } else {
-      TranslateTabHelper* translate_tab_helper =
-          TranslateTabHelper::FromWebContents(web_contents);
-      DCHECK(translate_tab_helper);
-      translate_tab_helper->ShowTranslateUI(TranslateTabHelper::TRANSLATE_ERROR,
-                                            web_contents,
-                                            request.source_lang,
-                                            request.target_lang,
-                                            TranslateErrors::NETWORK);
-
-      if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
-        TranslateErrorDetails error_details;
-        error_details.time = base::Time::Now();
-        error_details.url = entry->GetURL();
-        error_details.error = TranslateErrors::NETWORK;
-        NotifyTranslateError(error_details);
-      }
+  if (success) {
+    // Translate the page.
+    TranslateScript* translate_script =
+        TranslateDownloadManager::GetInstance()->script();
+    DCHECK(translate_script);
+    DoTranslatePage(web_contents, translate_script->data(), request.source_lang,
+                    request.target_lang);
+  } else {
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents);
+    DCHECK(translate_tab_helper);
+    translate_tab_helper->ShowTranslateUI(TranslateTabHelper::TRANSLATE_ERROR,
+                                          web_contents,
+                                          request.source_lang,
+                                          request.target_lang,
+                                          TranslateErrors::NETWORK);
+    if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+      TranslateErrorDetails error_details;
+      error_details.time = base::Time::Now();
+      error_details.url = entry->GetURL();
+      error_details.error = TranslateErrors::NETWORK;
+      NotifyTranslateError(error_details);
     }
   }
-  pending_requests_.clear();
 }
 
 // static

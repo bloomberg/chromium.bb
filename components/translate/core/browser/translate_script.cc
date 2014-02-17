@@ -51,13 +51,15 @@ TranslateScript::TranslateScript()
 TranslateScript::~TranslateScript() {
 }
 
-void TranslateScript::Request(const Callback& callback) {
+void TranslateScript::Request(const RequestCallback& callback) {
+  DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
+  callback_list_.push_back(callback);
+
   if (fetcher_.get() != NULL) {
-    NOTREACHED();
+    // If there is already a request in progress, do nothing. |callback| will be
+    // run on completion.
     return;
   }
-
-  callback_ = callback;
 
   GURL translate_script_url;
   // Check if command-line contains an alternative URL for translate service.
@@ -145,5 +147,10 @@ void TranslateScript::OnScriptFetchComplete(
         expiration_delay_);
   }
 
-  callback_.Run(success, data);
+  for (RequestCallbackList::iterator it = callback_list_.begin();
+       it != callback_list_.end();
+       ++it) {
+    it->Run(success, data);
+  }
+  callback_list_.clear();
 }

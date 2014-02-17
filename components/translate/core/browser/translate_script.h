@@ -6,8 +6,9 @@
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_SCRIPT_H_
 
 #include <string>
+#include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +19,7 @@ class TranslateURLFetcher;
 
 class TranslateScript {
  public:
-  typedef base::Callback<void(bool, const std::string&)> Callback;
+  typedef base::Callback<void(bool, const std::string&)> RequestCallback;
 
   static const int kFetcherId = 0;
 
@@ -40,10 +41,7 @@ class TranslateScript {
 
   // Fetches the JS translate script (the script that is injected in the page
   // to translate it).
-  void Request(const Callback& callback);
-
-  // Returns true if this has a pending request.
-  bool HasPendingRequest() const { return fetcher_.get() != NULL; }
+  void Request(const RequestCallback& callback);
 
  private:
   friend class TranslateScriptTest;
@@ -83,8 +81,9 @@ class TranslateScript {
   // server.
   base::TimeDelta expiration_delay_;
 
-  // The callback called when the server sends a response.
-  Callback callback_;
+  // The callbacks called when the server sends a response.
+  typedef std::vector<RequestCallback> RequestCallbackList;
+  RequestCallbackList callback_list_;
 
   base::WeakPtrFactory<TranslateScript> weak_method_factory_;
 

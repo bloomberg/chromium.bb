@@ -136,7 +136,9 @@ class TranslateManager : public content::NotificationObserver {
   void PageTranslated(content::WebContents* web_contents,
                       PageTranslatedDetails* details);
 
-  void OnTranslateScriptFetchComplete(bool success, const std::string& data);
+  void OnTranslateScriptFetchComplete(PendingRequest request,
+                                      bool success,
+                                      const std::string& data);
 
   // Notifies to the observers when a language is detected.
   void NotifyLanguageDetection(const LanguageDetectionDetails& details);
@@ -148,11 +150,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
-
-  // The list of pending translate requests.  Translate requests are queued when
-  // the translate script is not ready and has to be fetched from the translate
-  // server.
-  std::vector<PendingRequest> pending_requests_;
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;
