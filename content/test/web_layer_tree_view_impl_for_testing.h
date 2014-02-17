@@ -16,7 +16,7 @@ class LayerTreeHost;
 
 namespace blink { class WebLayer; }
 
-namespace webkit {
+namespace content {
 
 class WebLayerTreeViewImplForTesting
     : public blink::WebLayerTreeView,
@@ -89,6 +89,6 @@ class WebLayerTreeViewImplForTesting
   DISALLOW_COPY_AND_ASSIGN(WebLayerTreeViewImplForTesting);
 };
 
-}  // namespace webkit
+}  // namespace content
 
 #endif  // CONTENT_TEST_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_

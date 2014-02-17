@@ -41,7 +41,6 @@
 #endif
 
 using blink::WebScriptController;
-using webkit::WebLayerTreeViewImplForTesting;
 
 namespace content {
 

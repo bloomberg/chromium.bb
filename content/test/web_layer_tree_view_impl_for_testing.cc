@@ -27,8 +27,9 @@ using blink::WebColor;
 using blink::WebGraphicsContext3D;
 using blink::WebRect;
 using blink::WebSize;
+using webkit::WebLayerImpl;
 
-namespace webkit {
+namespace content {
 
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting() {}
 
@@ -176,4 +177,4 @@ void WebLayerTreeViewImplForTesting::clearViewportLayers() {
                                            scoped_refptr<cc::Layer>());
 }
 
-}  // namespace webkit
+}  // namespace content
