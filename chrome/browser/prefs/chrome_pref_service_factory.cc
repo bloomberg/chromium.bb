@@ -33,6 +33,8 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/profiles/file_path_verifier_win.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -66,6 +68,10 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
+
+// The delay in seconds before actual work kicks in after calling
+// SchedulePrefHashStoresUpdateCheck can be set to 0 for tests.
+int g_pref_hash_store_update_check_delay_seconds = 55;
 
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
@@ -156,7 +162,6 @@ enum SettingsEnforcementGroup {
   // Only enforce settings on profile loads; still allow seeding of unloaded
   // profiles.
   GROUP_ENFORCE_ON_LOAD,
-  // TOOD(gab): Block unloaded profile seeding in this mode.
   GROUP_ENFORCE_ALWAYS
 };
 
@@ -373,9 +378,11 @@ class InitializeHashStoreObserver : public PrefStore::Observer {
  public:
   // Creates an observer that will initialize |pref_hash_store| with the
   // contents of |pref_store| when the latter is fully loaded.
-  InitializeHashStoreObserver(const scoped_refptr<PrefStore>& pref_store,
-                              scoped_ptr<PrefHashStore> pref_hash_store)
-      : pref_store_(pref_store), pref_hash_store_(pref_hash_store.Pass()) {}
+  InitializeHashStoreObserver(
+      const scoped_refptr<PrefStore>& pref_store,
+      scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl)
+      : pref_store_(pref_store),
+        pref_hash_store_impl_(pref_hash_store_impl.Pass()) {}
 
   virtual ~InitializeHashStoreObserver();
 
@@ -385,7 +392,7 @@ class InitializeHashStoreObserver : public PrefStore::Observer {
 
  private:
   scoped_refptr<PrefStore> pref_store_;
-  scoped_ptr<PrefHashStore> pref_hash_store_;
+  scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(InitializeHashStoreObserver);
 };
@@ -395,16 +402,68 @@ InitializeHashStoreObserver::~InitializeHashStoreObserver() {}
 void InitializeHashStoreObserver::OnPrefValueChanged(const std::string& key) {}
 
 void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
-  // If we successfully loaded the preferences _and_ the PrefHashStore hasn't
-  // been initialized by someone else in the meantime initialize it now.
-  if (succeeded & !pref_hash_store_->IsInitialized()) {
-    CreatePrefHashFilter(
-        pref_hash_store_.Pass())->Initialize(*pref_store_);
-    UMA_HISTOGRAM_BOOLEAN(
-        "Settings.TrackedPreferencesInitializedForUnloadedProfile", true);
+  // If we successfully loaded the preferences _and_ the PrefHashStoreImpl
+  // hasn't been initialized by someone else in the meantime, initialize it now.
+  const PrefHashStoreImpl::StoreVersion pre_update_version =
+      pref_hash_store_impl_->GetCurrentVersion();
+  if (succeeded && pre_update_version < PrefHashStoreImpl::VERSION_LATEST) {
+    CreatePrefHashFilter(pref_hash_store_impl_.PassAs<PrefHashStore>())->
+        Initialize(*pref_store_);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
+        pre_update_version,
+        PrefHashStoreImpl::VERSION_LATEST + 1);
   }
   pref_store_->RemoveObserver(this);
   delete this;
+}
+
+// Initializes/updates the PrefHashStore for the profile preferences file under
+// |profile_path| without actually loading that profile. Also reports the
+// version of that PrefHashStore via UMA, whether it proceeds with initializing
+// it or not.
+void UpdatePrefHashStoreIfRequired(
+    const base::FilePath& profile_path) {
+  scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl(
+      GetPrefHashStoreImpl(profile_path));
+
+  const PrefHashStoreImpl::StoreVersion current_version =
+      pref_hash_store_impl->GetCurrentVersion();
+  UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferencesAlternateStoreVersion",
+                            current_version,
+                            PrefHashStoreImpl::VERSION_LATEST + 1);
+
+  // Update the pref hash store if it's not at the latest version and the
+  // SettingsEnforcement group allows seeding of unloaded profiles.
+  if (current_version != PrefHashStoreImpl::VERSION_LATEST &&
+      GetSettingsEnforcementGroup() < GROUP_ENFORCE_ALWAYS) {
+    const base::FilePath pref_file(
+        GetPrefFilePathFromProfilePath(profile_path));
+    scoped_refptr<JsonPrefStore> pref_store(
+        new JsonPrefStore(pref_file,
+                          JsonPrefStore::GetTaskRunnerForFile(
+                              pref_file, BrowserThread::GetBlockingPool()),
+                          scoped_ptr<PrefFilter>()));
+    pref_store->AddObserver(
+        new InitializeHashStoreObserver(pref_store,
+                                        pref_hash_store_impl.Pass()));
+    pref_store->ReadPrefsAsync(NULL);
+  }
+}
+
+// Initialize/update preference hash stores for all profiles but the one whose
+// path matches |ignored_profile_path|.
+void UpdateAllPrefHashStoresIfRequired(
+    const base::FilePath& ignored_profile_path) {
+  const ProfileInfoCache& profile_info_cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t n_profiles = profile_info_cache.GetNumberOfProfiles();
+  for (size_t i = 0; i < n_profiles; ++i) {
+    const base::FilePath profile_path =
+        profile_info_cache.GetPathOfProfileAtIndex(i);
+    if (profile_path != ignored_profile_path)
+      UpdatePrefHashStoreIfRequired(profile_path);
+  }
 }
 
 }  // namespace
@@ -471,23 +530,19 @@ void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {
 #endif
 }
 
-void InitializePrefHashStoreIfRequired(
-    const base::FilePath& profile_path) {
-  scoped_ptr<PrefHashStoreImpl> pref_hash_store(
-      GetPrefHashStoreImpl(profile_path));
-  if (pref_hash_store && !pref_hash_store->IsInitialized()) {
-    const base::FilePath pref_file(
-        GetPrefFilePathFromProfilePath(profile_path));
-    scoped_refptr<JsonPrefStore> pref_store(
-        new JsonPrefStore(pref_file,
-                          JsonPrefStore::GetTaskRunnerForFile(
-                              pref_file, BrowserThread::GetBlockingPool()),
-                          scoped_ptr<PrefFilter>()));
-    pref_store->AddObserver(
-        new InitializeHashStoreObserver(
-            pref_store, pref_hash_store.PassAs<PrefHashStore>()));
-    pref_store->ReadPrefsAsync(NULL);
-  }
+void EnableZeroDelayPrefHashStoreUpdateForTesting() {
+  g_pref_hash_store_update_check_delay_seconds = 0;
+}
+
+void SchedulePrefHashStoresUpdateCheck(
+    const base::FilePath& initial_profile_path) {
+  BrowserThread::PostDelayedTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&UpdateAllPrefHashStoresIfRequired,
+                   initial_profile_path),
+        base::TimeDelta::FromSeconds(
+            g_pref_hash_store_update_check_delay_seconds));
 }
 
 void ResetPrefHashStore(const base::FilePath& profile_path) {

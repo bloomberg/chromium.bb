@@ -508,17 +508,6 @@ class LoadCompleteListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
 };
 
-void InitializeAllPrefHashStores() {
-  ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t n_profiles = profile_info_cache.GetNumberOfProfiles();
-  for (size_t i = 0; i < n_profiles; ++i) {
-    base::FilePath profile_path =
-        profile_info_cache.GetPathOfProfileAtIndex(i);
-    chrome_prefs::InitializePrefHashStoreIfRequired(profile_path);
-  }
-}
-
 }  // namespace
 
 namespace chrome_browser {
@@ -1588,9 +1577,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PostBrowserStart();
 
-  // Initialize preference hash stores for profiles that haven't been loaded
-  // recently.
-  InitializeAllPrefHashStores();
+  chrome_prefs::SchedulePrefHashStoresUpdateCheck(profile_->GetPath());
 
   if (parameters().ui_task) {
     // We end the startup timer here if we have parameters to run, because we

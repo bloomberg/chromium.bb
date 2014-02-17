@@ -15,9 +15,6 @@ class PrefHashStore {
  public:
   virtual ~PrefHashStore() {}
 
-  // Determines if the hash store has been initialized (contains any values).
-  virtual bool IsInitialized() const = 0;
-
   // Returns a PrefHashStoreTransaction which can be used to perform a series
   // of checks/transformations on the hash store.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() = 0;

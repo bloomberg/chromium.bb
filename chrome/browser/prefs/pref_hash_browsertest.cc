@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -14,6 +15,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
@@ -24,7 +26,10 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -87,9 +92,46 @@ int GetTrackedPrefHistogramCount(const char* histogram_name, bool expect_zero) {
 
 }  // namespace
 
-typedef InProcessBrowserTest PrefHashBrowserTest;
+class PrefHashBrowserTest : public InProcessBrowserTest,
+                            public testing::WithParamInterface<std::string> {
+ public:
+  PrefHashBrowserTest()
+      : is_unloaded_profile_seeding_allowed_(
+            GetParam() !=
+            chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways) {}
 
-IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kForceFieldTrials,
+        std::string(chrome_prefs::internals::kSettingsEnforcementTrialName) +
+            "/" + GetParam() + "/");
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    // Force the delayed PrefHashStore update task to happen immediately.
+    chrome_prefs::EnableZeroDelayPrefHashStoreUpdateForTesting();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // content::RunAllPendingInMessageLoop() is already called before
+    // SetUpOnMainThread() in in_process_browser_test.cc which guarantees that
+    // UpdateAllPrefHashStoresIfRequired() has already been called.
+
+    // Now flush the blocking pool to force any pending JsonPrefStore async read
+    // requests.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+    // And finally run tasks on this message loop again to process the OnRead()
+    // callbacks resulting from the file reads above.
+    content::RunAllPendingInMessageLoop();
+  }
+
+ protected:
+  const bool is_unloaded_profile_seeding_allowed_;
+};
+
+IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        PRE_PRE_InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -119,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
              true));
 }
 
-IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
+IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        PRE_InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -136,15 +178,15 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
       g_browser_process->local_state()->GetDictionary(
           prefs::kProfilePreferenceHashes);
 
-  // 3 is for hash_of_hashes, default profile, and new profile.
-  ASSERT_EQ(3U, hashes->size());
+  // 4 is for hash_of_hashes, versions_dict, default profile, and new profile.
+  EXPECT_EQ(4U, hashes->size());
 
   // One of the two profiles should not have been loaded. Reset its hash store.
   const base::FilePath unloaded_profile_path = GetUnloadedProfilePath();
   chrome_prefs::ResetPrefHashStore(unloaded_profile_path);
 
   // One of the profile hash collections should be gone.
-  ASSERT_EQ(2U, hashes->size());
+  EXPECT_EQ(3U, hashes->size());
 
   // No profile should have gone through the unloaded profile initialization in
   // this phase as both profiles were already initialized at the beginning of
@@ -152,11 +194,11 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
   // force initialization in the next phase's startup).
   EXPECT_EQ(
       0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferencesInitializedForUnloadedProfile",
+             "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
              true));
 }
 
-IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
+IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -165,15 +207,25 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
       g_browser_process->local_state()->GetDictionary(
           prefs::kProfilePreferenceHashes);
 
-  // The deleted hash collection should be restored.
-  ASSERT_EQ(3U, hashes->size());
+  // The deleted hash collection should be restored only if the current
+  // SettingsEnforcement group allows it.
+  if (is_unloaded_profile_seeding_allowed_) {
+    EXPECT_EQ(4U, hashes->size());
 
-  // Verify that the initialization truly did occur in this phase's startup;
-  // rather than in the previous phase's shutdown.
-  EXPECT_EQ(
-      1, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferencesInitializedForUnloadedProfile",
-             false));
+    // Verify that the initialization truly did occur in this phase's startup;
+    // rather than in the previous phase's shutdown.
+    EXPECT_EQ(
+        1, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
+               false));
+  } else {
+    EXPECT_EQ(3U, hashes->size());
+
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
+               true));
+  }
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -204,29 +256,41 @@ IN_PROC_BROWSER_TEST_F(PrefHashBrowserTest,
                                    false);
   EXPECT_GT(initial_unchanged_count, 0);
 
-  // Explicitly load the unloaded profile.
-  profile_manager->GetProfile(GetUnloadedProfilePath());
-  ASSERT_EQ(2U, profile_manager->GetLoadedProfiles().size());
+  if (is_unloaded_profile_seeding_allowed_) {
+    // Explicitly load the unloaded profile.
+    profile_manager->GetProfile(GetUnloadedProfilePath());
+    ASSERT_EQ(2U, profile_manager->GetLoadedProfiles().size());
 
-  // Loading the unexpected profile should only generate unchanged pings; and
-  // should have produced as many of them as loading the first profile.
-  EXPECT_EQ(
-      0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferenceChanged", true));
-  EXPECT_EQ(
-      0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferenceCleared", true));
-  EXPECT_EQ(
-      0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferenceInitialized", true));
-  EXPECT_EQ(
-      0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferenceTrustedInitialized", true));
-  EXPECT_EQ(
-      0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferenceMigrated", true));
-  EXPECT_EQ(
-      initial_unchanged_count * 2,
-      GetTrackedPrefHistogramCount("Settings.TrackedPreferenceUnchanged",
-                                   false));
+    // Loading the unloaded profile should only generate unchanged pings; and
+    // should have produced as many of them as loading the first profile.
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferenceChanged", true));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferenceCleared", true));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferenceInitialized", true));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferenceTrustedInitialized", true));
+    EXPECT_EQ(
+        0, GetTrackedPrefHistogramCount(
+               "Settings.TrackedPreferenceMigrated", true));
+    EXPECT_EQ(
+        initial_unchanged_count * 2,
+        GetTrackedPrefHistogramCount("Settings.TrackedPreferenceUnchanged",
+                                     false));
+  }
 }
+
+// TODO(gab): Also test kSettingsEnforcementGroupEnforceAlways below; for some
+// reason it doesn't pass on the try bots, yet I can't repro the failure
+// locally, it's as if GROUP_NO_ENFORCEMENT is always picked on bots..?
+INSTANTIATE_TEST_CASE_P(
+    PrefHashBrowserTestInstance,
+    PrefHashBrowserTest,
+    testing::Values(
+        chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload));

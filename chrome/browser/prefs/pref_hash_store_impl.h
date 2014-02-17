@@ -27,14 +27,28 @@ namespace internals {
 // Hash of hashes for each profile, used to validate the existing hashes when
 // debating whether an unknown value is to be trusted, will be stored as a
 // string under
-// |kProfilePreferenceHashes|.|kHashOfHashesPref|.|hash_stored_id_|.
-const char kHashOfHashesPref[] = "hash_of_hashes";
+// |kProfilePreferenceHashes|.|kHashOfHashesDict|.|hash_stored_id_|.
+extern const char kHashOfHashesDict[];
+
+// Versions for each PrefHashStore are stored in this dictionary under
+// |hash_store_id_|.
+extern const char kStoreVersionsDict[];
 
 }  // namespace internals
 
 // Implements PrefHashStoreImpl by storing preference hashes in a PrefService.
 class PrefHashStoreImpl : public PrefHashStore {
  public:
+  enum StoreVersion {
+    // No hashes have been stored in this PrefHashStore yet.
+    VERSION_UNINITIALIZED = 0,
+    // The hashes in this PrefHashStore were stored before the introduction
+    // of a version number and should be re-initialized.
+    VERSION_PRE_MIGRATION = 1,
+    // The hashes in this PrefHashStore were stored using the latest algorithm.
+    VERSION_LATEST = 2,
+  };
+
   // Constructs a PrefHashStoreImpl that calculates hashes using
   // |seed| and |device_id| and stores them in |local_state|. Multiple hash
   // stores can use the same |local_state| with distinct |hash_store_id|s.
@@ -56,8 +70,10 @@ class PrefHashStoreImpl : public PrefHashStore {
   void Reset();
 
   // PrefHashStore implementation.
-  virtual bool IsInitialized() const OVERRIDE;
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
+
+  // Returns the current version of this hash store.
+  StoreVersion GetCurrentVersion() const;
 
  private:
   class PrefHashStoreTransactionImpl;

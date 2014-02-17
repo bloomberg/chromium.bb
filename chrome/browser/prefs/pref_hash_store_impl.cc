@@ -12,6 +12,13 @@
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/common/pref_names.h"
 
+namespace internals {
+
+const char kHashOfHashesDict[] = "hash_of_hashes";
+const char kStoreVersionsDict[] = "store_versions";
+
+}  // namespace internals
+
 class PrefHashStoreImpl::PrefHashStoreTransactionImpl
     : public PrefHashStoreTransaction {
  public:
@@ -79,13 +86,18 @@ void PrefHashStoreImpl::Reset() {
   // Remove the dictionary corresponding to the profile name, which may have a
   // '.'
   update->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-}
 
-bool PrefHashStoreImpl::IsInitialized() const {
-  const base::DictionaryValue* pref_hash_dicts =
-      local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-  return pref_hash_dicts &&
-      pref_hash_dicts->GetDictionaryWithoutPathExpansion(hash_store_id_, NULL);
+  // Remove this store's entry in the kStoreVersionsDict.
+  base::DictionaryValue* version_dict;
+  if (update->GetDictionary(internals::kStoreVersionsDict, &version_dict))
+    version_dict->Remove(hash_store_id_, NULL);
+
+  // Remove this store's entry in the kHashOfHashesDict.
+  base::DictionaryValue* hash_of_hashes_dict;
+  if (update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesDict,
+                                                &hash_of_hashes_dict)) {
+    hash_of_hashes_dict->Remove(hash_store_id_, NULL);
+  }
 }
 
 scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction() {
@@ -93,18 +105,37 @@ scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction() {
       new PrefHashStoreTransactionImpl(this));
 }
 
+PrefHashStoreImpl::StoreVersion PrefHashStoreImpl::GetCurrentVersion() const {
+  const base::DictionaryValue* pref_hash_data =
+      local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
+
+  if (!pref_hash_data->GetDictionaryWithoutPathExpansion(hash_store_id_, NULL))
+    return VERSION_UNINITIALIZED;
+
+  const base::DictionaryValue* version_dict;
+  int current_version;
+  if (!pref_hash_data->GetDictionary(internals::kStoreVersionsDict,
+                                     &version_dict) ||
+      !version_dict->GetInteger(hash_store_id_, &current_version)) {
+    return VERSION_PRE_MIGRATION;
+  }
+
+  DCHECK_GT(current_version, VERSION_PRE_MIGRATION);
+  return static_cast<StoreVersion>(current_version);
+}
+
 bool PrefHashStoreImpl::IsHashDictionaryTrusted() const {
-  const base::DictionaryValue* pref_hash_dicts =
+  const base::DictionaryValue* pref_hash_data =
       local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
   const base::DictionaryValue* hashes_dict = NULL;
   const base::DictionaryValue* hash_of_hashes_dict = NULL;
   std::string hash_of_hashes;
   // The absence of the hashes dictionary isn't trusted. Nor is the absence of
   // the hash of hashes for this |hash_store_id_|.
-  if (!pref_hash_dicts->GetDictionaryWithoutPathExpansion(
+  if (!pref_hash_data->GetDictionaryWithoutPathExpansion(
           hash_store_id_, &hashes_dict) ||
-      !pref_hash_dicts->GetDictionaryWithoutPathExpansion(
-          internals::kHashOfHashesPref, &hash_of_hashes_dict) ||
+      !pref_hash_data->GetDictionaryWithoutPathExpansion(
+          internals::kHashOfHashesDict, &hash_of_hashes_dict) ||
       !hash_of_hashes_dict->GetStringWithoutPathExpansion(
           hash_store_id_, &hash_of_hashes)) {
     return false;
@@ -120,18 +151,17 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     ~PrefHashStoreTransactionImpl() {
+  DictionaryPrefUpdate update(outer_->local_state_,
+                              prefs::kProfilePreferenceHashes);
   // Update the hash_of_hashes if and only if the hashes dictionary has been
   // modified in this transaction.
   if (has_changed_) {
-    DictionaryPrefUpdate update(outer_->local_state_,
-                                prefs::kProfilePreferenceHashes);
-
     // Get the dictionary where the hash of hashes are stored.
     base::DictionaryValue* hash_of_hashes_dict = NULL;
-    if (!update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesPref,
+    if (!update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesDict,
                                                    &hash_of_hashes_dict)) {
       hash_of_hashes_dict = new base::DictionaryValue;
-      update->SetWithoutPathExpansion(internals::kHashOfHashesPref,
+      update->SetWithoutPathExpansion(internals::kHashOfHashesDict,
                                       hash_of_hashes_dict);
     }
 
@@ -147,16 +177,28 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     hash_of_hashes_dict->SetStringWithoutPathExpansion(outer_->hash_store_id_,
                                                        hash_of_hashes);
   }
-}
 
+  // Mark this hash store has having been updated to the latest version (in
+  // practice only initialization transactions will actually do this, but
+  // since they always occur before minor update transaction it's okay
+  // to unconditionally do this here). Do this even if |!has_changed_| to also
+  // seed version number on unchanged profiles.
+  base::DictionaryValue* store_versions_dict = NULL;
+  if (!update->GetDictionary(internals::kStoreVersionsDict,
+                             &store_versions_dict)) {
+    store_versions_dict = new base::DictionaryValue;
+    update->Set(internals::kStoreVersionsDict, store_versions_dict);
+  }
+  store_versions_dict->SetInteger(outer_->hash_store_id_, VERSION_LATEST);
+}
 
 PrefHashStoreTransaction::ValueState
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
     const std::string& path, const base::Value* initial_value) const {
-  const base::DictionaryValue* pref_hash_dicts =
+  const base::DictionaryValue* pref_hash_data =
       outer_->local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
   const base::DictionaryValue* hashed_prefs = NULL;
-  pref_hash_dicts->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
+  pref_hash_data->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
                                                      &hashed_prefs);
 
   std::string last_hash;
@@ -283,10 +325,10 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ClearPath(
 
 bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::HasSplitHashesAtPath(
     const std::string& path) const {
-  const base::DictionaryValue* pref_hash_dicts =
+  const base::DictionaryValue* pref_hash_data =
       outer_->local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
   const base::DictionaryValue* hashed_prefs = NULL;
-  pref_hash_dicts->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
+  pref_hash_data->GetDictionaryWithoutPathExpansion(outer_->hash_store_id_,
                                                      &hashed_prefs);
   return hashed_prefs && hashed_prefs->GetDictionary(path, NULL);
 }

@@ -18009,8 +18009,31 @@ other types of suffix sets.
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferencesAlternateStoreVersion"
+    enum="PrefHashStoreVersion">
+  <summary>
+    The version of a PrefHashStore, reported once for each alternate
+    PrefHashStore (not associated to the default profile) from a delayed task on
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom"
+    enum="PrefHashStoreVersion">
+  <summary>
+    The previous version of an alternate PrefHashStore (not associated to the
+    default profile) that was updated from a delayed task on startup. This
+    should match Settings.TrackedPreferencesAlternateStoreVersion fairly closely
+    for all versions but VERSION_LATEST which should never be reported here.
+  </summary>
+</histogram>
+
 <histogram name="Settings.TrackedPreferencesInitializedForUnloadedProfile"
     enum="BooleanHit">
+  <obsolete>
+    Deprecated 2014-02 in favor of
+    Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom.
+  </obsolete>
   <summary>
     Preference tracking was initialized for an unloaded profile. This should
     happen at most once per profile.
@@ -30120,6 +30143,12 @@ other types of suffix sets.
   <int value="1" label="success from cache"/>
   <int value="2" label="success from network"/>
   <int value="3" label="canceled in-flight"/>
+</enum>
+
+<enum name="PrefHashStoreVersion" type="int">
+  <int value="0" label="VERSION_UNINITIALIZED"/>
+  <int value="1" label="VERSION_PRE_MIGRATION"/>
+  <int value="2" label="VERSION_LATEST"/>
 </enum>
 
 <enum name="PrerenderCookieStatus" type="int">

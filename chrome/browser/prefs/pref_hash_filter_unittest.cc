@@ -128,7 +128,6 @@ class MockPrefHashStore : public PrefHashStore {
   }
 
   // PrefHashStore implementation.
-  virtual bool IsInitialized() const OVERRIDE;
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
 
  private:
@@ -213,11 +212,6 @@ void MockPrefHashStore::SetInvalidKeysResult(
   ASSERT_EQ(PrefHashStoreTransaction::CHANGED, result->second);
 
   invalid_keys_results_.insert(std::make_pair(path, invalid_keys_result));
-}
-
-bool MockPrefHashStore::IsInitialized() const {
-  NOTREACHED();
-  return true;
 }
 
 scoped_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction() {

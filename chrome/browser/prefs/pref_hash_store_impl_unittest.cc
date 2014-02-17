@@ -15,17 +15,24 @@
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
+class PrefHashStoreImplTest : public testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE {
+    PrefHashStoreImpl::RegisterPrefs(local_state_.registry());
+  }
+
+ protected:
+  TestingPrefServiceSimple local_state_;
+};
+
+TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   base::StringValue string_1("string1");
   base::StringValue string_2("string2");
-
-  TestingPrefServiceSimple local_state;
-  PrefHashStoreImpl::RegisterPrefs(local_state.registry());
 
   {
     // 32 NULL bytes is the seed that was used to generate the legacy hash.
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -54,7 +61,7 @@ TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
 
     {
       // Manually shove in a legacy hash.
-      DictionaryPrefUpdate update(&local_state,
+      DictionaryPrefUpdate update(&local_state_,
                                   prefs::kProfilePreferenceHashes);
       base::DictionaryValue* child_dictionary = NULL;
       ASSERT_TRUE(update->GetDictionary("store_id", &child_dictionary));
@@ -73,7 +80,7 @@ TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
@@ -86,10 +93,10 @@ TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
 
   {
     // Manually corrupt the hash of hashes for "store_id".
-    DictionaryPrefUpdate update(&local_state, prefs::kProfilePreferenceHashes);
+    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
     base::DictionaryValue* hash_of_hashes_dict = NULL;
     ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
-        internals::kHashOfHashesPref, &hash_of_hashes_dict));
+        internals::kHashOfHashesDict, &hash_of_hashes_dict));
     hash_of_hashes_dict->SetString("store_id", std::string(64, 'A'));
     // This shouldn't have increased the number of existing hash of hashes.
     ASSERT_EQ(1U, hash_of_hashes_dict->size());
@@ -99,7 +106,7 @@ TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust non-NULL unknown values.
     PrefHashStoreImpl pref_hash_store3(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
@@ -111,7 +118,7 @@ TEST(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   }
 }
 
-TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
+TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
   base::DictionaryValue dict;
   dict.Set("a", new base::StringValue("to be replaced"));
   dict.Set("b", new base::StringValue("same"));
@@ -124,14 +131,11 @@ TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
 
   base::DictionaryValue empty_dict;
 
-  TestingPrefServiceSimple local_state;
-  PrefHashStoreImpl::RegisterPrefs(local_state.registry());
-
   std::vector<std::string> invalid_keys;
 
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -200,7 +204,7 @@ TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
@@ -210,10 +214,10 @@ TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
 
   {
     // Manually corrupt the hash of hashes for "store_id".
-    DictionaryPrefUpdate update(&local_state, prefs::kProfilePreferenceHashes);
+    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
     base::DictionaryValue* hash_of_hashes_dict = NULL;
     ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
-        internals::kHashOfHashesPref, &hash_of_hashes_dict));
+        internals::kHashOfHashesDict, &hash_of_hashes_dict));
     hash_of_hashes_dict->SetString("store_id", std::string(64, 'A'));
     // This shouldn't have increased the number of existing hash of hashes.
     ASSERT_EQ(1U, hash_of_hashes_dict->size());
@@ -223,7 +227,7 @@ TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust unknown values.
     PrefHashStoreImpl pref_hash_store3(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction());
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
@@ -232,17 +236,14 @@ TEST(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
   }
 }
 
-TEST(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
+TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
   base::DictionaryValue empty_dict;
-
-  TestingPrefServiceSimple local_state;
-  PrefHashStoreImpl::RegisterPrefs(local_state.registry());
 
   std::vector<std::string> invalid_keys;
 
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -279,7 +280,7 @@ TEST(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
     // regression test ensuring that the internal action of clearing some hashes
     // does update the stored hash of hashes).
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
 
@@ -299,7 +300,7 @@ TEST(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
 // switching strategies after their initial release as split preferences are
 // turned into split preferences specifically because the atomic hash isn't
 // considered useful.
-TEST(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
+TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   base::StringValue string("string1");
 
   base::DictionaryValue dict;
@@ -308,12 +309,9 @@ TEST(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   dict.Set("b", new base::StringValue("bar"));
   dict.Set("c", new base::StringValue("baz"));
 
-  TestingPrefServiceSimple local_state;
-  PrefHashStoreImpl::RegisterPrefs(local_state.registry());
-
   {
     PrefHashStoreImpl pref_hash_store(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
 
@@ -325,12 +323,73 @@ TEST(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   {
     // Load a new |pref_hash_store2| in which the hashes dictionary is trusted.
     PrefHashStoreImpl pref_hash_store2(
-        "store_id", std::string(32, 0), "device_id", &local_state);
+        "store_id", std::string(32, 0), "device_id", &local_state_);
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction());
     std::vector<std::string> invalid_keys;
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("path1", &dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
+  }
+}
+
+TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
+  COMPILE_ASSERT(PrefHashStoreImpl::VERSION_LATEST == 2,
+                 new_versions_should_be_tested_here);
+  {
+    PrefHashStoreImpl pref_hash_store(
+        "store_id", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_UNINITIALIZED when no hashes are stored.
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
+              pref_hash_store.GetCurrentVersion());
+
+    scoped_ptr<PrefHashStoreTransaction> transaction(
+        pref_hash_store.BeginTransaction());
+    base::StringValue string_value("foo");
+    transaction->StoreHash("path1", &string_value);
+  }
+  {
+    PrefHashStoreImpl pref_hash_store(
+        "store_id", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_LATEST after storing a hash.
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
+              pref_hash_store.GetCurrentVersion());
+  }
+  {
+    // Manually clear the version number.
+    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
+    base::DictionaryValue* store_versions_dict = NULL;
+    ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(
+        internals::kStoreVersionsDict, &store_versions_dict));
+    scoped_ptr<base::Value> stored_value;
+    store_versions_dict->Remove("store_id", &stored_value);
+    int stored_version;
+    EXPECT_TRUE(stored_value->GetAsInteger(&stored_version));
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST, stored_version);
+    // There should be no versions left in the versions dictionary.
+    EXPECT_TRUE(store_versions_dict->empty());
+  }
+  {
+    PrefHashStoreImpl pref_hash_store(
+        "store_id", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_PRE_MIGRATION when no version is present for "store_id".
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_PRE_MIGRATION,
+              pref_hash_store.GetCurrentVersion());
+
+    scoped_ptr<PrefHashStoreTransaction> transaction(
+        pref_hash_store.BeginTransaction());
+  }
+  {
+    PrefHashStoreImpl pref_hash_store(
+        "store_id", std::string(32, 0), "device_id", &local_state_);
+
+    // Back to VERSION_LATEST after performing a transaction from
+    // VERSION_PRE_MIGRATION (the presence of an existing hash should be
+    // sufficient, no need for the transaction itself to perform any work).
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
+              pref_hash_store.GetCurrentVersion());
   }
 }

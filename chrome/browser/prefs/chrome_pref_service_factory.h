@@ -76,10 +76,14 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
 // |profile_path|.
 void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
 
-// Initializes the PrefHashStore for the profile preferences file under
-// |profile_path| without actually loading that profile.
-void InitializePrefHashStoreIfRequired(
-    const base::FilePath& profile_path);
+// Call before calling SchedulePrefHashStoresUpdateCheck to cause it to run with
+// zero delay. For testing only.
+void EnableZeroDelayPrefHashStoreUpdateForTesting();
+
+// Shedules an update check for all PrefHashStores, stores whose version doesn't
+// match the latest version will then be updated.
+void SchedulePrefHashStoresUpdateCheck(
+    const base::FilePath& initial_profile_path);
 
 // Resets the contents of the preference hash store for the profile at
 // |profile_path|.
