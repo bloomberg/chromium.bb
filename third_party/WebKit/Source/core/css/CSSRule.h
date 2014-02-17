@@ -53,7 +53,6 @@ public:
         WEBKIT_KEYFRAME_RULE = KEYFRAME_RULE,
         SUPPORTS_RULE = 12,
         VIEWPORT_RULE = 15,
-        WEBKIT_REGION_RULE = 16,
         WEBKIT_FILTER_RULE = 17
     };
 

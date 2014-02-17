@@ -497,8 +497,6 @@ enum ImageResolutionSnap { ImageResolutionNoSnap = 0, ImageResolutionSnapPixels 
 
 enum Order { LogicalOrder = 0, VisualOrder };
 
-enum RegionFragment { AutoRegionFragment, BreakRegionFragment };
-
 enum ColumnAxis { HorizontalColumnAxis, VerticalColumnAxis, AutoColumnAxis };
 
 enum ColumnProgression { NormalColumnProgression, ReverseColumnProgression };

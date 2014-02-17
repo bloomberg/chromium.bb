@@ -132,10 +132,6 @@
 
     void webkitRequestPointerLock();
 
-    // CSS Regions API
-    [RuntimeEnabled=CSSRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
-    [RuntimeEnabled=CSSRegions] sequence<Range> webkitGetRegionFlowRanges();
-
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

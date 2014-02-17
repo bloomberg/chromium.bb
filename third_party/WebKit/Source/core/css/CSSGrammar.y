@@ -193,7 +193,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token INTERNAL_SUPPORTS_CONDITION_SYM
 %token KEYFRAMES_SYM
 %token WEBKIT_KEYFRAMES_SYM
-%token WEBKIT_REGION_RULE_SYM
 %token <marginBox> TOPLEFTCORNER_SYM
 %token <marginBox> TOPLEFT_SYM
 %token <marginBox> TOPCENTER_SYM
@@ -284,13 +283,8 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <rule> valid_rule
 %type <ruleList> block_rule_body
 %type <ruleList> block_rule_list
-%type <ruleList> region_block_rule_body
-%type <ruleList> region_block_rule_list
 %type <rule> block_rule
 %type <rule> block_valid_rule
-%type <rule> region_block_rule
-%type <rule> region_block_valid_rule
-%type <rule> region
 %type <rule> supports
 %type <rule> viewport
 %type <boolean> keyframes_rule_start
@@ -338,7 +332,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <selector> relative_selector
 %type <selectorList> selector_list
 %type <selectorList> simple_selector_list
-%type <selectorList> region_selector
 %type <selector> class
 %type <selector> attrib
 %type <selector> pseudo
@@ -507,7 +500,6 @@ valid_rule:
   | keyframes
   | namespace
   | import
-  | region
   | supports
   | viewport
   ;
@@ -542,43 +534,10 @@ block_rule_list:
     }
     ;
 
-region_block_rule_body:
-    region_block_rule_list
-  | region_block_rule_list block_rule_recovery
-    ;
-
-region_block_rule_list:
-    /* empty */ { $$ = 0; }
-  | region_block_rule_list region_block_rule maybe_sgml {
-        $$ = parser->appendRule($1, $2);
-    }
-  ;
-
-region_block_rule:
-    before_rule region_block_valid_rule {
-        $$ = $2;
-        parser->endRule(!!$$);
-    }
-  | before_rule invalid_rule {
-        $$ = 0;
-        parser->endRule(false);
-    }
-  ;
-
 block_rule_recovery:
     before_rule invalid_rule_header {
         parser->endRule(false);
     }
-  ;
-
-region_block_valid_rule:
-    ruleset
-  | page
-  | font_face
-  | media
-  | keyframes
-  | supports
-  | viewport
   ;
 
 block_valid_rule:
@@ -590,7 +549,6 @@ block_valid_rule:
   | supports
   | viewport
   | namespace
-  | region
   ;
 
 block_rule:
@@ -1079,25 +1037,6 @@ viewport:
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createViewportRule();
         parser->markViewportRuleBodyEnd();
-    }
-;
-
-region_selector:
-    selector_list {
-        parser->setReusableRegionSelectorVector($1);
-        $$ = parser->reusableRegionSelectorVector();
-    }
-;
-
-before_region_rule:
-    /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::REGION_RULE);
-    }
-    ;
-
-region:
-    before_region_rule WEBKIT_REGION_RULE_SYM maybe_space region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
-        $$ = parser->createRegionRule($4, $9);
     }
 ;
 
@@ -1890,7 +1829,6 @@ regular_invalid_at_rule_header:
     }
   | import_rule_start at_rule_header_recovery
   | NAMESPACE_SYM at_rule_header_recovery
-  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_header_recovery
   | error_location invalid_at at_rule_header_recovery {
         parser->resumeErrorLogging();
         parser->reportError($1, InvalidRuleCSSError);

@@ -29,7 +29,6 @@ namespace WebCore {
 class EllipsisBox;
 class HitTestResult;
 class RenderBlockFlow;
-class RenderRegion;
 
 struct BidiStatus;
 struct GapRects;
@@ -63,9 +62,6 @@ public:
 
     LayoutUnit paginatedLineWidth() const { return m_fragmentationData ? m_fragmentationData->m_paginatedLineWidth : LayoutUnit(0); }
     void setPaginatedLineWidth(LayoutUnit width) { ensureLineFragmentationData()->m_paginatedLineWidth = width; }
-
-    RenderRegion* containingRegion() const;
-    void setContainingRegion(RenderRegion*);
 
     LayoutUnit selectionTop() const;
     LayoutUnit selectionBottom() const;
@@ -221,17 +217,13 @@ private:
         WTF_MAKE_NONCOPYABLE(LineFragmentationData); WTF_MAKE_FAST_ALLOCATED;
     public:
         LineFragmentationData()
-            : m_containingRegion(0)
-            , m_paginationStrut(0)
+            : m_paginationStrut(0)
             , m_paginatedLineWidth(0)
             , m_isFirstAfterPageBreak(false)
         {
 
         }
 
-        // It should not be assumed the |containingRegion| is always valid.
-        // It can also be 0 if the flow has no region chain.
-        RenderRegion* m_containingRegion;
         LayoutUnit m_paginationStrut;
         LayoutUnit m_paginatedLineWidth;
         bool m_isFirstAfterPageBreak;

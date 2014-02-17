@@ -22,14 +22,12 @@
 #include "config.h"
 #include "core/css/StyleRule.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFilterRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSPageRule.h"
-#include "core/css/CSSRegionRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/CSSViewportRule.h"
@@ -72,9 +70,6 @@ void StyleRuleBase::destroy()
     case Supports:
         delete toStyleRuleSupports(this);
         return;
-    case Region:
-        delete toStyleRuleRegion(this);
-        return;
     case Import:
         delete toStyleRuleImport(this);
         return;
@@ -109,8 +104,6 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
         return toStyleRuleMedia(this)->copy();
     case Supports:
         return toStyleRuleSupports(this)->copy();
-    case Region:
-        return toStyleRuleRegion(this)->copy();
     case Import:
         // FIXME: Copy import rules.
         ASSERT_NOT_REACHED();
@@ -150,9 +143,6 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         break;
     case Supports:
         rule = CSSSupportsRule::create(toStyleRuleSupports(self), parentSheet);
-        break;
-    case Region:
-        rule = CSSRegionRule::create(toStyleRuleRegion(self), parentSheet);
         break;
     case Import:
         rule = CSSImportRule::create(toStyleRuleImport(self), parentSheet);
@@ -314,20 +304,6 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
     , m_conditionText(o.m_conditionText)
     , m_conditionIsSupported(o.m_conditionIsSupported)
 {
-}
-
-StyleRuleRegion::StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >* selectors, Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    : StyleRuleGroup(Region, adoptRules)
-{
-    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
-    m_selectorList.adoptSelectorVector(*selectors);
-}
-
-StyleRuleRegion::StyleRuleRegion(const StyleRuleRegion& o)
-    : StyleRuleGroup(o)
-    , m_selectorList(o.m_selectorList)
-{
-    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
 StyleRuleViewport::StyleRuleViewport()

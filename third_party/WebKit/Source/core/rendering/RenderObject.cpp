@@ -55,6 +55,7 @@
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderImage.h"
@@ -65,8 +66,6 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderMultiColumnBlock.h"
-#include "core/rendering/RenderNamedFlowThread.h"
-#include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTableCaption.h"
 #include "core/rendering/RenderTableCell.h"
@@ -605,15 +604,6 @@ RenderFlowThread* RenderObject::locateFlowThreadContainingBlock() const
         curr = curr->containingBlock();
     }
     return 0;
-}
-
-RenderNamedFlowThread* RenderObject::renderNamedFlowThreadWrapper() const
-{
-    RenderObject* object = const_cast<RenderObject*>(this);
-    while (object && object->isAnonymousBlock() && !object->isRenderNamedFlowThread())
-        object = object->parent();
-
-    return object && object->isRenderNamedFlowThread() ? toRenderNamedFlowThread(object) : 0;
 }
 
 RenderBlock* RenderObject::firstLineBlock() const
@@ -2565,18 +2555,6 @@ void RenderObject::willBeDestroyed()
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->remove(this);
 
-#ifndef NDEBUG
-    if (!documentBeingDestroyed() && view() && view()->hasRenderNamedFlowThreads()) {
-        // After remove, the object and the associated information should not be in any flow thread.
-        const RenderNamedFlowThreadList* flowThreadList = view()->flowThreadController()->renderNamedFlowThreadList();
-        for (RenderNamedFlowThreadList::const_iterator iter = flowThreadList->begin(); iter != flowThreadList->end(); ++iter) {
-            const RenderNamedFlowThread* renderFlowThread = *iter;
-            ASSERT(!renderFlowThread->hasChild(this));
-            ASSERT(!renderFlowThread->hasChildInfo(this));
-        }
-    }
-#endif
-
     // If this renderer had a parent, remove should have destroyed any counters
     // attached to this renderer and marked the affected other counters for
     // reevaluation. This apparently redundant check is here for the case when
@@ -2613,9 +2591,6 @@ void RenderObject::insertedIntoTree()
 
     if (!isFloating() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
-
-    if (RenderNamedFlowThread* containerFlowThread = parent()->renderNamedFlowThreadWrapper())
-        containerFlowThread->addFlowChild(this);
 }
 
 void RenderObject::willBeRemovedFromTree()
@@ -2641,9 +2616,6 @@ void RenderObject::willBeRemovedFromTree()
 
     removeFromRenderFlowThread();
 
-    if (RenderNamedFlowThread* containerFlowThread = parent()->renderNamedFlowThreadWrapper())
-        containerFlowThread->removeFlowChild(this);
-
     // Update cached boundaries in SVG renderers if a child is removed.
     if (parent()->isSVG())
         parent()->setNeedsBoundariesUpdate();
@@ -2668,11 +2640,6 @@ void RenderObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderF
             child->removeFromRenderFlowThreadRecursive(renderFlowThread);
     }
 
-    RenderFlowThread* localFlowThread = renderFlowThread;
-    if (flowThreadState() == InsideInFlowThread)
-        localFlowThread = flowThreadContainingBlock(); // We have to ask. We can't just assume we are in the same flow thread.
-    if (localFlowThread)
-        localFlowThread->removeFlowChildInfo(this);
     setFlowThreadState(NotInsideFlowThread);
 }
 
@@ -3134,33 +3101,6 @@ void RenderObject::imageChanged(ImageResource* image, const IntRect* rect)
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 
-RenderObject* RenderObject::hoverAncestor() const
-{
-    // When searching for the hover ancestor and encountering a named flow thread,
-    // the search will continue with the DOM ancestor of the top-most element
-    // in the named flow thread.
-    // See https://code.google.com/p/chromium/issues/detail?id=243278
-    RenderObject* hoverAncestor = parent();
-
-    // Skip anonymous blocks directly flowed into flow threads as it would
-    // prevent us from continuing the search on the DOM tree when reaching the named flow thread.
-    if (hoverAncestor && hoverAncestor->isAnonymousBlock() && hoverAncestor->parent() && hoverAncestor->parent()->isRenderNamedFlowThread())
-        hoverAncestor = hoverAncestor->parent();
-
-    if (hoverAncestor && hoverAncestor->isRenderNamedFlowThread()) {
-        hoverAncestor = 0;
-
-        Node* node = this->node();
-        if (node) {
-            Node* domAncestorNode = node->parentNode();
-            if (domAncestorNode)
-                hoverAncestor = domAncestorNode->renderer();
-        }
-    }
-
-    return hoverAncestor;
-}
-
 Element* RenderObject::offsetParent() const
 {
     if (isRoot() || isBody())
@@ -3177,10 +3117,6 @@ Element* RenderObject::offsetParent() const
     Node* node = 0;
     for (RenderObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
         // Spec: http://www.w3.org/TR/cssom-view/#offset-attributes
-
-        // CSS regions specification says that region flows should return the body element as their offsetParent.
-        if (ancestor->isRenderNamedFlowThread())
-            return document().body();
 
         node = ancestor->node();
 
@@ -3337,11 +3273,6 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
 bool RenderObject::isRelayoutBoundaryForInspector() const
 {
     return objectIsRelayoutBoundary(this);
-}
-
-bool RenderObject::isRenderNamedFlowFragmentContainer() const
-{
-    return isRenderBlockFlow() && toRenderBlockFlow(this)->renderNamedFlowFragment();
 }
 
 } // namespace WebCore

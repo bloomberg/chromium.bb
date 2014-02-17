@@ -49,10 +49,10 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMarquee.h"
-#include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTextControl.h"
@@ -1058,8 +1058,6 @@ void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* 
     // Explicitly delete the child's line box tree, or the special anonymous
     // block handling in willBeDestroyed will cause problems.
     child->deleteLineBoxTree();
-    if (childFlowThread && childFlowThread->isRenderNamedFlowThread())
-        toRenderNamedFlowThread(childFlowThread)->removeFlowChildInfo(child);
     child->destroy();
 }
 
@@ -1465,14 +1463,8 @@ void RenderBlock::computeShapeSize()
     if (!shapeInsideInfo)
         return;
 
-    if (isRenderNamedFlowFragment()) {
-        ShapeInsideInfo* parentShapeInsideInfo = toRenderBlock(parent())->shapeInsideInfo();
-        ASSERT(parentShapeInsideInfo);
-        shapeInsideInfo->setShapeSize(parentShapeInsideInfo->shapeSize().width(), parentShapeInsideInfo->shapeSize().height());
-    } else {
-        bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
-        shapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
-    }
+    bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
+    shapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
 }
 
 void RenderBlock::updateRegionsAndShapesAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
@@ -1558,9 +1550,6 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
 
     // Add visual overflow from theme.
     addVisualOverflowFromTheme();
-
-    if (isRenderNamedFlowThread())
-        toRenderNamedFlowThread(this)->computeOversetStateForRegions(oldClientAfterEdge);
 }
 
 void RenderBlock::addOverflowFromBlockChildren()
@@ -2854,25 +2843,6 @@ LayoutUnit RenderBlock::textIndentOffset() const
     return minimumValueForLength(style()->textIndent(), cw);
 }
 
-LayoutUnit RenderBlock::logicalLeftOffsetForContent(RenderRegion* region) const
-{
-    LayoutUnit logicalLeftOffset = style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop();
-    if (!region)
-        return logicalLeftOffset;
-    LayoutRect boxRect = borderBoxRectInRegion(region);
-    return logicalLeftOffset + (isHorizontalWritingMode() ? boxRect.x() : boxRect.y());
-}
-
-LayoutUnit RenderBlock::logicalRightOffsetForContent(RenderRegion* region) const
-{
-    LayoutUnit logicalRightOffset = style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop();
-    logicalRightOffset += availableLogicalWidth();
-    if (!region)
-        return logicalRightOffset;
-    LayoutRect boxRect = borderBoxRectInRegion(region);
-    return logicalRightOffset - (logicalWidth() - (isHorizontalWritingMode() ? boxRect.maxX() : boxRect.maxY()));
-}
-
 void RenderBlock::markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest)
 {
     if (logicalTop >= logicalBottom)
@@ -2955,7 +2925,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     // If we have clipping, then we can't have any spillout.
     bool useOverflowClip = hasOverflowClip() && !hasSelfPaintingLayer();
     bool useClip = (hasControlClip() || useOverflowClip);
-    bool checkChildren = !useClip || (hasControlClip() ? locationInContainer.intersects(controlClipRect(adjustedLocation)) : locationInContainer.intersects(overflowClipRect(adjustedLocation, locationInContainer.region(), IncludeOverlayScrollbarSize)));
+    bool checkChildren = !useClip || (hasControlClip() ? locationInContainer.intersects(controlClipRect(adjustedLocation)) : locationInContainer.intersects(overflowClipRect(adjustedLocation, IncludeOverlayScrollbarSize)));
     if (checkChildren) {
         // Hit test descendants first.
         LayoutSize scrolledOffset(localOffset);
@@ -3096,9 +3066,6 @@ void RenderBlock::adjustForColumnRect(LayoutSize& offset, const LayoutPoint& loc
 
 bool RenderBlock::hitTestContents(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    if (isRenderRegion())
-        return toRenderRegion(this)->hitTestFlowThreadContents(request, result, locationInContainer, accumulatedOffset, hitTestAction);
-
     if (childrenInline() && !isTable()) {
         // We have to hit-test our line boxes.
         if (m_lineBoxes.hitTest(this, request, result, locationInContainer, accumulatedOffset, hitTestAction))
@@ -5145,25 +5112,6 @@ RenderBox* RenderBlock::createAnonymousBoxWithSameTypeAs(const RenderObject* par
     return createAnonymousWithParentRendererAndDisplay(parent, style()->display());
 }
 
-bool RenderBlock::hasNextPage(LayoutUnit logicalOffset, PageBoundaryRule pageBoundaryRule) const
-{
-    ASSERT(view()->layoutState() && view()->layoutState()->isPaginated());
-
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (!flowThread)
-        return true; // Printing and multi-column both make new pages to accommodate content.
-
-    // See if we're in the last region.
-    LayoutUnit pageOffset = offsetFromLogicalTopOfFirstPage() + logicalOffset;
-    RenderRegion* region = flowThread->regionAtBlockOffset(pageOffset, this);
-    if (!region)
-        return false;
-    if (region->isLastRegion())
-        return region->isRenderRegionSet() || region->style()->regionFragment() == BreakRegionFragment
-            || (pageBoundaryRule == IncludePageBoundary && pageOffset == region->logicalTopForFlowThreadContent());
-    return true;
-}
-
 LayoutUnit RenderBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule pageBoundaryRule) const
 {
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
@@ -5227,42 +5175,25 @@ LayoutUnit RenderBlock::adjustForUnsplittableChild(RenderBox* child, LayoutUnit 
 {
     bool checkColumnBreaks = view()->layoutState()->isPaginatingColumns();
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->m_pageLogicalHeight;
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    bool checkRegionBreaks = flowThread && flowThread->isRenderNamedFlowThread();
     bool isUnsplittable = child->isUnsplittableForPagination() || (checkColumnBreaks && child->style()->columnBreakInside() == PBAVOID)
-        || (checkPageBreaks && child->style()->pageBreakInside() == PBAVOID)
-        || (checkRegionBreaks && child->style()->regionBreakInside() == PBAVOID);
+        || (checkPageBreaks && child->style()->pageBreakInside() == PBAVOID);
     if (!isUnsplittable)
         return logicalOffset;
     LayoutUnit childLogicalHeight = logicalHeightForChild(child) + (includeMargins ? marginBeforeForChild(child) + marginAfterForChild(child) : LayoutUnit());
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
-    bool hasUniformPageLogicalHeight = !flowThread || flowThread->regionsHaveUniformLogicalHeight();
     updateMinimumPageHeight(logicalOffset, childLogicalHeight);
-    if (!pageLogicalHeight || (hasUniformPageLogicalHeight && childLogicalHeight > pageLogicalHeight)
-        || !hasNextPage(logicalOffset))
+    if (!pageLogicalHeight || childLogicalHeight > pageLogicalHeight)
         return logicalOffset;
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
-    if (remainingLogicalHeight < childLogicalHeight) {
-        if (!hasUniformPageLogicalHeight && !pushToNextPageWithMinimumLogicalHeight(remainingLogicalHeight, logicalOffset, childLogicalHeight))
-            return logicalOffset;
+    if (remainingLogicalHeight < childLogicalHeight)
         return logicalOffset + remainingLogicalHeight;
-    }
     return logicalOffset;
 }
 
 bool RenderBlock::pushToNextPageWithMinimumLogicalHeight(LayoutUnit& adjustment, LayoutUnit logicalOffset, LayoutUnit minimumLogicalHeight) const
 {
-    bool checkRegion = false;
-    for (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset + adjustment); pageLogicalHeight;
-        pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset + adjustment)) {
-        if (minimumLogicalHeight <= pageLogicalHeight)
-            return true;
-        if (!hasNextPage(logicalOffset + adjustment))
-            return false;
-        adjustment += pageLogicalHeight;
-        checkRegion = true;
-    }
-    return !checkRegion;
+    // FIXME: multicol will need to do some work here, when we implement support for multiple rows.
+    return false;
 }
 
 void RenderBlock::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
@@ -5330,8 +5261,7 @@ void RenderBlock::adjustLinePositionForPagination(RootInlineBox* lineBox, Layout
     bool hasUniformPageLogicalHeight = !flowThread || flowThread->regionsHaveUniformLogicalHeight();
     // If lineHeight is greater than pageLogicalHeight, but logicalVisualOverflow.height() still fits, we are
     // still going to add a strut, so that the visible overflow fits on a single page.
-    if (!pageLogicalHeight || (hasUniformPageLogicalHeight && logicalVisualOverflow.height() > pageLogicalHeight)
-        || !hasNextPage(logicalOffset))
+    if (!pageLogicalHeight || (hasUniformPageLogicalHeight && logicalVisualOverflow.height() > pageLogicalHeight))
         // FIXME: In case the line aligns with the top of the page (or it's slightly shifted downwards) it will not be marked as the first line in the page.
         // From here, the fix is not straightforward because it's not easy to always determine when the current line is the first in the page.
         return;
@@ -5370,34 +5300,6 @@ void RenderBlock::adjustLinePositionForPagination(RootInlineBox* lineBox, Layout
     }
 }
 
-void RenderBlock::updateRegionForLine(RootInlineBox* lineBox) const
-{
-    ASSERT(lineBox);
-    lineBox->setContainingRegion(regionAtBlockOffset(lineBox->lineTopWithLeading()));
-
-    RootInlineBox* prevLineBox = lineBox->prevRootBox();
-    if (!prevLineBox)
-        return;
-
-    // This check is more accurate than the one in |adjustLinePositionForPagination| because it takes into
-    // account just the container changes between lines. The before mentioned function doesn't set the flag
-    // correctly if the line is positioned at the top of the last fragment container.
-    if (lineBox->containingRegion() != prevLineBox->containingRegion())
-        lineBox->setIsFirstAfterPageBreak(true);
-}
-
-bool RenderBlock::lineWidthForPaginatedLineChanged(RootInlineBox* rootBox, LayoutUnit lineDelta, RenderFlowThread* flowThread) const
-{
-    if (!flowThread)
-        return false;
-
-    RenderRegion* currentRegion = regionAtBlockOffset(rootBox->lineTopWithLeading() + lineDelta);
-    // Just bail if the region didn't change.
-    if (rootBox->containingRegion() == currentRegion)
-        return false;
-    return rootBox->paginatedLineWidth() != availableLogicalWidthForContent(currentRegion);
-}
-
 LayoutUnit RenderBlock::offsetFromLogicalTopOfFirstPage() const
 {
     LayoutState* layoutState = view()->layoutState();
@@ -5426,38 +5328,6 @@ RenderRegion* RenderBlock::regionAtBlockOffset(LayoutUnit blockOffset) const
         return 0;
 
     return flowThread->regionAtBlockOffset(offsetFromLogicalTopOfFirstPage() + blockOffset, true);
-}
-
-bool RenderBlock::logicalWidthChangedInRegions(RenderFlowThread* flowThread) const
-{
-    if (!flowThread || !flowThread->hasValidRegionInfo())
-        return false;
-
-    return flowThread->logicalWidthChangedInRegionsForBlock(this);
-}
-
-RenderRegion* RenderBlock::clampToStartAndEndRegions(RenderRegion* region) const
-{
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-
-    ASSERT(isRenderView() || (region && flowThread));
-    if (isRenderView())
-        return region;
-
-    // We need to clamp to the block, since we want any lines or blocks that overflow out of the
-    // logical top or logical bottom of the block to size as though the border box in the first and
-    // last regions extended infinitely. Otherwise the lines are going to size according to the regions
-    // they overflow into, which makes no sense when this block doesn't exist in |region| at all.
-    RenderRegion* startRegion;
-    RenderRegion* endRegion;
-    flowThread->getRegionRangeForBox(this, startRegion, endRegion);
-
-    if (startRegion && region->logicalTopForFlowThreadContent() < startRegion->logicalTopForFlowThreadContent())
-        return startRegion;
-    if (endRegion && region->logicalTopForFlowThreadContent() > endRegion->logicalTopForFlowThreadContent())
-        return endRegion;
-
-    return region;
 }
 
 LayoutUnit RenderBlock::collapsedMarginBeforeForChild(const RenderBox* child) const

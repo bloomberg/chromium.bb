@@ -278,9 +278,6 @@ public:
     bool parseFontFeatureTag(CSSValueList*);
     bool parseFontFeatureSettings(bool important);
 
-    bool parseFlowThread(CSSPropertyID, bool important);
-    bool parseRegionThread(CSSPropertyID, bool important);
-
     bool parseFontVariantLigatures(bool important);
 
     bool parseGeneratedImage(CSSParserValueList*, RefPtr<CSSValue>&);
@@ -313,7 +310,6 @@ public:
     StyleRuleBase* createStyleRule(Vector<OwnPtr<CSSParserSelector> >* selectors);
     StyleRuleBase* createFontFaceRule();
     StyleRuleBase* createPageRule(PassOwnPtr<CSSParserSelector> pageSelector);
-    StyleRuleBase* createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules);
     StyleRuleBase* createMarginAtRule(CSSSelector::MarginBoxType);
     StyleRuleBase* createSupportsRule(bool conditionIsSupported, RuleList*);
     void markSupportsRuleHeaderStart();
@@ -349,9 +345,6 @@ public:
     void invalidBlockHit();
 
     Vector<OwnPtr<CSSParserSelector> >* reusableSelectorVector() { return &m_reusableSelectorVector; }
-
-    void setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector> >* selectors);
-    Vector<OwnPtr<CSSParserSelector> >* reusableRegionSelectorVector() { return &m_reusableRegionSelectorVector; }
 
     void clearProperties();
 
@@ -547,7 +540,6 @@ private:
     OwnPtr<Vector<RefPtr<StyleKeyframe> > > m_floatingKeyframeVector;
 
     Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
-    Vector<OwnPtr<CSSParserSelector> > m_reusableRegionSelectorVector;
 
     RefPtrWillBePersistent<CSSCalcValue> m_parsedCalculation;
 

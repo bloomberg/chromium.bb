@@ -42,7 +42,6 @@
 #include "V8CSSSupportsRule.h"
 #include "V8CSSViewportRule.h"
 #include "V8WebKitCSSFilterRule.h"
-#include "V8WebKitCSSRegionRule.h"
 
 namespace WebCore {
 
@@ -75,8 +74,6 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         return wrap(toCSSSupportsRule(impl), creationContext, isolate);
     case CSSRule::VIEWPORT_RULE:
         return wrap(toCSSViewportRule(impl), creationContext, isolate);
-    case CSSRule::WEBKIT_REGION_RULE:
-        return wrap(toCSSRegionRule(impl), creationContext, isolate);
     case CSSRule::WEBKIT_FILTER_RULE:
         return wrap(toCSSFilterRule(impl), creationContext, isolate);
     }

@@ -33,9 +33,7 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
-#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -51,9 +49,6 @@ RenderObject* RenderTreeBuilder::nextRenderer() const
 
     if (element && element->isInTopLayer())
         return NodeRenderingTraversal::nextInTopLayer(element);
-
-    if (m_parentFlowRenderer)
-        return m_parentFlowRenderer->nextRendererForNode(m_node);
 
     // Avoid an O(N^2) walk over the children when reattaching all children of a node.
     if (m_renderingParent->needsAttach())
@@ -75,13 +70,6 @@ RenderObject* RenderTreeBuilder::parentRenderer() const
         if (element->isInTopLayer())
             return m_node->document().renderView();
     }
-
-    // Even if the normal parent has no renderer we still can be flowed into a named flow.
-    // FIXME: This is bad, it breaks the assumption that if you have a renderer then
-    // NodeRenderingTraversal::parent(this) also has one which likely means lots of bugs
-    // with regions.
-    if (m_parentFlowRenderer)
-        return m_parentFlowRenderer;
 
     return m_renderingParent->renderer();
 }
@@ -105,72 +93,6 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
     return true;
 }
 
-// Check the specific case of elements that are children of regions but are flowed into a flow thread themselves.
-bool RenderTreeBuilder::elementInsideRegionNeedsRenderer()
-{
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-        return false;
-    Element& element = toElement(*m_node);
-    RenderObject* parentRenderer = this->parentRenderer();
-    if ((parentRenderer && !parentRenderer->canHaveChildren() && parentRenderer->isRenderNamedFlowFragmentContainer())
-        || (!parentRenderer && element.parentElement() && element.parentElement()->isInsideRegion())) {
-
-        // Children of this element will only be allowed to be flowed into other flow-threads if display is NOT none.
-        if (element.rendererIsNeeded(style()))
-            element.setIsInsideRegion(true);
-
-        return shouldMoveToFlowThread();
-    }
-
-    return false;
-}
-
-bool RenderTreeBuilder::shouldMoveToFlowThread() const
-{
-    Element& element = toElement(*m_node);
-    RenderStyle& style = this->style();
-
-    if (style.flowThread().isEmpty())
-        return false;
-
-    if (FullscreenElementStack::isActiveFullScreenElement(&element))
-        return false;
-
-    if (element.isInShadowTree())
-        return false;
-
-    // As per http://dev.w3.org/csswg/css3-regions/#flow-into, pseudo-elements such as
-    // ::first-line, ::first-letter, ::before or ::after cannot be directly collected
-    // into a named flow.
-    if (element.isPseudoElement())
-        return false;
-
-    // Allow only svg root elements to be directly collected by a render flow thread.
-    if (element.isSVGElement()) {
-        if (!element.hasTagName(SVGNames::svgTag))
-            return false;
-        if (!element.parentNode())
-            return false;
-        if (element.parentNode()->isSVGElement())
-            return false;
-    }
-
-    return !element.isRegisteredWithNamedFlow();
-}
-
-void RenderTreeBuilder::moveToFlowThreadIfNeeded()
-{
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-        return;
-
-    if (!shouldMoveToFlowThread())
-        return;
-
-    FlowThreadController* flowThreadController = m_node->document().renderView()->flowThreadController();
-    m_parentFlowRenderer = flowThreadController->ensureRenderFlowThreadWithName(style().flowThread());
-    flowThreadController->registerNamedFlowContentNode(m_node, m_parentFlowRenderer);
-}
-
 RenderStyle& RenderTreeBuilder::style() const
 {
     if (!m_style)
@@ -188,10 +110,8 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 
     Element* element = toElement(m_node);
 
-    if (!shouldCreateRenderer() && !elementInsideRegionNeedsRenderer())
+    if (!shouldCreateRenderer())
         return;
-
-    moveToFlowThreadIfNeeded();
 
     RenderStyle& style = this->style();
 

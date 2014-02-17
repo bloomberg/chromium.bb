@@ -94,7 +94,6 @@ struct CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
         FONT_FACE_RULE,
         PAGE_RULE,
         KEYFRAMES_RULE,
-        REGION_RULE,
         VIEWPORT_RULE,
         SUPPORTS_RULE,
         FILTER_RULE

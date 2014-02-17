@@ -27,7 +27,6 @@
 #ifndef RenderRegionSet_h
 #define RenderRegionSet_h
 
-#include "core/rendering/RenderBoxRegionInfo.h"
 #include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
@@ -49,17 +48,10 @@ class RenderRegionSet : public RenderRegion {
 public:
     RenderRegionSet(Element*, RenderFlowThread*);
 
-protected:
-    virtual bool shouldHaveAutoLogicalHeight() const OVERRIDE { return false; }
-
 private:
-    virtual void installFlowThread() OVERRIDE FINAL;
-
     virtual void expandToEncompassFlowThreadContentsIfNeeded() OVERRIDE FINAL;
 
     virtual const char* renderName() const = 0;
-
-    virtual bool isRenderRegionSet() const OVERRIDE FINAL { return true; }
 };
 
 } // namespace WebCore

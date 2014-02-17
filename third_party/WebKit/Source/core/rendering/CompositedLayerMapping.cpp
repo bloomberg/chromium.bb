@@ -362,7 +362,7 @@ void CompositedLayerMapping::updateCompositedBounds()
             clippingBounds = view->unscaledDocumentRect();
 
         if (m_owningLayer != rootLayer)
-            clippingBounds.intersect(m_owningLayer->clipper().backgroundClipRect(ClipRectsContext(rootLayer, 0, AbsoluteClipRects)).rect()); // FIXME: Incorrect for CSS regions.
+            clippingBounds.intersect(m_owningLayer->clipper().backgroundClipRect(ClipRectsContext(rootLayer, AbsoluteClipRects)).rect());
 
         LayoutPoint delta;
         m_owningLayer->convertToLayerCoords(rootLayer, delta);
@@ -543,10 +543,10 @@ static IntRect clipBox(RenderBox* renderer)
 {
     LayoutRect result = PaintInfo::infiniteRect();
     if (renderer->hasOverflowClip())
-        result = renderer->overflowClipRect(LayoutPoint(), 0); // FIXME: Incorrect for CSS regions.
+        result = renderer->overflowClipRect(LayoutPoint());
 
     if (renderer->hasClip())
-        result.intersect(renderer->clipRect(LayoutPoint(), 0)); // FIXME: Incorrect for CSS regions.
+        result.intersect(renderer->clipRect(LayoutPoint()));
 
     return pixelSnappedIntRect(result);
 }
@@ -688,8 +688,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         // Call calculateRects to get the backgroundRect which is what is used to clip the contents of this
         // layer. Note that we call it with temporaryClipRects = true because normally when computing clip rects
         // for a compositing layer, rootLayer is the layer itself.
-        ClipRectsContext clipRectsContext(compAncestor, 0, TemporaryClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
-        IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer->clipper().backgroundClipRect(clipRectsContext).rect()); // FIXME: Incorrect for CSS regions.
+        ClipRectsContext clipRectsContext(compAncestor, TemporaryClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
+        IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer->clipper().backgroundClipRect(clipRectsContext).rect());
         ASSERT(parentClipRect != PaintInfo::infiniteRect());
         m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
         m_ancestorClippingLayer->setSize(parentClipRect.size());

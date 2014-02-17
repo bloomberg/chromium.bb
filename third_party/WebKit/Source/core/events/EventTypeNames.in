@@ -216,8 +216,6 @@ webkitprerenderdomcontentloaded
 webkitprerenderload
 webkitprerenderstart
 webkitprerenderstop
-webkitregionlayoutupdate
-webkitregionoversetchange
 webkitremovesourcebuffer
 webkitresourcetimingbufferfull
 webkitsourceclose

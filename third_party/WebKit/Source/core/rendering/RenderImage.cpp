@@ -218,7 +218,7 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
         bool hasOverrideSize = hasOverrideHeight() || hasOverrideWidth();
         if (!hasOverrideSize && !imageSizeChanged) {
             LogicalExtentComputedValues computedValues;
-            computeLogicalWidthInRegion(computedValues);
+            computeLogicalWidth(computedValues);
             LayoutUnit newWidth = computedValues.m_extent;
             computeLogicalHeight(height(), 0, computedValues);
             LayoutUnit newHeight = computedValues.m_extent;

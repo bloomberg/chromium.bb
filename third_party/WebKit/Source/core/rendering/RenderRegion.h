@@ -38,19 +38,13 @@ namespace WebCore {
 struct LayerFragment;
 typedef Vector<LayerFragment, 1> LayerFragments;
 class RenderBox;
-class RenderBoxRegionInfo;
 class RenderFlowThread;
-class RenderNamedFlowThread;
 
 class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
     virtual bool isRenderRegion() const OVERRIDE FINAL { return true; }
-
-    bool hitTestFlowThreadContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
-
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }
@@ -59,71 +53,30 @@ public:
     void attachRegion();
     void detachRegion();
 
-    RenderNamedFlowThread* parentNamedFlowThread() const { return m_parentNamedFlowThread; }
     RenderFlowThread* flowThread() const { return m_flowThread; }
 
     // Valid regions do not create circular dependencies with other flows.
     bool isValid() const { return m_isValid; }
     void setIsValid(bool valid) { m_isValid = valid; }
 
-    bool hasCustomRegionStyle() const { return m_hasCustomRegionStyle; }
-    void setHasCustomRegionStyle(bool hasCustomRegionStyle) { m_hasCustomRegionStyle = hasCustomRegionStyle; }
-
-    RenderBoxRegionInfo* renderBoxRegionInfo(const RenderBox*) const;
-    RenderBoxRegionInfo* setRenderBoxRegionInfo(const RenderBox*, LayoutUnit logicalLeftInset, LayoutUnit logicalRightInset,
-        bool containingBlockChainIsInset);
-    PassOwnPtr<RenderBoxRegionInfo> takeRenderBoxRegionInfo(const RenderBox*);
-    void removeRenderBoxRegionInfo(const RenderBox*);
-
-    void deleteAllRenderBoxRegionInfo();
-
     bool isFirstRegion() const;
     bool isLastRegion() const;
-
-    void clearObjectStyleInRegion(const RenderObject*);
-
-    RegionOversetState regionOversetState() const;
-    void setRegionOversetState(RegionOversetState);
 
     // These methods represent the width and height of a "page" and for a RenderRegion they are just the
     // content width and content height of a region. For RenderRegionSets, however, they will be the width and
     // height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
-    virtual LayoutUnit maxPageLogicalHeight() const;
 
     LayoutUnit logicalTopOfFlowThreadContentRect(const LayoutRect&) const;
     LayoutUnit logicalBottomOfFlowThreadContentRect(const LayoutRect&) const;
     LayoutUnit logicalTopForFlowThreadContent() const { return logicalTopOfFlowThreadContentRect(flowThreadPortionRect()); };
     LayoutUnit logicalBottomForFlowThreadContent() const { return logicalBottomOfFlowThreadContentRect(flowThreadPortionRect()); };
 
-    void getRanges(Vector<RefPtr<Range> >&) const;
-
     // This method represents the logical height of the entire flow thread portion used by the region or set.
     // For RenderRegions it matches logicalPaginationHeight(), but for sets it is the height of all the pages
     // or columns added together.
     virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const;
-
-    bool hasAutoLogicalHeight() const { return m_hasAutoLogicalHeight; }
-
-    const LayoutUnit& computedAutoHeight() const
-    {
-        ASSERT(hasComputedAutoHeight());
-        return m_computedAutoHeight;
-    }
-
-    void setComputedAutoHeight(LayoutUnit computedAutoHeight)
-    {
-        ASSERT(computedAutoHeight >= 0);
-        m_computedAutoHeight = computedAutoHeight;
-    }
-
-    void clearComputedAutoHeight()
-    {
-        m_computedAutoHeight = -1;
-    }
-
-    bool hasComputedAutoHeight() const { return (m_computedAutoHeight >= 0); }
 
     // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
@@ -132,9 +85,6 @@ public:
 
     virtual void expandToEncompassFlowThreadContentsIfNeeded() { };
 
-    // Whether or not this region is a set.
-    virtual bool isRenderRegionSet() const { return false; }
-
     virtual void repaintFlowThreadContent(const LayoutRect& repaintRect) const;
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }
@@ -142,24 +92,14 @@ public:
     virtual bool canHaveChildren() const OVERRIDE FINAL { return false; }
     virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return true; }
 
-    bool isElementBasedRegion() const;
-
-    Node* nodeForRegion() const;
-    Node* generatingNodeForRegion() const;
-
     virtual const char* renderName() const OVERRIDE { return "RenderRegion"; }
 
 protected:
-    void setRegionObjectsRegionStyle();
-    void restoreRegionObjectsOriginalStyle();
-
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
     void repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, const LayoutRect& flowThreadPortionRect,
         const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
-
-    virtual bool shouldHaveAutoLogicalHeight() const;
 
 private:
     virtual void insertedIntoTree() OVERRIDE FINAL;
@@ -167,59 +107,13 @@ private:
 
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
     virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
-
-    virtual void updateLogicalHeight() OVERRIDE FINAL;
-
-    virtual void installFlowThread();
-
-    PassRefPtr<RenderStyle> computeStyleInRegion(const RenderObject*);
-    void computeChildrenStyleInRegion(const RenderObject*);
-    void setObjectStyleInRegion(RenderObject*, PassRefPtr<RenderStyle>, bool objectRegionStyleCached);
-
-    void checkRegionStyle();
-    void updateRegionHasAutoLogicalHeightFlag();
-
-    void incrementAutoLogicalHeightCount();
-    void decrementAutoLogicalHeightCount();
-
-    Element* element() const;
 
 protected:
     RenderFlowThread* m_flowThread;
 
 private:
-    // If this RenderRegion is displayed as part of another named flow,
-    // we need to create a dependency tree, so that layout of the
-    // regions is always done before the regions themselves.
-    RenderNamedFlowThread* m_parentNamedFlowThread;
     LayoutRect m_flowThreadPortionRect;
-
-    // This map holds unique information about a block that is split across regions.
-    // A RenderBoxRegionInfo* tells us about any layout information for a RenderBox that
-    // is unique to the region. For now it just holds logical width information for RenderBlocks, but eventually
-    // it will also hold a custom style for any box (for region styling).
-    typedef HashMap<const RenderBox*, OwnPtr<RenderBoxRegionInfo> > RenderBoxRegionInfoMap;
-    RenderBoxRegionInfoMap m_renderBoxRegionInfo;
-
-    struct ObjectRegionStyleInfo {
-        // Used to store the original style of the object in region
-        // so that the original style is properly restored after paint.
-        // Also used to store computed style of the object in region between
-        // region paintings, so that the style in region is computed only
-        // when necessary.
-        RefPtr<RenderStyle> style;
-        // True if the computed style in region is cached.
-        bool cached;
-    };
-    typedef HashMap<const RenderObject*, ObjectRegionStyleInfo > RenderObjectRegionStyleMap;
-    RenderObjectRegionStyleMap m_renderObjectRegionStyle;
-
-    LayoutUnit m_computedAutoHeight;
-
     bool m_isValid : 1;
-    bool m_hasCustomRegionStyle : 1;
-    bool m_hasAutoLogicalHeight : 1;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderRegion, isRenderRegion());

@@ -47,7 +47,7 @@ unsigned StyleSheetContents::estimatedSizeInBytes() const
     // The assumption is that nearly all of of them are atomic and would exist anyway.
     unsigned size = sizeof(*this);
 
-    // FIXME: This ignores the children of media and region rules.
+    // FIXME: This ignores the children of media rules.
     // Most rules are StyleRules.
     size += ruleCount() * StyleRule::averageSizeInBytes();
 
@@ -485,10 +485,6 @@ static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<Style
             break;
         case StyleRuleBase::Media:
             if (childRulesHaveFailedOrCanceledSubresources(toStyleRuleMedia(rule)->childRules()))
-                return true;
-            break;
-        case StyleRuleBase::Region:
-            if (childRulesHaveFailedOrCanceledSubresources(toStyleRuleRegion(rule)->childRules()))
                 return true;
             break;
         case StyleRuleBase::Import:

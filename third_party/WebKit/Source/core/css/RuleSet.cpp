@@ -112,8 +112,6 @@ static inline bool containsUncommonAttributeSelector(const CSSSelector& selector
 
 static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRuleFlags addRuleFlags, const CSSSelector& selector)
 {
-    if (addRuleFlags & RuleIsInRegionRule)
-        return PropertyWhitelistRegion;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
         if (component->pseudoType() == CSSSelector::PseudoCue || (component->m_match == CSSSelector::PseudoElement && component->value() == TextTrackCue::cueShadowPseudoId()))
             return PropertyWhitelistCue;
@@ -335,31 +333,6 @@ void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule)
     m_keyframesRules.append(rule);
 }
 
-void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
-{
-    ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
-    OwnPtr<RuleSet> regionRuleSet = RuleSet::create();
-    // The region rule set should take into account the position inside the parent rule set.
-    // Otherwise, the rules inside region block might be incorrectly positioned before other similar rules from
-    // the stylesheet that contains the region block.
-    regionRuleSet->m_ruleCount = m_ruleCount;
-
-    // Collect the region rules into a rule set
-    // FIXME: Should this add other types of rules? (i.e. use addChildRules() directly?)
-    const Vector<RefPtr<StyleRuleBase> >& childRules = regionRule->childRules();
-    AddRuleFlags addRuleFlags = hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
-    addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleIsInRegionRule | RuleCanUseFastCheckSelector);
-    for (unsigned i = 0; i < childRules.size(); ++i) {
-        StyleRuleBase* regionStylingRule = childRules[i].get();
-        if (regionStylingRule->isStyleRule())
-            regionRuleSet->addStyleRule(toStyleRule(regionStylingRule), addRuleFlags);
-    }
-    // Update the "global" rule count so that proper order is maintained
-    m_ruleCount = regionRuleSet->m_ruleCount;
-
-    m_regionSelectorsAndRuleSets.append(RuleSetSelectorPair(regionRule->selectorList().first(), regionRuleSet.release()));
-}
-
 void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
@@ -388,8 +361,6 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             addFontFaceRule(toStyleRuleFontFace(rule));
         } else if (rule->isKeyframesRule()) {
             addKeyframesRule(toStyleRuleKeyframes(rule));
-        } else if (rule->isRegionRule()) {
-            addRegionRule(toStyleRuleRegion(rule), addRuleFlags & RuleHasDocumentSecurityOrigin);
         } else if (rule->isViewportRule()) {
             addViewportRule(toStyleRuleViewport(rule));
         } else if (rule->isSupportsRule() && toStyleRuleSupports(rule)->conditionIsSupported()) {

@@ -316,8 +316,6 @@ webkitColumnSpan
 webkitColumnWidth
 webkitColumns
 webkitFilter
-webkitFlowFrom
-webkitFlowInto
 webkitFontFeatureSettings
 webkitFontSizeDelta
 webkitFontSmoothing
@@ -372,10 +370,6 @@ webkitPerspectiveOrigin
 webkitPerspectiveOriginX
 webkitPerspectiveOriginY
 webkitPrintColorAdjust
-webkitRegionBreakAfter
-webkitRegionBreakBefore
-webkitRegionBreakInside
-webkitRegionFragment
 webkitRtlOrdering
 webkitRubyPosition
 webkitTapHighlightColor

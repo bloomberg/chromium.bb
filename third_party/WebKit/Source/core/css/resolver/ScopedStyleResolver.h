@@ -55,7 +55,6 @@ public:
     ScopedStyleResolver* parent() { return m_parent; }
 
 public:
-    bool checkRegionStyle(Element*);
     const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
     void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 

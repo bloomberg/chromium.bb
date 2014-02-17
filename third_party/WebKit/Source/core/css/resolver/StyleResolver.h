@@ -61,7 +61,6 @@ class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
 class MediaQueryResult;
-class RenderRegion;
 class RuleData;
 class Settings;
 class StyleKeyframe;
@@ -117,7 +116,7 @@ public:
     void popParentShadowRoot(const ShadowRoot&);
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
-        RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
+        RuleMatchingBehavior = MatchAllRules);
 
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, RenderStyle* parentStyle, const StyleKeyframe*, const AtomicString& animationName);
     static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
@@ -188,9 +187,6 @@ public:
     MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool mediaQueryAffectedByViewportChange() const;
-
-    // FIXME: Regions should not require special logic in StyleResolver.
-    bool checkRegionStyle(Element* regionElement);
 
     // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
@@ -329,20 +325,6 @@ private:
     // Use only for Internals::updateStyleAndReturnAffectedElementCount.
     unsigned m_accessCount;
 };
-
-inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)
-{
-    if (!regionSelector || !regionElement)
-        return false;
-
-    SelectorChecker selectorChecker(regionElement->document(), SelectorChecker::QueryingRules);
-    for (const CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(*s)) {
-        SelectorChecker::SelectorCheckingContext selectorCheckingContext(*s, regionElement, SelectorChecker::VisitedMatchDisabled);
-        if (selectorChecker.match(selectorCheckingContext, DOMSiblingTraversalStrategy()) == SelectorChecker::SelectorMatches)
-            return true;
-    }
-    return false;
-}
 
 } // namespace WebCore
 

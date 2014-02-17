@@ -187,8 +187,6 @@ column-fill type_name=ColumnFill
 -webkit-column-rule-width type_name=unsigned short, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
--webkit-flow-from type_name=AtomicString, name_for_methods=RegionThread, converter=convertString<CSSValueNone>
--webkit-flow-into type_name=AtomicString, name_for_methods=FlowThread, converter=convertString<CSSValueNone>
 -webkit-font-smoothing custom_all
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
@@ -221,10 +219,6 @@ column-fill type_name=ColumnFill
 -webkit-perspective-origin-x type_name=Length, converter=convertLength
 -webkit-perspective-origin-y type_name=Length, converter=convertLength
 -webkit-print-color-adjust type_name=PrintColorAdjust
--webkit-region-break-after type_name=EPageBreak, initial=initialPageBreak
--webkit-region-break-before type_name=EPageBreak, initial=initialPageBreak
--webkit-region-break-inside type_name=EPageBreak, initial=initialPageBreak
--webkit-region-fragment type_name=RegionFragment
 -webkit-rtl-ordering type_name=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
 -webkit-text-combine type_name=TextCombine

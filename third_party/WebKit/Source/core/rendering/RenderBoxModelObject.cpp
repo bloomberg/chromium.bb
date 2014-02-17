@@ -33,11 +33,11 @@
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
-#include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowList.h"
@@ -252,11 +252,8 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
             else if (isStickyPositioned())
                 referencePoint.move(stickyPositionOffset());
 
-            // CSS regions specification says that region flows should return the body element as their offsetParent.
-            // Since we will bypass the body’s renderer anyway, just end the loop if we encounter a region flow (named flow thread).
-            // See http://dev.w3.org/csswg/css-regions/#cssomview-offset-attributes
             RenderObject* current;
-            for (current = parent(); current != offsetParent && !current->isRenderNamedFlowThread() && current->parent(); current = current->parent()) {
+            for (current = parent(); current != offsetParent && current->parent(); current = current->parent()) {
                 // FIXME: What are we supposed to do inside SVG content?
                 if (!isOutOfFlowPositioned()) {
                     if (current->isBox() && !current->isTableRow())
@@ -265,11 +262,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
                 }
             }
 
-            // Compute the offset position for elements inside named flow threads for which the offsetParent was the body.
-            // See https://code.google.com/p/chromium/issues/detail?id=242168
-            if (current->isRenderNamedFlowThread())
-                referencePoint = toRenderNamedFlowThread(current)->adjustedPositionRelativeToOffsetParent(*this, referencePoint);
-            else if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
+            if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
                 referencePoint.moveBy(toRenderBox(offsetParent)->topLeftLocation());
         }
     }
@@ -343,7 +336,7 @@ LayoutSize RenderBoxModelObject::stickyPositionOffset() const
     RenderLayer* enclosingClippingLayer = layer()->enclosingOverflowClipLayer(ExcludeSelf);
     if (enclosingClippingLayer) {
         RenderBox* enclosingClippingBox = toRenderBox(enclosingClippingLayer->renderer());
-        LayoutRect clipRect = enclosingClippingBox->overflowClipRect(LayoutPoint(), 0); // FIXME: make this work in regions.
+        LayoutRect clipRect = enclosingClippingBox->overflowClipRect(LayoutPoint());
         constrainingRect = enclosingClippingBox->localToContainerQuad(FloatRect(clipRect), view()).boundingBox();
     } else {
         LayoutRect viewportRect = view()->frameView()->viewportConstrainedVisibleContentRect();
@@ -584,7 +577,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     if (clippedWithLocalScrolling) {
         // Clip to the overflow area.
         RenderBox* thisBox = toRenderBox(this);
-        context->clip(thisBox->overflowClipRect(rect.location(), paintInfo.renderRegion));
+        context->clip(thisBox->overflowClipRect(rect.location()));
 
         // Adjust the paint rect to reflect a scrolled content box with borders at the ends.
         IntSize offset = thisBox->scrolledContentOffset();
@@ -724,7 +717,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
 
         // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
-        PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0, paintInfo.renderRegion);
+        PaintInfo info(context, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0);
         context->setCompositeOperation(CompositeSourceOver);
         if (box) {
             RootInlineBox* root = box->root();

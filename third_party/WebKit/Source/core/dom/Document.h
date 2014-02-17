@@ -77,7 +77,6 @@ class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
 class CustomElementRegistrationContext;
 class DOMImplementation;
-class DOMNamedFlowCollection;
 class DOMSelection;
 class DOMWindow;
 class Database;
@@ -129,7 +128,6 @@ class MainThreadTaskRunner;
 class MediaQueryList;
 class MediaQueryMatcher;
 class MouseEventWithHitTestResults;
-class NamedFlowCollection;
 class NodeFilter;
 class NodeIterator;
 class Page;
@@ -319,10 +317,6 @@ public:
     PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
     PassRefPtr<Element> createElement(const QualifiedName&, bool createdByParser);
-
-    PassRefPtr<DOMNamedFlowCollection> webkitGetNamedFlows();
-
-    NamedFlowCollection* namedFlows();
 
     bool regionBasedColumnsEnabled() const;
 
@@ -1324,8 +1318,6 @@ private:
     OwnPtr<FastTextAutosizer> m_fastTextAutosizer;
 
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
-
-    RefPtr<NamedFlowCollection> m_namedFlows;
 
     void elementDataCacheClearTimerFired(Timer<Document>*);
     Timer<Document> m_elementDataCacheClearTimer;

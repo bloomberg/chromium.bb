@@ -1883,8 +1883,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFlexWrap:
     case CSSPropertyJustifyContent:
     case CSSPropertyOrder:
-    case CSSPropertyWebkitFlowFrom:
-    case CSSPropertyWebkitFlowInto:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyWebkitHyphenateCharacter:
@@ -1914,10 +1912,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyWebkitPrintColorAdjust:
-    case CSSPropertyWebkitRegionBreakAfter:
-    case CSSPropertyWebkitRegionBreakBefore:
-    case CSSPropertyWebkitRegionBreakInside:
-    case CSSPropertyWebkitRegionFragment:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:

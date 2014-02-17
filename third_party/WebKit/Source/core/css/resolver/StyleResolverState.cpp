@@ -29,13 +29,12 @@
 
 namespace WebCore {
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle)
     : m_elementContext(element ? ElementResolveContext(*element) : ElementResolveContext())
     , m_document(document)
     , m_style(0)
     , m_cssToLengthConversionData(0, rootElementStyle(), document.renderView())
     , m_parentStyle(parentStyle)
-    , m_regionForStyling(regionForStyling)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)

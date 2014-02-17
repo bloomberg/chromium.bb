@@ -745,19 +745,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueExact || valueID == CSSValueEconomy)
             return true;
         break;
-    case CSSPropertyWebkitRegionBreakAfter:
-    case CSSPropertyWebkitRegionBreakBefore:
-        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueAlways || valueID == CSSValueAvoid || valueID == CSSValueLeft || valueID == CSSValueRight))
-            return true;
-        break;
-    case CSSPropertyWebkitRegionBreakInside:
-        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueAvoid))
-            return true;
-        break;
-    case CSSPropertyWebkitRegionFragment:
-        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueBreak))
-            return true;
-        break;
     case CSSPropertyWebkitRtlOrdering:
         if (valueID == CSSValueLogical || valueID == CSSValueVisual)
             return true;
@@ -910,10 +897,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
-    case CSSPropertyWebkitRegionBreakAfter:
-    case CSSPropertyWebkitRegionBreakBefore:
-    case CSSPropertyWebkitRegionBreakInside:
-    case CSSPropertyWebkitRegionFragment:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
@@ -2291,14 +2274,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         else
             validPrimitive = validUnit(value, FTime | FInteger | FNonNeg);
         break;
-    case CSSPropertyWebkitFlowInto:
-        if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-            return false;
-        return parseFlowThread(propId, important);
-    case CSSPropertyWebkitFlowFrom:
-        if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-            return false;
-        return parseRegionThread(propId, important);
     case CSSPropertyWebkitTransform:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -2774,10 +2749,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
-    case CSSPropertyWebkitRegionBreakAfter:
-    case CSSPropertyWebkitRegionBreakBefore:
-    case CSSPropertyWebkitRegionBreakInside:
-    case CSSPropertyWebkitRegionFragment:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
@@ -8784,78 +8755,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFilter()
     return list.release();
 }
 
-static bool validFlowName(const String& flowName)
-{
-    return !(equalIgnoringCase(flowName, "auto")
-            || equalIgnoringCase(flowName, "default")
-            || equalIgnoringCase(flowName, "inherit")
-            || equalIgnoringCase(flowName, "initial")
-            || equalIgnoringCase(flowName, "none"));
-}
-
-// none | <ident>
-bool BisonCSSParser::parseFlowThread(CSSPropertyID propId, bool important)
-{
-    ASSERT(propId == CSSPropertyWebkitFlowInto);
-    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
-
-    if (m_valueList->size() != 1)
-        return false;
-
-    CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
-
-    if (value->unit != CSSPrimitiveValue::CSS_IDENT)
-        return false;
-
-    if (value->id == CSSValueNone) {
-        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
-        return true;
-    }
-
-    String inputProperty = String(value->string);
-    if (!inputProperty.isEmpty()) {
-        if (!validFlowName(inputProperty))
-            return false;
-        addProperty(propId, cssValuePool().createValue(inputProperty, CSSPrimitiveValue::CSS_STRING), important);
-    } else
-        addProperty(propId, cssValuePool().createIdentifierValue(CSSValueNone), important);
-
-    return true;
-}
-
-// -webkit-flow-from: none | <ident>
-bool BisonCSSParser::parseRegionThread(CSSPropertyID propId, bool important)
-{
-    ASSERT(propId == CSSPropertyWebkitFlowFrom);
-    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
-
-    if (m_valueList->size() != 1)
-        return false;
-
-    CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
-
-    if (value->unit != CSSPrimitiveValue::CSS_IDENT)
-        return false;
-
-    if (value->id == CSSValueNone)
-        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
-    else {
-        String inputProperty = String(value->string);
-        if (!inputProperty.isEmpty()) {
-            if (!validFlowName(inputProperty))
-                return false;
-            addProperty(propId, cssValuePool().createValue(inputProperty, CSSPrimitiveValue::CSS_STRING), important);
-        } else
-            addProperty(propId, cssValuePool().createIdentifierValue(CSSValueNone), important);
-    }
-
-    return true;
-}
-
 bool BisonCSSParser::parseTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtr<CSSValue>& value, RefPtr<CSSValue>& value2, RefPtr<CSSValue>& value3)
 {
     propId1 = propId;
@@ -9883,32 +9782,6 @@ StyleRuleBase* BisonCSSParser::createPageRule(PassOwnPtr<CSSParserSelector> page
     }
     clearProperties();
     return pageRule;
-}
-
-void BisonCSSParser::setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector> >* selectors)
-{
-    if (selectors)
-        m_reusableRegionSelectorVector.swap(*selectors);
-}
-
-StyleRuleBase* BisonCSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
-{
-    if (m_context.useCounter())
-        m_context.useCounter()->count(UseCounter::CSSWebkitRegionAtRule);
-
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules)
-        return 0;
-
-    m_allowImportRules = m_allowNamespaceDeclarations = false;
-
-    RefPtr<StyleRuleRegion> regionRule = StyleRuleRegion::create(regionSelector, *rules);
-
-    StyleRuleRegion* result = regionRule.get();
-    m_parsedRules.append(regionRule.release());
-    if (m_observer)
-        m_observer->startEndUnknownRule();
-
-    return result;
 }
 
 StyleRuleBase* BisonCSSParser::createMarginAtRule(CSSSelector::MarginBoxType /* marginBox */)

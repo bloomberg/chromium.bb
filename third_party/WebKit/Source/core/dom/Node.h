@@ -262,10 +262,7 @@ public:
     bool isShadowRoot() const { return isDocumentFragment() && isTreeScope(); }
     bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
 
-    bool inNamedFlow() const { return getFlag(InNamedFlowFlag); }
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
-
-    bool isRegisteredWithNamedFlow() const;
 
     bool hasSyntheticAttrChildNodes() const { return getFlag(HasSyntheticAttrChildNodesFlag); }
     void setHasSyntheticAttrChildNodes(bool flag) { setFlag(flag, HasSyntheticAttrChildNodesFlag); }
@@ -380,9 +377,6 @@ public:
     bool shouldNotifyRendererWithIdenticalStyles() const { return getFlag(NotifyRendererWithIdenticalStyles); }
 
     void setIsLink(bool f);
-
-    void setInNamedFlow() { setFlag(InNamedFlowFlag); }
-    void clearInNamedFlow() { clearFlag(InNamedFlowFlag); }
 
     bool hasScopedHTMLStyleChild() const { return getFlag(HasScopedHTMLStyleChildFlag); }
     void setHasScopedHTMLStyleChild(bool flag) { setFlag(flag, HasScopedHTMLStyleChildFlag); }
@@ -705,7 +699,8 @@ private:
 
         HasNameOrIsEditingTextFlag = 1 << 17,
 
-        InNamedFlowFlag = 1 << 18,
+        // Bit 18 is available
+
         HasSyntheticAttrChildNodesFlag = 1 << 19,
         HasCustomStyleCallbacksFlag = 1 << 20,
         HasScopedHTMLStyleChildFlag = 1 << 21,
@@ -725,7 +720,7 @@ private:
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
-    // 2 bits remaining.
+    // 3 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }

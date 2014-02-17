@@ -49,7 +49,6 @@ public:
         Keyframe, // Not used. These are internally non-rule StyleKeyframe objects.
         Supports = 12,
         Viewport = 15,
-        Region = 16,
         Filter = 17
     };
 
@@ -61,7 +60,6 @@ public:
     bool isMediaRule() const { return type() == Media; }
     bool isPageRule() const { return type() == Page; }
     bool isStyleRule() const { return type() == Style; }
-    bool isRegionRule() const { return type() == Region; }
     bool isSupportsRule() const { return type() == Supports; }
     bool isViewportRule() const { return type() == Viewport; }
     bool isImportRule() const { return type() == Import; }
@@ -216,24 +214,6 @@ private:
     bool m_conditionIsSupported;
 };
 
-class StyleRuleRegion : public StyleRuleGroup {
-public:
-    static PassRefPtr<StyleRuleRegion> create(Vector<OwnPtr<CSSParserSelector> >* selectors, Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    {
-        return adoptRef(new StyleRuleRegion(selectors, adoptRules));
-    }
-
-    const CSSSelectorList& selectorList() const { return m_selectorList; }
-
-    PassRefPtr<StyleRuleRegion> copy() const { return adoptRef(new StyleRuleRegion(*this)); }
-
-private:
-    StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >*, Vector<RefPtr<StyleRuleBase> >& adoptRules);
-    StyleRuleRegion(const StyleRuleRegion&);
-
-    CSSSelectorList m_selectorList;
-};
-
 class StyleRuleViewport : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleViewport> create() { return adoptRef(new StyleRuleViewport); }
@@ -285,7 +265,6 @@ DEFINE_STYLE_RULE_TYPE_CASTS(FontFace);
 DEFINE_STYLE_RULE_TYPE_CASTS(Page);
 DEFINE_STYLE_RULE_TYPE_CASTS(Media);
 DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
-DEFINE_STYLE_RULE_TYPE_CASTS(Region);
 DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
 DEFINE_STYLE_RULE_TYPE_CASTS(Filter);
 

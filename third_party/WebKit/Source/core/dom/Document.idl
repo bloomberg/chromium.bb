@@ -157,8 +157,6 @@ callback CustomElementConstructor = Element ();
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;
 
-    [RuntimeEnabled=CSSRegions] WebKitNamedFlowCollection webkitGetNamedFlows();
-
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

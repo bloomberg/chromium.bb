@@ -30,69 +30,26 @@
 #ifndef FlowThreadController_h
 #define FlowThreadController_h
 
-#include "core/rendering/RenderView.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class RenderFlowThread;
-class RenderNamedFlowThread;
-
-typedef ListHashSet<RenderNamedFlowThread*> RenderNamedFlowThreadList;
 
 class FlowThreadController {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<FlowThreadController> create(RenderView*);
-    ~FlowThreadController();
+    static PassOwnPtr<FlowThreadController> create();
 
     RenderFlowThread* currentRenderFlowThread() const { return m_currentRenderFlowThread; }
     void setCurrentRenderFlowThread(RenderFlowThread* flowThread) { m_currentRenderFlowThread = flowThread; }
 
-    bool isRenderNamedFlowThreadOrderDirty() const { return m_isRenderNamedFlowThreadOrderDirty; }
-    void setIsRenderNamedFlowThreadOrderDirty(bool dirty)
-    {
-        m_isRenderNamedFlowThreadOrderDirty = dirty;
-        if (dirty)
-            m_view->setNeedsLayout();
-    }
-
-    RenderNamedFlowThread* ensureRenderFlowThreadWithName(const AtomicString&);
-    const RenderNamedFlowThreadList* renderNamedFlowThreadList() const { return m_renderNamedFlowThreadList.get(); }
-    bool hasRenderNamedFlowThreads() const { return m_renderNamedFlowThreadList && !m_renderNamedFlowThreadList->isEmpty(); }
-    void layoutRenderNamedFlowThreads();
-    void styleDidChange();
-
-    void registerNamedFlowContentNode(Node*, RenderNamedFlowThread*);
-    void unregisterNamedFlowContentNode(Node*);
-    bool isContentNodeRegisteredWithAnyNamedFlow(const Node*) const;
-
-    bool hasFlowThreadsWithAutoLogicalHeightRegions() const { return m_flowThreadsWithAutoLogicalHeightRegions; }
-    void incrementFlowThreadsWithAutoLogicalHeightRegions() { ++m_flowThreadsWithAutoLogicalHeightRegions; }
-    void decrementFlowThreadsWithAutoLogicalHeightRegions() { ASSERT(m_flowThreadsWithAutoLogicalHeightRegions > 0); --m_flowThreadsWithAutoLogicalHeightRegions; }
-
-    bool updateFlowThreadsNeedingLayout();
-    bool updateFlowThreadsNeedingTwoStepLayout();
-    void updateFlowThreadsIntoConstrainedPhase();
-
-#ifndef NDEBUG
-    bool isAutoLogicalHeightRegionsCountConsistent() const;
-#endif
-
 protected:
-    FlowThreadController(RenderView*);
-    void updateFlowThreadsChainIfNecessary();
-    void resetFlowThreadsWithAutoHeightRegions();
+    FlowThreadController();
 
 private:
-    RenderView* m_view;
     RenderFlowThread* m_currentRenderFlowThread;
-    bool m_isRenderNamedFlowThreadOrderDirty;
-    unsigned m_flowThreadsWithAutoLogicalHeightRegions;
-    OwnPtr<RenderNamedFlowThreadList> m_renderNamedFlowThreadList;
-    // maps a content node to its render flow thread.
-    HashMap<const Node*, RenderNamedFlowThread*> m_mapNamedFlowContentNodes;
 };
 
 }

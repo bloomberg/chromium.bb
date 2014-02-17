@@ -64,7 +64,7 @@ const QualifiedName& pseudoElementTagName();
 
 inline bool pseudoElementRendererIsNeeded(const RenderStyle* style)
 {
-    return style && style->display() != NONE && (style->styleType() == BACKDROP || style->contentData() || style->hasFlowFrom());
+    return style && style->display() != NONE && (style->styleType() == BACKDROP || style->contentData());
 }
 
 DEFINE_NODE_TYPE_CASTS(PseudoElement, isPseudoElement());

@@ -93,8 +93,6 @@ void PseudoElement::attach(const AttachContext& context)
     if (!renderer)
         return;
     RenderStyle* style = renderer->style();
-    if (style->hasFlowFrom())
-        return;
     if (style->styleType() != BEFORE && style->styleType() != AFTER)
         return;
     ASSERT(style->contentData());

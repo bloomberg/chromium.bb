@@ -209,29 +209,6 @@ void RootInlineBox::childRemoved(InlineBox* box)
     }
 }
 
-RenderRegion* RootInlineBox::containingRegion() const
-{
-    RenderRegion* region = m_fragmentationData ? m_fragmentationData->m_containingRegion : 0;
-
-#ifndef NDEBUG
-    if (region) {
-        RenderFlowThread* flowThread = block()->flowThreadContainingBlock();
-        const RenderRegionList& regionList = flowThread->renderRegionList();
-        ASSERT(regionList.contains(region));
-    }
-#endif
-
-    return region;
-}
-
-void RootInlineBox::setContainingRegion(RenderRegion* region)
-{
-    ASSERT(!isDirty());
-    ASSERT(block()->flowThreadContainingBlock());
-    LineFragmentationData* fragmentationData  = ensureLineFragmentationData();
-    fragmentationData->m_containingRegion = region;
-}
-
 LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache)
 {
     // SVG will handle vertical alignment on its own.
@@ -272,7 +249,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     maxHeight = max<LayoutUnit>(0, maxHeight); // FIXME: Is this really necessary?
 
     setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight);
-    setPaginatedLineWidth(block()->availableLogicalWidthForContent(heightOfBlock));
+    setPaginatedLineWidth(block()->availableLogicalWidthForContent());
 
     LayoutUnit annotationsAdjustment = beforeAnnotationsAdjustment();
     if (annotationsAdjustment) {

@@ -915,10 +915,6 @@ at
 // closest-side
 // farthest-side
 
-// -webkit-region-fragment
-// auto
-break
-
 // -webkit-wrap-flow
 // auto
 // both

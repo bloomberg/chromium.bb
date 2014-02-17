@@ -260,10 +260,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
     LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 
-    // Regions changing widths can force us to relayout our children.
     RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (logicalWidthChangedInRegions(flowThread))
-        relayoutChildren = true;
     if (updateRegionsAndShapesLogicalSize(flowThread))
         relayoutChildren = true;
 

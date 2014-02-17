@@ -42,7 +42,6 @@ class Image;
 class KURL;
 class Node;
 class RenderObject;
-class RenderRegion;
 class Scrollbar;
 
 class HitTestResult {

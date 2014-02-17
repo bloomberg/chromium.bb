@@ -174,11 +174,7 @@ public:
     // Renderer that paints the root background has background-images which all have background-attachment: fixed.
     bool rootBackgroundIsEntirelyFixed() const;
 
-    bool hasRenderNamedFlowThreads() const;
-    bool checkTwoPassLayoutForAutoHeightRegions() const;
     FlowThreadController* flowThreadController();
-
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     IntervalArena* intervalArena();
 
@@ -242,7 +238,6 @@ private:
     void enableLayoutState() { ASSERT(m_layoutStateDisableCount > 0); m_layoutStateDisableCount--; }
 
     void layoutContent(const LayoutState&);
-    void layoutContentInAutoLogicalHeightRegions(const LayoutState&);
 #ifndef NDEBUG
     void checkLayoutState(const LayoutState&);
 #endif

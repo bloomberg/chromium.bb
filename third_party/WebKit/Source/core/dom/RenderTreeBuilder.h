@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class ContainerNode;
-class RenderNamedFlowThread;
 class RenderObject;
 class RenderStyle;
 
@@ -44,7 +43,6 @@ public:
         : m_node(node)
         , m_renderingParent(0)
         , m_style(style)
-        , m_parentFlowRenderer(0)
     {
         ASSERT(!node->renderer());
         ASSERT(node->needsAttach());
@@ -68,15 +66,10 @@ private:
     bool shouldCreateRenderer() const;
     RenderStyle& style() const;
 
-    bool shouldMoveToFlowThread() const;
-    void moveToFlowThreadIfNeeded();
-    bool elementInsideRegionNeedsRenderer();
-
     Node* m_node;
     ContainerNode* m_renderingParent;
     NodeRenderingTraversal::ParentDetails m_parentDetails;
     mutable RefPtr<RenderStyle> m_style;
-    RenderNamedFlowThread* m_parentFlowRenderer;
 };
 
 } // namespace WebCore

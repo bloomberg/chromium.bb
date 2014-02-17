@@ -42,7 +42,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
 
@@ -51,7 +50,6 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     : m_context(context)
     , m_selectorFilter(filter)
     , m_style(style)
-    , m_regionForStyling(0)
     , m_pseudoStyleRequest(NOPSEUDO)
     , m_mode(SelectorChecker::ResolvingStyle)
     , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(context.parentNode()))
@@ -176,22 +174,6 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
         collectMatchingRulesForList(matchRequest.ruleSet->focusPseudoClassRules(), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localName()), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), behaviorAtBoundary, cascadeScope, cascadeOrder, matchRequest, ruleRange);
-}
-
-void ElementRuleCollector::collectMatchingRulesForRegion(const MatchRequest& matchRequest, RuleRange& ruleRange, SelectorChecker::BehaviorAtBoundary behaviorAtBoundary, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
-{
-    if (!m_regionForStyling)
-        return;
-
-    unsigned size = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.size();
-    for (unsigned i = 0; i < size; ++i) {
-        const CSSSelector* regionSelector = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.at(i).selector;
-        if (checkRegionSelector(regionSelector, toElement(m_regionForStyling->nodeForRegion()))) {
-            RuleSet* regionRules = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.at(i).ruleSet.get();
-            ASSERT(regionRules);
-            collectMatchingRules(MatchRequest(regionRules, matchRequest.includeEmptyRules, matchRequest.scope), ruleRange, behaviorAtBoundary, cascadeScope, cascadeOrder);
-        }
-    }
 }
 
 CSSRuleList* ElementRuleCollector::nestedRuleList(CSSRule* rule)

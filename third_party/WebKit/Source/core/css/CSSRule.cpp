@@ -37,8 +37,6 @@ struct SameSizeAsCSSRule : public RefCounted<SameSizeAsCSSRule> {
 
 COMPILE_ASSERT(sizeof(CSSRule) == sizeof(SameSizeAsCSSRule), CSSRule_should_stay_small);
 
-COMPILE_ASSERT(StyleRuleBase::Region == static_cast<StyleRuleBase::Type>(CSSRule::WEBKIT_REGION_RULE), enums_should_match);
-
 COMPILE_ASSERT(StyleRuleBase::Viewport == static_cast<StyleRuleBase::Type>(CSSRule::VIEWPORT_RULE), enums_should_match);
 
 void CSSRule::setCSSText(const String&)

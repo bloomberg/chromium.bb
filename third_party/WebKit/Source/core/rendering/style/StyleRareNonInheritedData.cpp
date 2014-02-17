@@ -58,12 +58,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_visitedLinkBorderBottomColor(StyleColor::currentColor())
     , m_order(RenderStyle::initialOrder())
     , m_objectPosition(RenderStyle::initialObjectPosition())
-    , m_flowThread(RenderStyle::initialFlowThread())
-    , m_regionThread(RenderStyle::initialRegionThread())
-    , m_regionFragment(RenderStyle::initialRegionFragment())
-    , m_regionBreakAfter(RenderStyle::initialPageBreak())
-    , m_regionBreakBefore(RenderStyle::initialPageBreak())
-    , m_regionBreakInside(RenderStyle::initialPageBreak())
     , m_pageSizeType(PAGE_SIZE_AUTO)
     , m_transformStyle3D(RenderStyle::initialTransformStyle3D())
     , m_backfaceVisibility(RenderStyle::initialBackfaceVisibility())
@@ -139,12 +133,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_visitedLinkBorderBottomColor(o.m_visitedLinkBorderBottomColor)
     , m_order(o.m_order)
     , m_objectPosition(o.m_objectPosition)
-    , m_flowThread(o.m_flowThread)
-    , m_regionThread(o.m_regionThread)
-    , m_regionFragment(o.m_regionFragment)
-    , m_regionBreakAfter(o.m_regionBreakAfter)
-    , m_regionBreakBefore(o.m_regionBreakBefore)
-    , m_regionBreakInside(o.m_regionBreakInside)
     , m_pageSizeType(o.m_pageSizeType)
     , m_transformStyle3D(o.m_transformStyle3D)
     , m_backfaceVisibility(o.m_backfaceVisibility)
@@ -227,12 +215,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_order == o.m_order
         && m_objectPosition == o.m_objectPosition
         && m_callbackSelectors == o.m_callbackSelectors
-        && m_flowThread == o.m_flowThread
-        && m_regionThread == o.m_regionThread
-        && m_regionFragment == o.m_regionFragment
-        && m_regionBreakAfter == o.m_regionBreakAfter
-        && m_regionBreakBefore == o.m_regionBreakBefore
-        && m_regionBreakInside == o.m_regionBreakInside
         && m_pageSizeType == o.m_pageSizeType
         && m_transformStyle3D == o.m_transformStyle3D
         && m_backfaceVisibility == o.m_backfaceVisibility

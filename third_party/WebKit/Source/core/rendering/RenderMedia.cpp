@@ -29,7 +29,6 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/rendering/LayoutRectRecorder.h"
-#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -61,14 +60,6 @@ void RenderMedia::layout()
         return;
 
     bool controlsNeedLayout = controlsRenderer->needsLayout();
-    // If the region chain has changed we also need to relayout the controls to update the region box info.
-    // FIXME: We can do better once we compute region box info for RenderReplaced, not only for RenderBlock.
-    const RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (flowThread && !controlsNeedLayout) {
-        if (flowThread->pageLogicalSizeChanged())
-            controlsNeedLayout = true;
-    }
-
     LayoutSize newSize = contentBoxRect().size();
     if (newSize == oldSize && !controlsNeedLayout)
         return;

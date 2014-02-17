@@ -31,8 +31,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 HitTestLocation::HitTestLocation()
-    : m_region(0)
-    , m_isRectBased(false)
+    : m_isRectBased(false)
     , m_isRectilinear(true)
 {
 }
@@ -42,7 +41,6 @@ HitTestLocation::HitTestLocation(const LayoutPoint& point)
     , m_boundingBox(rectForPoint(point, 0, 0, 0, 0))
     , m_transformedPoint(point)
     , m_transformedRect(m_boundingBox)
-    , m_region(0)
     , m_isRectBased(false)
     , m_isRectilinear(true)
 {
@@ -53,7 +51,6 @@ HitTestLocation::HitTestLocation(const FloatPoint& point)
     , m_boundingBox(rectForPoint(m_point, 0, 0, 0, 0))
     , m_transformedPoint(point)
     , m_transformedRect(m_boundingBox)
-    , m_region(0)
     , m_isRectBased(false)
     , m_isRectilinear(true)
 {
@@ -62,7 +59,6 @@ HitTestLocation::HitTestLocation(const FloatPoint& point)
 HitTestLocation::HitTestLocation(const FloatPoint& point, const FloatQuad& quad)
     : m_transformedPoint(point)
     , m_transformedRect(quad)
-    , m_region(0)
     , m_isRectBased(true)
 {
     m_point = flooredLayoutPoint(point);
@@ -74,19 +70,17 @@ HitTestLocation::HitTestLocation(const LayoutPoint& centerPoint, unsigned topPad
     : m_point(centerPoint)
     , m_boundingBox(rectForPoint(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding))
     , m_transformedPoint(centerPoint)
-    , m_region(0)
     , m_isRectBased(topPadding || rightPadding || bottomPadding || leftPadding)
     , m_isRectilinear(true)
 {
     m_transformedRect = FloatQuad(m_boundingBox);
 }
 
-HitTestLocation::HitTestLocation(const HitTestLocation& other, const LayoutSize& offset, RenderRegion* region)
+HitTestLocation::HitTestLocation(const HitTestLocation& other, const LayoutSize& offset)
     : m_point(other.m_point)
     , m_boundingBox(other.m_boundingBox)
     , m_transformedPoint(other.m_transformedPoint)
     , m_transformedRect(other.m_transformedRect)
-    , m_region(region ? region : other.m_region)
     , m_isRectBased(other.m_isRectBased)
     , m_isRectilinear(other.m_isRectilinear)
 {
@@ -98,7 +92,6 @@ HitTestLocation::HitTestLocation(const HitTestLocation& other)
     , m_boundingBox(other.m_boundingBox)
     , m_transformedPoint(other.m_transformedPoint)
     , m_transformedRect(other.m_transformedRect)
-    , m_region(other.m_region)
     , m_isRectBased(other.m_isRectBased)
     , m_isRectilinear(other.m_isRectilinear)
 {
@@ -114,7 +107,6 @@ HitTestLocation& HitTestLocation::operator=(const HitTestLocation& other)
     m_boundingBox = other.m_boundingBox;
     m_transformedPoint = other.m_transformedPoint;
     m_transformedRect = other.m_transformedRect;
-    m_region = other.m_region;
     m_isRectBased = other.m_isRectBased;
     m_isRectilinear = other.m_isRectilinear;
 

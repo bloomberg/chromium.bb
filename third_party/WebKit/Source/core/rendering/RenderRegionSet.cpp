@@ -35,12 +35,6 @@ RenderRegionSet::RenderRegionSet(Element* element, RenderFlowThread* flowThread)
 {
 }
 
-void RenderRegionSet::installFlowThread()
-{
-    // We don't have to do anything, since we were able to connect the flow thread
-    // in the constructor.
-}
-
 void RenderRegionSet::expandToEncompassFlowThreadContentsIfNeeded()
 {
     // Whenever the last region is a set, it always expands its region rect to consume all

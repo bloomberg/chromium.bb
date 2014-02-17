@@ -150,14 +150,6 @@ public:
 
     Vector<String> m_callbackSelectors;
 
-    AtomicString m_flowThread;
-    AtomicString m_regionThread;
-    unsigned m_regionFragment : 1; // RegionFragment
-
-    unsigned m_regionBreakAfter : 2; // EPageBreak
-    unsigned m_regionBreakBefore : 2; // EPageBreak
-    unsigned m_regionBreakInside : 2; // EPageBreak
-
     unsigned m_pageSizeType : 2; // PageSizeType
     unsigned m_transformStyle3D : 1; // ETransformStyle3D
     unsigned m_backfaceVisibility : 1; // EBackfaceVisibility

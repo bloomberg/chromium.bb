@@ -306,7 +306,7 @@ private:
     LayoutUnit convertStyleLogicalWidthToComputedWidth(const Length& styleLogicalWidth, LayoutUnit availableWidth);
     LayoutUnit convertStyleLogicalHeightToComputedHeight(const Length& styleLogicalHeight);
 
-    virtual LayoutRect overflowClipRect(const LayoutPoint& location, RenderRegion*, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) OVERRIDE;
+    virtual LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) OVERRIDE;
 
     virtual void addOverflowFromChildren() OVERRIDE;
 

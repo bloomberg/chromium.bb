@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-class RenderBoxRegionInfo;
-class RenderRegion;
 struct PaintInfo;
 
 enum SizeType { MainOrPreferredSize, MinSize, MaxSize };
@@ -68,7 +66,6 @@ public:
 class RenderBox : public RenderBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
-    virtual ~RenderBox();
 
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since
     // position:static elements that are not flex-items get their z-index coerced to auto.
@@ -113,7 +110,7 @@ public:
     LayoutUnit logicalWidth() const { return style()->isHorizontalWritingMode() ? width() : height(); }
     LayoutUnit logicalHeight() const { return style()->isHorizontalWritingMode() ? height() : width(); }
 
-    LayoutUnit constrainLogicalWidthInRegionByMinMax(LayoutUnit, LayoutUnit, RenderBlock*, RenderRegion* = 0) const;
+    LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit, LayoutUnit, RenderBlock*) const;
     LayoutUnit constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit constrainContentBoxLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const;
 
@@ -398,9 +395,6 @@ public:
     void computeBlockDirectionMargins(const RenderBlock* containingBlock, LayoutUnit& marginBefore, LayoutUnit& marginAfter) const;
     void computeAndSetBlockDirectionMargins(const RenderBlock* containingBlock);
 
-    enum RenderBoxRegionInfoFlags { CacheRenderBoxRegionInfo, DoNotCacheRenderBoxRegionInfo };
-    LayoutRect borderBoxRectInRegion(RenderRegion*, RenderBoxRegionInfoFlags = CacheRenderBoxRegionInfo) const;
-    void clearRenderBoxRegionInfo();
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
     void positionLineBox(InlineBox*);
@@ -423,16 +417,14 @@ public:
     virtual LayoutUnit containingBlockLogicalWidthForContent() const OVERRIDE;
     LayoutUnit containingBlockLogicalHeightForContent(AvailableLogicalHeightType) const;
 
-    LayoutUnit containingBlockLogicalWidthForContentInRegion(RenderRegion*) const;
-    LayoutUnit containingBlockAvailableLineWidthInRegion(RenderRegion*) const;
+    LayoutUnit containingBlockAvailableLineWidth() const;
     LayoutUnit perpendicularContainingBlockLogicalHeight() const;
 
     virtual void updateLogicalWidth();
     virtual void updateLogicalHeight();
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const;
 
-    RenderBoxRegionInfo* renderBoxRegionInfo(RenderRegion*, RenderBoxRegionInfoFlags = CacheRenderBoxRegionInfo) const;
-    void computeLogicalWidthInRegion(LogicalExtentComputedValues&, RenderRegion* = 0) const;
+    void computeLogicalWidth(LogicalExtentComputedValues&) const;
 
     bool stretchesToViewport() const
     {
@@ -447,9 +439,9 @@ public:
     // of a containing block).  HTML4 buttons, <select>s, <input>s, legends, and floating/compact elements do this.
     bool sizesLogicalWidthToFitContent(SizeType) const;
 
-    LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb, RenderRegion*) const;
+    LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const RenderBlockFlow* cb) const;
 
-    LayoutUnit computeLogicalWidthInRegionUsing(SizeType, Length logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* containingBlock, RenderRegion*) const;
+    LayoutUnit computeLogicalWidthUsing(SizeType, Length logicalWidth, LayoutUnit availableLogicalWidth, const RenderBlock* containingBlock) const;
     LayoutUnit computeLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit computeContentLogicalHeight(const Length& height, LayoutUnit intrinsicContentHeight) const;
     LayoutUnit computeContentAndScrollbarLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
@@ -508,8 +500,8 @@ public:
 
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
 
-    virtual LayoutRect overflowClipRect(const LayoutPoint& location, RenderRegion*, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize);
-    LayoutRect clipRect(const LayoutPoint& location, RenderRegion*);
+    virtual LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize);
+    LayoutRect clipRect(const LayoutPoint& location);
     virtual bool hasControlClip() const { return false; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const { return LayoutRect(); }
     bool pushContentsClip(PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
@@ -653,7 +645,7 @@ protected:
     BackgroundBleedAvoidance determineBackgroundBleedAvoidance(GraphicsContext*) const;
     bool backgroundHasOpaqueTopLayer() const;
 
-    void computePositionedLogicalWidth(LogicalExtentComputedValues&, RenderRegion* = 0) const;
+    void computePositionedLogicalWidth(LogicalExtentComputedValues&) const;
 
     LayoutUnit computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const;
     LayoutUnit computeIntrinsicLogicalContentHeightUsing(Length logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const;
@@ -682,7 +674,7 @@ private:
 
     bool skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const;
 
-    LayoutUnit containingBlockLogicalWidthForPositioned(const RenderBoxModelObject* containingBlock, RenderRegion* = 0, bool checkForPerpendicularWritingMode = true) const;
+    LayoutUnit containingBlockLogicalWidthForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
     LayoutUnit containingBlockLogicalHeightForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
 
     LayoutUnit viewLogicalHeightForPercentages() const;

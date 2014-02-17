@@ -62,7 +62,6 @@
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
@@ -75,7 +74,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/MutationObserver.h"
-#include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
@@ -1058,24 +1056,6 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
 bool Document::regionBasedColumnsEnabled() const
 {
     return settings() && settings()->regionBasedColumnsEnabled();
-}
-
-PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
-{
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderView())
-        return 0;
-
-    updateStyleIfNeeded();
-
-    return namedFlows()->createCSSOMSnapshot();
-}
-
-NamedFlowCollection* Document::namedFlows()
-{
-    if (!m_namedFlows)
-        m_namedFlows = NamedFlowCollection::create(this);
-
-    return m_namedFlows.get();
 }
 
 String Document::readyState() const

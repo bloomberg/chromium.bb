@@ -3,7 +3,6 @@ namespace="EventTarget"
 core/css/FontFaceSet
 core/dom/MessagePort
 core/dom/Node
-core/dom/WebKitNamedFlow ImplementedAs=NamedFlow
 core/fileapi/FileReader
 core/html/MediaController
 core/html/ime/InputMethodContext

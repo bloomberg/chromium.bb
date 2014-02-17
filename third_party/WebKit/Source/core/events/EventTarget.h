@@ -57,7 +57,6 @@ class MIDIPort;
 class MediaController;
 class MediaStream;
 class MessagePort;
-class NamedFlow;
 class Node;
 class Notification;
 class SVGElementInstance;

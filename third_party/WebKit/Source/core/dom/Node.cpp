@@ -1143,11 +1143,6 @@ bool Node::canStartSelection() const
     return parentOrShadowHostNode() ? parentOrShadowHostNode()->canStartSelection() : true;
 }
 
-bool Node::isRegisteredWithNamedFlow() const
-{
-    return document().renderView()->flowThreadController()->isContentNodeRegisteredWithAnyNamedFlow(this);
-}
-
 Element* Node::shadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())

@@ -516,7 +516,6 @@ void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
     MatchRequest matchRequest(m_watchedSelectorsRules.get());
     RuleRange ruleRange = collector.matchedResult().ranges.userRuleRange();
     collector.collectMatchingRules(matchRequest, ruleRange);
-    collector.collectMatchingRulesForRegion(matchRequest, ruleRange);
 
     collector.sortAndTransferMatchedRules();
 }
@@ -630,7 +629,7 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
 }
 
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
-    RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
+    RuleMatchingBehavior matchingBehavior)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
@@ -653,7 +652,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
-    StyleResolverState state(document(), element, defaultParent, regionForStyling);
+    StyleResolverState state(document(), element, defaultParent);
 
     if (sharingBehavior == AllowStyleSharing && state.parentStyle()) {
         SharedStyleFinder styleFinder(state.elementContext(), m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), *this);
@@ -697,7 +696,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     {
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
-        collector.setRegionForStyling(regionForStyling);
 
         if (matchingBehavior == MatchOnlyUserAgentRules)
             matchUARules(collector);
@@ -1010,17 +1008,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
     return parentNode->renderStyle();
 }
 
-bool StyleResolver::checkRegionStyle(Element* regionElement)
-{
-    // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment,
-    // so all region rules are global by default. Verify whether that can stand or needs changing.
-    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument()) {
-        if (scopedResolver->checkRegionStyle(regionElement))
-            return true;
-    }
-    return false;
-}
-
 void StyleResolver::updateFont(StyleResolverState& state)
 {
     state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
@@ -1118,21 +1105,6 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ani
     }
 }
 
-// http://dev.w3.org/csswg/css3-regions/#the-at-region-style-rule
-// FIXME: add incremental support for other region styling properties.
-static inline bool isValidRegionStyleProperty(CSSPropertyID id)
-{
-    switch (id) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyColor:
-        return true;
-    default:
-        break;
-    }
-
-    return false;
-}
-
 static inline bool isValidCueStyleProperty(CSSPropertyID id)
 {
     switch (id) {
@@ -1207,7 +1179,6 @@ bool StyleResolver::isPropertyForPass(CSSPropertyID property)
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
-    ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || state.regionForStyling());
     state.setCurrentRule(rule);
 
     unsigned propertyCount = properties->propertyCount();
@@ -1224,8 +1195,6 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         }
         CSSPropertyID property = current.id();
 
-        if (propertyWhitelistType == PropertyWhitelistRegion && !isValidRegionStyleProperty(property))
-            continue;
         if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
             continue;
         if (!isPropertyForPass<pass>(property))

@@ -853,9 +853,6 @@ public:
     EPageBreak columnBreakBefore() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakBefore); }
     EPageBreak columnBreakInside() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakInside); }
     EPageBreak columnBreakAfter() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakAfter); }
-    EPageBreak regionBreakBefore() const { return static_cast<EPageBreak>(rareNonInheritedData->m_regionBreakBefore); }
-    EPageBreak regionBreakInside() const { return static_cast<EPageBreak>(rareNonInheritedData->m_regionBreakInside); }
-    EPageBreak regionBreakAfter() const { return static_cast<EPageBreak>(rareNonInheritedData->m_regionBreakAfter); }
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
     Length transformOriginX() const { return rareNonInheritedData->m_transform->m_x; }
     Length transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
@@ -892,11 +889,6 @@ public:
     unsigned tabSize() const { return rareInheritedData->m_tabSize; }
 
     // End CSS3 Getters
-
-    const AtomicString& flowThread() const { return rareNonInheritedData->m_flowThread; }
-    bool hasFlowFrom() const { return !rareNonInheritedData->m_regionThread.isNull(); }
-    const AtomicString& regionThread() const { return rareNonInheritedData->m_regionThread; }
-    RegionFragment regionFragment() const { return static_cast<RegionFragment>(rareNonInheritedData->m_regionFragment); }
 
     WrapFlow wrapFlow() const { return static_cast<WrapFlow>(rareNonInheritedData->m_wrapFlow); }
     WrapThrough wrapThrough() const { return static_cast<WrapThrough>(rareNonInheritedData->m_wrapThrough); }
@@ -1318,9 +1310,6 @@ public:
     // For valid values of column-break-inside see http://www.w3.org/TR/css3-multicol/#break-before-break-after-break-inside
     void setColumnBreakInside(EPageBreak p) { ASSERT(p == PBAUTO || p == PBAVOID); SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakInside, p); }
     void setColumnBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakAfter, p); }
-    void setRegionBreakBefore(EPageBreak p) { SET_VAR(rareNonInheritedData, m_regionBreakBefore, p); }
-    void setRegionBreakInside(EPageBreak p) { ASSERT(p == PBAUTO || p == PBAVOID); SET_VAR(rareNonInheritedData, m_regionBreakInside, p); }
-    void setRegionBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData, m_regionBreakAfter, p); }
     void inheritColumnPropertiesFrom(RenderStyle* parent) { rareNonInheritedData.access()->m_multiCol = parent->rareNonInheritedData->m_multiCol; }
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
     void setTransformOriginX(Length l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_x, l); }
@@ -1346,10 +1335,6 @@ public:
     void setTabSize(unsigned size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 
     // End CSS3 Setters
-
-    void setFlowThread(const AtomicString& flowThread) { SET_VAR(rareNonInheritedData, m_flowThread, flowThread); }
-    void setRegionThread(const AtomicString& regionThread) { SET_VAR(rareNonInheritedData, m_regionThread, regionThread); }
-    void setRegionFragment(RegionFragment regionFragment) { SET_VAR(rareNonInheritedData, m_regionFragment, regionFragment); }
 
     void setWrapFlow(WrapFlow wrapFlow) { SET_VAR(rareNonInheritedData, m_wrapFlow, wrapFlow); }
     void setWrapThrough(WrapThrough wrapThrough) { SET_VAR(rareNonInheritedData, m_wrapThrough, wrapThrough); }
@@ -1505,12 +1490,6 @@ public:
     bool isDisplayReplacedType() const { return isDisplayReplacedType(display()); }
     bool isDisplayInlineType() const { return isDisplayInlineType(display()); }
     bool isOriginalDisplayInlineType() const { return isDisplayInlineType(originalDisplay()); }
-    bool isDisplayRegionType() const
-    {
-        return display() == BLOCK || display() == INLINE_BLOCK
-            || display() == TABLE_CELL || display() == TABLE_CAPTION
-            || display() == LIST_ITEM;
-    }
 
     bool setWritingMode(WritingMode v)
     {
@@ -1714,10 +1693,6 @@ public:
     static GridPosition initialGridRowEnd() { return GridPosition(); }
 
     static unsigned initialTabSize() { return 8; }
-
-    static const AtomicString& initialFlowThread() { return nullAtom; }
-    static const AtomicString& initialRegionThread() { return nullAtom; }
-    static RegionFragment initialRegionFragment() { return AutoRegionFragment; }
 
     static WrapFlow initialWrapFlow() { return WrapFlowAuto; }
     static WrapThrough initialWrapThrough() { return WrapThroughWrap; }

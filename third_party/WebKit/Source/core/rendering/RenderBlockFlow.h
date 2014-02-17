@@ -46,7 +46,6 @@ namespace WebCore {
 class MarginInfo;
 class LineBreaker;
 class LineWidth;
-class RenderNamedFlowFragment;
 
 class RenderBlockFlow : public RenderBlock {
 public:
@@ -63,43 +62,17 @@ public:
     virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats = false) OVERRIDE;
     virtual void deleteLineBoxTree() OVERRIDE FINAL;
 
-    // Versions that can compute line offsets with the region and page offset passed in. Used for speed to avoid having to
-    // compute the region all over again when you already know it.
-    LayoutUnit availableLogicalWidthForLineInRegion(LayoutUnit position, bool shouldIndentText, RenderRegion* region, LayoutUnit logicalHeight = 0) const
-    {
-        return max<LayoutUnit>(0, logicalRightOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight)
-            - logicalLeftOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight));
-    }
-    LayoutUnit logicalRightOffsetForLineInRegion(LayoutUnit position, bool shouldIndentText, RenderRegion* region, LayoutUnit logicalHeight = 0) const
-    {
-        return logicalRightOffsetForLine(position, logicalRightOffsetForContent(region), shouldIndentText, logicalHeight);
-    }
-    LayoutUnit logicalLeftOffsetForLineInRegion(LayoutUnit position, bool shouldIndentText, RenderRegion* region, LayoutUnit logicalHeight = 0) const
-    {
-        return logicalLeftOffsetForLine(position, logicalLeftOffsetForContent(region), shouldIndentText, logicalHeight);
-    }
-    LayoutUnit startOffsetForLineInRegion(LayoutUnit position, bool shouldIndentText, RenderRegion* region, LayoutUnit logicalHeight = 0) const
-    {
-        return style()->isLeftToRightDirection() ? logicalLeftOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight)
-            : logicalWidth() - logicalRightOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight);
-    }
-    LayoutUnit endOffsetForLineInRegion(LayoutUnit position, bool shouldIndentText, RenderRegion* region, LayoutUnit logicalHeight = 0) const
-    {
-        return !style()->isLeftToRightDirection() ? logicalLeftOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight)
-            : logicalWidth() - logicalRightOffsetForLineInRegion(position, shouldIndentText, region, logicalHeight);
-    }
-
     LayoutUnit availableLogicalWidthForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
     {
-        return availableLogicalWidthForLineInRegion(position, shouldIndentText, regionAtBlockOffset(position), logicalHeight);
+        return max<LayoutUnit>(0, logicalRightOffsetForLine(position, shouldIndentText, logicalHeight) - logicalLeftOffsetForLine(position, shouldIndentText, logicalHeight));
     }
     LayoutUnit logicalRightOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
     {
-        return logicalRightOffsetForLine(position, logicalRightOffsetForContent(position), shouldIndentText, logicalHeight);
+        return logicalRightOffsetForLine(position, logicalRightOffsetForContent(), shouldIndentText, logicalHeight);
     }
     LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
     {
-        return logicalLeftOffsetForLine(position, logicalLeftOffsetForContent(position), shouldIndentText, logicalHeight);
+        return logicalLeftOffsetForLine(position, logicalLeftOffsetForContent(), shouldIndentText, logicalHeight);
     }
     LayoutUnit pixelSnappedLogicalLeftOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
     {
@@ -127,7 +100,7 @@ public:
     virtual LayoutUnit logicalLeftSelectionOffset(RenderBlock* rootBlock, LayoutUnit position) OVERRIDE;
     virtual LayoutUnit logicalRightSelectionOffset(RenderBlock* rootBlock, LayoutUnit position) OVERRIDE;
 
-    LayoutUnit computeStartPositionDeltaForChildAvoidingFloats(const RenderBox* child, LayoutUnit childMarginStart, RenderRegion* = 0);
+    LayoutUnit computeStartPositionDeltaForChildAvoidingFloats(const RenderBox* child, LayoutUnit childMarginStart);
 
     RootInlineBox* createAndAppendRootInlineBox();
 
@@ -242,8 +215,6 @@ protected:
         return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);
     }
 
-    virtual void insertedIntoTree() OVERRIDE;
-    virtual void willBeDestroyed() OVERRIDE;
 private:
     bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);
     void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&, LayoutUnit beforeEdge, LayoutUnit afterEdge);
@@ -357,8 +328,6 @@ public:
     };
     MarginValues marginValuesForChild(RenderBox* child) const;
 
-    virtual void updateLogicalHeight() OVERRIDE;
-
     // Allocated only when some of these fields have non-default values
     struct RenderBlockFlowRareData {
         WTF_MAKE_NONCOPYABLE(RenderBlockFlowRareData); WTF_MAKE_FAST_ALLOCATED;
@@ -367,7 +336,6 @@ public:
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
             , m_discardMarginBefore(false)
             , m_discardMarginAfter(false)
-            , m_renderNamedFlowFragment(0)
         {
         }
 
@@ -392,12 +360,8 @@ public:
 
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
-        RenderNamedFlowFragment* m_renderNamedFlowFragment;
     };
     LayoutUnit marginOffsetForSelfCollapsingBlock();
-
-    RenderNamedFlowFragment* renderNamedFlowFragment() const { return m_rareData ? m_rareData->m_renderNamedFlowFragment : 0; }
-    void setRenderNamedFlowFragment(RenderNamedFlowFragment*);
 
 protected:
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : RenderBlockFlowRareData::positiveMarginBeforeDefault(this); }
@@ -450,11 +414,6 @@ private:
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;
-
-    virtual bool canHaveChildren() const OVERRIDE;
-    virtual bool canHaveGeneratedChildren() const OVERRIDE;
-
-    void createRenderNamedFlowFragmentIfNeeded();
 
     RenderBlockFlowRareData& ensureRareData();
 

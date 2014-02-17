@@ -40,7 +40,6 @@ namespace WebCore {
 class RenderInline;
 class RenderLayerModelObject;
 class RenderObject;
-class RenderRegion;
 class RenderWidget;
 
 typedef HashMap<RenderWidget*, IntRect> OverlapTestRequestMap;
@@ -51,14 +50,13 @@ typedef HashMap<RenderWidget*, IntRect> OverlapTestRequestMap;
  */
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
-        RenderObject* newPaintingRoot = 0, RenderRegion* region = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
+        RenderObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
         OverlapTestRequestMap* overlapTestRequests = 0, const RenderLayerModelObject* newPaintContainer = 0)
         : context(newContext)
         , rect(newRect)
         , phase(newPhase)
         , paintBehavior(newPaintBehavior)
         , paintingRoot(newPaintingRoot)
-        , renderRegion(region)
         , overlapTestRequests(overlapTestRequests)
         , m_paintContainer(newPaintContainer)
         , m_outlineObjects(newOutlineObjects)
@@ -112,7 +110,6 @@ struct PaintInfo {
     PaintPhase phase;
     PaintBehavior paintBehavior;
     RenderObject* paintingRoot; // used to draw just one element and its visual kids
-    RenderRegion* renderRegion;
     OverlapTestRequestMap* overlapTestRequests;
 
 private:

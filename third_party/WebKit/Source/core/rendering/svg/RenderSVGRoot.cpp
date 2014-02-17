@@ -259,7 +259,7 @@ void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paint
     childPaintInfo.context->save();
 
     // Apply initial viewport clip - not affected by overflow handling
-    childPaintInfo.context->clip(pixelSnappedIntRect(overflowClipRect(paintOffset, paintInfo.renderRegion)));
+    childPaintInfo.context->clip(pixelSnappedIntRect(overflowClipRect(paintOffset)));
 
     // Convert from container offsets (html renderers) to a relative transform (svg renderers).
     // Transform from our paint container's coordinate system to our local coords.

@@ -34,7 +34,6 @@ namespace WebCore {
 
 class CSSStyleSheet;
 class CSSRuleList;
-class RenderRegion;
 class RuleData;
 class RuleSet;
 class ScopedStyleResolver;
@@ -95,7 +94,6 @@ public:
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
     void setPseudoStyleRequest(const PseudoStyleRequest& request) { m_pseudoStyleRequest = request; }
     void setSameOriginOnly(bool f) { m_sameOriginOnly = f; }
-    void setRegionForStyling(const RenderRegion* regionForStyling) { m_regionForStyling = regionForStyling; }
 
     void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
     bool hasAnyMatchingRules(RuleSet*);
@@ -105,7 +103,6 @@ public:
     PassRefPtr<CSSRuleList> matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
@@ -136,7 +133,6 @@ private:
     const SelectorFilter& m_selectorFilter;
     RefPtr<RenderStyle> m_style; // FIXME: This can be mutated during matching!
 
-    const RenderRegion* m_regionForStyling;
     PseudoStyleRequest m_pseudoStyleRequest;
     SelectorChecker::Mode m_mode;
     bool m_canUseFastReject;

@@ -40,8 +40,6 @@ static bool isRendererReparented(const RenderObject* renderer)
 {
     if (!renderer->node()->isElementNode())
         return false;
-    if (renderer->style() && !renderer->style()->flowThread().isEmpty())
-        return true;
     if (toElement(renderer->node())->isInTopLayer())
         return true;
     return false;

@@ -326,12 +326,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitUserModify,
     CSSPropertyWebkitUserSelect,
     CSSPropertyWebkitWritingMode,
-    CSSPropertyWebkitFlowInto,
-    CSSPropertyWebkitFlowFrom,
-    CSSPropertyWebkitRegionBreakAfter,
-    CSSPropertyWebkitRegionBreakBefore,
-    CSSPropertyWebkitRegionBreakInside,
-    CSSPropertyWebkitRegionFragment,
     CSSPropertyWebkitAppRegion,
     CSSPropertyWebkitWrapFlow,
     CSSPropertyWebkitWrapThrough,
@@ -1331,8 +1325,6 @@ static PassRefPtr<CSSValue> valueForContentData(const RenderStyle& style)
         } else if (contentData->isText())
             list->append(cssValuePool().createValue(static_cast<const TextContentData*>(contentData)->text(), CSSPrimitiveValue::CSS_STRING));
     }
-    if (style.hasFlowFrom())
-        list->append(cssValuePool().createValue(style.regionThread(), CSSPrimitiveValue::CSS_STRING));
     return list.release();
 }
 
@@ -1818,12 +1810,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return zoomAdjustedPixelValue(style->columnWidth(), *style);
         case CSSPropertyTabSize:
             return cssValuePool().createValue(style->tabSize(), CSSPrimitiveValue::CSS_NUMBER);
-        case CSSPropertyWebkitRegionBreakAfter:
-            return cssValuePool().createValue(style->regionBreakAfter());
-        case CSSPropertyWebkitRegionBreakBefore:
-            return cssValuePool().createValue(style->regionBreakBefore());
-        case CSSPropertyWebkitRegionBreakInside:
-            return cssValuePool().createValue(style->regionBreakInside());
         case CSSPropertyCursor: {
             RefPtrWillBeRawPtr<CSSValueList> list;
             CursorList* cursors = style->cursors();
@@ -2606,16 +2592,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                     return CSSPrimitiveValue::create(toReferenceClipPathOperation(operation)->url(), CSSPrimitiveValue::CSS_URI);
             }
             return cssValuePool().createIdentifierValue(CSSValueNone);
-        case CSSPropertyWebkitFlowInto:
-            if (style->flowThread().isNull())
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            return cssValuePool().createValue(style->flowThread(), CSSPrimitiveValue::CSS_STRING);
-        case CSSPropertyWebkitFlowFrom:
-            if (!style->hasFlowFrom())
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            return cssValuePool().createValue(style->regionThread(), CSSPrimitiveValue::CSS_STRING);
-        case CSSPropertyWebkitRegionFragment:
-            return cssValuePool().createValue(style->regionFragment());
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
         case CSSPropertyShapeMargin:

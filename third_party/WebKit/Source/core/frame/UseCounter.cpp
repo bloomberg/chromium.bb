@@ -384,12 +384,12 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitUserDrag: return 337;
     case CSSPropertyWebkitUserModify: return 338;
     case CSSPropertyWebkitUserSelect: return 339;
-    case CSSPropertyWebkitFlowInto: return 340;
-    case CSSPropertyWebkitFlowFrom: return 341;
-    case CSSPropertyWebkitRegionFragment: return 342;
-    case CSSPropertyWebkitRegionBreakAfter: return 343;
-    case CSSPropertyWebkitRegionBreakBefore: return 344;
-    case CSSPropertyWebkitRegionBreakInside: return 345;
+    // case CSSPropertyWebkitFlowInto: return 340;
+    // case CSSPropertyWebkitFlowFrom: return 341;
+    // case CSSPropertyWebkitRegionFragment: return 342;
+    // case CSSPropertyWebkitRegionBreakAfter: return 343;
+    // case CSSPropertyWebkitRegionBreakBefore: return 344;
+    // case CSSPropertyWebkitRegionBreakInside: return 345;
     case CSSPropertyShapeInside: return 346;
     case CSSPropertyShapeOutside: return 347;
     case CSSPropertyShapeMargin: return 348;

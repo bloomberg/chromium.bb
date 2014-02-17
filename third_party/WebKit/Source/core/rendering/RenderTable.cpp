@@ -275,10 +275,8 @@ void RenderTable::updateLogicalWidth()
 
         // Subtract out our margins to get the available content width.
         LayoutUnit availableContentLogicalWidth = max<LayoutUnit>(0, containerWidthInInlineDirection - marginTotal);
-        if (shrinkToAvoidFloats() && cb->containsFloats() && !hasPerpendicularContainingBlock) {
-            // FIXME: Work with regions someday.
-            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb), 0);
-        }
+        if (shrinkToAvoidFloats() && cb->containsFloats() && !hasPerpendicularContainingBlock)
+            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb));
 
         // Ensure we aren't bigger than our available width.
         setLogicalWidth(min<int>(availableContentLogicalWidth, maxPreferredLogicalWidth()));
@@ -308,7 +306,7 @@ void RenderTable::updateLogicalWidth()
     if (!hasPerpendicularContainingBlock) {
         LayoutUnit containerLogicalWidthForAutoMargins = availableLogicalWidth;
         if (avoidsFloats() && cb->containsFloats())
-            containerLogicalWidthForAutoMargins = containingBlockAvailableLineWidthInRegion(0); // FIXME: Work with regions someday.
+            containerLogicalWidthForAutoMargins = containingBlockAvailableLineWidth();
         ComputedMarginValues marginValues;
         bool hasInvertedDirection =  cb->style()->isLeftToRightDirection() == style()->isLeftToRightDirection();
         computeInlineDirectionMargins(cb, containerLogicalWidthForAutoMargins, logicalWidth(),
@@ -1384,9 +1382,9 @@ int RenderTable::firstLineBoxBaseline() const
     return -1;
 }
 
-LayoutRect RenderTable::overflowClipRect(const LayoutPoint& location, RenderRegion* region, OverlayScrollbarSizeRelevancy relevancy)
+LayoutRect RenderTable::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy)
 {
-    LayoutRect rect = RenderBlock::overflowClipRect(location, region, relevancy);
+    LayoutRect rect = RenderBlock::overflowClipRect(location, relevancy);
 
     // If we have a caption, expand the clip to include the caption.
     // FIXME: Technically this is wrong, but it's virtually impossible to fix this
@@ -1412,7 +1410,7 @@ bool RenderTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     LayoutPoint adjustedLocation = accumulatedOffset + location();
 
     // Check kids first.
-    if (!hasOverflowClip() || locationInContainer.intersects(overflowClipRect(adjustedLocation, locationInContainer.region()))) {
+    if (!hasOverflowClip() || locationInContainer.intersects(overflowClipRect(adjustedLocation))) {
         for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
             if (child->isBox() && !toRenderBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
                 LayoutPoint childPoint = flipForWritingModeForChild(toRenderBox(child), adjustedLocation);

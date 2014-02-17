@@ -80,7 +80,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
@@ -959,17 +958,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
             return true;
         }
 
-        // FIXME: This should probably move to a virtual method on RenderBox, something like
-        // RenderBox::scrollAncestor, and specialized for RenderFlowThread
         curBox = curBox->containingBlock();
-        if (curBox && curBox->isRenderNamedFlowThread()) {
-            RenderBox* flowedBox = curBox;
-
-            if (RenderBox* startBox = node->renderBox())
-                flowedBox = startBox;
-
-            curBox = toRenderFlowThread(curBox)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
-        }
     }
 
     return false;

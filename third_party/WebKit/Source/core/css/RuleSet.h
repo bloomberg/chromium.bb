@@ -37,18 +37,15 @@ enum AddRuleFlags {
     RuleHasNoSpecialState         = 0,
     RuleHasDocumentSecurityOrigin = 1,
     RuleCanUseFastCheckSelector   = 1 << 1,
-    RuleIsInRegionRule            = 1 << 2,
 };
 
 enum PropertyWhitelistType {
     PropertyWhitelistNone   = 0,
-    PropertyWhitelistRegion,
     PropertyWhitelistCue
 };
 
 class CSSSelector;
 class MediaQueryEvaluator;
-class StyleRuleRegion;
 class StyleSheetContents;
 
 struct MinimalRuleData {
@@ -165,8 +162,6 @@ public:
         OwnPtr<RuleSet> ruleSet;
     };
 
-    Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
-
 private:
     typedef HashMap<AtomicString, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
     typedef HashMap<AtomicString, OwnPtr<RuleData> > CompactRuleMap;
@@ -181,7 +176,6 @@ private:
     void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);
     void addKeyframesRule(StyleRuleKeyframes*);
-    void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector&, RuleData&);

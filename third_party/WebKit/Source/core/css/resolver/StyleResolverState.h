@@ -39,13 +39,12 @@ namespace WebCore {
 
 class CSSAnimationUpdate;
 class FontDescription;
-class RenderRegion;
 class StyleRule;
 
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0);
     ~StyleResolverState();
 
     // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
@@ -74,8 +73,6 @@ public:
     void setParentStyle(PassRefPtr<RenderStyle> parentStyle) { m_parentStyle = parentStyle; }
     const RenderStyle* parentStyle() const { return m_parentStyle.get(); }
     RenderStyle* parentStyle() { return m_parentStyle.get(); }
-
-    const RenderRegion* regionForStyling() const { return m_regionForStyling; }
 
     void setCurrentRule(StyleRule* currentRule) { m_currentRule = currentRule; }
     const StyleRule* currentRule() const { return m_currentRule; }
@@ -149,11 +146,6 @@ private:
     RefPtr<RenderStyle> m_parentStyle;
 
     OwnPtr<CSSAnimationUpdate> m_animationUpdate;
-
-    // Required to ASSERT in applyProperties.
-    // FIXME: Regions should not need special state on StyleResolverState
-    // no other @rule does.
-    RenderRegion* m_regionForStyling;
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;

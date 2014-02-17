@@ -90,19 +90,6 @@ void ScopedStyleResolver::resetAuthorStyle()
     m_keyframesRuleMap.clear();
 }
 
-bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)
-{
-    for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-        const RuleSet& ruleSet = m_authorStyleSheets[i]->contents()->ruleSet();
-        for (unsigned i = 0; i < ruleSet.m_regionSelectorsAndRuleSets.size(); ++i) {
-            ASSERT(ruleSet.m_regionSelectorsAndRuleSets.at(i).ruleSet.get());
-            if (checkRegionSelector(ruleSet.m_regionSelectorsAndRuleSets.at(i).selector, regionElement))
-                return true;
-        }
-    }
-    return false;
-}
-
 const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const StringImpl* animationName)
 {
     if (m_keyframesRuleMap.isEmpty())
@@ -146,7 +133,6 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, scopingNode, applyAuthorStyles, i, m_authorStyleSheets[i]);
         collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
-        collector.collectMatchingRulesForRegion(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
     }
 }
 

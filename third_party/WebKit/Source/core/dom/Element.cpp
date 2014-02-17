@@ -91,9 +91,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
-#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -198,10 +196,6 @@ PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* docu
 
 Element::~Element()
 {
-    // When the document is not destroyed, an element that was part of a named flow
-    // content nodes should have been removed from the content nodes collection
-    // and the inNamedFlow flag reset.
-    ASSERT(!document().renderView() || !inNamedFlow());
     ASSERT(needsAttach());
 
     if (hasRareData())
@@ -1441,22 +1435,14 @@ void Element::attach(const AttachContext& context)
     InspectorInstrumentation::didRecalculateStyleForElement(this);
 }
 
-void Element::unregisterNamedFlowContentNode()
-{
-    if (RuntimeEnabledFeatures::cssRegionsEnabled() && inNamedFlow() && document().renderView())
-        document().renderView()->flowThreadController()->unregisterNamedFlowContentNode(this);
-}
-
 void Element::detach(const AttachContext& context)
 {
     RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-    unregisterNamedFlowContentNode();
     cancelFocusAppearanceUpdate();
     removeCallbackSelectors();
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
-        data->setIsInsideRegion(false);
 
         // attach() will perform the below steps for us when inside recalcStyle.
         if (!document().inStyleRecalc()) {
@@ -2691,29 +2677,6 @@ bool Element::isInCanvasSubtree() const
     return hasRareData() && elementRareData()->isInCanvasSubtree();
 }
 
-void Element::setIsInsideRegion(bool value)
-{
-    if (value == isInsideRegion())
-        return;
-
-    ensureElementRareData().setIsInsideRegion(value);
-}
-
-bool Element::isInsideRegion() const
-{
-    return hasRareData() ? elementRareData()->isInsideRegion() : false;
-}
-
-void Element::setRegionOversetState(RegionOversetState state)
-{
-    ensureElementRareData().setRegionOversetState(state);
-}
-
-RegionOversetState Element::regionOversetState() const
-{
-    return hasRareData() ? elementRareData()->regionOversetState() : RegionUndefined;
-}
-
 AtomicString Element::computeInheritedLanguage() const
 {
     const Node* n = this;
@@ -2987,63 +2950,6 @@ bool Element::isSpellCheckingEnabled() const
     }
 
     return true;
-}
-
-RenderRegion* Element::renderRegion() const
-{
-    if (renderer() && renderer()->isRenderNamedFlowFragmentContainer())
-        return toRenderBlockFlow(renderer())->renderNamedFlowFragment();
-
-    return 0;
-}
-
-const AtomicString& Element::webkitRegionOverset() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, undefinedState, ("undefined", AtomicString::ConstructFromLiteral));
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-        return undefinedState;
-
-    document().updateLayoutIgnorePendingStylesheets();
-
-    if (!renderRegion())
-        return undefinedState;
-
-    switch (renderRegion()->regionOversetState()) {
-    case RegionFit: {
-        DEFINE_STATIC_LOCAL(AtomicString, fitState, ("fit", AtomicString::ConstructFromLiteral));
-        return fitState;
-    }
-    case RegionEmpty: {
-        DEFINE_STATIC_LOCAL(AtomicString, emptyState, ("empty", AtomicString::ConstructFromLiteral));
-        return emptyState;
-    }
-    case RegionOverset: {
-        DEFINE_STATIC_LOCAL(AtomicString, overflowState, ("overset", AtomicString::ConstructFromLiteral));
-        return overflowState;
-    }
-    case RegionUndefined:
-        return undefinedState;
-    }
-
-    ASSERT_NOT_REACHED();
-    return undefinedState;
-}
-
-Vector<RefPtr<Range> > Element::webkitGetRegionFlowRanges() const
-{
-    Vector<RefPtr<Range> > rangeObjects;
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
-        return rangeObjects;
-
-    document().updateLayoutIgnorePendingStylesheets();
-
-    if (renderer() && renderer()->isRenderNamedFlowFragmentContainer()) {
-        RenderNamedFlowFragment* region = toRenderBlockFlow(renderer())->renderNamedFlowFragment();
-        if (region->isValid())
-            region->getRanges(rangeObjects);
-    }
-
-    return rangeObjects;
 }
 
 #ifndef NDEBUG

@@ -426,8 +426,7 @@ bool RenderLayerStackingNode::shouldBeNormalFlowOnlyIgnoringCompositedScrolling(
         || renderer()->hasClipPath()
         || renderer()->hasFilter()
         || renderer()->hasBlendMode()
-        || layer()->isTransparent()
-        || renderer()->style()->hasFlowFrom();
+        || layer()->isTransparent();
 
     return couldBeNormalFlow && !preventsElementFromBeingNormalFlow;
 }

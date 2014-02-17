@@ -43,6 +43,7 @@ class BidiContext;
 class LayoutStateMaintainer;
 class LineLayoutState;
 class RenderInline;
+class RenderRegion;
 class RenderText;
 
 struct BidiRun;
@@ -245,40 +246,7 @@ public:
 
     virtual void scrollbarsChanged(bool /*horizontalScrollbarChanged*/, bool /*verticalScrollbarChanged*/) { };
 
-    LayoutUnit logicalLeftOffsetForContent(RenderRegion*) const;
-    LayoutUnit logicalRightOffsetForContent(RenderRegion*) const;
-    LayoutUnit availableLogicalWidthForContent(RenderRegion* region) const
-    {
-        return max<LayoutUnit>(0, logicalRightOffsetForContent(region) - logicalLeftOffsetForContent(region));
-    }
-    LayoutUnit startOffsetForContent(RenderRegion* region) const
-    {
-        return style()->isLeftToRightDirection() ? logicalLeftOffsetForContent(region) : logicalWidth() - logicalRightOffsetForContent(region);
-    }
-    LayoutUnit endOffsetForContent(RenderRegion* region) const
-    {
-        return !style()->isLeftToRightDirection() ? logicalLeftOffsetForContent(region) : logicalWidth() - logicalRightOffsetForContent(region);
-    }
-    LayoutUnit logicalLeftOffsetForContent(LayoutUnit blockOffset) const
-    {
-        return logicalLeftOffsetForContent(regionAtBlockOffset(blockOffset));
-    }
-    LayoutUnit logicalRightOffsetForContent(LayoutUnit blockOffset) const
-    {
-        return logicalRightOffsetForContent(regionAtBlockOffset(blockOffset));
-    }
-    LayoutUnit availableLogicalWidthForContent(LayoutUnit blockOffset) const
-    {
-        return availableLogicalWidthForContent(regionAtBlockOffset(blockOffset));
-    }
-    LayoutUnit startOffsetForContent(LayoutUnit blockOffset) const
-    {
-        return startOffsetForContent(regionAtBlockOffset(blockOffset));
-    }
-    LayoutUnit endOffsetForContent(LayoutUnit blockOffset) const
-    {
-        return endOffsetForContent(regionAtBlockOffset(blockOffset));
-    }
+    LayoutUnit availableLogicalWidthForContent() const { return max<LayoutUnit>(0, logicalRightOffsetForContent() - logicalLeftOffsetForContent()); }
     LayoutUnit logicalLeftOffsetForContent() const { return isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
     LayoutUnit logicalRightOffsetForContent() const { return logicalLeftOffsetForContent() + availableLogicalWidth(); }
     LayoutUnit startOffsetForContent() const { return style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
@@ -525,7 +493,6 @@ protected:
     // For a page height of 800px, the first rule will return 800 if the value passed in is 0. The second rule will simply return 0.
     enum PageBoundaryRule { ExcludePageBoundary, IncludePageBoundary };
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
-    bool hasNextPage(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
 
     bool createsBlockFormattingContext() const;
 
@@ -547,17 +514,9 @@ protected:
 
     LayoutUnit adjustForUnsplittableChild(RenderBox* child, LayoutUnit logicalOffset, bool includeMargins = false); // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
     void adjustLinePositionForPagination(RootInlineBox*, LayoutUnit& deltaOffset, RenderFlowThread*); // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
-    void updateRegionForLine(RootInlineBox*) const;
 
     // Adjust from painting offsets to the local coords of this renderer
     void offsetForContents(LayoutPoint&) const;
-
-    // This function is called to test a line box that has moved in the block direction to see if it has ended up in a new
-    // region/page/column that has a different available line width than the old one. Used to know when you have to dirty a
-    // line, i.e., that it can't be re-used.
-    bool lineWidthForPaginatedLineChanged(RootInlineBox*, LayoutUnit lineDelta, RenderFlowThread*) const;
-
-    bool logicalWidthChangedInRegions(RenderFlowThread*) const;
 
     bool requiresColumns(int desiredColumnCount) const;
 
@@ -568,7 +527,6 @@ protected:
 public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const OVERRIDE FINAL;
     RenderRegion* regionAtBlockOffset(LayoutUnit) const;
-    RenderRegion* clampToStartAndEndRegions(RenderRegion*) const;
 
 public:
 

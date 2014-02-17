@@ -180,9 +180,7 @@ StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const Render
         || oldStyle->columnSpan() != newStyle->columnSpan()
         || oldStyle->specifiesAutoColumns() != newStyle->specifiesAutoColumns()
         || !oldStyle->contentDataEquivalent(newStyle)
-        || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
-        || oldStyle->flowThread() != newStyle->flowThread()
-        || oldStyle->regionThread() != newStyle->regionThread())
+        || oldStyle->hasTextCombine() != newStyle->hasTextCombine())
         return Reattach;
 
     if (*oldStyle == *newStyle)
@@ -419,7 +417,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareNonInheritedData->marginAfterCollapse != other->rareNonInheritedData->marginAfterCollapse
             || rareNonInheritedData->lineClamp != other->rareNonInheritedData->lineClamp
             || rareNonInheritedData->textOverflow != other->rareNonInheritedData->textOverflow
-            || rareNonInheritedData->m_regionFragment != other->rareNonInheritedData->m_regionFragment
             || rareNonInheritedData->m_wrapFlow != other->rareNonInheritedData->m_wrapFlow
             || rareNonInheritedData->m_wrapThrough != other->rareNonInheritedData->m_wrapThrough
             || rareNonInheritedData->m_shapeMargin != other->rareNonInheritedData->m_shapeMargin

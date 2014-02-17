@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/rendering/shapes/ShapeInfo.h"
 
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
 

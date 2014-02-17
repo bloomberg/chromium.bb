@@ -34,7 +34,6 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusType.h"
-#include "core/rendering/RegionOversetState.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
@@ -56,7 +55,6 @@ class Locale;
 class MutableStylePropertySet;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
-class RenderRegion;
 class ShadowRoot;
 class StylePropertySet;
 
@@ -359,12 +357,6 @@ public:
     bool isUpgradedCustomElement() { return customElementState() == Upgraded; }
     bool isUnresolvedCustomElement() { return customElementState() == WaitingForUpgrade; }
 
-    void setIsInsideRegion(bool);
-    bool isInsideRegion() const;
-
-    void setRegionOversetState(RegionOversetState);
-    RegionOversetState regionOversetState() const;
-
     AtomicString computeInheritedLanguage() const;
     Locale& locale() const;
 
@@ -502,10 +494,6 @@ public:
 
     // FIXME: public for RenderTreeBuilder, we shouldn't expose this though.
     PassRefPtr<RenderStyle> styleForRenderer();
-
-    RenderRegion* renderRegion() const;
-    const AtomicString& webkitRegionOverset() const;
-    Vector<RefPtr<Range> > webkitGetRegionFlowRanges() const;
 
     bool hasID() const;
     bool hasClass() const;
@@ -663,8 +651,6 @@ private:
 
     void updateNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName);
     void updateExtraNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName);
-
-    void unregisterNamedFlowContentNode();
 
     void createUniqueElementData();
 

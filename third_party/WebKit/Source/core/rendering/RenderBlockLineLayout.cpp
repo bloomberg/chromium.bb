@@ -1296,9 +1296,6 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
 
                         setLogicalHeight(lineBox->lineBottomWithLeading());
                     }
-
-                    if (layoutState.flowThread())
-                        updateRegionForLine(lineBox);
                 }
             }
         }
@@ -1417,8 +1414,6 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                     layoutState.updateRepaintRangeFromBox(line, delta);
                     line->adjustBlockDirectionPosition(delta);
                 }
-                if (layoutState.flowThread())
-                    updateRegionForLine(line);
                 if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
                     Vector<RenderBox*>::iterator end = cleanLineFloats->end();
                     for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
@@ -1452,12 +1447,10 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
             LayoutUnit blockLogicalHeight = logicalHeight();
             trailingFloatsLineBox->alignBoxesInBlockDirection(blockLogicalHeight, textBoxDataMap, verticalPositionCache);
             trailingFloatsLineBox->setLineTopBottomPositions(blockLogicalHeight, blockLogicalHeight, blockLogicalHeight, blockLogicalHeight);
-            trailingFloatsLineBox->setPaginatedLineWidth(availableLogicalWidthForContent(blockLogicalHeight));
+            trailingFloatsLineBox->setPaginatedLineWidth(availableLogicalWidthForContent());
             LayoutRect logicalLayoutOverflow(0, blockLogicalHeight, 1, bottomLayoutOverflow - blockLogicalHeight);
             LayoutRect logicalVisualOverflow(0, blockLogicalHeight, 1, bottomVisualOverflow - blockLogicalHeight);
             trailingFloatsLineBox->setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow, trailingFloatsLineBox->lineTop(), trailingFloatsLineBox->lineBottom());
-            if (layoutState.flowThread())
-                updateRegionForLine(trailingFloatsLineBox);
         }
 
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -1636,10 +1629,6 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         size_t floatIndex = 0;
         for (curr = firstRootBox(); curr && !curr->isDirty(); curr = curr->nextRootBox()) {
             if (paginated) {
-                if (lineWidthForPaginatedLineChanged(curr, 0, layoutState.flowThread())) {
-                    curr->markDirty();
-                    break;
-                }
                 paginationDelta -= curr->paginationStrut();
                 adjustLinePositionForPagination(curr, paginationDelta, layoutState.flowThread());
                 if (paginationDelta) {
@@ -1652,8 +1641,6 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                     layoutState.updateRepaintRangeFromBox(curr, paginationDelta);
                     curr->adjustBlockDirectionPosition(paginationDelta);
                 }
-                if (layoutState.flowThread())
-                    updateRegionForLine(curr);
             }
 
             // If a new float has been inserted before this line or before its last known float, just do a full layout.
@@ -1806,8 +1793,6 @@ bool RenderBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
                 adjustLinePositionForPagination(lineBox, lineDelta, layoutState.flowThread());
                 lineBox->setPaginationStrut(oldPaginationStrut);
             }
-            if (lineWidthForPaginatedLineChanged(lineBox, lineDelta, layoutState.flowThread()))
-                return false;
         }
     }
 

@@ -175,9 +175,6 @@ void RenderView::layoutContent(const LayoutState& state)
     if (m_frameView->partialLayout().isStopping())
         return;
 
-    if (hasRenderNamedFlowThreads())
-        flowThreadController()->layoutRenderNamedFlowThreads();
-
 #ifndef NDEBUG
     checkLayoutState(state);
 #endif
@@ -201,50 +198,6 @@ void RenderView::initializeLayoutState(LayoutState& state)
     state.m_pageLogicalHeight = m_pageLogicalHeight;
     state.m_pageLogicalHeightChanged = m_pageLogicalHeightChanged;
     state.m_isPaginated = state.m_pageLogicalHeight;
-}
-
-// The algorithm below assumes this is a full layout. In case there are previously computed values for regions, supplemental steps are taken
-// to ensure the results are the same as those obtained from a full layout (i.e. the auto-height regions from all the flows are marked as needing
-// layout).
-// 1. The flows are laid out from the outer flow to the inner flow. This successfully computes the outer non-auto-height regions size so the
-// inner flows have the necessary information to correctly fragment the content.
-// 2. The flows are laid out from the inner flow to the outer flow. After an inner flow is laid out it goes into the constrained layout phase
-// and marks the auto-height regions they need layout. This means the outer flows will relayout if they depend on regions with auto-height regions
-// belonging to inner flows. This step will correctly set the computedAutoHeight for the auto-height regions. It's possible for non-auto-height
-// regions to relayout if they depend on auto-height regions. This will invalidate the inner flow threads and mark them as needing layout.
-// 3. The last step is to do one last layout if there are pathological dependencies between non-auto-height regions and auto-height regions
-// as detected in the previous step.
-void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& state)
-{
-    if (!m_frameView->partialLayout().isStopping()) {
-        // Disable partial layout for any two-pass layout algorithm.
-        m_frameView->partialLayout().reset();
-    }
-
-    // We need to invalidate all the flows with auto-height regions if one such flow needs layout.
-    // If none is found we do a layout a check back again afterwards.
-    if (!flowThreadController()->updateFlowThreadsNeedingLayout()) {
-        // Do a first layout of the content. In some cases more layouts are not needed (e.g. only flows with non-auto-height regions have changed).
-        layoutContent(state);
-
-        // If we find no named flow needing a two step layout after the first layout, exit early.
-        // Otherwise, initiate the two step layout algorithm and recompute all the flows.
-        if (!flowThreadController()->updateFlowThreadsNeedingTwoStepLayout())
-            return;
-    }
-
-    // Layout to recompute all the named flows with auto-height regions.
-    layoutContent(state);
-
-    // Propagate the computed auto-height values upwards.
-    // Non-auto-height regions may invalidate the flow thread because they depended on auto-height regions, but that's ok.
-    flowThreadController()->updateFlowThreadsIntoConstrainedPhase();
-
-    // Do one last layout that should update the auto-height regions found in the main flow
-    // and solve pathological dependencies between regions (e.g. a non-auto-height region depending
-    // on an auto-height one).
-    if (needsLayout())
-        layoutContent(state);
 }
 
 void RenderView::layout()
@@ -286,10 +239,7 @@ void RenderView::layout()
     m_pageLogicalHeightChanged = false;
     m_layoutState = &state;
 
-    if (checkTwoPassLayoutForAutoHeightRegions())
-        layoutContentInAutoLogicalHeightRegions(state);
-    else
-        layoutContent(state);
+    layoutContent(state);
 
     if (m_frameView->partialLayout().isStopping()) {
         m_layoutState = 0;
@@ -1003,27 +953,10 @@ void RenderView::setIsInWindow(bool isInWindow)
         m_compositor->setIsInWindow(isInWindow);
 }
 
-void RenderView::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
-{
-    RenderBlock::styleDidChange(diff, oldStyle);
-    if (hasRenderNamedFlowThreads())
-        flowThreadController()->styleDidChange();
-}
-
-bool RenderView::hasRenderNamedFlowThreads() const
-{
-    return m_flowThreadController && m_flowThreadController->hasRenderNamedFlowThreads();
-}
-
-bool RenderView::checkTwoPassLayoutForAutoHeightRegions() const
-{
-    return hasRenderNamedFlowThreads() && m_flowThreadController->hasFlowThreadsWithAutoLogicalHeightRegions();
-}
-
 FlowThreadController* RenderView::flowThreadController()
 {
     if (!m_flowThreadController)
-        m_flowThreadController = FlowThreadController::create(this);
+        m_flowThreadController = FlowThreadController::create();
 
     return m_flowThreadController.get();
 }

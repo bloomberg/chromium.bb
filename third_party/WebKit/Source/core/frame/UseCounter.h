@@ -241,7 +241,6 @@ public:
         PrefixedPageVisibility = 196,
         HTMLFrameElementLocation = 197,
         CSSStyleSheetInsertRuleOptionalArg = 198, // Inconsistent with the specification and other browsers.
-        CSSWebkitRegionAtRule = 199, // @region rule changed to ::region()
         DocumentBeforeUnloadRegistered = 200,
         DocumentBeforeUnloadFired = 201,
         DocumentUnloadRegistered = 202,

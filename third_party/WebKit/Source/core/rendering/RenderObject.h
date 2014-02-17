@@ -60,7 +60,6 @@ class RenderFlowThread;
 class RenderGeometryMap;
 class RenderLayer;
 class RenderLayerModelObject;
-class RenderNamedFlowThread;
 class RenderSVGResourceContainer;
 class RenderTable;
 class RenderTheme;
@@ -211,8 +210,6 @@ public:
         return locateFlowThreadContainingBlock();
     }
 
-    RenderNamedFlowThread* renderNamedFlowThreadWrapper() const;
-
     virtual bool isEmpty() const { return firstChild() == 0; }
 
 #ifndef NDEBUG
@@ -345,7 +342,6 @@ public:
     virtual bool isRenderInline() const { return false; }
     virtual bool isRenderPart() const { return false; }
     virtual bool isRenderRegion() const { return false; }
-    virtual bool isRenderNamedFlowFragment() const { return false; }
     virtual bool isRenderView() const { return false; }
     virtual bool isReplica() const { return false; }
 
@@ -374,10 +370,8 @@ public:
     virtual bool isRenderGrid() const { return false; }
 
     virtual bool isRenderFlowThread() const { return false; }
-    virtual bool isRenderNamedFlowThread() const { return false; }
     bool isInFlowRenderFlowThread() const { return isRenderFlowThread() && !isOutOfFlowPositioned(); }
     bool isOutOfFlowRenderFlowThread() const { return isRenderFlowThread() && isOutOfFlowPositioned(); }
-    bool isRenderNamedFlowFragmentContainer() const;
 
     virtual bool isRenderMultiColumnBlock() const { return false; }
     virtual bool isRenderMultiColumnSet() const { return false; }
@@ -610,7 +604,7 @@ public:
     // is true if the renderer returned is an ancestor of repaintContainer.
     RenderObject* container(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
 
-    virtual RenderObject* hoverAncestor() const;
+    virtual RenderObject* hoverAncestor() const { return parent(); }
 
     Element* offsetParent() const;
 
