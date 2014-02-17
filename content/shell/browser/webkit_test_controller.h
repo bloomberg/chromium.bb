@@ -208,6 +208,8 @@ class WebKitTestController : public base::NonThreadSafe,
 
   NotificationRegistrar registrar_;
 
+  const bool is_leak_detection_enabled_;
+
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow
   // waiting on the UI thread while layout tests are being ran.

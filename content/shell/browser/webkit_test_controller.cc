@@ -201,7 +201,9 @@ WebKitTestController* WebKitTestController::Get() {
 
 WebKitTestController::WebKitTestController()
     : main_window_(NULL),
-      test_phase_(BETWEEN_TESTS) {
+      test_phase_(BETWEEN_TESTS),
+      is_leak_detection_enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLeakDetection)) {
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
@@ -647,8 +649,7 @@ void WebKitTestController::OnCloseRemainingWindows() {
 }
 
 void WebKitTestController::OnResetDone() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection)) {
+  if (is_leak_detection_enabled_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* render_view_host =
           main_window_->web_contents()->GetRenderViewHost();

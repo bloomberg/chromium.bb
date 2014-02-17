@@ -13,9 +13,19 @@ using blink::WebLeakDetector;
 
 namespace content {
 
+// The initial states of the DOM objects at about:blank. The four nodes are a
+// Document, a HTML, a HEAD and a BODY.
+//
+// TODO(hajimehoshi): Now these are hard-corded. If we add target to count like
+// RefCoutned objects whose initial state is diffcult to estimate, we stop using
+// hard-coded values. Instead, we need to load about:blank ahead of the layout
+// tests actually and initialize LeakDetector by the got values.
+const int kInitialNumberOfLiveDocuments = 1;
+const int kInitialNumberOfLiveNodes = 4;
+
 LeakDetector::LeakDetector()
-    : previous_number_of_live_documents_(0),
-      previous_number_of_live_nodes_(0) {
+    : previous_number_of_live_documents_(kInitialNumberOfLiveDocuments),
+      previous_number_of_live_nodes_(kInitialNumberOfLiveNodes) {
 }
 
 LeakDetectionResult LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
@@ -27,8 +37,6 @@ LeakDetectionResult LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
       frame, &number_of_live_documents, &number_of_live_nodes);
 
   result.leaked =
-      previous_number_of_live_documents_ > 0 &&
-      previous_number_of_live_nodes_ > 0 &&
       (previous_number_of_live_documents_ < number_of_live_documents ||
        previous_number_of_live_nodes_ < number_of_live_nodes);
 

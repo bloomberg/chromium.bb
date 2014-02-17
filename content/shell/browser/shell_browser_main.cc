@@ -204,13 +204,6 @@ int ShellBrowserMain(
     std::cout << "#READY\n";
     std::cout.flush();
 
-    // To detect leaks, the numbers of objects are counted at about:blank before
-    // loading a page and after loading a page. The first content should be
-    // about:blank when the leak detection is enabled.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableLeakDetection))
-      RunOneTest(content::kAboutBlankURL, &ran_at_least_once, main_runner);
-
     while (GetNextTest(args, &command_line_position, &test_string)) {
       if (!RunOneTest(test_string, &ran_at_least_once, main_runner))
         break;
