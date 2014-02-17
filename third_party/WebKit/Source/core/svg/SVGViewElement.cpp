@@ -32,14 +32,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
-    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+    , SVGFitToViewBox(this)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
 {
     ScriptWrappable::init(this);
 
-    addToPropertyMap(m_viewBox);
-    addToPropertyMap(m_preserveAspectRatio);
     addToPropertyMap(m_viewTarget);
     registerAnimatedPropertiesForSVGViewElement();
 }
@@ -67,17 +64,15 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
-    if (SVGFitToViewBox::parseAttribute(this, name, value))
-        return;
-    if (SVGZoomAndPan::parseAttribute(name, value))
-        return;
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::viewTargetAttr)
+    if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
+    } else if (SVGZoomAndPan::parseAttribute(name, value)) {
+    } else if (name == SVGNames::viewTargetAttr) {
         m_viewTarget->setBaseValueAsString(value, parseError);
-    else
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }

@@ -48,12 +48,11 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(SVGNames::patternTag, document)
     , SVGURIReference(this)
     , SVGTests(this)
+    , SVGFitToViewBox(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
-    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
@@ -63,8 +62,6 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    addToPropertyMap(m_viewBox);
-    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 
@@ -123,7 +120,7 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else if (SVGTests::parseAttribute(name, value)) {
-    } else if (SVGFitToViewBox::parseAttribute(this, name, value)) {
+    } else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
     } else {
         ASSERT_NOT_REACHED();
     }

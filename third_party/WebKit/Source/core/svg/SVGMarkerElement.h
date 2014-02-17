@@ -26,8 +26,6 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 
@@ -122,7 +120,6 @@ public:
     SVGAnimatedLength* refY() const { return m_refY.get(); }
     SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
     SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
-    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
 
     // Custom 'orientType' property.
     static void synchronizeOrientType(SVGElement* contextElement);
@@ -131,7 +128,6 @@ public:
     SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
     void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
     PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGMarkerElement(Document&);
@@ -157,8 +153,6 @@ private:
     RefPtr<SVGAnimatedLength> m_refY;
     RefPtr<SVGAnimatedLength> m_markerWidth;
     RefPtr<SVGAnimatedLength> m_markerHeight;
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
         DECLARE_ANIMATED_ENUMERATION(MarkerUnits, markerUnits, SVGMarkerUnitsType)

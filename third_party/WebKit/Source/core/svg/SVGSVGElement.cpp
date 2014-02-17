@@ -70,12 +70,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(SVGNames::svgTag, doc)
+    , SVGFitToViewBox(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
-    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_useCurrentView(false)
     , m_timeContainer(SMILTimeContainer::create(this))
     , m_translation(SVGPoint::create())
@@ -89,8 +88,6 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    addToPropertyMap(m_viewBox);
-    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
@@ -283,7 +280,8 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     } else if (name == SVGNames::heightAttr) {
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    } else if (SVGFitToViewBox::parseAttribute(this, name, value) || SVGZoomAndPan::parseAttribute(name, value)) {
+    } else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
+    } else if (SVGZoomAndPan::parseAttribute(name, value)) {
     } else {
         SVGGraphicsElement::parseAttribute(name, value);
     }
@@ -558,7 +556,7 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
     if (m_useCurrentView)
         return m_viewSpec ? m_viewSpec->viewBox()->currentValue()->value() : FloatRect();
 
-    FloatRect useViewBox = m_viewBox->currentValue()->value();
+    FloatRect useViewBox = viewBox()->currentValue()->value();
     if (!useViewBox.isEmpty())
         return useViewBox;
     if (!renderer() || !renderer()->isSVGRoot())
@@ -674,7 +672,7 @@ Length SVGSVGElement::intrinsicHeight(ConsiderCSSMode mode) const
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
     if (!m_useCurrentView || !m_viewSpec)
-        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_preserveAspectRatio->currentValue(), viewWidth, viewHeight);
+        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
     const SVGTransformList& transformList = m_viewSpec->transformBaseValue();
@@ -748,14 +746,14 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     if (viewElement->hasAttribute(SVGNames::viewBoxAttr))
         view->viewBox()->baseValue()->setValue(viewElement->viewBox()->currentValue()->value());
     else
-        view->viewBox()->baseValue()->setValue(m_viewBox->currentValue()->value());
+        view->viewBox()->baseValue()->setValue(viewBox()->currentValue()->value());
 
     if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
         view->preserveAspectRatio()->baseValue()->setAlign(viewElement->preserveAspectRatio()->currentValue()->align());
         view->preserveAspectRatio()->baseValue()->setMeetOrSlice(viewElement->preserveAspectRatio()->currentValue()->meetOrSlice());
     } else {
-        view->preserveAspectRatio()->baseValue()->setAlign(m_preserveAspectRatio->currentValue()->align());
-        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(m_preserveAspectRatio->currentValue()->meetOrSlice());
+        view->preserveAspectRatio()->baseValue()->setAlign(preserveAspectRatio()->currentValue()->align());
+        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(preserveAspectRatio()->currentValue()->meetOrSlice());
     }
 
     if (viewElement->hasAttribute(SVGNames::zoomAndPanAttr))

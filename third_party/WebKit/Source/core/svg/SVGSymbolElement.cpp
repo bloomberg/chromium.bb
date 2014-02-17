@@ -36,13 +36,10 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(SVGNames::symbolTag, document)
-    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+    , SVGFitToViewBox(this)
 {
     ScriptWrappable::init(this);
 
-    addToPropertyMap(m_viewBox);
-    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGSymbolElement();
 }
 
@@ -67,10 +64,13 @@ void SVGSymbolElement::parseAttribute(const QualifiedName& name, const AtomicStr
         return;
     }
 
-    if (SVGFitToViewBox::parseAttribute(this, name, value))
-        return;
+    SVGParsingError parseError = NoError;
+    if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
+    } else {
+        ASSERT_NOT_REACHED();
+    }
 
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)

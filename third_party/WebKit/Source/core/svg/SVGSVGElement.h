@@ -23,8 +23,6 @@
 
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGLengthTearOff.h"
@@ -126,14 +124,10 @@ public:
     bool widthAttributeEstablishesViewport() const;
     bool heightAttributeEstablishesViewport() const;
 
-    bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }
-
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGSVGElement(Document&);
@@ -168,8 +162,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
     END_DECLARE_ANIMATED_PROPERTIES
 

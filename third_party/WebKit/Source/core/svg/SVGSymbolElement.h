@@ -22,8 +22,6 @@
 #define SVGSymbolElement_h
 
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 
@@ -33,9 +31,6 @@ class SVGSymbolElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
 public:
     static PassRefPtr<SVGSymbolElement> create(Document&);
-
-    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGSymbolElement(Document&);
@@ -50,8 +45,6 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSymbolElement)
     END_DECLARE_ANIMATED_PROPERTIES
 };

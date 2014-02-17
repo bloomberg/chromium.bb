@@ -21,8 +21,6 @@
 #define SVGViewSpec_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTransformList.h"
@@ -64,9 +62,6 @@ public:
     SVGTransformListPropertyTearOff* transform();
     SVGTransformList transformBaseValue() const { return m_transform; }
 
-    SVGAnimatedRect* viewBox() { return m_viewBox.get(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
-
 private:
     explicit SVGViewSpec(SVGSVGElement*);
 
@@ -82,8 +77,6 @@ private:
     // FIXME(oilpan): This is back-ptr to be cleared from contextElement.
     SVGSVGElement* m_contextElement;
     SVGTransformList m_transform;
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     String m_viewTargetString;
 };
 

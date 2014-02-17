@@ -57,12 +57,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
+    , SVGFitToViewBox(this)
     , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
     , m_refY(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
     , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth)))
     , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight)))
-    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
-    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_orientType(SVGMarkerOrientAngle)
     , m_markerUnits(SVGMarkerUnitsStrokeWidth)
 {
@@ -76,9 +75,7 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_refY);
     addToPropertyMap(m_markerWidth);
     addToPropertyMap(m_markerHeight);
-    addToPropertyMap(m_viewBox);
 
-    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGMarkerElement();
 }
 
@@ -101,7 +98,7 @@ const AtomicString& SVGMarkerElement::orientAngleIdentifier()
 
 AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
-    return SVGFitToViewBox::viewBoxToViewTransform(m_viewBox->currentValue()->value(), m_preserveAspectRatio->currentValue(), viewWidth, viewHeight);
+    return SVGFitToViewBox::viewBoxToViewTransform(viewBox()->currentValue()->value(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 }
 
 bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -144,9 +141,10 @@ void SVGMarkerElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setOrientTypeBaseValue(orientType);
         if (orientType == SVGMarkerOrientAngle)
             setOrientAngleBaseValue(angle);
-    } else if (SVGFitToViewBox::parseAttribute(this, name, value)) {
-    } else
+    } else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }

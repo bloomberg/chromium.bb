@@ -25,8 +25,6 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
@@ -53,8 +51,6 @@ public:
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGPatternElement(Document&);
@@ -75,8 +71,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPatternElement)
         DECLARE_ANIMATED_ENUMERATION(PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)

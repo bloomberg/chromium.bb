@@ -23,8 +23,6 @@
 
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGStaticStringList.h"
@@ -41,10 +39,7 @@ public:
     using SVGElement::ref;
     using SVGElement::deref;
 
-    SVGAnimatedRect* viewBox() { return m_viewBox.get(); }
-
     SVGStringListTearOff* viewTarget() { return m_viewTarget->tearOff(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGViewElement(Document&);
@@ -55,8 +50,6 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     RefPtr<SVGStaticStringList> m_viewTarget;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGViewElement)
     END_DECLARE_ANIMATED_PROPERTIES

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007, 2010 Rob Buis <buis@kde.org>
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,7 +23,10 @@
 #define SVGFitToViewBox_h
 
 #include "SVGNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -36,37 +40,54 @@ class Document;
 
 class SVGFitToViewBox {
 public:
+    enum PropertyMapPolicy {
+        PropertyMapPolicyAdd,
+        PropertyMapPolicySkip,
+    };
+
     static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
 
     static bool isKnownAttribute(const QualifiedName&);
     static void addSupportedAttributes(HashSet<QualifiedName>&);
 
-    template<class SVGElementTarget>
-    static bool parseAttribute(SVGElementTarget* target, const QualifiedName& name, const AtomicString& value)
+    bool parseAttribute(const QualifiedName& name, const AtomicString& value, Document& document, SVGParsingError& parseError)
     {
-        ASSERT(target);
-
-        SVGParsingError parseError = NoError;
-
         if (name == SVGNames::viewBoxAttr) {
-            target->viewBox()->setBaseValueAsString(value, parseError);
-            if (target->viewBox()->baseValue()->width() < 0.0f) {
-                target->document().accessSVGExtensions()->reportError("A negative value for ViewBox width is not allowed");
-                target->viewBox()->baseValue()->setInvalid();
+            m_viewBox->setBaseValueAsString(value, parseError);
+            if (m_viewBox->baseValue()->width() < 0.0f) {
+                document.accessSVGExtensions()->reportError("A negative value for ViewBox width is not allowed");
+                m_viewBox->baseValue()->setInvalid();
             }
-            if (target->viewBox()->baseValue()->height() < 0.0f) {
-                target->document().accessSVGExtensions()->reportError("A negative value for ViewBox height is not allowed");
-                target->viewBox()->baseValue()->setInvalid();
+            if (m_viewBox->baseValue()->height() < 0.0f) {
+                document.accessSVGExtensions()->reportError("A negative value for ViewBox height is not allowed");
+                m_viewBox->baseValue()->setInvalid();
             }
-        } else if (name == SVGNames::preserveAspectRatioAttr) {
-            target->preserveAspectRatio()->setBaseValueAsString(value, parseError);
-        } else {
-            return false;
+            return true;
         }
-
-        target->reportAttributeParsingError(parseError, name, value);
-        return true;
+        if (name == SVGNames::preserveAspectRatioAttr) {
+            m_preserveAspectRatio->setBaseValueAsString(value, parseError);
+            return true;
+        }
+        return false;
     }
+
+    // SVGFitToViewBox JS API.
+    static SVGAnimatedRect* viewBox(SVGFitToViewBox* object) { return object->viewBox(); }
+    static SVGAnimatedPreserveAspectRatio* preserveAspectRatio(SVGFitToViewBox* object) { return object->preserveAspectRatio(); }
+
+    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
+    bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }
+    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
+
+protected:
+    explicit SVGFitToViewBox(SVGElement*, PropertyMapPolicy = PropertyMapPolicyAdd);
+    void updateViewBox(const FloatRect&);
+    void clearViewBox() { m_viewBox = 0; }
+    void clearPreserveAspectRatio() { m_preserveAspectRatio = 0; }
+
+private:
+    RefPtr<SVGAnimatedRect> m_viewBox;
+    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace WebCore

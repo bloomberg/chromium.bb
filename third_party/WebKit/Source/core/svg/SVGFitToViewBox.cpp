@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007, 2010 Rob Buis <buis@kde.org>
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,12 +26,24 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/StringImpl.h"
 
 namespace WebCore {
+
+SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy propertyMapPolicy)
+    : m_viewBox(SVGAnimatedRect::create(element, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(element, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+{
+    ASSERT(element);
+    if (propertyMapPolicy == PropertyMapPolicyAdd) {
+        element->addToPropertyMap(m_viewBox);
+        element->addToPropertyMap(m_preserveAspectRatio);
+    }
+}
 
 AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
 {
@@ -49,6 +62,12 @@ void SVGFitToViewBox::addSupportedAttributes(HashSet<QualifiedName>& supportedAt
 {
     supportedAttributes.add(SVGNames::viewBoxAttr);
     supportedAttributes.add(SVGNames::preserveAspectRatioAttr);
+}
+
+void SVGFitToViewBox::updateViewBox(const FloatRect& rect)
+{
+    ASSERT(m_viewBox);
+    m_viewBox->baseValue()->setValue(rect);
 }
 
 }
