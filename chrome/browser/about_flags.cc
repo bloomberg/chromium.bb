@@ -1728,7 +1728,7 @@ const Experiment kExperiments[] = {
     "enable-app-list-folder",
     IDS_FLAGS_ENABLE_APP_LIST_FOLDER,
     IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION,
-    kOsWin | kOsCrOS,
+    kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(app_list::switches::kEnableFolderUI)
   },
   {
