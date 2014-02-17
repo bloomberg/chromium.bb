@@ -187,6 +187,7 @@ if test "x$LIBKMS" = xauto ; then
 		linux*)		LIBKMS="yes" ;;
 		freebsd* | kfreebsd*-gnu)
 				LIBKMS="yes" ;;
+		dragonfly*)	LIBKMS="yes" ;;
 		*)		LIBKMS="no" ;;
 	esac
 fi
