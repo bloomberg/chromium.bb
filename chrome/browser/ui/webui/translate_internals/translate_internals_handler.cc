@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
@@ -20,11 +21,22 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 TranslateInternalsHandler::TranslateInternalsHandler() {
-  TranslateManager::GetInstance()->AddObserver(this);
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+                              content::NotificationService::AllSources());
+
+  error_subscription_ = TranslateManager::RegisterTranslateErrorCallback(
+      base::Bind(&TranslateInternalsHandler::OnTranslateError,
+                 base::Unretained(this)));
+
   TranslateLanguageList* language_list =
       TranslateDownloadManager::GetInstance()->language_list();
   if (!language_list) {
@@ -37,10 +49,8 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
 }
 
 TranslateInternalsHandler::~TranslateInternalsHandler() {
-  TranslateManager::GetInstance()->RemoveObserver(this);
-
-  // |event_subscription_| is deleted automatically and un-registers the
-  // callback automatically.
+  // |event_subscription_| and |error_subscription_| are deleted automatically
+  // and un-register the callbacks automatically.
 }
 
 void TranslateInternalsHandler::RegisterMessages() {
@@ -50,27 +60,41 @@ void TranslateInternalsHandler::RegisterMessages() {
       &TranslateInternalsHandler::OnRequestInfo, base::Unretained(this)));
 }
 
-void TranslateInternalsHandler::OnLanguageDetection(
-    const LanguageDetectionDetails& details) {
-  if (!TranslateManager::IsTranslatableURL(details.url))
+void TranslateInternalsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED, type);
+  const LanguageDetectionDetails* language_detection_details =
+      content::Details<const LanguageDetectionDetails>(details).ptr();
+  content::WebContents* web_contents =
+      content::Source<content::WebContents>(source).ptr();
+
+  if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
+      !TranslateManager::IsTranslatableURL(language_detection_details->url)) {
     return;
+  }
 
   base::DictionaryValue dict;
-  dict.Set("time",
-           new base::FundamentalValue(details.time.ToJsTime()));
+  dict.Set(
+      "time",
+      new base::FundamentalValue(language_detection_details->time.ToJsTime()));
   dict.Set("url",
-           new base::StringValue(details.url.spec()));
+           new base::StringValue(language_detection_details->url.spec()));
   dict.Set("content_language",
-           new base::StringValue(details.content_language));
+           new base::StringValue(language_detection_details->content_language));
   dict.Set("cld_language",
-           new base::StringValue(details.cld_language));
-  dict.Set("is_cld_reliable",
-           new base::FundamentalValue(details.is_cld_reliable));
-  dict.Set("html_root_language",
-           new base::StringValue(details.html_root_language));
+           new base::StringValue(language_detection_details->cld_language));
+  dict.Set(
+      "is_cld_reliable",
+      new base::FundamentalValue(language_detection_details->is_cld_reliable));
+  dict.Set(
+      "html_root_language",
+      new base::StringValue(language_detection_details->html_root_language));
   dict.Set("adopted_language",
-           new base::StringValue(details.adopted_language));
-  dict.Set("content", new base::StringValue(details.contents));
+           new base::StringValue(language_detection_details->adopted_language));
+  dict.Set("content",
+           new base::StringValue(language_detection_details->contents));
   SendMessageToJs("languageDetectionInfoAdded", dict);
 }
 

@@ -8,7 +8,11 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "components/translate/core/browser/translate_language_list.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/webplugininfo.h"
 
@@ -22,9 +26,14 @@ class ListValue;
 class Value;
 }
 
+namespace content {
+class NotificationDetails;
+class NotificationSource;
+}
+
 // The handler class for TranslateInternals page operations.
 class TranslateInternalsHandler : public content::WebUIMessageHandler,
-                                  public TranslateManager::Observer {
+                                  public content::NotificationObserver {
  public:
   TranslateInternalsHandler();
   virtual ~TranslateInternalsHandler();
@@ -32,16 +41,18 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler methods:
   virtual void RegisterMessages() OVERRIDE;
 
-  // TranslateManager::Observer methods:
-  virtual void OnLanguageDetection(
-      const LanguageDetectionDetails& details) OVERRIDE;
-  virtual void OnTranslateError(
-      const TranslateErrorDetails& details) OVERRIDE;
+ private:
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Callback for translate errors.
+  void OnTranslateError(const TranslateErrorDetails& details);
 
   // Callback for translate events.
   virtual void OnTranslateEvent(const TranslateEventDetails& details);
 
- private:
   // Handles the Javascript message 'removePrefItem'. This message is sent
   // when UI requests to remove an item in the preference.
   void OnRemovePrefItem(const base::ListValue* args);
@@ -61,9 +72,15 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // Sends the languages currently supported by the server to JavaScript.
   void SendSupportedLanguagesToJs();
 
-  // Subscription for translate events comming from the translate language list.
-  scoped_ptr<base::CallbackList<
-      void(const TranslateEventDetails&)>::Subscription> event_subscription_;
+  // Subscription for translate events coming from the translate language list.
+  scoped_ptr<TranslateLanguageList::EventCallbackList::Subscription>
+      event_subscription_;
+
+  // Subscription for translate errors coming from the translate manager.
+  scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
+      error_subscription_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsHandler);
 };

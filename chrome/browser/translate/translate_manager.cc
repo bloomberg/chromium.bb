@@ -63,6 +63,9 @@ using content::WebContents;
 
 namespace {
 
+// Callbacks for translate errors.
+TranslateManager::TranslateErrorCallbackList* g_callback_list_ = NULL;
+
 const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
 
@@ -76,6 +79,14 @@ const char kUrlQueryName[] = "u";
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
+
+// Notifies |g_callback_list_| of translate errors.
+void NotifyTranslateError(const TranslateErrorDetails& details) {
+  if (!g_callback_list_)
+    return;
+
+  g_callback_list_->Notify(details);
+}
 
 }  // namespace
 
@@ -168,8 +179,6 @@ void TranslateManager::Observe(int type,
           content::Details<const LanguageDetectionDetails>(details).ptr();
 
       WebContents* tab = content::Source<WebContents>(source).ptr();
-      if (!tab->GetBrowserContext()->IsOffTheRecord())
-        NotifyLanguageDetection(*lang_det_details);
 
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
@@ -203,22 +212,13 @@ void TranslateManager::Observe(int type,
   }
 }
 
-void TranslateManager::AddObserver(Observer* obs) {
-  observer_list_.AddObserver(obs);
-}
-
-void TranslateManager::RemoveObserver(Observer* obs) {
-  observer_list_.RemoveObserver(obs);
-}
-
-void TranslateManager::NotifyLanguageDetection(
-    const LanguageDetectionDetails& details) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnLanguageDetection(details));
-}
-
-void TranslateManager::NotifyTranslateError(
-    const TranslateErrorDetails& details) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnTranslateError(details));
+// static
+scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
+TranslateManager::RegisterTranslateErrorCallback(
+    const TranslateManager::TranslateErrorCallback& callback) {
+  if (!g_callback_list_)
+    g_callback_list_ = new TranslateErrorCallbackList;
+  return g_callback_list_->Add(callback);
 }
 
 TranslateManager::TranslateManager()

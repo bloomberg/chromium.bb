@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,27 +9,21 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
-struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
-class Profile;
 struct TranslateErrorDetails;
 
 namespace content {
 class WebContents;
-}
-
-namespace net {
-class URLFetcher;
 }
 
 // The TranslateManager class is responsible for showing an info-bar when a page
@@ -86,18 +80,15 @@ class TranslateManager : public content::NotificationObserver {
     max_reload_check_attempts_ = attempts;
   }
 
-  // The observer class for TranslateManager.
-  class Observer {
-   public:
-    virtual void OnLanguageDetection(
-        const LanguageDetectionDetails& details) = 0;
-    virtual void OnTranslateError(
-        const TranslateErrorDetails& details) = 0;
-  };
+  // Callback types for translate errors.
+  typedef base::Callback<void(const TranslateErrorDetails&)>
+      TranslateErrorCallback;
+  typedef base::CallbackList<void(const TranslateErrorDetails&)>
+      TranslateErrorCallbackList;
 
-  // Adds/removes observer.
-  void AddObserver(Observer* obs);
-  void RemoveObserver(Observer* obs);
+  // Registers a callback for translate errors.
+  static scoped_ptr<TranslateErrorCallbackList::Subscription>
+      RegisterTranslateErrorCallback(const TranslateErrorCallback& callback);
 
  protected:
   TranslateManager();
@@ -140,19 +131,10 @@ class TranslateManager : public content::NotificationObserver {
                                       bool success,
                                       const std::string& data);
 
-  // Notifies to the observers when a language is detected.
-  void NotifyLanguageDetection(const LanguageDetectionDetails& details);
-
-  // Notifies to the observers when translate failed.
-  void NotifyTranslateError(const TranslateErrorDetails& details);
-
   content::NotificationRegistrar notification_registrar_;
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
-
-  // List of registered observers.
-  ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
