@@ -26,9 +26,6 @@
 #ifndef WebLayer_h
 #define WebLayer_h
 
-// TODO(vollick) Remove when sublayerTransform is removed.
-#include "SkMatrix44.h"
-
 #include "WebAnimation.h"
 #include "WebBlendMode.h"
 #include "WebColor.h"
@@ -220,11 +217,6 @@ public:
     virtual bool isOrphan() const = 0;
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
-
-    // TODO(vollick) remove these.
-    virtual void setSublayerTransform(const SkMatrix44&) { }
-    virtual SkMatrix44 sublayerTransform() const { return SkMatrix44(); }
-
 };
 
 } // namespace blink
