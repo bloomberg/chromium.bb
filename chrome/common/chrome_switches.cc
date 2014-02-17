@@ -1154,10 +1154,6 @@ const char kPlaybackMode[]                  = "playback-mode";
 // Overrides the path to the location that PNaCl is installed.
 const char kPnaclDir[]                      = "pnacl-dir";
 
-// Forces the PPAPI version of Flash (if it's being used) to run in the
-// renderer process rather than in a separate plugin process.
-const char kPpapiFlashInProcess[]           = "ppapi-flash-in-process";
-
 // Use the PPAPI (Pepper) Flash found at the given path.
 const char kPpapiFlashPath[]                = "ppapi-flash-path";
 

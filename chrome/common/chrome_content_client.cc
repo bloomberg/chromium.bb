@@ -334,10 +334,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
                                                 const std::string& version) {
   content::PepperPluginInfo plugin;
 
-  // Flash being out of process is handled separately than general plugins
-  // for testing purposes.
-  plugin.is_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPpapiFlashInProcess);
+  plugin.is_out_of_process = true;
   plugin.name = content::kFlashPluginName;
   plugin.path = path;
   plugin.permissions = kPepperFlashPermissions;
