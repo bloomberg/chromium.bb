@@ -159,10 +159,8 @@ public:
     bool convert(ConversionContext&, const String&, Dictionary&) const;
     bool convert(ConversionContext&, const String&, Vector<String>&) const;
     bool convert(ConversionContext&, const String&, ArrayValue&) const;
-    template<typename T>
-    bool convert(ConversionContext&, const String&, RefPtr<T>&) const;
-    template<typename T>
-    bool convert(ConversionContext&, const String&, RawPtr<T>&) const;
+    template<template <typename> class PointerType, typename T>
+    bool convert(ConversionContext&, const String&, PointerType<T>&) const;
 
     template<typename StringType>
     bool getStringType(const String&, StringType&) const;
@@ -304,26 +302,7 @@ template<typename T> bool Dictionary::convert(ConversionContext& context, const 
     return true;
 }
 
-template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, RefPtr<T>& value) const
-{
-    ConversionContextScope scope(context);
-
-    if (!get(key, value))
-        return true;
-
-    if (value)
-        return true;
-
-    v8::Local<v8::Value> v8Value;
-    getKey(key, v8Value);
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
-        return true;
-
-    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a " + context.typeName() + " type."));
-    return false;
-}
-
-template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, RawPtr<T>& value) const
+template<template <typename> class PointerType, typename T> bool Dictionary::convert(ConversionContext& context, const String& key, PointerType<T>& value) const
 {
     ConversionContextScope scope(context);
 
