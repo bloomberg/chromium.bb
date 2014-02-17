@@ -69,13 +69,13 @@ NotificationCenter* DOMWindowNotifications::webkitNotifications(DOMWindow* windo
 
 void DOMWindowNotifications::willDestroyGlobalObjectInFrame()
 {
-    m_notificationCenter = nullptr;
+    m_notificationCenter = 0;
     DOMWindowProperty::willDestroyGlobalObjectInFrame();
 }
 
 void DOMWindowNotifications::willDetachGlobalObjectFromFrame()
 {
-    m_notificationCenter = nullptr;
+    m_notificationCenter = 0;
     DOMWindowProperty::willDetachGlobalObjectFromFrame();
 }
 
