@@ -275,7 +275,7 @@ public class AwTestBase
 
     protected AwTestContainerView createAwTestContainerView(
             final AwContentsClient awContentsClient) {
-        return createAwTestContainerView(awContentsClient, true);
+        return createAwTestContainerView(awContentsClient, false);
     }
 
     protected AwTestContainerView createAwTestContainerView(
@@ -293,7 +293,7 @@ public class AwTestBase
 
     protected AwTestContainerView createDetachedAwTestContainerView(
             final AwContentsClient awContentsClient) {
-        return createDetachedAwTestContainerView(awContentsClient, true);
+        return createDetachedAwTestContainerView(awContentsClient, false);
     }
 
     protected AwTestContainerView createDetachedAwTestContainerView(
@@ -303,8 +303,6 @@ public class AwTestBase
             testDependencyFactory.createAwTestContainerView(getActivity());
         AwSettings awSettings = testDependencyFactory.createAwSettings(getActivity(),
                 supportsLegacyQuirks);
-        // TODO(mnaganov): Should also have tests for the "pure Chromium" mode.
-        // See http://crbug.com/278106
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
                 awContentsClient, awSettings, testDependencyFactory.createLayoutSizer()));
@@ -314,7 +312,7 @@ public class AwTestBase
 
     protected AwTestContainerView createAwTestContainerViewOnMainSync(
             final AwContentsClient client) throws Exception {
-        return createAwTestContainerViewOnMainSync(client, true);
+        return createAwTestContainerViewOnMainSync(client, false);
     }
 
     protected AwTestContainerView createAwTestContainerViewOnMainSync(

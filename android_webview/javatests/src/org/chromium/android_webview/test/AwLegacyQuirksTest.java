@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -16,16 +17,16 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 
 /**
- * Tests for usage and quirks of viewport related methods.
+ * Tests for legacy quirks (compatibility with WebView Classic).
  */
-public class AwViewportTest extends AwTestBase {
+public class AwLegacyQuirksTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testTargetDensityDpi() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -62,7 +63,7 @@ public class AwViewportTest extends AwTestBase {
     public void testWideViewportInitialScaleDoesNotExpandFixedLayoutWidth() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -88,7 +89,7 @@ public class AwViewportTest extends AwTestBase {
     public void testZeroValuesQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -120,7 +121,7 @@ public class AwViewportTest extends AwTestBase {
     public void testScreenSizeInPhysicalPixelsQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -175,7 +176,7 @@ public class AwViewportTest extends AwTestBase {
     public void testMetaMergeContentQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -207,7 +208,7 @@ public class AwViewportTest extends AwTestBase {
     public void testMetaMergeContentQuirkOverrides() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -232,7 +233,7 @@ public class AwViewportTest extends AwTestBase {
     public void testInitialScaleClobberQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
@@ -266,7 +267,7 @@ public class AwViewportTest extends AwTestBase {
     public void testNoUserScalableQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentClient);
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
@@ -294,6 +295,41 @@ public class AwViewportTest extends AwTestBase {
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
+    }
+
+    // background shorthand property must not override background-size when
+    // it's already set.
+    @MediumTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testUseLegacyBackgroundSizeShorthandBehavior() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSyncInQuirksMode(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = getAwSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+        final String expectedBackgroundSize = "cover";
+        final String page = "<html><head>" +
+                "<script>" +
+                "function getBackgroundSize() {" +
+                "  var e = document.getElementById('test'); " +
+                "  e.style.backgroundSize = '" + expectedBackgroundSize + "';" +
+                "  e.style.background = 'center red url(dummy://test.png) no-repeat border-box'; " +
+                "  return e.style.backgroundSize; " +
+                "}" +
+                "</script></head>" +
+                "<body onload='document.title=getBackgroundSize()'>" +
+                "  <div id='test'> </div>" +
+                "</body></html>";
+        settings.setJavaScriptEnabled(true);
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        String actualBackgroundSize = getTitleOnUiThread(awContents);
+        assertEquals(expectedBackgroundSize, actualBackgroundSize);
+    }
+
+    private AwTestContainerView createAwTestContainerViewOnMainSyncInQuirksMode(
+            final AwContentsClient client) throws Exception {
+        return createAwTestContainerViewOnMainSync(client, true);
     }
 
     private void ensureScaleBecomes(final float targetScale, final AwContents awContents)
