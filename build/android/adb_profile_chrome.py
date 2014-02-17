@@ -10,6 +10,7 @@ import logging
 import optparse
 import os
 import re
+import select
 import shutil
 import sys
 import threading
@@ -263,6 +264,10 @@ def _PrintMessage(heading, eol='\n'):
   sys.stdout.flush()
 
 
+def _WaitForEnter(timeout):
+  select.select([sys.stdin], [], [], timeout)
+
+
 def _StartTracing(controllers, interval):
   for controller in controllers:
     controller.StartTracing(interval)
@@ -307,14 +312,12 @@ def _CaptureAndPullTrace(controllers, interval, output, compress, write_html):
   try:
     _StartTracing(controllers, interval)
     if interval:
-      _PrintMessage('Capturing %d-second %s. Press Ctrl-C to stop early...' % \
+      _PrintMessage('Capturing %d-second %s. Press Enter to stop early...' % \
           (interval, trace_type), eol='')
-      time.sleep(interval)
+      _WaitForEnter(interval)
     else:
       _PrintMessage('Capturing %s. Press Enter to stop...' % trace_type, eol='')
       raw_input()
-  except KeyboardInterrupt:
-    _PrintMessage('\nInterrupted...', eol='')
   finally:
     _StopTracing(controllers)
   if interval:
