@@ -860,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   observer.Wait();
 
   ASSERT_TRUE(window_->web_contents()->GetURL().
-                  SchemeIs(chrome::kChromeDevToolsScheme));
+                  SchemeIs(content::kChromeDevToolsScheme));
   ASSERT_EQ(url, GetInspectedTab()->GetURL());
   CloseDevToolsWindow();
 }

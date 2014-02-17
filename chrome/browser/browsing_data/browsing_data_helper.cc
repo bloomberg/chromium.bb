@@ -28,7 +28,7 @@ bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
         content::ChildProcessSecurityPolicy::GetInstance();
     return (policy->IsWebSafeScheme(scheme) &&
             !BrowsingDataHelper::IsExtensionScheme(scheme) &&
-            scheme != chrome::kChromeDevToolsScheme);
+            scheme != content::kChromeDevToolsScheme);
   }
 }
 

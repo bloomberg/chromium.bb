@@ -182,7 +182,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       chrome::kBlobScheme,
       kFileSystemScheme,
       kChromeUIScheme,
-      chrome::kChromeDevToolsScheme,
+      kChromeDevToolsScheme,
       kDataScheme,
       kFileScheme,
   };

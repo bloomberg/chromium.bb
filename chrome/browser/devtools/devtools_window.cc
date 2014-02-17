@@ -805,7 +805,7 @@ content::WebContents* DevToolsWindow::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   DCHECK(source == web_contents_);
-  if (!params.url.SchemeIs(chrome::kChromeDevToolsScheme)) {
+  if (!params.url.SchemeIs(content::kChromeDevToolsScheme)) {
     content::WebContents* inspected_web_contents = GetInspectedWebContents();
     return inspected_web_contents ?
         inspected_web_contents->OpenURL(params) : NULL;
@@ -1144,13 +1144,13 @@ void DevToolsWindow::AppendToFile(const std::string& url,
 }
 
 void DevToolsWindow::RequestFileSystems() {
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RequestFileSystems(base::Bind(
       &DevToolsWindow::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::AddFileSystem() {
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->AddFileSystem(
       base::Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()),
       base::Bind(&DevToolsWindow::ShowDevToolsConfirmInfoBar,
@@ -1158,7 +1158,7 @@ void DevToolsWindow::AddFileSystem() {
 }
 
 void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
   base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
@@ -1167,7 +1167,7 @@ void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
 
 void DevToolsWindow::UpgradeDraggedFileSystemPermissions(
     const std::string& file_system_url) {
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->UpgradeDraggedFileSystemPermissions(
       file_system_url,
       base::Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()),
@@ -1178,7 +1178,7 @@ void DevToolsWindow::UpgradeDraggedFileSystemPermissions(
 void DevToolsWindow::IndexPath(int request_id,
                                const std::string& file_system_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     IndexingDone(request_id, file_system_path);
     return;
@@ -1214,7 +1214,7 @@ void DevToolsWindow::SearchInPath(int request_id,
                                   const std::string& file_system_path,
                                   const std::string& query) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     SearchCompleted(request_id, file_system_path, std::vector<std::string>());
     return;

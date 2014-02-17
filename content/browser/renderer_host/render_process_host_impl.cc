@@ -1782,7 +1782,7 @@ bool RenderProcessHost::ShouldUseProcessPerSite(
   // Note: DevTools pages have WebUI type but should not reuse the same host.
   if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
           browser_context, url) &&
-      !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
+      !url.SchemeIs(kChromeDevToolsScheme)) {
     return true;
   }
 

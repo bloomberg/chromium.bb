@@ -43,7 +43,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUnlimitedStorage))
     return true;
 
-  if (origin.SchemeIs(chrome::kChromeDevToolsScheme) &&
+  if (origin.SchemeIs(content::kChromeDevToolsScheme) &&
       origin.host() == chrome::kChromeUIDevToolsHost)
     return true;
 

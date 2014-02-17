@@ -132,7 +132,7 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
   bundled_path_prefix = "/" + bundled_path_prefix + "/";
 
-  if (!url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+  if (!url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.host() != chrome::kChromeUIDevToolsHost ||
       !StartsWithASCII(url.path(), bundled_path_prefix, false)) {
     return false;
@@ -607,7 +607,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, StringToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
     content::kFileScheme,
-    chrome::kChromeDevToolsScheme,
+    content::kChromeDevToolsScheme,
     chrome::kDomDistillerScheme,
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,

@@ -2541,7 +2541,7 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
     std::vector<std::string>* additional_allowed_schemes) {
   ContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
-  additional_allowed_schemes->push_back(kChromeDevToolsScheme);
+  additional_allowed_schemes->push_back(content::kChromeDevToolsScheme);
   additional_allowed_schemes->push_back(content::kChromeUIScheme);
   additional_allowed_schemes->push_back(extensions::kExtensionScheme);
 }

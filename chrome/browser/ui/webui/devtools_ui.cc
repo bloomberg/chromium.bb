@@ -203,7 +203,7 @@ GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
     return GURL(kFallbackFrontendURL);
   }
   return GURL(base::StringPrintf("%s://%s/%s/%s",
-              chrome::kChromeDevToolsScheme,
+              content::kChromeDevToolsScheme,
               chrome::kChromeUIDevToolsHost,
               chrome::kChromeUIDevToolsRemotePath,
               url.path().substr(1).c_str()));

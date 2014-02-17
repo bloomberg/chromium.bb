@@ -34,7 +34,7 @@ bool ShouldAddPage(const GURL& url) {
   if (url.is_empty())
     return false;
 
-  if (url.SchemeIs(chrome::kChromeDevToolsScheme))
+  if (url.SchemeIs(content::kChromeDevToolsScheme))
     return false;
 
   if (url.SchemeIs(content::kChromeUIScheme)) {

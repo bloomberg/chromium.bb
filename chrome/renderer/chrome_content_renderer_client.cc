@@ -313,7 +313,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (!command_line->HasSwitch(switches::kInstantProcess))
     WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
 
-  WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
+  WebString dev_tools_scheme(ASCIIToUTF16(content::kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
 
   WebString dom_distiller_scheme(ASCIIToUTF16(chrome::kDomDistillerScheme));

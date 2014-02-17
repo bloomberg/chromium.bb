@@ -51,7 +51,7 @@ RenderViewHost* FindFirstDevToolsHost() {
     RenderViewHost* host = RenderViewHost::From(widget);
     WebContents* contents = WebContents::FromRenderViewHost(host);
     GURL url = contents->GetURL();
-    if (url.SchemeIs(chrome::kChromeDevToolsScheme))
+    if (url.SchemeIs(content::kChromeDevToolsScheme))
       return host;
   }
   return NULL;

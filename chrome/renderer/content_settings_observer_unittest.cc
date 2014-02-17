@@ -26,7 +26,7 @@ TEST_F(ContentSettingsObserverTest, WhitelistedSchemes) {
       GURL()));
 
   GURL chrome_dev_tools_url =
-      GURL(std::string(chrome::kChromeDevToolsScheme).append(end_url));
+      GURL(std::string(content::kChromeDevToolsScheme).append(end_url));
   EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
       WebSecurityOrigin::create(chrome_dev_tools_url),
       GURL()));

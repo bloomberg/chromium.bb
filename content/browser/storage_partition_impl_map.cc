@@ -406,7 +406,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                 partition->GetAppCacheService(),
                 blob_storage_context));
   }
-  protocol_handlers[chrome::kChromeDevToolsScheme] =
+  protocol_handlers[kChromeDevToolsScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           CreateDevToolsProtocolHandler(browser_context_->GetResourceContext(),
                                         browser_context_->IsOffTheRecord()));

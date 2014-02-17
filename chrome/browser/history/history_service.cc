@@ -1008,12 +1008,12 @@ bool HistoryService::CanAddURL(const GURL& url) {
   // typed.  Right now, however, these are marked as typed even when triggered
   // by a shortcut or menu action.
   if (url.SchemeIs(content::kJavaScriptScheme) ||
-      url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      url.SchemeIs(chrome::kChromeNativeScheme) ||
+      url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(content::kViewSourceScheme) ||
+      url.SchemeIs(chrome::kChromeNativeScheme) ||
       url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.SchemeIs(chrome::kDomDistillerScheme) ||
-      url.SchemeIs(content::kViewSourceScheme))
+      url.SchemeIs(chrome::kDomDistillerScheme))
     return false;
 
   // Allow all about: and chrome: URLs except about:blank, since the user may

@@ -98,7 +98,7 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
   //   confuse the CLD)
   return !url.is_empty() &&
          !url.SchemeIs(content::kChromeUIScheme) &&
-         !url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+         !url.SchemeIs(content::kChromeDevToolsScheme) &&
 #if defined(OS_CHROMEOS)
          !(url.SchemeIs(extensions::kExtensionScheme) &&
            url.DomainIs(file_manager::kFileManagerAppId)) &&

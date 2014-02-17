@@ -636,7 +636,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), content::kChromeUIScheme))
     return true;  // Browser UI elements should still work.
 
-  if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))
+  if (EqualsASCII(origin.protocol(), content::kChromeDevToolsScheme))
     return true;  // DevTools UI elements should still work.
 
   if (EqualsASCII(origin.protocol(), extensions::kExtensionScheme))

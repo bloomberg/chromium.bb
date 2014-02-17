@@ -79,7 +79,7 @@ bool ResourceRequestPolicy::CanRequestResource(
         page_url.GetOrigin() == extension->url();
     // - devtools (chrome-extension:// URLs are loaded into frames of devtools
     //     to support the devtools extension APIs)
-    bool is_dev_tools = page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+    bool is_dev_tools = page_url.SchemeIs(content::kChromeDevToolsScheme) &&
                         !ManifestURL::GetDevToolsPage(extension).is_empty();
     bool transition_allowed =
         !content::PageTransitionIsWebTriggerable(transition_type);

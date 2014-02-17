@@ -64,8 +64,7 @@ bool SchemeIsInSchemes(const std::string& scheme,
 // Returns whether |url| passes some sanity checks and is a valid GURL.
 bool CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
-  DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(kChromeUIScheme) ||
+  DCHECK(url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
          (GetContentClient()->browser()->GetAdditionalWebUISchemes(
               &additional_schemes),
           SchemeIsInSchemes(url.scheme(), additional_schemes)));
