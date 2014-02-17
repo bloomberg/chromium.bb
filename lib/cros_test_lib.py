@@ -143,7 +143,8 @@ def VerifyOnDiskHierarchy(base_path, dir_struct):
   """Verify that an on-disk directory tree exactly matches a given structure.
 
   Args:
-    See arguments of CreateOnDiskHierarchy()
+    base_path: See CreateOnDiskHierarchy()
+    dir_struct: See CreateOnDiskHierarchy()
 
   Raises:
     AssertionError when there is any divergence between the on-disk
@@ -602,6 +603,15 @@ class OutputCapturer(object):
 
 
 class TestCase(unittest.TestCase):
+  """Basic chromite test case.
+
+  Provides sane setUp/tearDown logic so that tearDown is correctly cleaned up.
+
+  Takes care of saving/restoring process-wide settings like the environment so
+  that sub-tests don't have to worry about gettings this right.
+
+  Also includes additional assert helpers beyond python stdlib.
+  """
 
   __metaclass__ = StackedSetup
 
