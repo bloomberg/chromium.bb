@@ -58,7 +58,6 @@ crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-backgrou
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
-crbug.com/310882 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
 crbug.com/327877 [ Win ] http/tests/xmlhttprequest/sync-repeated-and-caching.html [ Pass Failure Timeout ]
 
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
@@ -298,7 +297,6 @@ crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetime
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
-crbug.com/314947 [ Mavericks ] http/tests/xmlhttprequest/origin-exact-matching.html [ Failure ]
 crbug.com/314947 [ Mavericks ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 # Mavericks bots seem to fail lots of tests on occasion.
