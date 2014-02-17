@@ -16,10 +16,13 @@ def _CheckWhitelistSorted(input_api, output_api):
   for path in input_api.LocalPaths():
     if WHITELIST_FILE == path:
       lines = open(os.path.join('../..', WHITELIST_FILE)).readlines()
-      sorted = all(lines[i] <= lines[i + 1] for i in xrange(len(lines) - 1))
-      if not sorted:
+      i = 0
+      while i < len(lines) - 1 and lines[i] <= lines[i + 1]:
+        i += 1
+      if i < len(lines) - 1:
         return [output_api.PresubmitError(
-            'The file ' + WHITELIST_FILE + ' must be sorted.')]
+            'The file ' + WHITELIST_FILE + ' must be sorted.  ' +
+            'First offending line: #' + str(i + 2))]
   return []
 
 def _CommonChecks(input_api, output_api):
