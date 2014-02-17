@@ -81,6 +81,24 @@ def PrintTestOutput(test_name):
   return persisted_result['exit_code']
 
 
+def PrintSummary(test_names):
+  logging.info('*' * 80)
+  logging.info('Sharding summary')
+  total_time = 0
+  for test_name in test_names:
+    file_name = os.path.join(constants.PERF_OUTPUT_DIR, test_name)
+    if not os.path.exists(file_name):
+      logging.info('%s : No status file found', test_name)
+      continue
+    with file(file_name, 'r') as f:
+      result = pickle.loads(f.read())
+    logging.info('%s : exit_code=%d in %d secs at %s',
+                 result['name'], result['exit_code'], result['total_time'],
+                 result['device'])
+    total_time += result['total_time']
+  logging.info('Total steps time: %d secs', total_time)
+
+
 class _HeartBeatLogger(object):
   # How often to print the heartbeat on flush().
   _PRINT_INTERVAL = 30.0

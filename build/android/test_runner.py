@@ -649,6 +649,8 @@ def _RunPerfTests(options, args, error_func, devices):
   if perf_options.single_step:
     return perf_test_runner.PrintTestOutput('single_step')
 
+  perf_test_runner.PrintSummary(tests)
+
   # Always return 0 on the sharding stage. Individual tests exit_code
   # will be returned on the print_step stage.
   return 0
