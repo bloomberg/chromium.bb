@@ -25,4 +25,12 @@ void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
 
 void ProfilePolicyConnector::Shutdown() {}
 
+bool ProfilePolicyConnector::IsManaged() const {
+  return false;
+}
+
+std::string ProfilePolicyConnector::GetManagementDomain() const {
+  return "";
+}
+
 }  // namespace policy

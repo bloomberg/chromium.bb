@@ -10,10 +10,13 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/forwarding_policy_provider.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
@@ -28,7 +31,10 @@ namespace policy {
 
 ProfilePolicyConnector::ProfilePolicyConnector()
 #if defined(OS_CHROMEOS)
-    : is_primary_user_(false)
+    : is_primary_user_(false),
+      user_cloud_policy_manager_(NULL)
+#else
+    : user_cloud_policy_manager_(NULL)
 #endif
       {}
 
@@ -41,6 +47,8 @@ void ProfilePolicyConnector::Init(
 #endif
     SchemaRegistry* schema_registry,
     CloudPolicyManager* user_cloud_policy_manager) {
+  user_cloud_policy_manager_ = user_cloud_policy_manager;
+
   // |providers| contains a list of the policy providers available for the
   // PolicyService of this connector, in decreasing order of priority.
   //
@@ -120,6 +128,19 @@ void ProfilePolicyConnector::Shutdown() {
 #endif
   if (forwarding_policy_provider_)
     forwarding_policy_provider_->Shutdown();
+}
+
+bool ProfilePolicyConnector::IsManaged() const {
+  return !GetManagementDomain().empty();
+}
+
+std::string ProfilePolicyConnector::GetManagementDomain() const {
+  if (!user_cloud_policy_manager_)
+    return "";
+  CloudPolicyStore* store = user_cloud_policy_manager_->core()->store();
+  if (store && store->is_managed() && store->policy()->has_username())
+    return gaia::ExtractDomainName(store->policy()->username());
+  return "";
 }
 
 #if defined(OS_CHROMEOS)

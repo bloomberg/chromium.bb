@@ -45,6 +45,13 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }
 
+  // Returns true if this Profile is under cloud policy management.
+  bool IsManaged() const;
+
+  // Returns the cloud policy management domain, if this Profile is under
+  // cloud policy management. Otherwise returns an empty string.
+  std::string GetManagementDomain() const;
+
  private:
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
@@ -63,6 +70,7 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 #endif  // defined(OS_CHROMEOS)
 
   scoped_ptr<ConfigurationPolicyProvider> forwarding_policy_provider_;
+  CloudPolicyManager* user_cloud_policy_manager_;
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   scoped_ptr<PolicyService> policy_service_;
