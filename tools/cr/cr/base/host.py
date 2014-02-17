@@ -6,6 +6,7 @@
 
 import os
 import pipes
+import signal
 import subprocess
 
 import cr
@@ -42,7 +43,8 @@ class Host(cr.Plugin, cr.Plugin.Type):
 
   def _Execute(self, context, command,
                shell=False, capture=False, silent=False,
-               ignore_dry_run=False, return_status=False):
+               ignore_dry_run=False, return_status=False,
+               ignore_interrupt_signal=False):
     """This is the only method that launches external programs.
 
     It is a thin wrapper around subprocess.Popen that handles cr specific
@@ -58,6 +60,9 @@ class Host(cr.Plugin, cr.Plugin.Type):
         the command to be run anyway.
       return_status: switches the function to returning the status code rather
         the output.
+      ignore_interrupt_signal: Ignore the interrupt signal (i.e., Ctrl-C) while
+        the command is running. Useful for letting interactive programs manage
+        Ctrl-C by themselves.
     Returns:
       the status if return_status is true, or the output if capture is true,
       otherwise nothing.
@@ -94,12 +99,12 @@ class Host(cr.Plugin, cr.Plugin.Type):
             print '   ', key, '=', value
         exit(1)
       try:
+        if ignore_interrupt_signal:
+          signal.signal(signal.SIGINT, signal.SIG_IGN)
         output, _ = p.communicate()
-      except KeyboardInterrupt:
-        p.terminate()
-        p.wait()
-        exit(1)
       finally:
+        if ignore_interrupt_signal:
+          signal.signal(signal.SIGINT, signal.SIG_DFL)
         if silent:
           out.close()
       if return_status:
@@ -113,7 +118,8 @@ class Host(cr.Plugin, cr.Plugin.Type):
   @cr.Plugin.activemethod
   def Shell(self, context, *command):
     command = ' '.join([pipes.quote(arg) for arg in command])
-    return self._Execute(context, [command], shell=True)
+    return self._Execute(context, [command], shell=True,
+                         ignore_interrupt_signal=True)
 
   @cr.Plugin.activemethod
   def Execute(self, context, *command):
