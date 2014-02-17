@@ -99,7 +99,7 @@ void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
         return;
 
     m_textAutosizingEnabled = textAutosizingEnabled;
-    invalidate(SettingsDelegate::StyleChange);
+    invalidate(SettingsDelegate::TextAutosizingChange);
 }
 
 // FIXME: Move to Settings.in once make_settings can understand IntSize.
@@ -109,7 +109,7 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
         return;
 
     m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
-    invalidate(SettingsDelegate::StyleChange);
+    invalidate(SettingsDelegate::TextAutosizingChange);
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)

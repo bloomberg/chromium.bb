@@ -27,7 +27,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -266,6 +266,8 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
 
     childVectorIndex -= m_importRules.size();
 
+    if (rule->isFontFaceRule())
+        setHasFontFaceRule(true);
     m_childRules.insert(childVectorIndex, rule);
     return true;
 }
@@ -285,11 +287,15 @@ void StyleSheetContents::wrapperDeleteRule(unsigned index)
     }
     if (childVectorIndex < m_importRules.size()) {
         m_importRules[childVectorIndex]->clearParentStyleSheet();
+        if (m_importRules[childVectorIndex]->isFontFaceRule())
+            notifyRemoveFontFaceRule(toStyleRuleFontFace(m_importRules[childVectorIndex].get()));
         m_importRules.remove(childVectorIndex);
         return;
     }
     childVectorIndex -= m_importRules.size();
 
+    if (m_childRules[childVectorIndex]->isFontFaceRule())
+        notifyRemoveFontFaceRule(toStyleRuleFontFace(m_childRules[childVectorIndex].get()));
     m_childRules.remove(childVectorIndex);
 }
 
@@ -574,6 +580,42 @@ void StyleSheetContents::clearRuleSet()
     m_ruleSet.clear();
 }
 
+void StyleSheetContents::notifyRemoveFontFaceRule(const StyleRuleFontFace* fontFaceRule)
+{
+    StyleSheetContents* root = rootStyleSheet();
+
+    for (unsigned i = 0; i < root->m_clients.size(); ++i) {
+        if (Node* ownerNode = root->m_clients[0]->ownerNode())
+            ownerNode->document().styleEngine()->removeFontFaceRules(Vector<const StyleRuleFontFace*>(1, fontFaceRule));
+    }
+}
+
+static void findFontFaceRulesFromRules(const Vector<RefPtr<StyleRuleBase> >& rules, Vector<const StyleRuleFontFace*>& fontFaceRules)
+{
+    for (unsigned i = 0; i < rules.size(); ++i) {
+        StyleRuleBase* rule = rules[i].get();
+
+        if (rule->isFontFaceRule()) {
+            fontFaceRules.append(toStyleRuleFontFace(rule));
+        } else if (rule->isMediaRule()) {
+            StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
+            // We cannot know whether the media rule matches or not, but
+            // for safety, remove @font-face in the media rule (if exists).
+            findFontFaceRulesFromRules(mediaRule->childRules(), fontFaceRules);
+        }
+    }
+}
+
+void StyleSheetContents::findFontFaceRules(Vector<const StyleRuleFontFace*>& fontFaceRules)
+{
+    for (unsigned i = 0; i < m_importRules.size(); ++i) {
+        if (!m_importRules[i]->styleSheet())
+            continue;
+        m_importRules[i]->styleSheet()->findFontFaceRules(fontFaceRules);
+    }
+
+    findFontFaceRulesFromRules(childRules(), fontFaceRules);
+}
 
 void StyleSheetContents::trace(Visitor*)
 {

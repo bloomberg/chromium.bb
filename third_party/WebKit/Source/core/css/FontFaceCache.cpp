@@ -107,6 +107,13 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
     ++m_version;
 }
 
+void FontFaceCache::clear()
+{
+    for (StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.begin(); it != m_styleRuleToFontFace.end(); ++it)
+        removeFontFace(it->value.get(), true);
+    m_styleRuleToFontFace.clear();
+}
+
 static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraitsMask desiredTraitsMask)
 {
     FontTraitsMask firstTraitsMask = first->traitsMask();

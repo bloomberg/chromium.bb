@@ -53,6 +53,7 @@ public:
     static PassOwnPtr<Settings> create();
 
     GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
+    void notifyGenericFontFamilyChange() { invalidate(SettingsDelegate::FontFamilyChange); }
 
     void setTextAutosizingEnabled(bool);
     bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }

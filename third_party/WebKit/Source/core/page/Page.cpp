@@ -262,6 +262,16 @@ void Page::setNeedsRecalcStyleInAllFrames()
         frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
+void Page::setNeedsLayoutInAllFrames()
+{
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (FrameView* view = frame->view()) {
+            view->setNeedsLayout();
+            view->scheduleRelayout();
+        }
+    }
+}
+
 void Page::refreshPlugins(bool reload)
 {
     if (allPages().isEmpty())
@@ -491,16 +501,28 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         break;
     case SettingsDelegate::TextAutosizingChange:
-        // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
-        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            TextAutosizer* textAutosizer = frame->document()->textAutosizer();
-            if (textAutosizer)
-                textAutosizer->recalculateMultipliers();
+        // FTA needs both setNeedsRecalcStyle and setNeedsLayout after a setting change.
+        if (RuntimeEnabledFeatures::fastTextAutosizingEnabled()) {
+            setNeedsRecalcStyleInAllFrames();
+        } else {
+            // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
+            for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+                TextAutosizer* textAutosizer = frame->document()->textAutosizer();
+                if (textAutosizer)
+                    textAutosizer->recalculateMultipliers();
+            }
         }
-        setNeedsRecalcStyleInAllFrames();
+        // TextAutosizing updates RenderStyle during layout phase (via TextAutosizer::processSubtree).
+        // We should invoke setNeedsLayout here.
+        setNeedsLayoutInAllFrames();
         break;
     case SettingsDelegate::ScriptEnableChange:
         m_inspectorController->scriptsEnabled(settings().scriptEnabled());
+        break;
+    case SettingsDelegate::FontFamilyChange:
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+            frame->document()->styleEngine()->updateGenericFontFamilySettings();
+        setNeedsRecalcStyleInAllFrames();
         break;
     }
 }

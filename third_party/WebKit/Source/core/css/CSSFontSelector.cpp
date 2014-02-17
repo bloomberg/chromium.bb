@@ -216,4 +216,10 @@ void CSSFontSelector::loadPendingFonts()
     m_fontLoader.loadPendingFonts();
 }
 
+void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
+{
+    ASSERT(document.settings());
+    m_genericFontFamilySettings = document.settings()->genericFontFamilySettings();
+}
+
 }

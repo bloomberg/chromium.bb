@@ -241,6 +241,8 @@ private:
 
     void setTimerAlignmentInterval(double);
 
+    void setNeedsLayoutInAllFrames();
+
     // SettingsDelegate overrides.
     virtual void settingsChanged(SettingsDelegate::ChangeType) OVERRIDE;
 

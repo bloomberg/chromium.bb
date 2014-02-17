@@ -232,7 +232,7 @@ void InternalSettings::setStandardFontFamily(const AtomicString& family, const S
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setStandard(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -242,7 +242,7 @@ void InternalSettings::setSerifFontFamily(const AtomicString& family, const Stri
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setSerif(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -252,7 +252,7 @@ void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const 
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setSansSerif(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setFixedFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -262,7 +262,7 @@ void InternalSettings::setFixedFontFamily(const AtomicString& family, const Stri
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setFixed(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setCursiveFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -272,7 +272,7 @@ void InternalSettings::setCursiveFontFamily(const AtomicString& family, const St
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setCursive(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setFantasyFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -282,7 +282,7 @@ void InternalSettings::setFantasyFontFamily(const AtomicString& family, const St
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setFantasy(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setPictographFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -292,12 +292,13 @@ void InternalSettings::setPictographFontFamily(const AtomicString& family, const
     if (code == USCRIPT_INVALID_CODE)
         return;
     settings()->genericFontFamilySettings().setPictograph(family, code);
-    m_page->setNeedsRecalcStyleInAllFrames();
+    settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
+    settings()->setTextAutosizingEnabled(enabled);
     m_page->inspectorController().setTextAutosizingEnabled(enabled);
 }
 

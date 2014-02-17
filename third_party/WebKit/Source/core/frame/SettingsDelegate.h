@@ -57,6 +57,7 @@ public:
         ImageLoadingChange,
         TextAutosizingChange,
         ScriptEnableChange,
+        FontFamilyChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

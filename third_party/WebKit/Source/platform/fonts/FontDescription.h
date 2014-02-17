@@ -120,7 +120,11 @@ public:
     FontWeight lighterWeight() const;
     FontWeight bolderWeight() const;
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
+#if OS(MACOSX)
+    bool usePrinterFont() const { return false; }
+#else
     bool usePrinterFont() const { return m_usePrinterFont; }
+#endif
     // only use fixed default size when there is only one font family, and that family is "monospace"
     bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace; }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
@@ -158,11 +162,7 @@ public:
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
     void setGenericFamily(GenericFamilyType genericFamily) { m_genericFamily = genericFamily; }
-#if OS(MACOSX)
-    void setUsePrinterFont(bool) { }
-#else
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
-#endif
     void setKerning(Kerning kerning) { m_kerning = kerning; updateTypesettingFeatures(); }
     void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; updateTypesettingFeatures(); }
     void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; }

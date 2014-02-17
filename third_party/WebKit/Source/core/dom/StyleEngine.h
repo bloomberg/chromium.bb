@@ -48,6 +48,7 @@ class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
 class StyleResolver;
+class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetCollection;
 class StyleSheetContents;
@@ -168,7 +169,10 @@ public:
     void clearMasterResolver();
 
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
-    void resetFontSelector();
+    void removeFontFaceRules(const Vector<const StyleRuleFontFace*>&);
+    void clearFontCache();
+    // updateGenericFontFamilySettings is used from WebSettingsImpl.
+    void updateGenericFontFamilySettings();
 
     void didDetach();
     bool shouldClearResolver() const;
