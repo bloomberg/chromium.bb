@@ -497,7 +497,7 @@ class OutputCapturer(object):
     # Capturing automatically stops at end of 'with' block.
 
   # stdout/stderr can be retrieved from the OutputCapturer object:
-  stdout = output.getStdoutLines() # Or other access methods
+  stdout = output.GetStdoutLines() # Or other access methods
 
   # Some Assert methods are only valid if capturing was used in test.
   self.AssertOutputContainsError() # Or other related methods
@@ -514,10 +514,9 @@ class OutputCapturer(object):
   __slots__ = ['_stderr', '_stderr_cap', '_stdout', '_stdout_cap']
 
   def __init__(self):
-    self._stdout = None
-    self._stderr = None
-    self._stdout_cap = None
-    self._stderr_cap = None
+    self._stdout = mock.patch('sys.stdout', new_callable=cStringIO.StringIO)
+    self._stderr = mock.patch('sys.stderr', new_callable=cStringIO.StringIO)
+    self._stderr_cap = self._stdout_cap = None
 
   def __enter__(self):
     # This method is called with entering 'with' block.
@@ -543,26 +542,16 @@ class OutputCapturer(object):
 
   def StartCapturing(self):
     """Begin capturing stdout and stderr."""
-    self._stdout = sys.stdout
-    self._stderr = sys.stderr
-    sys.stdout = self._stdout_cap = cStringIO.StringIO()
-    sys.stderr = self._stderr_cap = cStringIO.StringIO()
+    self._stdout_cap = self._stdout.start()
+    self._stderr_cap = self._stderr.start()
 
   def StopCapturing(self):
     """Stop capturing stdout and stderr."""
-    # The only reason to check stdout or stderr separately might
-    # have capturing on independently is if StartCapturing did not complete.
-    if self._stdout:
-      sys.stdout = self._stdout
-      self._stdout = None
-    if self._stderr:
-      sys.stderr = self._stderr
-      self._stderr = None
+    self._stdout.stop()
+    self._stderr.stop()
 
   def ClearCaptured(self):
-    # Only valid if capturing is not on.
-    assert self._stdout is None and self._stderr is None
-
+    """Clear any captured stdout/stderr content."""
     self._stdout_cap = None
     self._stderr_cap = None
 
