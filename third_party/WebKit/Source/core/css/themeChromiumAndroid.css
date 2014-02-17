@@ -39,3 +39,17 @@ select[size][multiple] {
     border-radius: initial;
     white-space: pre;
 }
+
+input[type="date"]:disabled,
+input[type="datetime-local"]:disabled,
+input[type="month"]:disabled,
+input[type="time"]:disabled,
+input[type="week"]:disabled,
+input[type="date"]:read-only,
+input[type="datetime-local"]:read-only,
+input[type="month"]:read-only,
+input[type="time"]:read-only,
+input[type="week"]:read-only {
+    background-color: ButtonFace;
+    color: GrayText;
+}
