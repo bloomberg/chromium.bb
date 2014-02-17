@@ -53,7 +53,7 @@ public:
     // EventTarget APIs
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 
     AbstractWorker(ExecutionContext*);
     virtual ~AbstractWorker();
