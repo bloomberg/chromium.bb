@@ -47,7 +47,7 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_holdTime(nullValue())
     , m_storedTimeLag(0)
     , m_content(content)
-    , m_timeline(timeline)
+    , m_timeline(&timeline)
     , m_paused(false)
     , m_held(false)
     , m_isPausedForTesting(false)
@@ -61,6 +61,8 @@ Player::~Player()
 {
     if (m_content)
         m_content->detach();
+    if (m_timeline)
+        m_timeline->playerDestroyed(this);
 }
 
 double Player::sourceEnd() const
@@ -75,9 +77,9 @@ bool Player::limited(double currentTime) const
 
 double Player::currentTimeWithoutLag() const
 {
-    if (isNull(m_startTime))
+    if (isNull(m_startTime) || !m_timeline)
         return 0;
-    double timelineTime = m_timeline.currentTime();
+    double timelineTime = m_timeline->currentTime();
     if (isNull(timelineTime))
         timelineTime = 0;
     return (timelineTime - m_startTime) * m_playbackRate;
@@ -229,7 +231,8 @@ void Player::setPlaybackRate(double playbackRate)
 void Player::setNeedsUpdate()
 {
     m_needsUpdate = true;
-    timeline().setHasPlayerNeedingUpdate();
+    if (m_timeline)
+        m_timeline->setHasPlayerNeedingUpdate();
 }
 
 bool Player::maybeStartAnimationOnCompositor()
@@ -258,7 +261,10 @@ void Player::cancelAnimationOnCompositor()
 
 bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
 {
-    double inheritedTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
+    if (!m_timeline)
+        return false;
+
+    double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
     m_needsUpdate = false;
 
     if (!m_content) {

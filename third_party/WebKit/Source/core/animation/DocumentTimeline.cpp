@@ -61,11 +61,18 @@ DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming
     ASSERT(document);
 }
 
+DocumentTimeline::~DocumentTimeline()
+{
+    for (HashSet<Player*>::iterator it = m_players.begin(); it != m_players.end(); ++it)
+        (*it)->timelineDestroyed();
+}
+
 Player* DocumentTimeline::createPlayer(TimedItem* child)
 {
     RefPtr<Player> player = Player::create(*this, child);
     Player* result = player.get();
-    m_players.append(player.release());
+    m_players.add(result);
+    m_currentPlayers.append(player.release());
     setHasPlayerNeedingUpdate();
     return result;
 }
@@ -90,17 +97,17 @@ bool DocumentTimeline::serviceAnimations()
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
     bool didTriggerStyleRecalc = false;
-    for (int i = m_players.size() - 1; i >= 0; --i) {
+    for (int i = m_currentPlayers.size() - 1; i >= 0; --i) {
         double playerNextEffect;
         bool playerDidTriggerStyleRecalc;
-        if (!m_players[i]->update(&playerNextEffect, &playerDidTriggerStyleRecalc))
-            m_players.remove(i);
+        if (!m_currentPlayers[i]->update(&playerNextEffect, &playerDidTriggerStyleRecalc))
+            m_currentPlayers.remove(i);
         didTriggerStyleRecalc |= playerDidTriggerStyleRecalc;
         if (playerNextEffect < timeToNextEffect)
             timeToNextEffect = playerNextEffect;
     }
 
-    if (!m_players.isEmpty()) {
+    if (!m_currentPlayers.isEmpty()) {
         if (timeToNextEffect < s_minimumDelay)
             m_timing->serviceOnNextFrame();
         else if (timeToNextEffect != std::numeric_limits<double>::infinity())
@@ -144,8 +151,8 @@ double DocumentTimeline::currentTime()
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 {
-    for (size_t i = 0; i < m_players.size(); i++)
-        m_players[i]->pauseForTesting(pauseTime);
+    for (size_t i = 0; i < m_currentPlayers.size(); i++)
+        m_currentPlayers[i]->pauseForTesting(pauseTime);
     serviceAnimations();
 }
 
@@ -185,9 +192,9 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
     if (isNull(m_zeroTime))
         return 0;
     size_t count = 0;
-    for (size_t i = 0; i < m_players.size(); ++i) {
-        const TimedItem* timedItem = m_players[i]->source();
-        if (m_players[i]->hasStartTime())
+    for (size_t i = 0; i < m_currentPlayers.size(); ++i) {
+        const TimedItem* timedItem = m_currentPlayers[i]->source();
+        if (m_currentPlayers[i]->hasStartTime())
             count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));
     }
     return count;

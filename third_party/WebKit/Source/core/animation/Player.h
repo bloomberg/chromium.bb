@@ -66,8 +66,10 @@ public:
 
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
-    const DocumentTimeline& timeline() const { return m_timeline; }
-    DocumentTimeline& timeline() { return m_timeline; }
+    const DocumentTimeline* timeline() const { return m_timeline; }
+    DocumentTimeline* timeline() { return m_timeline; }
+
+    void timelineDestroyed() { m_timeline = 0; }
 
     bool hasStartTime() const { return !isNull(m_startTime); }
     double startTime() const { return m_startTime; }
@@ -107,7 +109,9 @@ private:
     double m_storedTimeLag;
 
     RefPtr<TimedItem> m_content;
-    DocumentTimeline& m_timeline;
+    // FIXME: We should keep the timeline alive and have this as non-null
+    // but this is tricky to do without Oilpan
+    DocumentTimeline* m_timeline;
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;
     bool m_held;

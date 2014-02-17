@@ -57,7 +57,7 @@ protected:
         document = Document::create();
         document->animationClock().resetTimeForTesting();
         timeline = DocumentTimeline::create(document.get());
-        player = Player::create(*timeline, 0);
+        player = timeline->createPlayer(0);
         player->setStartTime(0);
         player->setSource(makeAnimation().get());
     }
@@ -92,7 +92,7 @@ protected:
 TEST_F(AnimationPlayerTest, InitialState)
 {
     setUpWithoutStartingTimeline();
-    player = Player::create(*timeline, 0);
+    player = timeline->createPlayer(0);
     EXPECT_TRUE(isNull(timeline->currentTime()));
     EXPECT_EQ(0, player->currentTime());
     EXPECT_FALSE(player->paused());
@@ -190,7 +190,7 @@ TEST_F(AnimationPlayerTest, SetCurrentTimeUnrestrictedDouble)
 
 TEST_F(AnimationPlayerTest, SetCurrentTimeBeforeStartTimeSet)
 {
-    player = Player::create(*timeline, 0);
+    player = timeline->createPlayer(0);
     player->setSource(makeAnimation().get());
     player->setCurrentTime(20);
     EXPECT_EQ(20, player->currentTime());
@@ -291,7 +291,7 @@ TEST_F(AnimationPlayerTest, PauseBeforeTimelineStarted)
 
 TEST_F(AnimationPlayerTest, PauseBeforeStartTimeSet)
 {
-    player = Player::create(*timeline, 0);
+    player = timeline->createPlayer(0);
     player->setSource(makeAnimation().get());
     updateTimeline(100);
     player->pause();
@@ -561,7 +561,7 @@ TEST_F(AnimationPlayerTest, SetPlaybackRateMax)
 
 TEST_F(AnimationPlayerTest, SetSource)
 {
-    player = Player::create(*timeline, 0);
+    player = timeline->createPlayer(0);
     player->setStartTime(0);
     RefPtr<TimedItem> source1 = makeAnimation();
     RefPtr<TimedItem> source2 = makeAnimation();
@@ -599,7 +599,7 @@ TEST_F(AnimationPlayerTest, SetSourceUnlimitsPlayer)
 
 TEST_F(AnimationPlayerTest, EmptyPlayersDontUpdateEffects)
 {
-    player = Player::create(*timeline, 0);
+    player = timeline->createPlayer(0);
     double timeToNextEffect;
     updateTimeline(0, &timeToNextEffect);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
@@ -616,7 +616,7 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
     timing.iterationDuration = 1;
     timing.endDelay = 1;
     RefPtr<Animation> animation = Animation::create(0, 0, timing);
-    player = Player::create(*timeline, animation.get());
+    player = timeline->createPlayer(animation.get());
     player->setStartTime(0);
 
     double timeToNextEffect;
@@ -666,7 +666,8 @@ TEST_F(AnimationPlayerTest, AttachedPlayers)
 
     Timing timing;
     RefPtr<Animation> animation = Animation::create(element, 0, timing);
-    RefPtr<Player> player = Player::create(*timeline, animation.get());
+    RefPtr<Player> player = timeline->createPlayer(animation.get());
+    timeline->serviceAnimations();
     EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();

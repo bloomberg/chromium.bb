@@ -429,7 +429,7 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
             ? std::numeric_limits<double>::infinity()
             : localTime - end;
     case PhaseNone:
-        ASSERT(player() && !player()->timeline().hasStarted());
+        ASSERT(player() && player()->timeline() && !player()->timeline()->hasStarted());
         return std::numeric_limits<double>::infinity();
     default:
         ASSERT_NOT_REACHED();

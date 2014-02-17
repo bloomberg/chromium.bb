@@ -44,7 +44,7 @@ void CSSPendingAnimations::add(Player* player)
     // The actual start time is either this value, or the time that
     // this animation, or an animation that it is synchronized with
     // is started on the compositor.
-    const double defaultStartTime = player->timeline().currentTime();
+    const double defaultStartTime = player->timeline()->currentTime();
     m_pending.append(std::make_pair(player, defaultStartTime));
 }
 
@@ -92,7 +92,7 @@ void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnim
 {
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         Player* player = m_waitingForCompositorAnimationStart[i].get();
-        player->setStartTime(monotonicAnimationStartTime - player->timeline().zeroTime());
+        player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime());
         player->update();
     }
 

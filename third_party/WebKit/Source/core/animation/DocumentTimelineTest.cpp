@@ -320,4 +320,12 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     timeline->play(anim.get());
 }
 
+TEST_F(AnimationDocumentTimelineTest, UsePlayerAfterTimelineDeref)
+{
+    RefPtr<Player> player = timeline->createPlayer(0);
+    timeline.clear();
+    // Test passes if this does not crash.
+    player->setStartTime(0);
+}
+
 }
