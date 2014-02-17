@@ -17,4 +17,10 @@ message PolicySigningKey {
   // stored in the Chrome binary). This is essentially a certificate (key
   // signed with another well-known key that establishes a trust root).
   optional bytes signing_key_signature = 2;
+
+  // This is the hard-coded verification key used to generate/verify the
+  // signing_key_signature. We track this in the cache data so we know which
+  // verification key to use when validating the cached policy (important when
+  // doing key rotation).
+  optional bytes verification_key = 3;
 }

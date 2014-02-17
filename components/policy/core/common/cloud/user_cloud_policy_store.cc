@@ -117,6 +117,7 @@ bool WriteStringToFile(const base::FilePath path, const std::string& data) {
 void StorePolicyToDiskOnBackgroundThread(
     const base::FilePath& policy_path,
     const base::FilePath& key_path,
+    const std::string& verification_key,
     const em::PolicyFetchResponse& policy) {
   DVLOG(1) << "Storing policy to " << policy_path.value();
   std::string data;
@@ -129,11 +130,12 @@ void StorePolicyToDiskOnBackgroundThread(
     return;
 
   if (policy.has_new_public_key()) {
-    // Write the new public key and its verification signature to a file.
+    // Write the new public key and its verification signature/key to a file.
     em::PolicySigningKey key_info;
     key_info.set_signing_key(policy.new_public_key());
     key_info.set_signing_key_signature(
         policy.new_public_key_verification_signature());
+    key_info.set_verification_key(verification_key);
     std::string key_data;
     if (!key_info.SerializeToString(&key_data)) {
       DLOG(WARNING) << "Failed to serialize policy signing key";
@@ -233,12 +235,29 @@ void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
           new em::PolicyFetchResponse(result.policy));
       scoped_ptr<em::PolicySigningKey> key(
           new em::PolicySigningKey(result.key));
+
+      bool doing_key_rotation = false;
+      const std::string& verification_key = verification_key_;
+      if (!key->has_verification_key() ||
+          key->verification_key() != verification_key_) {
+        // The cached key didn't match our current key, so we're doing a key
+        // rotation - make sure we request a new key from the server on our
+        // next fetch.
+        doing_key_rotation = true;
+        DLOG(WARNING) << "Verification key rotation detected";
+        // TODO(atwilson): Add code to update |verification_key| to point to
+        // the correct key to validate the existing blob (can't do this until
+        // we've done our first key rotation).
+      }
+
       Validate(cloud_policy.Pass(),
                key.Pass(),
+               verification_key,
                validate_in_background,
                base::Bind(
                    &UserCloudPolicyStore::InstallLoadedPolicyAfterValidation,
                    weak_factory_.GetWeakPtr(),
+                   doing_key_rotation,
                    result.key.has_signing_key() ?
                        result.key.signing_key() : std::string()));
       break;
@@ -249,6 +268,7 @@ void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
 }
 
 void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
+    bool doing_key_rotation,
     const std::string& signing_key,
     UserCloudPolicyValidator* validator) {
   validation_status_ = validator->status();
@@ -263,9 +283,17 @@ void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
       validator->policy_data()->request_token();
   DVLOG(1) << "Device ID: " << validator->policy_data()->device_id();
 
+  // If we're doing a key rotation, clear the public key version so a future
+  // policy fetch will force regeneration of the keys.
+  if (doing_key_rotation) {
+    validator->policy_data()->clear_public_key_version();
+    policy_key_.clear();
+  } else {
+    // Policy validation succeeded, so we know the signing key is good.
+    policy_key_ = signing_key;
+  }
+
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
-  // Policy validation succeeded, so we know the signing key is good.
-  policy_key_ = signing_key;
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
@@ -278,6 +306,7 @@ void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
       new em::PolicyFetchResponse(policy));
   Validate(policy_copy.Pass(),
            scoped_ptr<em::PolicySigningKey>(),
+           verification_key_,
            true,
            base::Bind(&UserCloudPolicyStore::StorePolicyAfterValidation,
                       weak_factory_.GetWeakPtr()));
@@ -286,6 +315,7 @@ void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
 void UserCloudPolicyStore::Validate(
     scoped_ptr<em::PolicyFetchResponse> policy,
     scoped_ptr<em::PolicySigningKey> cached_key,
+    const std::string& verification_key,
     bool validate_in_background,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
 
@@ -343,11 +373,11 @@ void UserCloudPolicyStore::Validate(
       // key. We're loading from cache so don't allow key rotation.
       validator->ValidateCachedKey(cached_key->signing_key(),
                                    cached_key->signing_key_signature(),
-                                   verification_key_,
+                                   verification_key,
                                    owning_domain);
       const bool no_rotation = false;
       validator->ValidateSignature(cached_key->signing_key(),
-                                   verification_key_,
+                                   verification_key,
                                    owning_domain,
                                    no_rotation);
     }
@@ -355,9 +385,10 @@ void UserCloudPolicyStore::Validate(
     // No passed cached_key - this is not validating the initial policy load
     // from cache, but rather an update from the server.
     if (policy_key_.empty()) {
-      // Case #3 - no valid existing policy key, so this new policy fetch should
-      // include an initial key provision.
-      validator->ValidateInitialKey(verification_key_, owning_domain);
+      // Case #3 - no valid existing policy key (either this is the initial
+      // policy fetch, or we're doing a key rotation), so this new policy fetch
+      // should include an initial key provision.
+      validator->ValidateInitialKey(verification_key, owning_domain);
     } else {
       // Case #4 - verify new policy with existing key. We always allow key
       // rotation - the verification key will prevent invalid policy from being
@@ -365,7 +396,7 @@ void UserCloudPolicyStore::Validate(
       // verify via ValidateCachedKey().
       const bool allow_rotation = true;
       validator->ValidateSignature(
-          policy_key_, verification_key_, owning_domain, allow_rotation);
+          policy_key_, verification_key, owning_domain, allow_rotation);
     }
   }
 
@@ -395,7 +426,8 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
   background_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&StorePolicyToDiskOnBackgroundThread,
-                 policy_path_, key_path_, *validator->policy()));
+                 policy_path_, key_path_, verification_key_,
+                 *validator->policy()));
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
 
   // If the key was rotated, update our local cache of the key.

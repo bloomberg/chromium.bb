@@ -211,9 +211,6 @@ void PolicyBuilder::UnsetNewSigningKey() {
 }
 
 void PolicyBuilder::Build() {
-  if (policy_data_.get())
-    CHECK(policy_data_->SerializeToString(policy_.mutable_policy_data()));
-
   // Generate signatures if applicable.
   scoped_ptr<crypto::RSAPrivateKey> policy_signing_key = GetNewSigningKey();
   if (policy_signing_key) {
@@ -240,6 +237,14 @@ void PolicyBuilder::Build() {
     policy_.clear_new_public_key_signature();
     policy_signing_key = GetSigningKey();
   }
+
+  // Policy isn't signed, so there shouldn't be a public key version.
+  if (!policy_signing_key)
+    policy_data_->clear_public_key_version();
+
+  // Serialize the policy data.
+  if (policy_data_.get())
+    CHECK(policy_data_->SerializeToString(policy_.mutable_policy_data()));
 
   // PolicyData signature.
   if (policy_signing_key) {

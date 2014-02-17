@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -13,6 +14,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,6 +35,21 @@ void RunUntilIdle() {
   run_loop.RunUntilIdle();
 }
 
+bool WriteStringToFile(const base::FilePath path, const std::string& data) {
+ if (!base::CreateDirectory(path.DirName())) {
+    DLOG(WARNING) << "Failed to create directory " << path.DirName().value();
+    return false;
+  }
+
+  int size = data.size();
+  if (file_util::WriteFile(path, data.c_str(), size) != size) {
+    DLOG(WARNING) << "Failed to write " << path.value();
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 class UserCloudPolicyStoreTest : public testing::Test {
@@ -40,6 +57,8 @@ class UserCloudPolicyStoreTest : public testing::Test {
   UserCloudPolicyStoreTest() {}
 
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePolicyKeyVerification);
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(
         new UserCloudPolicyStore(policy_file(),
@@ -229,6 +248,7 @@ TEST_F(UserCloudPolicyStoreTest, Migration) {
   // being installed.
   StorePolicyAndEnsureLoaded(policy_.policy());
   EXPECT_EQ(policy_.policy().new_public_key(), store_->policy_key());
+  EXPECT_TRUE(store_->policy()->has_public_key_version());
   EXPECT_TRUE(base::PathExists(key_file()));
 }
 
@@ -468,8 +488,62 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   store4->RemoveObserver(&observer_);
 }
 
-// TODO(atwilson): Add a test to detect tampered policy
-// (new_public_key_verification_signature() doesn't match the right key -
-// http://crbug.com/275291).
+TEST_F(UserCloudPolicyStoreTest, KeyRotation) {
+  // Make sure when we load data from disk with a different key, that we trigger
+  // a server-side key rotation.
+  StorePolicyAndEnsureLoaded(policy_.policy());
+  ASSERT_TRUE(store_->policy()->has_public_key_version());
+
+  std::string key_data;
+  enterprise_management::PolicySigningKey key;
+  ASSERT_TRUE(base::ReadFileToString(key_file(), &key_data));
+  ASSERT_TRUE(key.ParseFromString(key_data));
+  key.set_verification_key("different_key");
+  key.SerializeToString(&key_data);
+  WriteStringToFile(key_file(), key_data);
+
+  // Now load this in a new store - this should trigger key rotation. The keys
+  // will still verify using the existing verification key.
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
+  store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
+  store2->AddObserver(&observer_);
+  EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
+  store2->Load();
+  RunUntilIdle();
+  ASSERT_TRUE(store2->policy());
+  ASSERT_FALSE(store2->policy()->has_public_key_version());
+  store2->RemoveObserver(&observer_);
+}
+
+TEST_F(UserCloudPolicyStoreTest, InvalidCachedVerificationSignature) {
+  // Make sure that we reject code with an invalid key.
+  StorePolicyAndEnsureLoaded(policy_.policy());
+
+  std::string key_data;
+  enterprise_management::PolicySigningKey key;
+  ASSERT_TRUE(base::ReadFileToString(key_file(), &key_data));
+  ASSERT_TRUE(key.ParseFromString(key_data));
+  key.set_signing_key_signature("different_key");
+  key.SerializeToString(&key_data);
+  WriteStringToFile(key_file(), key_data);
+
+  // Now load this in a new store - this should cause a validation error because
+  // the key won't verify.
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
+  store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
+  store2->AddObserver(&observer_);
+  ExpectError(store2.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
+  store2->Load();
+  RunUntilIdle();
+  store2->RemoveObserver(&observer_);
+}
 
 }  // namespace policy

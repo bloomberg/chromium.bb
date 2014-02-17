@@ -78,12 +78,14 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   void Validate(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
       scoped_ptr<enterprise_management::PolicySigningKey> key,
+      const std::string& verification_key,
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback);
 
   // Callback invoked to install a just-loaded policy after validation has
   // finished.
-  void InstallLoadedPolicyAfterValidation(const std::string& signing_key,
+  void InstallLoadedPolicyAfterValidation(bool doing_key_rotation,
+                                          const std::string& signing_key,
                                           UserCloudPolicyValidator* validator);
 
   // Callback invoked to store the policy after validation has finished.
