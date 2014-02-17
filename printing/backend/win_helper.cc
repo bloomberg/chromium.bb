@@ -446,7 +446,7 @@ scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
   const DRIVER_INFO_6* p = info_6.get();
 
   // Only HP known to have issues.
-  if (wcscmp(p->pszMfgName, L"HP") != 0)
+  if (!p->pszMfgName || wcscmp(p->pszMfgName, L"HP") != 0)
     return default.Pass();
 
   // Need XPS for this workaround.
