@@ -206,9 +206,6 @@ const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
 // Ownership API signals.
 const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
 const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
-
-// DEPRECATED.
-const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
 }  // namespace login_manager
 
 namespace speech_synthesis {
@@ -225,18 +222,9 @@ const char kShutdown[] = "Shutdown";
 
 namespace chromium {
 const char kChromiumInterface[] = "org.chromium.Chromium";
-// ScreenLock signals.
-const char kLockScreenSignal[] = "LockScreen";
 // Text-to-speech service signals.
 const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
-
-// DEPRECATED in favor of constants in appropriate (login_manager) namespace.
-// Ownership API signals.
-const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
-const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
-// Liveness detection signals.
-const char kLivenessRequestedSignal[] = "LivenessRequested";
 }  // namespace chromium
 
 namespace power_manager {
