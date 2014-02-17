@@ -51,6 +51,21 @@ const char kUSlayout[] = "xkb:us::eng";
 const int64 kDerelectDetectionTimeoutSeconds = 8 * 60 * 60; // 8 hours.
 const int64 kDerelectIdleTimeoutSeconds = 5 * 60; // 5 minutes.
 
+// Returns true if element was inserted.
+bool InsertString(const std::string& str, std::set<std::string>& to) {
+  const std::pair<std::set<std::string>::iterator, bool> result =
+      to.insert(str);
+  return result.second;
+}
+
+void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
+  base::DictionaryValue* optgroup = new base::DictionaryValue;
+  optgroup->SetString(
+      "optionGroupName",
+      l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
+  input_methods_list->Append(optgroup);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -352,6 +367,19 @@ base::ListValue* NetworkScreenHandler::GetLanguageList() {
   return languages_list;
 }
 
+base::DictionaryValue* CreateInputMethodsEntry(
+    const input_method::InputMethodDescriptor& method,
+    const std::string current_input_method_id) {
+  input_method::InputMethodUtil* util =
+      input_method::InputMethodManager::Get()->GetInputMethodUtil();
+  const std::string& ime_id = method.id();
+  scoped_ptr<base::DictionaryValue> input_method(new base::DictionaryValue);
+  input_method->SetString("value", ime_id);
+  input_method->SetString("title", util->GetInputMethodLongName(method));
+  input_method->SetBoolean("selected", ime_id == current_input_method_id);
+  return input_method.release();
+}
+
 // static
 base::ListValue* NetworkScreenHandler::GetInputMethods() {
   base::ListValue* input_methods_list = new base::ListValue;
@@ -361,32 +389,48 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
   std::string current_input_method_id = manager->GetCurrentInputMethod().id();
-  bool default_us_layout_added = false;
+  const std::vector<std::string>& hardware_login_input_methods =
+      util->GetHardwareLoginInputMethodIds();
+  std::set<std::string> input_methods_added;
+
+  for (std::vector<std::string>::const_iterator i =
+           hardware_login_input_methods.begin();
+       i != hardware_login_input_methods.end();
+       ++i) {
+    input_methods_added.insert(*i);
+    const input_method::InputMethodDescriptor* ime =
+        util->GetInputMethodDescriptorFromId(*i);
+    DCHECK(ime != NULL);
+    // Do not crash in case of misconfiguration.
+    if (ime != NULL) {
+      input_methods_list->Append(
+          CreateInputMethodsEntry(*ime, current_input_method_id));
+    }
+  }
+
+  bool optgroup_added = false;
   for (size_t i = 0; i < input_methods->size(); ++i) {
-    const std::string ime_id = input_methods->at(i).id();
-
-    if (ime_id == kUSlayout)
-      default_us_layout_added = true;
-
-    base::DictionaryValue* input_method = new base::DictionaryValue;
-    input_method->SetString("value", ime_id);
-    input_method->SetString(
-        "title",
-        util->GetInputMethodLongName(input_methods->at(i)));
-    input_method->SetBoolean("selected",
-        ime_id == current_input_method_id);
-    input_methods_list->Append(input_method);
+    const std::string& ime_id = input_methods->at(i).id();
+    if (!InsertString(ime_id, input_methods_added))
+      continue;
+    if (!optgroup_added) {
+      optgroup_added = true;
+      AddOptgroupOtherLayouts(input_methods_list);
+    }
+    input_methods_list->Append(
+        CreateInputMethodsEntry(input_methods->at(i), current_input_method_id));
   }
   // "xkb:us::eng" should always be in the list of available layouts.
-  if (!default_us_layout_added) {
+  if (input_methods_added.count(kUSlayout) == 0) {
     const input_method::InputMethodDescriptor* us_eng_descriptor =
         util->GetInputMethodDescriptorFromId(kUSlayout);
     DCHECK(us_eng_descriptor != NULL);
-    base::DictionaryValue* input_method = new base::DictionaryValue;
-    input_method->SetString("value", kUSlayout);
-    input_method->SetString("title",
-                            util->GetInputMethodLongName(*us_eng_descriptor));
-    input_methods_list->Append(input_method);
+    if (!optgroup_added) {
+      optgroup_added = true;
+      AddOptgroupOtherLayouts(input_methods_list);
+    }
+    input_methods_list->Append(
+        CreateInputMethodsEntry(*us_eng_descriptor, current_input_method_id));
   }
   return input_methods_list;
 }
