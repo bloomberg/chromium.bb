@@ -232,6 +232,8 @@ function populateRemoteTargets(devices) {
 
       var majorChromeVersion = browser.adbBrowserChromeVersion;
 
+      var incompatibleVersion = browser.hasOwnProperty('compatibleVersion') &&
+                                !browser.compatibleVersion;
       var pageList;
       var browserSection = $(browser.id);
       if (browserSection) {
@@ -253,7 +255,14 @@ function populateRemoteTargets(devices) {
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
         browserSection.appendChild(browserHeader);
 
-        if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
+        if (incompatibleVersion) {
+          var warningSection = document.createElement('div');
+          warningSection.className = 'warning';
+          warningSection.textContent =
+            'You may need a newer version of desktop Chrome. ' +
+            'Please try Chrome ' + browser.adbBrowserVersion + ' or later.';
+          browserHeader.appendChild(warningSection);
+        } else if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
           var newPage = document.createElement('div');
           newPage.className = 'open';
 
@@ -285,7 +294,7 @@ function populateRemoteTargets(devices) {
         browserSection.appendChild(pageList);
       }
 
-      if (alreadyDisplayed(browserSection, browser))
+      if (incompatibleVersion || alreadyDisplayed(browserSection, browser))
         continue;
 
       pageList.textContent = '';
@@ -368,10 +377,10 @@ function formatValue(data, property) {
   if (text.length > 100)
     text = text.substring(0, 100) + '\u2026';
 
-  var span = document.createElement('div');
-  span.textContent = text;
-  span.className = property;
-  return span;
+  var div = document.createElement('div');
+  div.textContent = text;
+  div.className = property;
+  return div;
 }
 
 function addFavicon(row, data) {
@@ -416,13 +425,11 @@ function addWebViewDescription(row, webview) {
     subRow.className += ' invisible-view';
   if (viewStatus.visibility)
     subRow.appendChild(formatValue(viewStatus, 'visibility'));
-  subRow.appendChild(formatValue(viewStatus, 'position'));
+  if (viewStatus.position)
+    subRow.appendChild(formatValue(viewStatus, 'position'));
   subRow.appendChild(formatValue(viewStatus, 'size'));
-  var mainSubrow = row.querySelector('.subrow.main');
-  if (mainSubrow.nextSibling)
-    mainSubrow.parentNode.insertBefore(subRow, mainSubrow.nextSibling);
-  else
-    mainSubrow.parentNode.appendChild(subRow);
+  var subrowBox = row.querySelector('.subrow-box');
+  subrowBox.insertBefore(subRow, row.querySelector('.actions'));
 }
 
 function addWebViewThumbnail(row, webview, screenWidth, screenHeight) {
@@ -481,15 +488,11 @@ function addTargetToList(data, list, properties) {
   row.appendChild(subrowBox);
 
   var subrow = document.createElement('div');
-  subrow.className = 'subrow main';
+  subrow.className = 'subrow';
   subrowBox.appendChild(subrow);
 
-  var description = null;
   for (var j = 0; j < properties.length; j++)
     subrow.appendChild(formatValue(data, properties[j]));
-
-  if (description)
-    addWebViewDescription(description, subrowBox);
 
   var actionBox = document.createElement('div');
   actionBox.className = 'actions';

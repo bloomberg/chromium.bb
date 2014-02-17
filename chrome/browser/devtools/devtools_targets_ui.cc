@@ -8,9 +8,11 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/port_forwarding_controller.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -56,6 +58,7 @@ const char kAdbBrowsersList[] = "browsers";
 const char kAdbBrowserNameField[] = "adbBrowserName";
 const char kAdbBrowserVersionField[] = "adbBrowserVersion";
 const char kAdbBrowserChromeVersionField[] = "adbBrowserChromeVersion";
+const char kCompatibleVersion[] = "compatibleVersion";
 const char kAdbPagesList[] = "pages";
 
 const char kAdbScreenWidthField[] = "adbScreenWidth";
@@ -413,10 +416,27 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
           browser->socket().c_str());  // Ensure uniqueness on the device.
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
-      remote_browsers_[browser_id] = browser;
-      base::ListValue* page_list = new base::ListValue();
-      browser_data->Set(kAdbPagesList, page_list);
 
+      base::Version remote_version;
+      if (browser->IsChrome()) {
+        remote_version = base::Version(browser->version());
+      } else {
+        // Try parse WebView version.
+        std::string version = browser->version();
+        size_t pos = version.find("Chrome/");
+        if (pos != std::string::npos) {
+          remote_version = base::Version(browser->version().substr(pos + 7));
+        }
+      }
+      chrome::VersionInfo version_info;
+      base::Version local_version(version_info.Version());
+      browser_data->SetBoolean(kCompatibleVersion,
+          !remote_version.IsValid() || // Allow debug of unparseable versions.
+          remote_version.IsOlderThan(version_info.Version()));
+
+      base::ListValue* page_list = new base::ListValue();
+      remote_browsers_[browser_id] = browser;
+            browser_data->Set(kAdbPagesList, page_list);
       DevToolsTargetImpl::List pages = browser->CreatePageTargets();
       for (DevToolsTargetImpl::List::iterator it =
           pages.begin(); it != pages.end(); ++it) {
