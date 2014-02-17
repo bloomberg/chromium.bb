@@ -8,11 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
-#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -98,11 +96,8 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
-    PasswordStoreFactory* factory = PasswordStoreFactory::GetInstance();
-    factory->SetTestingFactory(profile(), MockPasswordStoreService::Build);
-    scoped_refptr<PasswordStore> store_temp(
-        factory->GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
-    store_ = static_cast<MockPasswordStore*>(store_temp.get());
+    store_ = new MockPasswordStore;
+    CHECK(store_->Init());
 
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs())
@@ -120,6 +115,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void TearDown() {
+    store_->Shutdown();
     store_ = NULL;
 
     // Destroy the PasswordManager before tearing down the Profile to avoid

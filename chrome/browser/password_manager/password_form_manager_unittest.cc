@@ -12,8 +12,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -383,12 +381,8 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
 TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   // Need a MessageLoop for callbacks.
   base::MessageLoop message_loop;
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
-      profile(), TestPasswordStoreService::Build);
-  scoped_refptr<PasswordStore> store_temp(
-      PasswordStoreFactory::GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
-  scoped_refptr<TestPasswordStore> password_store =
-      static_cast<TestPasswordStore*>(store_temp.get());
+  scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
+  CHECK(password_store->Init());
 
   TestPasswordManagerClient client(profile(), password_store.get());
   TestPasswordManager password_manager(&client);
@@ -460,6 +454,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
       0U,
       passwords[saved_match()->signon_realm][0].
       other_possible_usernames.size());
+  password_store->Shutdown();
 }
 
 TEST_F(PasswordFormManagerTest, TestValidForms) {
