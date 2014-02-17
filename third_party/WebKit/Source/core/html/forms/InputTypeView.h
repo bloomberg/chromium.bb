@@ -33,7 +33,7 @@
 #ifndef InputTypeView_h
 #define InputTypeView_h
 
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -87,7 +87,7 @@ public:
     virtual bool shouldSubmitImplicitly(Event*);
     virtual PassRefPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
-    virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection);
+    virtual void handleFocusEvent(Element* oldFocusedElement, FocusType);
     virtual void handleBlurEvent();
     virtual void subtreeHasChanged();
     virtual bool hasTouchEventHandler() const;

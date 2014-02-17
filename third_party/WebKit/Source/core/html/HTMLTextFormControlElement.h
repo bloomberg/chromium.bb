@@ -115,7 +115,7 @@ private:
     int computeSelectionEnd() const;
     TextFieldSelectionDirection computeSelectionDirection() const;
 
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE FINAL;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
     virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE FINAL;
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.
@@ -123,7 +123,7 @@ private:
     // Returns true if suggested value is empty. Used to check placeholder visibility.
     virtual bool isEmptySuggestedValue() const { return true; }
     // Called in dispatchFocusEvent(), after placeholder process, before calling parent's dispatchFocusEvent().
-    virtual void handleFocusEvent(Element* /* oldFocusedNode */, FocusDirection) { }
+    virtual void handleFocusEvent(Element* /* oldFocusedNode */, FocusType) { }
     // Called in dispatchBlurEvent(), after placeholder process, before calling parent's dispatchBlurEvent().
     virtual void handleBlurEvent() { }
 

@@ -79,8 +79,8 @@ public:
     virtual WebCore::FloatRect windowRect() OVERRIDE;
     virtual WebCore::FloatRect pageRect() OVERRIDE;
     virtual void focus() OVERRIDE;
-    virtual bool canTakeFocus(WebCore::FocusDirection) OVERRIDE;
-    virtual void takeFocus(WebCore::FocusDirection) OVERRIDE;
+    virtual bool canTakeFocus(WebCore::FocusType) OVERRIDE;
+    virtual void takeFocus(WebCore::FocusType) OVERRIDE;
     virtual void focusedNodeChanged(WebCore::Node*) OVERRIDE;
     virtual WebCore::Page* createWindow(
         WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer) OVERRIDE;

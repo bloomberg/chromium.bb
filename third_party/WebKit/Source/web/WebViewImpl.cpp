@@ -2503,7 +2503,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
     Frame* frame = page()->focusController().focusedOrMainFrame();
     if (Document* document = frame->document())
         document->setFocusedElement(0);
-    page()->focusController().setInitialFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
+    page()->focusController().setInitialFocus(reverse ? FocusTypeBackward : FocusTypeForward);
 }
 
 void WebViewImpl::clearFocusedNode()
@@ -2622,7 +2622,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
 
 void WebViewImpl::advanceFocus(bool reverse)
 {
-    page()->focusController().advanceFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
+    page()->focusController().advanceFocus(reverse ? FocusTypeBackward : FocusTypeForward);
 }
 
 double WebViewImpl::zoomLevel()

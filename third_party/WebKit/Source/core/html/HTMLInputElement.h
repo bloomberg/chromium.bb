@@ -347,7 +347,7 @@ private:
     virtual void updatePlaceholderText() OVERRIDE FINAL;
     virtual bool isEmptyValue() const OVERRIDE FINAL { return innerTextValue().isEmpty(); }
     virtual bool isEmptySuggestedValue() const OVERRIDE FINAL { return suggestedValue().isEmpty(); }
-    virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE FINAL;
+    virtual void handleFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
     virtual void handleBlurEvent() OVERRIDE FINAL;
 
     virtual bool isOptionalFormControl() const OVERRIDE FINAL { return !isRequiredFormControl(); }

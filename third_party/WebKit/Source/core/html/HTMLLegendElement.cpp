@@ -66,14 +66,14 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     return 0;
 }
 
-void HTMLLegendElement::focus(bool, FocusDirection direction)
+void HTMLLegendElement::focus(bool, FocusType type)
 {
     if (isFocusable())
-        Element::focus(true, direction);
+        Element::focus(true, type);
 
     // To match other browsers' behavior, never restore previous selection.
     if (HTMLFormControlElement* control = associatedControl())
-        control->focus(false, direction);
+        control->focus(false, type);
 }
 
 void HTMLLegendElement::accessKeyAction(bool sendMouseEvents)

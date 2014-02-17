@@ -129,7 +129,7 @@ protected:
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldHaveFocusAppearance() const OVERRIDE FINAL;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE;
     virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
     virtual void willCallDefaultEventHandler(const Event&) OVERRIDE FINAL;
 

@@ -27,7 +27,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
@@ -88,8 +88,8 @@ public:
 
     virtual void focus() = 0;
 
-    virtual bool canTakeFocus(FocusDirection) = 0;
-    virtual void takeFocus(FocusDirection) = 0;
+    virtual bool canTakeFocus(FocusType) = 0;
+    virtual void takeFocus(FocusType) = 0;
 
     virtual void focusedNodeChanged(Node*) = 0;
 

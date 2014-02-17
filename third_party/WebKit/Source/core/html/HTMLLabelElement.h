@@ -54,7 +54,7 @@ private:
     // Overridden to either click() or focus() the corresponding control.
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
-    virtual void focus(bool restorePreviousSelection, FocusDirection) OVERRIDE;
+    virtual void focus(bool restorePreviousSelection, FocusType) OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLLabelElement, hasTagName(HTMLNames::labelTag));

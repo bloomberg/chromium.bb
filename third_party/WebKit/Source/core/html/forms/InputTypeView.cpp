@@ -112,7 +112,7 @@ bool InputTypeView::hasCustomFocusLogic() const
     return false;
 }
 
-void InputTypeView::handleFocusEvent(Element*, FocusDirection)
+void InputTypeView::handleFocusEvent(Element*, FocusType)
 {
 }
 

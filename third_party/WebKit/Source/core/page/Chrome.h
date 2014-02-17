@@ -23,7 +23,7 @@
 #define Chrome_h
 
 #include "core/loader/NavigationPolicy.h"
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
 #include "wtf/Forward.h"
@@ -80,8 +80,8 @@ public:
 
     void focus() const;
 
-    bool canTakeFocus(FocusDirection) const;
-    void takeFocus(FocusDirection) const;
+    bool canTakeFocus(FocusType) const;
+    void takeFocus(FocusType) const;
 
     void focusedNodeChanged(Node*) const;
 

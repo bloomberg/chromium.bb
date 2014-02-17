@@ -29,7 +29,7 @@
 #include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
 #include "core/page/DragActions.h"
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
@@ -286,7 +286,7 @@ private:
     void defaultBackspaceEventHandler(KeyboardEvent*);
     void defaultTabEventHandler(KeyboardEvent*);
     void defaultEscapeEventHandler(KeyboardEvent*);
-    void defaultArrowEventHandler(FocusDirection, KeyboardEvent*);
+    void defaultArrowEventHandler(FocusType, KeyboardEvent*);
 
     void updateSelectionForMouseDrag(const HitTestResult&);
 

@@ -2078,7 +2078,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         // clear swallowEvent if the page already set it (e.g., by canceling
         // default behavior).
         if (element) {
-            if (!page->focusController().setFocusedElement(element, m_frame, FocusDirectionMouse))
+            if (!page->focusController().setFocusedElement(element, m_frame, FocusTypeMouse))
                 swallowEvent = true;
         } else {
             // We call setFocusedElement even with !element in order to blur
@@ -3146,23 +3146,23 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     return keydownResult || keypress->defaultPrevented() || keypress->defaultHandled();
 }
 
-static FocusDirection focusDirectionForKey(const AtomicString& keyIdentifier)
+static FocusType focusDirectionForKey(const AtomicString& keyIdentifier)
 {
     DEFINE_STATIC_LOCAL(AtomicString, Down, ("Down", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, Up, ("Up", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, Left, ("Left", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, Right, ("Right", AtomicString::ConstructFromLiteral));
 
-    FocusDirection retVal = FocusDirectionNone;
+    FocusType retVal = FocusTypeNone;
 
     if (keyIdentifier == Down)
-        retVal = FocusDirectionDown;
+        retVal = FocusTypeDown;
     else if (keyIdentifier == Up)
-        retVal = FocusDirectionUp;
+        retVal = FocusTypeUp;
     else if (keyIdentifier == Left)
-        retVal = FocusDirectionLeft;
+        retVal = FocusTypeLeft;
     else if (keyIdentifier == Right)
-        retVal = FocusDirectionRight;
+        retVal = FocusTypeRight;
 
     return retVal;
 }
@@ -3180,9 +3180,9 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
         else if (event->keyIdentifier() == "U+001B")
             defaultEscapeEventHandler(event);
         else {
-            FocusDirection direction = focusDirectionForKey(AtomicString(event->keyIdentifier()));
-            if (direction != FocusDirectionNone)
-                defaultArrowEventHandler(direction, event);
+            FocusType type = focusDirectionForKey(AtomicString(event->keyIdentifier()));
+            if (type != FocusTypeNone)
+                defaultArrowEventHandler(type, event);
         }
     }
     if (event->type() == EventTypeNames::keypress) {
@@ -3441,7 +3441,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
         event->setDefaultHandled();
 }
 
-void EventHandler::defaultArrowEventHandler(FocusDirection focusDirection, KeyboardEvent* event)
+void EventHandler::defaultArrowEventHandler(FocusType focusType, KeyboardEvent* event)
 {
     ASSERT(event->type() == EventTypeNames::keydown);
 
@@ -3460,7 +3460,7 @@ void EventHandler::defaultArrowEventHandler(FocusDirection focusDirection, Keybo
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController().advanceFocus(focusDirection))
+    if (page->focusController().advanceFocus(focusType))
         event->setDefaultHandled();
 }
 
@@ -3478,13 +3478,13 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     if (!page->tabKeyCyclesThroughElements())
         return;
 
-    FocusDirection focusDirection = event->shiftKey() ? FocusDirectionBackward : FocusDirectionForward;
+    FocusType focusType = event->shiftKey() ? FocusTypeBackward : FocusTypeForward;
 
     // Tabs can be used in design mode editing.
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController().advanceFocus(focusDirection))
+    if (page->focusController().advanceFocus(focusType))
         event->setDefaultHandled();
 }
 

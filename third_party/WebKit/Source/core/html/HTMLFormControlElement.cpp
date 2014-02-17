@@ -323,11 +323,11 @@ bool HTMLFormControlElement::shouldShowFocusRingOnMouseFocus() const
     return false;
 }
 
-void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection direction)
+void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
 {
-    if (direction != FocusDirectionPage)
-        m_wasFocusedByMouse = direction == FocusDirectionMouse;
-    HTMLElement::dispatchFocusEvent(oldFocusedElement, direction);
+    if (type != FocusTypePage)
+        m_wasFocusedByMouse = type == FocusTypeMouse;
+    HTMLElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
 bool HTMLFormControlElement::shouldHaveFocusAppearance() const

@@ -381,9 +381,9 @@ bool HTMLInputElement::shouldUseInputMethod()
     return m_inputType->shouldUseInputMethod();
 }
 
-void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
+void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusType type)
 {
-    m_inputTypeView->handleFocusEvent(oldFocusedElement, direction);
+    m_inputTypeView->handleFocusEvent(oldFocusedElement, type);
     m_inputType->enableSecureTextInput();
 }
 

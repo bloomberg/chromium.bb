@@ -37,7 +37,7 @@
 #include "core/page/ContextMenuClient.h"
 #include "core/page/DragClient.h"
 #include "core/page/EditorClient.h"
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
 #include "core/page/StorageClient.h"
@@ -79,8 +79,8 @@ public:
 
     virtual void focus() OVERRIDE { }
 
-    virtual bool canTakeFocus(FocusDirection) OVERRIDE { return false; }
-    virtual void takeFocus(FocusDirection) OVERRIDE { }
+    virtual bool canTakeFocus(FocusType) OVERRIDE { return false; }
+    virtual void takeFocus(FocusType) OVERRIDE { }
 
     virtual void focusedNodeChanged(Node*) OVERRIDE { }
     virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) OVERRIDE { return 0; }

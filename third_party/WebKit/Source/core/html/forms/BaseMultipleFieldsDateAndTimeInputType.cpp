@@ -379,15 +379,15 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
     m_isDestroyingShadowSubtree = false;
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocusedElement, FocusDirection direction)
+void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocusedElement, FocusType type)
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit || m_isDestroyingShadowSubtree)
         return;
-    if (direction == FocusDirectionBackward) {
+    if (type == FocusTypeBackward) {
         if (element().document().page())
-            element().document().page()->focusController().advanceFocus(direction);
-    } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse || direction == FocusDirectionPage) {
+            element().document().page()->focusController().advanceFocus(type);
+    } else if (type == FocusTypeNone || type == FocusTypeMouse || type == FocusTypePage) {
         edit->focusByOwner(oldFocusedElement);
     } else {
         edit->focusByOwner();

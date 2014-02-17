@@ -23,27 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FocusDirection_h
-#define FocusDirection_h
+#ifndef FocusType_h
+#define FocusType_h
 
 namespace WebCore {
-// FIXME: Rename FocusDirection to FocusType or something.
-    enum FocusDirection {
-        // Element::focus(), etc.
-        FocusDirectionNone = 0,
-        // TAB, or Shift + TAB
-        FocusDirectionForward,
-        FocusDirectionBackward,
-        // Spatial navigation.
-        FocusDirectionUp,
-        FocusDirectionDown,
-        FocusDirectionLeft,
-        FocusDirectionRight,
-        // Mouse press
-        FocusDirectionMouse,
-        // Re-focus by a page focus
-        FocusDirectionPage
-    };
+
+enum FocusType {
+    // Element::focus(), etc.
+    FocusTypeNone = 0,
+    // Sequential navigation with TAB, or Shift + TAB.
+    FocusTypeForward,
+    FocusTypeBackward,
+    // Spatial navigation.
+    FocusTypeUp,
+    FocusTypeDown,
+    FocusTypeLeft,
+    FocusTypeRight,
+    // Mouse press
+    FocusTypeMouse,
+    // Re-focus by a page focus
+    FocusTypePage
+};
+
 }
 
-#endif // FocusDirection_h
+#endif // FocusType_h

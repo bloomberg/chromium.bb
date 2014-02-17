@@ -151,7 +151,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
 
         document().updateLayoutIgnorePendingStylesheets();
         if (element->isMouseFocusable())
-            element->focus(true, FocusDirectionMouse);
+            element->focus(true, FocusTypeMouse);
 
         // Click the corresponding control.
         element->dispatchSimulatedClick(evt);
@@ -172,13 +172,13 @@ bool HTMLLabelElement::willRespondToMouseClickEvents()
     return HTMLElement::willRespondToMouseClickEvents();
 }
 
-void HTMLLabelElement::focus(bool, FocusDirection direction)
+void HTMLLabelElement::focus(bool, FocusType type)
 {
     // to match other browsers, always restore previous selection
     if (HTMLElement* element = control())
-        element->focus(true, direction);
+        element->focus(true, type);
     if (isFocusable())
-        HTMLElement::focus(true, direction);
+        HTMLElement::focus(true, type);
 }
 
 void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)

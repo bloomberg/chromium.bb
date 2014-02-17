@@ -23,7 +23,7 @@
 
 #include "core/dom/Node.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/page/FocusDirection.h"
+#include "core/page/FocusType.h"
 #include "platform/geometry/LayoutRect.h"
 
 #include <limits>
@@ -111,8 +111,8 @@ struct FocusCandidate {
     {
     }
 
-    FocusCandidate(Node* n, FocusDirection);
-    explicit FocusCandidate(HTMLAreaElement* area, FocusDirection);
+    FocusCandidate(Node*, FocusType);
+    explicit FocusCandidate(HTMLAreaElement*, FocusType);
     bool isNull() const { return !visibleNode; }
     bool inScrollableContainer() const { return visibleNode && enclosingScrollableBox; }
     bool isFrameOwnerElement() const { return visibleNode && visibleNode->isFrameOwnerElement(); }
@@ -133,19 +133,19 @@ struct FocusCandidate {
     bool isOffscreenAfterScrolling;
 };
 
-bool hasOffscreenRect(Node*, FocusDirection direction = FocusDirectionNone);
-bool scrollInDirection(Frame*, FocusDirection);
-bool scrollInDirection(Node* container, FocusDirection);
-bool canScrollInDirection(const Node* container, FocusDirection);
-bool canScrollInDirection(const Frame*, FocusDirection);
-bool canBeScrolledIntoView(FocusDirection, const FocusCandidate&);
+bool hasOffscreenRect(Node*, FocusType = FocusTypeNone);
+bool scrollInDirection(Frame*, FocusType);
+bool scrollInDirection(Node* container, FocusType);
+bool canScrollInDirection(const Node* container, FocusType);
+bool canScrollInDirection(const Frame*, FocusType);
+bool canBeScrolledIntoView(FocusType, const FocusCandidate&);
 bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCandidate& secondCandidate);
-void distanceDataForNode(FocusDirection, const FocusCandidate& current, FocusCandidate& candidate);
-Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusDirection, Node*);
+void distanceDataForNode(FocusType, const FocusCandidate& current, FocusCandidate&);
+Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusType, Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
 LayoutRect frameRectInAbsoluteCoordinates(Frame*);
-LayoutRect virtualRectForDirection(FocusDirection, const LayoutRect& startingRect, LayoutUnit width = 0);
-LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement*, FocusDirection);
+LayoutRect virtualRectForDirection(FocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
+LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement*, FocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 
 } // namspace WebCore

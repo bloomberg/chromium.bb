@@ -2167,7 +2167,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
     return elementData()->getAttributeItem(qName);
 }
 
-void Element::focus(bool restorePreviousSelection, FocusDirection direction)
+void Element::focus(bool restorePreviousSelection, FocusType type)
 {
     if (!inDocument())
         return;
@@ -2194,7 +2194,7 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
         // If a focus event handler changes the focus to a different node it
         // does not make sense to continue and update appearence.
         protect = this;
-        if (!page->focusController().setFocusedElement(this, doc.frame(), direction))
+        if (!page->focusController().setFocusedElement(this, doc.frame(), type))
             return;
     }
 
@@ -2256,7 +2256,7 @@ bool Element::isMouseFocusable() const
     return isFocusable();
 }
 
-void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection)
+void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusType)
 {
     RefPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);
     EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));

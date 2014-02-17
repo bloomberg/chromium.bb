@@ -179,18 +179,18 @@ void ChromeClientImpl::focus()
         m_webView->client()->didFocus();
 }
 
-bool ChromeClientImpl::canTakeFocus(FocusDirection)
+bool ChromeClientImpl::canTakeFocus(FocusType)
 {
     // For now the browser can always take focus if we're not running layout
     // tests.
     return !layoutTestMode();
 }
 
-void ChromeClientImpl::takeFocus(FocusDirection direction)
+void ChromeClientImpl::takeFocus(FocusType type)
 {
     if (!m_webView->client())
         return;
-    if (direction == FocusDirectionBackward)
+    if (type == FocusTypeBackward)
         m_webView->client()->focusPrevious();
     else
         m_webView->client()->focusNext();

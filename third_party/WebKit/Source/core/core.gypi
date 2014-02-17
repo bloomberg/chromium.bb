@@ -1293,6 +1293,7 @@
             'page/EventSource.cpp',
             'page/EventSource.h',
             'page/FocusController.cpp',
+            'page/FocusType.h',
             'page/FrameTree.cpp',
             'page/HistoryController.cpp',
             'page/HistoryController.h',

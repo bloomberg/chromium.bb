@@ -57,7 +57,7 @@ protected:
     virtual void disabledAttributeChanged() OVERRIDE;
     virtual void readonlyAttributeChanged() OVERRIDE;
     virtual bool supportsReadOnly() const OVERRIDE;
-    virtual void handleFocusEvent(Element* oldFocusedNode, FocusDirection) OVERRIDE FINAL;
+    virtual void handleFocusEvent(Element* oldFocusedNode, FocusType) OVERRIDE FINAL;
     virtual void handleBlurEvent() OVERRIDE FINAL;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual void updateView() OVERRIDE;

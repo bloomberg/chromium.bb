@@ -115,14 +115,14 @@ void Chrome::focus() const
     m_client->focus();
 }
 
-bool Chrome::canTakeFocus(FocusDirection direction) const
+bool Chrome::canTakeFocus(FocusType type) const
 {
-    return m_client->canTakeFocus(direction);
+    return m_client->canTakeFocus(type);
 }
 
-void Chrome::takeFocus(FocusDirection direction) const
+void Chrome::takeFocus(FocusType type) const
 {
-    m_client->takeFocus(direction);
+    m_client->takeFocus(type);
 }
 
 void Chrome::focusedNodeChanged(Node* node) const
