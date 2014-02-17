@@ -6,6 +6,48 @@
 function test()
 {
     InspectorTest.runTestSuite([
+        function orderedMergeIntersect(next)
+        {
+            function comparator(a, b)
+            {
+                return a - b;
+            }
+            function count(a, x)
+            {
+                return a.upperBound(x) - a.lowerBound(x);
+            }
+            function testAll(a, b)
+            {
+                testOperation(a, b, a.mergeOrdered(b, comparator), Math.max, "U");
+                testOperation(a, b, a.intersectOrdered(b, comparator), Math.min, "x");
+            }
+            function testOperation(a, b, actual, checkOperation, opName)
+            {
+                var allValues = a.concat(b).concat(actual);
+                for (var i = 0; i < allValues.length; ++i) {
+                    var value = allValues[i];
+                    expectedCount = checkOperation(count(a, value), count(b, value));
+                    actualCount = count(actual, value);
+                    InspectorTest.assertEquals(expectedCount, actualCount,
+                        "Incorrect result for value: " + value + " at [" + a + "] " + opName + " [" + b + "] -> [" + actual + "]");
+                }
+                InspectorTest.assertEquals(JSON.stringify(actual.sort()), JSON.stringify(actual), "result array is ordered");
+            }
+            var testArrays = [
+                [], [],
+                [1], [],
+                [1, 2, 2, 2, 3], [],
+                [4, 5, 5, 8, 8], [1, 1, 1, 2, 6],
+                [1, 2, 2, 2, 2, 3, 3, 4], [2, 2, 2, 3, 3, 3, 3],
+                [1, 2, 3, 4, 5], [1, 2, 3]
+            ];
+            for (var i = 0; i < testArrays.length; i += 2) {
+                testAll(testArrays[i], testArrays[i + 1]);
+                testAll(testArrays[i + 1], testArrays[i]);
+            }
+            next();
+        },
+
         function binaryIndexOfTest(next)
         {
             var testArrays = [
