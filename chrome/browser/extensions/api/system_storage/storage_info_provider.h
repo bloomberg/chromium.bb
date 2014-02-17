@@ -12,11 +12,8 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
-#include "chrome/browser/storage_monitor/removable_storage_observer.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/extensions/api/system_storage.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/storage_monitor/storage_info.h"
 
 namespace extensions {
 

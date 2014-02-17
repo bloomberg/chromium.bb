@@ -17,7 +17,6 @@
 #include "components/breakpad/app/breakpad_linux.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 #include "chrome/browser/sxs_linux.h"
 #include "content/public/browser/browser_thread.h"
 #endif

@@ -16,9 +16,9 @@
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/media_galleries/media_scan_manager_observer.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -139,7 +139,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   virtual void TearDown() OVERRIDE {
     media_scan_manager_->RemoveObserver(profile_.get());
     media_scan_manager_.reset();
-    TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::Destroy();
   }
 
   // Create a test folder in the test specific scoped temp dir and return the

@@ -48,6 +48,15 @@
             'precache/core/precache_url_table_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/webdata/token_service_table_unittest.cc',
+            'storage_monitor/image_capture_device_manager_unittest.mm',
+            'storage_monitor/media_storage_util_unittest.cc',
+            'storage_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
+            'storage_monitor/storage_info_unittest.cc',
+            'storage_monitor/storage_monitor_chromeos_unittest.cc',
+            'storage_monitor/storage_monitor_linux_unittest.cc',
+            'storage_monitor/storage_monitor_mac_unittest.mm',
+            'storage_monitor/storage_monitor_unittest.cc',
+            'storage_monitor/storage_monitor_win_unittest.cc',
             'sync_driver/model_association_manager_unittest.cc',
             'sync_driver/system_encryptor_unittest.cc',
             'test/run_all_unittests.cc',
@@ -156,6 +165,10 @@
                 'components.gyp:sessions',
                 'components.gyp:sessions_test_support',
 
+                # Dependencies of storage monitor
+                'components.gyp:storage_monitor',
+                'components.gyp:storage_monitor_test_support',
+
                 # Dependencies of url_matcher.
                 'components.gyp:url_matcher',
 
@@ -171,6 +184,7 @@
             }, { # 'OS == "ios"'
               'sources/': [
                 ['exclude', '\\.cc$'],
+                ['exclude', '\\.mm$'],
                 ['include', '^test/run_all_unittests\\.cc$'],
                 # TODO(ios): Include files here as they are made to work, see
                 # http://crbug.com/303011.
@@ -215,6 +229,8 @@
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/ImageCaptureCore.framework',
                 ],
               },
               'sources!': [
@@ -223,9 +239,14 @@
             }],
             ['OS == "android"', {
               'sources!': [
+                'storage_monitor/media_storage_util_unittest.cc',
+                'storage_monitor/storage_info_unittest.cc',
+                'storage_monitor/storage_monitor_unittest.cc',
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies!': [
+                'components.gyp:storage_monitor',
+                'components.gyp:storage_monitor_test_support',
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
               ],
@@ -234,6 +255,20 @@
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
               ]
+            }],
+            ['chromeos==1', {
+              'sources!': [
+                'storage_monitor/storage_monitor_linux_unittest.cc',
+              ],
+              'dependencies': [
+                '../chromeos/chromeos.gyp:chromeos_test_support',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../dbus/dbus.gyp:dbus',
+                '../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol',
+              ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [

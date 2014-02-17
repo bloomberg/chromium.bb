@@ -11,8 +11,8 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
 #include "components/policy/core/common/preferences_mac.h"
+#include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::mac::CFCast;

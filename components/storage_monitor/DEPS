@@ -1,0 +1,6 @@
+include_rules = [
+  "+chromeos/disks",
+  "+content/public/browser",
+  "+content/public/test",
+  "+device/media_transfer_protocol",
+]

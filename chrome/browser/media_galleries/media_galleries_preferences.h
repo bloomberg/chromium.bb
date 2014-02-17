@@ -16,8 +16,8 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/storage_monitor/removable_storage_observer.h"
 
 class Profile;
 

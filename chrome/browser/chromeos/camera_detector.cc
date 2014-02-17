@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/storage_monitor/udev_util_linux.h"
+#include "components/storage_monitor/udev_util_linux.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

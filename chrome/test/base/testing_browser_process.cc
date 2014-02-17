@@ -28,8 +28,8 @@
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "components/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -349,15 +349,6 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 #endif
 }
 
-StorageMonitor* TestingBrowserProcess::storage_monitor() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-  return NULL;
-#else
-  return storage_monitor_.get();
-#endif
-}
-
 MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   NOTIMPLEMENTED();
@@ -433,13 +424,6 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 #if !defined(OS_IOS)
   NOTIMPLEMENTED();
   sb_service_ = sb_service;
-#endif
-}
-
-void TestingBrowserProcess::SetStorageMonitor(
-    scoped_ptr<StorageMonitor> storage_monitor) {
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  storage_monitor_ = storage_monitor.Pass();
 #endif
 }
 

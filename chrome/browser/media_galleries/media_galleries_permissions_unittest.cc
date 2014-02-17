@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
@@ -52,7 +52,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
 
-    TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::Destroy();
 
     testing::Test::TearDown();
   }

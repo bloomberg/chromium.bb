@@ -5,7 +5,6 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_REMOVABLE_STORAGE_PROVIDER_H_
 
 #include "base/callback.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "chrome/common/ref_counted_util.h"
 

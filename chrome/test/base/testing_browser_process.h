@@ -113,7 +113,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual component_updater::PnaclComponentInstaller*
       pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
-  virtual StorageMonitor* storage_monitor() OVERRIDE;
   virtual MediaFileSystemRegistry* media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
 
@@ -130,7 +129,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetBookmarkPromptController(BookmarkPromptController* controller);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
-  void SetStorageMonitor(scoped_ptr<StorageMonitor> storage_monitor);
 
  private:
   // See CreateInstance() and DestoryInstance() above.
@@ -164,7 +162,6 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif  // !defined(OS_IOS)
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  scoped_ptr<StorageMonitor> storage_monitor_;
   scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
 #endif
 

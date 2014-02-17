@@ -20,7 +20,6 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"

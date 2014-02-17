@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_info.h"
 
 #if defined(OS_MACOSX)
 

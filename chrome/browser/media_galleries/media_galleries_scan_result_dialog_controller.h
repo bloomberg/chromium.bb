@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/storage_monitor/removable_storage_observer.h"
+#include "components/storage_monitor/removable_storage_observer.h"
 
 namespace content {
 class WebContents;

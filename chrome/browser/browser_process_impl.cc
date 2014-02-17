@@ -64,7 +64,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -112,6 +111,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "components/storage_monitor/storage_monitor.h"
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -263,11 +263,11 @@ void BrowserProcessImpl::StartTearDown() {
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   media_file_system_registry_.reset();
-  // Delete |storage_monitor_| now. Otherwise the FILE thread would be gone
-  // when we try to release it in the dtor and Valgrind would report a
-  // leak on almost every single browser_test.
+  // Remove the global instance of the Storage Monitor now. Otherwise the
+  // FILE thread would be gone when we try to release it in the dtor and
+  // Valgrind would report a leak on almost every single browser_test.
   // TODO(gbillock): Make this unnecessary.
-  storage_monitor_.reset();
+  StorageMonitor::Destroy();
 #endif
 
   message_center::MessageCenter::Shutdown();
@@ -644,21 +644,6 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
 #endif
 }
 
-StorageMonitor* BrowserProcessImpl::storage_monitor() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  return NULL;
-#else
-  return storage_monitor_.get();
-#endif
-}
-
-void BrowserProcessImpl::set_storage_monitor_for_test(
-    scoped_ptr<StorageMonitor> monitor) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  storage_monitor_ = monitor.Pass();
-#endif
-}
-
 MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     return NULL;
@@ -970,7 +955,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  storage_monitor_.reset(StorageMonitor::Create());
+  StorageMonitor::Create();
 #endif
 
   platform_part_->PreMainMessageLoopRun();

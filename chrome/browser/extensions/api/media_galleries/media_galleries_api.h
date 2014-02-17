@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_scan_manager_observer.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/common/extensions/api/media_galleries.h"
+#include "components/storage_monitor/media_storage_util.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 

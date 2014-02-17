@@ -128,8 +128,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual component_updater::PnaclComponentInstaller*
       pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
-  virtual StorageMonitor* storage_monitor() OVERRIDE;
-  void set_storage_monitor_for_test(scoped_ptr<StorageMonitor> monitor);
   virtual MediaFileSystemRegistry* media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
 #if defined(ENABLE_WEBRTC)
@@ -203,8 +201,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  scoped_ptr<StorageMonitor> storage_monitor_;
-
   scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
 #endif
 

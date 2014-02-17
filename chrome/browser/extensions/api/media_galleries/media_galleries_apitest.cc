@@ -18,9 +18,9 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_monitor.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 

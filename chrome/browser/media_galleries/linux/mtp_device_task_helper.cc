@@ -11,7 +11,7 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "net/base/io_buffer.h"

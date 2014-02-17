@@ -37,6 +37,7 @@
         'navigation_interception.gypi',
         'plugins.gypi',
         'sessions.gypi',
+        'storage_monitor.gypi',
         'visitedlink.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',

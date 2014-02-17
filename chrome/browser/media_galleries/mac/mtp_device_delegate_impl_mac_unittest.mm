@@ -18,8 +18,8 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
-#include "chrome/browser/storage_monitor/image_capture_device_manager.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "components/storage_monitor/image_capture_device_manager.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,7 +190,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 
     delegate_->CancelPendingTasksAndDeleteDelegate();
 
-    TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::Destroy();
 
     io_thread_->Stop();
   }

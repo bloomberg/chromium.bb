@@ -28,14 +28,14 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/removable_device_constants.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/storage_monitor/removable_device_constants.h"
+#include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_view_host.h"
@@ -787,7 +787,7 @@ void MediaFileSystemRegistryTest::TearDown() {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
-  TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::Destroy();
 #if defined(OS_CHROMEOS)
   test_user_manager_.reset();
 #endif

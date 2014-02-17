@@ -13,8 +13,8 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/common/media_galleries/picasa_types.h"
+#include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)

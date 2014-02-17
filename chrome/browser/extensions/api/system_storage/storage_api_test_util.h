@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_info.h"
 
 namespace extensions {
 namespace test {

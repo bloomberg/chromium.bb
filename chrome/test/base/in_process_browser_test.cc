@@ -67,7 +67,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
 namespace {

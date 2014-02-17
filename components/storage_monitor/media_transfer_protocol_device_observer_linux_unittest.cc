@@ -1,0 +1,161 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// MediaTransferProtocolDeviceObserverLinux unit tests.
+
+#include "components/storage_monitor/media_transfer_protocol_device_observer_linux.h"
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/storage_monitor/mock_removable_storage_observer.h"
+#include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/test_storage_monitor.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Sample mtp device storage information.
+const char kStorageLabel[] = "Camera V1.0";
+const char kStorageLocation[] = "/usb:2,2,88888";
+const char kStorageUniqueId[] = "VendorModelSerial:COM:MOD2012:283";
+const char kStorageWithInvalidInfo[] = "usb:2,3,11111";
+const char kStorageWithValidInfo[] = "usb:2,2,88888";
+
+// Returns the mtp device id given the |unique_id|.
+std::string GetMtpDeviceId(const std::string& unique_id) {
+  return StorageInfo::MakeDeviceId(StorageInfo::MTP_OR_PTP, unique_id);
+}
+
+// Helper function to get the device storage details such as device id, label
+// and location. On success, fills in |id|, |label| and |location|.
+void GetStorageInfo(const std::string& storage_name,
+                    device::MediaTransferProtocolManager* mtp_manager,
+                    std::string* id,
+                    base::string16* label,
+                    std::string* location) {
+  if (storage_name == kStorageWithInvalidInfo)
+    return;  // Do not set any storage details.
+
+  ASSERT_EQ(kStorageWithValidInfo, storage_name);
+
+  *id = GetMtpDeviceId(kStorageUniqueId);
+  *label = base::ASCIIToUTF16(kStorageLabel);
+  *location = kStorageLocation;
+}
+
+class TestMediaTransferProtocolDeviceObserverLinux
+    : public MediaTransferProtocolDeviceObserverLinux {
+ public:
+  TestMediaTransferProtocolDeviceObserverLinux(
+      StorageMonitor::Receiver* receiver,
+      device::MediaTransferProtocolManager* mtp_manager)
+      : MediaTransferProtocolDeviceObserverLinux(receiver, mtp_manager,
+                                                 &GetStorageInfo) {
+  }
+
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the attachment of
+  // mtp storage device given the |storage_name|.
+  void MtpStorageAttached(const std::string& storage_name) {
+    StorageChanged(true, storage_name);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the detachment of
+  // mtp storage device given the |storage_name|.
+  void MtpStorageDetached(const std::string& storage_name) {
+    StorageChanged(false, storage_name);
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolDeviceObserverLinux);
+};
+
+}  // namespace
+
+// A class to test the functionality of MediaTransferProtocolDeviceObserverLinux
+// member functions.
+class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
+ public:
+  MediaTransferProtocolDeviceObserverLinuxTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+  virtual ~MediaTransferProtocolDeviceObserverLinuxTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    mock_storage_observer_.reset(new MockRemovableStorageObserver);
+    TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
+    mtp_device_observer_.reset(
+        new TestMediaTransferProtocolDeviceObserverLinux(
+            monitor->receiver(), monitor->media_transfer_protocol_manager()));
+    monitor->AddObserver(mock_storage_observer_.get());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    StorageMonitor* monitor = StorageMonitor::GetInstance();
+    monitor->RemoveObserver(mock_storage_observer_.get());
+    mtp_device_observer_.reset();
+    TestStorageMonitor::Destroy();
+  }
+
+  // Returns the device changed observer object.
+  MockRemovableStorageObserver& observer() {
+    return *mock_storage_observer_;
+  }
+
+  TestMediaTransferProtocolDeviceObserverLinux* mtp_device_observer() {
+    return mtp_device_observer_.get();
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  scoped_ptr<TestMediaTransferProtocolDeviceObserverLinux> mtp_device_observer_;
+  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinuxTest);
+};
+
+// Test to verify basic mtp storage attach and detach notifications.
+TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
+  std::string device_id = GetMtpDeviceId(kStorageUniqueId);
+
+  // Attach a mtp storage.
+  mtp_device_observer()->MtpStorageAttached(kStorageWithValidInfo);
+
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(device_id, observer().last_attached().device_id());
+  EXPECT_EQ(base::ASCIIToUTF16(kStorageLabel),
+            observer().last_attached().name());
+  EXPECT_EQ(kStorageLocation, observer().last_attached().location());
+
+  // Detach the attached storage.
+  mtp_device_observer()->MtpStorageDetached(kStorageWithValidInfo);
+
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(device_id, observer().last_detached().device_id());
+}
+
+// When a mtp storage device with invalid storage label and id is
+// attached/detached, there should not be any device attach/detach
+// notifications.
+TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, StorageWithInvalidInfo) {
+  // Attach the mtp storage with invalid storage info.
+  mtp_device_observer()->MtpStorageAttached(kStorageWithInvalidInfo);
+
+  // Detach the attached storage.
+  mtp_device_observer()->MtpStorageDetached(kStorageWithInvalidInfo);
+
+  EXPECT_EQ(0, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+}

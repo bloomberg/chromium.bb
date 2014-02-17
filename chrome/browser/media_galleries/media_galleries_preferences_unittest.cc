@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/storage_monitor/media_storage_util.h"
+#include "components/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -151,7 +151,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     Verify();
-    TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::Destroy();
   }
 
   void Verify() {
@@ -1222,5 +1222,5 @@ TEST(MediaGalleriesPrefInfoTest, NameGeneration) {
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("unique")).AsUTF8Unsafe(),
             base::UTF16ToUTF8(info.GetGalleryTooltip()));
 
-  TestStorageMonitor::RemoveSingleton();
+  TestStorageMonitor::Destroy();
 }

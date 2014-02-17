@@ -27,7 +27,7 @@
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
 #include "chrome/browser/media_galleries/win/portable_device_map_service.h"
 #include "chrome/browser/media_galleries/win/snapshot_file_details.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

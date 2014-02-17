@@ -13,10 +13,10 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +103,7 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    TestStorageMonitor::RemoveSingleton();
+    TestStorageMonitor::Destroy();
   }
 
   void StartDialog() {

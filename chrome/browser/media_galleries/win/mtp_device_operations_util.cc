@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_propvariant.h"
-#include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/common/chrome_constants.h"
 
 namespace media_transfer_protocol {
