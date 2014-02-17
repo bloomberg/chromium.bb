@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_IME_FAKE_INPUT_METHOD_DELEGATE_H_
 #define CHROMEOS_IME_FAKE_INPUT_METHOD_DELEGATE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -25,8 +27,10 @@ class CHROMEOS_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
   virtual ~FakeInputMethodDelegate();
 
   // InputMethodDelegate implementation:
-  virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
+  virtual std::string GetHardwareKeyboardLayouts() const OVERRIDE;
   virtual base::string16 GetLocalizedString(int resource_id) const OVERRIDE;
+  virtual void SetHardwareKeyboardLayoutForTesting(
+      const std::string& layout) OVERRIDE;
   virtual base::string16 GetDisplayLanguageName(
       const std::string& language_code) const OVERRIDE;
 

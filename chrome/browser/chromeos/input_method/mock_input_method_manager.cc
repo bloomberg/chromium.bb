@@ -74,10 +74,10 @@ const InputMethodDescriptor* MockInputMethodManager::GetInputMethodFromId(
 
 void MockInputMethodManager::EnableLoginLayouts(
     const std::string& language_code,
-    const std::string& initial_layout) {
+    const std::vector<std::string>& initial_layout) {
 }
 
-bool MockInputMethodManager::EnableInputMethods(
+bool MockInputMethodManager::ReplaceEnabledInputMethods(
     const std::vector<std::string>& new_active_input_method_ids) {
   return true;
 }
@@ -111,7 +111,7 @@ void MockInputMethodManager::SetEnabledExtensionImes(
     std::vector<std::string>* ids) {
 }
 
-void MockInputMethodManager::SetInputMethodDefault() {
+void MockInputMethodManager::SetInputMethodLoginDefault() {
 }
 
 bool MockInputMethodManager::SwitchToNextInputMethod() {
@@ -168,11 +168,6 @@ ComponentExtensionIMEManager*
 
 void MockInputMethodManager::set_application_locale(const std::string& value) {
   delegate_.set_active_locale(value);
-}
-
-void MockInputMethodManager::set_hardware_keyboard_layout(
-    const std::string& value) {
-  delegate_.set_hardware_keyboard_layout(value);
 }
 
 bool MockInputMethodManager::IsLoginKeyboard(

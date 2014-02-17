@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include <vector>
+
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
@@ -87,12 +89,11 @@ void Preferences::RegisterProfilePrefs(
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::Get();
-    if (manager) {
-      hardware_keyboard_id =
-          manager->GetInputMethodUtil()->GetHardwareInputMethodId();
-    }
+    DCHECK(g_browser_process);
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    hardware_keyboard_id =
+        local_state->GetString(prefs::kHardwareKeyboardLayout);
   } else {
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
@@ -582,7 +583,7 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
 
   if (section == std::string(language_prefs::kGeneralSectionName) &&
       name == std::string(language_prefs::kPreloadEnginesConfigName)) {
-    input_method_manager_->EnableInputMethods(split_values);
+    input_method_manager_->ReplaceEnabledInputMethods(split_values);
     return;
   }
 }

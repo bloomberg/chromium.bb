@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -33,8 +35,10 @@ class SetInputMethodListener : public content::NotificationObserver {
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
+    std::vector<std::string> keyboard_layouts;
+    keyboard_layouts.push_back(kInitialInputMethodOnLoginScreen);
     chromeos::input_method::InputMethodManager::Get()->EnableLoginLayouts(
-        kLoginScreenUILanguage, kInitialInputMethodOnLoginScreen);
+        kLoginScreenUILanguage, keyboard_layouts);
   }
 
   virtual ~SetInputMethodListener() {

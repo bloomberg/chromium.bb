@@ -147,11 +147,17 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   if (!layout.empty()) {
     PrefService* prefs = g_browser_process->local_state();
     prefs->SetString(prefs::kHardwareKeyboardLayout, layout);
+
     // This asks the file thread to save the prefs (i.e. doesn't block).
     // The latest values of Local State reside in memory so we can safely
     // get the value of kHardwareKeyboardLayout even if the data is not
     // yet saved to disk.
     prefs->CommitPendingWrite();
+
+    chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+    manager->GetInputMethodUtil()->UpdateHardwareLayoutCache();
+    manager->SetInputMethodLoginDefault();
   }
 }
 
@@ -1078,7 +1084,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.
   if (g_browser_process && g_browser_process->local_state()) {
-    manager->SetInputMethodDefault();
+    manager->SetInputMethodLoginDefault();
 
     PrefService* prefs = g_browser_process->local_state();
     // Apply owner preferences for tap-to-click and mouse buttons swap for
@@ -1145,7 +1151,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       std::string locale = chromeos::StartupUtils::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
       manager->EnableLoginLayouts(
-          locale, manager->GetInputMethodUtil()->GetHardwareInputMethodId());
+          locale,
+          manager->GetInputMethodUtil()->GetHardwareInputMethodIds());
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
           ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
@@ -1169,13 +1176,17 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   VLOG(1) << "Current locale: " << current_locale;
   std::string locale = startup_manifest->initial_locale_default();
 
+  std::string layout = startup_manifest->keyboard_layout();
+  VLOG(1) << "Initial locale: " << locale << "keyboard layout " << layout;
+
+  // Determine keyboard layout from OEM customization (if provided) or
+  // initial locale and save it in preferences.
+  DetermineAndSaveHardwareKeyboard(locale, layout);
+
   if (!current_locale.empty() || locale.empty()) {
     ShowLoginWizardFinish(first_screen_name, startup_manifest, display_host);
     return;
   }
-
-  std::string layout = startup_manifest->keyboard_layout();
-  VLOG(1) << "Initial locale: " << locale << "keyboard layout " << layout;
 
   // Save initial locale from VPD/customization manifest as current
   // Chrome locale. Otherwise it will be lost if Chrome restarts.
@@ -1183,10 +1194,6 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // will enforce preference saving.
   prefs->SetString(prefs::kApplicationLocale, locale);
   chromeos::StartupUtils::SetInitialLocale(locale);
-
-  // Determine keyboard layout from OEM customization (if provided) or
-  // initial locale and save it in preferences.
-  DetermineAndSaveHardwareKeyboard(locale, layout);
 
   scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
       new ShowLoginWizardSwitchLanguageCallbackData(

@@ -161,34 +161,40 @@ const InputMethodDescriptor* InputMethodManagerImpl::GetInputMethodFromId(
 
 void InputMethodManagerImpl::EnableLoginLayouts(
     const std::string& language_code,
-    const std::string& initial_layout) {
+    const std::vector<std::string>& initial_layouts) {
   if (state_ == STATE_TERMINATING)
     return;
 
-  std::vector<std::string> candidates;
+  // First, hardware keyboard layout should be shown.
+  std::vector<std::string> candidates =
+      util_.GetHardwareLoginInputMethodIds();
+
+  // Seocnd, locale based input method should be shown.
   // Add input methods associated with the language.
+  std::vector<std::string> layouts_from_locale;
   util_.GetInputMethodIdsFromLanguageCode(language_code,
                                           kKeyboardLayoutsOnly,
-                                          &candidates);
-  // Add the hardware keyboard as well. We should always add this so users
-  // can use the hardware keyboard on the login screen and the screen locker.
-  candidates.push_back(util_.GetHardwareLoginInputMethodId());
+                                          &layouts_from_locale);
+  candidates.insert(candidates.end(), layouts_from_locale.begin(),
+                    layouts_from_locale.end());
 
   std::vector<std::string> layouts;
   // First, add the initial input method ID, if it's requested, to
   // layouts, so it appears first on the list of active input
   // methods at the input language status menu.
-  if (util_.IsValidInputMethodId(initial_layout)) {
-    if (!IsLoginKeyboard(initial_layout)) {
-      DVLOG(1)
-          << "EnableLoginLayouts: ignoring non-login initial keyboard layout:"
-          << initial_layout;
-    } else {
-      layouts.push_back(initial_layout);
+  for (size_t i = 0; i < initial_layouts.size(); ++i) {
+    if (util_.IsValidInputMethodId(initial_layouts[i])) {
+      if (IsLoginKeyboard(initial_layouts[i])) {
+        layouts.push_back(initial_layouts[i]);
+      } else {
+        DVLOG(1)
+            << "EnableLoginLayouts: ignoring non-login initial keyboard layout:"
+            << initial_layouts[i];
+      }
+    } else if (!initial_layouts[i].empty()) {
+      DVLOG(1) << "EnableLoginLayouts: ignoring non-keyboard or invalid ID: "
+               << initial_layouts[i];
     }
-  } else if (!initial_layout.empty()) {
-    DVLOG(1) << "EnableLoginLayouts: ignoring non-keyboard or invalid ID: "
-             << initial_layout;
   }
 
   // Add candidates to layouts, while skipping duplicates.
@@ -208,7 +214,8 @@ void InputMethodManagerImpl::EnableLoginLayouts(
   if (active_input_method_ids_.size() > 1)
     MaybeInitializeCandidateWindowController();
 
-  ChangeInputMethod(initial_layout);  // you can pass empty |initial_layout|.
+  // you can pass empty |initial_layout|.
+  ChangeInputMethod(initial_layouts.empty() ? "" : initial_layouts[0]);
 }
 
 // Adds new input method to given list.
@@ -251,7 +258,7 @@ bool InputMethodManagerImpl::EnableInputMethod(
   return true;
 }
 
-bool InputMethodManagerImpl::EnableInputMethods(
+bool InputMethodManagerImpl::ReplaceEnabledInputMethods(
     const std::vector<std::string>& new_active_input_method_ids) {
   if (state_ == STATE_TERMINATING)
     return false;
@@ -264,7 +271,7 @@ bool InputMethodManagerImpl::EnableInputMethods(
                           &new_active_input_method_ids_filtered);
 
   if (new_active_input_method_ids_filtered.empty()) {
-    DVLOG(1) << "EnableInputMethods: No valid input method ID";
+    DVLOG(1) << "ReplaceEnabledInputMethods: No valid input method ID";
     return false;
   }
 
@@ -541,7 +548,7 @@ void InputMethodManagerImpl::SetEnabledExtensionImes(
   }
 }
 
-void InputMethodManagerImpl::SetInputMethodDefault() {
+void InputMethodManagerImpl::SetInputMethodLoginDefault() {
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.
   if (g_browser_process && g_browser_process->local_state()) {
@@ -550,12 +557,14 @@ void InputMethodManagerImpl::SetInputMethodDefault() {
     PrefService* prefs = g_browser_process->local_state();
     std::string initial_input_method_id =
         prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
+    std::vector<std::string> input_methods_to_be_enabled;
     if (initial_input_method_id.empty()) {
       // If kPreferredKeyboardLayout is not specified, use the hardware layout.
-      initial_input_method_id =
-          GetInputMethodUtil()->GetHardwareInputMethodId();
+      input_methods_to_be_enabled = util_.GetHardwareLoginInputMethodIds();
+    } else {
+      input_methods_to_be_enabled.push_back(initial_input_method_id);
     }
-    EnableLoginLayouts(locale, initial_input_method_id);
+    EnableLoginLayouts(locale, input_methods_to_be_enabled);
   }
 }
 
@@ -787,25 +796,32 @@ void InputMethodManagerImpl::OnScreenLocked() {
   saved_current_input_method_ = current_input_method_;
   saved_active_input_method_ids_ = active_input_method_ids_;
 
-  const std::string hardware_keyboard_id = util_.GetHardwareInputMethodId();
-  // We'll add the hardware keyboard if it's not included in
-  // |active_input_method_list| so that the user can always use the hardware
-  // keyboard on the screen locker.
-  bool should_add_hardware_keyboard = true;
+  std::set<std::string> added_ids_;
+
+  const std::vector<std::string>& hardware_keyboard_ids =
+      util_.GetHardwareLoginInputMethodIds();
 
   active_input_method_ids_.clear();
   for (size_t i = 0; i < saved_active_input_method_ids_.size(); ++i) {
     const std::string& input_method_id = saved_active_input_method_ids_[i];
     // Skip if it's not a keyboard layout. Drop input methods including
     // extension ones.
-    if (!IsLoginKeyboard(input_method_id))
+    if (!IsLoginKeyboard(input_method_id) ||
+        added_ids_.find(input_method_id) != added_ids_.end())
       continue;
     active_input_method_ids_.push_back(input_method_id);
-    if (input_method_id == hardware_keyboard_id)
-      should_add_hardware_keyboard = false;
+    added_ids_.insert(input_method_id);
   }
-  if (should_add_hardware_keyboard)
-    active_input_method_ids_.push_back(hardware_keyboard_id);
+
+  // We'll add the hardware keyboard if it's not included in
+  // |active_input_method_ids_| so that the user can always use the hardware
+  // keyboard on the screen locker.
+  for (size_t i = 0; i < hardware_keyboard_ids.size(); ++i) {
+    if (added_ids_.find(hardware_keyboard_ids[i]) == added_ids_.end()) {
+      active_input_method_ids_.push_back(hardware_keyboard_ids[i]);
+      added_ids_.insert(hardware_keyboard_ids[i]);
+    }
+  }
 
   ChangeInputMethod(current_input_method_.id());
 }

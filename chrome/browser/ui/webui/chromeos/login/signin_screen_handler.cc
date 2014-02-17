@@ -962,7 +962,7 @@ void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
     DVLOG(0) << "SetUserInputMethod('" << username
                << "'): failed to set user layout. Switching to default.";
 
-    manager->SetInputMethodDefault();
+    manager->SetInputMethodLoginDefault();
   }
 }
 

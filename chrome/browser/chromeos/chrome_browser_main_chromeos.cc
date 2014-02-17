@@ -581,10 +581,13 @@ void GuestLanguageSetCallbackData::Callback(
       input_method::InputMethodManager::Get();
   // Active layout must be hardware "login layout".
   // The previous one must be "locale default layout".
-  const std::string login_input_method =
-      ime_manager->GetInputMethodUtil()->GetHardwareLoginInputMethodId();
-  ime_manager->ChangeInputMethod(login_input_method);
+  // First, enable all hardware input methods.
+  const std::vector<std::string>& input_methods =
+      ime_manager->GetInputMethodUtil()->GetHardwareInputMethodIds();
+  for (size_t i = 0; i < input_methods.size(); ++i)
+    ime_manager->EnableInputMethod(input_methods[i]);
 
+  // Second, enable locale based input methods.
   const std::string locale_default_input_method =
       ime_manager->GetInputMethodUtil()->
           GetLanguageDefaultInputMethodId(loaded_locale);
@@ -592,7 +595,13 @@ void GuestLanguageSetCallbackData::Callback(
     PrefService* user_prefs = self->profile->GetPrefs();
     user_prefs->SetString(prefs::kLanguagePreviousInputMethod,
                           locale_default_input_method);
+    ime_manager->EnableInputMethod(locale_default_input_method);
   }
+
+  // Finally, activate the first login input method.
+  const std::vector<std::string>& login_input_methods =
+      ime_manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
+  ime_manager->ChangeInputMethod(login_input_methods[0]);
 }
 
 void SetGuestLocale(UserManager* const usermanager, Profile* const profile) {

@@ -19,12 +19,15 @@ namespace input_method {
 class InputMethodDelegateImpl : public InputMethodDelegate {
  public:
   InputMethodDelegateImpl();
+  virtual ~InputMethodDelegateImpl();
 
   // InputMethodDelegate implementation.
-  virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
+  virtual std::string GetHardwareKeyboardLayouts() const OVERRIDE;
   virtual base::string16 GetLocalizedString(int resource_id) const OVERRIDE;
   virtual base::string16 GetDisplayLanguageName(
       const std::string& language_code) const OVERRIDE;
+  virtual void SetHardwareKeyboardLayoutForTesting(
+      const std::string& layout) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodDelegateImpl);

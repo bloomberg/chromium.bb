@@ -14,7 +14,7 @@ FakeInputMethodDelegate::FakeInputMethodDelegate()
 FakeInputMethodDelegate::~FakeInputMethodDelegate() {
 }
 
-std::string FakeInputMethodDelegate::GetHardwareKeyboardLayout() const {
+std::string FakeInputMethodDelegate::GetHardwareKeyboardLayouts() const {
   return hardware_keyboard_layout_;
 }
 
@@ -30,6 +30,11 @@ base::string16 FakeInputMethodDelegate::GetDisplayLanguageName(
   if (!get_display_language_name_callback_.is_null())
     return get_display_language_name_callback_.Run(language_code);
   return base::string16();
+}
+
+void FakeInputMethodDelegate::SetHardwareKeyboardLayoutForTesting(
+    const std::string& layout) {
+  set_hardware_keyboard_layout(layout);
 }
 
 }  // namespace input_method

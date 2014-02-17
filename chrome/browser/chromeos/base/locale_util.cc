@@ -65,7 +65,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
           input_method::InputMethodManager::Get();
       manager->EnableLoginLayouts(
           data->locale,
-          manager->GetInputMethodUtil()->GetHardwareLoginInputMethodId());
+          manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
       if (!data->login_layouts_only) {
         // Enable all the other layouts
         std::vector<std::string> candidates;

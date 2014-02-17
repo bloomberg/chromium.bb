@@ -13,6 +13,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "chromeos/ime/input_method_descriptor.h"
 
 namespace chromeos {
@@ -97,12 +98,24 @@ class InputMethodUtil {
   // Returns empty string on error.
   std::string GetLanguageDefaultInputMethodId(const std::string& language_code);
 
-  // Returns the input method ID of the hardware keyboard. e.g. "xkb:us::eng"
-  // for the US Qwerty keyboard.
-  std::string GetHardwareInputMethodId() const;
+  // Updates the internal cache of hardware layouts.
+  void UpdateHardwareLayoutCache();
 
-  // Returns the login-allowed input method ID of the hardware keyboard.
-  std::string GetHardwareLoginInputMethodId() const;
+  // Set hardware keyboard layout for testing purpose. This is for simulating
+  // "keyboard_layout" entry in VPD values.
+  void SetHardwareKeyboardLayoutForTesting(const std::string& layout);
+
+  // Fills the input method IDs of the hardware keyboard. e.g. "xkb:us::eng"
+  // for US Qwerty keyboard or "xkb:ru::rus" for Russian keyboard.
+  const std::vector<std::string>& GetHardwareInputMethodIds();
+
+  // Returns the login-allowed input method ID of the hardware keyboard, e.g.
+  // "xkb:us::eng" but not include non-login keyboard like "xkb:ru::rus". Please
+  // note that this is not a subset of returned value of
+  // GetHardwareInputMethodIds. If GetHardwareInputMethodIds returns only
+  // non-login keyboard, this function will returns "xkb:us::eng" as the
+  // fallback keyboard.
+  const std::vector<std::string>& GetHardwareLoginInputMethodIds();
 
   // Returns true if given input method can be used to input login data.
   bool IsLoginKeyboard(const std::string& input_method_id) const;
@@ -172,6 +185,10 @@ class InputMethodUtil {
   HashType english_to_resource_id_;
 
   InputMethodDelegate* delegate_;
+
+  base::ThreadChecker thread_checker_;
+  std::vector<std::string> hardware_layouts_;
+  std::vector<std::string> hardware_login_layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodUtil);
 };

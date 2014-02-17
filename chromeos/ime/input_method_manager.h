@@ -116,21 +116,22 @@ class CHROMEOS_EXPORT InputMethodManager {
 
   // Enables "login" keyboard layouts (e.g. US Qwerty, US Dvorak, French
   // Azerty) that are necessary for the |language_code| and then switches to
-  // |initial_layout| if the string is not empty. For example, if
+  // |initial_layouts| if the given list is not empty. For example, if
   // |language_code| is "en-US", US Qwerty, US International, US Extended, US
   // Dvorak, and US Colemak layouts would be enabled. Likewise, for Germany
   // locale, US Qwerty which corresponds to the hardware keyboard layout and
   // several keyboard layouts for Germany would be enabled.
-  //   Only layouts suitable for login screen are enabled.
-  virtual void EnableLoginLayouts(const std::string& language_code,
-                                  const std::string& initial_layout) = 0;
+  // Only layouts suitable for login screen are enabled.
+  virtual void EnableLoginLayouts(
+      const std::string& language_code,
+      const std::vector<std::string>& initial_layouts) = 0;
 
   // Activates the input method property specified by the |key|.
   virtual void ActivateInputMethodProperty(const std::string& key) = 0;
 
   // Updates the list of active input method IDs, and then starts or stops the
   // system input method framework as needed.
-  virtual bool EnableInputMethods(
+  virtual bool ReplaceEnabledInputMethods(
       const std::vector<std::string>& new_active_input_method_ids) = 0;
 
   // Adds one entry to the list of active input method IDs, and then starts or
@@ -153,8 +154,8 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Sets the list of extension IME ids which should be enabled.
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) = 0;
 
-  // Sets current input method to default (first owners, then hardware).
-  virtual void SetInputMethodDefault() = 0;
+  // Sets current input method to login default (first owners, then hardware).
+  virtual void SetInputMethodLoginDefault() = 0;
 
   // Gets the descriptor of the input method which is currently selected.
   virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;

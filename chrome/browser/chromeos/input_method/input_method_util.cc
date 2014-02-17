@@ -17,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
+// For SetHardwareKeyboardLayoutForTesting.
+#include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/input_method_delegate.h"
 // TODO(nona): move this header from this file.
 #include "grit/generated_resources.h"
@@ -609,25 +611,49 @@ std::string InputMethodUtil::GetLanguageDefaultInputMethodId(
   return std::string();
 }
 
-std::string InputMethodUtil::GetHardwareInputMethodId() const {
-  const std::string input_method_id = delegate_->GetHardwareKeyboardLayout();
+void InputMethodUtil::UpdateHardwareLayoutCache() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  hardware_layouts_.clear();
+  hardware_login_layouts_.clear();
+  Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",", &hardware_layouts_);
 
-  if (input_method_id.empty()) {
+  for (size_t i = 0; i < hardware_layouts_.size(); ++i) {
+    if (IsLoginKeyboard(hardware_layouts_[i]))
+      hardware_login_layouts_.push_back(hardware_layouts_[i]);
+  }
+  if (hardware_layouts_.empty()) {
     // This is totally fine if it's empty. The hardware keyboard layout is
     // not stored if startup_manifest.json (OEM customization data) is not
     // present (ex. Cr48 doen't have that file).
-    return GetFallbackInputMethodDescriptor().id();
+    hardware_layouts_.push_back(GetFallbackInputMethodDescriptor().id());
   }
-  return input_method_id;
+
+  if (hardware_login_layouts_.empty())
+    hardware_login_layouts_.push_back(GetFallbackInputMethodDescriptor().id());
 }
 
-std::string InputMethodUtil::GetHardwareLoginInputMethodId() const {
-  const std::string input_method_id = GetHardwareInputMethodId();
+void InputMethodUtil::SetHardwareKeyboardLayoutForTesting(
+    const std::string& layout) {
+  delegate_->SetHardwareKeyboardLayoutForTesting(layout);
+  UpdateHardwareLayoutCache();
+}
 
-  if (!IsLoginKeyboard(input_method_id))
-    return GetFallbackInputMethodDescriptor().id();
+const std::vector<std::string>&
+    InputMethodUtil::GetHardwareInputMethodIds() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Once the initialization is done, at least one input method should be set.
+  if (hardware_layouts_.empty())
+    UpdateHardwareLayoutCache();
+  return hardware_layouts_;
+}
 
-  return input_method_id;
+const std::vector<std::string>&
+    InputMethodUtil::GetHardwareLoginInputMethodIds() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Once the initialization is done, at least one input method should be set.
+  if (hardware_login_layouts_.empty())
+    UpdateHardwareLayoutCache();
+  return hardware_login_layouts_;
 }
 
 bool InputMethodUtil::IsLoginKeyboard(const std::string& input_method_id)
