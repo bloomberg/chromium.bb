@@ -41,7 +41,7 @@ cr.define('login', function() {
    * synced with computed CSS sizes of pods.
    */
   var POD_WIDTH = 180;
-  var POD_HEIGHT = 217;
+  var POD_HEIGHT = 213;
   var POD_ROW_PADDING = 10;
 
   /**
@@ -1061,7 +1061,12 @@ cr.define('login', function() {
     /** @override */
     update: function() {
       this.imageElement.src = this.user.iconUrl;
+      if (this.user.iconHeight && this.user.iconWidth) {
+        this.imageElement.style.height = this.user.iconHeight;
+        this.imageElement.style.width = this.user.iconWidth;
+      }
       this.imageElement.alt = this.user.label;
+      this.imageElement.title = this.user.label;
       this.passwordElement.hidden = true;
       this.signinButtonElement.hidden = true;
       this.launchAppButtonElement.hidden = false;
@@ -1393,7 +1398,7 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i)
         this.podsWithPendingImages_.push(pod);
 
-      // TODO: Edge case handling when kiosk apps are not fitting.
+      // TODO(nkostylev): Edge case handling when kiosk apps are not fitting.
       for (var i = 0; i < this.apps_.length; ++i)
         this.addUserPod(this.apps_[i], this.user_add_is_animated_);
 
