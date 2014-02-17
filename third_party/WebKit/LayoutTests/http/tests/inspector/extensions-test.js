@@ -11,6 +11,7 @@ function extensionFunctions()
 
 var initialize_ExtensionsTest = function()
 {
+WebInspector.ExtensionServerProxy._ensureExtensionServer();
 
 window.buildPlatformExtensionAPI = function(extensionInfo)
 {
