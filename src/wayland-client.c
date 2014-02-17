@@ -588,13 +588,13 @@ display_handle_error(void *data,
 	switch (code) {
 	case WL_DISPLAY_ERROR_INVALID_OBJECT:
 	case WL_DISPLAY_ERROR_INVALID_METHOD:
-		err = -EINVAL;
+		err = EINVAL;
 		break;
 	case WL_DISPLAY_ERROR_NO_MEMORY:
-		err = -ENOMEM;
+		err = ENOMEM;
 		break;
 	default:
-		err = -EFAULT;
+		err = EFAULT;
 		break;
 	}
 
