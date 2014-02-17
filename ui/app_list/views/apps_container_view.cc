@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
@@ -27,9 +29,14 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
       top_icon_animation_pending_count_(0) {
   apps_grid_view_ = new AppsGridView(
       app_list_main_view, pagination_model, start_page_contents);
-  apps_grid_view_->SetLayout(kPreferredIconDimension,
-                             kPreferredCols,
-                             kPreferredRows);
+  int cols = kPreferredCols;
+  int rows = kPreferredRows;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kEnableExperimentalAppList)) {
+    cols = kExperimentalPreferredCols;
+    rows = kExperimentalPreferredRows;
+  }
+  apps_grid_view_->SetLayout(kPreferredIconDimension, cols, rows);
   AddChildView(apps_grid_view_);
 
   folder_background_view_ = new FolderBackgroundView();

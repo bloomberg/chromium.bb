@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -60,6 +62,12 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
   // subtract it if the taskbar is set to auto-hide, and the app list should
   // never overlap the taskbar.
   positioner.WorkAreaSubtract(taskbar_rect);
+
+  // The experimental app list is placed in the center of the screen.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kEnableExperimentalAppList)) {
+    return positioner.GetAnchorPointForScreenCenter();
+  }
 
   // Find which edge of the screen the taskbar is attached to.
   AppListPositioner::ScreenEdge edge = positioner.GetShelfEdge(taskbar_rect);

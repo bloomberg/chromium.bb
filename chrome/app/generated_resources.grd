@@ -6853,6 +6853,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the app info context menu option in the app list.">
           Enable the app info dialog. If enabled, the user will be able to select the 'App Info' context menu in the App Launcher to show the app info dialog for the selected app.
+       </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_NAME" desc="Name of the flag to enable the experimental app launcher.">
+          Enable the experimental app launcher.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the experimental app launcher.">
+          Enable the experimental version of the app launcher.
         </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME" desc="Name of the flag to disable sync of user account image.">

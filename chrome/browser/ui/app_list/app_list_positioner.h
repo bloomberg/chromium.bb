@@ -61,6 +61,10 @@ class AppListPositioner {
   // anchor point will potentially position the window under it.
   gfx::Point GetAnchorPointForScreenCorner(ScreenCorner corner) const;
 
+  // Finds the position for a window to anchor it to the center of the screen.
+  // Returns the intended coordinates for the center of the window.
+  gfx::Point GetAnchorPointForScreenCenter() const;
+
   // Finds the position for a window to anchor it to the corner of the shelf.
   // The window will be aligned to the left of the work area for horizontal
   // shelves, or to the top for vertical shelves. |shelf_edge| specifies the

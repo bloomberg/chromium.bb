@@ -58,6 +58,10 @@ const int kPreferredCols = 4;
 const int kPreferredRows = 4;
 const int kPreferredIconDimension = 48;
 
+// Preferred number of columns and rows in the experimental app list apps grid.
+const int kExperimentalPreferredCols = 6;
+const int kExperimentalPreferredRows = 3;
+
 // Number of the top items in a folder, which are shown inside the folder icon
 // and animated when opening and closing a folder.
 const size_t kNumFolderTopItems = 4;

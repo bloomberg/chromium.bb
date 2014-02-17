@@ -9,6 +9,9 @@
 namespace app_list {
 namespace switches {
 
+// If set, the experimental app list will be used.
+const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
+
 // If set, folder will be enabled in app list UI.
 const char kEnableFolderUI[] = "enable-app-list-folder-ui";
 

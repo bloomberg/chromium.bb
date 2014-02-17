@@ -1997,6 +1997,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kPrefetchSearchResults)
   },
+#if defined(ENABLE_APP_LIST)
+  {
+    "enable-experimental-app-list",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

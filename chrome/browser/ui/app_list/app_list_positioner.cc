@@ -32,6 +32,10 @@ void AppListPositioner::WorkAreaInset(int left,
   display_.set_work_area(work_area);
 }
 
+gfx::Point AppListPositioner::GetAnchorPointForScreenCenter() const {
+  return display_.bounds().CenterPoint();
+}
+
 gfx::Point AppListPositioner::GetAnchorPointForScreenCorner(
     ScreenCorner corner) const {
   const gfx::Rect& screen_rect = display_.bounds();

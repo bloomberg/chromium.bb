@@ -55,9 +55,10 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   items_grid_view_ = new AppsGridView(
       app_list_main_view, pagination_model_.get(), NULL);
   items_grid_view_->set_is_root_level(false);
-  items_grid_view_->SetLayout(kPreferredIconDimension,
-                              kPreferredCols,
-                              kPreferredRows);
+  items_grid_view_->SetLayout(
+      kPreferredIconDimension,
+      container_view->apps_grid_view()->cols(),
+      container_view->apps_grid_view()->rows_per_page());
   items_grid_view_->SetModel(model);
   AddChildView(items_grid_view_);
   view_model_->Add(items_grid_view_, kIndexChildItems);

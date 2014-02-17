@@ -81,6 +81,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // is no longer called to dynamically choosing those layout params.
   void SetLayout(int icon_size, int cols, int rows_per_page);
 
+  int cols() { return cols_; }
+  int rows_per_page() { return rows_per_page_; }
+
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 
