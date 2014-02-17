@@ -7,8 +7,6 @@
 #include "apps/app_window.h"
 #include "apps/ui/views/app_window_frame_view.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -36,14 +34,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-
-#if defined(OS_WIN)
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/web_applications/web_app_win.h"
-#include "ui/base/win/shell.h"
-#include "ui/views/win/hwnd_util.h"
-#endif
 
 #if defined(OS_LINUX)
 #include "chrome/browser/shell_integration_linux.h"
@@ -138,39 +128,6 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
   }
   return accelerators;
 }
-
-#if defined(OS_WIN)
-void CreateIconAndSetRelaunchDetails(
-    const base::FilePath web_app_path,
-    const base::FilePath icon_file,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const HWND hwnd) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  // Set the relaunch data so "Pin this program to taskbar" has the app's
-  // information.
-  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      shortcut_info.url,
-      shortcut_info.extension_id,
-      shortcut_info.profile_path);
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-  command_line.SetProgram(chrome_exe);
-  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
-      shortcut_info.title, hwnd);
-
-  if (!base::PathExists(web_app_path) &&
-      !base::CreateDirectory(web_app_path))
-    return;
-
-  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
-}
-#endif
 
 #if defined(USE_ASH)
 // This class handles a user's fullscreen request (Shift+F4/F4).
@@ -355,50 +312,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
     focus_manager->RegisterAccelerator(
         iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
-
-#if defined(OS_WIN)
-  base::string16 app_name_wide = base::UTF8ToWide(app_name);
-  HWND hwnd = GetNativeAppWindowHWND();
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          app_name_wide,
-          Profile::FromBrowserContext(browser_context())->GetPath()),
-      hwnd);
-
-  web_app::UpdateShortcutInfoAndIconForApp(
-      *extension(),
-      Profile::FromBrowserContext(browser_context()),
-      base::Bind(&NativeAppWindowViews::OnShortcutInfoLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
-#endif
 }
-
-#if defined(OS_WIN)
-void NativeAppWindowViews::OnShortcutInfoLoaded(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  HWND hwnd = GetNativeAppWindowHWND();
-
-  // Set window's icon to the one we're about to create/update in the web app
-  // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id,
-      shortcut_info.url);
-  base::FilePath icon_file = web_app_path
-      .Append(web_app::internals::GetSanitizedFileName(shortcut_info.title))
-      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&CreateIconAndSetRelaunchDetails,
-                 web_app_path, icon_file, shortcut_info, hwnd));
-}
-
-HWND NativeAppWindowViews::GetNativeAppWindowHWND() const {
-  return views::HWNDForWidget(window_->GetTopLevelWidget());
-}
-#endif
 
 void NativeAppWindowViews::InitializePanelWindow(
     const AppWindow::CreateParams& create_params) {
