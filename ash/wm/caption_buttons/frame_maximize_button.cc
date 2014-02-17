@@ -38,7 +38,9 @@ const int kUpdateDelayMS = 400;
 // The delay of the bubble appearance.
 const int kBubbleAppearanceDelayMS = 500;
 
-}  // namespace
+// The minimum sanp size in percent of the screen width.
+const int kMinSnapSizePercent = 50;
+}
 
 // EscapeEventFilter is installed on the RootWindow to track when the escape key
 // is pressed. We use an EventFilter for this as the FrameMaximizeButton
@@ -147,11 +149,10 @@ void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
 }
 
 void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
-  if (snap_type_ != snap_type) {
-    // This occurs if mouse hover opened the maximize bubble and a user
-    // "touched" one of the maximize bubble's buttons.
+  // We can come here with no snap type set in case that the mouse opened the
+  // maximize button and a touch event "touched" a button.
+  if (snap_type_ == SNAP_NONE)
     SnapButtonHovered(snap_type);
-  }
 
   Cancel(true);
   // Tell our menu to close.
@@ -190,17 +191,10 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
   maximizer_.reset();
   if (observing_frame_) {
     CHECK_EQ(frame_->GetNativeWindow(), window);
-    window->RemoveObserver(this);
-    wm::GetWindowState(window)->RemoveObserver(this);
+    frame_->GetNativeWindow()->RemoveObserver(this);
     frame_->RemoveObserver(this);
     observing_frame_ = false;
   }
-}
-
-void FrameMaximizeButton::OnPostWindowShowTypeChange(
-    wm::WindowState* window_state,
-    wm::WindowShowType old_type) {
-  Cancel(false);
 }
 
 void FrameMaximizeButton::OnWidgetActivationChanged(views::Widget* widget,
@@ -230,9 +224,7 @@ void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
     DCHECK(GetWidget());
     if (!observing_frame_) {
       observing_frame_ = true;
-      aura::Window* window = frame_->GetNativeWindow();
-      window->AddObserver(this);
-      wm::GetWindowState(window)->AddObserver(this);
+      frame_->GetNativeWindow()->AddObserver(this);
       frame_->AddObserver(this);
     }
     maximizer_.reset(new MaximizeBubbleController(
@@ -566,23 +558,31 @@ MaximizeBubbleFrameState
 FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
   wm::WindowState* window_state =
       wm::GetWindowState(frame_->GetNativeWindow());
-  switch (window_state->window_show_type()) {
-    case wm::SHOW_TYPE_MAXIMIZED:
-    case wm::SHOW_TYPE_FULLSCREEN:
-      return FRAME_STATE_FULL;
-    case wm::SHOW_TYPE_LEFT_SNAPPED:
-      return FRAME_STATE_SNAP_LEFT;
-    case wm::SHOW_TYPE_RIGHT_SNAPPED:
-      return FRAME_STATE_SNAP_RIGHT;
-    case wm::SHOW_TYPE_DEFAULT:
-    case wm::SHOW_TYPE_NORMAL:
-    case wm::SHOW_TYPE_MINIMIZED:
-    case wm::SHOW_TYPE_INACTIVE:
-    case wm::SHOW_TYPE_DETACHED:
-    case wm::SHOW_TYPE_END:
-    case wm::SHOW_TYPE_AUTO_POSITIONED:
-      return FRAME_STATE_NONE;
-  }
+  // When there are no restore bounds, we are in normal mode.
+  if (!window_state->HasRestoreBounds())
+    return FRAME_STATE_NONE;
+  // The normal maximized test can be used.
+  if (frame_->IsMaximized())
+    return FRAME_STATE_FULL;
+  // For Left/right maximize we need to check the dimensions.
+  gfx::Rect bounds = frame_->GetWindowBoundsInScreen();
+  gfx::Rect screen = Shell::GetScreen()->GetDisplayNearestWindow(
+      frame_->GetNativeView()).work_area();
+  if (bounds.width() < (screen.width() * kMinSnapSizePercent) / 100)
+    return FRAME_STATE_NONE;
+  // We might still have a horizontally filled window at this point which we
+  // treat as no special state.
+  if (bounds.y() != screen.y() || bounds.height() != screen.height())
+    return FRAME_STATE_NONE;
+
+  // We have to be in a maximize mode at this point.
+  if (bounds.x() == screen.x())
+    return FRAME_STATE_SNAP_LEFT;
+  if (bounds.right() == screen.right())
+    return FRAME_STATE_SNAP_RIGHT;
+  // If we come here, it is likely caused by the fact that the
+  // "VerticalResizeDoubleClick" stored a restore rectangle. In that case
+  // we allow all maximize operations (and keep the restore rectangle).
   return FRAME_STATE_NONE;
 }
 
