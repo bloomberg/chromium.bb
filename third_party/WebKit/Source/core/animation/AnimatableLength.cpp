@@ -138,7 +138,7 @@ bool AnimatableLength::equalTo(const AnimatableValue* value) const
     return m_number == length->m_number;
 }
 
-PassRefPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const
+PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> AnimatableLength::toCSSCalcExpressionNode() const
 {
     if (isCalc())
         return m_calcExpression;

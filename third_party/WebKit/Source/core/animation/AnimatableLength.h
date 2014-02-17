@@ -68,7 +68,7 @@ public:
     {
         return adoptRef(new AnimatableLength(number, unitType, cssPrimitiveValue));
     }
-    static PassRefPtr<AnimatableLength> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtr<AnimatableLength> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
         return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
     }
@@ -88,7 +88,7 @@ private:
     {
         ASSERT(m_unitType != UnitTypeCalc);
     }
-    AnimatableLength(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
+    AnimatableLength(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
         : m_unitType(UnitTypeCalc)
         , m_calcExpression(calcExpression)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
@@ -115,7 +115,7 @@ private:
     }
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toCSSPrimitiveValue(NumberRange) const;
-    PassRefPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
+    PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> toCSSCalcExpressionNode() const;
 
     PassRefPtr<AnimatableLength> scale(double) const;
     double clampedNumber(NumberRange range) const
@@ -153,7 +153,7 @@ private:
     double m_number;
     const NumberUnitType m_unitType;
 
-    RefPtr<CSSCalcExpressionNode> m_calcExpression;
+    RefPtrWillBePersistent<CSSCalcExpressionNode> m_calcExpression;
 
     mutable RefPtrWillBePersistent<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 

@@ -45,9 +45,12 @@ class RawPtr {
 public:
     RawPtr() : m_ptr(0) { }
     RawPtr(T* ptr) : m_ptr(ptr) { }
-
+    RawPtr(const RawPtr& other)
+        : m_ptr(other.get())
+    {
+    }
     template<typename U>
-    explicit RawPtr(const RawPtr<U>& other)
+    RawPtr(const RawPtr<U>& other)
         : m_ptr(other.get())
     {
     }
@@ -68,9 +71,17 @@ public:
         return ptr;
     }
 
-    RawPtr& operator=(T* ptr)
+    template<typename U>
+    RawPtr& operator=(U* ptr)
     {
         m_ptr = ptr;
+        return *this;
+    }
+
+    template<typename U>
+    RawPtr& operator=(RawPtr<U> ptr)
+    {
+        m_ptr = ptr.get();
         return *this;
     }
 
