@@ -510,7 +510,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void operator delete[](void* p) { Allocator::deleteArray(p); }
         void* operator new(size_t, NotNullTag, void* location)
         {
-            ASSERT(!Allocator::isGarbageCollected);
+            COMPILE_ASSERT(!Allocator::isGarbageCollected, Garbage_collector_must_be_disabled);
             ASSERT(location);
             return location;
         }
@@ -1143,7 +1143,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator>
     void Vector<T, inlineCapacity, Allocator>::trace(typename Allocator::Visitor* visitor)
     {
-        ASSERT(Allocator::isGarbageCollected);
+        COMPILE_ASSERT(Allocator::isGarbageCollected, Garbage_collector_must_be_enabled);
         const T* bufferBegin = buffer();
         const T* bufferEnd = buffer() + size();
         if (VectorTraits<T>::needsTracing) {

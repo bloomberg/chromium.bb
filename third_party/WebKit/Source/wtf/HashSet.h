@@ -52,7 +52,7 @@ namespace WTF {
         void operator delete[](void* p) { Allocator::deleteArray(p); }
         void* operator new(size_t, NotNullTag, void* location)
         {
-            ASSERT(!Allocator::isGarbageCollected);
+            COMPILE_ASSERT(!Allocator::isGarbageCollected, Garbage_collector_must_be_disabled);
             ASSERT(location);
             return location;
         }
