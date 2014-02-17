@@ -41,15 +41,17 @@
 
 namespace WebCore {
 
-PassRefPtr<WebKitNotification> WebKitNotification::create(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
+DEFINE_GC_INFO(WebKitNotification);
+
+PassRefPtrWillBeRawPtr<WebKitNotification> WebKitNotification::create(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtrWillBeRawPtr<NotificationCenter> provider)
 {
-    RefPtr<WebKitNotification> notification(adoptRef(new WebKitNotification(title, body, iconUrl, context, es, provider)));
+    RefPtrWillBeRawPtr<WebKitNotification> notification = adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitNotification(title, body, iconUrl, context, es, provider));
     notification->suspendIfNeeded();
 
     return notification.release();
 }
 
-WebKitNotification::WebKitNotification(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
+WebKitNotification::WebKitNotification(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtrWillBeRawPtr<NotificationCenter> provider)
     : NotificationBase(title, context, provider->client())
 {
     ScriptWrappable::init(this);

@@ -32,6 +32,7 @@
 #ifndef Notification_h
 #define Notification_h
 
+#include "heap/Handle.h"
 #include "modules/notifications/NotificationBase.h"
 #include "platform/AsyncMethodRunner.h"
 #include "wtf/OwnPtr.h"
@@ -45,11 +46,12 @@ class ExecutionContext;
 class NotificationClient;
 class NotificationPermissionCallback;
 
-class Notification FINAL : public RefCounted<Notification>, public NotificationBase {
-    REFCOUNTED_EVENT_TARGET(Notification);
+class Notification FINAL : public RefCountedWillBeRefCountedGarbageCollected<Notification>, public NotificationBase {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<Notification>);
 
 public:
-    static PassRefPtr<Notification> create(ExecutionContext*, const String& title, const Dictionary& options);
+    static PassRefPtrWillBeRawPtr<Notification> create(ExecutionContext*, const String& title, const Dictionary& options);
 
     virtual ~Notification();
 
@@ -62,6 +64,8 @@ public:
     // ActiveDOMObject interface
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     Notification(ExecutionContext*, const String& title, NotificationClient*);

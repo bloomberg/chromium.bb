@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     ActiveDOMObject,
     Conditional=LEGACY_NOTIFICATIONS,
     NoInterfaceObject,

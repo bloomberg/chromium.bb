@@ -34,6 +34,7 @@
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/notifications/NotificationBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -46,11 +47,12 @@ class NotificationCenter;
 
 // Implementation of the legacy notification API as specified the following page:
 // http://chromium.org/developers/design-documents/desktop-notifications/api-specification
-class WebKitNotification FINAL : public RefCounted<WebKitNotification>, public NotificationBase {
-    REFCOUNTED_EVENT_TARGET(WebKitNotification);
+class WebKitNotification FINAL : public RefCountedWillBeRefCountedGarbageCollected<WebKitNotification>, public NotificationBase {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WebKitNotification>);
 
 public:
-    static PassRefPtr<WebKitNotification> create(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
+    static PassRefPtrWillBeRawPtr<WebKitNotification> create(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtrWillBeRawPtr<NotificationCenter> provider);
 
     virtual ~WebKitNotification();
 
@@ -64,8 +66,10 @@ public:
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    void trace(Visitor*) { }
+
 private:
-    WebKitNotification(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
+    WebKitNotification(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtrWillBeRawPtr<NotificationCenter> provider);
 };
 
 } // namespace WebCore

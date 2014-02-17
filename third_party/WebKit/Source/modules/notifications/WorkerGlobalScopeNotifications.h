@@ -30,6 +30,7 @@
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/workers/WorkerSupplementable.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -51,7 +52,7 @@ private:
     static const char* supplementName();
 
     WorkerGlobalScope* m_context;
-    RefPtr<NotificationCenter> m_notificationCenter;
+    RefPtrWillBePersistent<NotificationCenter> m_notificationCenter;
 };
 
 } // namespace WebCore

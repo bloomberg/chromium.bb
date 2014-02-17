@@ -39,6 +39,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/VoidCallback.h"
+#include "heap/Handle.h"
 #include "modules/notifications/WebKitNotification.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
@@ -52,11 +53,13 @@ namespace WebCore {
 class NotificationClient;
 class VoidCallback;
 
-class NotificationCenter FINAL : public RefCounted<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
+// FIXME: oilpan: Change this to GarbageCollectedFinalized once we move ActiveDOMObject to oilpan.
+class NotificationCenter FINAL : public RefCountedWillBeGarbageCollectedFinalized<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
+    static PassRefPtrWillBeRawPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
 
-    PassRefPtr<WebKitNotification> createNotification(const String& iconUrl, const String& title, const String& body, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<WebKitNotification> createNotification(const String& iconUrl, const String& title, const String& body, ExceptionState& exceptionState)
     {
         if (!client()) {
             exceptionState.throwDOMException(InvalidStateError, "The notification client is null.");
@@ -72,18 +75,24 @@ public:
 
     virtual void stop() OVERRIDE;
 
+    void trace(Visitor*);
+
 private:
     NotificationCenter(ExecutionContext*, NotificationClient*);
 
-    class NotificationRequestCallback : public RefCounted<NotificationRequestCallback> {
+    class NotificationRequestCallback : public RefCountedWillBeGarbageCollectedFinalized<NotificationRequestCallback> {
+        DECLARE_GC_INFO;
     public:
-        static PassRefPtr<NotificationRequestCallback> createAndStartTimer(NotificationCenter*, PassOwnPtr<VoidCallback>);
+        static PassRefPtrWillBeRawPtr<NotificationRequestCallback> createAndStartTimer(NotificationCenter*, PassOwnPtr<VoidCallback>);
         void startTimer();
         void timerFired(Timer<NotificationRequestCallback>*);
+
+        void trace(Visitor*);
+
     private:
         NotificationRequestCallback(NotificationCenter*, PassOwnPtr<VoidCallback>);
 
-        RefPtr<NotificationCenter> m_notificationCenter;
+        RefPtrWillBeMember<NotificationCenter> m_notificationCenter;
         Timer<NotificationRequestCallback> m_timer;
         OwnPtr<VoidCallback> m_callback;
     };
@@ -91,7 +100,12 @@ private:
     void requestTimedOut(NotificationRequestCallback*);
 
     NotificationClient* m_client;
-    HashSet<RefPtr<NotificationRequestCallback> > m_callbacks;
+    WillBeHeapHashSet<RefPtrWillBeMember<NotificationRequestCallback> > m_callbacks;
+};
+
+// FIXME: oilpan: Move this to ThreadState.h.
+template<> struct ThreadingTrait<NotificationCenter::NotificationRequestCallback> {
+    static const ThreadAffinity Affinity = AnyThread;
 };
 
 } // namespace WebCore

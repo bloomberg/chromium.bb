@@ -42,9 +42,12 @@
 
 namespace WebCore {
 
-PassRefPtr<NotificationCenter> NotificationCenter::create(ExecutionContext* context, NotificationClient* client)
+DEFINE_GC_INFO(NotificationCenter);
+DEFINE_GC_INFO(NotificationCenter::NotificationRequestCallback);
+
+PassRefPtrWillBeRawPtr<NotificationCenter> NotificationCenter::create(ExecutionContext* context, NotificationClient* client)
 {
-    RefPtr<NotificationCenter> notificationCenter(adoptRef(new NotificationCenter(context, client)));
+    RefPtrWillBeRawPtr<NotificationCenter> notificationCenter = adoptRefWillBeNoop(new NotificationCenter(context, client));
     notificationCenter->suspendIfNeeded();
     return notificationCenter.release();
 }
@@ -103,9 +106,14 @@ void NotificationCenter::requestTimedOut(NotificationCenter::NotificationRequest
     m_callbacks.remove(request);
 }
 
-PassRefPtr<NotificationCenter::NotificationRequestCallback> NotificationCenter::NotificationRequestCallback::createAndStartTimer(NotificationCenter* center, PassOwnPtr<VoidCallback> callback)
+void NotificationCenter::trace(Visitor* visitor)
 {
-    RefPtr<NotificationCenter::NotificationRequestCallback> requestCallback = adoptRef(new NotificationCenter::NotificationRequestCallback(center, callback));
+    visitor->trace(m_callbacks);
+}
+
+PassRefPtrWillBeRawPtr<NotificationCenter::NotificationRequestCallback> NotificationCenter::NotificationRequestCallback::createAndStartTimer(NotificationCenter* center, PassOwnPtr<VoidCallback> callback)
+{
+    RefPtrWillBeRawPtr<NotificationCenter::NotificationRequestCallback> requestCallback = adoptRefWillBeNoop(new NotificationCenter::NotificationRequestCallback(center, callback));
     requestCallback->startTimer();
     return requestCallback.release();
 }
@@ -127,6 +135,11 @@ void NotificationCenter::NotificationRequestCallback::timerFired(Timer<Notificat
     if (m_callback)
         m_callback->handleEvent();
     m_notificationCenter->requestTimedOut(this);
+}
+
+void NotificationCenter::NotificationRequestCallback::trace(Visitor* visitor)
+{
+    visitor->trace(m_notificationCenter);
 }
 
 } // namespace WebCore
