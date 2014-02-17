@@ -166,7 +166,7 @@ HTMLInputElement::~HTMLInputElement()
     // setForm(0) may register this to a document-level radio button group.
     // We should unregister it to avoid accessing a deleted object.
     if (isRadioButton())
-        document().formController()->checkedRadioButtons().removeButton(this);
+        document().formController()->radioButtonGroupScope().removeButton(this);
     if (m_hasTouchEventHandler)
         document().didRemoveTouchEventHandler(this);
 }
@@ -861,8 +861,8 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     m_isChecked = nowChecked;
     setNeedsStyleRecalc(SubtreeStyleChange);
 
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-            buttons->updateCheckedState(this);
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        scope->updateCheckedState(this);
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), CheckedState);
 
@@ -1428,7 +1428,7 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
         imageLoader()->elementDidMoveToNewDocument();
 
     if (isRadioButton())
-        oldDocument.formController()->checkedRadioButtons().removeButton(this);
+        oldDocument.formController()->radioButtonGroupScope().removeButton(this);
     if (m_hasTouchEventHandler)
         oldDocument.didRemoveTouchEventHandler(this);
 
@@ -1452,8 +1452,8 @@ bool HTMLInputElement::recalcWillValidate() const
 void HTMLInputElement::requiredAttributeChanged()
 {
     HTMLTextFormControlElement::requiredAttributeChanged();
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        buttons->requiredAttributeChanged(this);
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        scope->requiredAttributeChanged(this);
     m_inputTypeView->requiredAttributeChanged();
 }
 
@@ -1702,39 +1702,39 @@ bool HTMLInputElement::capture() const
 bool HTMLInputElement::isInRequiredRadioButtonGroup()
 {
     ASSERT(isRadioButton());
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        return buttons->isInRequiredGroup(this);
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        return scope->isInRequiredGroup(this);
     return false;
 }
 
 HTMLInputElement* HTMLInputElement::checkedRadioButtonForGroup() const
 {
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        return buttons->checkedButtonForGroup(name());
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        return scope->checkedButtonForGroup(name());
     return 0;
 }
 
-CheckedRadioButtons* HTMLInputElement::checkedRadioButtons() const
+RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
 {
     if (!isRadioButton())
         return 0;
     if (HTMLFormElement* formElement = form())
-        return &formElement->checkedRadioButtons();
+        return &formElement->radioButtonGroupScope();
     if (inDocument())
-        return &document().formController()->checkedRadioButtons();
+        return &document().formController()->radioButtonGroupScope();
     return 0;
 }
 
 inline void HTMLInputElement::addToRadioButtonGroup()
 {
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        buttons->addButton(this);
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        scope->addButton(this);
 }
 
 inline void HTMLInputElement::removeFromRadioButtonGroup()
 {
-    if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        buttons->removeButton(this);
+    if (RadioButtonGroupScope* scope = radioButtonGroupScope())
+        scope->removeButton(this);
 }
 
 unsigned HTMLInputElement::height() const

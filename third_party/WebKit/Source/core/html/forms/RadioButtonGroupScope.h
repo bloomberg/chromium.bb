@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef CheckedRadioButtons_h
-#define CheckedRadioButtons_h
+#ifndef RadioButtonGroupScope_h
+#define RadioButtonGroupScope_h
 
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -31,12 +31,10 @@ namespace WebCore {
 class HTMLInputElement;
 class RadioButtonGroup;
 
-// FIXME: Rename the class. The class was a simple map from a name to a checked
-// radio button. It manages RadioButtonGroup objects now.
-class CheckedRadioButtons {
+class RadioButtonGroupScope {
 public:
-    CheckedRadioButtons();
-    ~CheckedRadioButtons();
+    RadioButtonGroupScope();
+    ~RadioButtonGroupScope();
     void addButton(HTMLInputElement*);
     void updateCheckedState(HTMLInputElement*);
     void requiredAttributeChanged(HTMLInputElement*);
@@ -51,4 +49,4 @@ private:
 
 } // namespace WebCore
 
-#endif // CheckedRadioButtons_h
+#endif // RadioButtonGroupScope_h

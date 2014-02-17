@@ -31,7 +31,6 @@
 
 namespace WebCore {
 
-class CheckedRadioButtons;
 class DragData;
 class ExceptionState;
 class FileList;
@@ -42,6 +41,7 @@ class InputType;
 class InputTypeView;
 class KURL;
 class ListAttributeTargetObserver;
+class RadioButtonGroupScope;
 struct DateTimeChooserParameters;
 
 class HTMLInputElement : public HTMLTextFormControlElement {
@@ -364,7 +364,7 @@ private:
     void updateValueIfNeeded();
 
     // Returns null if this isn't associated with any radio button group.
-    CheckedRadioButtons* checkedRadioButtons() const;
+    RadioButtonGroupScope* radioButtonGroupScope() const;
     void addToRadioButtonGroup();
     void removeFromRadioButtonGroup();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)

@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
-#include "core/html/forms/CheckedRadioButtons.h"
+#include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include "wtf/OwnPtr.h"
@@ -109,7 +109,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocomplete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocompleteerror);
 
-    CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
+    RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
     const Vector<FormAssociatedElement*>& associatedElements() const;
     const Vector<HTMLImageElement*>& imageElements();
@@ -159,7 +159,7 @@ private:
     FormSubmission::Attributes m_attributes;
     OwnPtr<PastNamesMap> m_pastNamesMap;
 
-    CheckedRadioButtons m_checkedRadioButtons;
+    RadioButtonGroupScope m_radioButtonGroupScope;
 
     // Do not access m_associatedElements directly. Use associatedElements() instead.
     Vector<FormAssociatedElement*> m_associatedElements;

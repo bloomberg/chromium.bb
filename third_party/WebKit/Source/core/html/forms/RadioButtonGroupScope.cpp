@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/html/forms/CheckedRadioButtons.h"
+#include "core/html/forms/RadioButtonGroupScope.h"
 
 #include "core/html/HTMLInputElement.h"
 #include "wtf/HashSet.h"
@@ -176,15 +176,15 @@ bool RadioButtonGroup::contains(HTMLInputElement* button) const
 // Explicity define empty constructor and destructor in order to prevent the
 // compiler from generating them as inlines. So we don't need to to define
 // RadioButtonGroup in the header.
-CheckedRadioButtons::CheckedRadioButtons()
+RadioButtonGroupScope::RadioButtonGroupScope()
 {
 }
 
-CheckedRadioButtons::~CheckedRadioButtons()
+RadioButtonGroupScope::~RadioButtonGroupScope()
 {
 }
 
-void CheckedRadioButtons::addButton(HTMLInputElement* element)
+void RadioButtonGroupScope::addButton(HTMLInputElement* element)
 {
     ASSERT(element->isRadioButton());
     if (element->name().isEmpty())
@@ -199,7 +199,7 @@ void CheckedRadioButtons::addButton(HTMLInputElement* element)
     group->add(element);
 }
 
-void CheckedRadioButtons::updateCheckedState(HTMLInputElement* element)
+void RadioButtonGroupScope::updateCheckedState(HTMLInputElement* element)
 {
     ASSERT(element->isRadioButton());
     if (element->name().isEmpty())
@@ -212,7 +212,7 @@ void CheckedRadioButtons::updateCheckedState(HTMLInputElement* element)
     group->updateCheckedState(element);
 }
 
-void CheckedRadioButtons::requiredAttributeChanged(HTMLInputElement* element)
+void RadioButtonGroupScope::requiredAttributeChanged(HTMLInputElement* element)
 {
     ASSERT(element->isRadioButton());
     if (element->name().isEmpty())
@@ -225,7 +225,7 @@ void CheckedRadioButtons::requiredAttributeChanged(HTMLInputElement* element)
     group->requiredAttributeChanged(element);
 }
 
-HTMLInputElement* CheckedRadioButtons::checkedButtonForGroup(const AtomicString& name) const
+HTMLInputElement* RadioButtonGroupScope::checkedButtonForGroup(const AtomicString& name) const
 {
     if (!m_nameToGroupMap)
         return 0;
@@ -233,7 +233,7 @@ HTMLInputElement* CheckedRadioButtons::checkedButtonForGroup(const AtomicString&
     return group ? group->checkedButton() : 0;
 }
 
-bool CheckedRadioButtons::isInRequiredGroup(HTMLInputElement* element) const
+bool RadioButtonGroupScope::isInRequiredGroup(HTMLInputElement* element) const
 {
     ASSERT(element->isRadioButton());
     if (element->name().isEmpty())
@@ -244,7 +244,7 @@ bool CheckedRadioButtons::isInRequiredGroup(HTMLInputElement* element) const
     return group && group->isRequired() && group->contains(element);
 }
 
-void CheckedRadioButtons::removeButton(HTMLInputElement* element)
+void RadioButtonGroupScope::removeButton(HTMLInputElement* element)
 {
     ASSERT(element->isRadioButton());
     if (element->name().isEmpty())
