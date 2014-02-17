@@ -40,12 +40,12 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_imageLoader(this)
 {
     ScriptWrappable::init(this);
@@ -56,7 +56,6 @@ inline SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_height);
 
     addToPropertyMap(m_preserveAspectRatio);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGImageElement();
 }
 
@@ -112,22 +111,22 @@ void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicStri
 {
     SVGParsingError parseError = NoError;
 
-    if (!isSupportedAttribute(name))
+    if (!isSupportedAttribute(name)) {
         SVGGraphicsElement::parseAttribute(name, value);
-    else if (name == SVGNames::xAttr)
+    } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::yAttr)
+    } else if (name == SVGNames::yAttr) {
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::widthAttr)
+    } else if (name == SVGNames::widthAttr) {
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::heightAttr)
+    } else if (name == SVGNames::heightAttr) {
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::preserveAspectRatioAttr)
+    } else if (name == SVGNames::preserveAspectRatioAttr) {
         m_preserveAspectRatio->setBaseValueAsString(value, parseError);
-    else if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
@@ -215,7 +214,7 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
 
 const AtomicString SVGImageElement::imageSourceURL() const
 {
-    return AtomicString(m_href->currentValue()->value());
+    return AtomicString(hrefString());
 }
 
 void SVGImageElement::didMoveToNewDocument(Document& oldDocument)

@@ -44,14 +44,12 @@ public:
     void setFormat(const AtomicString&, ExceptionState&);
 
     bool hasValidGlyphElements(Vector<AtomicString>& glyphNames) const;
-    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGAltGlyphElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAltGlyphElement)
     END_DECLARE_ANIMATED_PROPERTIES
 };

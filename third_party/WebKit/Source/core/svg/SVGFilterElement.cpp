@@ -43,11 +43,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_filterRes(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::filterResAttr))
     , m_filterUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_primitiveUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
@@ -65,7 +65,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    addToPropertyMap(m_href);
     addToPropertyMap(m_filterRes);
     registerAnimatedPropertiesForSVGFilterElement();
 }
@@ -104,9 +103,9 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
 {
     SVGParsingError parseError = NoError;
 
-    if (!isSupportedAttribute(name))
+    if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
-    else if (name == SVGNames::filterUnitsAttr) {
+    } else if (name == SVGNames::filterUnitsAttr) {
         SVGUnitTypes::SVGUnitType propertyValue = SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::fromString(value);
         if (propertyValue > 0)
             setFilterUnitsBaseValue(propertyValue);
@@ -114,20 +113,20 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
         SVGUnitTypes::SVGUnitType propertyValue = SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::fromString(value);
         if (propertyValue > 0)
             setPrimitiveUnitsBaseValue(propertyValue);
-    } else if (name == SVGNames::xAttr)
+    } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::yAttr)
+    } else if (name == SVGNames::yAttr) {
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::widthAttr)
+    } else if (name == SVGNames::widthAttr) {
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::heightAttr)
+    } else if (name == SVGNames::heightAttr) {
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::filterResAttr)
+    } else if (name == SVGNames::filterResAttr) {
         m_filterRes->setBaseValueAsString(value, parseError);
-    else if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }

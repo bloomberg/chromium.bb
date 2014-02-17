@@ -43,13 +43,11 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
-    SVGAnimatedString* href() { return m_href.get(); }
-    const SVGAnimatedString* href() const { return m_href.get(); }
 
 private:
     explicit SVGImageElement(Document&);
 
-    virtual bool isStructurallyExternal() const OVERRIDE { return !href()->currentValue()->value().isNull(); }
+    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefString().isNull(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
@@ -75,7 +73,6 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
-    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGImageElement)
     END_DECLARE_ANIMATED_PROPERTIES
 

@@ -48,7 +48,6 @@ public:
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedString* href() { return m_href.get(); }
     SVGAnimatedInteger* filterResX() { return m_filterRes->firstInteger(); }
     SVGAnimatedInteger* filterResY() { return m_filterRes->secondInteger(); }
 
@@ -70,7 +69,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
-    RefPtr<SVGAnimatedString> m_href;
     RefPtr<SVGAnimatedIntegerOptionalInteger> m_filterRes;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterElement)
         DECLARE_ANIMATED_ENUMERATION(FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)

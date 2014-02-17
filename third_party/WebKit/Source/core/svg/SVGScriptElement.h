@@ -43,7 +43,6 @@ public:
     void setType(const String&);
 
     ScriptLoader* loader() const { return m_loader.get(); }
-    SVGAnimatedString* href() { return m_href.get(); }
 
 #ifndef NDEBUG
     virtual bool isAnimatableAttribute(const QualifiedName&) const OVERRIDE;
@@ -82,7 +81,6 @@ private:
 
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
-    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
     END_DECLARE_ANIMATED_PROPERTIES
 

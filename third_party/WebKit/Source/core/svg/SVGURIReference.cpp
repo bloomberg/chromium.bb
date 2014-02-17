@@ -19,13 +19,20 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGURIReference.h"
 
 #include "XLinkNames.h"
+#include "core/svg/SVGElement.h"
 #include "platform/weborigin/KURL.h"
 
 namespace WebCore {
+
+SVGURIReference::SVGURIReference(SVGElement* element)
+    : m_href(SVGAnimatedString::create(element, XLinkNames::hrefAttr, SVGString::create()))
+{
+    ASSERT(element);
+    element->addToPropertyMap(m_href);
+}
 
 bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
 {
@@ -91,6 +98,15 @@ Element* SVGURIReference::targetElementFromIRIString(const String& iri, const Do
 void SVGURIReference::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
 {
     supportedAttributes.add(XLinkNames::hrefAttr);
+}
+
+bool SVGURIReference::parseAttribute(const QualifiedName& name, const AtomicString& value, SVGParsingError& parseError)
+{
+    if (name.matches(XLinkNames::hrefAttr)) {
+        m_href->setBaseValueAsString(value, parseError);
+        return true;
+    }
+    return false;
 }
 
 }

@@ -42,12 +42,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feImageTag, document)
+    , SVGURIReference(this)
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_preserveAspectRatio);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGFEImageElement();
 }
 
@@ -81,7 +80,7 @@ void SVGFEImageElement::clearResourceReferences()
 
 void SVGFEImageElement::fetchImageResource()
 {
-    FetchRequest request(ResourceRequest(ownerDocument()->completeURL(m_href->currentValue()->value())), localName());
+    FetchRequest request(ResourceRequest(ownerDocument()->completeURL(hrefString())), localName());
     m_cachedImage = document().fetcher()->fetchImage(request);
 
     if (m_cachedImage)
@@ -95,7 +94,7 @@ void SVGFEImageElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id);
     if (!target) {
         if (id.isEmpty())
             fetchImageResource();
@@ -133,8 +132,7 @@ void SVGFEImageElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
     if (name == SVGNames::preserveAspectRatioAttr) {
         m_preserveAspectRatio->setBaseValueAsString(value, parseError);
-    } else if (name.matches(XLinkNames::hrefAttr)) {
-        m_href->setBaseValueAsString(value, parseError);
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -197,7 +195,7 @@ PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* fil
 {
     if (m_cachedImage)
         return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), m_preserveAspectRatio->currentValue());
-    return FEImage::createWithIRIReference(filter, document(), m_href->currentValue()->value(), m_preserveAspectRatio->currentValue());
+    return FEImage::createWithIRIReference(filter, document(), hrefString(), m_preserveAspectRatio->currentValue());
 }
 
 }

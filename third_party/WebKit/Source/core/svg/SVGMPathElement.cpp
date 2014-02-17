@@ -36,10 +36,9 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document)
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
+    , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGMPathElement();
 }
 
@@ -60,7 +59,7 @@ void SVGMPathElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
         if (document().accessSVGExtensions()->isElementPendingResource(this, id))
@@ -115,8 +114,7 @@ void SVGMPathElement::parseAttribute(const QualifiedName& name, const AtomicStri
 
     if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
-    } else if (name.matches(XLinkNames::hrefAttr)) {
-        m_href->setBaseValueAsString(value, parseError);
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -143,7 +141,7 @@ void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 SVGPathElement* SVGMPathElement::pathElement()
 {
-    Element* target = targetElementFromIRIString(m_href->currentValue()->value(), document());
+    Element* target = targetElementFromIRIString(hrefString(), document());
     if (target && target->hasTagName(SVGNames::pathTag))
         return toSVGPathElement(target);
     return 0;

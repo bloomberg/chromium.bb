@@ -45,8 +45,6 @@ public:
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedString* href() { return m_href.get(); }
-
 private:
     explicit SVGCursorElement(Document&);
 
@@ -60,7 +58,6 @@ private:
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
-    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCursorElement)
     END_DECLARE_ANIMATED_PROPERTIES
 

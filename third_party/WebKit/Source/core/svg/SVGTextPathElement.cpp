@@ -41,15 +41,14 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
+    , SVGURIReference(this)
     , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(LengthModeOther)))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_method(SVGTextPathMethodAlign)
     , m_spacing(SVGTextPathSpacingExact)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_startOffset);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGTextPathElement();
 }
 
@@ -84,11 +83,11 @@ void SVGTextPathElement::parseAttribute(const QualifiedName& name, const AtomicS
 {
     SVGParsingError parseError = NoError;
 
-    if (!isSupportedAttribute(name))
+    if (!isSupportedAttribute(name)) {
         SVGTextContentElement::parseAttribute(name, value);
-    else if (name == SVGNames::startOffsetAttr)
+    } else if (name == SVGNames::startOffsetAttr) {
         m_startOffset->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::methodAttr) {
+    } else if (name == SVGNames::methodAttr) {
         SVGTextPathMethodType propertyValue = SVGPropertyTraits<SVGTextPathMethodType>::fromString(value);
         if (propertyValue > 0)
             setMethodBaseValue(propertyValue);
@@ -96,10 +95,10 @@ void SVGTextPathElement::parseAttribute(const QualifiedName& name, const AtomicS
         SVGTextPathSpacingType propertyValue = SVGPropertyTraits<SVGTextPathSpacingType>::fromString(value);
         if (propertyValue > 0)
             setSpacingBaseValue(propertyValue);
-    } else if (name.matches(XLinkNames::hrefAttr)) {
-        m_href->setBaseValueAsString(value, parseError);
-    } else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
@@ -147,7 +146,7 @@ void SVGTextPathElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
         if (document().accessSVGExtensions()->isElementPendingResource(this, id))

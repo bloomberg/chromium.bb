@@ -43,10 +43,9 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
+    , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGAltGlyphElement();
 }
 

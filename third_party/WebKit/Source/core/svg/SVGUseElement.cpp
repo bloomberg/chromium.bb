@@ -59,11 +59,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser)
     : SVGGraphicsElement(SVGNames::useTag, document)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_wasInsertedByParser(wasInsertedByParser)
     , m_haveFiredLoadEvent(false)
     , m_needsShadowTreeRecreation(false)
@@ -76,7 +76,6 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGUseElement();
 }
 
@@ -130,20 +129,20 @@ void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString
 {
     SVGParsingError parseError = NoError;
 
-    if (!isSupportedAttribute(name))
+    if (!isSupportedAttribute(name)) {
         SVGGraphicsElement::parseAttribute(name, value);
-    else if (name == SVGNames::xAttr)
+    } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::yAttr)
+    } else if (name == SVGNames::yAttr) {
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::widthAttr)
+    } else if (name == SVGNames::widthAttr) {
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::heightAttr)
+    } else if (name == SVGNames::heightAttr) {
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
@@ -184,7 +183,7 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
 
 Document* SVGUseElement::referencedDocument() const
 {
-    if (!isExternalURIReference(m_href->currentValue()->value(), document()))
+    if (!isExternalURIReference(hrefString(), document()))
         return &document();
     return externalDocument();
 }
@@ -222,9 +221,9 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        bool isExternalReference = isExternalURIReference(m_href->currentValue()->value(), document());
+        bool isExternalReference = isExternalURIReference(hrefString(), document());
         if (isExternalReference) {
-            KURL url = document().completeURL(m_href->currentValue()->value());
+            KURL url = document().completeURL(hrefString());
             if (url.hasFragmentIdentifier()) {
                 FetchRequest request(ResourceRequest(url.string()), localName());
                 setDocumentResource(document().fetcher()->fetchSVGDocument(request));
@@ -387,7 +386,7 @@ void SVGUseElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id, externalDocument());
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id, externalDocument());
     if (!target || !target->inDocument()) {
         // If we can't find the target of an external element, just give up.
         // We can't observe if the target somewhen enters the external document, nor should we do it.
@@ -622,7 +621,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
 bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, SVGElementInstance* targetInstance, SVGElement*& newTarget)
 {
     ASSERT(referencedDocument());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->m_href->currentValue()->value(), *referencedDocument());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedDocument());
     newTarget = 0;
     if (targetElement && targetElement->isSVGElement())
         newTarget = toSVGElement(targetElement);
@@ -696,7 +695,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         ASSERT(!use->resourceIsStillLoading());
 
         ASSERT(referencedDocument());
-        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->m_href->currentValue()->value(), *referencedDocument());
+        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedDocument());
         SVGElement* target = 0;
         if (targetElement && targetElement->isSVGElement())
             target = toSVGElement(targetElement);

@@ -55,7 +55,6 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
-    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGPatternElement(Document&);
@@ -78,7 +77,6 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedRect> m_viewBox;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
-    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPatternElement)
         DECLARE_ANIMATED_ENUMERATION(PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)

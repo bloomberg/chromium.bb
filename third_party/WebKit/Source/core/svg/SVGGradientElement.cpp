@@ -49,12 +49,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
+    , SVGURIReference(this)
     , m_spreadMethod(SVGSpreadMethodPad)
     , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
 {
     ScriptWrappable::init(this);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGGradientElement();
 }
 
@@ -101,10 +100,10 @@ void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicS
 
     SVGParsingError parseError = NoError;
 
-    if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else
+    if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }

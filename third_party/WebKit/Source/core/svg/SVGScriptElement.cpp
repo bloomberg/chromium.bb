@@ -41,12 +41,11 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(SVGNames::scriptTag, document)
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
+    , SVGURIReference(this)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
 {
     ScriptWrappable::init(this);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGScriptElement();
 }
 
@@ -77,12 +76,12 @@ void SVGScriptElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (name == SVGNames::typeAttr)
         return;
 
-    if (name == HTMLNames::onerrorAttr)
+    if (name == HTMLNames::onerrorAttr) {
         setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value));
-    else if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
@@ -100,7 +99,7 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        m_loader->handleSourceAttribute(m_href->currentValue()->value());
+        m_loader->handleSourceAttribute(hrefString());
         return;
     }
 
@@ -147,7 +146,7 @@ bool SVGScriptElement::haveLoadedRequiredResources()
 
 String SVGScriptElement::sourceAttributeValue() const
 {
-    return m_href->currentValue()->value();
+    return hrefString();
 }
 
 String SVGScriptElement::charsetAttributeValue() const
@@ -187,7 +186,7 @@ bool SVGScriptElement::deferAttributeValue() const
 
 bool SVGScriptElement::hasSourceAttribute() const
 {
-    return m_href->isSpecified();
+    return href()->isSpecified();
 }
 
 PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()

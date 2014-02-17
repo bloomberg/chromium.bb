@@ -37,15 +37,14 @@ END_REGISTER_ANIMATED_PROPERTIES
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
     , SVGTests(this)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
-    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
-    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGCursorElement();
 }
 
@@ -77,17 +76,17 @@ void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicStr
 {
     SVGParsingError parseError = NoError;
 
-    if (!isSupportedAttribute(name))
+    if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
-    else if (name == SVGNames::xAttr)
+    } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name == SVGNames::yAttr)
+    } else if (name == SVGNames::yAttr) {
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (name.matches(XLinkNames::hrefAttr))
-        m_href->setBaseValueAsString(value, parseError);
-    else if (SVGTests::parseAttribute(name, value)) {
-    } else
+    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else if (SVGTests::parseAttribute(name, value)) {
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     reportAttributeParsingError(parseError, name, value);
 }
