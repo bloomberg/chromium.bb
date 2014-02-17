@@ -62,7 +62,7 @@ class NET_EXPORT OpenSSLClientKeyStore {
   bool FetchClientCertPrivateKey(const X509Certificate* cert,
                                  ScopedEVP_PKEY* private_key);
 
-  // Flush all recorded keys. Used only during testing.
+  // Flush all recorded keys.
   void Flush();
 
  protected:
