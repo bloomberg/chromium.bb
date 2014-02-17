@@ -6,6 +6,7 @@
   "version": "0.2",
   "minimum_chrome_version": "28",
   "default_locale": "en",
+  "incognito" : "split",
   "icons": {
     "16": "icon/16.png",
     "32": "icon/32.png",
@@ -24,6 +25,7 @@
   "permissions": [
     "identity",
     "chromeosInfoPrivate",
+    "firstRunPrivate",
     "management",
     "webview",
     "storage",
@@ -39,6 +41,7 @@
   "oauth2": {
     "client_id": "929143421683.apps.googleusercontent.com",
     "scopes": [
+        "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/supportcontent"
     ]
   },
