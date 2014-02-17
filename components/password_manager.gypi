@@ -63,6 +63,8 @@
         '..',
       ],
       'sources': [
+        'password_manager/core/browser/mock_password_store.cc',
+        'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_form_data.cc',
         'password_manager/core/browser/password_form_data.h',
         'password_manager/core/browser/test_password_store.cc',

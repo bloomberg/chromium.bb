@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 
 MockPasswordStore::MockPasswordStore()
     : PasswordStore(

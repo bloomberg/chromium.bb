@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/mock_password_store_service.h"
 
-#include "chrome/browser/password_manager/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 
 // static
 BrowserContextKeyedService* MockPasswordStoreService::Build(

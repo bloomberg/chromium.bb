@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/password_manager/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
