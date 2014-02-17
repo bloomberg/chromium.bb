@@ -69,6 +69,16 @@ function test()
             }
         },
 
+        function testSetScriptableAttribute(next)
+        {
+            domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
+         
+            function testBody(node, done)
+            {
+                editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
+            }
+        },
+
         function testRemoveAttribute(next)
         {
             domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
@@ -287,6 +297,10 @@ Tests that user can mutate DOM by means of elements panel.
 
     <div id="testSetAttribute">
         <div foo="attribute value" id="node-to-set-attribute"></div>
+    </div>
+
+    <div id="testSetScriptableAttribute">
+        <div onclick="alert(1)" id="node-to-set-scriptable-attribute"></div>
     </div>
 
     <div id="testRemoveAttribute">

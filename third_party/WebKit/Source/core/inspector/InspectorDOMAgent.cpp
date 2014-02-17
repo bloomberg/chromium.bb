@@ -703,9 +703,9 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     bool shouldIgnoreCase = element->document().isHTMLDocument() && element->isHTMLElement();
     // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
     if (shouldIgnoreCase && element->document().body())
-        fragment->parseHTML(markup, element->document().body(), DisallowScriptingContent);
+        fragment->parseHTML(markup, element->document().body(), AllowScriptingContent);
     else
-        fragment->parseXML(markup, 0, DisallowScriptingContent);
+        fragment->parseXML(markup, 0, AllowScriptingContent);
 
     Element* parsedElement = fragment->firstChild() && fragment->firstChild()->isElementNode() ? toElement(fragment->firstChild()) : 0;
     if (!parsedElement) {

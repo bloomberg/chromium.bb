@@ -57,6 +57,16 @@ Running: testSetAttribute
       <div id="node-to-set-attribute" bar="edited attribute"></div>
   </div>
 
+Running: testSetScriptableAttribute
+==== before ====
+- <div id="testSetScriptableAttribute">
+      <div onclick="alert(1)" id="node-to-set-scriptable-attribute"></div>
+  </div>
+==== after ====
+- <div id="testSetScriptableAttribute">
+      <div onclick="alert(2)" id="node-to-set-scriptable-attribute"></div>
+  </div>
+
 Running: testRemoveAttribute
 ==== before ====
 - <div id="testRemoveAttribute">
