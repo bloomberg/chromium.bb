@@ -1867,16 +1867,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # The resulting string leaves an uninterpolated %{suffix} which
     # is used in the final substitution below.
     mtime_preserving_solink_base = (
-        'if [ ! -e $lib -o ! -e ${lib}.TOC ]; then '
-        '%(solink)s && %(extract_toc)s > ${lib}.TOC; else '
-        '%(solink)s && %(extract_toc)s > ${lib}.tmp && '
-        'if ! cmp -s ${lib}.tmp ${lib}.TOC; then mv ${lib}.tmp ${lib}.TOC ; '
+        'if [ ! -e $lib -o ! -e $lib.TOC ]; then '
+        '%(solink)s && %(extract_toc)s > $lib.TOC; else '
+        '%(solink)s && %(extract_toc)s > $lib.tmp && '
+        'if ! cmp -s $lib.tmp $lib.TOC; then mv $lib.tmp $lib.TOC ; '
         'fi; fi'
         % { 'solink':
               '$ld -shared $ldflags -o $lib -Wl,-soname=$soname %(suffix)s',
             'extract_toc':
-              ('{ readelf -d ${lib} | grep SONAME ; '
-               'nm -gD -f p ${lib} | cut -f1-2 -d\' \'; }')})
+              ('{ readelf -d $lib | grep SONAME ; '
+               'nm -gD -f p $lib | cut -f1-2 -d\' \'; }')})
 
     master_ninja.rule(
       'solink',
@@ -1942,16 +1942,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # comment in the posix section above for details.
     solink_base = '$ld %(type)s $ldflags -o $lib %(suffix)s'
     mtime_preserving_solink_base = (
-        'if [ ! -e $lib -o ! -e ${lib}.TOC ] || '
+        'if [ ! -e $lib -o ! -e $lib.TOC ] || '
              # Always force dependent targets to relink if this library
              # reexports something. Handling this correctly would require
              # recursive TOC dumping but this is rare in practice, so punt.
              'otool -l $lib | grep -q LC_REEXPORT_DYLIB ; then '
-          '%(solink)s && %(extract_toc)s > ${lib}.TOC; '
+          '%(solink)s && %(extract_toc)s > $lib.TOC; '
         'else '
-          '%(solink)s && %(extract_toc)s > ${lib}.tmp && '
-          'if ! cmp -s ${lib}.tmp ${lib}.TOC; then '
-            'mv ${lib}.tmp ${lib}.TOC ; '
+          '%(solink)s && %(extract_toc)s > $lib.tmp && '
+          'if ! cmp -s $lib.tmp $lib.TOC; then '
+            'mv $lib.tmp $lib.TOC ; '
           'fi; '
         'fi'
         % { 'solink': solink_base,
