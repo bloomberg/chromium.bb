@@ -8,11 +8,11 @@
 namespace extensions {
 namespace image_writer {
 
-void Operation::WriteStart() {
+void Operation::Write(const base::Closure& continuation) {
   Error(error::kUnsupportedOperation);
 }
 
-void Operation::VerifyWriteStart() {
+void Operation::VerifyWrite(const base::Closure& continuation) {
   Error(error::kUnsupportedOperation);
 }
 

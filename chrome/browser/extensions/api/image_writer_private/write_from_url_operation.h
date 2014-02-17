@@ -5,17 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_URL_OPERATION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_URL_OPERATION_H_
 
-#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
-#include "content/public/browser/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-
-class RenderViewHost;
-
-}  // namespace content
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 namespace extensions {
 namespace image_writer {
@@ -23,44 +19,57 @@ namespace image_writer {
 class OperationManager;
 
 // Encapsulates a write of an image accessed via URL.
-class WriteFromUrlOperation : public Operation,
-                              public content::DownloadItem::Observer {
+class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
  public:
   WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
                         const ExtensionId& extension_id,
-                        content::RenderViewHost* rvh,
+                        net::URLRequestContextGetter* request_context,
                         GURL url,
                         const std::string& hash,
-                        bool saveImageAsDownload,
                         const std::string& storage_unit_id);
-  virtual void Start() OVERRIDE;
- private:
+  virtual void StartImpl() OVERRIDE;
+
+ protected:
   virtual ~WriteFromUrlOperation();
-  void CreateTempFile();
 
-  void DownloadStart();
-  void OnDownloadStarted(content::DownloadItem*,
-                         content::DownloadInterruptReason interrupt_reason);
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  void DownloadComplete();
-  void DownloadCleanUp();
+  // Sets the image_path to the correct location to download to.
+  void GetDownloadTarget(const base::Closure& continuation);
 
-  void VerifyDownloadStart();
-  void VerifyDownloadRun();
-  void VerifyDownloadCompare(scoped_ptr<std::string> download_hash);
-  void VerifyDownloadComplete();
+  // Downloads the |url| to the currently configured |image_path|.  Should not
+  // be called without calling |GetDownloadTarget| first.
+  void Download(const base::Closure& continuation);
+
+  // Verifies the download matches |hash|.  If the hash is empty, this stage is
+  // skipped.
+  void VerifyDownload(const base::Closure& continuation);
+
+ private:
+  // Destroys the URLFetcher.  The URLFetcher needs to be destroyed on the same
+  // thread it was created on.  The Operation may be deleted on the UI thread
+  // and so we must first delete the URLFetcher on the FILE thread.
+  void DestroyUrlFetcher();
+
+  // URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                          int64 current,
+                                          int64 total) OVERRIDE;
+  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                        int64 current,
+                                        int64 total) OVERRIDE;
+
+  void VerifyDownloadCompare(const base::Closure& continuation,
+                             const std::string& download_hash);
+  void VerifyDownloadComplete(const base::Closure& continuation);
 
   // Arguments
-  content::RenderViewHost* rvh_;
+  net::URLRequestContextGetter* request_context_;
   GURL url_;
   const std::string hash_;
-  const bool saveImageAsDownload_;
 
   // Local state
-  scoped_ptr<base::FilePath> tmp_file_;
-  bool download_stopped_;
-  content::DownloadItem* download_;
-  base::FilePath download_path_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+  base::Closure download_continuation_;
 };
 
 } // namespace image_writer

@@ -3,17 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/threading/worker_pool.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_manager.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "extensions/common/error_utils.h"
+#include "net/url_request/url_fetcher.h"
 
 namespace extensions {
 namespace image_writer {
@@ -23,176 +17,126 @@ using content::BrowserThread;
 WriteFromUrlOperation::WriteFromUrlOperation(
     base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
-    content::RenderViewHost* rvh,
+    net::URLRequestContextGetter* request_context,
     GURL url,
     const std::string& hash,
-    bool saveImageAsDownload,
-    const std::string& storage_unit_id)
-    : Operation(manager, extension_id, storage_unit_id),
-      rvh_(rvh),
+    const std::string& device_path)
+    : Operation(manager, extension_id, device_path),
+      request_context_(request_context),
       url_(url),
       hash_(hash),
-      saveImageAsDownload_(saveImageAsDownload),
-      download_stopped_(false),
-      download_(NULL) {
-}
+      download_continuation_() {}
 
 WriteFromUrlOperation::~WriteFromUrlOperation() {
 }
 
-void WriteFromUrlOperation::Start() {
+void WriteFromUrlOperation::StartImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  SetStage(image_writer_api::STAGE_DOWNLOAD);
-
-  if (saveImageAsDownload_){
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WriteFromUrlOperation::DownloadStart, this));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&WriteFromUrlOperation::CreateTempFile, this));
-  }
-
-  AddCleanUpFunction(base::Bind(&WriteFromUrlOperation::DownloadCleanUp, this));
+  GetDownloadTarget(base::Bind(
+      &WriteFromUrlOperation::Download,
+      this,
+      base::Bind(
+          &WriteFromUrlOperation::VerifyDownload,
+          this,
+          base::Bind(
+              &WriteFromUrlOperation::Unzip,
+              this,
+              base::Bind(&WriteFromUrlOperation::Write,
+                         this,
+                         base::Bind(&WriteFromUrlOperation::VerifyWrite,
+                                    this,
+                                    base::Bind(&WriteFromUrlOperation::Finish,
+                                               this)))))));
 }
 
-void WriteFromUrlOperation::CreateTempFile() {
+void WriteFromUrlOperation::GetDownloadTarget(
+    const base::Closure& continuation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
 
-  tmp_file_.reset(new base::FilePath());
-
-  if (base::CreateTemporaryFile(tmp_file_.get())) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WriteFromUrlOperation::DownloadStart, this));
+  if (url_.ExtractFileName() == "") {
+    if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_)) {
+      Error(error::kTempFileError);
+      return;
+    }
   } else {
-    Error(error::kTempFileError);
+    base::FilePath file_name =
+        base::FilePath::FromUTF8Unsafe(url_.ExtractFileName());
+    image_path_ = temp_dir_.path().Append(file_name);
   }
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
-// The downloader runs on the UI thread.
-void WriteFromUrlOperation::DownloadStart() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (download_stopped_) {
-    return;
-  }
-
-  DVLOG(1) << "Starting download of URL: " << url_;
-
-  Profile* current_profile = manager_->profile();
-
-  scoped_ptr<content::DownloadUrlParameters> download_params(
-      new content::DownloadUrlParameters(
-        url_,
-        rvh_->GetProcess()->GetID(),
-        rvh_->GetRoutingID(),
-        current_profile->GetResourceContext()));
-
-  if (tmp_file_.get()) {
-    download_params->set_file_path(*tmp_file_);
-  }
-
-  download_params->set_callback(
-      base::Bind(&WriteFromUrlOperation::OnDownloadStarted, this));
-
-  content::DownloadManager* download_manager =
-    content::BrowserContext::GetDownloadManager(current_profile);
-  download_manager->DownloadUrl(download_params.Pass());
-}
-
-void WriteFromUrlOperation::OnDownloadStarted(
-    content::DownloadItem* item,
-    content::DownloadInterruptReason interrupt_reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (download_stopped_) {
-    // At this point DownloadCleanUp was called but the |download_| wasn't
-    // stored yet and still hasn't been cancelled.
-    item->Cancel(true);
-    return;
-  }
-
-  if (item) {
-    DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-
-    download_ = item;
-    download_->AddObserver(this);
-
-    // Run at least once.
-    OnDownloadUpdated(download_);
-  } else {
-    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-    std::string error_message = ErrorUtils::FormatErrorMessage(
-        "Download failed: *",
-        content::DownloadInterruptReasonToString(interrupt_reason));
-    Error(error_message);
-  }
-}
-
-// Always called from the UI thread.
-void WriteFromUrlOperation::OnDownloadUpdated(content::DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (download_stopped_) {
-    return;
-  }
-
-  SetProgress(download->PercentComplete());
-
-  if (download->GetState() == content::DownloadItem::COMPLETE) {
-    download_path_ = download_->GetTargetFilePath();
-
-    download_->RemoveObserver(this);
-    download_ = NULL;
-
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&WriteFromUrlOperation::DownloadComplete, this));
-
-  } else if (download->GetState() == content::DownloadItem::INTERRUPTED) {
-    Error(error::kDownloadInterrupted);
-  } else if (download->GetState() == content::DownloadItem::CANCELLED) {
-    Error(error::kDownloadCancelled);
-  }
-}
-
-void WriteFromUrlOperation::DownloadComplete() {
+void WriteFromUrlOperation::Download(const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DVLOG(1) << "Download complete.";
 
-  SetProgress(kProgressComplete);
-
-  VerifyDownloadStart();
-}
-
-void WriteFromUrlOperation::DownloadCleanUp() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WriteFromUrlOperation::DownloadCleanUp, this));
+  if (IsCancelled()) {
     return;
   }
 
-  download_stopped_ = true;
+  download_continuation_ = continuation;
 
-  if (download_) {
-    download_->RemoveObserver(this);
-    download_->Cancel(true);
-    download_ = NULL;
+  SetStage(image_writer_api::STAGE_DOWNLOAD);
+
+  // Store the URL fetcher on this object so that it is destroyed before this
+  // object is.
+  url_fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+
+  url_fetcher_->SetRequestContext(request_context_);
+  url_fetcher_->SaveResponseToFileAtPath(
+      image_path_,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+
+  AddCleanUpFunction(
+      base::Bind(&WriteFromUrlOperation::DestroyUrlFetcher, this));
+
+  url_fetcher_->Start();
+}
+
+void WriteFromUrlOperation::DestroyUrlFetcher() { url_fetcher_.reset(); }
+
+void WriteFromUrlOperation::OnURLFetchUploadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
+  // No-op
+}
+
+void WriteFromUrlOperation::OnURLFetchDownloadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (IsCancelled()) {
+    url_fetcher_.reset(NULL);
+  }
+
+  int progress = (kProgressComplete * current) / total;
+
+  SetProgress(progress);
+}
+
+void WriteFromUrlOperation::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
+    SetProgress(kProgressComplete);
+
+    download_continuation_.Run();
+
+    // Remove the reference to ourselves in this closure.
+    download_continuation_ = base::Closure();
+  } else {
+    Error(error::kDownloadInterrupted);
   }
 }
 
-void WriteFromUrlOperation::VerifyDownloadStart() {
+void WriteFromUrlOperation::VerifyDownload(const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (IsCancelled()) {
@@ -201,37 +145,26 @@ void WriteFromUrlOperation::VerifyDownloadStart() {
 
   // Skip verify if no hash.
   if (hash_.empty()) {
-    scoped_ptr<base::FilePath> download_path(
-        new base::FilePath(download_path_));
-    UnzipStart(download_path.Pass());
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
     return;
   }
 
-  DVLOG(1) << "Download verification started.";
-
   SetStage(image_writer_api::STAGE_VERIFYDOWNLOAD);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WriteFromUrlOperation::VerifyDownloadRun, this));
-}
-
-void WriteFromUrlOperation::VerifyDownloadRun() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<base::FilePath> download_path(new base::FilePath(download_path_));
   GetMD5SumOfFile(
-      download_path.Pass(),
+      image_path_,
       0,
       0,
       kProgressComplete,
-      base::Bind(&WriteFromUrlOperation::VerifyDownloadCompare, this));
+      base::Bind(
+          &WriteFromUrlOperation::VerifyDownloadCompare, this, continuation));
 }
 
 void WriteFromUrlOperation::VerifyDownloadCompare(
-    scoped_ptr<std::string> download_hash) {
+    const base::Closure& continuation,
+    const std::string& download_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (*download_hash != hash_) {
+  if (download_hash != hash_) {
     Error(error::kDownloadHashError);
     return;
   }
@@ -239,21 +172,19 @@ void WriteFromUrlOperation::VerifyDownloadCompare(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&WriteFromUrlOperation::VerifyDownloadComplete, this));
+      base::Bind(
+          &WriteFromUrlOperation::VerifyDownloadComplete, this, continuation));
 }
 
-void WriteFromUrlOperation::VerifyDownloadComplete() {
+void WriteFromUrlOperation::VerifyDownloadComplete(
+    const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
 
-  DVLOG(1) << "Download verification complete.";
-
   SetProgress(kProgressComplete);
-
-  scoped_ptr<base::FilePath> download_path(new base::FilePath(download_path_));
-  UnzipStart(download_path.Pass());
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
 } // namespace image_writer

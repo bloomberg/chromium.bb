@@ -45,16 +45,18 @@ class ImageWriterFakeImageBurnerClient
  private:
   BurnFinishedHandler burn_finished_handler_;
   BurnProgressUpdateHandler burn_progress_update_handler_;
-
 };
 
 } // namespace
 #endif
 
 MockOperationManager::MockOperationManager() : OperationManager(NULL) {}
+MockOperationManager::MockOperationManager(Profile* profile)
+    : OperationManager(profile) {}
 MockOperationManager::~MockOperationManager() {}
 
-ImageWriterUnitTestBase::ImageWriterUnitTestBase() {}
+ImageWriterUnitTestBase::ImageWriterUnitTestBase()
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 ImageWriterUnitTestBase::~ImageWriterUnitTestBase() {}
 
 void ImageWriterUnitTestBase::SetUp() {
@@ -85,31 +87,6 @@ void ImageWriterUnitTestBase::TearDown() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Shutdown();
 #endif
-}
-
-bool ImageWriterUnitTestBase::CompareImageAndDevice() {
-  scoped_ptr<char[]> image_buffer(new char[kTestFileSize]);
-  scoped_ptr<char[]> device_buffer(new char[kTestFileSize]);
-
-  while (true) {
-    int image_bytes_read = ReadFile(test_image_path_,
-                                    image_buffer.get(),
-                                    kTestFileSize);
-    int device_bytes_read = ReadFile(test_device_path_,
-                                     device_buffer.get(),
-                                     kTestFileSize);
-
-    if (image_bytes_read != device_bytes_read)
-      return false;
-
-    if (image_bytes_read == 0)
-      return true;
-
-    if (memcmp(image_buffer.get(), device_buffer.get(), image_bytes_read) != 0)
-      return false;
-  }
-
-  return false;
 }
 
 bool ImageWriterUnitTestBase::FillFile(const base::FilePath& file,

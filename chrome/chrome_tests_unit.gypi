@@ -869,6 +869,7 @@
         'browser/extensions/api/image_writer_private/operation_unittest.cc',
         'browser/extensions/api/image_writer_private/test_utils.cc',
         'browser/extensions/api/image_writer_private/write_from_file_operation_unittest.cc',
+        'browser/extensions/api/image_writer_private/write_from_url_operation_unittest.cc',
         'browser/extensions/api/log_private/syslog_parser_unittest.cc',
         'browser/extensions/api/mdns/dns_sd_registry_unittest.cc',
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',

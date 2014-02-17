@@ -18,195 +18,177 @@ using content::BrowserThread;
 
 const int kBurningBlockSize = 8 * 1024;  // 8 KiB
 
-void Operation::WriteStart() {
+void Operation::Write(const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
-
-  if (image_path_.empty()) {
-    Error(error::kImageNotFound);
-    return;
-  }
-
-  DVLOG(1) << "Starting write of " << image_path_.value()
-           << " to " << storage_unit_id_;
 
   SetStage(image_writer_api::STAGE_WRITE);
 
   // TODO (haven): Unmount partitions before writing. http://crbug.com/284834
 
-  scoped_ptr<image_writer_utils::ImageReader> reader(
-      new image_writer_utils::ImageReader());
-  scoped_ptr<image_writer_utils::ImageWriter> writer(
-      new image_writer_utils::ImageWriter());
-  base::FilePath storage_path(storage_unit_id_);
-
-  if (reader->Open(image_path_)) {
-    if (!writer->Open(storage_path)) {
-      reader->Close();
-      Error(error::kDeviceOpenError);
-      return;
-    }
-  } else {
+  base::PlatformFileError result;
+  image_file_ = base::CreatePlatformFile(
+      image_path_,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      NULL,
+      &result);
+  if (result != base::PLATFORM_FILE_OK) {
     Error(error::kImageOpenError);
     return;
   }
 
-  BrowserThread::PostTask(
-    BrowserThread::FILE,
-    FROM_HERE,
-    base::Bind(&Operation::WriteChunk,
-               this,
-               base::Passed(&reader),
-               base::Passed(&writer),
-               0));
-}
-
-void Operation::WriteChunk(
-    scoped_ptr<image_writer_utils::ImageReader> reader,
-    scoped_ptr<image_writer_utils::ImageWriter> writer,
-    int64 bytes_written) {
-  if (IsCancelled()) {
-    WriteCleanUp(reader.Pass(), writer.Pass());
+  device_file_ = base::CreatePlatformFile(
+      device_path_,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
+      NULL,
+      &result);
+  if (result != base::PLATFORM_FILE_OK) {
+    Error(error::kDeviceOpenError);
+    base::ClosePlatformFile(image_file_);
     return;
   }
 
-  char buffer[kBurningBlockSize];
-  int64 image_size = reader->GetSize();
-  int len = reader->Read(buffer, kBurningBlockSize);
+  int64 total_size;
+  base::GetFileSize(image_path_, &total_size);
 
-  if (len > 0) {
-    if (writer->Write(buffer, len) == len) {
-      int percent_prev = kProgressComplete * bytes_written / image_size;
-      int percent_curr = kProgressComplete * (bytes_written + len) / image_size;
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&Operation::WriteChunk, this, 0, total_size, continuation));
+}
 
-      if (percent_curr > percent_prev) {
+void Operation::WriteChunk(const int64& bytes_written,
+                           const int64& total_size,
+                           const base::Closure& continuation) {
+  if (!IsCancelled()) {
+    scoped_ptr<char[]> buffer(new char[kBurningBlockSize]);
+    int64 len = base::ReadPlatformFile(
+        image_file_, bytes_written, buffer.get(), kBurningBlockSize);
+
+    if (len > 0) {
+      if (base::WritePlatformFile(
+              device_file_, bytes_written, buffer.get(), len) == len) {
+        int percent_curr =
+            kProgressComplete * (bytes_written + len) / total_size;
+
         SetProgress(percent_curr);
-      }
 
-      BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&Operation::WriteChunk,
-                   this,
-                   base::Passed(&reader),
-                   base::Passed(&writer),
-                   bytes_written + len));
-    } else {
-      WriteCleanUp(reader.Pass(), writer.Pass());
-      Error(error::kDeviceWriteError);
-    }
-  } else if (len == 0) {
-    if (bytes_written == image_size) {
-      if (WriteCleanUp(reader.Pass(), writer.Pass())) {
-        BrowserThread::PostTask(
-          BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(&Operation::WriteComplete,
-                     this));
+        BrowserThread::PostTask(BrowserThread::FILE,
+                                FROM_HERE,
+                                base::Bind(&Operation::WriteChunk,
+                                           this,
+                                           bytes_written + len,
+                                           total_size,
+                                           continuation));
+        return;
+      } else {
+        Error(error::kDeviceWriteError);
       }
-    } else {
-      WriteCleanUp(reader.Pass(), writer.Pass());
+    } else if (len == 0) {
+      WriteComplete(continuation);
+    } else {  // len < 0
       Error(error::kImageReadError);
     }
-  } else { // len < 0
-    WriteCleanUp(reader.Pass(), writer.Pass());
-    Error(error::kImageReadError);
   }
+
+  base::ClosePlatformFile(image_file_);
+  base::ClosePlatformFile(device_file_);
 }
 
-bool Operation::WriteCleanUp(
-    scoped_ptr<image_writer_utils::ImageReader> reader,
-    scoped_ptr<image_writer_utils::ImageWriter> writer) {
-
-  bool success = true;
-  if (!reader->Close()) {
-    Error(error::kImageCloseError);
-    success = false;
-  }
-
-  if (!writer->Close()) {
-    Error(error::kDeviceCloseError);
-    success = false;
-  }
-  return success;
-}
-
-void Operation::WriteComplete() {
-
-  DVLOG(2) << "Completed write of " << image_path_.value();
+void Operation::WriteComplete(const base::Closure& continuation) {
   SetProgress(kProgressComplete);
-
-  if (verify_write_) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::VerifyWriteStart, this));
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Finish, this));
-  }
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
-void Operation::VerifyWriteStart() {
+void Operation::VerifyWrite(const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
 
-  DVLOG(1) << "Starting verification stage.";
-
   SetStage(image_writer_api::STAGE_VERIFYWRITE);
 
-  scoped_ptr<base::FilePath> image_path(new base::FilePath(image_path_));
+  base::PlatformFileError result;
 
-  GetMD5SumOfFile(
-      image_path.Pass(),
-      -1,
-      0, // progress_offset
-      50, // progress_scale
-      base::Bind(&Operation::VerifyWriteStage2,
-                 this));
-}
-
-void Operation::VerifyWriteStage2(
-    scoped_ptr<std::string> image_hash) {
-  DVLOG(1) << "Building MD5 sum of device: " << storage_unit_id_;
-
-  int64 image_size;
-  scoped_ptr<base::FilePath> device_path(new base::FilePath(storage_unit_id_));
-
-  if (!base::GetFileSize(image_path_, &image_size)){
-    Error(error::kImageSizeError);
+  image_file_ = base::CreatePlatformFile(
+      image_path_,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      NULL,
+      &result);
+  if (result != base::PLATFORM_FILE_OK) {
+    Error(error::kImageOpenError);
     return;
   }
 
-  GetMD5SumOfFile(
-      device_path.Pass(),
-      image_size,
-      50, // progress_offset
-      50, // progress_scale
-      base::Bind(&Operation::VerifyWriteCompare,
-                 this,
-                 base::Passed(&image_hash)));
-}
-
-void Operation::VerifyWriteCompare(
-    scoped_ptr<std::string> image_hash,
-    scoped_ptr<std::string> device_hash) {
-  DVLOG(1) << "Comparing hashes: " << *image_hash << " vs " << *device_hash;
-
-  if (*image_hash != *device_hash) {
-    Error(error::kVerificationFailed);
+  device_file_ = base::CreatePlatformFile(
+      device_path_,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      NULL,
+      &result);
+  if (result != base::PLATFORM_FILE_OK) {
+    Error(error::kDeviceOpenError);
+    base::ClosePlatformFile(image_file_);
     return;
   }
 
-  DVLOG(2) << "Completed write verification of " << image_path_.value();
+  int64 total_size;
+  base::GetFileSize(image_path_, &total_size);
 
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &Operation::VerifyWriteChunk, this, 0, total_size, continuation));
+}
+
+void Operation::VerifyWriteChunk(const int64& bytes_processed,
+                                 const int64& total_size,
+                                 const base::Closure& continuation) {
+  if (!IsCancelled()) {
+    scoped_ptr<char[]> source_buffer(new char[kBurningBlockSize]);
+    scoped_ptr<char[]> target_buffer(new char[kBurningBlockSize]);
+
+    int64 image_bytes_read = base::ReadPlatformFile(
+        image_file_, bytes_processed, source_buffer.get(), kBurningBlockSize);
+
+    if (image_bytes_read > 0) {
+      int64 device_bytes_read = base::ReadPlatformFile(
+          device_file_, bytes_processed, target_buffer.get(), image_bytes_read);
+      if (image_bytes_read == device_bytes_read &&
+          memcmp(source_buffer.get(), target_buffer.get(), image_bytes_read) ==
+              0) {
+        int percent_curr = kProgressComplete *
+                           (bytes_processed + image_bytes_read) / total_size;
+
+        SetProgress(percent_curr);
+
+        BrowserThread::PostTask(BrowserThread::FILE,
+                                FROM_HERE,
+                                base::Bind(&Operation::VerifyWriteChunk,
+                                           this,
+                                           bytes_processed + image_bytes_read,
+                                           total_size,
+                                           continuation));
+        return;
+      } else {
+        Error(error::kVerificationFailed);
+      }
+    } else if (image_bytes_read == 0) {
+      VerifyWriteComplete(continuation);
+    } else {  // len < 0
+      Error(error::kImageReadError);
+    }
+  }
+
+  base::ClosePlatformFile(image_file_);
+  base::ClosePlatformFile(device_file_);
+}
+
+void Operation::VerifyWriteComplete(const base::Closure& continuation) {
   SetProgress(kProgressComplete);
-
-  Finish();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
 }  // namespace image_writer
