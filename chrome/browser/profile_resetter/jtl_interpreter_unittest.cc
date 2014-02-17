@@ -677,4 +677,13 @@ TEST(JtlInterpreter, GetOutput) {
   EXPECT_FALSE(interpreter.GetOutputString("outputxx", &output2));
 }
 
+TEST(JtlInterpreter, CalculateProgramChecksum) {
+  const char kTestSeed[] = "Irrelevant seed value.";
+  const char kTestProgram[] = "The quick brown fox jumps over the lazy dog.";
+  // This program is invalid, but we are not actually executing it.
+  base::DictionaryValue input;
+  JtlInterpreter interpreter(kTestSeed, kTestProgram, &input);
+  EXPECT_EQ(0xef537f, interpreter.CalculateProgramChecksum());
+}
+
 }  // namespace

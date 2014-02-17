@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/profile_resetter/jtl_foundation.h"
 #include "crypto/hmac.h"
+#include "crypto/sha2.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
@@ -736,4 +737,12 @@ bool JtlInterpreter::GetOutputString(const std::string& unhashed_key,
   std::string hashed_key =
       jtl_foundation::Hasher(hasher_seed_).GetHash(unhashed_key);
   return working_memory_->GetString(hashed_key, output);
+}
+
+int JtlInterpreter::CalculateProgramChecksum() const {
+  uint8 digest[3] = {};
+  crypto::SHA256HashString(program_, digest, arraysize(digest));
+  return static_cast<uint32>(digest[0]) << 16 |
+         static_cast<uint32>(digest[1]) << 8 |
+         static_cast<uint32>(digest[2]);
 }

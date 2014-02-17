@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -642,6 +643,8 @@ scoped_ptr<AutomaticProfileResetter::EvaluationResults>
   UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.InterpreterResult",
                             interpreter.result(),
                             JtlInterpreter::RESULT_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AutomaticProfileReset.ProgramChecksum",
+                              interpreter.CalculateProgramChecksum());
 
   // In each case below, the respective field in result originally contains the
   // default, so if the getter fails, we still have the correct value there.

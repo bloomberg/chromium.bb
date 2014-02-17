@@ -42,6 +42,10 @@ class JtlInterpreter {
   bool GetOutputString(const std::string& unhashed_key,
                        std::string* output) const;
 
+  // Generates a checksum of the loaded program, defined as the first 3 bytes of
+  // the program's SHA-256 hash interpreted as a big-endian integer.
+  int CalculateProgramChecksum() const;
+
  private:
   // Input.
   std::string hasher_seed_;
