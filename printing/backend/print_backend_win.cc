@@ -96,11 +96,11 @@ void LoadPaper(const wchar_t* printer,
     short default_id = 0;
     gfx::Size default_size;
 
-    if ((devmode->dmFields & DM_PAPERSIZE) == DM_PAPERSIZE)
+    if (devmode->dmFields & DM_PAPERSIZE)
       default_id = devmode->dmPaperSize;
-    if ((devmode->dmFields & DM_PAPERWIDTH) == DM_PAPERWIDTH)
+    if (devmode->dmFields & DM_PAPERWIDTH)
       default_size.set_width(devmode->dmPaperWidth * kToUm);
-    if ((devmode->dmFields & DM_PAPERLENGTH) == DM_PAPERLENGTH)
+    if (devmode->dmFields & DM_PAPERLENGTH)
       default_size.set_height(devmode->dmPaperLength * kToUm);
 
     if (default_size.IsEmpty()) {
@@ -136,11 +136,10 @@ void LoadDpi(const wchar_t* printer,
     caps->dpis.push_back(gfx::Size(dpis[i].x, dpis[i].y));
 
   if (devmode) {
-    if ((devmode->dmFields & DM_PRINTQUALITY) == DM_PRINTQUALITY &&
-        devmode->dmPrintQuality > 0) {
+    if ((devmode->dmFields & DM_PRINTQUALITY) && devmode->dmPrintQuality > 0) {
       caps->default_dpi.SetSize(devmode->dmPrintQuality,
                                 devmode->dmPrintQuality);
-      if ((devmode->dmFields & DM_YRESOLUTION) == DM_PRINTQUALITY) {
+      if (devmode->dmFields & DM_YRESOLUTION) {
         caps->default_dpi.set_height(devmode->dmYResolution);
       }
     }
@@ -229,10 +228,10 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   PrinterSemanticCapsAndDefaults caps;
   UserDefaultDevMode user_settings;
   if (user_settings.Init(printer_handle)) {
-    if ((user_settings.get()->dmFields & DM_COLOR) == DM_COLOR)
+    if (user_settings.get()->dmFields & DM_COLOR)
       caps.color_default = (user_settings.get()->dmColor == DMCOLOR_COLOR);
 
-    if ((user_settings.get()->dmFields & DM_DUPLEX) == DM_DUPLEX) {
+    if (user_settings.get()->dmFields & DM_DUPLEX) {
       switch (user_settings.get()->dmDuplex) {
       case DMDUP_SIMPLEX:
         caps.duplex_default = SIMPLEX;
@@ -248,7 +247,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
       }
     }
 
-    if ((user_settings.get()->dmFields & DM_COLLATE) == DM_COLLATE)
+    if (user_settings.get()->dmFields & DM_COLLATE)
       caps.collate_default = (user_settings.get()->dmCollate == DMCOLLATE_TRUE);
   } else {
     LOG(WARNING) << "Fallback to color/simplex mode.";

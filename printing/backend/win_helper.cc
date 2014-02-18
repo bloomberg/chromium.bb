@@ -432,7 +432,7 @@ scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
                                              bool color) {
   scoped_ptr<DEVMODE[]> default = CreateDevMode(printer, NULL);
   if (default && (default.get()->dmFields & DM_COLOR) &&
-      (default.get()->dmColor == DMCOLOR_COLOR) == color) {
+      ((default.get()->dmColor == DMCOLOR_COLOR) == color)) {
     return default.Pass();
   }
 
