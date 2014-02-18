@@ -8,6 +8,12 @@
 
 namespace appcache {
 
+static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
+  if (origin_url.host() == "docs.google.com")
+    return ".Docs";
+  return std::string();
+}
+
 void AppCacheHistograms::CountInitResult(InitResultType init_result) {
   UMA_HISTOGRAM_ENUMERATION(
        "appcache.InitResult",
@@ -20,6 +26,24 @@ void AppCacheHistograms::CountReinitAttempt(bool repeated_attempt) {
 
 void AppCacheHistograms::CountCorruptionDetected() {
   UMA_HISTOGRAM_BOOLEAN("appcache.CorruptionDetected", true);
+}
+
+void AppCacheHistograms::CountUpdateJobResult(
+    AppCacheUpdateJob::ResultType result,
+    const GURL& origin_url) {
+  UMA_HISTOGRAM_ENUMERATION(
+       "appcache.UpdateJobResult",
+       result, AppCacheUpdateJob::NUM_UPDATE_JOB_RESULT_TYPES);
+
+  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+  if (!suffix.empty()) {
+    base::LinearHistogram::FactoryGet(
+        "appcache.UpdateJobResult" + suffix,
+        1,
+        AppCacheUpdateJob::NUM_UPDATE_JOB_RESULT_TYPES,
+        AppCacheUpdateJob::NUM_UPDATE_JOB_RESULT_TYPES + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(result);
+  }
 }
 
 void AppCacheHistograms::CountCheckResponseResult(
