@@ -543,6 +543,26 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 
   if (render_frame) {  // NULL in tests
     render_frame->render_view()->PepperInstanceCreated(this);
+    // Bind a callback now so that we can inform the RenderViewImpl when we are
+    // destroyed. This works around a temporary problem stemming from work to
+    // move parts of RenderViewImpl in to RenderFrameImpl (see
+    // crbug.com/245126). If destruction happens in this order:
+    //  1) RenderFrameImpl
+    //  2) PepperPluginInstanceImpl
+    //  3) RenderViewImpl
+    // Then after 1), the PepperPluginInstanceImpl doesn't have any way to talk
+    // to the RenderViewImpl. But when the instance is destroyed, it still
+    // needs to inform the RenderViewImpl that it has gone away, otherwise
+    // between (2) and (3), the RenderViewImpl will still have the dead
+    // instance in its active set, and so might make calls on the deleted
+    // instance. See crbug.com/343576 for more information. Once the plugin
+    // calls move entirely from RenderViewImpl in to RenderFrameImpl, this
+    // can be a little bit simplified by instead making a direct call on
+    // RenderFrameImpl in the destructor (but only if render_frame_ is valid).
+    instance_deleted_callback_ =
+        base::Bind(&RenderViewImpl::PepperInstanceDeleted,
+                   render_frame->render_view()->AsWeakPtr(),
+                   base::Unretained(this));
     view_data_.is_page_visible = !render_frame_->GetRenderWidget()->is_hidden();
 
     // Set the initial focus.
@@ -584,8 +604,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
 
-  if (render_frame_ && render_frame_->render_view())
-    render_frame_->render_view()->PepperInstanceDeleted(this);
+  if (!instance_deleted_callback_.is_null())
+    instance_deleted_callback_.Run();
 
   if (!module_->IsProxied() && render_frame_) {
     PepperBrowserConnection* browser_connection =

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -664,6 +665,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       const ppapi::URLResponseInfoData& data);
 
   RenderFrameImpl* render_frame_;
+  base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr<ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the
