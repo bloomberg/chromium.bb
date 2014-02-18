@@ -111,11 +111,6 @@ extern const char kPrinterInfo[];
 #if defined(OS_CHROMEOS)
 // The number of simultaneous users in multi profile sessions.
 extern const char kNumberOfUsers[];
-
-// The name of an aura::Window which is still alive despite its ui::Layer being
-// destroyed.
-// TODO(pkotwicz): Remove once crbug.com/338788 is resolved.
-extern const char kNameOfWindowWithDestroyedLayer[];
 #endif
 
 #if defined(OS_MACOSX)
