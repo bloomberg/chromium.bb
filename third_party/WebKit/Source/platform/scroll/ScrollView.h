@@ -121,10 +121,16 @@ public:
     // The visible content rect has a location that is the scrolled offset of the document. The width and height are the viewport width
     // and height. By default the scrollbars themselves are excluded from this rectangle, but an optional boolean argument allows them to be
     // included.
+    // FIXME: The rect/scroll offset methods in this class should be converted to use LayoutSize/Rect
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
     IntSize visibleSize() const { return visibleContentRect().size(); }
     virtual int visibleWidth() const OVERRIDE { return visibleContentRect().width(); }
     virtual int visibleHeight() const OVERRIDE { return visibleContentRect().height(); }
+    IntRect visibleContentRectAtScale(float, IncludeScrollbarsInRect) const;
+
+    // Returns the width of the vertical scrollbar and height of the horizontal scrollbar if they exist
+    // and are non overlay. Otherwise, returns 0.
+    IntSize scrollbarSizes() const;
 
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
@@ -282,10 +288,13 @@ protected:
     virtual bool isVerticalDocument() const { return true; }
     virtual bool isFlippedDocument() const { return false; }
 
+    // Sets the pinch model to use.
+    // FIXME(bokan): This should be removed when virtual viewport settles and becomes the only
+    // pinch model.
+    void setPinchVirtualViewportEnabled(bool enabled) { m_pinchVirtualViewportEnabled = enabled; }
+
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const IntSize& desiredOffset);
-
-    IntSize excludeScrollbars(const IntSize&) const;
 
 private:
     RefPtr<Scrollbar> m_horizontalScrollbar;
@@ -317,6 +326,8 @@ private:
 
     bool m_paintsEntireContents;
     bool m_clipsRepaints;
+
+    bool m_pinchVirtualViewportEnabled;
 
     void init();
     void destroy();

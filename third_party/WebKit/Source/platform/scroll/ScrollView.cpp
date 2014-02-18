@@ -49,6 +49,7 @@ ScrollView::ScrollView()
     , m_drawPanScrollIcon(false)
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
+    , m_pinchVirtualViewportEnabled(false)
 {
 }
 
@@ -186,29 +187,61 @@ void ScrollView::setClipsRepaints(bool clipsRepaints)
 
 IntSize ScrollView::unscaledVisibleContentSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(frameRect().size()) : frameRect().size();
+    return scrollbarInclusion == ExcludeScrollbars ? (frameRect().size() - scrollbarSizes()) : frameRect().size();
 }
 
-IntSize ScrollView::excludeScrollbars(const IntSize& size) const
+IntRect ScrollView::visibleContentRectAtScale(float scale, IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    int verticalScrollbarWidth = 0;
-    int horizontalScrollbarHeight = 0;
+    LayoutSize visibleContentSize;
 
-    if (Scrollbar* verticalBar = verticalScrollbar())
-        verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
-    if (Scrollbar* horizontalBar = horizontalScrollbar())
-        horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
+    if (m_pinchVirtualViewportEnabled) {
+        // In the virtual viewport model, the frame scrollbars scale with the page and can be panned in and out
+        // of the visible (inner) viewport. This means that if scrollbarInclusion == ExcludeScrollbars, we have
+        // to calculate how much of the (scaled) scrollbar is visible and subtract that from the inner viewport
+        // rect.
+        visibleContentSize = unscaledVisibleContentSize(IncludeScrollbars);
+        visibleContentSize.scale(1 / scale);
 
-    return IntSize(max(0, size.width() - verticalScrollbarWidth),
-        max(0, size.height() - horizontalScrollbarHeight));
+        if (scrollbarInclusion == ExcludeScrollbars) {
+            LayoutUnit visibleRectRightEdge = visibleContentSize.width() + LayoutUnit(m_scrollOffset.width());
+            LayoutUnit visibleRectBottomEdge = visibleContentSize.height() + LayoutUnit(m_scrollOffset.height());
 
+            LayoutUnit verticalScrollbarVisibleWidth =
+                std::max(LayoutUnit(0), visibleRectRightEdge - LayoutUnit(contentsSize().width()));
+            LayoutUnit horizontalScrollbarVisibleHeight =
+                std::max(LayoutUnit(0), visibleRectBottomEdge - LayoutUnit(contentsSize().height()));
+
+            visibleContentSize.shrink(verticalScrollbarVisibleWidth, horizontalScrollbarVisibleHeight);
+
+        }
+
+        LayoutRect visibleContentRect(LayoutPoint(m_scrollOffset), visibleContentSize);
+        LayoutRect contentAndScrollbars(LayoutPoint(), contentsSize() + scrollbarSizes());
+        return enclosingIntRect(intersection(visibleContentRect, contentAndScrollbars));
+    }
+
+    // Old style pinch model. The scrollbars do not scale and stay fixed to the viewport. This means
+    // we remove the scrollbars from the viewport before applying scale.
+    visibleContentSize = unscaledVisibleContentSize(scrollbarInclusion);
+    visibleContentSize.scale(1 / scale);
+    return IntRect(IntPoint(m_scrollOffset), IntSize(visibleContentSize.width().ceil(), visibleContentSize.height().ceil()));
 }
 
-IntRect ScrollView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion) const
+IntSize ScrollView::scrollbarSizes() const
 {
-    FloatSize visibleContentSize = unscaledVisibleContentSize(scollbarInclusion);
-    visibleContentSize.scale(1 / visibleContentScaleFactor());
-    return IntRect(IntPoint(m_scrollOffset), expandedIntSize(visibleContentSize));
+    IntSize size;
+
+    if (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
+        size.setWidth(verticalScrollbar()->width());
+    if (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar())
+        size.setHeight(horizontalScrollbar()->height());
+
+    return size;
+}
+
+IntRect ScrollView::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
+{
+    return visibleContentRectAtScale(visibleContentScaleFactor(), scrollbarInclusion);
 }
 
 IntSize ScrollView::contentsSize() const
@@ -227,7 +260,22 @@ void ScrollView::setContentsSize(const IntSize& newSize)
 
 IntPoint ScrollView::maximumScrollPosition() const
 {
-    IntPoint maximumOffset(contentsWidth() - visibleWidth() - scrollOrigin().x(), contentsHeight() - visibleHeight() - scrollOrigin().y());
+    IntPoint maximumOffset;
+    if (m_pinchVirtualViewportEnabled && visibleContentScaleFactor() > 1.0f) {
+        // In the new pinch model, scrollbars aren't fixed to the user's zoomed in viewport (inner viewport).
+        // If the user zooms in they can pan the inner viewport within the outer viewport (to which the scrollbars
+        // are affixed). Therefore, in this case we need to effectively treat the scrollbars as part of the content.
+        IntSize scrollableContent = contentsSize() + scrollbarSizes();
+
+        maximumOffset = IntPoint(
+            scrollableContent.width() - visibleContentRect(IncludeScrollbars).width() - scrollOrigin().x(),
+            scrollableContent.height() - visibleContentRect(IncludeScrollbars).height() - scrollOrigin().y());
+    } else {
+        maximumOffset = IntPoint(
+            contentsWidth() - visibleWidth() - scrollOrigin().x(),
+            contentsHeight() - visibleHeight() - scrollOrigin().y());
+    }
+
     maximumOffset.clampNegativeToZero();
     return maximumOffset;
 }
