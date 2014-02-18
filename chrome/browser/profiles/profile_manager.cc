@@ -1107,23 +1107,23 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 }
 
 void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
+  // This can be removed in the future but needs to be present through
+  // a release (or two) so that any existing installs get switched to
+  // the new state and away from the previous "forced" state.
   IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
-  profile->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+                                      IncognitoModePrefs::ENABLED);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
-  bool go_off_the_record = false;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(chromeos::switches::kGuestSession) ||
-      (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
-       (!command_line.HasSwitch(switches::kTestType) ||
-       command_line.HasSwitch(chromeos::switches::kLoginProfile)))) {
-    go_off_the_record = true;
+  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
+      (!command_line.HasSwitch(switches::kTestType) ||
+       command_line.HasSwitch(chromeos::switches::kLoginProfile))) {
+    return true;
   }
 #endif
-  return go_off_the_record;
+  return profile->IsGuestSession();
 }
 
 void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,

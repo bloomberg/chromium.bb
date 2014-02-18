@@ -150,13 +150,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // ExtensionService depends on RuntimeData.
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
 
-  bool autoupdate_enabled = true;
+  bool autoupdate_enabled = !profile_->IsGuestSession();
 #if defined(OS_CHROMEOS)
   if (!extensions_enabled)
     autoupdate_enabled = false;
-  else
-    autoupdate_enabled =
-        !command_line->HasSwitch(chromeos::switches::kGuestSession);
 #endif
   extension_service_.reset(new ExtensionService(
       profile_,

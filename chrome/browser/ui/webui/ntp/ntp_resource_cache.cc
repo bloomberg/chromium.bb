@@ -296,10 +296,10 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
   int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
   const char* new_tab_link = kLearnMoreIncognitoUrl;
+
   // TODO(altimofeev): consider implementation without 'if def' usage.
 #if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession)) {
+  if (profile_->IsGuestSession()) {
     new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
     new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
     new_tab_link = kLearnMoreGuestSessionUrl;
@@ -323,6 +323,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
     }
   }
 #endif
+
   localized_strings.SetString("content",
       l10n_util::GetStringFUTF16(new_tab_message_ids,
                                  GetUrlWithLang(GURL(new_tab_link))));

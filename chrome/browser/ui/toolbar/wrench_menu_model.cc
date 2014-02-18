@@ -480,14 +480,7 @@ bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   }
 #endif
 
-#if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kGuestSession)) {
-    return false;
-  }
-#endif
-
-  return true;
+  return !browser_->profile()->IsGuestSession();
 }
 
 bool WrenchMenuModel::ShouldShowNewWindowMenuItem() {

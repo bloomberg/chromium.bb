@@ -1593,10 +1593,9 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
 #endif
 
 void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD)
   // Don't show the reporting setting if we are in the guest mode.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession)) {
+  if (Profile::FromWebUI(web_ui())->IsGuestSession()) {
     base::FundamentalValue visible(false);
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.setMetricsReportingSettingVisibility", visible);
