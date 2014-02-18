@@ -71,11 +71,11 @@ config("compiler") {
       common_mac_flags += [ "-arch i386" ]
     }
 
-    cflags += common_mac_flags + [
-      # Without this, the constructors and destructors of a C++ object inside
-      # an Objective C struct won't be called, which is very bad.
-      "-fobjc-call-cxx-cdtors",
-    ]
+    cflags += common_mac_flags
+
+    # Without this, the constructors and destructors of a C++ object inside
+    # an Objective C struct won't be called, which is very bad.
+    cflags_objcc = [ "-fobjc-call-cxx-cdtors", ]
 
     cflags_c += [ "-std=c99" ]
     cflags_cc += [ "-std=gnu++11" ]
