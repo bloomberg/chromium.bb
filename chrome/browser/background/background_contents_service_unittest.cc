@@ -175,6 +175,7 @@ class BackgroundContentsServiceNotificationTest
   }
 
   virtual void TearDown() {
+    g_browser_process->notification_ui_manager()->CancelAll();
     profile_manager_.reset();
     profile_ = NULL;
 #if !defined(OS_CHROMEOS)
