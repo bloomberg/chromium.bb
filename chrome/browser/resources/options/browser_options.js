@@ -265,6 +265,9 @@ cr.define('options', function() {
 
       // Default browser section.
       if (!cr.isChromeOS) {
+        if (!loadTimeData.getBoolean('showSetDefault')) {
+          $('set-default-browser-section').hidden = true;
+        }
         $('set-as-default-browser').onclick = function(event) {
           chrome.send('becomeDefaultBrowser');
         };

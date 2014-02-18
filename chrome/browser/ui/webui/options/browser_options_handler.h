@@ -134,6 +134,9 @@ class BrowserOptionsHandler
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 
+  // Returns if the "make Chrome default browser" button should be shown.
+  bool ShouldShowSetDefaultBrowser();
+
   // Gets the current default browser state, and asynchronously reports it to
   // the WebUI page.
   void UpdateDefaultBrowserState();

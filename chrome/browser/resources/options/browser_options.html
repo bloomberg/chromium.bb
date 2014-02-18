@@ -172,8 +172,8 @@
         i18n-values=".innerHTML:profilesSupervisedDashboardTip" hidden>
     </div>
   </section>
+  <section id="set-default-browser-section">
 <if expr="not pp_ifdef('chromeos')">
-  <section>
     <h3 i18n-content="sectionTitleDefaultBrowser"></h3>
     <div>
       <button id="set-as-default-browser"
@@ -188,8 +188,8 @@
         </label>
       </div>
     </div>
-  </section>
 </if>  <!-- not pp_ifdef('chromeos') -->
+  </section>
 <div id="advanced-settings" hidden>
 <div id="advanced-settings-container">
 <if expr="pp_ifdef('chromeos')">

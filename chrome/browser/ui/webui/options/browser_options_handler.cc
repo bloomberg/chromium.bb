@@ -616,6 +616,8 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON));
 #endif
+
+  values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
 }
 #endif  // defined(ENABLE_FULL_PRINTING)
 
@@ -926,6 +928,16 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
                                      enabled);
   }
+#endif
+}
+
+bool BrowserOptionsHandler::ShouldShowSetDefaultBrowser() {
+#if defined(OS_CHROMEOS)
+  // We're always the default browser on ChromeOS.
+  return false;
+#else
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return !profile->IsGuestSession();
 #endif
 }
 
