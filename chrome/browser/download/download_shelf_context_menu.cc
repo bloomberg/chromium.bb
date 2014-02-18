@@ -9,7 +9,6 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/url_constants.h"
@@ -94,7 +93,6 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       return !download_item_->IsDone();
     case DISCARD:
     case KEEP:
-    case REPORT:
     case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
       return true;
@@ -159,26 +157,6 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case KEEP:
       download_item_->ValidateDangerousDownload();
       break;
-    case REPORT: {
-#if defined(FULL_SAFE_BROWSING)
-      using safe_browsing::DownloadProtectionService;
-      DownloadItemModel download_model(download_item_);
-      if (!download_model.ShouldAllowDownloadFeedback())
-        break;
-      SafeBrowsingService* sb_service =
-          g_browser_process->safe_browsing_service();
-      DownloadProtectionService* protection_service =
-          (sb_service ? sb_service->download_protection_service() : NULL);
-      if (protection_service) {
-        protection_service->feedback_service()->BeginFeedbackForDownload(
-            download_item_);
-      }
-#else
-      // Should only be getting invoked if we are using safe browsing.
-      NOTREACHED();
-#endif
-      break;
-    }
     case LEARN_MORE_SCANNING: {
 #if defined(FULL_SAFE_BROWSING)
       using safe_browsing::DownloadProtectionService;
@@ -238,8 +216,6 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_RESUME_ITEM);
     case DISCARD:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_DISCARD);
-    case REPORT:
-      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_REPORT);
     case KEEP:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_KEEP);
     case LEARN_MORE_SCANNING:
@@ -365,10 +341,6 @@ DownloadShelfContextMenu::GetMaliciousMenuModel() {
   malicious_download_menu_model_.reset(new ui::SimpleMenuModel(this));
 
   DownloadItemModel download_model(download_item_);
-  if (download_model.ShouldAllowDownloadFeedback()) {
-    malicious_download_menu_model_->AddItemWithStringId(
-        REPORT, IDS_DOWNLOAD_MENU_REPORT);
-  }
   malicious_download_menu_model_->AddItemWithStringId(
       LEARN_MORE_SCANNING, IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING);
 

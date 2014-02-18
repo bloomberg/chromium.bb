@@ -35,7 +35,6 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
     KEEP,                  // Keep the malicious download.
     LEARN_MORE_SCANNING,   // Show information about download scanning.
     LEARN_MORE_INTERRUPTED,// Show information about interrupted downloads.
-    REPORT,                // Send the download to Google for analysis.
   };
 
   virtual ~DownloadShelfContextMenu();
