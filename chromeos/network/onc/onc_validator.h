@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_VALIDATOR_H_
 #define CHROMEOS_NETWORK_ONC_ONC_VALIDATOR_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -174,6 +175,13 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
+  // Returns true if the GUID is unique or if the GUID is not a string
+  // and false otherwise. The function also adds the GUID to a set in
+  // order to identify duplicates.
+  bool CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
+                                    const std::string& kGUID,
+                                    std::set<std::string> *guids);
+
   // Prohibit certificate patterns for device policy ONC so that an unmanaged
   // user won't have a certificate presented for them involuntarily.
   bool IsCertPatternInDevicePolicy(const std::string& cert_type);
@@ -194,6 +202,14 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   // The path of field names and indices to the current value. Indices
   // are stored as strings in decimal notation.
   std::vector<std::string> path_;
+
+  // Accumulates all network GUIDs during validation. Used to identify
+  // duplicate GUIDs.
+  std::set<std::string> network_guids_;
+
+  // Accumulates all certificate GUIDs during validation. Used to identify
+  // duplicate GUIDs.
+  std::set<std::string> certificate_guids_;
 
   // Tracks if an error or warning occurred within validation initiated by
   // function ValidateAndRepairObject.

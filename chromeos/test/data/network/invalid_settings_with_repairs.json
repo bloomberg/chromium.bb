@@ -1,4 +1,63 @@
 {
+    "duplicate-network-guid": {
+          "NetworkConfigurations": [
+             {
+               "GUID": "1",
+                "Type": "WiFi",
+                "Name": "My WiFi Network",
+                "WiFi": {
+                  "Passphrase": "dummy",
+                  "SSID": "dummySSID",
+                  "Security": "WPA-PSK"
+               }
+              },
+              {
+                 "GUID": "1",
+                 "Type": "WiFi",
+                 "Name": "My WiFi Network",
+                 "WiFi": {
+                   "Passphrase": "dummy1",
+                   "SSID": "dummySSID1",
+                   "Security": "WPA-PSK"
+               }
+              }
+          ],
+          "Type": "UnencryptedConfiguration"
+    },
+    "repaired-duplicate-network-guid": {
+          "NetworkConfigurations": [
+             {
+               "GUID": "1",
+                "Type": "WiFi",
+                "Name": "My WiFi Network",
+                "WiFi": {
+                  "Passphrase": "dummy",
+                  "SSID": "dummySSID",
+                  "Security": "WPA-PSK"
+               }
+              }
+          ],
+          "Type": "UnencryptedConfiguration"
+    },
+    "duplicate-cert-guid": {
+      "Type": "UnencryptedConfiguration",
+      "Certificates": [
+        { "GUID": "2",
+          "Type": "Server",
+          "X509": "abc" },
+        { "GUID": "2",
+          "PKCS12": "abc" ,
+          "Type": "Client" }
+       ]
+    },
+    "repaired-duplicate-cert-guid": {
+      "Type": "UnencryptedConfiguration",
+      "Certificates": [
+        { "GUID": "2",
+          "Type": "Server",
+          "X509": "abc" }
+       ]
+    },
     "managed-network-repaired": {
         "Recommended": [],
         "GUID": "guid",
@@ -181,7 +240,7 @@
                         "{58ac1967-a0e7-49e9-be68-123abc}"
                     ],
                     "EnrollmentURI": [
-                        "chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html" 
+                        "chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html"
                     ]
                 }
             }

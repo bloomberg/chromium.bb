@@ -387,6 +387,21 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
   return false;
 }
 
+bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
+                                             const std::string& key_guid,
+                                             std::set<std::string> *guids) {
+  std::string guid;
+  if (dict.GetStringWithoutPathExpansion(key_guid, &guid)) {
+    if (guids->count(guid) != 0) {
+      error_or_warning_found_ = true;
+      LOG(ERROR) << MessageHeader() << "Found a duplicate GUID " << guid << ".";
+      return false;
+    }
+    guids->insert(guid);
+  }
+  return true;
+}
+
 bool Validator::IsCertPatternInDevicePolicy(const std::string& cert_type) {
   if (cert_type == ::onc::certificate::kPattern &&
       onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY) {
@@ -457,6 +472,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
       FieldExistsAndIsEmpty(*result, kGUID)) {
     return false;
   }
+
+  if (!CheckGuidIsUniqueAndAddToSet(*result, kGUID, &network_guids_))
+    return false;
 
   bool all_required_exist = RequireField(*result, kGUID);
 
@@ -811,6 +829,9 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
                << "prohibited in ONC device policies.";
     return false;
   }
+
+  if (!CheckGuidIsUniqueAndAddToSet(*result, kGUID, &certificate_guids_))
+    return false;
 
   bool all_required_exist = RequireField(*result, kGUID);
 
