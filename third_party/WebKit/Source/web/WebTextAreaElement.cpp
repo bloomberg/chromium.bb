@@ -60,6 +60,21 @@ WebString WebTextAreaElement::suggestedValue() const
     return constUnwrap<HTMLTextAreaElement>()->suggestedValue();
 }
 
+void WebTextAreaElement::setSelectionRange(int start, int end)
+{
+    unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end);
+}
+
+bool WebTextAreaElement::autoComplete() const
+{
+    return constUnwrap<HTMLTextAreaElement>()->shouldAutocomplete();
+}
+
+WebString WebTextAreaElement::directionForFormData() const
+{
+    return constUnwrap<HTMLTextAreaElement>()->directionForFormData();
+}
+
 WebTextAreaElement::WebTextAreaElement(const PassRefPtr<HTMLTextAreaElement>& element)
     : WebFormControlElement(element)
 {
