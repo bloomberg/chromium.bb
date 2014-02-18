@@ -28,9 +28,9 @@ TEST(video.webkitAddKey('webkit-org.w3.clearkey', undefined)) THROWS(DOMExceptio
 TEST(video.webkitAddKey('webkit-org.w3.clearkey', new Uint8Array())) THROWS(DOMException.TYPE_MISMATCH_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': The key provided is invalid.) OK
 
 Key system validity is not checked before loading.
-TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': No player is available.) OK
-TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': No player is available.) OK
-TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': No player is available.) OK
+TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': No media has been loaded.) OK
+TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': No media has been loaded.) OK
+TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': No media has been loaded.) OK
 
 EVENT(loadstart)
 Verify valid syntaxes do not throw.
@@ -46,8 +46,8 @@ RUN(video.webkitCancelKeyRequest('webkit-org.w3.clearkey'))
 RUN(video.webkitCancelKeyRequest('webkit-org.w3.clearkey', 'session'))
 
 Unsupported key systems result in NOT_SUPPORTED_ERR.
-TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
-TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
-TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
+TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': The key system provided ('com.example.invalid') is not supported.) OK
+TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': The key system provided ('com.example.invalid') is not supported.) OK
+TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': The key system provided ('com.example.invalid') is not supported.) OK
 END OF TEST
 

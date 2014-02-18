@@ -151,19 +151,19 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
         map.add(document, set);
 }
 
-static void throwExceptionForMediaKeyException(MediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
+static void throwExceptionForMediaKeyException(const String& keySystem, const String& sessionId, MediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
 {
     switch (exception) {
     case MediaPlayer::NoError:
         return;
     case MediaPlayer::InvalidPlayerState:
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The player is in an invalid state.");
         return;
     case MediaPlayer::KeySystemNotSupported:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The key system provided ('" + keySystem +"') is not supported.");
         return;
     case MediaPlayer::InvalidAccess:
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The session ID provided ('" + sessionId + "') is invalid.");
         return;
     }
 
@@ -2209,7 +2209,7 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRef
     }
 
     if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
+        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
         return;
     }
 
@@ -2221,7 +2221,7 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRef
     }
 
     MediaPlayer::MediaKeyException result = m_player->generateKeyRequest(keySystem, initDataPointer, initDataLength);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(keySystem, String(), result, exceptionState);
 }
 
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, ExceptionState& exceptionState)
@@ -2252,7 +2252,7 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
     }
 
     if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
+        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
         return;
     }
 
@@ -2264,7 +2264,7 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
     }
 
     MediaPlayer::MediaKeyException result = m_player->addKey(keySystem, key->data(), key->length(), initDataPointer, initDataLength, sessionId);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(keySystem, sessionId, result, exceptionState);
 }
 
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState& exceptionState)
@@ -2285,12 +2285,12 @@ void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const Str
     }
 
     if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No player is available.");
+        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
         return;
     }
 
     MediaPlayer::MediaKeyException result = m_player->cancelKeyRequest(keySystem, sessionId);
-    throwExceptionForMediaKeyException(result, exceptionState);
+    throwExceptionForMediaKeyException(keySystem, sessionId, result, exceptionState);
 }
 
 bool HTMLMediaElement::loop() const
