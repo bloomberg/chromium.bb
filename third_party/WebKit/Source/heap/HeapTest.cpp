@@ -2302,6 +2302,27 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
     EXPECT_EQ(6, IntWrapper::s_destructorCalls);
 }
 
+TEST(HeapTest, CollectionNesting)
+{
+    void* key = &IntWrapper::s_destructorCalls;
+    IntWrapper::s_destructorCalls = 0;
+    typedef HeapVector<Member<IntWrapper> > IntVector;
+    HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
+
+    map->add(key, IntVector());
+
+    HeapHashMap<void*, IntVector>::iterator it = map->find(key);
+    EXPECT_EQ(0u, map->get(key).size());
+
+    it->value.append(IntWrapper::create(42));
+    EXPECT_EQ(1u, map->get(key).size());
+
+    Persistent<HeapHashMap<void*, IntVector> > keepAlive(map);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1u, map->get(key).size());
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+}
+
 DEFINE_GC_INFO(Bar);
 DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);

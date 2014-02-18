@@ -826,6 +826,21 @@ struct IsWeak<WebCore::WeakMember<T> > {
     static const bool value = true;
 };
 
+template<typename T, size_t inlineCapacity>
+struct NeedsTracing<WebCore::HeapVector<T, inlineCapacity> > {
+    static const bool value = true;
+};
+
+template<typename T, typename U, typename V>
+struct NeedsTracing<WebCore::HeapHashSet<T, U, V> > {
+    static const bool value = true;
+};
+
+template<typename T, typename U, typename V, typename W, typename X>
+struct NeedsTracing<WebCore::HeapHashMap<T, U, V, W, X> > {
+    static const bool value = true;
+};
+
 template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
 struct IsWeak<WebCore::HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
     static const bool value = Traits::isWeak;
