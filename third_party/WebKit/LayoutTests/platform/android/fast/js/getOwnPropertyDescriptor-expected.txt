@@ -135,8 +135,8 @@ PASS Object.getOwnPropertyDescriptor(global, 'length').hasOwnProperty('set') is 
 PASS Object.getOwnPropertyDescriptor(global, 'length').enumerable is true
 FAIL Object.getOwnPropertyDescriptor(global, 'length').configurable should be false. Was true.
 FAIL Object.getOwnPropertyDescriptor(global, 0).value should be [object Window]. Threw exception TypeError: Cannot read property 'value' of undefined
-FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('get') should be false. Threw exception TypeError: Cannot read property 'hasOwnProperty' of undefined
-FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('set') should be false. Threw exception TypeError: Cannot read property 'hasOwnProperty' of undefined
+FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('get') should be false. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
+FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('set') should be false. Threw exception TypeError: Cannot call method 'hasOwnProperty' of undefined
 FAIL Object.getOwnPropertyDescriptor(global, 0).enumerable should be false. Threw exception TypeError: Cannot read property 'enumerable' of undefined
 FAIL Object.getOwnPropertyDescriptor(global, 0).configurable should be false. Threw exception TypeError: Cannot read property 'configurable' of undefined
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').value is 1

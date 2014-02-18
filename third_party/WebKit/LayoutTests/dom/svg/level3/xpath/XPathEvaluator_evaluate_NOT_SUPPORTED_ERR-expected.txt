@@ -1,2 +1,2 @@
 XPathEvaluator_evaluate_NOT_SUPPORTED_ERR
-TypeError: Object #<Document> has no method 'createEntityReference'
+TypeError: undefined is not a function
