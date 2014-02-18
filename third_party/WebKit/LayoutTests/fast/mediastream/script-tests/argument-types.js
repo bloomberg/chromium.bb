@@ -11,7 +11,7 @@ function test(expression, expressionShouldThrow, expectedException) {
     }
 }
 
-var notSupportedError = 'NotSupportedError: The implementation did not support the requested type of object or operation.';
+var notSupportedError = 'NotSupportedError: Failed to execute \'webkitGetUserMedia\' on \'Navigator\': Failed to request user media.';
 var typeErrorArg2 = 'TypeError: Failed to execute \'webkitGetUserMedia\' on \'Navigator\': The callback provided as parameter 2 is not a function.';
 var typeErrorArg3 = 'TypeError: Failed to execute \'webkitGetUserMedia\' on \'Navigator\': The callback provided as parameter 3 is not a function.';
 var typeNotAnObjectError = new TypeError('Not an object.');

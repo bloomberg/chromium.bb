@@ -54,13 +54,14 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictio
 
     UserMediaController* userMedia = UserMediaController::from(navigator->frame() ? navigator->frame()->page() : 0);
     if (!userMedia) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No user media controller available; is this a detached window?");
         return;
     }
 
     RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator->frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        if (!exceptionState.hadException())
+            exceptionState.throwDOMException(NotSupportedError, "Failed to request user media.");
         return;
     }
 
@@ -71,13 +72,14 @@ void NavigatorMediaStream::getMediaDevices(Navigator* navigator, PassOwnPtr<Medi
 {
     UserMediaController* userMedia = UserMediaController::from(navigator->frame() ? navigator->frame()->page() : 0);
     if (!userMedia) {
-        exceptionState.throwDOMException(NotSupportedError, "Not implemented.");
+        exceptionState.throwDOMException(NotSupportedError, "No media device controller available; is this a detached window?");
         return;
     }
 
     RefPtr<MediaDevicesRequest> request = MediaDevicesRequest::create(navigator->frame()->document(), userMedia, callback, exceptionState);
     if (!request) {
-        exceptionState.throwDOMException(NotSupportedError, "Not implemented.");
+        if (!exceptionState.hadException())
+            exceptionState.throwDOMException(NotSupportedError, "Failed to request media devices.");
         return;
     }
 
