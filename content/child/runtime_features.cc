@@ -139,12 +139,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);
 
-  if (command_line.HasSwitch(switches::kDisableDeviceMotion))
-    WebRuntimeFeatures::enableDeviceMotion(false);
-
-  if (command_line.HasSwitch(switches::kDisableDeviceOrientation))
-    WebRuntimeFeatures::enableDeviceOrientation(false);
-
   if (command_line.HasSwitch(switches::kDisableSpeechInput))
     WebRuntimeFeatures::enableSpeechInput(false);
 

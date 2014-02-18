@@ -976,8 +976,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDeadlineScheduling,
     switches::kDisableDelegatedRenderer,
     switches::kDisableDesktopNotifications,
-    switches::kDisableDeviceMotion,
-    switches::kDisableDeviceOrientation,
     switches::kDisableDirectNPAPIRequests,
     switches::kDisableFileSystem,
     switches::kDisableFiltersOverIPC,

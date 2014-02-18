@@ -55,8 +55,6 @@ CONTENT_EXPORT extern const char kDisableDatabases[];
 CONTENT_EXPORT extern const char kDisableDeadlineScheduling[];
 CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 extern const char kDisableDesktopNotifications[];
-CONTENT_EXPORT extern const char kDisableDeviceMotion[];
-CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 extern const char kDisableDirectNPAPIRequests[];
 extern const char kDisableDomainBlockingFor3DAPIs[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];

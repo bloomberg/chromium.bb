@@ -161,12 +161,6 @@ const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 const char kDisableNavigatorContentUtils[]  =
       "disable-navigator-content-utils";
 
-// Disable device motion events.
-const char kDisableDeviceMotion[]           = "disable-device-motion";
-
-// Disable device orientation events.
-const char kDisableDeviceOrientation[]      = "disable-device-orientation";
-
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 

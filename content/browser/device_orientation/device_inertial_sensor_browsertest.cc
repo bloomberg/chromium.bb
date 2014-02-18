@@ -128,12 +128,6 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
         io_loop_finished_event_(false, false) {
   }
 
-  // From ContentBrowserTest.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    EXPECT_TRUE(!command_line->HasSwitch(switches::kDisableDeviceOrientation));
-    EXPECT_TRUE(!command_line->HasSwitch(switches::kDisableDeviceMotion));
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
