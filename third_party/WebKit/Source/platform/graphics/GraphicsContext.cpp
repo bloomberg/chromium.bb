@@ -1482,10 +1482,15 @@ void GraphicsContext::strokeEllipse(const FloatRect& ellipse)
     drawOval(rect, paint);
 }
 
-void GraphicsContext::clipRoundedRect(const RoundedRect& rect)
+void GraphicsContext::clipRoundedRect(const RoundedRect& rect, SkRegion::Op regionOp)
 {
     if (paintingDisabled())
         return;
+
+    if (!rect.isRounded()) {
+        clipRect(rect.rect(), NotAntiAliased, regionOp);
+        return;
+    }
 
     SkVector radii[4];
     RoundedRect::Radii wkRadii = rect.radii();
@@ -1494,7 +1499,7 @@ void GraphicsContext::clipRoundedRect(const RoundedRect& rect)
     SkRRect r;
     r.setRectRadii(rect.rect(), radii);
 
-    clipRRect(r, AntiAliased);
+    clipRRect(r, AntiAliased, regionOp);
 }
 
 void GraphicsContext::clipOut(const Path& pathToClip)
@@ -1543,14 +1548,7 @@ void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)
     if (paintingDisabled())
         return;
 
-    if (!rect.isRounded()) {
-        clipOut(rect.rect());
-        return;
-    }
-
-    Path path;
-    path.addRoundedRect(rect);
-    clipOut(path);
+    clipRoundedRect(rect, SkRegion::kDifference_Op);
 }
 
 void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
