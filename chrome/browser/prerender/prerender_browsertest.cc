@@ -1280,46 +1280,56 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return prerender_link_manager;
   }
 
-  int GetPrerenderEventCount(int index, const std::string& type) const {
-    int event_count;
-    std::string expression = base::StringPrintf(
-        "window.domAutomationController.send("
-        "    GetPrerenderEventCount(%d, '%s'))", index, type.c_str());
-
-    CHECK(content::ExecuteScriptAndExtractInt(
-        GetActiveWebContents(), expression, &event_count));
-    return event_count;
-  }
-
   bool DidReceivePrerenderStartEventForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderstart") > 0;
+    bool received_prerender_started;
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send(Boolean("
+            "receivedPrerenderStartEvents[%d]))", index);
+
+    CHECK(content::ExecuteScriptAndExtractBool(
+        GetActiveWebContents(),
+        expression,
+        &received_prerender_started));
+    return received_prerender_started;
   }
 
   int GetPrerenderLoadEventCountForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderload");
+    int load_event_count;
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send("
+            "receivedPrerenderLoadEvents[%d] || 0)", index);
+
+    CHECK(content::ExecuteScriptAndExtractInt(
+        GetActiveWebContents(),
+        expression,
+        &load_event_count));
+    return load_event_count;
   }
 
   int GetPrerenderDomContentLoadedEventCountForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderdomcontentloaded");
+    int dom_content_loaded_event_count;
+    std::string expression = base::StringPrintf(
+        "window.domAutomationController.send("
+            "receivedPrerenderDomContentLoadedEvents[%d] || 0)", index);
+
+    CHECK(content::ExecuteScriptAndExtractInt(
+        GetActiveWebContents(),
+        expression,
+        &dom_content_loaded_event_count));
+    return dom_content_loaded_event_count;
   }
 
   bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderstop") > 0;
-  }
-
-  void WaitForPrerenderEventCount(int index,
-                                  const std::string& type,
-                                  int count) const {
-    int dummy;
+    bool received_prerender_stopped;
     std::string expression = base::StringPrintf(
-        "WaitForPrerenderEventCount(%d, '%s', %d,"
-        "    window.domAutomationController.send.bind("
-        "        window.domAutomationController, 0))",
-        index, type.c_str(), count);
+        "window.domAutomationController.send(Boolean("
+            "receivedPrerenderStopEvents[%d]))", index);
 
-    CHECK(content::ExecuteScriptAndExtractInt(
-        GetActiveWebContents(), expression, &dummy));
-    CHECK_EQ(0, dummy);
+    CHECK(content::ExecuteScriptAndExtractBool(
+        GetActiveWebContents(),
+        expression,
+        &received_prerender_stopped));
+    return received_prerender_stopped;
   }
 
   bool HadPrerenderEventErrors() const {
@@ -1714,17 +1724,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
-  scoped_ptr<TestPrerender> prerender =
-      PrerenderTestURL("files/prerender/prerender_page.html",
-                       FINAL_STATUS_CANCELLED, 1);
+// Flaky, http://crbug.com/167340.
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest, DISABLED_PrerenderPageRemovingLink) {
+  set_loader_path("files/prerender/prerender_loader_removing_links.html");
+  set_loader_query_and_fragment("?links_to_insert=1");
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CANCELLED, 1);
 
   // No ChannelDestructionWatcher is needed here, since prerenders in the
   // PrerenderLinkManager should be deleted by removing the links, rather than
   // shutting down the renderer process.
   RemoveLinkElement(0);
-  prerender->WaitForStop();
-
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_FALSE(HadPrerenderEventErrors());
@@ -1734,15 +1745,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+// Flaky, http://crbug.com/167340.
 IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinks) {
+    PrerenderBrowserTest, DISABLED_PrerenderPageRemovingLinkWithTwoLinks) {
   GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
 
+  set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2");
-  scoped_ptr<TestPrerender> prerender =
-      PrerenderTestURL("files/prerender/prerender_page.html",
-                       FINAL_STATUS_CANCELLED, 1);
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CANCELLED, 1);
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
@@ -1750,8 +1762,6 @@ IN_PROC_BROWSER_TEST_F(
 
   RemoveLinkElement(0);
   RemoveLinkElement(1);
-  prerender->WaitForStop();
-
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
@@ -1763,43 +1773,20 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinksOneLate) {
-  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
-  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
-
-  GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
-  scoped_ptr<TestPrerender> prerender =
-      PrerenderTestURL(url, FINAL_STATUS_CANCELLED, 1);
-
-  // Add a second prerender for the same link. It reuses the prerender, so only
-  // the start event fires here.
-  AddPrerender(url, 1);
-  WaitForPrerenderEventCount(1, "webkitprerenderstart", 1);
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
-  EXPECT_EQ(0, GetPrerenderLoadEventCountForLinkNumber(1));
-  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
-
-  RemoveLinkElement(0);
-  RemoveLinkElement(1);
-  prerender->WaitForStop();
-
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
-  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
-  EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
-  EXPECT_FALSE(HadPrerenderEventErrors());
-  // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
-  // calls did a thread/process hop to the renderer which insured pending
-  // renderer events have arrived.
-  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
-}
-
+#if defined(OS_WIN)
+// TODO(gavinp): Fails on XP Rel - http://crbug.com/128841
+#define MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne \
+    DISABLED_PrerenderPageRemovingLinkWithTwoLinksRemovingOne
+#else
+#define MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne \
+    PrerenderPageRemovingLinkWithTwoLinksRemovingOne
+#endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest,
-    PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
+    MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
   GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
+  set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_USED, 1);

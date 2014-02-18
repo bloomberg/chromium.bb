@@ -17,14 +17,14 @@ function DidPrerenderPass() {
   var link = document.getElementById('thePrerender');
   if (link)
     link.parentElement.removeChild(link)
-  return !GetPrerenderEventCount(0, 'webkitprerenderstart');
+  return !receivedPrerenderStartEvents[0] && !receivedPrerenderStopEvents[0];
 }
 
 // Make sure DidPrerenderPass() was called first.  Otherwise, the page was
 // most likely reloaded instead of using the prerendered page.
 function DidDisplayPass() {
-  return pageWasPrerendered &&
-      !GetPrerenderEventCount(0, 'webkitprerenderstart');
+  return pageWasPrerendered && !receivedPrerenderStartEvents[0] &&
+         !receivedPrerenderStopEvents[0];
 }
 
 var link = document.getElementById('thePrerender');

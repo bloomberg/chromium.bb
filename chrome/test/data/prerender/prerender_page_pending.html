@@ -14,7 +14,7 @@ var pageWasPrerendered = false;
 
 function DidPrerenderPass() {
   pageWasPrerendered = true;
-  return !GetPrerenderEventCount(0, 'webkitprerenderstart');
+  return !receivedPrerenderStartEvents[0] && !receivedPrerenderStopEvents[0];
 }
 
 // Make sure DidPrerenderPass() was called first.  Otherwise, the page was
