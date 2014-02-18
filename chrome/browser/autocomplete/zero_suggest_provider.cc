@@ -84,20 +84,6 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool /*minimal_changes*/) {
 }
 
-void ZeroSuggestProvider::Stop(bool clear_cached_results) {
-  if (have_pending_request_)
-    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
-  have_pending_request_ = false;
-  fetcher_.reset();
-  done_ = true;
-  if (clear_cached_results) {
-    query_matches_map_.clear();
-    navigation_results_.clear();
-    current_query_.clear();
-    matches_.clear();
-  }
-}
-
 void ZeroSuggestProvider::ResetSession() {
   // The user has started editing in the omnibox, so leave
   // |field_trial_triggered_in_session_| unchanged and set
@@ -194,6 +180,20 @@ bool ZeroSuggestProvider::ShouldAppendExtraParams(
       const SuggestResult& result) const {
   // We always use the default provider for search, so append the params.
   return true;
+}
+
+void ZeroSuggestProvider::StopSuggest() {
+  if (have_pending_request_)
+    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
+  have_pending_request_ = false;
+  fetcher_.reset();
+}
+
+void ZeroSuggestProvider::ClearAllResults() {
+  query_matches_map_.clear();
+  navigation_results_.clear();
+  current_query_.clear();
+  matches_.clear();
 }
 
 void ZeroSuggestProvider::FillResults(const base::Value& root_val,

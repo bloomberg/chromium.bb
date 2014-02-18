@@ -43,6 +43,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   static bool ShouldPrefetch(const AutocompleteMatch& match);
 
   // AutocompleteProvider:
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
   bool field_trial_triggered_in_session() const {
@@ -357,6 +358,13 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Returns whether the destination URL corresponding to the given |result|
   // should contain command-line-specified query params.
   virtual bool ShouldAppendExtraParams(const SuggestResult& result) const = 0;
+
+  // Stops the suggest query.
+  // NOTE: This does not update |done_|.  Callers must do so.
+  virtual void StopSuggest() = 0;
+
+  // Clears the current results.
+  virtual void ClearAllResults() = 0;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion

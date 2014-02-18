@@ -158,7 +158,6 @@ class SearchProvider : public BaseSearchProvider {
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -170,6 +169,8 @@ class SearchProvider : public BaseSearchProvider {
       const SuggestResult& result) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
+  virtual void StopSuggest() OVERRIDE;
+  virtual void ClearAllResults() OVERRIDE;
 
   // This gets called when we have requested a suggestion deletion from the
   // server to handle the results of the deletion.
@@ -200,13 +201,6 @@ class SearchProvider : public BaseSearchProvider {
   // This will be false e.g. when Suggest is disabled, the query contains
   // potentially private data, etc.
   bool IsQuerySuitableForSuggest() const;
-
-  // Stops the suggest query.
-  // NOTE: This does not update |done_|.  Callers must do so.
-  void StopSuggest();
-
-  // Clears the current results.
-  void ClearAllResults();
 
   // Removes stale results for both default and keyword providers.  See comments
   // on RemoveStaleResults().

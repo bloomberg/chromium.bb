@@ -404,14 +404,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
-void SearchProvider::Stop(bool clear_cached_results) {
-  StopSuggest();
-  done_ = true;
-
-  if (clear_cached_results)
-    ClearAllResults();
-}
-
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;
@@ -491,6 +483,23 @@ bool SearchProvider::ShouldAppendExtraParams(
     const SuggestResult& result) const {
   return !result.from_keyword_provider() ||
       providers_.default_provider().empty();
+}
+
+void SearchProvider::StopSuggest() {
+  // Increment the appropriate field in the histogram by the number of
+  // pending requests that were invalidated.
+  for (int i = 0; i < suggest_results_pending_; ++i)
+    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
+  suggest_results_pending_ = 0;
+  timer_.Stop();
+  // Stop any in-progress URL fetches.
+  keyword_fetcher_.reset();
+  default_fetcher_.reset();
+}
+
+void SearchProvider::ClearAllResults() {
+  keyword_results_.Clear();
+  default_results_.Clear();
 }
 
 void SearchProvider::OnDeletionComplete(bool success,
@@ -709,23 +718,6 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
     return false;
 
   return true;
-}
-
-void SearchProvider::StopSuggest() {
-  // Increment the appropriate field in the histogram by the number of
-  // pending requests that were invalidated.
-  for (int i = 0; i < suggest_results_pending_; i++)
-    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
-  suggest_results_pending_ = 0;
-  timer_.Stop();
-  // Stop any in-progress URL fetches.
-  keyword_fetcher_.reset();
-  default_fetcher_.reset();
-}
-
-void SearchProvider::ClearAllResults() {
-  keyword_results_.Clear();
-  default_results_.Clear();
 }
 
 void SearchProvider::RemoveAllStaleResults() {

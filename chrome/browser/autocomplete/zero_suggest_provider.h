@@ -50,7 +50,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool /*minimal_changes*/) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
@@ -79,6 +78,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
       const SuggestResult& result) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
+  virtual void StopSuggest() OVERRIDE;
+  virtual void ClearAllResults() OVERRIDE;
 
   // The 4 functions below (that take classes defined in SearchProvider as
   // arguments) were copied and trimmed from SearchProvider.

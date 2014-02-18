@@ -42,6 +42,14 @@ bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
   return match.GetAdditionalInfo(kShouldPrefetchKey) == kTrue;
 }
 
+void BaseSearchProvider::Stop(bool clear_cached_results) {
+  StopSuggest();
+  done_ = true;
+
+  if (clear_cached_results)
+    ClearAllResults();
+}
+
 void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
@@ -466,34 +474,34 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
 
   bool should_prefetch = result.should_prefetch();
   if (!i.second) {
-     // NOTE: We purposefully do a direct relevance comparison here instead of
-     // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items
-     // added first" rather than "items alphabetically first" when the scores
-     // are equal. The only case this matters is when a user has results with
-     // the same score that differ only by capitalization; because the history
-     // system returns results sorted by recency, this means we'll pick the most
-     // recent such result even if the precision of our relevance score is too
-     // low to distinguish the two.
-     if (match.relevance > i.first->second.relevance) {
-       i.first->second = match;
-     } else if (match.keyword == i.first->second.keyword) {
-       // Old and new matches are from the same search provider. It is okay to
-       // record one match's prefetch data onto a different match (for the same
-       // query string) for the following reasons:
-       // 1. Because the suggest server only sends down a query string from
-       // which we construct a URL, rather than sending a full URL, and because
-       // we construct URLs from query strings in the same way every time, the
-       // URLs for the two matches will be the same. Therefore, we won't end up
-       // prefetching something the server didn't intend.
-       // 2. Presumably the server sets the prefetch bit on a match it things is
-       // sufficiently relevant that the user is likely to choose it. Surely
-       // setting the prefetch bit on a match of even higher relevance won't
-       // violate this assumption.
-       should_prefetch |= ShouldPrefetch(i.first->second);
-       i.first->second.RecordAdditionalInfo(kShouldPrefetchKey,
-                                            should_prefetch ? kTrue : kFalse);
-       if (should_prefetch)
-         i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
-     }
-   }
+    // NOTE: We purposefully do a direct relevance comparison here instead of
+    // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items
+    // added first" rather than "items alphabetically first" when the scores
+    // are equal. The only case this matters is when a user has results with
+    // the same score that differ only by capitalization; because the history
+    // system returns results sorted by recency, this means we'll pick the most
+    // recent such result even if the precision of our relevance score is too
+    // low to distinguish the two.
+    if (match.relevance > i.first->second.relevance) {
+      i.first->second = match;
+    } else if (match.keyword == i.first->second.keyword) {
+      // Old and new matches are from the same search provider. It is okay to
+      // record one match's prefetch data onto a different match (for the same
+      // query string) for the following reasons:
+      // 1. Because the suggest server only sends down a query string from
+      // which we construct a URL, rather than sending a full URL, and because
+      // we construct URLs from query strings in the same way every time, the
+      // URLs for the two matches will be the same. Therefore, we won't end up
+      // prefetching something the server didn't intend.
+      // 2. Presumably the server sets the prefetch bit on a match it things is
+      // sufficiently relevant that the user is likely to choose it. Surely
+      // setting the prefetch bit on a match of even higher relevance won't
+      // violate this assumption.
+      should_prefetch |= ShouldPrefetch(i.first->second);
+      i.first->second.RecordAdditionalInfo(kShouldPrefetchKey,
+                                           should_prefetch ? kTrue : kFalse);
+      if (should_prefetch)
+        i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
+    }
+  }
 }
