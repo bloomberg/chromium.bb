@@ -879,7 +879,7 @@
 
       This policy is meant to allow for strict plugin blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
 
-      Note that both the plugin name and the plugin's group name have to be exempted. Each plugin group is shown in a separate section in about:plugins; each section may have one or more plugins. For example, the "Shockware Flash" plugin belongs to the "Adobe Flash Player" group, and both names have to have a match in the exceptions list if that plugin is to be exempted from the blacklist.
+      Note that both the plugin name and the plugin's group name have to be exempted. Each plugin group is shown in a separate section in about:plugins; each section may have one or more plugins. For example, the "Shockwave Flash" plugin belongs to the "Adobe Flash Player" group, and both names have to have a match in the exceptions list if that plugin is to be exempted from the blacklist.
 
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.''',
       'label': '''List of exceptions to the list of disabled plugins''',
@@ -1684,7 +1684,7 @@
 
           If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Disabling this setting is equvalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
         {
           'name': 'RestoreOnStartupURLs',
@@ -2435,7 +2435,7 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respectred and cookies will be stored permanently for those sites.''',
+          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.''',
         },
         {
           'name': 'ImagesAllowedForUrls',
@@ -2981,7 +2981,7 @@
 
       If you set this setting, users cannot change or override it.
 
-      If the setting is changed while the user is signed into a multiprofile session, all users in the session will be checked against their cooresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
+      If the setting is changed while the user is signed into a multiprofile session, all users in the session will be checked against their corresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
 
       If the policy is left not set, the default value 'MultiProfileUserBehaviorUnrestricted' will be used.''',
     },
@@ -3535,7 +3535,7 @@
       'example_value': False,
       'id': 129,
       'caption': '''Whether online OCSP/CRL checks are performed''',
-      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
+      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.''',
     },
@@ -4099,7 +4099,7 @@
       'example_value': True,
       'id': 243,
       'caption': '''Allow autoupdate downloads via HTTP''',
-      'desc': '''Auto-update payloads on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be downloaded via HTTP instead of HTTPS. This allowes transparent HTTP caching of HTTP downloads.
+      'desc': '''Auto-update payloads on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
 
       If this policy is set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.''',
     },
@@ -4311,7 +4311,7 @@
       'example_value': True,
       'id': 150,
       'caption': '''Disable proceeding from the Safe Browsing warning page''',
-      'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially mallicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+      'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
     },
@@ -4370,7 +4370,7 @@
 
       When this policy is set to false, audio output will not be available on the device while the user is logged in.
 
-      This policy affects all types of audio output and not only the built-in speakers. Audio accessability features are also inhibited by this policy. Do not enable this policy if a screen reader is required for the user.
+      This policy affects all types of audio output and not only the built-in speakers. Audio accessibility features are also inhibited by this policy. Do not enable this policy if a screen reader is required for the user.
 
       If this setting is set to true or not configured then users can use all supported audio outputs on their device.''',
     },
@@ -4661,13 +4661,13 @@
 
       If this policy is set to false, neither the user nor any apps or extensions can enter fullscreen mode.
 
-      On all platforms except <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, kiosk mode is unvailable when fullscreen mode is disabled.''',
+      On all platforms except <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, kiosk mode is unavailable when fullscreen mode is disabled.''',
     },
     {
       'name': 'PowerManagement',
       'type': 'group',
-      'caption': '''Power mangement''',
-      'desc': '''Configure power manegement in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+      'caption': '''Power management''',
+      'desc': '''Configure power management in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
       These policies let you configure how <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> behaves when the user remains idle for some amount of time.''',
       'policies': [
@@ -5240,7 +5240,7 @@
       },
       'example_value': '{ "AC": { "IdleAction": "DoNothing" }, "Battery": { "IdleAction": "DoNothing" } }',
       'id': 225,
-      'caption': '''Power mangement on the login screen''',
+      'caption': '''Power management on the login screen''',
       'desc': '''Configure power management on the login screen in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
       This policy lets you configure how <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> behaves when there is no user activity for some amount of time while the login screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
@@ -5339,7 +5339,7 @@
       'example_value': True,
       'id': 185,
       'caption': '''Allow users to redeem offers through Chrome OS Registration''',
-      'desc': '''IT admins for enterprise devices can use this flag to controll whether to allow users to redeem offers through Chrome OS Registration.
+      'desc': '''IT admins for enterprise devices can use this flag to control whether to allow users to redeem offers through Chrome OS Registration.
 
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
@@ -5384,7 +5384,7 @@
           'example_value': True,
           'id': 188,
           'caption': '''Show accessibility options in system tray menu''',
-          'desc': '''Show <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility options in the systenm menu.
+          'desc': '''Show <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility options in the system menu.
 
           If this policy is set to true, Accessibility options always appear in system tray menu.
 
@@ -5604,7 +5604,7 @@
 
           If this policy is set to true, the on-screen keyboard will be enabled when the login screen is shown.
 
-          If this policy is set to false, the on-sreen keyboard will be disabled when the login screen is shown.
+          If this policy is set to false, the on-screen keyboard will be disabled when the login screen is shown.
 
           If you set this policy, users can temporarily override it by enabling or disabling the on-screen keyboard. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
