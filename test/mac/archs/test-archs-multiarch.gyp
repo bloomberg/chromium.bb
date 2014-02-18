@@ -61,7 +61,7 @@
       'target_name': 'exe_32_64_no_sources',
       'type': 'executable',
       'dependencies': [
-        ':static_32_64',
+        'static_32_64',
       ],
       'sources': [],
       'xcode_settings': {
