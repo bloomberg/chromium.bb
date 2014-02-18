@@ -15,7 +15,7 @@ BEGIN_COMP_NAME = 'INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT'
 # This is when the input event has reached swap buffer.
 END_COMP_NAME = 'INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT'
 
-def GetScrollInputLatencyEvents(browser_process, timeline_range):
+def GetScrollInputLatencyEvents(scroll_type, browser_process, timeline_range):
   """Get scroll events' LatencyInfo from the browser process's trace buffer
      that are within the timeline_range.
 
@@ -25,10 +25,9 @@ def GetScrollInputLatencyEvents(browser_process, timeline_range):
   type and a memeber 'data' containing its latency history.
 
   """
-  mouse_wheel_events = []
-  touch_scroll_events = []
+  scroll_events = []
   if not browser_process:
-    return (mouse_wheel_events, touch_scroll_events)
+    return scroll_events
   for event in browser_process.IterAllAsyncSlicesOfName("InputLatency"):
     if event.start >= timeline_range.min and event.end <= timeline_range.max:
       for ss in event.sub_slices:
@@ -36,13 +35,9 @@ def GetScrollInputLatencyEvents(browser_process, timeline_range):
           continue
         if 'data' not in ss.args:
           continue
-        if ss.args['step'] == 'MouseWheel':
-          mouse_wheel_events.append(ss)
-        elif ss.args['step'] == 'GestureScrollUpdate':
-          touch_scroll_events.append(ss)
-        elif ss.args['step'] == 'TouchMove':
-          touch_scroll_events.append(ss)
-  return (mouse_wheel_events, touch_scroll_events)
+        if ss.args['step'] == scroll_type:
+          scroll_events.append(ss)
+  return scroll_events
 
 def ComputeMouseWheelScrollLatency(mouse_wheel_events):
   """ Compute the mouse wheel scroll latency.
@@ -114,9 +109,12 @@ class RenderingStats(object):
     # End-to-end latency for MouseWheel scroll - from when mouse wheel event is
     # generated to when the scrolled page is buffer swapped.
     self.mouse_wheel_scroll_latency = []
-    # End-to-end latency for touch scroll event - from when the touch event is
-    # generated to the scrolled page is buffer swapped.
+    # End-to-end latency for GestureScrollUpdate scroll - from when the touch
+    # event is generated to the scrolled page is buffer swapped.
     self.touch_scroll_latency = []
+    # End-to-end latency for JS touch handler scrolling - from when the touch
+    # event is generated to the scrolled page is buffer swapped.
+    self.js_touch_scroll_latency = []
 
     for timeline_range in timeline_ranges:
       self.frame_timestamps.append([])
@@ -129,6 +127,7 @@ class RenderingStats(object):
       self.rasterized_pixel_counts.append([])
       self.mouse_wheel_scroll_latency.append([])
       self.touch_scroll_latency.append([])
+      self.js_touch_scroll_latency.append([])
 
       if timeline_range.is_empty:
         continue
@@ -137,11 +136,19 @@ class RenderingStats(object):
       self.initScrollLatencyStatsFromTimeline(browser_process, timeline_range)
 
   def initScrollLatencyStatsFromTimeline(self, browser_process, timeline_range):
-    mouse_wheel_events, touch_scroll_events = GetScrollInputLatencyEvents(
-        browser_process, timeline_range)
+    mouse_wheel_events = GetScrollInputLatencyEvents(
+        "MouseWheel", browser_process, timeline_range)
     self.mouse_wheel_scroll_latency = ComputeMouseWheelScrollLatency(
         mouse_wheel_events)
+
+    touch_scroll_events = GetScrollInputLatencyEvents(
+        "GestureScrollUpdate", browser_process, timeline_range)
     self.touch_scroll_latency = ComputeTouchScrollLatency(touch_scroll_events)
+
+    js_touch_scroll_events = GetScrollInputLatencyEvents(
+        "TouchMove", browser_process, timeline_range)
+    self.js_touch_scroll_latency = ComputeTouchScrollLatency(
+        js_touch_scroll_events)
 
   def initMainThreadStatsFromTimeline(self, timeline_range):
     event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'

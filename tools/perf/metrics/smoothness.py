@@ -92,6 +92,13 @@ class SmoothnessMetric(Metric):
       results.Add('mean_touch_scroll_latency', 'ms',
                   round(mean_touch_scroll_latency, 3))
 
+    if self._stats.js_touch_scroll_latency:
+      mean_js_touch_scroll_latency = statistics.ArithmeticMean(
+          self._stats.js_touch_scroll_latency,
+          len(self._stats.js_touch_scroll_latency))
+      results.Add('mean_js_touch_scroll_latency', 'ms',
+                  round(mean_js_touch_scroll_latency, 3))
+
     # List of raw frame times.
     frame_times = FlattenList(self._stats.frame_times)
     results.Add('frame_times', 'ms', frame_times)

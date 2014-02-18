@@ -61,8 +61,10 @@ class ReferenceInputLatencyStats(object):
   def __init__(self):
     self.mouse_wheel_scroll_latency = []
     self.touch_scroll_latency = []
+    self.js_touch_scroll_latency = []
     self.mouse_wheel_scroll_events = []
     self.touch_scroll_events = []
+    self.js_touch_scroll_events = []
 
 def AddMainThreadRenderingStats(mock_timer, thread, first_frame,
                                 ref_stats = None):
@@ -186,10 +188,14 @@ def AddInputLatencyStats(mock_timer, input_type, start_thread, end_thread,
     ref_latency_stats.mouse_wheel_scroll_latency.append(
         (data[END_COMP_NAME]['time'] - data[BEGIN_COMP_NAME]['time']) / 1000.0)
 
-
   if input_type == 'GestureScrollUpdate':
     ref_latency_stats.touch_scroll_events.append(async_sub_slice)
     ref_latency_stats.touch_scroll_latency.append(
+        (data[END_COMP_NAME]['time'] - data[UI_COMP_NAME]['time']) / 1000.0)
+
+  if input_type == 'TouchMove':
+    ref_latency_stats.js_touch_scroll_events.append(async_sub_slice)
+    ref_latency_stats.js_touch_scroll_latency.append(
         (data[END_COMP_NAME]['time'] - data[UI_COMP_NAME]['time']) / 1000.0)
 
 class RenderingStatsUnitTest(unittest.TestCase):
@@ -294,6 +300,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
                            renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'TouchMove', browser_main,
+                           renderer_main, ref_latency_stats)
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 input latency stats events not within any action.
@@ -301,6 +309,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
                            renderer_main, None)
       AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                           renderer_main, None)
+      AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, None)
 
     # Create 10 input latency stats events for Action B.
@@ -310,6 +320,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
+                           renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, ref_latency_stats)
     renderer_main.EndSlice(timer.Get())
 
@@ -321,6 +333,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
                                   renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'GestureScrollUpdate', browser_main,
                                   renderer_main, ref_latency_stats)
+      AddInputLatencyStats(timer, 'TouchMove', browser_main,
+                                  renderer_main, ref_latency_stats)
     renderer_main.EndSlice(timer.Get())
 
     browser_main.FinalizeImport()
@@ -328,6 +342,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
 
     mouse_wheel_scroll_events = []
     touch_scroll_events = []
+    js_touch_scroll_events = []
 
     timeline_markers = timeline.FindTimelineMarkers(
         ['ActionA', 'ActionB', 'ActionA'])
@@ -335,16 +350,25 @@ class RenderingStatsUnitTest(unittest.TestCase):
                             for marker in timeline_markers ]:
       if timeline_range.is_empty:
         continue
-      tmp_mouse_events, tmp_touch_events = GetScrollInputLatencyEvents(
-          browser, timeline_range)
+      tmp_mouse_events = GetScrollInputLatencyEvents(
+          'MouseWheel', browser, timeline_range)
+      tmp_touch_scroll_events = GetScrollInputLatencyEvents(
+          'GestureScrollUpdate', browser, timeline_range)
+      tmp_js_touch_scroll_events = GetScrollInputLatencyEvents(
+          'TouchMove', browser, timeline_range)
       mouse_wheel_scroll_events.extend(tmp_mouse_events)
-      touch_scroll_events.extend(tmp_touch_events)
+      touch_scroll_events.extend(tmp_touch_scroll_events)
+      js_touch_scroll_events.extend(tmp_js_touch_scroll_events)
 
     self.assertEquals(mouse_wheel_scroll_events,
                       ref_latency_stats.mouse_wheel_scroll_events)
     self.assertEquals(touch_scroll_events,
                       ref_latency_stats.touch_scroll_events)
+    self.assertEquals(js_touch_scroll_events,
+                      ref_latency_stats.js_touch_scroll_events)
     self.assertEquals(ComputeMouseWheelScrollLatency(mouse_wheel_scroll_events),
                       ref_latency_stats.mouse_wheel_scroll_latency)
     self.assertEquals(ComputeTouchScrollLatency(touch_scroll_events),
                       ref_latency_stats.touch_scroll_latency)
+    self.assertEquals(ComputeTouchScrollLatency(js_touch_scroll_events),
+                      ref_latency_stats.js_touch_scroll_latency)
