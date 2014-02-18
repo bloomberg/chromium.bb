@@ -498,6 +498,8 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/keyframe-timing-funct
 crbug.com/248938 [ Win ] virtual/threaded/transitions/move-after-transition.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 
+crbug.com/344367 [ Debug ] virtual/threaded/animations/timing-model.html [ Pass Failure ]
+
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 # Not yet supported on Win/Mac. See bug for details.
