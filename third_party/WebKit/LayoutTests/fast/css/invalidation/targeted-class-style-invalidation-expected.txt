@@ -3,7 +3,7 @@ Test that adding and removing class names only updates the elements that are aff
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
 PASS successfullyParsed is true
 
 TEST COMPLETE

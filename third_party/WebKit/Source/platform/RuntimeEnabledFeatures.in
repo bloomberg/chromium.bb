@@ -109,7 +109,7 @@ SVGPaintOrder status=experimental
 
 // Enable optimizations to recalculate style on the fewest possible number of
 // elements when updating classes, ids or attributes of DOM elements.
-TargetedStyleRecalc status=stable
+TargetedStyleRecalc
 
 // Many websites disable mouse support when touch APIs are available.  We'd
 // like to enable this always but can't until more websites fix this bug.
