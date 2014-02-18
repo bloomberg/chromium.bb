@@ -13,6 +13,8 @@ ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_DuringUnload
 
 # Crashes
 ResourceDispatcherHostBrowserTest.CrossSiteAfterCrash
+RenderFrameHostManagerTest.IgnoreRendererDebugURLsWhenCrashed
+RenderFrameHostManagerTest.ProcessExitWithSwappedOutViews
 
 # Failures
 RenderViewHostTest.BaseURLParam
@@ -57,9 +59,6 @@ RendererAccessibilityTest.ShowAccessibilityObject
 RenderWidgetTest.OnMsgPaintAtSize
 PasswordFormConversionUtilsTest.ValidWebFormElementToPasswordForm
 PasswordFormConversionUtilsTest.InvalidWebFormElementToPasswordForm
-
-# Multiple test servers support: http://crbug/187570
-RenderFrameHostManagerTest.*
 
 # http://crbug.com/215894
 DownloadContentTest.CancelInterruptedDownload
