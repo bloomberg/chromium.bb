@@ -56,13 +56,8 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(int worldId, int extensionGr
 DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
+    , m_domDataStore(adoptPtr(new DOMDataStore(isMainWorld())))
 {
-    if (isMainWorld())
-        m_domDataStore = adoptPtr(new DOMDataStore(MainWorld));
-    else if (isIsolatedWorld())
-        m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
-    else if (isWorkerWorld())
-        m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
 }
 
 DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
