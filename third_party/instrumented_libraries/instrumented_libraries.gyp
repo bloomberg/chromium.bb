@@ -77,6 +77,7 @@
         '<(_sanitizer_type)-pango1.0',
         '<(_sanitizer_type)-libcap2',
         '<(_sanitizer_type)-libudev0',
+        '<(_sanitizer_type)-libtasn1-3',
       ],
       'conditions': [
         ['asan==1', {
@@ -352,6 +353,11 @@
           # TODO(earthdok): find a better fix.
           '--disable-gudev'
       ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libtasn1-3',
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
