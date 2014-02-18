@@ -142,6 +142,5 @@ AC_CONFIG_FILES([Makefile
 		 src/wayland-client.pc
 		 src/wayland-scanner.pc
 		 src/wayland-version.h
-		 protocol/Makefile
 		 tests/Makefile])
 AC_OUTPUT

@@ -2,11 +2,14 @@ if BUILD_DOCS
 doc_subdir = doc
 endif
 
-SUBDIRS = protocol src $(doc_subdir) tests cursor
+SUBDIRS = src $(doc_subdir) tests cursor
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = wayland-scanner.m4
 
-dist_pkgdata_DATA = wayland-scanner.mk
+dist_pkgdata_DATA =				\
+	wayland-scanner.mk			\
+	protocol/wayland.xml			\
+	protocol/wayland.dtd
