@@ -13,6 +13,7 @@ namespace cc {
 class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
  public:
   // LayerTreeHostImplClient implementation.
+  virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE {}
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void DidSwapBuffersOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}

@@ -54,6 +54,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual bool CommitPendingForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
+  virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;

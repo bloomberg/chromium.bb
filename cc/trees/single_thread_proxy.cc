@@ -147,11 +147,7 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
     DCHECK(output_surface);
     initialized = layer_tree_host_impl_->InitializeRenderer(
         output_surface.Pass());
-    if (initialized) {
-      renderer_capabilities_for_main_thread_ =
-          layer_tree_host_impl_->GetRendererCapabilities()
-              .MainThreadCapabilities();
-    } else if (offscreen_context_provider.get()) {
+    if (!initialized && offscreen_context_provider.get()) {
       offscreen_context_provider->VerifyContexts();
       offscreen_context_provider = NULL;
     }
@@ -369,6 +365,12 @@ void SingleThreadProxy::SendManagedMemoryStats() {
 }
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
+
+void SingleThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
+  DCHECK(IsImplThread());
+  renderer_capabilities_for_main_thread_ =
+      layer_tree_host_impl_->GetRendererCapabilities().MainThreadCapabilities();
+}
 
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   TRACE_EVENT0("cc", "SingleThreadProxy::DidLoseOutputSurfaceOnImplThread");

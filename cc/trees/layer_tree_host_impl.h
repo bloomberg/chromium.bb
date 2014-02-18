@@ -59,6 +59,7 @@ struct RendererCapabilitiesImpl;
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
+  virtual void UpdateRendererCapabilitiesOnImplThread() = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void DidSwapBuffersOnImplThread() = 0;
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;

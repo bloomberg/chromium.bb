@@ -1744,6 +1744,7 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
     active_tree_->set_needs_update_draw_properties();
     if (pending_tree_)
       pending_tree_->set_needs_update_draw_properties();
+    client_->UpdateRendererCapabilitiesOnImplThread();
   }
 }
 

@@ -71,6 +71,7 @@ class ThreadProxy : public Proxy,
   virtual scoped_ptr<base::Value> SchedulerStateAsValueForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
+  virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
@@ -139,6 +140,8 @@ class ThreadProxy : public Proxy,
   };
 
   // Called on main thread.
+  void SetRendererCapabilitiesMainThreadCopy(
+      const RendererCapabilities& capabilities);
   void BeginMainFrame(
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
   void DidCommitAndDrawFrame();
