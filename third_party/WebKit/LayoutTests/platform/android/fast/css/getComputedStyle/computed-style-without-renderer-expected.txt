@@ -152,9 +152,12 @@ justify-content: flex-start
 -webkit-font-smoothing: auto
 -webkit-highlight: none
 -webkit-hyphenate-character: auto
+-webkit-line-align: none
 -webkit-line-box-contain: block inline replaced
 -webkit-line-break: auto
 -webkit-line-clamp: none
+-webkit-line-grid: none
+-webkit-line-snap: none
 -webkit-locale: auto
 -webkit-margin-before-collapse: collapse
 -webkit-margin-after-collapse: collapse

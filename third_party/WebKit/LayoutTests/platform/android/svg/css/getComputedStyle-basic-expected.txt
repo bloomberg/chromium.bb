@@ -304,12 +304,18 @@ rect: style.getPropertyValue(-webkit-highlight) : none
 rect: style.getPropertyCSSValue(-webkit-highlight) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-hyphenate-character) : auto
 rect: style.getPropertyCSSValue(-webkit-hyphenate-character) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(-webkit-line-align) : none
+rect: style.getPropertyCSSValue(-webkit-line-align) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-line-box-contain) : block inline replaced
 rect: style.getPropertyCSSValue(-webkit-line-box-contain) : [object CSSValue]
 rect: style.getPropertyValue(-webkit-line-break) : auto
 rect: style.getPropertyCSSValue(-webkit-line-break) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-line-clamp) : none
 rect: style.getPropertyCSSValue(-webkit-line-clamp) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(-webkit-line-grid) : none
+rect: style.getPropertyCSSValue(-webkit-line-grid) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(-webkit-line-snap) : none
+rect: style.getPropertyCSSValue(-webkit-line-snap) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-locale) : auto
 rect: style.getPropertyCSSValue(-webkit-locale) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-margin-before-collapse) : collapse
@@ -772,12 +778,18 @@ g: style.getPropertyValue(-webkit-highlight) : none
 g: style.getPropertyCSSValue(-webkit-highlight) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-hyphenate-character) : auto
 g: style.getPropertyCSSValue(-webkit-hyphenate-character) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(-webkit-line-align) : none
+g: style.getPropertyCSSValue(-webkit-line-align) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-line-box-contain) : block inline replaced
 g: style.getPropertyCSSValue(-webkit-line-box-contain) : [object CSSValue]
 g: style.getPropertyValue(-webkit-line-break) : auto
 g: style.getPropertyCSSValue(-webkit-line-break) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-line-clamp) : none
 g: style.getPropertyCSSValue(-webkit-line-clamp) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(-webkit-line-grid) : none
+g: style.getPropertyCSSValue(-webkit-line-grid) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(-webkit-line-snap) : none
+g: style.getPropertyCSSValue(-webkit-line-snap) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-locale) : auto
 g: style.getPropertyCSSValue(-webkit-locale) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-margin-before-collapse) : collapse

@@ -321,9 +321,12 @@ webkitFontSizeDelta
 webkitFontSmoothing
 webkitHighlight
 webkitHyphenateCharacter
+webkitLineAlign
 webkitLineBoxContain
 webkitLineBreak
 webkitLineClamp
+webkitLineGrid
+webkitLineSnap
 webkitLocale
 webkitLogicalHeight
 webkitLogicalWidth
