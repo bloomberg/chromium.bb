@@ -403,9 +403,9 @@ class ChromiumOSDeviceHandler(object):
 class RemoteDevice(object):
   """Handling basic SSH communication with a remote device."""
 
-  DEFAULT_WORK_DIR = '/tmp/remote-access'
+  DEFAULT_BASE_DIR = '/tmp/remote-access'
 
-  def __init__(self, hostname, port=None, work_dir=None,
+  def __init__(self, hostname, port=None, base_dir=DEFAULT_BASE_DIR,
                connect_settings=None, debug_level=logging.DEBUG):
     """Initializes a RemoteDevice object.
 
@@ -413,7 +413,7 @@ class RemoteDevice(object):
       hostname: The hostname of the device.
       port: The ssh port of the device.
       debug_level: Setting debug level for logging.
-      work_dir: The default working directory on the device.
+      base_dir: The base directory of the working directory on the device.
       connect_settings: Default SSH connection settings.
     """
     self.hostname = hostname
@@ -425,9 +425,14 @@ class RemoteDevice(object):
     self.agent = self._SetupSSH()
     self.debug_level = debug_level
     # Setup a working directory on the device.
-    self.work_dir = self.DEFAULT_WORK_DIR if work_dir is None else work_dir
-    self.RunCommand(['rm', '-r', self.work_dir], error_code_ok=True)
-    self.RunCommand(['mkdir', '-p', self.work_dir])
+    self.base_dir = base_dir
+    self.RunCommand(['mkdir', '-p', self.base_dir])
+    self.work_dir = self.RunCommand(
+        ['mktemp', '-d', '--tmpdir=%s' % base_dir],
+        capture_output=True).output.strip()
+    logging.debug(
+        'The tempory working directory on the device is %s', self.work_dir)
+
     self.cleanup_cmds = []
     self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
 

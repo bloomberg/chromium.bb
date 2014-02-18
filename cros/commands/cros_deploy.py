@@ -38,7 +38,7 @@ For more information of cros build usage:
   cros build -h
 """
 
-  DEVICE_WORK_DIR = '/tmp/cros-deploy'
+  DEVICE_BASE_DIR = '/usr/local/tmp/cros-deploy'
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -140,6 +140,10 @@ For more information of cros build usage:
     logging.info('Copying %s to device...', latest_pkg)
     device.CopyToDevice(latest_pkg, pkg_dir)
 
+    portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
+    device.RunCommand(['mkdir', '-p', portage_tmpdir])
+    logging.info('Use portage temp dir %s', portage_tmpdir)
+
     logging.info('Installing %s...', latest_pkg)
     pkg_path = os.path.join(pkg_dir, pkg_name)
     # We set PORTAGE_CONFIGROOT to '/usr/local' because by default all
@@ -152,7 +156,7 @@ For more information of cros build usage:
         'FEATURES': '-sandbox',
         'PKGDIR': pkgroot,
         'PORTAGE_CONFIGROOT': '/usr/local',
-        'PORTAGE_TMPDIR': '/tmp',
+        'PORTAGE_TMPDIR': portage_tmpdir,
         'PORTDIR': device.work_dir,
     }
     cmd = ['emerge', '--usepkg', pkg_path]
@@ -168,6 +172,10 @@ For more information of cros build usage:
       raise
     else:
       logging.info('%s has been installed.', pkg)
+    finally:
+      # Free up the space for other packages.
+      device.RunCommand(['rm', '-rf', portage_tmpdir, pkg_dir],
+                        error_code_ok=True)
 
   def _Unmerge(self, device, pkg, root):
     """Unmerges |pkg| on |device|.
@@ -228,7 +236,7 @@ For more information of cros build usage:
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port,
-          work_dir=self.DEVICE_WORK_DIR) as device:
+          base_dir=self.DEVICE_BASE_DIR) as device:
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board)
         logging.info('Board is %s', board)

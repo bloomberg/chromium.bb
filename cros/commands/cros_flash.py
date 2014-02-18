@@ -113,7 +113,7 @@ class RemoteDeviceUpdater(object):
   UPDATE_CHECK_INTERVAL = 10
   # Root working directory on the device. This directory is in the
   # stateful partition and thus has enough space to store the payloads.
-  DEVICE_WORK_DIR = '/mnt/stateful_partition/cros-flash'
+  DEVICE_BASE_DIR = '/mnt/stateful_partition/cros-flash'
 
   def __init__(self, ssh_hostname, ssh_port, image_path, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
@@ -374,7 +374,7 @@ class RemoteDeviceUpdater(object):
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port,
-          work_dir=self.DEVICE_WORK_DIR) as device:
+          base_dir=self.DEVICE_BASE_DIR) as device:
 
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.board,
