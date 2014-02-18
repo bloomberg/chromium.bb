@@ -346,7 +346,8 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 // Test fails because of NOTIMPLEMENTED in fullscreen_aura.cc used by the
 // notification system.
 // TODO(mukai): Fix in notification side.
-#if defined(OS_CHROMEOS) || !defined(OS_LINUX)
+// Flake on Windows too: crbug.com/344582
+#if defined(OS_CHROMEOS) || (!defined(OS_LINUX) && !defined(OS_WIN))
 #define MAYBE_TestShowBalloon TestShowBalloon
 #define MAYBE_TestShowBalloonNoIcon TestShowBalloonNoIcon
 #else
