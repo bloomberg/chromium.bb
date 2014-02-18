@@ -134,8 +134,9 @@ message TabNavigation {
   repeated string content_pack_categories = 19;
   // The status code from the last navigation.
   optional int32 http_status_code = 20;
-  // Referrer policy.
-  optional int32 referrer_policy = 21;
+  // Referrer policy. Valid enums are defined in
+  // third_party/WebKit/public/platform/WebReferrerPolicy.h.
+  optional int32 referrer_policy = 21 [default = 1];
   // True if created from restored navigation entry that hasn't been loaded.
   optional bool is_restored = 22;
 }
