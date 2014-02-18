@@ -201,14 +201,14 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
     if (!success) {
         if (errorString)
             *errorString = "Invalid storageId format";
-        return nullptr;
+        return 0;
     }
 
     Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
     if (!frame) {
         if (errorString)
             *errorString = "Frame not found for the given security origin";
-        return nullptr;
+        return 0;
     }
     targetFrame = frame;
 
