@@ -315,7 +315,10 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     }
 
     if (frame) {
-        IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? contextDocument.get() : 0);
+        const bool isImportedScript = contextDocument != elementDocument;
+        // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
+        // with additional support for HTML imports.
+        IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument.get() : 0);
 
         if (isHTMLScriptLoader(m_element))
             contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
