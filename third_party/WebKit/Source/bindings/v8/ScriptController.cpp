@@ -263,7 +263,8 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
 
 bool ScriptController::shouldBypassMainWorldContentSecurityPolicy()
 {
-    if (DOMWrapperWorld* world = isolatedWorldForEnteredContext(m_isolate))
+    DOMWrapperWorld* world = DOMWrapperWorld::current(m_isolate);
+    if (world && world->isIsolatedWorld())
         return world->isolatedWorldHasContentSecurityPolicy();
     return false;
 }

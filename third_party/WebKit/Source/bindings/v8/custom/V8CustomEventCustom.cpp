@@ -91,7 +91,7 @@ void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v
 
     if (!detailsArg.IsEmpty()) {
         setHiddenValue(info.GetIsolate(), info.Holder(), "detail", detailsArg);
-        if (isolatedWorldForIsolate(info.GetIsolate()))
+        if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld())
             event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(detailsArg, info.GetIsolate()));
     }
 }

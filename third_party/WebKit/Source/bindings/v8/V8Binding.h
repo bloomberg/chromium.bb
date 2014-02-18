@@ -614,8 +614,6 @@ namespace WebCore {
     WrapperWorldType worldType(v8::Isolate*);
     WrapperWorldType worldTypeInMainThread(v8::Isolate*);
 
-    DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate*);
-
     DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
     ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
@@ -636,14 +634,6 @@ namespace WebCore {
     // Returns the frame object of the window object associated with
     // a context, if the window is currently being displayed in the Frame.
     Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
-
-    inline DOMWrapperWorld* isolatedWorldForEnteredContext(v8::Isolate* isolate)
-    {
-        v8::Handle<v8::Context> context = isolate->GetEnteredContext();
-        if (context.IsEmpty())
-            return 0;
-        return DOMWrapperWorld::isolatedWorld(context);
-    }
 
     // If the current context causes out of memory, JavaScript setting
     // is disabled and it returns true.
