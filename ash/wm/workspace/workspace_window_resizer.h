@@ -150,8 +150,12 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // snapping should be used.
   SnapType GetSnapType(const gfx::Point& location) const;
 
-  // Docks the dragged window if |should_dock| and the window can be docked.
-  // Undocks the window if |should_dock| is false.
+  // Returns true if |bounds_in_parent| are valid bounds for snapped show type
+  // |snapped_type|.
+  bool AreBoundsValidSnappedBounds(wm::WindowShowType snapped_type,
+                                   const gfx::Rect& bounds_in_parent) const;
+
+  // Docks or undocks the dragged window.
   void SetDraggedWindowDocked(bool should_dock);
 
   wm::WindowState* window_state() { return window_state_; }

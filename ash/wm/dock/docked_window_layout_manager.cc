@@ -1172,11 +1172,8 @@ void DockedWindowLayoutManager::FanOutChildren(
     DCHECK_LE(bounds.width(), ideal_docked_width);
 
     DockedAlignment alignment = alignment_;
-    if (alignment == DOCKED_ALIGNMENT_NONE && window == dragged_window_) {
-      alignment = GetAlignmentOfWindow(window);
-      if (alignment == DOCKED_ALIGNMENT_NONE)
-        bounds.set_size(gfx::Size());
-    }
+    if (alignment == DOCKED_ALIGNMENT_NONE && window == dragged_window_)
+      alignment = GetEdgeNearestWindow(window);
 
     // Fan out windows evenly distributing the overlap or remaining free space.
     bounds.set_height(iter->height_);

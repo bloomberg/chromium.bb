@@ -418,10 +418,11 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
+  if (!did_move_or_resize_)
+    return;
+
   window_state()->set_bounds_changed_by_user(true);
   snap_phantom_window_controller_.reset();
-  if (!did_move_or_resize_ || details().window_component != HTCAPTION)
-    return;
 
   // If the window's show type changed over the course of the drag do not snap
   // the window. This happens when the user minimizes or maximizes the window
@@ -430,11 +431,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
     return;
 
   bool snapped = false;
-  if (window_state()->IsNormalShowState() &&
-      (GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL ||
-       !window_state()->panel_attached() ||
-       dock_layout_->is_dragged_window_docked()) &&
-      (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
+  if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
     if (!window_state()->HasRestoreBounds()) {
       gfx::Rect initial_bounds = ScreenUtil::ConvertRectToScreen(
           GetTarget()->parent(), details().initial_bounds_in_parent);
@@ -443,9 +440,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
           initial_bounds :
           details().restore_bounds);
     }
-    DCHECK(snap_sizer_);
-    if (window_state()->CanResize() &&
-        !dock_layout_->is_dragged_window_docked()) {
+    if (!dock_layout_->is_dragged_window_docked()) {
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT ?
               UMA_DRAG_MAXIMIZE_LEFT :
@@ -454,8 +449,24 @@ void WorkspaceWindowResizer::CompleteDrag() {
       snapped = true;
     }
   }
-  if (window_state()->IsSnapped() && !snapped)
-    window_state()->Restore();
+
+  if (!snapped && window_state()->IsSnapped()) {
+    // Keep the window snapped if the user resizes the window such that the
+    // window has valid bounds for a snapped window. Always unsnap the window
+    // if the user dragged the window via the caption area because doing this is
+    // slightly less confusing.
+    if (details().window_component == HTCAPTION ||
+        !AreBoundsValidSnappedBounds(window_state()->window_show_type(),
+                                     GetTarget()->bounds())) {
+      // Set the window to SHOW_TYPE_NORMAL but keep the window at the bounds
+      // that the user has moved/resized the window to. ClearRestoreBounds()
+      // is used instead of SaveCurrentBoundsForRestore() because most of the
+      // restore logic is skipped because we are still in the middle of a drag.
+      // TODO(pkotwicz): Fix this and use SaveCurrentBoundsForRestore().
+      window_state()->ClearRestoreBounds();
+      window_state()->Restore();
+    }
+  }
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
@@ -903,18 +914,25 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
       return;
     }
   }
-  const bool can_dock = dock_layout_->CanDockWindow(GetTarget(), snap_type_);
-  const bool can_snap = window_state()->CanSnap();
+
+  const bool can_dock = dock_layout_->CanDockWindow(GetTarget(), snap_type_) &&
+      dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;
+  if (!can_dock) {
+    // If the window cannot be docked, undock the window. This may change the
+    // workspace bounds and hence |snap_type_|.
+    SetDraggedWindowDocked(false);
+    snap_type_ = GetSnapType(location);
+  }
+  const bool can_snap = snap_type_ != SNAP_NONE && window_state()->CanSnap();
   if (!can_snap && !can_dock) {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
     snap_sizer_.reset();
-    SetDraggedWindowDocked(false);
     return;
   }
-  SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
-      SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
   if (!snap_sizer_) {
+    SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
+        SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
     SnapSizer::InputType input =
         details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH ?
             SnapSizer::TOUCH_DRAG_INPUT : SnapSizer::OTHER_INPUT;
@@ -927,24 +945,18 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   // Windows that cannot be snapped or are less wide than kMaxDockWidth can get
   // docked without going through a snapping sequence.
   gfx::Rect phantom_bounds;
-  if (can_snap && (!can_dock || GetTarget()->bounds().width() >
-      DockedWindowLayoutManager::kMaxDockWidth)) {
-    phantom_bounds = snap_sizer_->target_bounds();
-  }
   const bool should_dock = can_dock &&
-      (phantom_bounds.IsEmpty() ||
+      (!can_snap ||
+       GetTarget()->bounds().width() <=
+           DockedWindowLayoutManager::kMaxDockWidth ||
        snap_sizer_->end_of_sequence() ||
        dock_layout_->is_dragged_window_docked());
-  SetDraggedWindowDocked(should_dock);
-  snap_type_ = GetSnapType(location);
-  if (dock_layout_->is_dragged_window_docked()) {
+  if (should_dock) {
+    SetDraggedWindowDocked(true);
     phantom_bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(), dock_layout_->dragged_bounds());
-  }
-
-  if (phantom_bounds.IsEmpty()) {
-    snap_phantom_window_controller_.reset();
-    return;
+  } else {
+    phantom_bounds = snap_sizer_->target_bounds();
   }
 
   if (!snap_phantom_window_controller_) {
@@ -1011,9 +1023,7 @@ SnapType WorkspaceWindowResizer::GetSnapType(
 }
 
 void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
-  if (should_dock &&
-      dock_layout_->GetAlignmentOfWindow(GetTarget()) !=
-          DOCKED_ALIGNMENT_NONE) {
+  if (should_dock) {
     if (!dock_layout_->is_dragged_window_docked()) {
       window_state()->set_bounds_changed_by_user(false);
       dock_layout_->DockDraggedWindow(GetTarget());
@@ -1024,6 +1034,19 @@ void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
       window_state()->set_bounds_changed_by_user(true);
     }
   }
+}
+
+bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
+    wm::WindowShowType snapped_type,
+    const gfx::Rect& bounds_in_parent) const {
+  DCHECK(snapped_type == wm::SHOW_TYPE_LEFT_SNAPPED ||
+         snapped_type == wm::SHOW_TYPE_RIGHT_SNAPPED);
+  gfx::Rect snapped_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+      GetTarget());
+  if (snapped_type == wm::SHOW_TYPE_RIGHT_SNAPPED)
+    snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
+  snapped_bounds.set_width(bounds_in_parent.width());
+  return bounds_in_parent == snapped_bounds;
 }
 
 }  // namespace internal

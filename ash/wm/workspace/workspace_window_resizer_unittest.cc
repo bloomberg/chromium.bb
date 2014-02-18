@@ -686,6 +686,89 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
   }
 }
 
+// Verifies that dragging a snapped window unsnaps it.
+TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+
+  const gfx::Rect kInitialBounds(100, 100, 100, 100);
+  window_->SetBounds(kInitialBounds);
+  window_->Show();
+
+  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  gfx::Rect snapped_bounds = window_->bounds();
+  EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
+  EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
+            kInitialBounds.ToString());
+
+  // Dragging a side snapped window should unsnap it.
+  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+      window_.get(), gfx::Point(), HTCAPTION));
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ(wm::SHOW_TYPE_NORMAL, window_state->window_show_type());
+  EXPECT_EQ("10,0 100x100", window_->bounds().ToString());
+  EXPECT_FALSE(window_state->HasRestoreBounds());
+}
+
+// Verifies the behavior of resizing a side snapped window.
+TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+
+  const gfx::Rect kInitialBounds(100, 100, 100, 100);
+  window_->SetBounds(kInitialBounds);
+  window_->Show();
+
+  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  gfx::Rect snapped_bounds = window_->bounds();
+  EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
+  EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
+            kInitialBounds.ToString());
+
+  {
+    // 1) Resizing a side snapped window to make it wider should not unsnap the
+    // window.
+    scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+        window_.get(), gfx::Point(), HTRIGHT));
+    resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+    resizer->CompleteDrag();
+    EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+    snapped_bounds.Inset(0, 0, -10, 0);
+    EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+    EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
+              kInitialBounds.ToString());
+  }
+
+  {
+    // 2) Resizing a side snapped window vertically and then undoing the change
+    // should not unsnap.
+    scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+        window_.get(), gfx::Point(), HTBOTTOM));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -30), 0);
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    resizer->CompleteDrag();
+    EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+    EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+    EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
+              kInitialBounds.ToString());
+  }
+
+  {
+    // 3) Resizing a side snapped window vertically and then not undoing the
+    // change should unsnap.
+    scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+        window_.get(), gfx::Point(), HTBOTTOM));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -10), 0);
+    resizer->CompleteDrag();
+    EXPECT_EQ(wm::SHOW_TYPE_NORMAL, window_state->window_show_type());
+    gfx::Rect expected_bounds(snapped_bounds);
+    expected_bounds.Inset(0, 0, 0, 10);
+    EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
+    EXPECT_FALSE(window_state->HasRestoreBounds());
+  }
+}
+
 // Verifies windows are correctly restacked when reordering multiple windows.
 TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   window_->SetBounds(gfx::Rect(   0, 0, 200, 300));

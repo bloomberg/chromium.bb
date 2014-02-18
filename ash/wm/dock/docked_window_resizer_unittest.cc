@@ -434,7 +434,55 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
   // Try to detach by dragging left by kSnapToDockDistance or more.
   // The window should get undocked.
   const int left_edge = window->bounds().x();
-  ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(
+      window.get(), 10, 0));
+  DragMove(-32, -10);
+  // Release the mouse and the window should be no longer attached to the dock.
+  DragEnd();
+
+  // The window should be floating on the desktop again and moved to the left.
+  EXPECT_EQ(left_edge - 32, window->GetBoundsInScreen().x());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
+            window->parent()->id());
+}
+
+// Dock on the right side, and undock by dragging the right edge of the window
+// header. This test is useful because both the position of the dragged window
+// and the position of the mouse are used in determining whether a window should
+// be undocked.
+TEST_P(DockedWindowResizerTest, AttachTryDetachDragRightEdgeOfHeader) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> window(CreateTestWindow(
+      gfx::Rect(0, 0, ideal_width() + 10, 201)));
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
+
+  // The window should be docked at the right edge.
+  // Its width should shrink to ideal width.
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(ideal_width(), window->GetBoundsInScreen().width());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  // Try to detach by dragging left less than kSnapToDockDistance.
+  // The window should stay docked.
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(
+      window.get(), ideal_width() - 10, 0));
+  DragMove(-4, -10);
+  // Release the mouse and the window should be still attached to the dock.
+  DragEnd();
+
+  // The window should be still attached to the right edge.
+  EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+
+  // Try to detach by dragging left by kSnapToDockDistance or more.
+  // The window should get undocked.
+  const int left_edge = window->bounds().x();
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(
+      window.get(), ideal_width() - 10, 0));
   DragMove(-32, -10);
   // Release the mouse and the window should be no longer attached to the dock.
   DragEnd();
