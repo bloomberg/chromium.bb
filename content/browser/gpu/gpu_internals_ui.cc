@@ -324,7 +324,7 @@ base::Value* GpuMessageHandler::OnRequestClientInfo(
   dict->SetString("operating_system",
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
-  dict->SetString("angle_revision", base::UintToString(BUILD_REVISION));
+  dict->SetString("angle_commit_id", ANGLE_COMMIT_HASH);
   dict->SetString("graphics_backend", "Skia");
   dict->SetString("blacklist_version",
       GpuDataManagerImpl::GetInstance()->GetBlacklistVersion());

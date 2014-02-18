@@ -1351,6 +1351,7 @@
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/webkit_resources.gyp:webkit_strings',
+        '../third_party/angle/src/build_angle.gyp:commit_id',
       ],
     }],
     ['enable_printing!=0', {

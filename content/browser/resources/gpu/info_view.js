@@ -64,8 +64,8 @@ cr.define('gpu', function() {
             value: clientInfo.driver_bug_list_version
           },
           {
-            description: 'ANGLE revision',
-            value: clientInfo.angle_revision
+            description: 'ANGLE commit id',
+            value: clientInfo.angle_commit_id
           },
           {
             description: '2D graphics backend',
