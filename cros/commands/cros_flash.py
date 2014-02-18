@@ -184,18 +184,23 @@ class RemoteDeviceUpdater(object):
     stateful_update_bin = cros_build_lib.FromChrootPath(
         self.STATEFUL_UPDATE_BIN)
     device.CopyToWorkDir(stateful_update_bin)
-
     msg = 'Updating stateful partition'
-    cmd = ['sh', os.path.join(device.work_dir,
-                              os.path.basename(self.STATEFUL_UPDATE_BIN)), '-']
+    logging.info('Copying stateful payload to device...')
+    device.CopyToWorkDir(payload)
+    cmd = ['sh',
+           os.path.join(device.work_dir,
+                        os.path.basename(self.STATEFUL_UPDATE_BIN)),
+           os.path.join(device.work_dir, os.path.basename(payload))]
+
     if clobber:
       cmd.append('--stateful_change=clean')
       msg += ' with clobber enabled'
 
     logging.info('%s...', msg)
-
-    device.PipeOverSSH(payload, cmd)
-    logging.info('Payload decompressed to stateful partition.')
+    try:
+      device.RunCommand(cmd)
+    except cros_build_lib.RunCommandError:
+      logging.error('Faild to perform stateful partition update.')
 
   def _CopyDevServerPackage(self, device, tempdir):
     """Copy devserver package to work directory of device.
