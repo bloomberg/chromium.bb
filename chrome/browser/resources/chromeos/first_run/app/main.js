@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Global wallpaperManager reference useful for poking at from the console.
- */
-var wallpaperManager;
-
 function init() {
+  var content = $('greeting');
   chrome.firstRunPrivate.getLocalizedStrings(function(strings) {
     loadTimeData.data = strings;
     i18nTemplate.process(document, loadTimeData);
+    // Resizing and centering app's window.
+    var bounds = {};
+    bounds.width = content.offsetWidth;
+    bounds.height = content.offsetHeight;
+    bounds.left = Math.round(0.5 * (window.screen.availWidth - bounds.width));
+    bounds.top = Math.round(0.5 * (window.screen.availHeight - bounds.height));
+    appWindow.setBounds(bounds);
+    appWindow.show();
   });
-  var content = $('greeting');
   var closeButton = content.getElementsByClassName('close-button')[0];
   // Make close unfocusable by mouse.
   closeButton.addEventListener('mousedown', function(e) {

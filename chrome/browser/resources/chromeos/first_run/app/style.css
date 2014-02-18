@@ -13,7 +13,6 @@ body {
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 475px;
   padding: 40px;
   text-align: center;
   width: 720px;
@@ -28,20 +27,12 @@ body {
 .step.dialog p {
   font-size: 15px;
   margin-bottom: 0;
+  margin-top: 0;
 }
 
 .step.dialog .controls {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.step.dialog .controls .margin-top {
-  flex-grow: 8;
-}
-
-.step.dialog .controls .margin-bottom {
-  flex-grow: 5;
+  margin-bottom: 0;
+  margin-top: 40px;
 }
 
 .step.dialog .controls button {
@@ -75,4 +66,9 @@ body {
   -webkit-app-region: no-drag;
   -webkit-margin-end: 0;
   display: inline;
+}
+
+.step.dialog .greeting-image {
+  margin-bottom: 49px;
+  margin-top: 64px;
 }
