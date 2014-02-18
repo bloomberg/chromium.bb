@@ -39,3 +39,5 @@ Local Modifications:
 - patches/fallback_scsv.patch: add support for TLS_FALLBACK_SCSV. See
   https://tools.ietf.org/html/draft-bmoeller-tls-downgrade-scsv-01
 - patches/status_request.patch: add support for sending stapled OCSP responses.
+- patches/rsa_signature_length.patch: Ensure that RSA signatures have the
+  correct length.

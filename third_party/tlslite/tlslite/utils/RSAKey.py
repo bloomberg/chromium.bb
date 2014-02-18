@@ -117,7 +117,7 @@ class RSAKey:
         if m >= self.n:
             raise ValueError()
         c = self._rawPrivateKeyOp(m)
-        sigBytes = numberToBytes(c)
+        sigBytes = numberToBytes(c, numBytes(self.n))
         return sigBytes
 
     def verify(self, sigBytes, bytes):

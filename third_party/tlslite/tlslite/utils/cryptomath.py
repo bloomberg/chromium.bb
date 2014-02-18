@@ -129,8 +129,9 @@ def bytesToNumber(bytes):
         multiplier *= 256
     return total
 
-def numberToBytes(n):
-    howManyBytes = numBytes(n)
+def numberToBytes(n, howManyBytes=None):
+    if howManyBytes == None:
+      howManyBytes = numBytes(n)
     bytes = createByteArrayZeros(howManyBytes)
     for count in range(howManyBytes-1, -1, -1):
         bytes[count] = int(n % 256)
