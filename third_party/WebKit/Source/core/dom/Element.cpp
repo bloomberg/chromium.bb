@@ -61,6 +61,7 @@
 #include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/SiblingRuleHelper.h"
 #include "core/dom/Text.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
@@ -1647,7 +1648,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     updatePseudoElement(BEFORE, change);
 
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
-        checkForChildrenAdjacentRuleChanges();
+        SiblingRuleHelper(this).checkForChildrenAdjacentRuleChanges();
 
     if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
         // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
@@ -1676,36 +1677,6 @@ void Element::recalcChildStyle(StyleRecalcChange change)
 
     updatePseudoElement(AFTER, change);
     updatePseudoElement(BACKDROP, change);
-}
-
-void Element::checkForChildrenAdjacentRuleChanges()
-{
-    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
-    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
-
-    if (!hasDirectAdjacentRules && !hasIndirectAdjacentRules)
-        return;
-
-    unsigned forceCheckOfNextElementCount = 0;
-    bool forceCheckOfAnyElementSibling = false;
-
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (!child->isElementNode())
-            continue;
-        Element* element = toElement(child);
-        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
-
-        if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
-            element->setNeedsStyleRecalc(SubtreeStyleChange);
-
-        if (forceCheckOfNextElementCount)
-            forceCheckOfNextElementCount--;
-
-        if (childRulesChanged && hasDirectAdjacentRules)
-            forceCheckOfNextElementCount = document().styleEngine()->maxDirectAdjacentSelectors();
-
-        forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
-    }
 }
 
 void Element::updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle)

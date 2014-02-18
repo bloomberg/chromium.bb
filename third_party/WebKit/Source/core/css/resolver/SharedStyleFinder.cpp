@@ -40,6 +40,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/SiblingRuleHelper.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -331,7 +332,7 @@ RenderStyle* SharedStyleFinder::findSharedStyle()
     }
 
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (!element().parentOrShadowHostElement()->childrenSupportStyleSharing()) {
+    if (!SiblingRuleHelper(element().parentElementOrShadowRoot()).childrenSupportStyleSharing()) {
         INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByParent);
         return 0;
     }

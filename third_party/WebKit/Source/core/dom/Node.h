@@ -172,6 +172,7 @@ public:
     virtual NodeType nodeType() const = 0;
     ContainerNode* parentNode() const;
     Element* parentElement() const;
+    Node* parentElementOrShadowRoot() const;
     Node* previousSibling() const { return m_previous; }
     Node* nextSibling() const { return m_next; }
     PassRefPtr<NodeList> childNodes();

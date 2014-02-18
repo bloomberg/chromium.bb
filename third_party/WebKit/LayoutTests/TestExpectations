@@ -263,6 +263,7 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-naviga
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-001.html [ ImageOnlyFailure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-002.html [ ImageOnlyFailure ]
+crbug.com/337573 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 # Untriaged Aura-specific failure.
 crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]

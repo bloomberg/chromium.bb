@@ -241,6 +241,12 @@ inline Node* Node::highestAncestor() const
     return highest;
 }
 
+inline Node* Node::parentElementOrShadowRoot() const
+{
+    ContainerNode* parent = parentNode();
+    return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
+}
+
 // This constant controls how much buffer is initially allocated
 // for a Node Vector that is used to store child Nodes of a given Node.
 // FIXME: Optimize the value.

@@ -127,6 +127,22 @@ public:
     StyleSheetList* styleSheets();
     bool isActiveForStyling() const;
 
+    bool childrenSupportStyleSharing() const;
+    bool childrenAffectedByPositionalRules() const;
+    bool childrenAffectedByFirstChildRules() const;
+    bool childrenAffectedByLastChildRules() const;
+    bool childrenAffectedByDirectAdjacentRules() const;
+    bool childrenAffectedByForwardPositionalRules() const;
+    bool childrenAffectedByBackwardPositionalRules() const;
+
+    void setChildrenAffectedByFirstChildRules();
+    void setChildrenAffectedByLastChildRules();
+    void setChildrenAffectedByDirectAdjacentRules();
+    void setChildrenAffectedByForwardPositionalRules();
+    void setChildrenAffectedByBackwardPositionalRules();
+
+    using Node::isFinishedParsingChildren; // make public for SelectorChecker
+
 private:
     ShadowRoot(Document&, ShadowRootType);
     virtual ~ShadowRoot();

@@ -1911,6 +1911,8 @@
             'dom/FullscreenElementStack.cpp',
             'dom/FullscreenElementStack.h',
             'dom/GlobalEventHandlers.h',
+            'dom/SiblingRuleHelper.cpp',
+            'dom/SiblingRuleHelper.h',
             'dom/IconURL.cpp',
             'dom/IconURL.h',
             'dom/IdTargetObserver.cpp',

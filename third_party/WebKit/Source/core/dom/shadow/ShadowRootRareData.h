@@ -43,6 +43,11 @@ public:
         : m_descendantShadowElementCount(0)
         , m_descendantContentElementCount(0)
         , m_childShadowRootCount(0)
+        , m_childrenAffectedByDirectAdjacentRules(false)
+        , m_childrenAffectedByForwardPositionalRules(false)
+        , m_childrenAffectedByBackwardPositionalRules(false)
+        , m_childrenAffectedByFirstChildRules(false)
+        , m_childrenAffectedByLastChildRules(false)
     {
     }
 
@@ -70,6 +75,20 @@ public:
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(PassRefPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
+    bool childrenAffectedByDirectAdjacentRules() const { return m_childrenAffectedByDirectAdjacentRules; }
+    void setChildrenAffectedByDirectAdjacentRules(bool value) { m_childrenAffectedByDirectAdjacentRules = value; }
+    bool childrenAffectedByForwardPositionalRules() const { return m_childrenAffectedByForwardPositionalRules; }
+    void setChildrenAffectedByForwardPositionalRules(bool value) { m_childrenAffectedByForwardPositionalRules = value; }
+
+    bool childrenAffectedByBackwardPositionalRules() const { return m_childrenAffectedByBackwardPositionalRules; }
+    void setChildrenAffectedByBackwardPositionalRules(bool value) { m_childrenAffectedByBackwardPositionalRules = value; }
+
+    bool childrenAffectedByFirstChildRules() const { return m_childrenAffectedByFirstChildRules; }
+    void setChildrenAffectedByFirstChildRules(bool value) { m_childrenAffectedByFirstChildRules = value; }
+
+    bool childrenAffectedByLastChildRules() const { return m_childrenAffectedByLastChildRules; }
+    void setChildrenAffectedByLastChildRules(bool value) { m_childrenAffectedByLastChildRules = value; }
+
 private:
     RefPtr<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
     unsigned m_descendantShadowElementCount;
@@ -77,6 +96,12 @@ private:
     unsigned m_childShadowRootCount;
     Vector<RefPtr<InsertionPoint> > m_descendantInsertionPoints;
     RefPtr<StyleSheetList> m_styleSheetList;
+
+    unsigned m_childrenAffectedByDirectAdjacentRules : 1;
+    unsigned m_childrenAffectedByForwardPositionalRules : 1;
+    unsigned m_childrenAffectedByBackwardPositionalRules : 1;
+    unsigned m_childrenAffectedByFirstChildRules : 1;
+    unsigned m_childrenAffectedByLastChildRules : 1;
 };
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)

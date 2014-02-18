@@ -31,6 +31,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/SiblingRuleHelper.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -162,6 +163,9 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
 
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
+
+    if (change < Force && childNeedsStyleRecalc())
+        SiblingRuleHelper(this).checkForChildrenAdjacentRuleChanges();
 
     // There's no style to update so just calling recalcStyle means we're updated.
     clearNeedsStyleRecalc();
@@ -409,6 +413,72 @@ StyleSheetList* ShadowRoot::styleSheets()
         m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
 
     return m_shadowRootRareData->styleSheets();
+}
+
+bool ShadowRoot::childrenSupportStyleSharing() const
+{
+    if (!m_shadowRootRareData)
+        return false;
+    return !m_shadowRootRareData->childrenAffectedByFirstChildRules()
+        && !m_shadowRootRareData->childrenAffectedByLastChildRules()
+        && !m_shadowRootRareData->childrenAffectedByDirectAdjacentRules()
+        && !m_shadowRootRareData->childrenAffectedByForwardPositionalRules()
+        && !m_shadowRootRareData->childrenAffectedByBackwardPositionalRules();
+}
+
+bool ShadowRoot::childrenAffectedByPositionalRules() const
+{
+    return m_shadowRootRareData && (m_shadowRootRareData->childrenAffectedByForwardPositionalRules() || m_shadowRootRareData->childrenAffectedByBackwardPositionalRules());
+}
+
+bool ShadowRoot::childrenAffectedByFirstChildRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByFirstChildRules();
+}
+
+bool ShadowRoot::childrenAffectedByLastChildRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByLastChildRules();
+}
+
+bool ShadowRoot::childrenAffectedByDirectAdjacentRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByDirectAdjacentRules();
+}
+
+bool ShadowRoot::childrenAffectedByForwardPositionalRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByForwardPositionalRules();
+}
+
+bool ShadowRoot::childrenAffectedByBackwardPositionalRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByBackwardPositionalRules();
+}
+
+void ShadowRoot::setChildrenAffectedByForwardPositionalRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByForwardPositionalRules(true);
+}
+
+void ShadowRoot::setChildrenAffectedByDirectAdjacentRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByDirectAdjacentRules(true);
+}
+
+void ShadowRoot::setChildrenAffectedByBackwardPositionalRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByBackwardPositionalRules(true);
+}
+
+void ShadowRoot::setChildrenAffectedByFirstChildRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByFirstChildRules(true);
+}
+
+void ShadowRoot::setChildrenAffectedByLastChildRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByLastChildRules(true);
 }
 
 }
