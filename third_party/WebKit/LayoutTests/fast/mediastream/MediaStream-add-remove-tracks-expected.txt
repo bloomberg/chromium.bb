@@ -22,8 +22,8 @@ PASS stream1.getVideoTracks().length is 1
 PASS stream1.getAudioTracks().length is 2
 PASS stream1.getVideoTracks().length is 2
 PASS stream2.ended is true
-PASS stream1.addTrack(audioTrack) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS stream1.removeTrack(audioTrack) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS stream1.addTrack(audioTrack) threw exception InvalidStateError: Failed to execute 'addTrack' on 'MediaStream': The MediaStream is finished..
+PASS stream1.removeTrack(audioTrack) threw exception InvalidStateError: Failed to execute 'removeTrack' on 'MediaStream': The MediaStream is finished..
 PASS successfullyParsed is true
 
 TEST COMPLETE

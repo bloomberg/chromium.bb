@@ -114,8 +114,8 @@ function gotStream2(s) {
 
     stream1.stop();
 
-    shouldThrow('stream1.addTrack(audioTrack)', '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
-    shouldThrow('stream1.removeTrack(audioTrack)', '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
+    shouldThrow('stream1.addTrack(audioTrack)');
+    shouldThrow('stream1.removeTrack(audioTrack)');
 
     setTimeout(finishJSTest, 0);
 }

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDTMFSender.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -48,7 +49,7 @@ PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, blink
     RefPtr<MediaStreamTrack> track = prpTrack;
     OwnPtr<blink::WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
     if (!handler) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The MediaStreamTrack provided is not an element of a MediaStream that's currently in the local streams set.");
         return 0;
     }
 
@@ -102,17 +103,17 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, ExceptionStat
 void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState& exceptionState)
 {
     if (!canInsertDTMF()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The 'canInsertDTMF' attribute is false: this sender cannot send DTMF.");
         return;
     }
 
     if (duration > maxToneDurationMs || duration < minToneDurationMs) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::indexOutsideRange("duration", duration, minToneDurationMs, ExceptionMessages::ExclusiveBound, maxToneDurationMs, ExceptionMessages::ExclusiveBound));
         return;
     }
 
     if (interToneGap < minInterToneGapMs) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::indexExceedsMinimumBound("intertone gap", interToneGap, minInterToneGapMs));
         return;
     }
 
@@ -120,7 +121,7 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
     m_interToneGap = interToneGap;
 
     if (!m_handler->insertDTMF(tones, m_duration, m_interToneGap))
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "Could not send provided tones, '" + tones + "'.");
 }
 
 void RTCDTMFSender::didPlayTone(const blink::WebString& tone)

@@ -136,12 +136,12 @@ bool MediaStream::ended() const
 void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
 {
     if (ended()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The MediaStream is finished.");
         return;
     }
 
     if (!prpTrack) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The MediaStreamTrack provided is invalid.");
         return;
     }
 
@@ -170,12 +170,12 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState
 void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
 {
     if (ended()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The MediaStream is finished.");
         return;
     }
 
     if (!prpTrack) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The MediaStreamTrack provided is invalid.");
         return;
     }
 
