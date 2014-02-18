@@ -67,9 +67,18 @@
         'blacklist_test_dll_3',
         'blacklist_test_main_dll',
       ],
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here so we are able to test it.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
+      ],
     },
     {
-      # A dummy target to ensure that chrome_elf.dll and chrome.exe gets build
+      # A dummy target to ensure that chrome_elf.dll and chrome.exe gets built
       # when building chrome_elf_unittests.exe without introducing an
       # explicit runtime dependency.
       'target_name': 'chrome_elf_unittests',
@@ -95,6 +104,15 @@
         'ntdll_cache.cc',
         'ntdll_cache.h',
       ],
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here to avoid a circular dependency.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
+      ],
     },
   ], # targets
   'conditions': [
@@ -119,6 +137,15 @@
               'SubSystem': '2',
             },
           },
+          'conditions': [
+            ['component=="shared_library"', {
+              # In component builds, all targets depend on chrome_redirects by
+              # default. Remove it here to avoid a circular dependency.
+              'dependencies!': [
+                '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+              ],
+            }],
+          ],
         },
       ],
     }],
