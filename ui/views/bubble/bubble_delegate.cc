@@ -342,9 +342,12 @@ void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
 }
 
 void BubbleDelegateView::HandleVisibilityChanged(Widget* widget, bool visible) {
-  if (widget == GetWidget() && visible && anchor_widget() &&
+  if (widget == GetWidget() && anchor_widget() &&
       anchor_widget()->GetTopLevelWidget()) {
-    anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
+    if (visible)
+      anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
+    else
+      anchor_widget()->GetTopLevelWidget()->EnableInactiveRendering();
   }
 }
 
