@@ -1026,18 +1026,6 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
   if (!stream_texture_proxy_)
     return;
 
-  if (media_source_delegate_ && stream_texture_factory_) {
-    // MediaCodec will release the old surface when it goes away, we need to
-    // recreate a new one each time this is called.
-    stream_texture_factory_->DestroyStreamTexture(texture_id_);
-    stream_id_ = 0;
-    texture_id_ = 0;
-    texture_mailbox_ = gpu::Mailbox();
-    texture_mailbox_sync_point_ = 0;
-    DoCreateStreamTexture();
-    ReallocateVideoFrame();
-    stream_texture_proxy_initialized_ = false;
-  }
   if (stream_texture_factory_.get() && stream_id_)
     stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
   needs_establish_peer_ = false;
