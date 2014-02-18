@@ -343,11 +343,11 @@ void ProcessManager::UnregisterRenderViewHost(
   }
 }
 
-void ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
+bool ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
   const Extension* extension = GetExtensionForRenderViewHost(
       render_view_host);
   if (!extension)
-    return;
+    return false;
 
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   all_extension_views_[render_view_host] = GetViewType(web_contents);
@@ -356,6 +356,7 @@ void ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
   // extension views are visible. Keepalive count balanced in
   // UnregisterRenderViewHost.
   IncrementLazyKeepaliveCountForView(render_view_host);
+  return true;
 }
 
 SiteInstance* ProcessManager::GetSiteInstanceForURL(const GURL& url) {
@@ -672,8 +673,9 @@ void ProcessManager::Observe(int type,
       // The above will unregister a RVH when it gets swapped out with a new
       // one. However we need to watch the WebContents to know when a RVH is
       // deleted because the WebContents has gone away.
-      RenderViewHostDestructionObserver::CreateForWebContents(contents);
-      RegisterRenderViewHost(switched_details->second);
+      if (RegisterRenderViewHost(switched_details->second)) {
+        RenderViewHostDestructionObserver::CreateForWebContents(contents);
+      }
       break;
     }
 

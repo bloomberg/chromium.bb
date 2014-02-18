@@ -190,7 +190,9 @@ class ProcessManager : public content::NotificationObserver {
 
   // Potentially registers a RenderViewHost, if it is associated with an
   // extension. Does nothing if this is not an extension renderer.
-  void RegisterRenderViewHost(content::RenderViewHost* render_view_host);
+  // Returns true, if render_view_host was registered (it is associated
+  // with an extension).
+  bool RegisterRenderViewHost(content::RenderViewHost* render_view_host);
 
   // Unregister RenderViewHosts and clear background page data for an extension
   // which has been unloaded.
