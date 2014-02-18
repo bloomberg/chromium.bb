@@ -256,7 +256,6 @@ crbug.com/322272 [ Win Debug ] virtual/threaded/transitions/default-timing-funct
 crbug.com/322272 [ Win Debug ] virtual/threaded/transitions/hang-with-bad-transition-list.html [ Pass Timeout ]
 crbug.com/322272 [ Win Debug ] virtual/threaded/transitions/negative-delay.html [ Pass Timeout ]
 crbug.com/322272 virtual/threaded/transitions/transition-end-event-left.html [ Pass Failure ]
-crbug.com/325496 fast/speech/input-appearance-numberandspeech.html [ NeedsRebaseline ]
 
 # Tests that have new baselines but are probably still failing on Linux Aura.
 crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
