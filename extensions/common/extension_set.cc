@@ -75,7 +75,7 @@ std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
   if (url.SchemeIs(kExtensionScheme))
     return url.host();
 
-  const Extension* extension = GetExtensionOrAppByURL(url);
+  const Extension* extension = GetHostedAppByURL(url);
   if (!extension)
     return std::string();
 
