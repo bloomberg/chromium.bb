@@ -329,20 +329,16 @@
             'browser/notifications/notification_browsertest.cc',
             # TODO(port): I have no idea about the crashes in here; there's
             # nothing obviously wrong. It doesn't run on gtk today, either.
-            'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
             # TODO(port): Everything here times out. Attempts have been made to
             # fix the individual failures, but each time I disable a test from
             # these suites, it seems like one or another starts timing out too.
-            'browser/apps/web_view_interactive_browsertest.cc',
-            'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
-            'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
             'browser/ui/omnibox/omnibox_view_browsertest.cc',
             'browser/extensions/api/tabs/tabs_interactive_test.cc',
-            'browser/ui/search/instant_extended_interactive_uitest.cc',
-            'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
-            'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
+            # TODO(port): These tests crash in
+            # UIControlsDesktopX11::SendMouseEvents().
+            #'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
           ],
         }],
         ['use_ash==1', {
@@ -362,7 +358,6 @@
           'sources!': [
             # TODO(port)
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-            'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',

@@ -422,7 +422,10 @@ class WebViewInteractiveTest
 // is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
 // on Windows due to flakines, see http://crbug.com/293445.
 
-#if defined(OS_LINUX)
+// Disabled on Linux Aura because pointer lock does not work on Linux Aura.
+// crbug.com/341876
+
+#if defined(OS_LINUX) && !defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
   SetupTest("web_view/pointer_lock",
@@ -496,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
   }
 }
 
-#endif  // (defined(OS_WIN) || defined(OS_LINUX))
+#endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 // Tests that setting focus on the <webview> sets focus on the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusEvent) {
