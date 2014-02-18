@@ -73,8 +73,6 @@ public:
 
     BLINK_EXPORT static void enableGamepad(bool);
 
-    BLINK_EXPORT static void enableGeolocation(bool);
-
     BLINK_EXPORT static void enableLazyLayout(bool);
 
     BLINK_EXPORT static void enableLocalStorage(bool);

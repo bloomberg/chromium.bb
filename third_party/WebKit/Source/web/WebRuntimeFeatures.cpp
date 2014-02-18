@@ -138,11 +138,6 @@ void WebRuntimeFeatures::enableGamepad(bool enable)
     RuntimeEnabledFeatures::setGamepadEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableGeolocation(bool enable)
-{
-    RuntimeEnabledFeatures::setGeolocationEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableLazyLayout(bool enable)
 {
     // FIXME: Remove this once Chromium stops calling this.

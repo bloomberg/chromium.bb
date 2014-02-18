@@ -51,7 +51,6 @@ FontLoadEvents status=experimental
 Fullscreen status=stable
 FastTextAutosizing
 Gamepad status=stable
-Geolocation status=stable
 HTMLImports status=test
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
