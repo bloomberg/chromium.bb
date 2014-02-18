@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_details.h"
@@ -1192,10 +1193,9 @@ TabStrip* TabDragController::GetTargetTabStripForPoint(
   if (dragged_view)
     dock_windows_.insert(dragged_view);
   gfx::NativeWindow local_window =
-      DockInfo::GetLocalProcessWindowAtPoint(
-          host_desktop_type_,
-          point_in_screen,
-          dock_windows_);
+      GetLocalProcessWindowAtPoint(host_desktop_type_,
+                                   point_in_screen,
+                                   dock_windows_);
   if (dragged_view)
     dock_windows_.erase(dragged_view);
   TabStrip* tab_strip = GetTabStripForWindow(local_window);
@@ -2054,10 +2054,9 @@ void TabDragController::BringWindowUnderPointToFront(
     gfx::NativeView dragged_native_view =
         attached_tabstrip_->GetWidget()->GetNativeView();
     dock_windows_.insert(dragged_native_view);
-    window = DockInfo::GetLocalProcessWindowAtPoint(
-        host_desktop_type_,
-        point_in_screen,
-        dock_windows_);
+    window = GetLocalProcessWindowAtPoint(host_desktop_type_,
+                                          point_in_screen,
+                                          dock_windows_);
     dock_windows_.erase(dragged_native_view);
     // Only bring browser windows to front - only windows with a TabStrip can
     // be tab drag targets.
