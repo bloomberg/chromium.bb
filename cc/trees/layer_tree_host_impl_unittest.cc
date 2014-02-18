@@ -5811,5 +5811,21 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   }
 }
 
+class LayerTreeHostImplWithTopControlsTest : public LayerTreeHostImplTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.calculate_top_controls_position = true;
+    CreateHostImpl(settings, CreateOutputSurface());
+  }
+};
+
+TEST_F(LayerTreeHostImplWithTopControlsTest, NoIdleAnimations) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100))
+      ->SetScrollOffset(gfx::Vector2d(0, 10));
+  host_impl_->Animate(base::TimeTicks(), base::Time());
+  EXPECT_FALSE(did_request_redraw_);
+}
+
 }  // namespace
 }  // namespace cc

@@ -2633,7 +2633,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
 }
 
 void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
-  if (!top_controls_manager_)
+  if (!top_controls_manager_ || !top_controls_manager_->animation())
     return;
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
   if (active_tree_->TotalScrollOffset().y() == 0.f)
