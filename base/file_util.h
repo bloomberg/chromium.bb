@@ -139,9 +139,23 @@ BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
 // Read the file at |path| into |contents|, returning true on success.
 // This function fails if the |path| contains path traversal components ('..').
 // |contents| may be NULL, in which case this function is useful for its
-// side effect of priming the disk cache.
-// Useful for unit tests.
+// side effect of priming the disk cache, which is useful for unit tests.
+// The function replaces rather than append to |contents|, further |contents|
+// could be cleared on error.
 BASE_EXPORT bool ReadFileToString(const FilePath& path, std::string* contents);
+
+// Read the file at |path| into |contents|, returning true on success.
+// This function has an additional check on the maximum size of the file.
+// When the file size is greater than |max_size|, the function reads |max_size|
+// bytes into |contents| and returns false.
+// This function fails if the |path| contains path traversal components ('..').
+// |contents| may be NULL, in which case this function is useful for its
+// side effect of priming the disk cache, which is useful for unit tests.
+// The function replaces rather than append to |contents|, further |contents|
+// could be cleared on error.
+BASE_EXPORT bool ReadFileToString(const FilePath& path,
+                                  std::string* contents,
+                                  size_t max_size);
 
 #if defined(OS_POSIX)
 

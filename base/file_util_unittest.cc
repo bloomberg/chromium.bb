@@ -1941,6 +1941,51 @@ TEST_F(FileUtilTest, AppendToFile) {
   EXPECT_EQ(L"hellohello", read_content);
 }
 
+TEST_F(FileUtilTest, ReadFileToString) {
+  const char kTestData[] = "0123";
+  std::string data;
+
+  FilePath file_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
+
+  ASSERT_EQ(4, file_util::WriteFile(file_path, kTestData, 4));
+
+  EXPECT_TRUE(ReadFileToString(file_path, &data));
+  EXPECT_EQ(kTestData, data);
+
+  data = "temp";
+  EXPECT_FALSE(ReadFileToString(file_path, &data, 0));
+  EXPECT_EQ(data.length(), 0u);
+
+  data = "temp";
+  EXPECT_FALSE(ReadFileToString(file_path, &data, 2));
+  EXPECT_EQ("01", data);
+
+  data.clear();
+  EXPECT_FALSE(ReadFileToString(file_path, &data, 3));
+  EXPECT_EQ("012", data);
+
+  data.clear();
+  EXPECT_TRUE(ReadFileToString(file_path, &data, 4));
+  EXPECT_EQ("0123", data);
+
+  data.clear();
+  EXPECT_TRUE(ReadFileToString(file_path, &data, 6));
+  EXPECT_EQ("0123", data);
+
+  EXPECT_TRUE(ReadFileToString(file_path, NULL, 6));
+
+  EXPECT_TRUE(ReadFileToString(file_path, NULL));
+
+  EXPECT_TRUE(base::DeleteFile(file_path, false));
+
+  EXPECT_FALSE(ReadFileToString(file_path, &data));
+  EXPECT_EQ(data.length(), 0u);
+
+  EXPECT_FALSE(ReadFileToString(file_path, &data, 6));
+  EXPECT_EQ(data.length(), 0u);
+}
+
 TEST_F(FileUtilTest, TouchFile) {
   FilePath data_dir =
       temp_dir_.path().Append(FILE_PATH_LITERAL("FilePathTest"));

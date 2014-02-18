@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include <fstream>
+#include <limits>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -126,7 +127,11 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   return true;
 }
 
-bool ReadFileToString(const FilePath& path, std::string* contents) {
+bool ReadFileToString(const FilePath& path,
+                      std::string* contents,
+                      size_t max_size) {
+  if (contents)
+    contents->clear();
   if (path.ReferencesParent())
     return false;
   FILE* file = OpenFile(path, "rb");
@@ -136,13 +141,29 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
 
   char buf[1 << 16];
   size_t len;
+  size_t size = 0;
+  bool read_status = true;
+
+  // Many files supplied in |path| have incorrect size (proc files etc).
+  // Hence, the file is read sequentially as opposed to a one-shot read.
   while ((len = fread(buf, 1, sizeof(buf), file)) > 0) {
     if (contents)
-      contents->append(buf, len);
+      contents->append(buf, std::min(len, max_size - size));
+
+    if ((max_size - size) < len) {
+      read_status = false;
+      break;
+    }
+
+    size += len;
   }
   CloseFile(file);
 
-  return true;
+  return read_status;
+}
+
+bool ReadFileToString(const FilePath& path, std::string* contents) {
+  return ReadFileToString(path, contents, std::numeric_limits<size_t>::max());
 }
 
 bool IsDirectoryEmpty(const FilePath& dir_path) {
