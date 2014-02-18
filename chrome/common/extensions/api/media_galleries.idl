@@ -106,6 +106,9 @@ namespace mediaGalleries {
 
     // Defined for audio and video. In seconds.
     double? duration;
+    
+    // Defined for images and video. In degrees.
+    long? rotation;
 
     // Generic metadata tags.
     DOMString? album;

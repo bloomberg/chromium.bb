@@ -55,6 +55,7 @@ AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
       width_(-1),
       height_(-1),
       disc_(-1),
+      rotation_(-1),
       track_(-1) {
 }
 
@@ -129,6 +130,11 @@ int AudioVideoMetadataExtractor::height() const {
   return height_;
 }
 
+int AudioVideoMetadataExtractor::rotation() const {
+  DCHECK(extracted_);
+  return rotation_;
+}
+
 const std::string& AudioVideoMetadataExtractor::album() const {
   DCHECK(extracted_);
   return album_;
@@ -195,6 +201,7 @@ void AudioVideoMetadataExtractor::ExtractDictionary(AVDictionary* metadata) {
 
   AVDictionaryEntry* tag = NULL;
   while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+    if (ExtractInt(tag, "rotate", &rotation_)) continue;
     if (ExtractString(tag, "album", &album_)) continue;
     if (ExtractString(tag, "artist", &artist_)) continue;
     if (ExtractString(tag, "comment", &comment_)) continue;

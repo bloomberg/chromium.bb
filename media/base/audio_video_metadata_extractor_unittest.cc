@@ -61,6 +61,13 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
+TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
+  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+      GetExtractor("90rotation.mp4", true, 0, 1920, 1080);
+
+  EXPECT_EQ(90, extractor->rotation());
+}
+
 TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("id3_png_test.mp3", true, 1, -1, -1);

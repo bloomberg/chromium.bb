@@ -75,6 +75,7 @@ void MediaMetadataParser::PopulateAudioVideoMetadata() {
   SetIntScopedPtr(extractor.disc(), &metadata_->disc);
   SetStringScopedPtr(extractor.genre(), &metadata_->genre);
   SetStringScopedPtr(extractor.language(), &metadata_->language);
+  SetIntScopedPtr(extractor.rotation(), &metadata_->rotation);
   SetStringScopedPtr(extractor.title(), &metadata_->title);
   SetIntScopedPtr(extractor.track(), &metadata_->track);
 }

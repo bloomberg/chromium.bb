@@ -34,6 +34,9 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   int width() const;
   int height() const;
 
+  // Returns -1 if undefined.
+  int rotation() const;
+
   // Returns -1 or an empty string if the value is undefined.
   const std::string& album() const;
   const std::string& artist() const;
@@ -67,6 +70,7 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   std::string encoded_by_;
   std::string genre_;
   std::string language_;
+  int rotation_;
   std::string title_;
   int track_;
 
