@@ -162,7 +162,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
 
     if (!dataArg.IsEmpty()) {
         setHiddenValue(info.GetIsolate(), info.Holder(), dataHiddenValueKey, dataArg);
-        if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld())
+        if (isolatedWorldForIsolate(info.GetIsolate()))
             event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(dataArg, info.GetIsolate()));
     }
 }

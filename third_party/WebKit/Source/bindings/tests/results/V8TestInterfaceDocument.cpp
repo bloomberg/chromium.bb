@@ -125,10 +125,9 @@ v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> 
     v8::Handle<v8::Object> wrapper = V8TestInterfaceDocument::createWrapper(impl, creationContext, isolate);
     if (wrapper.IsEmpty())
         return wrapper;
-    DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
-    if (world->isMainWorld()) {
+    if (!isolatedWorldForEnteredContext(isolate)) {
         if (Frame* frame = impl->frame())
-            frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(DOMWrapperWorld::mainWorld())->updateDocumentWrapper(wrapper);
     }
     return wrapper;
 }

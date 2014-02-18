@@ -287,7 +287,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {
+    if (isolatedWorldForIsolate(info.GetIsolate())) {
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, info.GetIsolate()));
     }
