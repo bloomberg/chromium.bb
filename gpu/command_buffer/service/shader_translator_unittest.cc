@@ -19,9 +19,10 @@ class ShaderTranslatorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ShBuiltInResources resources;
+    ShInitBuiltInResources(&resources);
     resources.MaxExpressionComplexity = 32;
     resources.MaxCallStackDepth = 32;
-    ShInitBuiltInResources(&resources);
+
     vertex_translator_ = new ShaderTranslator();
     fragment_translator_ = new ShaderTranslator();
 
