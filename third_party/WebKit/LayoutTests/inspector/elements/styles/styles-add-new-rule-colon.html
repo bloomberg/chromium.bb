@@ -35,27 +35,31 @@ function test()
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         textInputController.insertText("color");
-        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        eventSender.keyDown(":");
         textInputController.insertText("maroon");
-        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.selectNodeAndWaitForStyles("other", step3);
+        eventSender.keyDown(";");
+        InspectorTest.runAfterPendingDispatches(step3);
     }
 
-    function step3()
-    {
-        // Click "Add new rule".
-        document.getElementById("add-style-button-test-id").click();
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step4);
+    function step3() {
+        InspectorTest.selectNodeAndWaitForStyles("other", step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("After adding new rule (inspected):");
-        InspectorTest.dumpSelectedElementStyles(true, false, true, true);
-        InspectorTest.selectNodeAndWaitForStyles("other", step5);
+        // Click "Add new rule".
+        document.getElementById("add-style-button-test-id").click();
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step5);
     }
 
     function step5()
+    {
+        InspectorTest.addResult("After adding new rule (inspected):");
+        InspectorTest.dumpSelectedElementStyles(true, false, true, true);
+        InspectorTest.selectNodeAndWaitForStyles("other", step6);
+    }
+
+    function step6()
     {
         InspectorTest.addResult("After adding new rule (other):");
         InspectorTest.dumpSelectedElementStyles(true, false, true);

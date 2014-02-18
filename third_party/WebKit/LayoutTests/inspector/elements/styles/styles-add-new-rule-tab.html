@@ -35,9 +35,9 @@ function test()
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         textInputController.insertText("color");
-        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
         textInputController.insertText("maroon");
-        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
         InspectorTest.selectNodeAndWaitForStyles("other", step3);
     }
 
