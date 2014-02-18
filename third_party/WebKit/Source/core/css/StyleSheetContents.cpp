@@ -410,9 +410,11 @@ void StyleSheetContents::checkLoaded()
         if (clients[i]->loadCompleted())
             continue;
 
-        RefPtr<Node> ownerNode = clients[i]->ownerNode();
-        if (clients[i]->sheetLoaded())
-            ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
+        // sheetLoaded might be invoked after its owner node is removed from document.
+        if (RefPtr<Node> ownerNode = clients[i]->ownerNode()) {
+            if (clients[i]->sheetLoaded())
+                ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
+        }
     }
 }
 

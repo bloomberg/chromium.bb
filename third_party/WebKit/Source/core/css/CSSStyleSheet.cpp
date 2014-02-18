@@ -395,6 +395,7 @@ void CSSStyleSheet::clearChildRuleCSSOMWrappers()
 
 bool CSSStyleSheet::sheetLoaded()
 {
+    ASSERT(m_ownerNode);
     m_loadCompleted = m_ownerNode->sheetLoaded();
     return m_loadCompleted;
 }
