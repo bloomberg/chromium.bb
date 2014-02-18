@@ -8,7 +8,9 @@
 This tests various driver_tools / driver_log utility functions.
 """
 
+from driver_env import env
 import driver_log
+import driver_temps
 import driver_tools
 import pathtools
 
@@ -29,11 +31,7 @@ class TestTempNamegenFileWipe(unittest.TestCase):
       if os.path.exists(t.name):
         os.remove(t.name)
 
-  def test_NamegenGetsWiped(self):
-    """Test that driver-generated temp files can get wiped
-    (no path canonicalization problems, etc.).
-    This assumes that the default option is to not "-save-temps".
-    """
+  def nameGenTemps(self):
     temp_out = pathtools.normalize(tempfile.NamedTemporaryFile().name)
     temp_in1 = pathtools.normalize(tempfile.NamedTemporaryFile().name)
     temp_in2 = pathtools.normalize(tempfile.NamedTemporaryFile().name)
@@ -52,11 +50,36 @@ class TestTempNamegenFileWipe(unittest.TestCase):
     self.assertTrue(os.path.exists(t_gen_in))
     self.tempfiles.append(fp2)
     fp2.close()
+    return t_gen_out, t_gen_in
 
+
+  def test_NamegenGetsWiped(self):
+    """Test that driver-generated temp files can get wiped
+    (no path canonicalization problems, etc.).
+    This assumes that the default option is to not "-save-temps".
+    """
+    t_gen_out, t_gen_in = self.nameGenTemps()
     # Now wipe!
-    driver_log.TempFiles.wipe()
+    driver_temps.TempFiles.wipe()
+    # They are gone!
     self.assertFalse(os.path.exists(t_gen_out))
     self.assertFalse(os.path.exists(t_gen_in))
+
+
+  def test_SaveTempsNotWiped(self):
+    """Test that driver-generated temp files don't get wiped w/ "-save-temps".
+    """
+    env.push()
+    env.set('SAVE_TEMPS', '1')
+    t_gen_out, t_gen_in = self.nameGenTemps()
+    # Now wipe!
+    driver_temps.TempFiles.wipe()
+    env.pop()
+    # They are *not* gone.
+    self.assertTrue(os.path.exists(t_gen_out))
+    self.assertTrue(os.path.exists(t_gen_in))
+    # However, tearDown() should clean them up since we registered them
+    # with the test harness's own tempfiles list.
 
 
 if __name__ == '__main__':

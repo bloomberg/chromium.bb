@@ -11,7 +11,7 @@
 
 from driver_tools import *
 from driver_env import env
-from driver_log import Log, DriverOpen, TempFiles
+from driver_log import Log
 import filetype
 import platform
 

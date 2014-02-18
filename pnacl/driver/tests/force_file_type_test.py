@@ -10,6 +10,7 @@ Test the -x language mechanism (force file type).
 
 from driver_env import env
 import driver_log
+import driver_temps
 import driver_test_utils
 import driver_tools
 import filetype
@@ -34,7 +35,7 @@ class TestForceFileType(unittest.TestCase):
   def tearDown(self):
     # Wipe other temp files that are normally wiped by DriverExit.
     # We don't want anything to exit, so we do not call DriverExit manually.
-    driver_log.TempFiles.wipe()
+    driver_temps.TempFiles.wipe()
     # Reset some internal state.
     filetype.ClearFileTypeCaches()
     filetype.SetForcedFileType(None)
@@ -60,7 +61,7 @@ class TestForceFileType(unittest.TestCase):
     if not driver_test_utils.CanRunHost():
       return
     temp_out = pathtools.normalize(tempfile.NamedTemporaryFile().name)
-    driver_log.TempFiles.add(temp_out)
+    driver_temps.TempFiles.add(temp_out)
     driver_tools.RunDriver('clang', flags + ['-o', temp_out])
     output = open(temp_out, 'r').read()
     for e in expected:

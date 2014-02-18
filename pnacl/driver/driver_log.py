@@ -17,11 +17,6 @@ import pathtools
 # any dependencies. Maybe they should go in another low level lib, or maybe
 # this should become a low level lib that's more general than just log
 
-# same with TempFiles. this factoring is at least a little useful though
-# because it helps tease apart the dependencies. The TempName stuff is
-# smarter and uses env, so it is not here for now.
-# TODO(dschuff): rename this library to driver_base.
-
 def DriverOpen(filename, mode, fail_ok = False):
   try:
     fp = open(pathtools.tosys(filename), mode)
@@ -65,28 +60,9 @@ def FixArch(arch):
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
 
-class TempFileHandler(object):
-  def __init__(self):
-    self.files = []
-
-  def add(self, path):
-    path = pathtools.abspath(path)
-    self.files.append(path)
-
-  def wipe(self):
-    for path in self.files:
-      try:
-        sys_path = pathtools.tosys(path)
-        # If exiting early, the file may not have been created yet.
-        if os.path.exists(sys_path):
-          os.remove(sys_path)
-      except OSError as err:
-        Log.Fatal("TempFileHandler: Unable to wipe file %s w/ error %s",
-                  pathtools.touser(path),
-                  err.strerror)
-    self.files = []
-
-TempFiles = TempFileHandler()
+driver_exit_funcs = []
+def AtDriverExit(func):
+  driver_exit_funcs.append(func)
 
 # Completely terminate the driver and all module layers.
 #
@@ -98,7 +74,8 @@ TempFiles = TempFileHandler()
 # exit (in loader.py).
 def DriverExit(retcode, is_final_exit=False):
   assert(is_final_exit or retcode != 0)
-  TempFiles.wipe()
+  for func in driver_exit_funcs:
+    func()
   sys.exit(retcode)
 
 ######################################################################

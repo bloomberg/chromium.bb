@@ -11,7 +11,7 @@
 
 import driver_tools
 from driver_env import env
-from driver_log import Log, TempFiles
+from driver_log import Log
 import sys
 
 EXTRA_ENV = {

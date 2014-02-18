@@ -17,7 +17,8 @@ import os
 import pathtools
 import shutil
 from driver_env import env
-from driver_log import Log, TempFiles
+from driver_log import Log
+from driver_temps import TempFiles
 
 import re
 import subprocess

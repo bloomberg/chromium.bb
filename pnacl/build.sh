@@ -2725,7 +2725,8 @@ driver-install-python() {
   spushd "${DRIVER_DIR}"
 
   # Copy python scripts
-  cp $@ driver_log.py driver_env.py *tools.py filetype.py loader.py "${pydir}"
+  cp $@ driver_log.py driver_env.py driver_temps.py \
+    *tools.py filetype.py loader.py "${pydir}"
 
   # Install redirector shell/batch scripts
   for name in $@; do

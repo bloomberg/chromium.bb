@@ -12,6 +12,7 @@ import unittest
 
 import driver_env
 import driver_log
+import driver_temps
 import driver_tools
 
 def CanRunHost():
@@ -131,7 +132,7 @@ class DriverTesterCommon(unittest.TestCase):
       if not t.closed:
         t.close()
       os.remove(t.name)
-    driver_log.TempFiles.wipe()
+    driver_temps.TempFiles.wipe()
     super(DriverTesterCommon, self).tearDown()
 
   def getTemp(self, close=True, **kwargs):

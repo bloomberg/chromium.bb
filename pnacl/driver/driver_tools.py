@@ -31,7 +31,8 @@ import pathtools
 from driver_env import env
 # TODO: import driver_log and change these references from 'foo' to
 # 'driver_log.foo', or split driver_log further
-from driver_log import Log, DriverOpen, DriverClose, StringifyCommand, TempFiles, DriverExit, FixArch
+from driver_log import Log, DriverOpen, DriverClose, StringifyCommand, DriverExit, FixArch
+from driver_temps import TempFiles
 from shelltools import shell
 
 def ParseError(s, leftpos, rightpos, msg):
@@ -483,8 +484,7 @@ class TempNameGen(object):
 
   def TempNameForOutput(self, imtype):
     temp = self.TempBase + '.' + imtype
-    if not env.getbool('SAVE_TEMPS'):
-      TempFiles.add(temp)
+    TempFiles.add(temp)
     return temp
 
   def TempNameForInput(self, input, imtype):
@@ -496,8 +496,7 @@ class TempNameGen(object):
       # Source file
       temp = self.TempMap[fullpath] + '.' + imtype
 
-    if not env.getbool('SAVE_TEMPS'):
-      TempFiles.add(temp)
+    TempFiles.add(temp)
     return temp
 
 # (Invoked from loader.py)
