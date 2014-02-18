@@ -8,12 +8,14 @@
 
 Value::Value()
     : type_(NONE),
+      boolean_value_(false),
       int_value_(0),
       origin_(NULL) {
 }
 
 Value::Value(const ParseNode* origin, Type t)
     : type_(t),
+      boolean_value_(false),
       int_value_(0),
       origin_(origin) {
 }
@@ -35,6 +37,7 @@ Value::Value(const ParseNode* origin, int64 int_val)
 Value::Value(const ParseNode* origin, std::string str_val)
     : type_(STRING),
       string_value_(),
+      boolean_value_(false),
       int_value_(0),
       origin_(origin) {
   string_value_.swap(str_val);
@@ -43,6 +46,7 @@ Value::Value(const ParseNode* origin, std::string str_val)
 Value::Value(const ParseNode* origin, const char* str_val)
     : type_(STRING),
       string_value_(str_val),
+      boolean_value_(false),
       int_value_(0),
       origin_(origin) {
 }

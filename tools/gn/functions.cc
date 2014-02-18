@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "base/environment.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/config.h"
 #include "tools/gn/config_values_generator.h"
@@ -361,6 +362,42 @@ Value RunDefined(Scope* scope,
   return Value(function, false);
 }
 
+// getenv ----------------------------------------------------------------------
+
+const char kGetEnv[] = "getenv";
+const char kGetEnv_Help[] =
+    "getenv: Get an environment variable.\n"
+    "\n"
+    "  value = getenv(env_var_name)\n"
+    "\n"
+    "  Returns the value of the given enironment variable. If the value is\n"
+    "  not found, it will try to look up the variable with the \"opposite\"\n"
+    "  case (based on the case of the first letter of the variable), but\n"
+    "  is otherwise case-sensitive.\n"
+    "\n"
+    "  If the environment variable is not found, the empty string will be\n"
+    "  returned. Note: it might be nice to extend this if we had the concept\n"
+    "  of \"none\" in the language to indicate lookup failure.\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "  home_dir = getenv(\"HOME\")\n";
+
+Value RunGetEnv(Scope* scope,
+                const FunctionCallNode* function,
+                const std::vector<Value>& args,
+                Err* err) {
+  if (!EnsureSingleStringArg(function, args, err))
+    return Value();
+
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+
+  std::string result;
+  if (!env->GetVar(args[0].string_value().c_str(), &result))
+    return Value(function, "");  // Not found, return empty string.
+  return Value(function, result);
+}
+
 // import ----------------------------------------------------------------------
 
 const char kImport[] = "import";
@@ -546,6 +583,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Defined)
     INSERT_FUNCTION(ExecScript)
     INSERT_FUNCTION(Executable)
+    INSERT_FUNCTION(GetEnv)
     INSERT_FUNCTION(Group)
     INSERT_FUNCTION(Import)
     INSERT_FUNCTION(Print)

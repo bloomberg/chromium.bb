@@ -42,16 +42,14 @@ size_t BackUpToLineBegin(const std::string& data, size_t offset) {
   return 0;
 }
 
-// Assumes DoesLineBeginWithComment().
-std::string StripCommentFromLine(const base::StringPiece& line) {
-  std::string ret = line.as_string();
-  for (size_t i = 0; i < ret.size(); i++) {
-    if (ret[i] == '#') {
-      ret[i] = ' ';
-      break;
-    }
-  }
-  return ret;
+// Assumes DoesLineBeginWithComment(), this strips the # character from the
+// beginning and normalizes preceeding whitespace.
+std::string StripHashFromLine(const base::StringPiece& line) {
+  // Replace the # sign and everything before it with 3 spaces, so that a
+  // normal comment that has a space after the # will be indented 4 spaces
+  // (which makes our formatting come out nicely). If the comment is indented
+  // from there, we want to preserve that indenting.
+  return "   " + line.substr(line.find('#') + 1).as_string();
 }
 
 // Tries to find the comment before the setting of the given value.
@@ -79,7 +77,7 @@ void GetContextForValue(const Value& value,
     if (!DoesLineBeginWithComment(line))
       break;
 
-    comment->insert(0, StripCommentFromLine(line) + "\n");
+    comment->insert(0, StripHashFromLine(line) + "\n");
     line_off = previous_line_offset;
   }
 }
@@ -149,6 +147,12 @@ int RunArgs(const std::vector<std::string>& args) {
   for (Scope::KeyValueMap::const_iterator i = build_args.begin();
        i != build_args.end(); ++i)
     sorted_args.insert(*i);
+
+  OutputString(
+      "Available build arguments. Note that the which arguments are declared\n"
+      "and their default values may depend on other arguments or the current\n"
+      "platform and architecture. So setting some values may add, remove, or\n"
+      "change the default value of other values.\n\n");
 
   for (std::map<base::StringPiece, Value>::iterator i = sorted_args.begin();
        i != sorted_args.end(); ++i) {

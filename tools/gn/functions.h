@@ -121,6 +121,13 @@ Value RunExecutable(Scope* scope,
                     BlockNode* block,
                     Err* err);
 
+extern const char kGetEnv[];
+extern const char kGetEnv_Help[];
+Value RunGetEnv(Scope* scope,
+                const FunctionCallNode* function,
+                const std::vector<Value>& args,
+                Err* err);
+
 extern const char kGroup[];
 extern const char kGroup_Help[];
 Value RunGroup(Scope* scope,

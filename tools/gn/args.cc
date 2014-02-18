@@ -120,11 +120,7 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     //
     // The tricky part is that a buildfile can be interpreted multiple times
     // when used from different toolchains, so we can't just check that we've
-    // seen it before. Instead, we check that the location matches. We
-    // additionally check that the value matches to prevent people from
-    // declaring defaults based on other parameters that may change. The
-    // rationale is that you should have exactly one default value for each
-    // argument that we can display in the help.
+    // seen it before. Instead, we check that the location matches.
     Scope::KeyValueMap::iterator previously_declared =
         declared_arguments_.find(i->first);
     if (previously_declared != declared_arguments_.end()) {
@@ -141,14 +137,6 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
                               "Previous declaration.",
                               "See also \"gn help buildargs\" for more on how "
                               "build arguments work."));
-        return false;
-      } else if (previously_declared->second != i->second) {
-        // Default value mismatch.
-        *err = Err(i->second.origin(),
-            "Non-constant default value for build argument.",
-            "Each build argument should have one default value so we report "
-            "it nicely in the\n\"gn args\" command. Please make this value "
-            "constant.");
         return false;
       }
     } else {

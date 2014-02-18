@@ -12,13 +12,13 @@ namespace {
 
 std::string RebaseOne(Scope* scope,
                       const char* input,
-                      const char* from_dir,
                       const char* to_dir,
+                      const char* from_dir,
                       const char* sep = NULL) {
   std::vector<Value> args;
   args.push_back(Value(NULL, input));
-  args.push_back(Value(NULL, from_dir));
   args.push_back(Value(NULL, to_dir));
+  args.push_back(Value(NULL, from_dir));
   if (sep)
     args.push_back(Value(NULL, sep));
 
@@ -40,24 +40,24 @@ TEST(RebasePath, Strings) {
   scope->set_source_dir(SourceDir("//tools/gn/"));
 
   // Build-file relative paths.
-  EXPECT_EQ("../../tools/gn", RebaseOne(scope, ".", ".", "//out/Debug"));
-  EXPECT_EQ("../../tools/gn/", RebaseOne(scope, "./", ".", "//out/Debug"));
-  EXPECT_EQ("../../tools/gn/foo", RebaseOne(scope, "foo", ".", "//out/Debug"));
-  EXPECT_EQ("../..", RebaseOne(scope, "../..", ".", "//out/Debug"));
-  EXPECT_EQ("../../", RebaseOne(scope, "../../", ".", "//out/Debug"));
+  EXPECT_EQ("../../tools/gn", RebaseOne(scope, ".", "//out/Debug", "."));
+  EXPECT_EQ("../../tools/gn/", RebaseOne(scope, "./", "//out/Debug", "."));
+  EXPECT_EQ("../../tools/gn/foo", RebaseOne(scope, "foo", "//out/Debug", "."));
+  EXPECT_EQ("../..", RebaseOne(scope, "../..", "//out/Debug", "."));
+  EXPECT_EQ("../../", RebaseOne(scope, "../../", "//out/Debug", "."));
 
   // We don't allow going above the root source dir.
-  EXPECT_EQ("../..", RebaseOne(scope, "../../..", ".", "//out/Debug"));
+  EXPECT_EQ("../..", RebaseOne(scope, "../../..", "//out/Debug", "."));
 
   // Source-absolute input paths.
   EXPECT_EQ("./", RebaseOne(scope, "//", "//", "//"));
   EXPECT_EQ("foo", RebaseOne(scope, "//foo", "//", "//"));
   EXPECT_EQ("foo/", RebaseOne(scope, "//foo/", "//", "//"));
-  EXPECT_EQ("../../foo/bar", RebaseOne(scope, "//foo/bar", ".", "//out/Debug"));
-  EXPECT_EQ("./", RebaseOne(scope, "//foo/", "//", "//foo/"));
+  EXPECT_EQ("../../foo/bar", RebaseOne(scope, "//foo/bar", "//out/Debug", "."));
+  EXPECT_EQ("./", RebaseOne(scope, "//foo/", "//foo/", "//"));
   // Thie one is technically correct but could be simplified to "." if
   // necessary.
-  EXPECT_EQ("../foo", RebaseOne(scope, "//foo", "//", "//foo"));
+  EXPECT_EQ("../foo", RebaseOne(scope, "//foo", "//foo", "//"));
 
   // Test slash conversion.
 #if defined(OS_WIN)
@@ -77,18 +77,18 @@ TEST(RebasePath, Strings) {
   // Test system path output.
 #if defined(OS_WIN)
   setup.build_settings()->SetRootPath(base::FilePath(L"C:\\source"));
-  EXPECT_EQ("C:\\source", RebaseOne(scope, ".", "//", ""));
-  EXPECT_EQ("C:\\source\\", RebaseOne(scope, "//", "//", ""));
-  EXPECT_EQ("C:\\source\\foo", RebaseOne(scope, "foo", "//", ""));
-  EXPECT_EQ("C:\\source\\foo\\", RebaseOne(scope, "foo/", "//", ""));
-  EXPECT_EQ("C:\\source\\tools\\gn\\foo", RebaseOne(scope, "foo", ".", ""));
+  EXPECT_EQ("C:\\source", RebaseOne(scope, ".", "", "//"));
+  EXPECT_EQ("C:\\source\\", RebaseOne(scope, "//", "", "//"));
+  EXPECT_EQ("C:\\source\\foo", RebaseOne(scope, "foo", "", "//"));
+  EXPECT_EQ("C:\\source\\foo\\", RebaseOne(scope, "foo/", "", "//"));
+  EXPECT_EQ("C:\\source\\tools\\gn\\foo", RebaseOne(scope, "foo", "", "."));
 #else
   setup.build_settings()->SetRootPath(base::FilePath("/source"));
-  EXPECT_EQ("/source", RebaseOne(scope, ".", "//", ""));
-  EXPECT_EQ("/source/", RebaseOne(scope, "//", "//", ""));
-  EXPECT_EQ("/source/foo", RebaseOne(scope, "foo", "//", ""));
-  EXPECT_EQ("/source/foo/", RebaseOne(scope, "foo/", "//", ""));
-  EXPECT_EQ("/source/tools/gn/foo", RebaseOne(scope, "foo", ".", ""));
+  EXPECT_EQ("/source", RebaseOne(scope, ".", "", "//"));
+  EXPECT_EQ("/source/", RebaseOne(scope, "//", "", "//"));
+  EXPECT_EQ("/source/foo", RebaseOne(scope, "foo", "", "//"));
+  EXPECT_EQ("/source/foo/", RebaseOne(scope, "foo/", "", "//"));
+  EXPECT_EQ("/source/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
 #endif
 }
 
@@ -102,8 +102,8 @@ TEST(RebasePath, List) {
   args.push_back(Value(NULL, Value::LIST));
   args[0].list_value().push_back(Value(NULL, "foo.txt"));
   args[0].list_value().push_back(Value(NULL, "bar.txt"));
-  args.push_back(Value(NULL, "."));
   args.push_back(Value(NULL, "//out/Debug/"));
+  args.push_back(Value(NULL, "."));
 
   Err err;
   FunctionCallNode function;
@@ -126,19 +126,5 @@ TEST(RebasePath, Errors) {
   std::vector<Value> args;
   FunctionCallNode function;
   Value ret = functions::RunRebasePath(setup.scope(), &function, args, &err);
-  EXPECT_TRUE(err.has_error());
-
-  // One arg int input.
-  args.push_back(Value(NULL, static_cast<int64>(5)));
-  err = Err();
-  ret = functions::RunRebasePath(setup.scope(), &function, args, &err);
-  EXPECT_TRUE(err.has_error());
-
-  // Two arg string input.
-  args.clear();
-  args.push_back(Value(NULL, "hello"));
-  args.push_back(Value(NULL, "world"));
-  err = Err();
-  ret = functions::RunRebasePath(setup.scope(), &function, args, &err);
   EXPECT_TRUE(err.has_error());
 }

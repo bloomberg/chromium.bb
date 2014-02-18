@@ -149,8 +149,10 @@ const char kRebasePath[] = "rebase_path";
 const char kRebasePath_Help[] =
     "rebase_path: Rebase a file or directory to another location.\n"
     "\n"
-    "  converted = rebase_path(input, current_base, new_base,\n"
-    "                          [path_separators])\n"
+    "  converted = rebase_path(input,\n"
+    "                          new_base = \"\",\n"
+    "                          current_base = \".\",\n"
+    "                          path_separators = \"none\")\n"
     "\n"
     "  Takes a string argument representing a file name, or a list of such\n"
     "  strings and converts it/them to be relative to a different base\n"
@@ -175,21 +177,21 @@ const char kRebasePath_Help[] =
     "      paths (\"/foo/bar.txt\"), or source absolute paths\n"
     "      (\"//foo/bar.txt\").\n"
     "\n"
+    "  new_base\n"
+    "      The directory to convert the paths to be relative to. This can be\n"
+    "      an absolute path or a relative path (which will be treated\n"
+    "      as being relative to the current BUILD-file's directory).\n"
+    "\n"
+    "      As a special case, if new_base is the empty string (the default),\n"
+    "      all paths will be converted to system-absolute native style paths\n"
+    "      with system path separators. This is useful for invoking external\n"
+    "      programs.\n"
+    "\n"
     "  current_base\n"
     "      Directory representing the base for relative paths in the input.\n"
     "      If this is not an absolute path, it will be treated as being\n"
-    "      relative to the current build file. Use \".\" to convert paths\n"
-    "      from the current BUILD-file's directory.\n"
-    "\n"
-    "  new_base\n"
-    "      The directory to convert the paths to be relative to. As with the\n"
-    "      current_base, this can be a relative path, which will be treated\n"
-    "      as being relative to the current BUILD-file's directory.\n"
-    "\n"
-    "      As a special case, if new_base is the empty string, all paths\n"
-    "      will be converted to system-absolute native style paths with\n"
-    "      system path separators. This is useful for invoking external\n"
-    "      programs.\n"
+    "      relative to the current build file. Use \".\" (the default) to\n"
+    "      convert paths from the current BUILD-file's directory.\n"
     "\n"
     "  path_separators\n"
     "      On Windows systems, indicates whether and how path separators\n"
@@ -218,11 +220,11 @@ const char kRebasePath_Help[] =
     "\n"
     "  # Convert a file in the current directory to be relative to the build\n"
     "  # directory (the current dir when executing compilers and scripts).\n"
-    "  foo = rebase_path(\"myfile.txt\", \".\", root_build_dir)\n"
+    "  foo = rebase_path(\"myfile.txt\", root_build_dir)\n"
     "  # might produce \"../../project/myfile.txt\".\n"
     "\n"
     "  # Convert a file to be system absolute:\n"
-    "  foo = rebase_path(\"myfile.txt\", \".\", \"\")\n"
+    "  foo = rebase_path(\"myfile.txt\")\n"
     "  # Might produce \"D:\\source\\project\\myfile.txt\" on Windows or\n"
     "  # \"/home/you/source/project/myfile.txt\" on Linux.\n"
     "\n"
@@ -241,9 +243,9 @@ const char kRebasePath_Help[] =
     "    # to be relative to the build directory:\n"
     "    args = [\n"
     "      \"--data\",\n"
-    "      rebase_path(\"//mything/data/input.dat\", \".\", root_build_dir),\n"
+    "      rebase_path(\"//mything/data/input.dat\", root_build_dir),\n"
     "      \"--rel\",\n"
-    "      rebase_path(\"relative_path.txt\", \".\", root_build_dir)\n"
+    "      rebase_path(\"relative_path.txt\", root_build_dir)\n"
     "    ]\n"
     "  }\n";
 
@@ -253,33 +255,48 @@ Value RunRebasePath(Scope* scope,
                     Err* err) {
   Value result;
 
+  // Argument indices.
+  static const size_t kArgIndexInputs = 0;
+  static const size_t kArgIndexDest = 1;
+  static const size_t kArgIndexFrom = 2;
+  static const size_t kArgIndexPathConversion = 3;
+
   // Inputs.
-  if (args.size() != 3 && args.size() != 4) {
-    *err = Err(function->function(), "rebase_path takes 3 or 4 args.");
+  if (args.size() < 1 || args.size() > 4) {
+    *err = Err(function->function(), "Wrong # of arguments for rebase_path.");
     return result;
   }
-  const Value& inputs = args[0];
-
-  // From path.
-  if (!args[1].VerifyTypeIs(Value::STRING, err))
-    return result;
-  const SourceDir& current_dir = scope->GetSourceDir();
-  SourceDir from_dir = current_dir.ResolveRelativeDir(args[1].string_value());
+  const Value& inputs = args[kArgIndexInputs];
 
   // To path.
-  if (!args[2].VerifyTypeIs(Value::STRING, err))
-    return result;
-  bool convert_to_system_absolute = false;
+  bool convert_to_system_absolute = true;
   SourceDir to_dir;
-  if (args[2].string_value().empty()) {
-    convert_to_system_absolute = true;
+  const SourceDir& current_dir = scope->GetSourceDir();
+  if (args.size() > kArgIndexDest) {
+    if (!args[kArgIndexDest].VerifyTypeIs(Value::STRING, err))
+      return result;
+    if (!args[kArgIndexDest].string_value().empty()) {
+      to_dir =
+          current_dir.ResolveRelativeDir(args[kArgIndexDest].string_value());
+      convert_to_system_absolute = false;
+    }
+  }
+
+  // From path.
+  SourceDir from_dir;
+  if (args.size() > kArgIndexFrom) {
+    if (!args[kArgIndexFrom].VerifyTypeIs(Value::STRING, err))
+      return result;
+    from_dir =
+        current_dir.ResolveRelativeDir(args[kArgIndexFrom].string_value());
   } else {
-    to_dir = current_dir.ResolveRelativeDir(args[2].string_value());
+    // Default to current directory if unspecified.
+    from_dir = current_dir;
   }
 
   // Path conversion.
   SeparatorConversion sep_conversion = SEP_NO_CHANGE;
-  if (args.size() == 4) {
+  if (args.size() > kArgIndexPathConversion) {
     if (convert_to_system_absolute) {
       *err = Err(function, "Can't specify slash conversion.",
           "You specified absolute system path output by using an empty string "
@@ -288,17 +305,20 @@ Value RunRebasePath(Scope* scope,
       return result;
     }
 
-    if (!args[3].VerifyTypeIs(Value::STRING, err))
+    if (!args[kArgIndexPathConversion].VerifyTypeIs(Value::STRING, err))
       return result;
-    const std::string& sep_string = args[3].string_value();
+    const std::string& sep_string =
+        args[kArgIndexPathConversion].string_value();
     if (sep_string == "to_system") {
       sep_conversion = SEP_TO_SYSTEM;
     } else if (sep_string == "from_system") {
       sep_conversion = SEP_FROM_SYSTEM;
     } else if (sep_string != "none") {
-      *err = Err(args[3], "Invalid path separator conversion mode.",
+      *err = Err(args[kArgIndexPathConversion],
+          "Invalid path separator conversion mode.",
           "I was expecting \"none\",  \"to_system\", or \"from_system\" and\n"
-          "you gave me \"" + args[3].string_value() + "\".");
+          "you gave me \"" + args[kArgIndexPathConversion].string_value() +
+          "\".");
       return result;
     }
   }
