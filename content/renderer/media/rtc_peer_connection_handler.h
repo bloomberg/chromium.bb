@@ -162,7 +162,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // Calls GetStats on |native_peer_connection_|.
   void GetStats(webrtc::StatsObserver* observer,
-                webrtc::MediaStreamTrackInterface* track);
+                webrtc::MediaStreamTrackInterface* track,
+                webrtc::PeerConnectionInterface::StatsOutputLevel level);
 
   PeerConnectionTracker* peer_connection_tracker();
 

@@ -8,9 +8,6 @@
 var TimelineGraphView = (function() {
   'use strict';
 
-  // Default starting scale factor, in terms of milliseconds per pixel.
-  var DEFAULT_SCALE = 1000;
-
   // Maximum number of labels placed vertically along the sides of the graph.
   var MAX_VERTICAL_LABELS = 6;
 
@@ -51,17 +48,24 @@ var TimelineGraphView = (function() {
 
     this.graph_ = null;
 
+    // Horizontal scale factor, in terms of milliseconds per pixel.
+    this.scale_ = 1000;
+
     // Initialize the scrollbar.
     this.updateScrollbarRange_(true);
   }
 
   TimelineGraphView.prototype = {
+    setScale: function(scale) {
+      this.scale_ = scale;
+    },
+
     // Returns the total length of the graph, in pixels.
     getLength_: function() {
       var timeRange = this.endTime_ - this.startTime_;
       // Math.floor is used to ignore the last partial area, of length less
-      // than DEFAULT_SCALE.
-      return Math.floor(timeRange / DEFAULT_SCALE);
+      // than this.scale_.
+      return Math.floor(timeRange / this.scale_);
     },
 
     /**
@@ -114,8 +118,8 @@ var TimelineGraphView = (function() {
      * all the way to the right, keeps it all the way to the right.  Otherwise,
      * leaves the view as-is and doesn't redraw anything.
      */
-    updateEndDate: function() {
-      this.endTime_ = (new Date()).getTime();
+    updateEndDate: function(opt_date) {
+      this.endTime_ = opt_date || (new Date()).getTime();
       this.updateScrollbarRange_(this.graphScrolledToRightEdge_());
     },
 
@@ -182,7 +186,7 @@ var TimelineGraphView = (function() {
       // the graph to the end of the time range.
       if (this.scrollbar_.range_ == 0)
         position = this.getLength_() - this.canvas_.width;
-      var visibleStartTime = this.startTime_ + position * DEFAULT_SCALE;
+      var visibleStartTime = this.startTime_ + position * this.scale_;
 
       // Make space at the bottom of the graph for the time labels, and then
       // draw the labels.
@@ -197,7 +201,7 @@ var TimelineGraphView = (function() {
       if (this.graph_) {
         // Layout graph and have them draw their tick marks.
         this.graph_.layout(
-            width, height, fontHeight, visibleStartTime, DEFAULT_SCALE);
+            width, height, fontHeight, visibleStartTime, this.scale_);
         this.graph_.drawTicks(context);
 
         // Draw the lines of all graphs, and then draw their labels.
@@ -229,7 +233,7 @@ var TimelineGraphView = (function() {
 
       // Draw labels and vertical grid lines.
       while (true) {
-        var x = Math.round((time - startTime) / DEFAULT_SCALE);
+        var x = Math.round((time - startTime) / this.scale_);
         if (x >= width)
           break;
         var text = (new Date(time)).toLocaleTimeString();

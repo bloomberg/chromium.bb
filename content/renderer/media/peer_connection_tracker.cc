@@ -245,7 +245,10 @@ void PeerConnectionTracker::OnGetAllStats() {
     talk_base::scoped_refptr<InternalStatsObserver> observer(
         new talk_base::RefCountedObject<InternalStatsObserver>(it->second));
 
-    it->first->GetStats(observer, NULL);
+    it->first->GetStats(
+        observer,
+        NULL,
+        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug);
   }
 }
 

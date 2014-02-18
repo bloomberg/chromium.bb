@@ -76,6 +76,9 @@ var TimelineDataSeries = (function() {
       this.color_ = color;
     },
 
+    getCount: function() {
+      return this.dataPoints_.length;
+    },
     /**
      * Returns a list containing the values of the data series at |count|
      * points, starting at |startTime|, and |stepSize| milliseconds apart.

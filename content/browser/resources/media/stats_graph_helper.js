@@ -15,6 +15,11 @@
 
 var STATS_GRAPH_CONTAINER_HEADING_CLASS = 'stats-graph-container-heading';
 
+var RECEIVED_PROPAGATION_DELTA_LABEL =
+    'googReceivedPacketGroupPropagationDeltaDebug';
+var RECEIVED_PACKET_GROUP_ARRIVAL_TIME_LABEL =
+    'googReceivedPacketGroupArrivalTimeDebug';
+
 // Specifies which stats should be drawn on the 'bweCompound' graph and how.
 var bweCompoundGraphConfig = {
   googAvailableSendBandwidth: {color: 'red'},
@@ -110,14 +115,22 @@ function drawSingleReport(peerConnectionElement, report) {
 
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
+    // Propagation deltas are handled separately.
+    if (rawLabel == RECEIVED_PROPAGATION_DELTA_LABEL) {
+      drawReceivedPropagationDelta(
+          peerConnectionElement, report, stats.values[i + 1]);
+      continue;
+    }
     var rawDataSeriesId = reportId + '-' + rawLabel;
     var rawValue = getNumberFromValue(rawLabel, stats.values[i + 1]);
     if (isNaN(rawValue)) {
       // We do not draw non-numerical values, but still want to record it in the
       // data series.
-      addDataSeriesPoint(peerConnectionElement,
-                         rawDataSeriesId, stats.timestamp,
-                         rawLabel, stats.values[i + 1]);
+      addDataSeriesPoints(peerConnectionElement,
+                          rawDataSeriesId,
+                          rawLabel,
+                          [stats.timestamp],
+                          [stats.values[i + 1]]);
       continue;
     }
 
@@ -127,9 +140,11 @@ function drawSingleReport(peerConnectionElement, report) {
     // We need to convert the value if dataConversionConfig[rawLabel] exists.
     if (dataConversionConfig[rawLabel]) {
       // Updates the original dataSeries before the conversion.
-      addDataSeriesPoint(peerConnectionElement,
-                         rawDataSeriesId, stats.timestamp,
-                         rawLabel, rawValue);
+      addDataSeriesPoints(peerConnectionElement,
+                          rawDataSeriesId,
+                          rawLabel,
+                          [stats.timestamp],
+                          [rawValue]);
 
       // Convert to another value to draw on graph, using the original
       // dataSeries as input.
@@ -141,11 +156,11 @@ function drawSingleReport(peerConnectionElement, report) {
     }
 
     // Updates the final dataSeries to draw.
-    addDataSeriesPoint(peerConnectionElement,
-                       finalDataSeriesId,
-                       stats.timestamp,
-                       finalLabel,
-                       finalValue);
+    addDataSeriesPoints(peerConnectionElement,
+                        finalDataSeriesId,
+                        finalLabel,
+                        [stats.timestamp],
+                        [finalValue]);
 
     // Updates the graph.
     var graphType = bweCompoundGraphConfig[finalLabel] ?
@@ -172,9 +187,10 @@ function drawSingleReport(peerConnectionElement, report) {
 }
 
 // Makes sure the TimelineDataSeries with id |dataSeriesId| is created,
-// and adds the new data point to it.
-function addDataSeriesPoint(
-    peerConnectionElement, dataSeriesId, time, label, value) {
+// and adds the new data points to it. |times| is the list of timestamps for
+// each data point, and |values| is the list of the data point values.
+function addDataSeriesPoints(
+    peerConnectionElement, dataSeriesId, label, times, values) {
   var dataSeries =
     peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
         dataSeriesId);
@@ -186,7 +202,62 @@ function addDataSeriesPoint(
       dataSeries.setColor(bweCompoundGraphConfig[label].color);
     }
   }
-  dataSeries.addPoint(time, value);
+  for (var i = 0; i < times.length; ++i)
+    dataSeries.addPoint(times[i], values[i]);
+}
+
+// Draws the received propagation deltas using the packet group arrival time as
+// the x-axis. For example, |report.stats.values| should be like
+// ['googReceivedPacketGroupArrivalTimeDebug', '[123456, 234455, 344566]',
+//  'googReceivedPacketGroupPropagationDeltaDebug', '[23, 45, 56]', ...].
+function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
+  var reportId = report.id;
+  var stats = report.stats;
+  var times = null;
+  // Find the packet group arrival times.
+  for (var i = 0; i < stats.values.length - 1; i = i + 2) {
+    if (stats.values[i] == RECEIVED_PACKET_GROUP_ARRIVAL_TIME_LABEL) {
+      times = stats.values[i + 1];
+      break;
+    }
+  }
+  // Unexpected.
+  if (times == null)
+    return;
+
+  // Convert |deltas| and |times| from strings to arrays of numbers.
+  try {
+    deltas = JSON.parse(deltas);
+    times = JSON.parse(times);
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+
+  // Update the data series.
+  var dataSeriesId = reportId + '-' + RECEIVED_PROPAGATION_DELTA_LABEL;
+  addDataSeriesPoints(
+      peerConnectionElement,
+      dataSeriesId,
+      RECEIVED_PROPAGATION_DELTA_LABEL,
+      times,
+      deltas);
+  // Update the graph.
+  var graphViewId = peerConnectionElement.id + '-' + reportId + '-' +
+      RECEIVED_PROPAGATION_DELTA_LABEL;
+  var date = new Date(times[times.length - 1]);
+  if (!graphViews[graphViewId]) {
+    graphViews[graphViewId] = createStatsGraphView(
+        peerConnectionElement,
+        report,
+        RECEIVED_PROPAGATION_DELTA_LABEL);
+    graphViews[graphViewId].setScale(10);
+    graphViews[graphViewId].setDateRange(date, date);
+    var dataSeries = peerConnectionDataStore[peerConnectionElement.id]
+        .getDataSeries(dataSeriesId);
+    graphViews[graphViewId].addDataSeries(dataSeries);
+  }
+  graphViews[graphViewId].updateEndDate(date);
 }
 
 // Ensures a div container to hold all stats graphs for one track is created as

@@ -608,13 +608,16 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
       return;
     }
   }
-  GetStats(observer, track);
+  GetStats(observer,
+           track,
+           webrtc::PeerConnectionInterface::kStatsOutputLevelStandard);
 }
 
 void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
-    webrtc::MediaStreamTrackInterface* track) {
-  if (!native_peer_connection_->GetStats(observer, track)) {
+    webrtc::MediaStreamTrackInterface* track,
+    webrtc::PeerConnectionInterface::StatsOutputLevel level) {
+  if (!native_peer_connection_->GetStats(observer, track, level)) {
     DVLOG(1) << "GetStats failed.";
     // TODO(hta): Consider how to get an error back.
     std::vector<webrtc::StatsReport> no_reports;

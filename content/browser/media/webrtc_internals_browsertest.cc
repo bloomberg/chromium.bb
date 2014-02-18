@@ -811,4 +811,54 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdateGetUserMedia) {
   list.erase(list.begin());
   VerifyUserMediaRequest(list);
 }
+
+// Tests that the received propagation delta values are converted and drawn
+// correctly.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
+                       ReceivedPropagationDelta) {
+  GURL url("chrome://webrtc-internals");
+  NavigateToURL(shell(), url);
+
+  PeerConnectionEntry pc(1, 0);
+  ExecuteAddPeerConnectionJs(pc);
+
+  StatsUnit stats = {FAKE_TIME_STAMP};
+  stats.values["googReceivedPacketGroupArrivalTimeDebug"] =
+      "[1000, 1100, 1200]";
+  stats.values["googReceivedPacketGroupPropagationDeltaDebug"] =
+      "[10, 20, 30]";
+  const string stats_type = "bwe";
+  const string stats_id = "videobwe";
+  ExecuteAndVerifyAddStats(pc, stats_type, stats_id, stats);
+
+  string graph_id = pc.getIdString() + "-" + stats_id +
+      "-googReceivedPacketGroupPropagationDeltaDebug";
+  string data_series_id =
+      stats_id + "-googReceivedPacketGroupPropagationDeltaDebug";
+  bool result = false;
+  // Verify that the graph exists.
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "   graphViews['" + graph_id + "'] != null)",
+      &result));
+  EXPECT_TRUE(result);
+
+  // Verify that the graph contains multiple data points.
+  int count = 0;
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "   graphViews['" + graph_id + "'].getDataSeriesCount())",
+      &count));
+  EXPECT_EQ(1, count);
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "   peerConnectionDataStore['" + pc.getIdString() + "']" +
+      "       .getDataSeries('" + data_series_id + "').getCount())",
+      &count));
+  EXPECT_EQ(3, count);
+}
+
 }  // namespace content
