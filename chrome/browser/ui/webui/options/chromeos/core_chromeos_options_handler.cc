@@ -255,11 +255,13 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   AddAccountUITweaksLocalizedValues(localized_strings, profile);
 
   UserManager* user_manager = UserManager::Get();
-  const std::string& primary_email = user_manager->GetPrimaryUser()->email();
 
   // Check at load time whether this is a secondary user in a multi-profile
   // session.
-  if (user_manager->GetUserByProfile(profile)->email() != primary_email) {
+  User* user = user_manager->GetUserByProfile(profile);
+  if (user && user->email() != user_manager->GetPrimaryUser()->email()) {
+    const std::string& primary_email = user_manager->GetPrimaryUser()->email();
+
     // Set secondaryUser to show the shared icon by the network section header.
     localized_strings->SetBoolean("secondaryUser", true);
     localized_strings->SetString("secondaryUserBannerText",
