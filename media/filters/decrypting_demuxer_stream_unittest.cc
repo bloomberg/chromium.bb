@@ -113,9 +113,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void Initialize() {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillOnce(SetDecryptorIfNotNull(decryptor_.get(), &is_decryptor_set_));
-    // TODO(xhwang): Use WillOnce after we remove the cancellation of NewKeyCB.
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
-        .WillRepeatedly(SaveArg<1>(&key_added_cb_));
+        .WillOnce(SaveArg<1>(&key_added_cb_));
 
     AudioDecoderConfig input_config(
         kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,

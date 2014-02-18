@@ -124,12 +124,6 @@ void DecryptingDemuxerStream::Stop(const base::Closure& closure) {
   // Destroy()), so running |closure| can't wait for anything that requires the
   // render thread to process messages to complete (such as PPAPI methods).
   if (decryptor_) {
-    // Clear the callback.
-    // TODO(xhwang): Since we invalidate all weak pointers during Stop(),
-    // canceling NewKeyCB seems unnecessary. Clean this up in all Decrypting*
-    // classes.
-    decryptor_->RegisterNewKeyCB(GetDecryptorStreamType(),
-                                 Decryptor::NewKeyCB());
     decryptor_->CancelDecrypt(GetDecryptorStreamType());
     decryptor_ = NULL;
   }

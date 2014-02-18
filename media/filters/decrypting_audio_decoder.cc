@@ -154,7 +154,6 @@ void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
   weak_factory_.InvalidateWeakPtrs();
 
   if (decryptor_) {
-    decryptor_->RegisterNewKeyCB(Decryptor::kAudio, Decryptor::NewKeyCB());
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
     decryptor_ = NULL;
   }
@@ -248,8 +247,9 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   UpdateDecoderConfig();
 
   decryptor_->RegisterNewKeyCB(
-      Decryptor::kAudio, BindToCurrentLoop(base::Bind(
-          &DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
+      Decryptor::kAudio,
+      BindToCurrentLoop(
+          base::Bind(&DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);

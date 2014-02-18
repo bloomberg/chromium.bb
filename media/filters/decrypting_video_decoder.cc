@@ -136,7 +136,6 @@ void DecryptingVideoDecoder::Stop(const base::Closure& closure) {
   // render thread to be processing messages to complete (such as PPAPI
   // callbacks).
   if (decryptor_) {
-    decryptor_->RegisterNewKeyCB(Decryptor::kVideo, Decryptor::NewKeyCB());
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
     decryptor_ = NULL;
   }
@@ -195,8 +194,10 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
     return;
   }
 
-  decryptor_->RegisterNewKeyCB(Decryptor::kVideo, BindToCurrentLoop(
-      base::Bind(&DecryptingVideoDecoder::OnKeyAdded, weak_this_)));
+  decryptor_->RegisterNewKeyCB(
+      Decryptor::kVideo,
+      BindToCurrentLoop(
+          base::Bind(&DecryptingVideoDecoder::OnKeyAdded, weak_this_)));
 
   // Success!
   state_ = kIdle;

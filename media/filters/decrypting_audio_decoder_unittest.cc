@@ -231,9 +231,6 @@ class DecryptingAudioDecoderTest : public testing::Test {
   }
 
   void Stop() {
-    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio,
-                                              IsNullCallback()))
-        .Times(AtMost(1));
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio))
         .WillRepeatedly(InvokeWithoutArgs(
             this, &DecryptingAudioDecoderTest::AbortAllPendingCBs));
