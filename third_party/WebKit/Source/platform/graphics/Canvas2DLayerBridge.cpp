@@ -343,10 +343,11 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
 {
     if (bitmap) {
         // Using accelerated 2d canvas with software renderer, which
-        // should only happen in tests that use fake graphics contexts.
-        // In this case, we do not care about producing any results for
-        // compositing.
+        // should only happen in tests that use fake graphics contexts
+        // or in Android WebView in software mode. In this case, we do
+        // not care about producing any results for this canvas.
         m_canvas->silentFlush();
+        m_lastImageId = 0;
         return false;
     }
     if (!isValid())
