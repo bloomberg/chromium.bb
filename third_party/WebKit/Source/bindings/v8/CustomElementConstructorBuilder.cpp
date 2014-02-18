@@ -65,8 +65,7 @@ CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* st
 
 bool CustomElementConstructorBuilder::isFeatureAllowed() const
 {
-    // Check that we are in the main world
-    return !DOMWrapperWorld::isolatedWorld(m_context);
+    return DOMWrapperWorld::world(m_context)->isMainWorld();
 }
 
 bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState& exceptionState)

@@ -642,21 +642,10 @@ WrapperWorldType worldTypeInMainThread(v8::Isolate* isolate)
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return MainWorld;
     ASSERT(!isolate->GetEnteredContext().IsEmpty());
-    DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(isolate->GetEnteredContext());
-    if (isolatedWorld)
-        return IsolatedWorld;
-    return MainWorld;
-}
-
-DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
-{
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (!data->isMainThread())
-        return 0;
-    if (!DOMWrapperWorld::isolatedWorldsExist())
-        return 0;
-    ASSERT(isolate->InContext());
-    return DOMWrapperWorld::isolatedWorld(isolate->GetCurrentContext());
+    DOMWrapperWorld* world = DOMWrapperWorld::world(isolate->GetEnteredContext());
+    if (world->isMainWorld())
+        return MainWorld;
+    return IsolatedWorld;
 }
 
 v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)

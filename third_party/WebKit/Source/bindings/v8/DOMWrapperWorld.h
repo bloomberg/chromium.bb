@@ -66,14 +66,6 @@ public:
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
-    // FIXME: Replace all call sites of isolatedWorld() with world().
-    static DOMWrapperWorld* isolatedWorld(v8::Handle<v8::Context> context)
-    {
-        ASSERT(contextHasCorrectPrototype(context));
-        DOMWrapperWorld* world = V8PerContextDataHolder::from(context)->world();
-        return world->isIsolatedWorld() ? world : 0;
-    }
-
     static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
     {
         ASSERT(contextHasCorrectPrototype(context));
