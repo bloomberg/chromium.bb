@@ -757,6 +757,11 @@ class OutputTestCase(TestCase):
 
       return line_re.search(line) if line_re else True
 
+    if isinstance(prefix_re, str):
+      prefix_re = re.compile(prefix_re)
+    if isinstance(line_re, str):
+      line_re = re.compile(line_re)
+
     # Provide a description of what this function looks for in a line.  Error
     # messages can make use of this.
     _method.description = None

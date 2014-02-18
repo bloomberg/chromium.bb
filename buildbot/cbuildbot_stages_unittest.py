@@ -138,7 +138,7 @@ class BuilderRunMock(partial_mock.PartialMock):
 
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
 class StageTest(cros_test_lib.MoxTempDirTestCase,
-                cros_test_lib.MockTestCase):
+                cros_test_lib.MockOutputTestCase):
   """Test running a single stage in isolation."""
 
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
@@ -329,6 +329,80 @@ class BuilderStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
     self.assertEqual(result, 'RESULT')
+
+  def testStageNamePrefixSmoke(self):
+    """Basic test for the StageNamePrefix() function."""
+    stage = self.ConstructStage()
+    self.assertEqual(stage.StageNamePrefix(), 'Builder')
+
+  def testGetStageNamesSmoke(self):
+    """Basic test for the GetStageNames() function."""
+    stage = self.ConstructStage()
+    self.assertEqual(stage.GetStageNames(), ['Builder'])
+
+  def testConstructDashboardURLSmoke(self):
+    """Basic test for the ConstructDashboardURL() function."""
+    stage = self.ConstructStage()
+
+    exp_url = ('http://build.chromium.org/p/chromiumos/builders/'
+               'x86-generic-paladin/builds/1234')
+    self.assertEqual(stage.ConstructDashboardURL(), exp_url)
+
+    stage_name = 'Archive'
+    exp_url = '%s/steps/%s/logs/stdio' % (exp_url, stage_name)
+    self.assertEqual(stage.ConstructDashboardURL(stage=stage_name), exp_url)
+
+  def test_ExtractOverlaysSmoke(self):
+    """Basic test for the _ExtractOverlays() function."""
+    stage = self.ConstructStage()
+    self.assertEqual(stage._ExtractOverlays(), ([], []))
+
+  def test_PrintSmoke(self):
+    """Basic test for the _Print() function."""
+    stage = self.ConstructStage()
+    with self.OutputCapturer():
+      stage._Print('hi there')
+    self.AssertOutputContainsLine('hi there', check_stderr=True)
+
+  def test_PrintLoudlySmoke(self):
+    """Basic test for the _PrintLoudly() function."""
+    stage = self.ConstructStage()
+    with self.OutputCapturer():
+      stage._PrintLoudly('hi there')
+    self.AssertOutputContainsLine(r'\*{10}', check_stderr=True)
+    self.AssertOutputContainsLine('hi there', check_stderr=True)
+
+  def testRunSmoke(self):
+    """Basic passing test for the Run() function."""
+    stage = self.ConstructStage()
+    with self.OutputCapturer():
+      stage.Run()
+
+  def _RunCapture(self, stage):
+    """Helper method to run Run() with captured output."""
+    output = self.OutputCapturer()
+    output.StartCapturing()
+    try:
+      stage.Run()
+    finally:
+      output.StopCapturing()
+
+  def testRunException(self):
+    """Verify stage exceptions are handled."""
+    class TestError(Exception):
+      """Unique test exception"""
+
+    def PerformStage():
+      raise TestError('fail!')
+
+    stage = self.ConstructStage()
+    stage.PerformStage = PerformStage
+    results_lib.Results.Clear()
+    self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
+
+    results = results_lib.Results.Get()[0]
+    self.assertTrue(isinstance(results.result, TestError))
+    self.assertEqual(str(results.result), 'fail!')
 
 
 class ManifestVersionedSyncStageTest(AbstractStageTest):
@@ -606,7 +680,7 @@ class RunCommandAbstractStageTest(AbstractStageTest,
 
   def _Run(self, dir_exists):
     """Helper for running the build."""
-    with mock.patch.object(os.path, 'isdir', return_value=dir_exists):
+    with patch(os.path, 'isdir', return_value=dir_exists):
       self.RunStage()
 
 
@@ -1954,8 +2028,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self.assertEqual(self.upload_mock.call_count, 1)
     self.assertEqual(self.tar_mock.call_count, 0)
 
-    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
-    self.assertEqual(self.archive_stage.WaitForDebugTarball(), False)
+    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(timeout=9), True)
+    self.assertEqual(self.archive_stage.WaitForDebugTarball(timeout=9), False)
 
 
 class PassStage(bs.BuilderStage):
