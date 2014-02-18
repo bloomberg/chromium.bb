@@ -19,7 +19,8 @@
 */
 
 [
-    ImplementedAs=DOMMimeTypeArray,
+    WillBeGarbageCollected,
+    ImplementedAs=DOMMimeTypeArray
 ] interface MimeTypeArray {
     readonly attribute unsigned long length;
     getter MimeType item([Default=Undefined] optional unsigned long index);

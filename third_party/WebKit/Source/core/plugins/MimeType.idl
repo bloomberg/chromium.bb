@@ -19,6 +19,7 @@
 */
 
 [
+    WillBeGarbageCollected,
     ImplementedAs=DOMMimeType
 ] interface MimeType {
     readonly attribute DOMString type;

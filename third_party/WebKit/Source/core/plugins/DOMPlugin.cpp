@@ -24,6 +24,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(DOMPlugin);
+
 DOMPlugin::DOMPlugin(PluginData* pluginData, Frame* frame, unsigned index)
     : FrameDestructionObserver(frame)
     , m_pluginData(pluginData)
@@ -56,7 +58,7 @@ unsigned DOMPlugin::length() const
     return pluginInfo().mimes.size();
 }
 
-PassRefPtr<DOMMimeType> DOMPlugin::item(unsigned index)
+PassRefPtrWillBeRawPtr<DOMMimeType> DOMPlugin::item(unsigned index)
 {
     if (index >= pluginInfo().mimes.size())
         return 0;
@@ -80,7 +82,7 @@ bool DOMPlugin::canGetItemsForName(const AtomicString& propertyName)
     return false;
 }
 
-PassRefPtr<DOMMimeType> DOMPlugin::namedItem(const AtomicString& propertyName)
+PassRefPtrWillBeRawPtr<DOMMimeType> DOMPlugin::namedItem(const AtomicString& propertyName)
 {
     const Vector<MimeClassInfo>& mimes = m_pluginData->mimes();
     for (unsigned i = 0; i < mimes.size(); ++i)

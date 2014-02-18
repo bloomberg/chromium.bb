@@ -22,6 +22,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/FrameDestructionObserver.h"
+#include "heap/Handle.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -33,15 +34,21 @@ namespace WebCore {
 class DOMPlugin;
 class Frame;
 
-class DOMMimeType FINAL : public RefCounted<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index) { return adoptRef(new DOMMimeType(pluginData, frame, index)); }
+    static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index)
+    {
+        return adoptRefWillBeNoop(new DOMMimeType(pluginData, frame, index));
+    }
     virtual ~DOMMimeType();
 
     const String& type() const;
     String suffixes() const;
     const String& description() const;
-    PassRefPtr<DOMPlugin> enabledPlugin() const;
+    PassRefPtrWillBeRawPtr<DOMPlugin> enabledPlugin() const;
+
+    void trace(Visitor*) { }
 
 private:
     const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }

@@ -27,6 +27,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(DOMMimeTypeArray);
+
 DOMMimeTypeArray::DOMMimeTypeArray(Frame* frame)
     : DOMWindowProperty(frame)
 {
@@ -45,7 +47,7 @@ unsigned DOMMimeTypeArray::length() const
     return data->mimes().size();
 }
 
-PassRefPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
+PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
 {
     PluginData* data = getPluginData();
     if (!data)
@@ -69,7 +71,7 @@ bool DOMMimeTypeArray::canGetItemsForName(const AtomicString& propertyName)
     return false;
 }
 
-PassRefPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
+PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
 {
     PluginData *data = getPluginData();
     if (!data)

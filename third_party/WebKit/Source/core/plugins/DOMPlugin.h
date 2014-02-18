@@ -23,6 +23,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/plugins/DOMMimeType.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -32,9 +33,13 @@ namespace WebCore {
 class Plugin;
 class PluginData;
 
-class DOMPlugin FINAL : public ScriptWrappable, public RefCounted<DOMPlugin>, public FrameDestructionObserver {
+class DOMPlugin FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public FrameDestructionObserver {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DOMPlugin> create(PluginData* pluginData, Frame* frame, unsigned index) { return adoptRef(new DOMPlugin(pluginData, frame, index)); }
+    static PassRefPtrWillBeRawPtr<DOMPlugin> create(PluginData* pluginData, Frame* frame, unsigned index)
+    {
+        return adoptRefWillBeNoop(new DOMPlugin(pluginData, frame, index));
+    }
     virtual ~DOMPlugin();
 
     String name() const;
@@ -43,9 +48,11 @@ public:
 
     unsigned length() const;
 
-    PassRefPtr<DOMMimeType> item(unsigned index);
+    PassRefPtrWillBeRawPtr<DOMMimeType> item(unsigned index);
     bool canGetItemsForName(const AtomicString& propertyName);
-    PassRefPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
+    PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
+
+    void trace(Visitor*) { }
 
 private:
     const PluginInfo& pluginInfo() const { return m_pluginData->plugins()[m_index]; }

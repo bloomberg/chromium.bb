@@ -23,6 +23,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/frame/NavigatorBase.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -61,8 +62,8 @@ public:
 private:
     explicit Navigator(Frame*);
 
-    mutable RefPtr<DOMPluginArray> m_plugins;
-    mutable RefPtr<DOMMimeTypeArray> m_mimeTypes;
+    mutable RefPtrWillBePersistent<DOMPluginArray> m_plugins;
+    mutable RefPtrWillBePersistent<DOMMimeTypeArray> m_mimeTypes;
 };
 
 }
