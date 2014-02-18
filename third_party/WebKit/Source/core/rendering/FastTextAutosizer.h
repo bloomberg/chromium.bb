@@ -77,6 +77,8 @@ public:
                 }
                 m_block = block;
                 m_textAutosizer->beginLayout(m_block);
+            } else {
+                m_block = 0;
             }
         }
 
