@@ -35,7 +35,8 @@ select[multiple],
 select[size][multiple] {
     -webkit-appearance: menulist;
     align-items: center;
-    border: 1px solid;
+    background-color: ButtonFace;
+    border: 1px solid #a9a9a9;
     border-radius: initial;
     white-space: pre;
 }
