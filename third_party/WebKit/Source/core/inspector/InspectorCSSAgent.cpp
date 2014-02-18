@@ -815,24 +815,6 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     }
 }
 
-void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& styleSheetObject)
-{
-    InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
-    if (!inspectorStyleSheet)
-        return;
-
-    Document* doc = inspectorStyleSheet->pageStyleSheet() ? inspectorStyleSheet->pageStyleSheet()->ownerDocument() : 0;
-    if (!doc)
-        return;
-
-    RefPtr<TypeBuilder::CSS::CSSStyleSheetBody> result = TypeBuilder::CSS::CSSStyleSheetBody::create()
-        .setRules(buildArrayForRuleList(inspectorStyleSheet->pageStyleSheet()->rules().get()));
-
-    bool success = inspectorStyleSheet->fillObjectForStyleSheet(result);
-    if (success)
-        styleSheetObject = result;
-}
-
 void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String& styleSheetId, String* result)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
@@ -1212,26 +1194,6 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSS
         rule->setParentStyleSheet(m_inspectorUserAgentStyleSheet.get());
     }
     return bindStyleSheet(rule->parentStyleSheet())->buildObjectForRule(rule, buildMediaListChain(rule));
-}
-
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > InspectorCSSAgent::buildArrayForRuleList(CSSRuleList* ruleList)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > result = TypeBuilder::Array<TypeBuilder::CSS::CSSRule>::create();
-    if (!ruleList)
-        return result.release();
-
-    RefPtr<CSSRuleList> refRuleList = ruleList;
-    CSSRuleVector rules;
-    InspectorStyleSheet::collectFlatRules(refRuleList, &rules);
-
-    for (unsigned i = 0, size = rules.size(); i < size; ++i) {
-        CSSStyleRule* styleRule = asCSSStyleRule(rules.at(i).get());
-        if (!styleRule)
-            continue;
-        result->addItem(buildObjectForRule(styleRule));
-    }
-
-    return result.release();
 }
 
 static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId elementPseudoId)

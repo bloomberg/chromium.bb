@@ -58,26 +58,17 @@ function getCSS()
 
 function test()
 {
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 1000);
-    var worker = new Worker("ScriptFormatterWorker.js");
-    worker.onmessage = onWorkerMessage;
-    worker.onerror = onWorkerError;
-
-    function onWorkerMessage(event)
+    function onStyleSheetParsed(rules)
     {
-        InspectorTest.addObject(event.data);
-        InspectorTest.completeTest();
-    }
-
-    function onWorkerError(event)
-    {
-        InspectorTest.addResult("Error in worker: " + event.data);
+        for (var i = 0; i < rules.length; ++i)
+            InspectorTest.addObject(rules[i]);
         InspectorTest.completeTest();
     }
 
     function onStyleFetched(result)
     {
-        worker.postMessage({ method: "cssOutline", params: { content: result.value } });
+        var parser = new WebInspector.CSSParser();
+        parser.parse(result.value, onStyleSheetParsed);
     }
 
     InspectorTest.evaluateInPage("getCSS()", onStyleFetched);

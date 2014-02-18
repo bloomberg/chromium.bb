@@ -187,11 +187,6 @@ body {
 
 }
 '
-#absent-id: [regular, 10:0-10:10] {
-}
-body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
-}
 
 StyleSheet: '@import url(styles-new-API-1.css);
 
@@ -219,11 +214,6 @@ body {
 
 }
 '
-#absent-id: [regular, 10:0-10:10] {
-}
-body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
-}
 
 StyleSheet: '@charset "UTF-8";
 
@@ -259,68 +249,6 @@ h1 {
     height : 100% ; border: 1px solid; border-width: 2px; background-color : #33FF33; googles: abra; foo: .bar; -moz-goog: 1***; border-width: 0px; /*padding-top:1px;*/
 }
 '
-html: [regular, 4:0-4:4] {
-    ['font-weight':'400'] @[5:4-5:21] active
-}
-body: [regular, 9:0-9:4] {
-    ['font-size':'12px'] @[10:4-10:20] active
-    ['foo':'bar !
-
-    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] active
-    ['height':'100% !important' is-important] @[14:4-14:28] active
-    ['colorz':'"!important"' non-parsed] @[15:4-15:25] active
-    ['important':'!important' non-parsed] @[16:4-16:25] active
-    ['color':'yellow'] @[17:4-17:18] active
-    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] active
-}
-body.main1: [regular, 21:29-21:67] {
-    ['color':'#F00BAA'] @[21:81-21:96] active
-    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] active
-}
-body.main2: [regular, 23:0-23:10] {
-    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] active
-    ['background-image':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-x':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-y':'initial' is-important] @[undefined-undefined] style
-    ['background-attachment':'initial' is-important] @[undefined-undefined] style
-    ['background-position-x':'initial' is-important] @[undefined-undefined] style
-    ['background-position-y':'initial' is-important] @[undefined-undefined] style
-    ['background-origin':'initial' is-important] @[undefined-undefined] style
-    ['background-clip':'initial' is-important] @[undefined-undefined] style
-    ['background-color':'green' is-important] @[undefined-undefined] style
-    ['background-size':'initial' is-important] @[undefined-undefined] style
-}
-body::after: [regular, 26:0-26:11] {
-    ['content':'"After body"'] @[27:4-27:26] active
-}
-h1: [regular, 30:0-30:2] {
-    ['height':'100%'] @[31:4-31:19] active
-    ['border':'1px solid'] @[31:20-31:38] active
-    ['border-width':'2px'] @[31:39-31:57] inactive
-    ['background-color':'#33FF33'] @[31:58-31:85] active
-    ['googles':'abra' non-parsed] @[31:86-31:100] active
-    ['foo':'.bar' non-parsed] @[31:101-31:111] active
-    ['-moz-goog':'1***' non-parsed] @[31:112-31:128] active
-    ['border-width':'0px'] @[31:129-31:147] active
-    [text='/*padding-top:1px;*/'] disabled
-    ['border-top-style':'solid'] @[undefined-undefined] style
-    ['border-right-style':'solid'] @[undefined-undefined] style
-    ['border-bottom-style':'solid'] @[undefined-undefined] style
-    ['border-left-style':'solid'] @[undefined-undefined] style
-    ['border-top-color':'initial'] @[undefined-undefined] style
-    ['border-right-color':'initial'] @[undefined-undefined] style
-    ['border-bottom-color':'initial'] @[undefined-undefined] style
-    ['border-left-color':'initial'] @[undefined-undefined] style
-    ['border-image-source':'initial'] @[undefined-undefined] style
-    ['border-image-slice':'initial'] @[undefined-undefined] style
-    ['border-image-width':'initial'] @[undefined-undefined] style
-    ['border-image-outset':'initial'] @[undefined-undefined] style
-    ['border-image-repeat':'initial'] @[undefined-undefined] style
-    ['border-top-width':'0px'] @[undefined-undefined] style
-    ['border-right-width':'0px'] @[undefined-undefined] style
-    ['border-bottom-width':'0px'] @[undefined-undefined] style
-    ['border-left-width':'0px'] @[undefined-undefined] style
-}
 
 StyleSheet: '
 
@@ -339,65 +267,20 @@ body:hover {
   color: #CDE;
 }
 '
-body.mainpage: [regular, 3:0-3:13] {
-    ['text-decoration':'none'] @[4:4-4:26] active
-    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
-    ['text-decoration-line':'none'] @[undefined-undefined] style
-    ['text-decoration-style':'initial'] @[undefined-undefined] style
-    ['text-decoration-color':'initial'] @[undefined-undefined] style
-}
-body.mainpage: [regular, 8:0-8:13] {
-    ['prop1':'val1' non-parsed] @[9:4-9:16] active
-    ['prop2':'val2' non-parsed] @[10:4-10:16] active
-}
-body:hover: [regular, 13:0-13:10] {
-    ['color':'#CDE'] @[14:2-14:14] active
-}
 
 === Last stylesheet patched ===
 
 StyleSheet: 'body.mainpage {    text-decoration: strikethrough;    badproperty: 2badvalue2;}body {    text-align: justify;}'
-body.mainpage: [regular, 0:0-0:13] {
-    ['text-decoration':'strikethrough' non-parsed] @[0:19-0:50] active
-    ['badproperty':'2badvalue2' non-parsed] @[0:54-0:78] active
-}
-body: [regular, 0:79-0:83] {
-    ['text-align':'justify'] @[0:89-0:109] active
-}
 
 === After selector set ===
 
 StyleSheet: 'html *, body[foo="bar"] {    text-decoration: strikethrough;    badproperty: 2badvalue2;}body {    text-align: justify;}'
-html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
-    ['text-decoration':'strikethrough' non-parsed] @[0:29-0:60] active
-    ['badproperty':'2badvalue2' non-parsed] @[0:64-0:88] active
-}
-body: [regular, 0:89-0:93] {
-    ['text-align':'justify'] @[0:99-0:119] active
-}
 
 === After style text set ===
 
 StyleSheet: 'html *, body[foo="bar"] {
     color: white; background: black;
 }body {    text-align: justify;}'
-html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
-    ['color':'white'] @[1:4-1:17] active
-    ['background':'black'] @[1:18-1:36] active
-    ['background-image':'initial'] @[undefined-undefined] style
-    ['background-repeat-x':'initial'] @[undefined-undefined] style
-    ['background-repeat-y':'initial'] @[undefined-undefined] style
-    ['background-attachment':'initial'] @[undefined-undefined] style
-    ['background-position-x':'initial'] @[undefined-undefined] style
-    ['background-position-y':'initial'] @[undefined-undefined] style
-    ['background-origin':'initial'] @[undefined-undefined] style
-    ['background-clip':'initial'] @[undefined-undefined] style
-    ['background-color':'black'] @[undefined-undefined] style
-    ['background-size':'initial'] @[undefined-undefined] style
-}
-body: [regular, 2:1-2:5] {
-    ['text-align':'justify'] @[2:11-2:31] active
-}
 
 Running: test_addRule
 

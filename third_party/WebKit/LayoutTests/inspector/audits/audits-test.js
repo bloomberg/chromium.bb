@@ -14,11 +14,11 @@ InspectorTest.collectAuditResults = function()
 
 InspectorTest.launchAllAudits = function(shouldReload, callback)
 {
+    InspectorTest.addSniffer(WebInspector.AuditController.prototype, "_auditFinishedCallback", callback);
     var launcherView = WebInspector.panels.audits._launcherView;
     launcherView._selectAllClicked(true);
     launcherView._auditPresentStateElement.checked = !shouldReload;
     launcherView._launchButtonClicked();
-    InspectorTest.runAfterPendingDispatches(callback);
 }
 
 InspectorTest.collectTextContent = function(element, level)

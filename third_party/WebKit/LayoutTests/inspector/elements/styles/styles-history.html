@@ -62,9 +62,8 @@ function test()
             {
                 styleSheetForResource(step1);
 
-                function step1(styleSheet)
+                function step1(style)
                 {
-                    var style = styleSheet.rules[0].style;
                     var property = style.getLiveProperty("margin");
                     property.setText("margin:25px;", false, true, dumpHistory(next));
                 }
@@ -74,9 +73,8 @@ function test()
             {
                 styleSheetForResource(step1);
 
-                function step1(styleSheet)
+                function step1(style)
                 {
-                    var style = styleSheet.rules[0].style;
                     var property = style.getLiveProperty("margin");
                     property.setText("margin:30px;", true, true);
                     InspectorTest.runAfterPendingDispatches(dumpHistory(next));
@@ -87,18 +85,29 @@ function test()
 
     function styleSheetForResource(callback)
     {
-        InspectorTest.waitForStylesheetsOnFrontend(1, didGetAllStyleSheets.bind(this));
+        InspectorTest.nodeWithId("mainBody", onNodeSelected);
 
-        function didGetAllStyleSheets(styleSheets)
+        function onNodeSelected(node)
         {
-            for (var i = 0; i < styleSheets.length; ++i) {
-                var styleSheet = styleSheets[i];
-                if (styleSheet.sourceURL.indexOf("styles-history.css") === -1)
-                    continue;
-                WebInspector.CSSStyleSheet.createForId(styleSheet.id, callback);
+            CSSAgent.getMatchedStylesForNode(node.id, false, false, onMatchedStylesForNode);
+        }
+
+        function onMatchedStylesForNode(error, matchedStyles)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                InspectorTest.completeTest();
                 return;
             }
-            callback(null);
+            for (var i = 0; i < matchedStyles.length; ++i) {
+                var rule = matchedStyles[i].rule;
+                if (rule.origin !== "regular")
+                    continue;
+                callback(WebInspector.CSSStyleDeclaration.parsePayload(rule.style));
+                return;
+            }
+            InspectorTest.addResult("error: did not find any regular rule");
+            InspectorTest.completeTest();
         }
     }
 
@@ -120,7 +129,7 @@ function test()
 </script>
 </head>
 
-<body onload="runTest()">
+<body id="mainBody" onload="runTest()">
 <p>
 Tests resources panel history.
 </p>

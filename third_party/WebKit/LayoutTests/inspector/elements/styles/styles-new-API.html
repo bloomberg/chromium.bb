@@ -187,6 +187,7 @@ function test()
             {
                 if (error) {
                     InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
                     return;
                 }
                 InspectorTest.addResult("");
@@ -194,38 +195,63 @@ function test()
                 loadAndDumpStyleSheet(style.styleId.styleSheetId, next);
             }
 
-            function setStyleText(styleSheet)
+            function setStyleText(rule)
             {
-                CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "", true);
-                CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "", true);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "", true);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "", true);
 
                 // This operation should not update the style as the new property text is not parsable.
-                CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "zzz;", false);
-                CSSAgent.setPropertyText(styleSheet.rules[0].style.styleId, 0, "color: white; background: black;", false, didSetStyleText);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "zzz;", false);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "color: white; background: black;", false, didSetStyleText);
             }
 
             function didSetSelector(error, rule)
             {
                 if (error) {
                     InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
                     return;
                 }
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== After selector set ===");
-                loadAndDumpStyleSheet(rule.ruleId.styleSheetId, setStyleText);
+                loadAndDumpStyleSheet(rule.ruleId.styleSheetId, setStyleText.bind(this, rule));
             }
 
-            function setRuleSelector(styleSheet)
+            function setRuleSelector(rule)
             {
-                CSSAgent.setRuleSelector(styleSheet.rules[0].ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
+                CSSAgent.setRuleSelector(rule.ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
             }
 
-            function patchStyleSheet(styleSheetId, styleSheet)
+            function onMatchedStylesForNode(error, matchedStyles)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
+                    return;
+                }
+                for (var i = 0; i < matchedStyles.length; ++i) {
+                    var rule = matchedStyles[i].rule;
+                    if (rule.selectorList.text !== "body.mainpage") {
+                        continue;
+                    }
+                    setRuleSelector(rule);
+                    return;
+                }
+                InspectorTest.addResult("Error: rule with selector body.mainpage is not found");
+                InspectorTest.completeTest();
+            }
+
+            function didPatchStyleSheet(styleSheedId)
+            {
+                CSSAgent.getMatchedStylesForNode(bodyId, false, false, onMatchedStylesForNode);
+            }
+
+            function patchStyleSheet(styleSheetId)
             {
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Last stylesheet patched ===");
                 CSSAgent.setStyleSheetText(styleSheetId, newStyleSheetText,
-                    loadAndDumpStyleSheet.bind(null, styleSheetId, setRuleSelector));
+                    loadAndDumpStyleSheet.bind(null, styleSheetId, didPatchStyleSheet));
             }
 
             function styleSheetInfosLoaded(styleSheets)
@@ -233,7 +259,7 @@ function test()
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== All stylesheets ===");
                 for (var i = 0; i < styleSheets.length; ++i)
-                    loadAndDumpStyleSheet(styleSheets[i].id, (i < styleSheets.length - 1) ? null : patchStyleSheet.bind(null, styleSheets[i].id));
+                    loadAndDumpStyleSheet(styleSheets[i].id, (i < styleSheets.length - 1) ? null : patchStyleSheet);
             }
             InspectorTest.waitForStylesheetsOnFrontend(4, styleSheetInfosLoaded);
         },
@@ -390,23 +416,23 @@ function test()
     {
         if (error) {
             InspectorTest.addResult("error: " + error);
+            InspectorTest.completeTest();
             return;
         }
 
-        function styleSheetLoaded(error, styleSheet)
+        function styleSheetLoaded(error, text)
         {
             if (error) {
                 InspectorTest.addResult("error: " + error);
                 return;
             }
             InspectorTest.addResult("");
-            InspectorTest.addResult("StyleSheet: '" + styleSheet.text + "'");
-            InspectorTest.dumpRulesArray(styleSheet.rules);
+            InspectorTest.addResult("StyleSheet: '" + text + "'");
             if (continuation)
-                continuation(styleSheet);
+                continuation(styleSheetId);
         }
 
-        CSSAgent.getStyleSheet(styleSheetId, styleSheetLoaded);
+        CSSAgent.getStyleSheetText(styleSheetId, styleSheetLoaded);
     }
 }
 

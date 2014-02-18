@@ -1124,21 +1124,6 @@ CSSStyleRule* InspectorStyleSheet::ruleForId(const InspectorCSSId& id) const
     return InspectorCSSAgent::asCSSStyleRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
 }
 
-bool InspectorStyleSheet::fillObjectForStyleSheet(PassRefPtr<TypeBuilder::CSS::CSSStyleSheetBody> prpResult)
-{
-    CSSStyleSheet* styleSheet = pageStyleSheet();
-    if (!styleSheet)
-        return false;
-
-    RefPtr<TypeBuilder::CSS::CSSStyleSheetBody> result = prpResult;
-
-    String styleSheetText;
-    bool success = getText(&styleSheetText);
-    if (success)
-        result->setText(styleSheetText);
-    return success;
-}
-
 PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo() const
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
