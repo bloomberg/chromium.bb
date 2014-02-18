@@ -127,6 +127,10 @@ void DecryptingVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << "Stop() - state: " << state_;
 
+  // Invalidate all weak pointers so that pending callbacks won't be fired into
+  // this object.
+  weak_factory_.InvalidateWeakPtrs();
+
   // At this point the render thread is likely paused (in WebMediaPlayerImpl's
   // Destroy()), so running |closure| can't wait for anything that requires the
   // render thread to be processing messages to complete (such as PPAPI
@@ -145,6 +149,7 @@ void DecryptingVideoDecoder::Stop(const base::Closure& closure) {
     base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
+
   state_ = kStopped;
   BindToCurrentLoop(closure).Run();
 }
@@ -156,10 +161,6 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
 void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
   DVLOG(2) << "SetDecryptor()";
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(!set_decryptor_ready_cb_.is_null());
@@ -183,10 +184,6 @@ void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
 void DecryptingVideoDecoder::FinishInitialization(bool success) {
   DVLOG(2) << "FinishInitialization()";
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
@@ -229,15 +226,12 @@ void DecryptingVideoDecoder::DeliverFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(3) << "DeliverFrame() - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT_ASYNC_END0(
-      "media", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_);
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kPendingDecode) << state_;
   DCHECK(!decode_cb_.is_null());
   DCHECK(pending_buffer_to_decode_.get());
+
+  TRACE_EVENT_ASYNC_END0(
+      "media", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_);
 
   bool need_to_try_again_if_nokey_is_returned = key_added_while_decode_pending_;
   key_added_while_decode_pending_ = false;

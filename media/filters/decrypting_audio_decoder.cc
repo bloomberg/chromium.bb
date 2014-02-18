@@ -149,6 +149,10 @@ void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
   DVLOG(2) << "Stop() - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  // Invalidate all weak pointers so that pending callbacks won't be fired into
+  // this object.
+  weak_factory_.InvalidateWeakPtrs();
+
   if (decryptor_) {
     decryptor_->RegisterNewKeyCB(Decryptor::kAudio, Decryptor::NewKeyCB());
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
@@ -163,6 +167,7 @@ void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
+
   state_ = kStopped;
   task_runner_->PostTask(FROM_HERE, closure);
 }
@@ -189,10 +194,6 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
 void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   DVLOG(2) << "SetDecryptor()";
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(!set_decryptor_ready_cb_.is_null());
@@ -232,10 +233,6 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DVLOG(2) << "FinishInitialization()";
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
@@ -375,10 +372,6 @@ void DecryptingAudioDecoder::DeliverFrame(
     const Decryptor::AudioBuffers& frames) {
   DVLOG(3) << "DeliverFrame() - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kPendingDecode) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(pending_buffer_to_decode_.get());
