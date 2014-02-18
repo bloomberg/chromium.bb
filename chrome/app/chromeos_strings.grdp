@@ -4812,19 +4812,16 @@ All users must sign out to continue.
     Hassle-free goodness.
   </message>
   <message name="IDS_FIRST_RUN_TRAY_STEP_TEXT" desc="Text on the first-run tutorial bubble pointing to system tray bubble.">
-    The status tray shows you the current state of your network, battery and other things.
+    The status tray shows you the current state of your network, battery, and more.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to help button in system tray.">
     Have fun! We're here for you.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_1" desc="First part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
-    Enjoy your Chromebook. Question? You can always get help by clicking the "?" in the Status tray.
+    Enjoy your Chromebook. Questions? You can always get help by clicking the "?" in the status tray.
   </message>
-  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
+  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
     Want to discover more awesome features?
-  </message>
-  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_3" desc="Third part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
-    It's just one click away.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_KEEP_EXPLORING_BUTTON" desc="Text on the button located in the first-run tutorial bubble pointing to help button is system tray. After click on the button tutorial finishes and help app opens.">
     Keep exploring

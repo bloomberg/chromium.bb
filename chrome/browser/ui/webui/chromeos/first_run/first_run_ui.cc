@@ -46,8 +46,6 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "helpText2", l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_TEXT_2));
   localized_strings->SetString(
-      "helpText3", l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_TEXT_3));
-  localized_strings->SetString(
       "helpKeepExploringButton",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_KEEP_EXPLORING_BUTTON));
   localized_strings->SetString(
