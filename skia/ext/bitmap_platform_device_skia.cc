@@ -27,7 +27,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
                                                            bool is_opaque) {
   BitmapPlatformDevice* device = Create(width, height, is_opaque);
   if (!is_opaque)
-    device->accessBitmap(true).eraseARGB(0, 0, 0, 0);
+    device->clear(0);
   return device;
 }
 
