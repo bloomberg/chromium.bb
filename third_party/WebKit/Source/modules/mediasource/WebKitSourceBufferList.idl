@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=WebKitMediaSource
 ] interface WebKitSourceBufferList : EventTarget {

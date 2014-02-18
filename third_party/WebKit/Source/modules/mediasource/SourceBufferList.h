@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
@@ -41,19 +42,20 @@ namespace WebCore {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList FINAL : public RefCounted<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SourceBufferList);
+class SourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCollected<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SourceBufferList>);
 public:
-    static PassRefPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    static PassRefPtrWillBeRawPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRef(new SourceBufferList(context, asyncEventQueue));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
     }
     virtual ~SourceBufferList();
 
     unsigned long length() const { return m_list.size(); }
     SourceBuffer* item(unsigned long index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
 
-    void add(PassRefPtr<SourceBuffer>);
+    void add(PassRefPtrWillBeRawPtr<SourceBuffer>);
     void remove(SourceBuffer*);
     bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != kNotFound; }
     void clear();
@@ -61,6 +63,8 @@ public:
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     SourceBufferList(ExecutionContext*, GenericEventQueue*);
@@ -70,7 +74,7 @@ private:
     ExecutionContext* m_executionContext;
     GenericEventQueue* m_asyncEventQueue;
 
-    Vector<RefPtr<SourceBuffer> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<SourceBuffer> > m_list;
 };
 
 } // namespace WebCore

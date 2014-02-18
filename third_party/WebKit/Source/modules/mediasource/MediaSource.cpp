@@ -48,9 +48,9 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-PassRefPtr<MediaSource> MediaSource::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<MediaSource> MediaSource::create(ExecutionContext* context)
 {
-    RefPtr<MediaSource> mediaSource(adoptRef(new MediaSource(context)));
+    RefPtrWillBeRawPtr<MediaSource> mediaSource(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource.release();
 }
@@ -108,7 +108,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
         return 0;
     }
 
-    RefPtr<SourceBuffer> buffer = SourceBuffer::create(webSourceBuffer.release(), this, asyncEventQueue());
+    RefPtrWillBeRawPtr<SourceBuffer> buffer = SourceBuffer::create(webSourceBuffer.release(), this, asyncEventQueue());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
     m_activeSourceBuffers->add(buffer);
@@ -224,6 +224,13 @@ bool MediaSource::isTypeSupported(const String& type)
 const AtomicString& MediaSource::interfaceName() const
 {
     return EventTargetNames::MediaSource;
+}
+
+void MediaSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_sourceBuffers);
+    visitor->trace(m_activeSourceBuffers);
+    MediaSourceBase::trace(visitor);
 }
 
 } // namespace WebCore

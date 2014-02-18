@@ -370,6 +370,8 @@ public:
 
     T* get() const { return m_raw; }
 
+    void clear() { m_raw = 0; }
+
 protected:
     T* m_raw;
 

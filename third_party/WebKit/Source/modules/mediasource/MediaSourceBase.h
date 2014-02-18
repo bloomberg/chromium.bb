@@ -49,8 +49,9 @@ namespace WebCore {
 class ExceptionState;
 class GenericEventQueue;
 
-class MediaSourceBase : public RefCounted<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(MediaSourceBase);
+class MediaSourceBase : public RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
@@ -89,6 +90,8 @@ public:
     // URLRegistrable interface
     virtual URLRegistry& registry() const OVERRIDE FINAL;
 
+    virtual void trace(Visitor*) { }
+
 protected:
     explicit MediaSourceBase(ExecutionContext*);
 
@@ -105,6 +108,7 @@ private:
     OwnPtr<blink::WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    // FIXME: oilpan: This should become a Member. For now, m_attachedElement will be cleared by the HTMLMediaElement destructor.
     HTMLMediaElement* m_attachedElement;
 };
 

@@ -37,6 +37,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(WebKitSourceBufferList);
+
 WebKitSourceBufferList::WebKitSourceBufferList(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     : m_executionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
@@ -56,7 +58,7 @@ WebKitSourceBuffer* WebKitSourceBufferList::item(unsigned index) const
     return m_list[index].get();
 }
 
-void WebKitSourceBufferList::add(PassRefPtr<WebKitSourceBuffer> buffer)
+void WebKitSourceBufferList::add(PassRefPtrWillBeRawPtr<WebKitSourceBuffer> buffer)
 {
     m_list.append(buffer);
     createAndFireEvent(EventTypeNames::webkitaddsourcebuffer);
@@ -100,6 +102,11 @@ const AtomicString& WebKitSourceBufferList::interfaceName() const
 ExecutionContext* WebKitSourceBufferList::executionContext() const
 {
     return m_executionContext;
+}
+
+void WebKitSourceBufferList::trace(Visitor* visitor)
+{
+    visitor->trace(m_list);
 }
 
 } // namespace WebCore

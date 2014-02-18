@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
@@ -41,25 +42,28 @@ namespace WebCore {
 class WebKitSourceBuffer;
 class GenericEventQueue;
 
-class WebKitSourceBufferList FINAL : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(WebKitSourceBufferList);
+class WebKitSourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCollected<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WebKitSourceBufferList>);
 public:
-    static PassRefPtr<WebKitSourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    static PassRefPtrWillBeRawPtr<WebKitSourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRef(new WebKitSourceBufferList(context, asyncEventQueue));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitSourceBufferList(context, asyncEventQueue));
     }
     virtual ~WebKitSourceBufferList() { }
 
     unsigned long length() const;
     WebKitSourceBuffer* item(unsigned index) const;
 
-    void add(PassRefPtr<WebKitSourceBuffer>);
+    void add(PassRefPtrWillBeRawPtr<WebKitSourceBuffer>);
     bool remove(WebKitSourceBuffer*);
     void clear();
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     WebKitSourceBufferList(ExecutionContext*, GenericEventQueue*);
@@ -69,7 +73,7 @@ private:
     ExecutionContext* m_executionContext;
     GenericEventQueue* m_asyncEventQueue;
 
-    Vector<RefPtr<WebKitSourceBuffer> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<WebKitSourceBuffer> > m_list;
 };
 
 } // namespace WebCore

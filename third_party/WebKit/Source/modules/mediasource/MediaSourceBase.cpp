@@ -49,6 +49,8 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
+DEFINE_GC_INFO(MediaSourceBase);
+
 MediaSourceBase::MediaSourceBase(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())

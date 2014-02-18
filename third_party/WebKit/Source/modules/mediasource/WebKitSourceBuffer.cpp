@@ -43,12 +43,14 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-PassRefPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtr<WebKitMediaSource> source)
+DEFINE_GC_INFO(WebKitSourceBuffer);
+
+PassRefPtrWillBeRawPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtrWillBeRawPtr<WebKitMediaSource> source)
 {
-    return adoptRef(new WebKitSourceBuffer(webSourceBuffer, source));
+    return adoptRefWillBeNoop(new WebKitSourceBuffer(webSourceBuffer, source));
 }
 
-WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtr<WebKitMediaSource> source)
+WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtrWillBeRawPtr<WebKitMediaSource> source)
     : m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_timestampOffset(0)
@@ -164,6 +166,11 @@ void WebKitSourceBuffer::removedFromMediaSource()
 bool WebKitSourceBuffer::isRemoved() const
 {
     return !m_source;
+}
+
+void WebKitSourceBuffer::trace(Visitor* visitor)
+{
+    visitor->trace(m_source);
 }
 
 } // namespace WebCore

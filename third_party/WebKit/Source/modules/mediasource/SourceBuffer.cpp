@@ -53,9 +53,11 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-PassRefPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
+DEFINE_GC_INFO(SourceBuffer);
+
+PassRefPtrWillBeRawPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
-    RefPtr<SourceBuffer> sourceBuffer(adoptRef(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
+    RefPtrWillBeRawPtr<SourceBuffer> sourceBuffer(adoptRefCountedWillBeRefCountedGarbageCollected(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
     sourceBuffer->suspendIfNeeded();
     return sourceBuffer.release();
 }
@@ -683,6 +685,11 @@ void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
     WTF_LOG(Media, "SourceBuffer::didFail(%d) %p", errorCode, this);
     appendStreamDone(false);
+}
+
+void SourceBuffer::trace(Visitor* visitor)
+{
+    visitor->trace(m_source);
 }
 
 } // namespace WebCore

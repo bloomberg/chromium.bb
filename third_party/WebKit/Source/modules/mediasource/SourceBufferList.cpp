@@ -37,6 +37,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(SourceBufferList);
+
 SourceBufferList::SourceBufferList(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     : m_executionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
@@ -49,7 +51,7 @@ SourceBufferList::~SourceBufferList()
     ASSERT(m_list.isEmpty());
 }
 
-void SourceBufferList::add(PassRefPtr<SourceBuffer> buffer)
+void SourceBufferList::add(PassRefPtrWillBeRawPtr<SourceBuffer> buffer)
 {
     m_list.append(buffer);
     scheduleEvent(EventTypeNames::addsourcebuffer);
@@ -88,6 +90,11 @@ const AtomicString& SourceBufferList::interfaceName() const
 ExecutionContext* SourceBufferList::executionContext() const
 {
     return m_executionContext;
+}
+
+void SourceBufferList::trace(Visitor* visitor)
+{
+    visitor->trace(m_list);
 }
 
 } // namespace WebCore

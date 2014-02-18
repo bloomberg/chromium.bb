@@ -43,7 +43,7 @@ class ExceptionState;
 
 class WebKitMediaSource FINAL : public MediaSourceBase, public ScriptWrappable {
 public:
-    static PassRefPtr<WebKitMediaSource> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<WebKitMediaSource> create(ExecutionContext*);
     virtual ~WebKitMediaSource() { }
 
     // WebKitMediaSource.idl methods
@@ -56,8 +56,12 @@ public:
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
+#if !ENABLE(OILPAN)
     using RefCounted<MediaSourceBase>::ref;
     using RefCounted<MediaSourceBase>::deref;
+#endif
 
 private:
     explicit WebKitMediaSource(ExecutionContext*);
@@ -67,8 +71,8 @@ private:
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const OVERRIDE;
     virtual bool isUpdating() const OVERRIDE;
 
-    RefPtr<WebKitSourceBufferList> m_sourceBuffers;
-    RefPtr<WebKitSourceBufferList> m_activeSourceBuffers;
+    RefPtrWillBeMember<WebKitSourceBufferList> m_sourceBuffers;
+    RefPtrWillBeMember<WebKitSourceBufferList> m_activeSourceBuffers;
 };
 
 } // namespace WebCore

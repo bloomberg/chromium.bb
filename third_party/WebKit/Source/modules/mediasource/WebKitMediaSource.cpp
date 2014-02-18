@@ -46,9 +46,9 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-PassRefPtr<WebKitMediaSource> WebKitMediaSource::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<WebKitMediaSource> WebKitMediaSource::create(ExecutionContext* context)
 {
-    RefPtr<WebKitMediaSource> mediaSource(adoptRef(new WebKitMediaSource(context)));
+    RefPtrWillBeRawPtr<WebKitMediaSource> mediaSource(adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitMediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource.release();
 }
@@ -103,7 +103,7 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     if (!webSourceBuffer)
         return 0;
 
-    RefPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(webSourceBuffer.release(), this);
+    RefPtrWillBeRawPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(webSourceBuffer.release(), this);
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
     m_activeSourceBuffers->add(buffer);
@@ -212,6 +212,13 @@ bool WebKitMediaSource::isTypeSupported(const String& type)
 const AtomicString& WebKitMediaSource::interfaceName() const
 {
     return EventTargetNames::WebKitMediaSource;
+}
+
+void WebKitMediaSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_sourceBuffers);
+    visitor->trace(m_activeSourceBuffers);
+    MediaSourceBase::trace(visitor);
 }
 
 } // namespace WebCore

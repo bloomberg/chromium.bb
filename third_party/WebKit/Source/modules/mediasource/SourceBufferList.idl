@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=MediaSource,
 ] interface SourceBufferList : EventTarget {

@@ -32,6 +32,7 @@
 #define WebKitSourceBuffer_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -46,9 +47,10 @@ class ExceptionState;
 class TimeRanges;
 class WebKitMediaSource;
 
-class WebKitSourceBuffer FINAL : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
+class WebKitSourceBuffer FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebKitSourceBuffer>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtr<WebKitMediaSource>);
+    static PassRefPtrWillBeRawPtr<WebKitSourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtrWillBeRawPtr<WebKitMediaSource>);
 
     ~WebKitSourceBuffer();
 
@@ -61,13 +63,15 @@ public:
 
     void removedFromMediaSource();
 
+    void trace(Visitor*);
+
 private:
-    WebKitSourceBuffer(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtr<WebKitMediaSource>);
+    WebKitSourceBuffer(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtrWillBeRawPtr<WebKitMediaSource>);
 
     bool isRemoved() const;
 
     OwnPtr<blink::WebSourceBuffer> m_webSourceBuffer;
-    RefPtr<WebKitMediaSource> m_source;
+    RefPtrWillBeMember<WebKitMediaSource> m_source;
 
     double m_timestampOffset;
 };
