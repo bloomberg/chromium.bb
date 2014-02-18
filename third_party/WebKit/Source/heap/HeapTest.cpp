@@ -1330,20 +1330,23 @@ TEST(HeapTest, HashMapOfMembers)
             HashTraits<Member<IntWrapper> >,
             HeapAllocator> HeapObjectIdentityMap;
 
-        HeapObjectIdentityMap* map(new HeapObjectIdentityMap());
+        Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
         map->clear();
         HeapStats afterSetWasCreated;
         getHeapStats(&afterSetWasCreated);
         EXPECT_TRUE(afterSetWasCreated.totalObjectSpace() > initialHeapSize.totalObjectSpace());
 
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         HeapStats afterGC;
         getHeapStats(&afterGC);
         EXPECT_EQ(afterGC.totalObjectSpace(), afterSetWasCreated.totalObjectSpace());
 
+        // If the additions below cause garbage collections, these
+        // pointers should be found by conservative stack scanning.
         IntWrapper* one(IntWrapper::create(1));
         IntWrapper* anotherOne(IntWrapper::create(1));
+
         map->add(one, one);
 
         HeapStats afterOneAdd;
@@ -1357,18 +1360,20 @@ TEST(HeapTest, HashMapOfMembers)
 
         map->add(anotherOne, one);
 
-        // the addition above can cause an allocation of a new
+        // The addition above can cause an allocation of a new
         // backing store. We therefore garbage collect before
         // taking the heap stats in order to get rid of the old
-        // backing store.
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        // backing store. We make sure to not use conservative
+        // stack scanning as that could find a pointer to the
+        // old backing.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         HeapStats afterAddAndGC;
         getHeapStats(&afterAddAndGC);
         EXPECT_TRUE(afterAddAndGC.totalObjectSpace() >= afterOneAdd.totalObjectSpace());
 
         EXPECT_EQ(map->size(), 2u); // Two different wrappings of '1' are distinct.
 
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_TRUE(map->contains(one));
         EXPECT_TRUE(map->contains(anotherOne));
 
@@ -1397,7 +1402,7 @@ TEST(HeapTest, HashMapOfMembers)
         EXPECT_EQ(gross->value(), 144);
 
         // This should clear out junk created by all the adds.
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         HeapStats afterGC3;
         getHeapStats(&afterGC3);
         EXPECT_TRUE(afterGC3.totalObjectSpace() < afterAdding1000.totalObjectSpace());
