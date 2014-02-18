@@ -3,7 +3,7 @@ CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/xmlhttprequest/r
 Tests that origin whitelisting for https does not match http URLs.
 
 Testing: http://localhost:8000/xmlhttprequest/resources/get.txt (sync)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt?sync'.
 Testing: http://localhost:8000/xmlhttprequest/resources/get.txt (async)
 PASS: 0
 

@@ -31,7 +31,7 @@
         xhr.setRequestHeader("Content-Type", "text/plain");
         xhr.send("Text");
     } catch (ex) {
-        log(ex);
+        log("Exception thrown: " + ex.name);
     }
 
     if (xhr.responseText.length)
@@ -56,7 +56,7 @@
         xhr.setRequestHeader("Content-Type", "text/plain");
         xhr.send("Text");
     } catch (ex) {
-        log(ex);
+        log("Exception thrown: " + ex.name);
     }
 
     if (xhr.responseText.length)

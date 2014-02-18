@@ -6,4 +6,4 @@ This test verifies that sandboxed iframe does not have XmlHttpRequest access to 
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-PASS: Exception thrown. Sandboxed iframe XHR access was denied in 'send'. [A network error occurred.].
+PASS: Exception thrown. Sandboxed iframe XHR access was denied in 'send'. [Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/xmlhttprequest/resources/access-control-sandboxed-iframe-denied.cgi'.].

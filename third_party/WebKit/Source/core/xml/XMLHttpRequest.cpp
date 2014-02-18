@@ -862,7 +862,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
     if (!m_exceptionCode && m_error)
         m_exceptionCode = NetworkError;
     if (m_exceptionCode)
-        exceptionState.throwUninformativeAndGenericDOMException(m_exceptionCode);
+        exceptionState.throwDOMException(m_exceptionCode, "Failed to load '" + m_url.elidedString() + "'.");
 }
 
 void XMLHttpRequest::abort()

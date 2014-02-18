@@ -28,10 +28,10 @@ function uploadFile(file, filePath, start, length, expectedException)
     } catch (ex) {
         if (expectedException) {
             passed = true;
-            message = "Expected exception thrown: " + ex;
+            message = "Expected exception thrown: " + ex.name;
         } else {
             passed = false;
-            message = "Unexpected exception thrown: " + ex;
+            message = "Unexpected exception thrown: " + ex.name;
         }
     }
 

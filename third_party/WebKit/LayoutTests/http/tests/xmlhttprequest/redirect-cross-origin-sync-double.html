@@ -25,7 +25,7 @@
         xhr.open("GET", "resources/redirect.php?url=http://localhost:8000/xmlhttprequest/resources/redirect.php?url=/xmlhttprequest/resources/reply.xml", false);
         xhr.send();
     } catch (ex) {
-        log(ex);
+        log("Exception thrown: " + ex.name);
     }
 
     if (xhr.responseText.length)
@@ -44,7 +44,7 @@
         xhr.open("GET", "resources/redirect.php?url=http://localhost:7/", false); // A port that will likely refuse the connection.
         xhr.send();
     } catch (ex) {
-        log(ex);
+        log("Exception thrown: " + ex.name);
     }
 
     if (xhr.responseText.length)

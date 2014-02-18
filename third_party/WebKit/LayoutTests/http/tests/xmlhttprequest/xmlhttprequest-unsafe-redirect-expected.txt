@@ -2,7 +2,7 @@ CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8080/xmlhttprequest/r
 This tests that unsafe redirects won't be allowed when making an XMLHttpRequest.
 Sync XHR started.
 readyState change 1
-Exception: NetworkError: A network error occurred.
+Exception: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/xmlhttprequest/resources/redirect.php?url=http://localhost:8080/xmlhttprequest/resources/forbidden.txt'.
 Async XHR started.
 readyState change 1
 readyState change 4

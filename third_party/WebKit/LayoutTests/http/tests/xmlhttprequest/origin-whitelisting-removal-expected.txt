@@ -10,38 +10,38 @@ Tests the behavior of whitelisting origins and removing them later.
 
 Testing: source origin: http://127.0.0.1:8000 destination origin: http:localhost 
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting PASS)
 PASS: PASS
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 
 
 Testing: source origin: http://127.0.0.1:8000 destination origin: http:localhost allowing subdomains
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting PASS)
 PASS: PASS
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 
 
 Testing: source origin: http://127.0.0.1:8000 destination origin: hTtP:LoCaLhOsT allowing subdomains
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting PASS)
 PASS: PASS
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 
 
 Testing: source origin: http://127.0.0.1:8000 destination origin: http: allowing subdomains
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting PASS)
 PASS: PASS
 Loading: http://localhost:8000/xmlhttprequest/resources/get.txt (expecting NETWORK_ERR)
-PASS: NetworkError: A network error occurred.
+PASS: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/get.txt'.
 
 
 

@@ -9,7 +9,7 @@ load
 loadend
 
 Step 2: Cross origin request, disallowed
-NetworkError: A network error occurred.
+NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/xmlhttprequest-sync-vs-async-assertion-failure.html'.
 
 Step 3: Cross origin request, allowed
 readystatechange 4
