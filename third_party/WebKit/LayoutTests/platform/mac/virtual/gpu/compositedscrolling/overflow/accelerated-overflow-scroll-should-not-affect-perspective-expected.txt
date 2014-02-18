@@ -12,7 +12,8 @@
           (children 4
             (GraphicsLayer
               (bounds 185.00 185.00)
-              (childrenTransform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 -1.00] [0.00 0.00 0.00 1.00])
+              (shouldFlattenTransform 0)
+              (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 -0.01] [0.00 0.00 0.00 1.00])
               (children 1
                 (GraphicsLayer
                   (bounds 185.00 265.00)

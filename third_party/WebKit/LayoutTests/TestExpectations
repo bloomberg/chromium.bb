@@ -792,16 +792,6 @@ crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_pro
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-Bug(vollick) compositing/backing/no-backing-for-perspective.html [ NeedsRebaseline ]
-Bug(vollick) compositing/geometry/preserve-3d-switching.html [ NeedsRebaseline ]
-Bug(vollick) compositing/layer-creation/overlap-transformed-preserved-3d.html [ NeedsRebaseline ]
-Bug(vollick) compositing/overflow/accelerated-overflow-scroll-should-not-affect-perspective.html [ NeedsRebaseline ]
-Bug(vollick) virtual/gpu/compositedscrolling/overflow/accelerated-overflow-scroll-should-not-affect-perspective.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/backing/no-backing-for-perspective.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/geometry/preserve-3d-switching.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/overflow/accelerated-overflow-scroll-should-not-affect-perspective.html [ NeedsRebaseline ]
-
 # Flaky on all platforms
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
