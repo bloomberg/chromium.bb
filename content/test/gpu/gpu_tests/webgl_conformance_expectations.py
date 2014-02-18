@@ -195,6 +195,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['android'], bug=315976)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
         ['android'], bug=315976)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
+        ['android'], bug=341698)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video-rgb565.html',
+        ['android'], bug=341698)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video-rgba4444.html',
+        ['android'], bug=341698)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video-rgba5551.html',
+        ['android'], bug=341698)
 
     # Skip slow tests.
     self.Skip('conformance/context/context-creation-and-destruction.html',
