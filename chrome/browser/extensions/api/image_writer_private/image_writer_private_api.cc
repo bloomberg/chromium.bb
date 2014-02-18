@@ -31,6 +31,17 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
     return false;
   }
 
+#if defined(OS_CHROMEOS)
+  // The Chrome OS temporary partition is too small for Chrome OS images, thus
+  // we must always use the downloads folder.
+  bool save_image_as_download = true;
+#else
+  bool save_image_as_download = false;
+  if (params->options.get() && params->options->save_as_download.get()) {
+    save_image_as_download = true;
+  }
+#endif
+
   std::string hash;
   if (params->options.get() && params->options->image_hash.get()) {
     hash = *params->options->image_hash;
@@ -39,7 +50,9 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
   image_writer::OperationManager::Get(GetProfile())->StartWriteFromUrl(
       extension_id(),
       url,
+      render_view_host(),
       hash,
+      save_image_as_download,
       params->storage_unit_id,
       base::Bind(&ImageWriterPrivateWriteFromUrlFunction::OnWriteStarted,
                  this));
@@ -76,11 +89,11 @@ bool ImageWriterPrivateWriteFromFileFunction::RunImpl() {
   base::FilePath path;
 
   if (!extensions::app_file_handler_util::ValidateFileEntryAndGetPath(
-           filesystem_name,
-           filesystem_path,
-           render_view_host(),
-           &path,
-           &error_))
+      filesystem_name,
+      filesystem_path,
+      render_view_host_,
+      &path,
+      &error_))
     return false;
 
   image_writer::OperationManager::Get(GetProfile())->StartWriteFromFile(

@@ -58,8 +58,10 @@ void OperationManager::Shutdown() {
 void OperationManager::StartWriteFromUrl(
     const ExtensionId& extension_id,
     GURL url,
+    content::RenderViewHost* rvh,
     const std::string& hash,
-    const std::string& device_path,
+    bool saveImageAsDownload,
+    const std::string& storage_unit_id,
     const Operation::StartWriteCallback& callback) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
@@ -70,10 +72,11 @@ void OperationManager::StartWriteFromUrl(
   scoped_refptr<Operation> operation(
       new WriteFromUrlOperation(weak_factory_.GetWeakPtr(),
                                 extension_id,
-                                profile_->GetRequestContext(),
+                                rvh,
                                 url,
                                 hash,
-                                device_path));
+                                saveImageAsDownload,
+                                storage_unit_id));
   operations_[extension_id] = operation;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -84,7 +87,7 @@ void OperationManager::StartWriteFromUrl(
 void OperationManager::StartWriteFromFile(
     const ExtensionId& extension_id,
     const base::FilePath& path,
-    const std::string& device_path,
+    const std::string& storage_unit_id,
     const Operation::StartWriteCallback& callback) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
@@ -92,8 +95,11 @@ void OperationManager::StartWriteFromFile(
     return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 
-  scoped_refptr<Operation> operation(new WriteFromFileOperation(
-      weak_factory_.GetWeakPtr(), extension_id, path, device_path));
+  scoped_refptr<Operation> operation(
+      new WriteFromFileOperation(weak_factory_.GetWeakPtr(),
+                                 extension_id,
+                                 path,
+                                 storage_unit_id));
   operations_[extension_id] = operation;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -119,7 +125,7 @@ void OperationManager::CancelWrite(
 
 void OperationManager::DestroyPartitions(
     const ExtensionId& extension_id,
-    const std::string& device_path,
+    const std::string& storage_unit_id,
     const Operation::StartWriteCallback& callback) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
@@ -127,8 +133,10 @@ void OperationManager::DestroyPartitions(
     return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 
-  scoped_refptr<Operation> operation(new DestroyPartitionsOperation(
-      weak_factory_.GetWeakPtr(), extension_id, device_path));
+  scoped_refptr<Operation> operation(
+      new DestroyPartitionsOperation(weak_factory_.GetWeakPtr(),
+                                     extension_id,
+                                     storage_unit_id));
   operations_[extension_id] = operation;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -140,6 +148,7 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
                                   image_writer_api::Stage stage,
                                   int progress) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(2) << "progress - " << stage << " at " << progress << "%";
 
   image_writer_api::ProgressInfo info;
   info.stage = stage;

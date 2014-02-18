@@ -15,27 +15,25 @@ using content::BrowserThread;
 WriteFromFileOperation::WriteFromFileOperation(
     base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
-    const base::FilePath& user_file_path,
-    const std::string& device_path)
-    : Operation(manager, extension_id, device_path) {
-  image_path_ = user_file_path;
+    const base::FilePath& path,
+    const std::string& storage_unit_id)
+  : Operation(manager, extension_id, storage_unit_id) {
+    image_path_ = path;
 }
 
-WriteFromFileOperation::~WriteFromFileOperation() {}
+WriteFromFileOperation::~WriteFromFileOperation() {
+}
 
-void WriteFromFileOperation::StartImpl() {
+void WriteFromFileOperation::Start() {
+  DVLOG(1) << "Starting file-to-usb write of " << image_path_.value()
+           << " to " << storage_unit_id_;
+
   if (!base::PathExists(image_path_) || base::DirectoryExists(image_path_)) {
-    DLOG(ERROR) << "Source must exist and not be a directory.";
     Error(error::kImageInvalid);
     return;
   }
 
-  Unzip(base::Bind(
-      &WriteFromFileOperation::Write,
-      this,
-      base::Bind(&WriteFromFileOperation::VerifyWrite,
-                 this,
-                 base::Bind(&WriteFromFileOperation::Finish, this))));
+  WriteStart();
 }
 
 }  // namespace image_writer

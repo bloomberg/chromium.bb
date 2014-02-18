@@ -28,37 +28,34 @@ using testing::AtLeast;
 using testing::Gt;
 using testing::Lt;
 
-// This class gives us a generic Operation with the ability to set or inspect
-// the current path to the image file.
+// This class gives us access to the protected methods of Operation so that we
+// can call them directly.  It also allows us to selectively disable some
+// phases.
 class OperationForTest : public Operation {
  public:
-  OperationForTest(base::WeakPtr<OperationManager> manager_,
+  OperationForTest(base::WeakPtr<OperationManager> manager,
                    const ExtensionId& extension_id,
-                   const std::string& device_path)
-      : Operation(manager_, extension_id, device_path) {}
+                   const std::string& storage_unit_id)
+      : Operation(manager, extension_id, storage_unit_id) {}
 
-  virtual void StartImpl() OVERRIDE {}
-
-  // Expose internal stages for testing.
-  void Unzip(const base::Closure& continuation) {
-    Operation::Unzip(continuation);
+  virtual void Start() OVERRIDE {
   }
 
-  void Write(const base::Closure& continuation) {
-    Operation::Write(continuation);
+  void UnzipStart(scoped_ptr<base::FilePath> zip_file) {
+    Operation::UnzipStart(zip_file.Pass());
   }
 
-  void VerifyWrite(const base::Closure& continuation) {
-    Operation::VerifyWrite(continuation);
+  void WriteStart() {
+    Operation::WriteStart();
   }
 
-  // Helpers to set-up state for intermediate stages.
-  void SetImagePath(const base::FilePath image_path) {
-    image_path_ = image_path;
+  void VerifyWriteStart() {
+    Operation::VerifyWriteStart();
   }
 
-  base::FilePath GetImagePath() { return image_path_; }
-
+  void Finish() {
+    Operation::Finish();
+  }
  private:
   virtual ~OperationForTest() {};
 };
@@ -69,189 +66,78 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
     ImageWriterUnitTestBase::SetUp();
 
     // Create the zip file.
-    base::FilePath image_dir = temp_dir_.path().AppendASCII("zip");
-    ASSERT_TRUE(base::CreateDirectory(image_dir));
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(image_dir, &image_path_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                               &image_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&zip_file_));
 
-    FillFile(image_path_, kImagePattern, kTestFileSize);
+    scoped_ptr<char[]> buffer(new char[kTestFileSize]);
+    memset(buffer.get(), kImagePattern, kTestFileSize);
+    file_util::WriteFile(image_file_, buffer.get(), kTestFileSize);
 
-    zip_file_ = temp_dir_.path().AppendASCII("test_image.zip");
-    ASSERT_TRUE(zip::Zip(image_dir, zip_file_, true));
+    zip::Zip(temp_dir_.path(), zip_file_, true);
   }
 
   virtual void TearDown() OVERRIDE {
     ImageWriterUnitTestBase::TearDown();
   }
 
-  base::FilePath image_path_;
+  base::ScopedTempDir temp_dir_;
+  base::FilePath image_file_;
   base::FilePath zip_file_;
-
-  MockOperationManager manager_;
 };
 
 } // namespace
 
-TEST_F(ImageWriterOperationTest, UnzipNonZipFile) {
-  scoped_refptr<OperationForTest> operation(
-      new OperationForTest(manager_.AsWeakPtr(),
-                           kDummyExtensionId,
-                           test_device_path_.AsUTF8Unsafe()));
-
-  EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
-
-  operation->SetImagePath(test_image_path_);
-
-  operation->Start();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &OperationForTest::Unzip, operation, base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(ImageWriterOperationTest, UnzipZipFile) {
-  scoped_refptr<OperationForTest> operation(
-      new OperationForTest(manager_.AsWeakPtr(),
-                           kDummyExtensionId,
-                           test_device_path_.AsUTF8Unsafe()));
-
-  EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_UNZIP, _))
-      .Times(AtLeast(1));
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_UNZIP, 0))
-      .Times(AtLeast(1));
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_UNZIP, 100))
-      .Times(AtLeast(1));
-
-  operation->SetImagePath(zip_file_);
-
-  operation->Start();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &OperationForTest::Unzip, operation, base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(base::ContentsEqual(image_path_, operation->GetImagePath()));
-}
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Chrome OS tests don't actually write to the disk because that's handled by
-// the DBUS process.
-TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
+// Tests a successful unzip.
+TEST_F(ImageWriterOperationTest, Unzip) {
+  MockOperationManager manager;
 
   scoped_refptr<OperationForTest> operation(
-      new OperationForTest(manager_.AsWeakPtr(),
+      new OperationForTest(manager.AsWeakPtr(),
                            kDummyExtensionId,
                            test_device_path_.AsUTF8Unsafe()));
 
-  EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
-      .Times(AtLeast(1));
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 0))
-      .Times(AtLeast(1));
-  EXPECT_CALL(manager_,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 100))
-      .Times(AtLeast(1));
+  scoped_ptr<base::FilePath> zip_file(new base::FilePath(zip_file_));
 
-  operation->SetImagePath(test_image_path_);
+  // At least one progress report > 0% and < 100%.
+  EXPECT_CALL(manager, OnProgress(kDummyExtensionId,
+                                  image_writer_api::STAGE_UNZIP,
+                                  Lt(100))).Times(AtLeast(1));
+  // At least one progress report at 100%.
+  EXPECT_CALL(manager, OnProgress(kDummyExtensionId,
+                                  image_writer_api::STAGE_UNZIP,
+                                  100)).Times(AtLeast(1));
+  // At least one progress report at 0%.
+  EXPECT_CALL(manager, OnProgress(kDummyExtensionId,
+                                  image_writer_api::STAGE_UNZIP,
+                                  0)).Times(AtLeast(1));
+  // Any number of additional progress calls in later stages.
+  EXPECT_CALL(manager, OnProgress(kDummyExtensionId,
+                                  Gt(image_writer_api::STAGE_UNZIP),
+                                  _)).Times(AnyNumber());
+  // One completion call.
+  EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(1);
+  // No errors
+  EXPECT_CALL(manager, OnError(_, _, _, _)).Times(0);
 
-  operation->Start();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &OperationForTest::Write, operation, base::Bind(&base::DoNothing)));
+  content::BrowserThread::PostTask(content::BrowserThread::FILE,
+                                   FROM_HERE,
+                                   base::Bind(&OperationForTest::UnzipStart,
+                                              operation,
+                                              base::Passed(&zip_file)));
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(base::ContentsEqual(test_image_path_, test_device_path_));
+  EXPECT_TRUE(base::ContentsEqual(image_file_, test_device_path_));
 }
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Chrome OS doesn't support verification in the ImageBurner, so these two tests
-// are skipped.
-
-TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
-  scoped_refptr<OperationForTest> operation(
-      new OperationForTest(manager_.AsWeakPtr(),
-                           kDummyExtensionId,
-                           test_device_path_.AsUTF8Unsafe()));
-
-  EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
-      .Times(AtLeast(1));
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 0))
-      .Times(AtLeast(1));
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
-      .Times(AtLeast(1));
-
-  FillFile(test_device_path_, kImagePattern, kTestFileSize);
-  operation->SetImagePath(test_image_path_);
-
-  operation->Start();
-  content::BrowserThread::PostTask(content::BrowserThread::FILE,
-                                   FROM_HERE,
-                                   base::Bind(&OperationForTest::VerifyWrite,
-                                              operation,
-                                              base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
-  scoped_refptr<OperationForTest> operation(
-      new OperationForTest(manager_.AsWeakPtr(),
-                           kDummyExtensionId,
-                           test_device_path_.AsUTF8Unsafe()));
-
-  EXPECT_CALL(
-      manager_,
-      OnError(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _, _))
-      .Times(1);
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
-      .Times(0);
-
-  FillFile(test_device_path_, kDevicePattern, kTestFileSize);
-  operation->SetImagePath(test_image_path_);
-
-  operation->Start();
-  content::BrowserThread::PostTask(content::BrowserThread::FILE,
-                                   FROM_HERE,
-                                   base::Bind(&OperationForTest::VerifyWrite,
-                                              operation,
-                                              base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-}
-#endif
-
-// Tests that on creation the operation has the expected state.
 TEST_F(ImageWriterOperationTest, Creation) {
+  MockOperationManager manager;
   scoped_refptr<Operation> op(
-      new OperationForTest(manager_.AsWeakPtr(),
+      new OperationForTest(manager.AsWeakPtr(),
                            kDummyExtensionId,
                            test_device_path_.AsUTF8Unsafe()));
 

@@ -18,11 +18,18 @@ DestroyPartitionsOperation::DestroyPartitionsOperation(
     base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
     const std::string& storage_unit_id)
-    : Operation(manager, extension_id, storage_unit_id) {}
+    : Operation(manager, extension_id, storage_unit_id) {
+  verify_write_ = false;
+}
 
 DestroyPartitionsOperation::~DestroyPartitionsOperation() {}
 
-void DestroyPartitionsOperation::StartImpl() {
+void DestroyPartitionsOperation::Start() {
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    Error(error::kTempDirError);
+    return;
+  }
+
   if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_)) {
     Error(error::kTempFileError);
     return;
@@ -37,7 +44,7 @@ void DestroyPartitionsOperation::StartImpl() {
     return;
   }
 
-  Write(base::Bind(&DestroyPartitionsOperation::Finish, this));
+  WriteStart();
 }
 
 }  // namespace image_writer

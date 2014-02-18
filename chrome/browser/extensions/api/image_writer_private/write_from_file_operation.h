@@ -15,9 +15,9 @@ class WriteFromFileOperation : public Operation {
  public:
   WriteFromFileOperation(base::WeakPtr<OperationManager> manager,
                          const ExtensionId& extension_id,
-                         const base::FilePath& user_file_path,
+                         const base::FilePath& path,
                          const std::string& storage_unit_id);
-  virtual void StartImpl() OVERRIDE;
+  virtual void Start() OVERRIDE;
 
  private:
   virtual ~WriteFromFileOperation();

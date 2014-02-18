@@ -31,56 +31,49 @@ void ClearImageBurner() {
 
 }  // namespace
 
-void Operation::Write(const base::Closure& continuation) {
+void Operation::WriteStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SetStage(image_writer_api::STAGE_WRITE);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Operation::StartWriteOnUIThread, this, continuation));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&Operation::StartWriteOnUIThread, this));
 
   AddCleanUpFunction(base::Bind(&ClearImageBurner));
 }
 
-void Operation::VerifyWrite(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // No verification is available in Chrome OS currently.
-  continuation.Run();
-}
-
-void Operation::StartWriteOnUIThread(const base::Closure& continuation) {
+void Operation::StartWriteOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "Starting burn.";
 
   ImageBurnerClient* burner =
       chromeos::DBusThreadManager::Get()->GetImageBurnerClient();
 
   burner->SetEventHandlers(
-      base::Bind(&Operation::OnBurnFinished, this, continuation),
+      base::Bind(&Operation::OnBurnFinished, this),
       base::Bind(&Operation::OnBurnProgress, this));
 
   burner->BurnImage(image_path_.value(),
-                    device_path_.value(),
+                    storage_unit_id_,
                     base::Bind(&Operation::OnBurnError, this));
 }
 
-void Operation::OnBurnFinished(const base::Closure& continuation,
-                               const std::string& target_path,
-                               bool success,
-                               const std::string& error) {
+void Operation::OnBurnFinished(const std::string& target_path,
+                    bool success,
+                    const std::string& error) {
+  DVLOG(1) << "Burn finished: " << success;
+
   if (success) {
     SetProgress(kProgressComplete);
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
+    Finish();
   } else {
-    DLOG(ERROR) << "Error encountered while burning: " << error;
-    Error(error::kChromeOSImageBurnerError);
+    Error(error);
   }
 }
 
 void Operation::OnBurnProgress(const std::string& target_path,
-                               int64 num_bytes_burnt,
-                               int64 total_size) {
+                    int64 num_bytes_burnt,
+                    int64 total_size) {
   int progress = kProgressComplete * num_bytes_burnt / total_size;
   SetProgress(progress);
 }

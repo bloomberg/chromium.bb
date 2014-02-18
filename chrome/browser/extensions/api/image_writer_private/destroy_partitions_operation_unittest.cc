@@ -12,7 +12,6 @@ namespace image_writer {
 
 using testing::_;
 using testing::AnyNumber;
-using testing::AtLeast;
 
 namespace {
 
@@ -22,7 +21,7 @@ class ImageWriterDestroyPartitionsOperationTest
 
 // Tests that the DestroyPartitionsOperation can successfully zero the first
 // kPartitionTableSize bytes of an image.
-TEST_F(ImageWriterDestroyPartitionsOperationTest, DestroyPartitionsEndToEnd) {
+TEST_F(ImageWriterDestroyPartitionsOperationTest, DestroyPartitions) {
   MockOperationManager manager;
   base::RunLoop loop;
 
@@ -32,15 +31,10 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, DestroyPartitionsEndToEnd) {
                                      test_device_path_.AsUTF8Unsafe()));
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  EXPECT_CALL(manager, OnProgress(kDummyExtensionId, _, _)).Times(0);
   EXPECT_CALL(manager, OnProgress(kDummyExtensionId,
                                   image_writer_api::STAGE_WRITE,
                                   _)).Times(AnyNumber());
-  EXPECT_CALL(manager,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 0))
-      .Times(AtLeast(1));
-  EXPECT_CALL(manager,
-              OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 100))
-      .Times(AtLeast(1));
   EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(1);
   EXPECT_CALL(manager, OnError(kDummyExtensionId, _, _, _)).Times(0);
 #else

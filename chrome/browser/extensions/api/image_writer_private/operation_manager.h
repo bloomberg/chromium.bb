@@ -45,14 +45,16 @@ class OperationManager
   // Starts a WriteFromUrl operation.
   void StartWriteFromUrl(const ExtensionId& extension_id,
                          GURL url,
+                         content::RenderViewHost* rvh,
                          const std::string& hash,
-                         const std::string& device_path,
+                         bool saveImageAsDownload,
+                         const std::string& storage_unit_id,
                          const Operation::StartWriteCallback& callback);
 
   // Starts a WriteFromFile operation.
   void StartWriteFromFile(const ExtensionId& extension_id,
                           const base::FilePath& path,
-                          const std::string& device_path,
+                          const std::string& storage_unit_id,
                           const Operation::StartWriteCallback& callback);
 
   // Cancels the extensions current operation if any.
@@ -61,7 +63,7 @@ class OperationManager
 
   // Starts a write that removes the partition table.
   void DestroyPartitions(const ExtensionId& extension_id,
-                         const std::string& device_path,
+                         const std::string& storage_unit_id,
                          const Operation::StartWriteCallback& callback);
 
   // Callback for progress events.

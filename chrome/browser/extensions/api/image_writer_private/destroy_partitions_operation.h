@@ -20,10 +20,11 @@ class DestroyPartitionsOperation : public Operation {
   DestroyPartitionsOperation(base::WeakPtr<OperationManager> manager,
                              const ExtensionId& extension_id,
                              const std::string& storage_unit_id);
-  virtual void StartImpl() OVERRIDE;
+  virtual void Start() OVERRIDE;
 
  private:
   virtual ~DestroyPartitionsOperation();
+  base::ScopedTempDir temp_dir_;
 };
 
 }  // namespace image_writer
