@@ -5,18 +5,13 @@
 package org.chromium.chromoting;
 
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /** Describes the appearance and behavior of each host list entry. */
-class HostListAdapter extends ArrayAdapter<JSONObject> {
+class HostListAdapter extends ArrayAdapter<HostInfo> {
     /** Color to use for hosts that are online. */
     private static final String HOST_COLOR_ONLINE = "green";
 
@@ -26,8 +21,8 @@ class HostListAdapter extends ArrayAdapter<JSONObject> {
     private Chromoting mChromoting;
 
     /** Constructor. */
-    public HostListAdapter(Chromoting chromoting, int textViewResourceId) {
-        super(chromoting, textViewResourceId);
+    public HostListAdapter(Chromoting chromoting, int textViewResourceId, HostInfo[] hosts) {
+        super(chromoting, textViewResourceId, hosts);
         mChromoting = chromoting;
     }
 
@@ -36,32 +31,24 @@ class HostListAdapter extends ArrayAdapter<JSONObject> {
     public View getView(int position, View convertView, ViewGroup parent) {
         TextView target = (TextView)super.getView(position, convertView, parent);
 
-        try {
-            final JSONObject host = getItem(position);
-            String status = host.getString("status");
-            boolean online = status.equals("ONLINE");
-            target.setText(Html.fromHtml(host.getString("hostName") + " (<font color=\"" +
-                    (online ? HOST_COLOR_ONLINE : HOST_COLOR_OFFLINE) + "\">" + status +
-                    "</font>)"));
+        final HostInfo host = getItem(position);
 
-            if (online) {
-                target.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mChromoting.connectToHost(host);
-                        }
-                });
-            } else {
-                // Disallow interaction with this entry.
-                target.setEnabled(false);
-            }
-        } catch (JSONException ex) {
-            Log.w("hostlist", ex);
-            Toast.makeText(mChromoting, mChromoting.getString(R.string.error_displaying_host),
-                    Toast.LENGTH_LONG).show();
+        // TODO(lambroslambrou): Don't use hardcoded ONLINE/OFFLINE strings here.
+        // See http://crbug.com/331103
+        target.setText(Html.fromHtml(host.name + " (<font color=\"" +
+                (host.isOnline ? HOST_COLOR_ONLINE : HOST_COLOR_OFFLINE) + "\">" +
+                (host.isOnline ? "ONLINE" : "OFFLINE") + "</font>)"));
 
-            // Close the application.
-            mChromoting.finish();
+        if (host.isOnline) {
+            target.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mChromoting.connectToHost(host);
+                    }
+            });
+        } else {
+            // Disallow interaction with this entry.
+            target.setEnabled(false);
         }
 
         return target;

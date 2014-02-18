@@ -16,8 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,24 +25,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.chromium.chromoting.jni.JniInterface;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.Arrays;
 
 /**
  * The user interface for querying and displaying a user's host list from the directory server. It
  * also requests and renews authentication tokens using the system account manager.
  */
-public class Chromoting extends Activity implements JniInterface.ConnectionListener {
+public class Chromoting extends Activity implements JniInterface.ConnectionListener,
+        AccountManagerCallback<Bundle>, HostListLoader.Callback {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -52,22 +42,17 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting " +
             "https://www.googleapis.com/auth/googletalk";
 
-    /** Path from which to download a user's host list JSON object. */
-    private static final String HOST_LIST_PATH =
-            "https://www.googleapis.com/chromoting/v1/@me/hosts?key=";
-
-    /** Lock to protect |mAccount| and |mToken|. */
-    // TODO(lambroslambrou): |mHosts| needs to be protected as well.
-    private Object mLock = new Object();
-
     /** User's account details. */
     private Account mAccount;
 
     /** Account auth token. */
     private String mToken;
 
+    /** Helper for fetching the host list. */
+    private HostListLoader mHostListLoader;
+
     /** List of hosts. */
-    private JSONArray mHosts;
+    private HostInfo[] mHosts;
 
     /** Refresh button. */
     private MenuItem mRefreshButton;
@@ -81,11 +66,15 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Host list as it appears to the user. */
     private ListView mList;
 
-    /** Callback handler to be used for network operations. */
-    private Handler mNetwork;
-
     /** Dialog for reporting connection progress. */
     private ProgressDialog mProgressIndicator;
+
+    /**
+     * This is set when receiving an authentication error from the HostListLoader. If that occurs,
+     * this flag is set and a fresh authentication token is fetched from the AccountsService, and
+     * used to request the host list a second time.
+     */
+    boolean mAlreadyTried;
 
     /**
      * Called when the activity is first created. Loads the native library and requests an
@@ -96,6 +85,9 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+        mAlreadyTried = false;
+        mHostListLoader = new HostListLoader();
+
         // Get ahold of our view widgets.
         mGreeting = (TextView)findViewById(R.id.hostList_greeting);
         mList = (ListView)findViewById(R.id.hostList_chooser);
@@ -103,34 +95,20 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         // Bring native components online.
         JniInterface.loadLibrary(this);
 
-        // Thread responsible for downloading/displaying host list.
-        HandlerThread thread = new HandlerThread("auth_callback");
-        thread.start();
-        mNetwork = new Handler(thread.getLooper());
-
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
         if (prefs.contains("account_name") && prefs.contains("account_type")) {
             // Perform authentication using saved account selection.
             mAccount = new Account(prefs.getString("account_name", null),
                     prefs.getString("account_type", null));
-            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this,
-                    new HostListDirectoryGrabber(this), mNetwork);
+            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
             if (mAccountSwitcher != null) {
                 mAccountSwitcher.setTitle(mAccount.name);
             }
         } else {
             // Request auth callback once user has chosen an account.
             Log.i("auth", "Requesting auth token from system");
-            AccountManager.get(this).getAuthTokenByFeatures(
-                    ACCOUNT_TYPE,
-                    TOKEN_SCOPE,
-                    null,
-                    this,
-                    null,
-                    null,
-                    new HostListDirectoryGrabber(this),
-                    mNetwork
-                );
+            AccountManager.get(this).getAuthTokenByFeatures(ACCOUNT_TYPE, TOKEN_SCOPE, null, this,
+                    null, null, this, null);
         }
     }
 
@@ -169,210 +147,131 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        mAlreadyTried = false;
         if (item == mAccountSwitcher) {
             // The account switcher triggers a listing of all available accounts.
-            AccountManager.get(this).getAuthTokenByFeatures(
-                    ACCOUNT_TYPE,
-                    TOKEN_SCOPE,
-                    null,
-                    this,
-                    null,
-                    null,
-                    new HostListDirectoryGrabber(this),
-                    mNetwork
-                );
-        }
-        else {
+            AccountManager.get(this).getAuthTokenByFeatures(ACCOUNT_TYPE, TOKEN_SCOPE, null, this,
+                    null, null, this, null);
+        } else {
             // The refresh button simply makes use of the currently-chosen account.
-            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this,
-                    new HostListDirectoryGrabber(this), mNetwork);
+            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
         }
 
         return true;
     }
 
     /** Called when the user taps on a host entry. */
-    public void connectToHost(JSONObject host) {
-        try {
-            synchronized (mLock) {
-                JniInterface.connectToHost(mAccount.name, mToken, host.getString("jabberId"),
-                        host.getString("hostId"), host.getString("publicKey"), this);
-            }
-        } catch (JSONException ex) {
-            Log.w("host", ex);
+    public void connectToHost(HostInfo host) {
+        if (host.jabberId.isEmpty() || host.publicKey.isEmpty()) {
+            // TODO(lambroslambrou): If these keys are not present, treat this as a connection
+            // failure and reload the host list (see crbug.com/304719).
             Toast.makeText(this, getString(R.string.error_reading_host),
                     Toast.LENGTH_LONG).show();
-            // Close the application.
-            finish();
+            return;
         }
+
+        JniInterface.connectToHost(mAccount.name, mToken, host.jabberId, host.id, host.publicKey,
+                this);
     }
 
-    /**
-     * Processes the authentication token once the system provides it. Once in possession of such a
-     * token, attempts to request a host list from the directory server. In case of a bad response,
-     * this is retried once in case the system's cached auth token had expired.
-     */
-    private class HostListDirectoryGrabber implements AccountManagerCallback<Bundle> {
-        // TODO(lambroslambrou): Refactor this class to provide async interface usable on the UI
-        // thread.
-
-        /** Whether authentication has already been attempted. */
-        private boolean mAlreadyTried;
-
-        /** Communication with the screen. */
-        private Activity mUi;
-
-        /** Constructor. */
-        public HostListDirectoryGrabber(Activity ui) {
-            mAlreadyTried = false;
-            mUi = ui;
+    @Override
+    public void run(AccountManagerFuture<Bundle> future) {
+        Log.i("auth", "User finished with auth dialogs");
+        Bundle result = null;
+        String explanation = null;
+        try {
+            // Here comes our auth token from the Android system.
+            result = future.getResult();
+        } catch (OperationCanceledException ex) {
+            explanation = getString(R.string.error_auth_canceled);
+        } catch (AuthenticatorException ex) {
+            explanation = getString(R.string.error_no_accounts);
+        } catch (IOException ex) {
+            explanation = getString(R.string.error_bad_connection);
         }
 
-        /**
-         * Retrieves the host list from the directory server. This method performs
-         * network operations and must be run an a non-UI thread.
-         */
-        @Override
-        public void run(AccountManagerFuture<Bundle> future) {
-            Log.i("auth", "User finished with auth dialogs");
-            try {
-                // Here comes our auth token from the Android system.
-                Bundle result = future.getResult();
-                String accountName = result.getString(AccountManager.KEY_ACCOUNT_NAME);
-                String accountType = result.getString(AccountManager.KEY_ACCOUNT_TYPE);
-                String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
-                Log.i("auth", "Received an auth token from system");
-
-                synchronized (mLock) {
-                    mAccount = new Account(accountName, accountType);
-                    mToken = authToken;
-                    getPreferences(MODE_PRIVATE).edit().putString("account_name", accountName).
-                            putString("account_type", accountType).apply();
-                }
-
-                // Send our HTTP request to the directory server.
-                URLConnection link =
-                        new URL(HOST_LIST_PATH + JniInterface.nativeGetApiKey()).openConnection();
-                link.addRequestProperty("client_id", JniInterface.nativeGetClientId());
-                link.addRequestProperty("client_secret", JniInterface.nativeGetClientSecret());
-                link.setRequestProperty("Authorization", "OAuth " + authToken);
-
-                // Listen for the server to respond.
-                StringBuilder response = new StringBuilder();
-                Scanner incoming = new Scanner(link.getInputStream());
-                Log.i("auth", "Successfully authenticated to directory server");
-                while (incoming.hasNext()) {
-                    response.append(incoming.nextLine());
-                }
-                incoming.close();
-
-                // Interpret what the directory server told us.
-                JSONObject data = new JSONObject(String.valueOf(response)).getJSONObject("data");
-                mHosts = sortHosts(data.getJSONArray("items"));
-                Log.i("hostlist", "Received host listing from directory server");
-            } catch (RuntimeException ex) {
-                // Make sure any other failure is reported to the user (as an unknown error).
-                throw ex;
-            } catch (Exception ex) {
-                // Assemble error message to display to the user.
-                String explanation = getString(R.string.error_unknown);
-                if (ex instanceof OperationCanceledException) {
-                    explanation = getString(R.string.error_auth_canceled);
-                } else if (ex instanceof AuthenticatorException) {
-                    explanation = getString(R.string.error_no_accounts);
-                } else if (ex instanceof IOException) {
-                    if (!mAlreadyTried) {
-                        // This was our first connection attempt.
-
-                        synchronized (mLock) {
-                            if (mAccount != null) {
-                                // We got an account, but couldn't log into it. We'll retry in case
-                                // the system's cached authentication token had already expired.
-                                AccountManager authenticator = AccountManager.get(mUi);
-                                mAlreadyTried = true;
-
-                                Log.w("auth", "Requesting renewal of rejected auth token");
-                                authenticator.invalidateAuthToken(mAccount.type, mToken);
-                                mToken = null;
-                                authenticator.getAuthToken(
-                                        mAccount, TOKEN_SCOPE, null, mUi, this, mNetwork);
-
-                                // We're not in an error state *yet*.
-                                return;
-                            }
-                        }
-
-                        // We didn't even get an account, so the auth server is likely unreachable.
-                        explanation = getString(R.string.error_bad_connection);
-                    } else {
-                        // Authentication truly failed.
-                        Log.e("auth", "Fresh auth token was also rejected");
-                        explanation = getString(R.string.error_auth_failed);
-                    }
-                } else if (ex instanceof JSONException) {
-                    explanation = getString(R.string.error_unexpected_response);
-                }
-
-                mHosts = null;
-                Log.w("auth", ex);
-                Toast.makeText(mUi, explanation, Toast.LENGTH_LONG).show();
-            }
-
-            // Share our findings with the user.
-            runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateUi();
-                    }
-            });
+        if (result == null) {
+            Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            return;
         }
 
-        private JSONArray sortHosts(JSONArray hosts) {
-            List<JSONObject> hostList = new ArrayList<JSONObject>();
-            for (int i = 0; i < hosts.length(); i++) {
-                try {
-                    hostList.add(hosts.getJSONObject(i));
-                } catch (JSONException ex) {
-                    // Ignore non-object entries.
-                }
-            }
+        String accountName = result.getString(AccountManager.KEY_ACCOUNT_NAME);
+        String accountType = result.getString(AccountManager.KEY_ACCOUNT_TYPE);
+        String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
+        Log.i("auth", "Received an auth token from system");
 
-            Comparator<JSONObject> compareHosts = new Comparator<JSONObject>() {
-                public int compare(JSONObject a, JSONObject b) {
-                    try {
-                        boolean aOnline = a.getString("status").equals("ONLINE");
-                        boolean bOnline = b.getString("status").equals("ONLINE");
-                        if (aOnline && !bOnline) {
-                            return -1;
-                        }
-                        if (bOnline && !aOnline) {
-                            return 1;
-                        }
-                        String aName = a.getString("hostName").toUpperCase();
-                        String bName = b.getString("hostName").toUpperCase();
-                        return aName.compareTo(bName);
-                    } catch (JSONException ex) {
-                        return 0;
-                    }
-                }
-            };
-            Collections.sort(hostList, compareHosts);
+        mAccount = new Account(accountName, accountType);
+        mToken = authToken;
+        getPreferences(MODE_PRIVATE).edit().putString("account_name", accountName).
+                putString("account_type", accountType).apply();
 
-            JSONArray result = new JSONArray(hostList);
-            return result;
+        mHostListLoader.retrieveHostList(authToken, this);
+    }
+
+    @Override
+    public void onHostListReceived(HostInfo[] hosts) {
+        // Store a copy of the array, so that it can't be mutated by the HostListLoader. HostInfo
+        // is an immutable type, so a shallow copy of the array is sufficient here.
+        mHosts = Arrays.copyOf(hosts, hosts.length);
+        updateUi();
+    }
+
+    @Override
+    public void onError(HostListLoader.Error error) {
+        String explanation = null;
+        switch (error) {
+            case AUTH_FAILED:
+                break;
+            case NETWORK_ERROR:
+                explanation = getString(R.string.error_bad_connection);
+                break;
+            case SERVICE_UNAVAILABLE:
+            case UNEXPECTED_RESPONSE:
+                explanation = getString(R.string.error_unexpected_response);
+                break;
+            case UNKNOWN:
+                explanation = getString(R.string.error_unknown);
+                break;
+            default:
+                // Unreachable.
+                return;
+        }
+
+        if (explanation != null) {
+            Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // This is the AUTH_FAILED case.
+
+        if (!mAlreadyTried) {
+            // This was our first connection attempt.
+
+            AccountManager authenticator = AccountManager.get(this);
+            mAlreadyTried = true;
+
+            Log.w("auth", "Requesting renewal of rejected auth token");
+            authenticator.invalidateAuthToken(mAccount.type, mToken);
+            mToken = null;
+            authenticator.getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
+
+            // We're not in an error state *yet*.
+            return;
+        } else {
+            // Authentication truly failed.
+            Log.e("auth", "Fresh auth token was also rejected");
+            explanation = getString(R.string.error_auth_failed);
+            Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
         }
     }
 
     /**
      * Updates the infotext and host list display.
-     * This method affects the UI and must be run on the main thread.
      */
     private void updateUi() {
-        synchronized (mLock) {
-            mRefreshButton.setEnabled(mAccount != null);
-            if (mAccount != null) {
-                mAccountSwitcher.setTitle(mAccount.name);
-            }
+        mRefreshButton.setEnabled(mAccount != null);
+        if (mAccount != null) {
+            mAccountSwitcher.setTitle(mAccount.name);
         }
 
         if (mHosts == null) {
@@ -383,23 +282,9 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         mGreeting.setText(getString(R.string.inst_host_list));
 
-        ArrayAdapter<JSONObject> displayer = new HostListAdapter(this, R.layout.host);
+        ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, R.layout.host, mHosts);
         Log.i("hostlist", "About to populate host list display");
-        try {
-            int index = 0;
-            while (!mHosts.isNull(index)) {
-                displayer.add(mHosts.getJSONObject(index));
-                ++index;
-            }
-            mList.setAdapter(displayer);
-        } catch (JSONException ex) {
-            Log.w("hostlist", ex);
-            Toast.makeText(this, getString(R.string.error_cataloging_hosts),
-                    Toast.LENGTH_LONG).show();
-
-            // Close the application.
-            finish();
-        }
+        mList.setAdapter(displayer);
     }
 
     @Override
