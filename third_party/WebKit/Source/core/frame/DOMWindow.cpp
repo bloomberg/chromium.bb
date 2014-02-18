@@ -785,7 +785,7 @@ Storage* DOMWindow::sessionStorage(ExceptionState& exceptionState) const
     if (!page)
         return 0;
 
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
+    OwnPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
         exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
@@ -828,7 +828,7 @@ Storage* DOMWindow::localStorage(ExceptionState& exceptionState) const
     if (!host || !host->settings().localStorageEnabled())
         return 0;
 
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
+    OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
         exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;

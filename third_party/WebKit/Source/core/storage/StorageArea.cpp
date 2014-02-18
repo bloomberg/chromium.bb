@@ -47,8 +47,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(StorageArea);
-
 StorageArea::StorageArea(PassOwnPtr<blink::WebStorageArea> storageArea, StorageType storageType)
     : m_storageArea(storageArea)
     , m_storageType(storageType)

@@ -26,7 +26,6 @@
 #ifndef StorageNamespace_h
 #define StorageNamespace_h
 
-#include "heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -45,9 +44,9 @@ public:
     explicit StorageNamespace(PassOwnPtr<blink::WebStorageNamespace>);
     ~StorageNamespace();
 
-    static PassOwnPtrWillBeRawPtr<StorageArea> localStorageArea(SecurityOrigin*);
+    static PassOwnPtr<StorageArea> localStorageArea(SecurityOrigin*);
 
-    PassOwnPtrWillBeRawPtr<StorageArea> storageArea(SecurityOrigin*);
+    PassOwnPtr<StorageArea> storageArea(SecurityOrigin*);
     bool isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const;
 
 private:

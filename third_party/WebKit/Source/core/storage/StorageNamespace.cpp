@@ -44,18 +44,18 @@ StorageNamespace::~StorageNamespace()
 {
 }
 
-PassOwnPtrWillBeRawPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
+PassOwnPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
 {
     ASSERT(isMainThread());
     static blink::WebStorageNamespace* localStorageNamespace = 0;
     if (!localStorageNamespace)
         localStorageNamespace = blink::Platform::current()->createLocalStorageNamespace();
-    return adoptPtrWillBeNoop(new StorageArea(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage));
+    return adoptPtr(new StorageArea(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage));
 }
 
-PassOwnPtrWillBeRawPtr<StorageArea> StorageNamespace::storageArea(SecurityOrigin* origin)
+PassOwnPtr<StorageArea> StorageNamespace::storageArea(SecurityOrigin* origin)
 {
-    return adoptPtrWillBeNoop(new StorageArea(adoptPtr(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage));
+    return adoptPtr(new StorageArea(adoptPtr(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage));
 }
 
 bool StorageNamespace::isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const
