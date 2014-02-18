@@ -166,6 +166,8 @@ bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
     return MinidumpGenerator::WriteThreadStream(thread_id, thread);
 
   size_t frame_count = [return_addresses_ count];
+  if (frame_count == 0)
+    return false;
   UntypedMDRVA memory(&writer_);
   size_t pointer_size = sizeof(uintptr_t);
   size_t frame_record_size = 2 * pointer_size;
@@ -176,7 +178,7 @@ bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
   uintptr_t sp = stack_size - pointer_size;
   uintptr_t fp = 0;
   uintptr_t lr = 0;
-  for (int current_frame = frame_count - 1;
+  for (size_t current_frame = frame_count - 1;
        current_frame > 0;
        --current_frame) {
     AppendToMemory(stack_memory.get(), sp, lr);

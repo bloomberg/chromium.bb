@@ -780,7 +780,7 @@ int BreakpadGetCrashReportCount(BreakpadRef ref) {
     Breakpad *breakpad = (Breakpad *)ref;
 
     if (breakpad) {
-       return [breakpad->CrashReportsToUpload() count];
+       return static_cast<int>([breakpad->CrashReportsToUpload() count]);
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadGetCrashReportCount() : error\n");
