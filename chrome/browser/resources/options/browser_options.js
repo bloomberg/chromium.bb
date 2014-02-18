@@ -190,6 +190,7 @@ cr.define('options', function() {
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
+        $('sync-users-section').hidden = false;
         $('profiles-section').hidden = false;
 
         var profilesList = $('profiles-list');
@@ -867,7 +868,12 @@ cr.define('options', function() {
      *     users.
      */
     updateManagesSupervisedUsers_: function(value) {
-      $('profiles-supervised-dashboard-tip').hidden = !value;
+      if (value) {
+        $('sync-users-section').hidden = false;
+        $('profiles-supervised-dashboard-tip').hidden = false;
+      } else {
+        $('profiles-supervised-dashboard-tip').hidden = true;
+      }
     },
 
     /**

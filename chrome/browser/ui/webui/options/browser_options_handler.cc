@@ -136,21 +136,6 @@ using content::Referrer;
 
 namespace options {
 
-namespace {
-
-bool ShouldShowMultiProfilesUserList(chrome::HostDesktopType desktop_type) {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS we use different UI for multi-profiles.
-  return false;
-#else
-  if (desktop_type != chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return false;
-  return profiles::IsMultipleProfilesEnabled();
-#endif
-}
-
-}  // namespace
-
 BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
@@ -563,7 +548,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
 
-  if (ShouldShowMultiProfilesUserList(helper::GetDesktopType(web_ui())))
+  if (ShouldShowMultiProfilesUserList())
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
   values->SetBoolean("profileIsManaged",
@@ -941,6 +926,20 @@ bool BrowserOptionsHandler::ShouldShowSetDefaultBrowser() {
 #endif
 }
 
+bool BrowserOptionsHandler::ShouldShowMultiProfilesUserList() {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS we use different UI for multi-profiles.
+  return false;
+#else
+  if (helper::GetDesktopType(web_ui()) != chrome::HOST_DESKTOP_TYPE_NATIVE)
+    return false;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (profile->IsGuestSession())
+    return false;
+  return profiles::IsMultipleProfilesEnabled();
+#endif
+}
+
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 #if defined(OS_MACOSX)
   ShellIntegration::DefaultWebClientState state =
@@ -1189,7 +1188,7 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {
-  if (!ShouldShowMultiProfilesUserList(helper::GetDesktopType(web_ui())))
+  if (!ShouldShowMultiProfilesUserList())
     return;
   web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
                                    *GetProfilesInfoList());

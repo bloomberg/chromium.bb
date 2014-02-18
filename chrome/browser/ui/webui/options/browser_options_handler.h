@@ -137,6 +137,9 @@ class BrowserOptionsHandler
   // Returns if the "make Chrome default browser" button should be shown.
   bool ShouldShowSetDefaultBrowser();
 
+  // Returns if profiles list should be shown on settings page.
+  bool ShouldShowMultiProfilesUserList();
+
   // Gets the current default browser state, and asynchronously reports it to
   // the WebUI page.
   void UpdateDefaultBrowserState();
