@@ -363,7 +363,7 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
       unselected_update_info.device_id, base::FilePath(),
       MediaGalleryPrefInfo::kScanResult,
       base::ASCIIToUTF16("Updated & Unselected"),
-      base::string16(), base::string16(), 0, base::Time(), 0, 0, 0);
+      base::string16(), base::string16(), 0, base::Time(), 1, 0, 0);
   EXPECT_EQ(5, dialog()->update_count());
   EXPECT_EQ(4U, controller()->GetGalleryList().size());
   const MediaGalleryPrefInfo& selected_update_info =
@@ -372,7 +372,7 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
       selected_update_info.device_id, base::FilePath(),
       MediaGalleryPrefInfo::kScanResult,
       base::ASCIIToUTF16("Updated & Selected"),
-      base::string16(), base::string16(), 0, base::Time(), 0, 0, 0);
+      base::string16(), base::string16(), 0, base::Time(), 1, 0, 0);
   EXPECT_EQ(6, dialog()->update_count());
   ASSERT_EQ(4U, controller()->GetGalleryList().size());
 

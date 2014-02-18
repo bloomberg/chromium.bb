@@ -384,8 +384,8 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
                                                     true);
   EXPECT_EQ(galleries_before + 2, gallery_prefs()->known_galleries().size());
 
-  // Run once with no scan results. "uscan" should go away, but "gscan" should
-  // be unaffected.
+  // Run once with no scan results. "uscan" should go away and "gscan" should
+  // have its scan counts updated.
   MediaFolderFinder::MediaFolderFinderResults found_folders;
   SetFindFoldersResults(true, found_folders);
 
@@ -396,7 +396,7 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
   EXPECT_EQ(galleries_before + 1, gallery_prefs()->known_galleries().size());
-  CheckFileCounts(granted_scan, 0, 2, 0);
+  CheckFileCounts(granted_scan, 0, 0, 0);
 
   MediaGalleryPrefId id =
       AddGallery("uscan", MediaGalleryPrefInfo::kScanResult, 1, 1, 1);
@@ -449,12 +449,12 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
   base::FilePath path = MakeTestFolder("auto/dir1");
   found_folders[path] = file_counts;
 
-  file_counts.audio_count = 5;
-  path = MakeTestFolder("user/dir2");
-  found_folders[path] = file_counts;
-
   file_counts.audio_count = 6;
   path = MakeTestFolder("scan");
+  found_folders[path] = file_counts;
+
+  file_counts.audio_count = 5;
+  path = MakeTestFolder("user/dir2");
   found_folders[path] = file_counts;
 
   SetFindFoldersResults(true, found_folders);
@@ -468,5 +468,17 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
   EXPECT_EQ(galleries_before + 3, gallery_prefs()->known_galleries().size());
   CheckFileCounts(auto_id, 4, 0, 0);
   CheckFileCounts(user_id, 5, 0, 0);
+  CheckFileCounts(scan_id, 6, 0, 0);
+
+  EXPECT_EQ(1U, found_folders.erase(path));
+  SetFindFoldersResults(true, found_folders);
+  SetExpectedScanResults(0 /*gallery_count*/, file_counts);
+  StartScan();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, FindFolderDestroyCount());
+  EXPECT_EQ(galleries_before + 3, gallery_prefs()->known_galleries().size());
+  CheckFileCounts(auto_id, 4, 0, 0);
+  CheckFileCounts(user_id, 0, 0, 0);
   CheckFileCounts(scan_id, 6, 0, 0);
 }

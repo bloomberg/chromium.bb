@@ -160,7 +160,9 @@ void AddScanResultsForProfile(
     if (!gallery.IsBlackListedType()) {
       MediaGalleryScanResult file_counts =
           SumFilesUnderPath(gallery.AbsolutePath(), child_folders);
-      if (!IsEmptyScanResult(file_counts) && !gallery.IsBlackListedType()) {
+      if (gallery.audio_count != file_counts.audio_count ||
+          gallery.image_count != file_counts.image_count ||
+          gallery.video_count != file_counts.video_count) {
         to_update[it->first] = file_counts;
       }
     }

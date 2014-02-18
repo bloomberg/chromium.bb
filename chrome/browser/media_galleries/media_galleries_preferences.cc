@@ -825,7 +825,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
     bool update_scan_counts =
       new_type != MediaGalleryPrefInfo::kRemovedScan &&
       new_type != MediaGalleryPrefInfo::kBlackListed &&
-      (audio_count > 0 || image_count > 0 || video_count > 0);
+      (audio_count > 0 || image_count > 0 || video_count > 0 ||
+       existing.audio_count || existing.image_count || existing.video_count);
 
     if (!update_gallery_name && !update_gallery_type &&
         !update_gallery_metadata && !update_scan_counts)
