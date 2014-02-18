@@ -276,13 +276,16 @@ def main(argv):
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
       env.getone('ARCH') == 'LINUX_X8632' or
-      RequiresNonStandardLDCommandline(inputs, output, 1)[1]):
+      RequiresNonStandardLDCommandline(inputs, output, 1)[1] or
+      env.getbool('USE_EMULATOR')):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
     # split it. For now also do not support threading non-SFI baremetal mode.
     # Non-ABI-stable pexes may have symbol naming and visibility issues that the
     # current splitting scheme doesn't account for.
     # If the link would require a non-standard command line, do not split the
     # modules because the sandboxed linker doesn't support that combination.
+    # The x86->arm emulator is very flaky when threading is used, so don't
+    # do module splitting when using it.
     env.set('SPLIT_MODULE', '1')
   else:
     modules = env.getone('SPLIT_MODULE')
