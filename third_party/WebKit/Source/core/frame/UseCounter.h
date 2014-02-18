@@ -294,7 +294,6 @@ public:
         MediaErrorEncrypted = 253,
         EventSourceURL = 254,
         WebSocketURL = 255,
-        UnsafeEvalBlocksCSSOM = 256,
         WorkerSubjectToCSP = 257,
         WorkerAllowedByChildBlockedByScript = 258,
         HTMLMediaElementControllerNotNull = 259,

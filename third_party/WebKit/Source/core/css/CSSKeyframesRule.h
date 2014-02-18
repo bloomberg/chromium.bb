@@ -36,7 +36,6 @@ namespace WebCore {
 class CSSRuleList;
 class StyleKeyframe;
 class CSSKeyframeRule;
-class ExceptionState;
 
 class StyleRuleKeyframes FINAL : public StyleRuleBase {
 public:
@@ -86,7 +85,7 @@ public:
 
     CSSRuleList* cssRules();
 
-    void insertRule(const String& rule, ExceptionState&);
+    void insertRule(const String& rule);
     void deleteRule(const String& key);
     CSSKeyframeRule* findRule(const String& key);
 

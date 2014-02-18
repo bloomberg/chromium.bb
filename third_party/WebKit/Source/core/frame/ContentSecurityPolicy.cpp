@@ -310,7 +310,7 @@ public:
 
     bool matches(const KURL&);
     bool allowInline() const { return m_allowInline; }
-    bool allowScriptEval() const { return m_allowScriptEval; }
+    bool allowEval() const { return m_allowEval; }
     bool allowNonce(const String& nonce) const { return !nonce.isNull() && m_nonces.contains(nonce); }
     bool allowHash(const SourceHashValue& hashValue) const { return m_hashes.contains(hashValue); }
     uint8_t hashAlgorithmsUsed() const { return m_hashAlgorithmsUsed; }
@@ -338,7 +338,7 @@ private:
     String m_directiveName;
     bool m_allowStar;
     bool m_allowInline;
-    bool m_allowScriptEval;
+    bool m_allowEval;
     HashSet<String> m_nonces;
     HashSet<SourceHashValue> m_hashes;
     uint8_t m_hashAlgorithmsUsed;
@@ -349,7 +349,7 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
     , m_directiveName(directiveName)
     , m_allowStar(false)
     , m_allowInline(false)
-    , m_allowScriptEval(false)
+    , m_allowEval(false)
     , m_hashAlgorithmsUsed(0)
 {
 }
@@ -730,7 +730,7 @@ void CSPSourceList::addSourceUnsafeInline()
 
 void CSPSourceList::addSourceUnsafeEval()
 {
-    m_allowScriptEval = true;
+    m_allowEval = true;
 }
 
 void CSPSourceList::addSourceNonce(const String& nonce)
@@ -858,7 +858,7 @@ public:
     }
 
     bool allowInline() const { return m_sourceList.allowInline(); }
-    bool allowScriptEval() const { return m_sourceList.allowScriptEval(); }
+    bool allowEval() const { return m_sourceList.allowEval(); }
     bool allowNonce(const String& nonce) const { return m_sourceList.allowNonce(nonce.stripWhiteSpace()); }
     bool allowHash(const SourceHashValue& hashValue) const { return m_sourceList.allowHash(hashValue); }
     bool isHashOrNoncePresent() const { return m_sourceList.isHashOrNoncePresent(); }
@@ -884,8 +884,7 @@ public:
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowScriptEval(ScriptState*, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowStyleEval(ScriptState*, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowEval(ScriptState*, ContentSecurityPolicy::ReportingStatus) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ContentSecurityPolicy::ReportingStatus) const;
 
     bool allowScriptFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
@@ -906,7 +905,6 @@ public:
     bool allowStyleHash(const SourceHashValue&) const;
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
-    const String& styleEvalDisabledErrorMessage() const { return m_styleEvalDisabledErrorMessage; }
     ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
     bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
@@ -942,7 +940,6 @@ private:
     bool checkAncestors(SourceListDirective*, Frame*) const;
 
     void setEvalDisabledErrorMessage(const String& errorMessage) { m_evalDisabledErrorMessage = errorMessage; }
-    void setStyleEvalDisabledErrorMessage(const String& errorMessage) { m_styleEvalDisabledErrorMessage = errorMessage; }
 
     bool checkEvalAndReportViolation(SourceListDirective*, const String& consoleMessage, ScriptState*) const;
     bool checkInlineAndReportViolation(SourceListDirective*, const String& consoleMessage, const String& contextURL, const WTF::OrdinalNumber& contextLine, bool isScript) const;
@@ -984,7 +981,6 @@ private:
     Vector<KURL> m_reportURIs;
 
     String m_evalDisabledErrorMessage;
-    String m_styleEvalDisabledErrorMessage;
 };
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicy::HeaderType type, ContentSecurityPolicy::HeaderSource source)
@@ -1005,10 +1001,10 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
     OwnPtr<CSPDirectiveList> directives = adoptPtr(new CSPDirectiveList(policy, type, source));
     directives->parse(begin, end);
 
-    if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get())))
-        directives->setEvalDisabledErrorMessage("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"" + directives->operativeDirective(directives->m_scriptSrc.get())->text() + "\".\n");
-    if (!directives->checkEval(directives->operativeDirective(directives->m_styleSrc.get())))
-        directives->setStyleEvalDisabledErrorMessage("Refused to evaluate a string as CSS because 'unsafe-eval' is not an allowed source of style in the following Content Security Policy directive: \"" + directives->operativeDirective(directives->m_styleSrc.get())->text() + "\".\n");
+    if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
+        String message = "Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"" + directives->operativeDirective(directives->m_scriptSrc.get())->text() + "\".\n";
+        directives->setEvalDisabledErrorMessage(message);
+    }
 
     if (directives->isReportOnly() && directives->reportURIs().isEmpty())
         policy->reportMissingReportURI(String(begin, end - begin));
@@ -1039,7 +1035,7 @@ void CSPDirectiveList::reportViolationWithState(const String& directiveText, con
 
 bool CSPDirectiveList::checkEval(SourceListDirective* directive) const
 {
-    return !directive || directive->allowScriptEval();
+    return !directive || directive->allowEval();
 }
 
 bool CSPDirectiveList::checkInline(SourceListDirective* directive) const
@@ -1227,22 +1223,13 @@ bool CSPDirectiveList::allowInlineStyle(const String& contextURL, const WTF::Ord
         checkInline(operativeDirective(m_styleSrc.get()));
 }
 
-bool CSPDirectiveList::allowScriptEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "));
 
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkEvalAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, state) :
         checkEval(operativeDirective(m_scriptSrc.get()));
-}
-
-bool CSPDirectiveList::allowStyleEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
-{
-    DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to evaluate a string as CSS because 'unsafe-eval' is not an allowed source of style in the following Content Security Policy directive: "));
-
-    return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkEvalAndReportViolation(operativeDirective(m_styleSrc.get()), consoleMessage, state) :
-        checkEval(operativeDirective(m_styleSrc.get()));
 }
 
 bool CSPDirectiveList::allowPluginType(const String& type, const String& typeAttribute, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -1725,7 +1712,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
         OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
 
         // We disable 'eval()' even in the case of report-only policies, and rely on the check in the V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the call should execute or not.
-        if (!policy->allowScriptEval(0, SuppressReport))
+        if (!policy->allowEval(0, SuppressReport))
             m_client->disableEval(policy->evalDisabledErrorMessage());
 
         m_policies.append(policy.release());
@@ -1850,35 +1837,16 @@ bool ContentSecurityPolicy::allowInlineStyle(const String& contextURL, const WTF
     return isAllowedByAllWithContext<&CSPDirectiveList::allowInlineStyle>(m_policies, contextURL, contextLine, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowScriptEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    return isAllowedByAllWithState<&CSPDirectiveList::allowScriptEval>(m_policies, state, reportingStatus);
-}
-
-bool ContentSecurityPolicy::allowStyleEval(ScriptState* state, ContentSecurityPolicy::ReportingStatus reportingStatus) const
-{
-    if (!experimentalFeaturesEnabled()) {
-        if (Document* document = this->document())
-            UseCounter::count(*document, UseCounter::UnsafeEvalBlocksCSSOM);
-        return true;
-    }
-    return isAllowedByAllWithState<&CSPDirectiveList::allowStyleEval>(m_policies, state, reportingStatus);
+    return isAllowedByAllWithState<&CSPDirectiveList::allowEval>(m_policies, state, reportingStatus);
 }
 
 String ContentSecurityPolicy::evalDisabledErrorMessage() const
 {
     for (size_t i = 0; i < m_policies.size(); ++i) {
-        if (!m_policies[i]->allowScriptEval(0, SuppressReport))
+        if (!m_policies[i]->allowEval(0, SuppressReport))
             return m_policies[i]->evalDisabledErrorMessage();
-    }
-    return String();
-}
-
-String ContentSecurityPolicy::styleEvalDisabledErrorMessage() const
-{
-    for (size_t i = 0; i < m_policies.size(); ++i) {
-        if (!m_policies[i]->allowStyleEval(0, SuppressReport))
-            return m_policies[i]->styleEvalDisabledErrorMessage();
     }
     return String();
 }

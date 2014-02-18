@@ -26,13 +26,10 @@
 #include "config.h"
 #include "core/css/CSSKeyframesRule.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/dom/Document.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -114,20 +111,11 @@ void CSSKeyframesRule::setName(const String& name)
     m_keyframesRule->setName(name);
 }
 
-void CSSKeyframesRule::insertRule(const String& ruleText, ExceptionState& exceptionState)
+void CSSKeyframesRule::insertRule(const String& ruleText)
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
-    if (styleSheet) {
-        if (Document* document = styleSheet->ownerDocument()) {
-            if (!document->contentSecurityPolicy()->allowStyleEval()) {
-                exceptionState.throwSecurityError(document->contentSecurityPolicy()->styleEvalDisabledErrorMessage());
-                return;
-            }
-        }
-    }
-
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
     BisonCSSParser parser(context);
     RefPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);

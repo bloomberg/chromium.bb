@@ -128,7 +128,7 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         ASSERT(imp->frame());
         action = adoptPtr(new ScheduledAction(context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
-        if (imp->document() && !imp->document()->contentSecurityPolicy()->allowScriptEval()) {
+        if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(info, 0);
             return;
         }

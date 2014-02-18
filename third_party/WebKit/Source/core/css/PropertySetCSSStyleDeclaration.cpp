@@ -28,11 +28,9 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
 using namespace std;
@@ -156,14 +154,6 @@ String AbstractPropertySetCSSStyleDeclaration::cssText() const
 
 void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, ExceptionState& exceptionState)
 {
-    if (parentElement()) {
-        ContentSecurityPolicy* csp = parentElement()->document().contentSecurityPolicy();
-        if (!csp->allowStyleEval()) {
-            exceptionState.throwSecurityError(csp->styleEvalDisabledErrorMessage());
-            return;
-        }
-    }
-
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
