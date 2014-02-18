@@ -136,7 +136,7 @@
             'simd/jsimdcpu.asm',
           ],
         }],
-        [ 'target_arch=="x64"', {
+        [ 'target_arch=="x64" and msan!=1', {
           'sources': [
             'simd/jsimd_x86_64.c',
             'simd/jccolss2-64.asm',
@@ -154,6 +154,13 @@
             'simd/jiss2fst-64.asm',
             'simd/jiss2int-64.asm',
             'simd/jiss2red-64.asm',
+          ],
+        }],
+        # MemorySanitizer doesn't support assembly code, so keep it disabled in
+        # MSan builds for now.
+        [ 'msan==1', {
+          'sources': [
+            'jsimd_none.c',
           ],
         }],
         # The ARM SIMD implementation can be used for devices that support
