@@ -67,7 +67,7 @@
 							<object class="NSButtonCell" key="NSCell" id="1019469145">
 								<int key="NSCellFlags">67108864</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">^IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL$IDS_PRODUCT_NAME</string>
+								<string key="NSContents">^IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL</string>
 								<object class="NSFont" key="NSSupport" id="605141190">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">13</double>

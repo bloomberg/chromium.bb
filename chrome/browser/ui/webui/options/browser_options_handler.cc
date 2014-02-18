@@ -437,9 +437,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_PRODUCT_NAME },
     { "defaultBrowserUnknown", IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
       IDS_PRODUCT_NAME },
-    { "defaultBrowserUseAsDefault", IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
-      IDS_PRODUCT_NAME },
-    { "autoLaunchText", IDS_AUTOLAUNCH_TEXT, IDS_PRODUCT_NAME },
+    { "defaultBrowserUseAsDefault", IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT },
+    { "autoLaunchText", IDS_AUTOLAUNCH_TEXT },
 #if defined(OS_CHROMEOS)
     { "factoryResetDescription", IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
       IDS_SHORT_PRODUCT_NAME },
