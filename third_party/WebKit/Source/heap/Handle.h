@@ -530,6 +530,7 @@ template<typename T> using RefPtrWillBeMember = Member<T>;
 template<typename T> using RawPtrWillBeMember = Member<T>;
 template<typename T> using RawPtrWillBeWeakMember = WeakMember<T>;
 template<typename T> using OwnPtrWillBeMember = Member<T>;
+template<typename T> using OwnPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using PassOwnPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = GarbageCollected<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
@@ -572,6 +573,7 @@ using WillBePersistentHeapVector = PersistentHeapVector<T, inlineCapacity>;
 #define RawPtrWillBeMember Member
 #define RawPtrWillBeWeakMember WeakMember
 #define OwnPtrWillBeMember Member
+#define OwnPtrWillBeRawPtr RawPtr
 #define PassOwnPtrWillBeRawPtr RawPtr
 #define NoBaseWillBeGarbageCollected GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized GarbageCollectedFinalized
@@ -630,6 +632,7 @@ template<typename T> using RefPtrWillBeMember = RefPtr<T>;
 template<typename T> using RawPtrWillBeMember = RawPtr<T>;
 template<typename T> using RawPtrWillBeWeakMember = RawPtr<T>;
 template<typename T> using OwnPtrWillBeMember = OwnPtr<T>;
+template<typename T> using OwnPtrWillBeRawPtr = OwnPtr<T>;
 template<typename T> using PassOwnPtrWillBeRawPtr = PassOwnPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = DummyBase<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
@@ -672,6 +675,7 @@ using WillBePersistentHeapVector = Vector<T, inlineCapacity>;
 #define RawPtrWillBeMember RawPtr
 #define RawPtrWillBeWeakMember RawPtr
 #define OwnPtrWillBeMember OwnPtr
+#define OwnPtrWillBeRawPtr OwnPtr
 #define PassOwnPtrWillBeRawPtr PassOwnPtr
 #define NoBaseWillBeGarbageCollected DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized DummyBase

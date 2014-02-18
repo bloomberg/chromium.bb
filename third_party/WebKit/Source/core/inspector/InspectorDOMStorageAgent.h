@@ -72,7 +72,7 @@ private:
     InspectorDOMStorageAgent(InspectorPageAgent*);
 
     bool isEnabled() const;
-    PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
+    PassOwnPtrWillBeRawPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     InspectorPageAgent* m_pageAgent;
