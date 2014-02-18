@@ -2178,6 +2178,12 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
             RETURN_WHEEL_EVENT_HANDLED();
     }
 
+    // Ctrl + scrollwheel is reserved for triggering zoom in/out actions in Chromium.
+    // When Ctrl is pressed and the event was not canceled by JavaScript code,
+    // return false to notify the caller that the scrollwheel event was not canceled.
+    if (e.ctrlKey())
+        return false;
+
 
     // We do another check on the frame view because the event handler can run JS which results in the frame getting destroyed.
     view = m_frame->view();
