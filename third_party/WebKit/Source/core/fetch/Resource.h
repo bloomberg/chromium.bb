@@ -180,6 +180,7 @@ public:
 
     void setCacheLiveResourcePriority(CacheLiveResourcePriority);
     unsigned cacheLiveResourcePriority() const { return m_cacheLiveResourcePriority; }
+    bool inLiveDecodedResourcesList() { return m_inLiveDecodedResourcesList; }
 
     void clearLoader();
 
@@ -364,6 +365,7 @@ private:
 
     unsigned m_preloadResult : 2; // PreloadResult
     unsigned m_cacheLiveResourcePriority : 2; // CacheLiveResourcePriority
+    unsigned m_inLiveDecodedResourcesList : 1;
     unsigned m_requestedFromNetworkingLayer : 1;
 
     unsigned m_inCache : 1;
@@ -380,7 +382,14 @@ private:
 
 #ifndef NDEBUG
     bool m_deleted;
+    unsigned m_lruIndex;
 #endif
+
+    Resource* m_nextInAllResourcesList;
+    Resource* m_prevInAllResourcesList;
+
+    Resource* m_nextInLiveResourcesList;
+    Resource* m_prevInLiveResourcesList;
 
     // If this field is non-null we are using the resource as a proxy for checking whether an existing resource is still up to date
     // using HTTP If-Modified-Since/If-None-Match headers. If the response is 304 all clients of this resource are moved

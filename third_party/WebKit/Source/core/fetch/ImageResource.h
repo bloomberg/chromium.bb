@@ -49,8 +49,6 @@ public:
 
     ImageResource(const ResourceRequest&);
     ImageResource(WebCore::Image*);
-    // Exposed for testing
-    ImageResource(const ResourceRequest&, WebCore::Image*);
     virtual ~ImageResource();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) OVERRIDE;

@@ -184,7 +184,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     const char data[6] = "abcde";
     ResourcePtr<Resource> cachedDeadResource =
-        new Resource(ResourceRequest("http://foo"), Resource::Raw);
+        new Resource(ResourceRequest(""), Resource::Raw);
     cachedDeadResource->appendData(data, 3);
     ResourcePtr<Resource> cachedLiveResource =
         new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
@@ -256,7 +256,7 @@ TEST_F(MemoryCacheTest, ClientRemoval)
 {
     const char data[6] = "abcde";
     ResourcePtr<Resource> resource1 =
-        new FakeDecodedResource(ResourceRequest("http://foo.com"), Resource::Raw);
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
     MockImageResourceClient client1;
     resource1->addClient(&client1);
     resource1->appendData(data, 4);
@@ -267,7 +267,7 @@ TEST_F(MemoryCacheTest, ClientRemoval)
     resource2->appendData(data, 4);
 
     const unsigned minDeadCapacity = 0;
-    const unsigned maxDeadCapacity = ((resource1->size() + resource2->size()) / 2) - 1;
+    const unsigned maxDeadCapacity = resource1->size() - 1;
     const unsigned totalCapacity = maxDeadCapacity;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     memoryCache()->add(resource1.get());
@@ -308,7 +308,7 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
     memoryCache()->setDelayBeforeLiveDecodedPrune(0);
     memoryCache()->setMaxPruneDeferralDelay(0);
     ResourcePtr<FakeDecodedResource> cachedImageLowPriority =
-        new FakeDecodedResource(ResourceRequest("http://foo.com"), Resource::Raw);
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
     ResourcePtr<FakeDecodedResource> cachedImageHighPriority =
         new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
 

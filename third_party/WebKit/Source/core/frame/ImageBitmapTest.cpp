@@ -106,19 +106,19 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 {
     RefPtr<HTMLImageElement> imageNoCrop = HTMLImageElement::create(*Document::create().get());
-    ResourcePtr<ImageResource> cachedImageNoCrop = new ImageResource(ResourceRequest("http://foo.com/1"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
+    ResourcePtr<ImageResource> cachedImageNoCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageNoCrop->setImageResource(cachedImageNoCrop.get());
 
     RefPtr<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(*Document::create().get());
-    ResourcePtr<ImageResource> cachedImageInteriorCrop = new ImageResource(ResourceRequest("http://foo.com/2"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
+    ResourcePtr<ImageResource> cachedImageInteriorCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageInteriorCrop->setImageResource(cachedImageInteriorCrop.get());
 
     RefPtr<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(*Document::create().get());
-    ResourcePtr<ImageResource> cachedImageExteriorCrop = new ImageResource(ResourceRequest("http://foo.com/3"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
+    ResourcePtr<ImageResource> cachedImageExteriorCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageExteriorCrop->setImageResource(cachedImageExteriorCrop.get());
 
     RefPtr<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(*Document::create().get());
-    ResourcePtr<ImageResource> cachedImageOutsideCrop = new ImageResource(ResourceRequest("http://foo.com/4"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
+    ResourcePtr<ImageResource> cachedImageOutsideCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageOutsideCrop->setImageResource(cachedImageOutsideCrop.get());
 
     MockImageResourceClient mockClient1, mockClient2, mockClient3, mockClient4;

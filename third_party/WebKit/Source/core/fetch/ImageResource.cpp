@@ -61,15 +61,6 @@ ImageResource::ImageResource(WebCore::Image* image)
     setCustomAcceptHeader();
 }
 
-ImageResource::ImageResource(const ResourceRequest& resourceRequest, WebCore::Image* image)
-    : Resource(resourceRequest, Image)
-    , m_image(image)
-{
-    setStatus(Cached);
-    setLoading(false);
-    setCustomAcceptHeader();
-}
-
 ImageResource::~ImageResource()
 {
     clearImage();
