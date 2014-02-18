@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/db/filename.h"
@@ -224,15 +224,10 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
   const base::FilePath kGarbageDir = kFSDir.AppendASCII("foo");
   const base::FilePath kGarbageFile = kGarbageDir.AppendASCII("bar");
   EXPECT_TRUE(base::CreateDirectory(kGarbageDir));
-  bool created = false;
-  base::PlatformFileError error;
-  base::PlatformFile file = base::CreatePlatformFile(
-      kGarbageFile,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-      &created, &error);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
-  EXPECT_TRUE(created);
-  EXPECT_TRUE(base::ClosePlatformFile(file));
+  base::File file(kGarbageFile,
+                  base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
+  file.Close();
 
   // Corrupt database itself and last log entry to drop last 1 database
   // operation.  The database should detect the corruption and should recover

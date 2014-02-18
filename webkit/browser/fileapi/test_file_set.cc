@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/rand_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,20 +46,14 @@ void SetUpOneTestCase(const base::FilePath& root_path,
     ASSERT_TRUE(base::CreateDirectory(path));
     return;
   }
-  base::PlatformFileError error_code;
-  bool created = false;
-  int file_flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-                    base::PLATFORM_FILE_WRITE;
-  base::PlatformFile file_handle =
-      base::CreatePlatformFile(path, file_flags, &created, &error_code);
-  EXPECT_TRUE(created);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
-  ASSERT_NE(base::kInvalidPlatformFileValue, file_handle);
-  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
-  if (test_case.data_file_size > 0U) {
+  base::File file(path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+  if (test_case.data_file_size) {
     std::string content = base::RandBytesAsString(test_case.data_file_size);
+    EXPECT_LE(test_case.data_file_size, kint32max);
     ASSERT_EQ(static_cast<int>(content.size()),
-              file_util::WriteFile(path, content.data(), content.size()));
+              file.Write(0, content.data(), static_cast<int>(content.size())));
   }
 }
 

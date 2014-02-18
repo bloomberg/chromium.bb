@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -828,14 +828,11 @@ void DatabaseTracker::ClearSessionOnlyOrigins() {
 
     for (std::vector<base::string16>::iterator database = databases.begin();
          database != databases.end(); ++database) {
-      base::PlatformFile file_handle = base::CreatePlatformFile(
-          GetFullDBFilePath(*origin, *database),
-          base::PLATFORM_FILE_OPEN_ALWAYS |
-          base::PLATFORM_FILE_SHARE_DELETE |
-          base::PLATFORM_FILE_DELETE_ON_CLOSE |
-          base::PLATFORM_FILE_READ,
-          NULL, NULL);
-      base::ClosePlatformFile(file_handle);
+      base::File file(GetFullDBFilePath(*origin, *database),
+                      base::File::FLAG_OPEN_ALWAYS |
+                          base::File::FLAG_SHARE_DELETE |
+                          base::File::FLAG_DELETE_ON_CLOSE |
+                          base::File::FLAG_READ);
     }
     DeleteOrigin(*origin, true);
   }
