@@ -664,6 +664,16 @@ PrintSystemWin::PrintSystemWin() : use_cdd_(false) {
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
   use_cdd_ = !printing::XPSModule::Init();
+
+  if (!use_cdd_) {
+    HPTPROVIDER provider = NULL;
+    HRESULT hr = printing::XPSModule::OpenProvider(L"", 1, &provider);
+    if (provider)
+      printing::XPSModule::CloseProvider(provider);
+    // Use cdd if error is different from expected.
+    use_cdd_ = (hr != HRESULT_FROM_WIN32(ERROR_INVALID_PRINTER_NAME));
+  }
+
   return PrintSystemResult(true, std::string());
 }
 
@@ -679,8 +689,7 @@ void PrintSystemWin::GetPrinterCapsAndDefaults(
   // Launch as child process to retrieve the capabilities and defaults because
   // this involves invoking a printer driver DLL and crashes have been known to
   // occur.
-  PrinterCapsHandler* handler =
-      new PrinterCapsHandler(printer_name, callback);
+  PrinterCapsHandler* handler = new PrinterCapsHandler(printer_name, callback);
   handler->AddRef();
   if (use_cdd_)
     handler->StartGetPrinterSemanticCapsAndDefaults();
@@ -711,8 +720,7 @@ bool PrintSystemWin::ValidatePrintTicket(
   }
   bool ret = false;
   HPTPROVIDER provider = NULL;
-  printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name.c_str()),
-                                    1,
+  printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name), 1,
                                     &provider);
   if (provider) {
     base::win::ScopedComPtr<IStream> print_ticket_stream;
