@@ -281,6 +281,7 @@ void AppWindowFrameView::Layout() {
     restore_button_->SetState(views::CustomButton::STATE_NORMAL);
 
   gfx::Size minimize_size = minimize_button_->GetPreferredSize();
+  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
   minimize_button_->SetBounds(
       maximize_button_->x() - kButtonSpacing - minimize_size.width(),
       kButtonOffsetY,
