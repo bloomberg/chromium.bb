@@ -1042,6 +1042,7 @@ crbug.com/340105 plugins/npp-set-window-called-during-destruction.html [ NeedsMa
 crbug.com/340105 svg/custom/createelement.svg [ NeedsManualRebaseline ]
 crbug.com/340105 svg/dom/svgpath-out-of-bounds-getPathSeg.html [ NeedsManualRebaseline ]
 crbug.com/340105 virtual/deferred/fast/images/support-broken-image-delegate.html [ NeedsManualRebaseline ]
+crbug.com/331301 editing/selection/move-left-right.html [ NeedsManualRebaseline ]
 
 # Needs rebaselining after fixing issue with text-overflow: ellipsis (not showing up).
 crbug.com/166263 fast/css/text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
