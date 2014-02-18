@@ -13884,48 +13884,51 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Ignore
     </message>
 
-    <!-- PDF with unsupported feature bubble -->
-    <message name="IDS_PDF_BUBBLE_MESSAGE" desc="Message for the bubble when a user views a PDF with an unsupported feature">
-      Parts of this PDF document could not be displayed.
-    </message>
-    <message name="IDS_PDF_BUBBLE_OPEN_IN_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
-      Open in Adobe Reader
-    </message>
-    <message name="IDS_PDF_BUBBLE_INSTALL_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
-      Install Adobe Reader
-    </message>
-    <message name="IDS_PDF_BUBBLE_METRO_MODE_LINK" desc="Title of the link to restart Chrome on Windows 8 in metro mode when viewing a PDF with an unsupported feature.">
-      Relaunch Chrome on the desktop
-    </message>
-    <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
-      Use Adobe Reader as your default PDF viewer?
-    </message>
-    <message name="IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON" desc="The label of the 'always' button on the infobar that asks the user if they want to set Adobe Reader as default.">
-      Always
-    </message>
-    <message name="IDS_PDF_PASSWORD_DIALOG_TITLE" desc="The title of the dialog requesting a password to open a protected PDF.">
-      Password required
-    </message>
+    <!-- PDF reader related strings. Not used on Android -->
+    <if expr="not is_android">
+      <!-- PDF with unsupported feature bubble -->
+      <message name="IDS_PDF_BUBBLE_MESSAGE" desc="Message for the bubble when a user views a PDF with an unsupported feature">
+        Parts of this PDF document could not be displayed.
+      </message>
+      <message name="IDS_PDF_BUBBLE_OPEN_IN_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
+        Open in Adobe Reader
+      </message>
+      <message name="IDS_PDF_BUBBLE_INSTALL_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
+        Install Adobe Reader
+      </message>
+      <message name="IDS_PDF_BUBBLE_METRO_MODE_LINK" desc="Title of the link to restart Chrome on Windows 8 in metro mode when viewing a PDF with an unsupported feature.">
+        Relaunch Chrome on the desktop
+      </message>
+      <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
+        Use Adobe Reader as your default PDF viewer?
+      </message>
+      <message name="IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON" desc="The label of the 'always' button on the infobar that asks the user if they want to set Adobe Reader as default.">
+        Always
+      </message>
+      <message name="IDS_PDF_PASSWORD_DIALOG_TITLE" desc="The title of the dialog requesting a password to open a protected PDF.">
+        Password required
+      </message>
 
-    <!-- Adobe Reader is out of date Blocking Page -->
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">
-      Adobe Reader Out Of Date
-    </message>
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_BODY" desc="The body of the Adobe Reader out of date blocking page.">
-      Adobe Reader is out of date and may be insecure.
-    </message>
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_UPDATE" desc="The name of the radio button option to go to the Adobe Reader installer website.">
-      Update Adobe Reader now
-    </message>
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_PROCEED" desc="The name of the radio button to proceed to open the PDF with the out of date Adobe Reader.">
-      Proceed without updating Adobe Reader (not recommended)
-    </message>
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_OK" desc="OK button text of the Adobe Reader out of date blocking page.">
-      OK
-    </message>
-    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL" desc="Cancel button text of the Adobe Reader out of date blocking page.">
-      Cancel
-    </message>
+      <!-- Adobe Reader is out of date Blocking Page -->
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">
+        Adobe Reader Out Of Date
+      </message>
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_BODY" desc="The body of the Adobe Reader out of date blocking page.">
+        Adobe Reader is out of date and may be insecure.
+      </message>
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_UPDATE" desc="The name of the radio button option to go to the Adobe Reader installer website.">
+        Update Adobe Reader now
+      </message>
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_PROCEED" desc="The name of the radio button to proceed to open the PDF with the out of date Adobe Reader.">
+        Proceed without updating Adobe Reader (not recommended)
+      </message>
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_OK" desc="OK button text of the Adobe Reader out of date blocking page.">
+        OK
+      </message>
+      <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL" desc="Cancel button text of the Adobe Reader out of date blocking page.">
+        Cancel
+      </message>
+    </if>
 
     <!-- Media Capture messages -->
     <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone and camera.">
