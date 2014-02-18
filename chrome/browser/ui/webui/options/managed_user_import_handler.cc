@@ -88,12 +88,20 @@ void ManagedUserImportHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(profile));
   if (!profile->IsManaged()) {
-    ManagedUserSyncServiceFactory::GetForProfile(profile)->AddObserver(this);
-    subscription_ =
-        ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile)
-            ->Subscribe(
-                base::Bind(&ManagedUserImportHandler::OnSharedSettingChanged,
-                           weak_ptr_factory_.GetWeakPtr()));
+    ManagedUserSyncService* sync_service =
+        ManagedUserSyncServiceFactory::GetForProfile(profile);
+    if (sync_service) {
+      sync_service->AddObserver(this);
+      ManagedUserSharedSettingsService* settings_service =
+          ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+              profile);
+      subscription_ = settings_service->Subscribe(
+          base::Bind(&ManagedUserImportHandler::OnSharedSettingChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      DCHECK(!ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+                 profile));
+    }
   }
 }
 
