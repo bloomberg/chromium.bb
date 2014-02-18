@@ -11,6 +11,7 @@ var test = function()
 {
     var scriptSource;
     var shouldRequestContent = false;
+    var scriptFormatter = InspectorTest.scriptFormatter();
 
     InspectorTest.startDebuggerTest(started);
 
@@ -22,7 +23,6 @@ var test = function()
     function didShowScriptSource(frame)
     {
         scriptSource = frame._uiSourceCode;
-        InspectorTest.addSniffer(scriptSource._project, "requestFileContent", requestContentSniffer);
         scriptSource.searchInContent("magic-string", true, false, dump1);
     }
 
@@ -31,13 +31,12 @@ var test = function()
         InspectorTest.addResult("Pre-format search results:");
         InspectorTest.dumpSearchMatches(matches);
         shouldRequestContent = true;
-        scriptSource.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormat, this);
-        scriptSource.setFormatted(true);
+        InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+        scriptFormatter._toggleFormatScriptSource();
     }
 
-    function didFormat()
+    function uiSourceCodeScriptFormatted()
     {
-        scriptSource.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormat, this);
         scriptSource.searchInContent("magic-string", true, false, dump2);
     }
 
@@ -46,14 +45,6 @@ var test = function()
         InspectorTest.addResult("Post-format search results:");
         InspectorTest.dumpSearchMatches(matches);
         InspectorTest.completeTest();
-    }
-
-    function requestContentSniffer()
-    {
-        if (shouldRequestContent)
-            InspectorTest.addResult("Original content was requested.");
-        else
-            InspectorTest.addResult("Failure: original content should not be requested.");
     }
 }
 

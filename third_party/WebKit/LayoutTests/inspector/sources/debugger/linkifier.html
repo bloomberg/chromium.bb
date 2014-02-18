@@ -14,7 +14,8 @@ function dummyScript()
 function test()
 {
     InspectorTest.startDebuggerTest(waitForScripts);
-
+    var panel = WebInspector.panel("sources");
+    var scriptFormatter = InspectorTest.scriptFormatter();
     var linkifier;
     var link;
     var script;
@@ -51,20 +52,14 @@ function test()
 
         InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));
         InspectorTest.addResult("original location: " + link.textContent);
-
-        InspectorTest.addSniffer(linkifier._formatter, "formatLiveAnchor", linkUpdated);
-        uiSourceCode.setFormatted(true);
+        InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+        scriptFormatter._toggleFormatScriptSource();
     }
 
-    function linkUpdated()
+    function uiSourceCodeScriptFormatted()
     {
         InspectorTest.addResult("pretty printed location: " + link.textContent);
-        InspectorTest.addSniffer(linkifier._formatter, "formatLiveAnchor", linkReverted);
-        uiSourceCode.setFormatted(false);
-    }
-
-    function linkReverted()
-    {
+        scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
         InspectorTest.addResult("reverted location: " + link.textContent);
 
         var count1 = liveLocationsCount();

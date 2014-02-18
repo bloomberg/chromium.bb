@@ -395,4 +395,13 @@ InspectorTest.checkUILocation = function(uiSourceCode, lineNumber, columnNumber,
     InspectorTest.assertEquals(columnNumber, location.columnNumber, "Incorrect columnNumber, expected '" + columnNumber + "', but got '" + location.columnNumber + "'");
 };
 
+InspectorTest.scriptFormatter = function()
+{
+    var editorActions = WebInspector.moduleManager.instances(WebInspector.SourcesPanel.EditorAction);
+    for (var i = 0; i < editorActions.length; ++i) {
+        if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
+            return editorActions[i];
+    }
+};
+
 };

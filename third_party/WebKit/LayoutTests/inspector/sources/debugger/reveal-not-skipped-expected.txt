@@ -24,7 +24,7 @@ Script execution paused.
 Showing script1 source...
 Script source was shown for 'script1.js'.
 Formatting...
-Script source was shown for 'reveal-not-skipped.html'.
+Script source was shown for 'script1.js:formatted'.
 Script execution resumed.
 Debugger was disabled.
 

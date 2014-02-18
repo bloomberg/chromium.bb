@@ -11,7 +11,7 @@ Script execution resumed.
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 
-    script-formatter-breakpoints.html:17var f = 0;
+    script-formatter-breakpoints.html:formatted:17var f = 0;
 Breakpoint sidebar pane while paused in raw
 
     script-formatter-breakpoints.html:12var f=0;
@@ -27,7 +27,7 @@ Running: testBreakpointsSetAndRemoveInFormattedSource
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 
-    unformatted.js:4var b = 1;
+    unformatted.js:formatted:4var b = 1;
 Breakpoint sidebar pane while paused in raw
 
 Script execution resumed.
@@ -36,11 +36,8 @@ Running: testBreakpointsSetInFormattedAndRemoveInOriginalSource
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 
-    unformatted.js:4var b = 1;
+    unformatted.js:formatted:4var b = 1;
 Breakpoint sidebar pane while paused in raw
-
-    unformatted.js:3var b=1;var c=3;var d=4;var e=5;
-Breakpoint sidebar pane after removed
 
 Script execution resumed.
 Debugger was disabled.

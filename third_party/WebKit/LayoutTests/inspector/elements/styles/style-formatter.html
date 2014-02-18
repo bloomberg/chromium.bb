@@ -8,8 +8,8 @@
 
 var test = function()
 {
-    var panel = WebInspector.panels.scripts;
     var worker = new Worker("ScriptFormatterWorker.js");
+    WebInspector.showPanel("sources");
 
     InspectorTest.runTestSuite([
         function testScriptFormatterWorker(next)

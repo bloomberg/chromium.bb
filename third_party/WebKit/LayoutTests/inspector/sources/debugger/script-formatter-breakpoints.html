@@ -16,8 +16,10 @@ function f1()
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    var panel = WebInspector.showPanel("sources");
+    var scriptFormatter = InspectorTest.scriptFormatter();
     var sourceFrame;
+    var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
         function testBreakpointsInOriginalAndFormattedSource(next)
@@ -40,13 +42,12 @@ var test = function()
 
             function resumed()
             {
-                sourceFrame._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
-                sourceFrame._uiSourceCode.setFormatted(true);
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
             }
 
-            function didFormatPage()
+            function uiSourceCodeScriptFormatted()
             {
-                sourceFrame._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
                 // There should be a breakpoint in f1 although script is pretty-printed.
                 InspectorTest.waitUntilPaused(pausedInF1Again);
                 InspectorTest.evaluateInPageWithTimeout("f1()");
@@ -55,7 +56,7 @@ var test = function()
             function pausedInF1Again(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                sourceFrame._uiSourceCode.setFormatted(false);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
                 InspectorTest.removeBreakpoint(sourceFrame, 11);
                 InspectorTest.resumeExecution(next);
@@ -76,17 +77,18 @@ var test = function()
 
             function breakpointResolved()
             {
-                InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "updateLiveLocations", didFormatPage);
                 InspectorTest.addResult("Formatting.");
-                sourceFrame._uiSourceCode.setFormatted(true);
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
             }
 
-            function didFormatPage()
+            function uiSourceCodeScriptFormatted()
             {
                 InspectorTest.addResult("Removing breakpoint.");
-                InspectorTest.removeBreakpoint(sourceFrame, 16);
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
                 InspectorTest.addResult("Unformatting.");
-                sourceFrame._uiSourceCode.setFormatted(false);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 var breakpoints = WebInspector.breakpointManager._storage._setting.get();
                 InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
                 next();
@@ -100,14 +102,14 @@ var test = function()
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
-                sourceFrame._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
-                sourceFrame._uiSourceCode.setFormatted(true);
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
             }
                 
-            function didFormatPage()
+            function uiSourceCodeScriptFormatted()
             {
-                sourceFrame._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
-                InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
                 InspectorTest.waitUntilPaused(pausedInF2);
                 InspectorTest.evaluateInPageWithTimeout("f2()");
             }
@@ -115,8 +117,8 @@ var test = function()
             function pausedInF2(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                InspectorTest.removeBreakpoint(sourceFrame, 3);
-                sourceFrame._uiSourceCode.setFormatted(false);
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 3);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
                 InspectorTest.resumeExecution(next);
             }
@@ -129,14 +131,14 @@ var test = function()
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
-                sourceFrame._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
-                sourceFrame._uiSourceCode.setFormatted(true);
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
             }
                 
-            function didFormatPage()
+            function uiSourceCodeScriptFormatted()
             {
-                sourceFrame._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
-                InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
                 InspectorTest.waitUntilPaused(pausedInF2);
                 InspectorTest.evaluateInPageWithTimeout("f2()");
             }
@@ -144,14 +146,14 @@ var test = function()
             function pausedInF2(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                sourceFrame._uiSourceCode.setFormatted(false);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.removeBreakpoint(sourceFrame, 2);
-                InspectorTest.dumpBreakpointSidebarPane("after removed");
+                // No need to remove breakpoint since formattedUISourceCode was removed.
                 InspectorTest.resumeExecution(next);
             }
         }
     ]);
+
 }
 
 </script>

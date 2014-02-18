@@ -4,12 +4,11 @@ Debugger was enabled.
 Pre-format search results:
 Search matches: 
 lineNumber: 25, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
-lineNumber: 40, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
+lineNumber: 39, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
 
-Original content was requested.
 Post-format search results:
 Search matches: 
-lineNumber: 30, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
-lineNumber: 45, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
+lineNumber: 25, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'
+lineNumber: 39, line: '        scriptSource.searchInContent("magic-string", true, false, dump2);'
 
 
