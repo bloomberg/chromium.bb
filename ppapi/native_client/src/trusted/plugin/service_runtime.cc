@@ -99,19 +99,6 @@ void PluginReverseInterface::ShutDown() {
   NaClLog(4, "PluginReverseInterface::Shutdown: broadcasted, exiting\n");
 }
 
-void PluginReverseInterface::Log(nacl::string message) {
-  LogToJavaScriptConsoleResource* continuation =
-      new LogToJavaScriptConsoleResource(message);
-  CHECK(continuation != NULL);
-  NaClLog(4, "PluginReverseInterface::Log(%s)\n", message.c_str());
-  plugin::WeakRefCallOnMainThread(
-      anchor_,
-      0,  /* delay in ms */
-      this,
-      &plugin::PluginReverseInterface::Log_MainThreadContinuation,
-      continuation);
-}
-
 void PluginReverseInterface::DoPostMessage(nacl::string message) {
   PostMessageResource* continuation = new PostMessageResource(message);
   CHECK(continuation != NULL);
@@ -138,15 +125,6 @@ void PluginReverseInterface::StartupInitializationComplete() {
   }
 }
 
-void PluginReverseInterface::Log_MainThreadContinuation(
-    LogToJavaScriptConsoleResource* p,
-    int32_t err) {
-  UNREFERENCED_PARAMETER(err);
-  NaClLog(4,
-          "PluginReverseInterface::Log_MainThreadContinuation(%s)\n",
-          p->message.c_str());
-  plugin_->AddToConsole(p->message);
-}
 void PluginReverseInterface::PostMessage_MainThreadContinuation(
     PostMessageResource* p,
     int32_t err) {

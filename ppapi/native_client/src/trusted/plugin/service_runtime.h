@@ -73,14 +73,6 @@ struct SelLdrStartParams {
 };
 
 // Callback resources are essentially our continuation state.
-
-struct LogToJavaScriptConsoleResource {
- public:
-  explicit LogToJavaScriptConsoleResource(std::string msg)
-      : message(msg) {}
-  std::string message;
-};
-
 struct PostMessageResource {
  public:
   explicit PostMessageResource(std::string msg)
@@ -157,8 +149,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   void ShutDown();
 
-  virtual void Log(nacl::string message);
-
   virtual void DoPostMessage(nacl::string message);
 
   virtual void StartupInitializationComplete();
@@ -183,9 +173,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   void AddTempQuotaManagedFile(const nacl::string& file_id);
 
  protected:
-  virtual void Log_MainThreadContinuation(LogToJavaScriptConsoleResource* p,
-                                          int32_t err);
-
   virtual void PostMessage_MainThreadContinuation(PostMessageResource* p,
                                                   int32_t err);
 
