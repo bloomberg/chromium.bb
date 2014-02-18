@@ -22,23 +22,23 @@ function highlightIfChanged(node, oldVal, newVal) {
 // Contains the latest snapshot of sync about info.
 chrome.sync.aboutInfo = {};
 
-// TODO(akalin): Make aboutInfo have key names likeThis and not
-// like_this.
 function refreshAboutInfo(aboutInfo) {
   chrome.sync.aboutInfo = aboutInfo;
   var aboutInfoDiv = $('aboutInfo');
   jstProcess(new JsEvalContext(aboutInfo), aboutInfoDiv);
 }
 
+function onAboutInfoUpdatedEvent(e) {
+  refreshAboutInfo(e.details);
+}
+
 function onLoad() {
   $('status-data').hidden = true;
-  chrome.sync.getAboutInfo(refreshAboutInfo);
 
   chrome.sync.events.addEventListener(
-      'onServiceStateChanged',
-      function(e) {
-        chrome.sync.getAboutInfo(refreshAboutInfo);
-      });
+      'onAboutInfoUpdated',
+      onAboutInfoUpdatedEvent);
+  chrome.sync.requestUpdatedAboutInfo();
 
   var dumpStatusButton = $('dump-status');
   dumpStatusButton.addEventListener('click', function(event) {
@@ -78,8 +78,8 @@ function onLoad() {
 
     // Remove listeners to prevent sync events from overwriting imported data.
     chrome.sync.events.removeEventListener(
-        'onServiceStateChanged',
-        refreshAboutInfo);
+        'onAboutInfoUpdated',
+        onAboutInfoUpdatedEvent);
 
     var aboutInfo = JSON.parse(data);
     refreshAboutInfo(aboutInfo);

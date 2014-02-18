@@ -881,16 +881,11 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
                     OnStateChanged());
-  // TODO(akalin): Make an Observer subclass that listens and does the
-  // event routing.
-  sync_js_controller_.HandleJsEvent("onServiceStateChanged", JsEventDetails());
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
   FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
                     OnSyncCycleCompleted());
-  sync_js_controller_.HandleJsEvent(
-      "onServiceStateChanged", JsEventDetails());
 }
 
 void ProfileSyncService::ClearStaleErrors() {

@@ -34,21 +34,22 @@ SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
 void SyncInternalsMessageHandler::RegisterMessages() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // Init our link to the JsController.
+  // Register for ProfileSyncService events.
   ProfileSyncService* service = GetProfileSyncService();
-  if (service)
+  if (service) {
+    service->AddObserver(this);
     js_controller_ = service->GetJsController();
-  if (js_controller_)
     js_controller_->AddJsEventHandler(this);
+  }
 
   web_ui()->RegisterMessageCallback(
-      "getAboutInfo",
-      base::Bind(&SyncInternalsMessageHandler::OnGetAboutInfo,
+      "requestUpdatedAboutInfo",
+      base::Bind(&SyncInternalsMessageHandler::HandleRequestUpdatedAboutInfo,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "getListOfTypes",
-      base::Bind(&SyncInternalsMessageHandler::OnGetListOfTypes,
+      "requestListOfTypes",
+      base::Bind(&SyncInternalsMessageHandler::HandleRequestListOfTypes,
                  base::Unretained(this)));
 
   RegisterJsControllerCallback("getNotificationState");
@@ -57,27 +58,27 @@ void SyncInternalsMessageHandler::RegisterMessages() {
   RegisterJsControllerCallback("getClientServerTraffic");
 }
 
-void SyncInternalsMessageHandler::OnGetAboutInfo(const base::ListValue* args) {
-  // TODO(rlarocque): We should DCHECK(!args) here.  See crbug.com/334431.
-  scoped_ptr<base::DictionaryValue> value =
-      sync_ui_util::ConstructAboutInformation(GetProfileSyncService());
-  web_ui()->CallJavascriptFunction(
-      "chrome.sync.getAboutInfo.handleReply",
-      *value);
+void SyncInternalsMessageHandler::HandleRequestUpdatedAboutInfo(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  SendAboutInfo();
 }
 
-void SyncInternalsMessageHandler::OnGetListOfTypes(
+void SyncInternalsMessageHandler::HandleRequestListOfTypes(
     const base::ListValue* args) {
-  // TODO(rlarocque): We should DCHECK(!args) here.  See crbug.com/334431.
-  base::ListValue type_list;
+  DCHECK(args->empty());
+  base::DictionaryValue event_details;
+  scoped_ptr<base::ListValue> type_list(new base::ListValue());
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = protocol_types.First();
        it.Good(); it.Inc()) {
-    type_list.Append(new base::StringValue(ModelTypeToString(it.Get())));
+    type_list->Append(new base::StringValue(ModelTypeToString(it.Get())));
   }
+  event_details.Set("types", type_list.release());
   web_ui()->CallJavascriptFunction(
-      "chrome.sync.getListOfTypes.handleReply",
-      type_list);
+      "chrome.sync.dispatchEvent",
+      base::StringValue("onReceivedListOfTypes"),
+      event_details);
 }
 
 void SyncInternalsMessageHandler::HandleJsReply(
@@ -88,6 +89,10 @@ void SyncInternalsMessageHandler::HandleJsReply(
   std::vector<const base::Value*> arg_list(args.Get().begin(),
                                            args.Get().end());
   web_ui()->CallJavascriptFunction(reply_handler, arg_list);
+}
+
+void SyncInternalsMessageHandler::OnStateChanged() {
+  SendAboutInfo();
 }
 
 void SyncInternalsMessageHandler::HandleJsEvent(
@@ -107,6 +112,15 @@ void SyncInternalsMessageHandler::RegisterJsControllerCallback(
       base::Bind(&SyncInternalsMessageHandler::ForwardToJsController,
                  base::Unretained(this),
                  name));
+}
+
+void SyncInternalsMessageHandler::SendAboutInfo() {
+  scoped_ptr<base::DictionaryValue> value =
+      sync_ui_util::ConstructAboutInformation(GetProfileSyncService());
+  web_ui()->CallJavascriptFunction(
+      "chrome.sync.dispatchEvent",
+      base::StringValue("onAboutInfoUpdated"),
+      *value);
 }
 
 void SyncInternalsMessageHandler::ForwardToJsController(

@@ -168,7 +168,7 @@ var HARD_CODED_ALL_NODES = [
 ];
 
 /**
- * Constant hard-coded value to return from mock getAboutInfo.
+ * A value to return in mock onReceivedUpdatedAboutInfo event.
  * @const
  */
 HARD_CODED_ABOUT_INFO = {

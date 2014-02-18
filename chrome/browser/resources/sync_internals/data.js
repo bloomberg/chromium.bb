@@ -164,11 +164,20 @@ function createTypesCheckboxes(types) {
   });
 }
 
+function onReceivedListOfTypes(e) {
+  var types = e.details.types;
+  types.sort();
+  createTypesCheckboxes(types);
+  chrome.sync.events.removeEventListener(
+      'onReceivedListOfTypes',
+      onReceivedListOfTypes);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  chrome.sync.getListOfTypes(function(types) {
-    types.sort();
-    createTypesCheckboxes(types);
-  });
+  chrome.sync.events.addEventListener(
+      'onReceivedListOfTypes',
+      onReceivedListOfTypes);
+  chrome.sync.requestListOfTypes();
 });
 
 var dumpToFileLink = $('dump-to-file');

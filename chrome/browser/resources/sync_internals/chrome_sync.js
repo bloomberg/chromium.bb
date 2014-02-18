@@ -4,7 +4,7 @@
 
 // require cr.js
 // require cr/event_target.js
-// requier cr/util.js
+// require cr/util.js
 
 cr.define('chrome.sync', function() {
   'use strict';
@@ -34,16 +34,10 @@ cr.define('chrome.sync', function() {
   }
 
   var syncFunctions = [
-    // Sync service functions.
-    'getAboutInfo',
-
     // Notification functions.  See chrome/browser/sync/engine/syncapi.h
     // for docs.
     'getNotificationState',
     'getNotificationInfo',
-
-    // Get a static list of available data types.
-    'getListOfTypes',
 
     // Client server communication logging functions.
     'getClientServerTraffic',
@@ -93,9 +87,28 @@ cr.define('chrome.sync', function() {
     chrome.sync.events.dispatchEvent(e);
   };
 
+  /**
+   * Asks the browser to refresh our snapshot of sync state.  Should result
+   * in an onAboutInfoUpdated event being emitted.
+   */
+  var requestUpdatedAboutInfo = function() {
+    chrome.send('requestUpdatedAboutInfo');
+  };
+
+  /**
+   * Asks the browser to send us the list of registered types.  Should result
+   * in an onReceivedListOfTypes event being emitted.
+   */
+  var requestListOfTypes = function() {
+    chrome.send('requestListOfTypes');
+  };
+
   return {
     makeTimer: makeTimer,
     dispatchEvent: dispatchEvent,
     events: new cr.EventTarget(),
+
+    requestUpdatedAboutInfo: requestUpdatedAboutInfo,
+    requestListOfTypes: requestListOfTypes,
   };
 });
