@@ -89,6 +89,7 @@ namespace {
 // Returns NULL if no compressed archive is available for processing, otherwise
 // returns a patch helper configured to uncompress and patch.
 scoped_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
+    const base::FilePath& setup_exe,
     const CommandLine& command_line,
     const installer::InstallerState& installer_state,
     const base::FilePath& working_directory) {
@@ -99,9 +100,8 @@ scoped_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
       command_line.GetSwitchValuePath(installer::switches::kInstallArchive));
   bool compressed_archive_specified = !compressed_archive.empty();
   if (!compressed_archive_specified) {
-    compressed_archive =
-        command_line.GetProgram().DirName().Append(
-            installer::kChromeCompressedArchive);
+    compressed_archive = setup_exe.DirName().Append(
+        installer::kChromeCompressedArchive);
   }
 
   // Fail if no compressed archive is found.
@@ -635,6 +635,7 @@ bool CreateTemporaryAndUnpackDirectories(
 installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
+    const base::FilePath& setup_exe,
     const CommandLine& cmd_line,
     bool remove_all,
     bool force_uninstall,
@@ -652,13 +653,14 @@ installer::InstallStatus UninstallProduct(
   }
 
   return installer::UninstallProduct(
-      original_state, installer_state, cmd_line.GetProgram(), product,
-      remove_all, force_uninstall, cmd_line);
+      original_state, installer_state, setup_exe, product, remove_all,
+      force_uninstall, cmd_line);
 }
 
 installer::InstallStatus UninstallProducts(
     const InstallationState& original_state,
     const InstallerState& installer_state,
+    const base::FilePath& setup_exe,
     const CommandLine& cmd_line) {
   const Products& products = installer_state.products();
 
@@ -715,14 +717,14 @@ installer::InstallStatus UninstallProducts(
   for (Products::const_iterator it = products.begin();
        install_status != installer::UNINSTALL_CANCELLED && it < products.end();
        ++it) {
-    prod_status = UninstallProduct(original_state, installer_state,
+    prod_status = UninstallProduct(original_state, installer_state, setup_exe,
         cmd_line, remove_all, force, **it);
     if (prod_status != installer::UNINSTALL_SUCCESSFUL)
       install_status = prod_status;
   }
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
-      original_state, installer_state, cmd_line, &install_status);
+      original_state, installer_state, setup_exe, &install_status);
 
   // The app and vendor dirs may now be empty. Make a last-ditch attempt to
   // delete them.
@@ -766,8 +768,9 @@ void UninstallBinariesIfUnused(
   InstallerState uninstall_state;
   uninstall_state.Initialize(uninstall_cmd, uninstall_prefs, original_state);
 
-  *install_status =
-      UninstallProducts(original_state, uninstall_state, uninstall_cmd);
+  *install_status = UninstallProducts(original_state, uninstall_state,
+                                      uninstall_cmd.GetProgram(),
+                                      uninstall_cmd);
 
   // Report that the binaries were uninstalled if they were. This translates
   // into a successful install return code.
@@ -779,6 +782,7 @@ void UninstallBinariesIfUnused(
 
 installer::InstallStatus InstallProducts(
     const InstallationState& original_state,
+    const base::FilePath& setup_exe,
     const CommandLine& cmd_line,
     const MasterPreferences& prefs,
     InstallerState* installer_state,
@@ -797,7 +801,7 @@ installer::InstallStatus InstallProducts(
                                 &install_status)) {
     VLOG(1) << "Installing to " << installer_state->target_path().value();
     install_status = InstallProductsHelper(
-        original_state, cmd_line, prefs, *installer_state,
+        original_state, setup_exe, cmd_line, prefs, *installer_state,
         installer_directory, &archive_type, &delegated_to_existing);
   } else {
     // CheckPreInstallConditions must set the status on failure.
@@ -897,6 +901,7 @@ void ActivateMetroChrome() {
 installer::InstallStatus RegisterDevChrome(
     const InstallationState& original_state,
     const InstallerState& installer_state,
+    const base::FilePath& setup_exe,
     const CommandLine& cmd_line) {
   BrowserDistribution* chrome_dist =
       BrowserDistribution::GetSpecificDistribution(
@@ -930,7 +935,7 @@ installer::InstallStatus RegisterDevChrome(
   base::FilePath chrome_exe(
       cmd_line.GetSwitchValuePath(installer::switches::kRegisterDevChrome));
   if (chrome_exe.empty())
-    chrome_exe = cmd_line.GetProgram().DirName().Append(installer::kChromeExe);
+    chrome_exe = setup_exe.DirName().Append(installer::kChromeExe);
   if (!chrome_exe.IsAbsolute())
     chrome_exe = base::MakeAbsoluteFilePath(chrome_exe);
 
@@ -972,6 +977,7 @@ installer::InstallStatus RegisterDevChrome(
 // among others). This function returns true if any such command line option
 // has been found and processed (so setup.exe should exit at that point).
 bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
+                                    const base::FilePath& setup_exe,
                                     const CommandLine& cmd_line,
                                     InstallerState* installer_state,
                                     int* exit_code) {
@@ -998,7 +1004,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       if (installer::ArchivePatchHelper::UncompressAndPatch(
               temp_path.path(),
               compressed_archive,
-              cmd_line.GetProgram(),
+              setup_exe,
               cmd_line.GetSwitchValuePath(installer::switches::kNewSetupExe))) {
         status = installer::NEW_VERSION_UPDATED;
       }
@@ -1055,7 +1061,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterDevChrome)) {
     installer::InstallStatus status = RegisterDevChrome(
-        original_state, *installer_state, cmd_line);
+        original_state, *installer_state, setup_exe, cmd_line);
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
@@ -1182,7 +1188,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                    << " found for system-level toast.";
       } else {
         product.LaunchUserExperiment(
-            cmd_line.GetProgram(), installer::REENTRY_SYS_UPDATE, true);
+            setup_exe, installer::REENTRY_SYS_UPDATE, true);
       }
     }
   } else if (cmd_line.HasSwitch(installer::switches::kPatch)) {
@@ -1377,6 +1383,7 @@ namespace installer {
 
 InstallStatus InstallProductsHelper(
     const InstallationState& original_state,
+    const base::FilePath& setup_exe,
     const CommandLine& cmd_line,
     const MasterPreferences& prefs,
     const InstallerState& installer_state,
@@ -1412,7 +1419,8 @@ InstallStatus InstallProductsHelper(
       switches::kUncompressedArchive));
   if (uncompressed_archive.empty()) {
     scoped_ptr<ArchivePatchHelper> archive_helper(
-        CreateChromeArchiveHelper(cmd_line, installer_state, unpack_path));
+        CreateChromeArchiveHelper(setup_exe, cmd_line, installer_state,
+                                  unpack_path));
     if (archive_helper) {
       VLOG(1) << "Installing Chrome from compressed archive "
               << archive_helper->compressed_archive().value();
@@ -1431,10 +1439,8 @@ InstallStatus InstallProductsHelper(
 
   // Check for an uncompressed archive alongside the current executable if one
   // was not given or generated.
-  if (uncompressed_archive.empty()) {
-    uncompressed_archive =
-        cmd_line.GetProgram().DirName().Append(kChromeArchive);
-  }
+  if (uncompressed_archive.empty())
+    uncompressed_archive = setup_exe.DirName().Append(kChromeArchive);
 
   if (*archive_type == UNKNOWN_ARCHIVE_TYPE) {
     // An archive was not uncompressed or patched above.
@@ -1479,13 +1485,14 @@ InstallStatus InstallProductsHelper(
       // of Chrome, which can safely be migrated to multi-install by way of
       // CheckMultiInstallConditions) is already installed, delegate to the
       // installed setup.exe to install the product at hand.
-      base::FilePath setup_exe;
+      base::FilePath existing_setup_exe;
       if (GetExistingHigherInstaller(original_state, system_install,
-                                     *installer_version, &setup_exe)) {
+                                     *installer_version, &existing_setup_exe)) {
         VLOG(1) << "Deferring to existing installer.";
         installer_state.UpdateStage(DEFERRING_TO_HIGHER_VERSION);
-        if (DeferToExistingInstall(setup_exe, cmd_line, installer_state,
-                                   temp_path.path(), &install_status)) {
+        if (DeferToExistingInstall(existing_setup_exe, cmd_line,
+                                   installer_state, temp_path.path(),
+                                   &install_status)) {
           *delegated_to_existing = true;
           return install_status;
         }
@@ -1558,9 +1565,9 @@ InstallStatus InstallProductsHelper(
       base::FilePath prefs_source_path(cmd_line.GetSwitchValueNative(
           switches::kInstallerData));
       install_status = InstallOrUpdateProduct(
-          original_state, installer_state, cmd_line.GetProgram(),
-          uncompressed_archive, temp_path.path(), src_path, prefs_source_path,
-          prefs, *installer_version);
+          original_state, installer_state, setup_exe, uncompressed_archive,
+          temp_path.path(), src_path, prefs_source_path, prefs,
+          *installer_version);
 
       int install_msg_base = IDS_INSTALL_FAILED_BASE;
       base::string16 chrome_exe;
@@ -1646,7 +1653,7 @@ InstallStatus InstallProductsHelper(
   {
     // If installation failed, use the path to the currently running setup.
     // If installation succeeded, use the path to setup in the installer dir.
-    base::FilePath setup_path(cmd_line.GetProgram());
+    base::FilePath setup_path(setup_exe);
     if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
       setup_path = installer_state.GetInstallerDirectory(*installer_version)
           .Append(setup_path.BaseName());
@@ -1655,8 +1662,7 @@ InstallStatus InstallProductsHelper(
     for (Products::const_iterator it = products.begin(); it < products.end();
          ++it) {
       const Product& product = **it;
-      product.LaunchUserExperiment(setup_path, install_status,
-                                   system_install);
+      product.LaunchUserExperiment(setup_path, install_status, system_install);
     }
   }
 
@@ -1740,9 +1746,23 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (installer::ContainsUnsupportedSwitch(cmd_line))
     return installer::UNSUPPORTED_OPTION;
 
+  // A variety of installer operations require the path to the current
+  // executable. Get it once here for use throughout these operations. Note that
+  // the path service is the authoritative source for this path. One might think
+  // that CommandLine::GetProgram would suffice, but it won't since
+  // CreateProcess may have been called with a command line that is somewhat
+  // ambiguous (e.g., an unquoted path with spaces, or a path lacking the file
+  // extension), in which case CommandLineToArgv will not yield an argv with the
+  // true path to the program at position 0.
+  base::FilePath setup_exe;
+  if (!PathService::Get(base::FILE_EXE, &setup_exe)) {
+    NOTREACHED();
+    return installer::OS_ERROR;
+  }
+
   int exit_code = 0;
   if (HandleNonInstallCmdLineOptions(
-          original_state, cmd_line, &installer_state, &exit_code)) {
+          original_state, setup_exe, cmd_line, &installer_state, &exit_code)) {
     return exit_code;
   }
 
@@ -1779,12 +1799,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // If --uninstall option is given, uninstall the identified product(s)
   if (is_uninstall) {
     install_status =
-        UninstallProducts(original_state, installer_state, cmd_line);
+        UninstallProducts(original_state, installer_state, setup_exe, cmd_line);
   } else {
     // If --uninstall option is not specified, we assume it is install case.
     install_status =
-        InstallProducts(original_state, cmd_line, prefs, &installer_state,
-                        &installer_directory);
+        InstallProducts(original_state, setup_exe, cmd_line, prefs,
+                        &installer_state, &installer_directory);
   }
 
   // Validate that the machine is now in a good state following the operation.

@@ -1044,7 +1044,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
 
 InstallStatus UninstallProduct(const InstallationState& original_state,
                                const InstallerState& installer_state,
-                               const base::FilePath& setup_path,
+                               const base::FilePath& setup_exe,
                                const Product& product,
                                bool remove_all,
                                bool force_uninstall,
@@ -1318,9 +1318,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
   } else if (!installer_state.is_multi_install() ||
              product.is_chrome_binaries()) {
-    base::FilePath setup_exe(base::MakeAbsoluteFilePath(cmd_line.GetProgram()));
     DeleteResult delete_result = DeleteChromeFilesAndFolders(
-        installer_state, setup_exe);
+        installer_state, base::MakeAbsoluteFilePath(setup_exe));
     if (delete_result == DELETE_FAILED) {
       ret = installer::UNINSTALL_FAILED;
     } else if (delete_result == DELETE_REQUIRES_REBOOT) {
@@ -1348,7 +1347,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 void CleanUpInstallationDirectoryAfterUninstall(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const CommandLine& cmd_line,
+    const base::FilePath& setup_exe,
     InstallStatus* uninstall_status) {
   if (*uninstall_status != UNINSTALL_SUCCESSFUL &&
       *uninstall_status != UNINSTALL_REQUIRES_REBOOT) {
@@ -1360,8 +1359,7 @@ void CleanUpInstallationDirectoryAfterUninstall(
     *uninstall_status = UNINSTALL_FAILED;
     return;
   }
-  base::FilePath setup_exe(base::MakeAbsoluteFilePath(cmd_line.GetProgram()));
-  if (!target_path.IsParent(setup_exe)) {
+  if (!target_path.IsParent(base::MakeAbsoluteFilePath(setup_exe))) {
     VLOG(1) << "setup.exe is not in target path. Skipping installer cleanup.";
     return;
   }

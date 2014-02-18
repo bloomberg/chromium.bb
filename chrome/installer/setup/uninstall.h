@@ -60,8 +60,9 @@ void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
 //
 // original_state: The installation state of all products on the system.
 // installer_state: State associated with this operation.
-// setup_path: Path to the executable (setup.exe) as it will be copied
-//           to temp folder before deleting Chrome folder.
+// setup_exe: The path to the currently running setup.exe. It and its containing
+//     directories are left in-place if it is within the target directory of
+//     the product being uninstalled.
 // dist: Represents the distribution to be uninstalled.
 // remove_all: Remove all shared files, registry entries as well.
 // force_uninstall: Uninstall without prompting for user confirmation or
@@ -71,7 +72,7 @@ void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
 installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const base::FilePath& setup_path,
+    const base::FilePath& setup_exe,
     const Product& dist,
     bool remove_all,
     bool force_uninstall,
@@ -84,13 +85,14 @@ installer::InstallStatus UninstallProduct(
 //
 // original_state: The installation state of all products on the system.
 // installer_state: State associated with this operation.
-// cmd_line: CommandLine that contains information about the command that
-//           was used to launch current uninstaller.
+// setup_exe: The path to the currently running setup.exe, which will be moved
+//     into a temporary directory to allow for deletion of the installation
+//     directory.
 // uninstall_status: the uninstall status so far (may change during invocation).
 void CleanUpInstallationDirectoryAfterUninstall(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const CommandLine& cmd_line,
+    const base::FilePath& setup_exe,
     InstallStatus* uninstall_status);
 
 }  // namespace installer
