@@ -18,6 +18,11 @@ import sys
 import tempfile
 from gyp.common import GypError
 
+# Populated lazily by XcodeVersion, for efficiency, and to fix an issue when
+# "xcodebuild" is called too quickly (it has been found to return incorrect
+# version number).
+XCODE_VERSION_CACHE = []
+
 class XcodeSettings(object):
   """A class that understands the gyp 'xcode_settings' object."""
 
@@ -33,10 +38,6 @@ class XcodeSettings(object):
   # Populated lazily by GetIOSPostbuilds.  Shared by all XcodeSettings, so
   # cached at class-level for efficiency.
   _codesigning_key_cache = {}
-
-  # Populated lazily by _XcodeVersion.  Shared by all XcodeSettings, so cached
-  # at class-level for efficiency.
-  _xcode_version_cache = ()
 
   def __init__(self, spec):
     self.spec = spec
@@ -868,11 +869,6 @@ class XcodeSettings(object):
   def _BuildMachineOSBuild(self):
     return GetStdout(['sw_vers', '-buildVersion'])
 
-  def _XcodeVersion(self):
-    if len(XcodeSettings._xcode_version_cache) == 0:
-      XcodeSettings._xcode_version_cache = XcodeVersion()
-    return XcodeSettings._xcode_version_cache
-
   def _XcodeIOSDeviceFamily(self, configname):
     family = self.xcode_settings[configname].get('TARGETED_DEVICE_FAMILY', '1')
     return [int(x) for x in family.split(',')]
@@ -883,7 +879,7 @@ class XcodeSettings(object):
       cache = {}
       cache['BuildMachineOSBuild'] = self._BuildMachineOSBuild()
 
-      xcode, xcode_build = self._XcodeVersion()
+      xcode, xcode_build = XcodeVersion()
       cache['DTXcode'] = xcode
       cache['DTXcodeBuild'] = xcode_build
 
@@ -921,7 +917,7 @@ class XcodeSettings(object):
     project, then the environment variable was empty. Starting with this
     version, Xcode uses the name of the newest SDK installed.
     """
-    xcode_version, xcode_build = self._XcodeVersion()
+    xcode_version, xcode_build = XcodeVersion()
     if xcode_version < '0500':
       return ''
     default_sdk_path = self._XcodeSdkPath('')
@@ -960,7 +956,7 @@ class XcodeSettings(object):
     # does not set ARCHS if it is not set in the .gyp file.
     if self.isIOS:
       return 'i386'
-    version, build = self._XcodeVersion()
+    version, build = XcodeVersion()
     if version >= '0500':
       return 'x86_64'
     return 'i386'
@@ -1081,6 +1077,9 @@ def XcodeVersion():
   #    Component versions: DevToolsCore-1809.0; DevToolsSupport-1806.0
   #    BuildVersion: 10M2518
   # Convert that to '0463', '4H1503'.
+  if XCODE_VERSION_CACHE:
+    assert len(XCODE_VERSION_CACHE) >= 2
+    return tuple(XCODE_VERSION_CACHE[:2])
   try:
     version_list = GetStdout(['xcodebuild', '-version']).splitlines()
     # In some circumstances xcodebuild exits 0 but doesn't return
@@ -1105,6 +1104,7 @@ def XcodeVersion():
   version = (version + '0' * (3 - len(version))).zfill(4)
   if build:
     build = build.split()[-1]
+  XCODE_VERSION_CACHE.extend((version, build))
   return version, build
 
 
