@@ -736,6 +736,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/version.h',
         '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
+        'common/chrome_constants.cc',
+        'common/chrome_constants.h',
         'test/chromedriver/alert_commands.cc',
         'test/chromedriver/alert_commands.h',
         'test/chromedriver/basic_types.cc',

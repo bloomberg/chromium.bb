@@ -25,6 +25,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_existing_impl.h"
@@ -661,28 +662,28 @@ Status PrepareUserDataDir(
     const base::FilePath& user_data_dir,
     const base::DictionaryValue* custom_prefs,
     const base::DictionaryValue* custom_local_state) {
-  base::FilePath default_dir = user_data_dir.AppendASCII("Default");
+  base::FilePath default_dir =
+      user_data_dir.AppendASCII(chrome::kInitialProfile);
   if (!base::CreateDirectory(default_dir))
     return Status(kUnknownError, "cannot create default profile directory");
 
-  Status status = WritePrefsFile(
-      kPreferences,
-      custom_prefs,
-      default_dir.AppendASCII("Preferences"));
+  Status status =
+      WritePrefsFile(kPreferences,
+                     custom_prefs,
+                     default_dir.Append(chrome::kPreferencesFilename));
   if (status.IsError())
     return status;
 
-  status = WritePrefsFile(
-      kLocalState,
-      custom_local_state,
-      user_data_dir.AppendASCII("Local State"));
+  status = WritePrefsFile(kLocalState,
+                          custom_local_state,
+                          user_data_dir.Append(chrome::kLocalStateFilename));
   if (status.IsError())
     return status;
 
   // Write empty "First Run" file, otherwise Chrome will wipe the default
   // profile that was written.
   if (file_util::WriteFile(
-          user_data_dir.AppendASCII("First Run"), "", 0) != 0) {
+          user_data_dir.Append(chrome::kFirstRunSentinel), "", 0) != 0) {
     return Status(kUnknownError, "failed to write first run file");
   }
   return Status(kOk);

@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -175,7 +176,8 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   ASSERT_EQ(kOk, status.code());
 
   base::FilePath prefs_file =
-      temp_dir.path().AppendASCII("Default").AppendASCII("Preferences");
+      temp_dir.path().AppendASCII(chrome::kInitialProfile).Append(
+          chrome::kPreferencesFilename);
   std::string prefs_str;
   ASSERT_TRUE(base::ReadFileToString(prefs_file, &prefs_str));
   scoped_ptr<base::Value> prefs_value(base::JSONReader::Read(prefs_str));
@@ -184,7 +186,8 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   AssertEQ(*prefs_dict, "myPrefsKey", "ok");
   AssertEQ(*prefs_dict, "pref.sub", "1");
 
-  base::FilePath local_state_file = temp_dir.path().AppendASCII("Local State");
+  base::FilePath local_state_file =
+      temp_dir.path().Append(chrome::kLocalStateFilename);
   std::string local_state_str;
   ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
   scoped_ptr<base::Value> local_state_value(
