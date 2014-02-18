@@ -464,7 +464,10 @@ Press any key to continue exploring.
     Copying $1 items...
   </message>
   <message name="IDS_FILE_BROWSER_COPY_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
-    Copy operation failed, item exists: "$1"
+    Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> already exists. Rename it and try again.
+  </message>
+  <message name="IDS_FILE_BROWSER_COPY_SOURCE_NOT_FOUND_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
+    Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> no longer exists.
   </message>
   <message name="IDS_FILE_BROWSER_COPY_FILESYSTEM_ERROR" desc="File Manager error message.">
     Copy operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
@@ -479,7 +482,10 @@ Press any key to continue exploring.
     Moving $1 items...
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
-    Move failed, item exists: "$1"
+    Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> already exists. Rename it and try again.
+  </message>
+  <message name="IDS_FILE_BROWSER_MOVE_SOURCE_NOT_FOUND_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
+    Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> no longer exists.
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_FILESYSTEM_ERROR" desc="File Manager error message.">
     Move failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>

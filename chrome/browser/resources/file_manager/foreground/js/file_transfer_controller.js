@@ -240,13 +240,6 @@ FileTransferController.prototype = {
   paste: function(dataTransfer, opt_destinationEntry, opt_effect) {
     var sourceURLs = dataTransfer.getData('fs/sources') ?
         dataTransfer.getData('fs/sources').split('\n') : [];
-    util.URLsToEntries(sourceURLs, function(sourceEntries) {
-      var destinationEntry =
-          opt_destinationEntry || this.currentDirectoryContentEntry;
-      // Start the pasting operation.
-      this.fileOperationManager_.paste(sourceEntries, destinationEntry, toMove);
-    }.bind(this));
-
     // effectAllowed set in copy/paste handlers stay uninitialized. DnD handlers
     // work fine.
     var effectAllowed = dataTransfer.effectAllowed !== 'uninitialized' ?
@@ -254,6 +247,22 @@ FileTransferController.prototype = {
     var toMove = effectAllowed === 'move' ||
         (effectAllowed === 'copyMove' && opt_effect === 'move');
 
+    util.URLsToEntries(sourceURLs, function(sourceEntries, failureUrls) {
+      var destinationEntry =
+          opt_destinationEntry || this.currentDirectoryContentEntry;
+      // Start the pasting operation.
+      this.fileOperationManager_.paste(sourceEntries, destinationEntry, toMove);
+
+      // Publish events for failureUrls.
+      for (var i = 0; i < failureUrls.length; i++) {
+        var fileName = decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
+        var event = new Event('source-not-found');
+        event.fileName = fileName;
+        event.progressType =
+            toMove ? ProgressItemType.MOVE : ProgressItemType.COPY;
+        this.dispatchEvent(event);
+      }
+    }.bind(this));
     return toMove ? 'move' : 'copy';
   },
 

@@ -399,6 +399,26 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.blinkSelection.bind(this));
     controller.addEventListener('selection-cut',
         this.blinkSelection.bind(this));
+    controller.addEventListener('source-not-found',
+        this.onSourceNotFound_.bind(this));
+  };
+
+  /**
+   * Handles an error that the source entry of file operation is not found.
+   * @private
+   */
+  FileManager.prototype.onSourceNotFound_ = function(event) {
+    // Ensure this.sourceNotFoundErrorCount_ is integer.
+    this.sourceNotFoundErrorCount_ = ~~this.sourceNotFoundErrorCount_;
+    var item = new ProgressCenterItem();
+    item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
+    if (event.progressType === ProgressItemType.COPY)
+      item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', event.fileName);
+    else if (event.progressType === ProgressItemType.MOVE)
+      item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', event.fileName);
+    item.state = ProgressItemState.ERROR;
+    this.backgroundPage_.background.progressCenter.updateItem(item);
+    this.sourceNotFoundErrorCount_++;
   };
 
   /**
