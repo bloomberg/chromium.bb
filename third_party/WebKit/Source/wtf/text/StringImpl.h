@@ -270,17 +270,17 @@ public:
         return hashSlowCase();
     }
 
-    inline bool hasOneRef() const
+    ALWAYS_INLINE bool hasOneRef() const
     {
         return m_refCount == 1;
     }
 
-    inline void ref()
+    ALWAYS_INLINE void ref()
     {
         ++m_refCount;
     }
 
-    inline void deref()
+    ALWAYS_INLINE void deref()
     {
         if (hasOneRef()) {
             destroyIfNotStatic();
