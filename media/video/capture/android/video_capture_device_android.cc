@@ -56,8 +56,43 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
-    VideoCaptureFormats* formats) {
-  NOTIMPLEMENTED();
+    VideoCaptureFormats* capture_formats) {
+  int id;
+  if (!base::StringToInt(device.id(), &id))
+    return;
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobjectArray> collected_formats =
+      Java_VideoCapture_getDeviceSupportedFormats(env, id);
+  if (collected_formats.is_null())
+    return;
+
+  jsize num_formats = env->GetArrayLength(collected_formats.obj());
+  for (int i = 0; i < num_formats; ++i) {
+    base::android::ScopedJavaLocalRef<jobject> format(
+        env, env->GetObjectArrayElement(collected_formats.obj(), i));
+
+    VideoPixelFormat pixel_format = media::PIXEL_FORMAT_UNKNOWN;
+    switch (media::Java_CaptureFormat_getPixelFormat(env, format.obj())) {
+      case VideoCaptureDeviceAndroid::ANDROID_IMAGEFORMAT_YV12:
+        pixel_format = media::PIXEL_FORMAT_YV12;
+        break;
+      case VideoCaptureDeviceAndroid::ANDROID_IMAGEFORMAT_NV21:
+        pixel_format = media::PIXEL_FORMAT_NV21;
+        break;
+      default:
+        break;
+    }
+    VideoCaptureFormat capture_format(
+        gfx::Size(media::Java_CaptureFormat_getWidth(env, format.obj()),
+                  media::Java_CaptureFormat_getHeight(env, format.obj())),
+        media::Java_CaptureFormat_getFramerate(env, format.obj()),
+        pixel_format);
+    capture_formats->push_back(capture_format);
+    DVLOG(1) << device.name() << " resolution: "
+        << capture_format.frame_size.ToString() << ", fps: "
+        << capture_format.frame_rate << ", pixel format: "
+        << capture_format.pixel_format;
+  }
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {

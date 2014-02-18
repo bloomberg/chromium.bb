@@ -9,6 +9,7 @@ import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.Size;
 import android.opengl.GLES20;
 import android.util.Log;
 import android.view.Surface;
@@ -18,7 +19,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,10 +31,34 @@ import java.util.concurrent.locks.ReentrantLock;
  **/
 @JNINamespace("media")
 public class VideoCapture implements PreviewCallback {
-    static class CaptureCapability {
+    static class CaptureFormat {
+        public CaptureFormat(
+                int width, int height, int framerate, int pixelformat) {
+            mWidth = width;
+            mHeight = height;
+            mFramerate = framerate;
+            mPixelFormat = pixelformat;
+        }
         public int mWidth;
         public int mHeight;
-        public int mDesiredFps;
+        public final int mFramerate;
+        public final int mPixelFormat;
+        @CalledByNative("CaptureFormat")
+        public int getWidth() {
+            return mWidth;
+        }
+        @CalledByNative("CaptureFormat")
+        public int getHeight() {
+            return mHeight;
+        }
+        @CalledByNative("CaptureFormat")
+        public int getFramerate() {
+            return mFramerate;
+        }
+        @CalledByNative("CaptureFormat")
+        public int getPixelFormat() {
+            return mPixelFormat;
+        }
     }
 
     // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
@@ -63,17 +88,17 @@ public class VideoCapture implements PreviewCallback {
             "ODROID-U2",
         };
 
-        static void applyMinDimensions(CaptureCapability capability) {
+        static void applyMinDimensions(CaptureFormat format) {
             // NOTE: this can discard requested aspect ratio considerations.
             for (IdAndSizes buggyDevice : s_CAPTURESIZE_BUGGY_DEVICE_LIST) {
                 if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL) &&
                         buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
-                    capability.mWidth = (buggyDevice.mMinWidth > capability.mWidth)
+                    format.mWidth = (buggyDevice.mMinWidth > format.mWidth)
                                         ? buggyDevice.mMinWidth
-                                        : capability.mWidth;
-                    capability.mHeight = (buggyDevice.mMinHeight > capability.mHeight)
+                                        : format.mWidth;
+                    format.mHeight = (buggyDevice.mMinHeight > format.mHeight)
                                          ? buggyDevice.mMinHeight
-                                         : capability.mHeight;
+                                         : format.mHeight;
                 }
             }
         }
@@ -94,7 +119,6 @@ public class VideoCapture implements PreviewCallback {
 
     private Camera mCamera;
     public ReentrantLock mPreviewBufferLock = new ReentrantLock();
-    private int mImageFormat = ImageFormat.YV12;
     private Context mContext = null;
     // True when native code has started capture.
     private boolean mIsRunning = false;
@@ -112,13 +136,71 @@ public class VideoCapture implements PreviewCallback {
     private int mCameraFacing = 0;
     private int mDeviceOrientation = 0;
 
-    CaptureCapability mCurrentCapability = null;
+    CaptureFormat mCaptureFormat = null;
     private static final String TAG = "VideoCapture";
 
     @CalledByNative
     public static VideoCapture createVideoCapture(
             Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         return new VideoCapture(context, id, nativeVideoCaptureDeviceAndroid);
+    }
+
+    @CalledByNative
+    public static CaptureFormat[] getDeviceSupportedFormats(int id) {
+        Camera camera;
+        try {
+             camera = Camera.open(id);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "Camera.open: " + ex);
+            return null;
+        }
+        Camera.Parameters parameters = camera.getParameters();
+
+        ArrayList<CaptureFormat> formatList = new ArrayList<CaptureFormat>();
+        // getSupportedPreview{Formats,FpsRange,PreviewSizes}() returns Lists
+        // with at least one element, but when the camera is in bad state, they
+        // can return null pointers; in that case we use a 0 entry, so we can
+        // retrieve as much information as possible.
+        List<Integer> pixelFormats = parameters.getSupportedPreviewFormats();
+        if (pixelFormats == null) {
+            pixelFormats = new ArrayList<Integer>();
+        }
+        if (pixelFormats.size() == 0) {
+            pixelFormats.add(ImageFormat.UNKNOWN);
+        }
+        for (Integer previewFormat : pixelFormats) {
+            int pixelFormat =
+                    AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
+            if (previewFormat == ImageFormat.YV12) {
+                pixelFormat = AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
+            } else if (previewFormat == ImageFormat.NV21) {
+                continue;
+            }
+
+            List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
+            if (listFpsRange == null) {
+                listFpsRange = new ArrayList<int[]>();
+            }
+            if (listFpsRange.size() == 0) {
+                listFpsRange.add(new int[] {0, 0});
+            }
+            for (int[] fpsRange : listFpsRange) {
+                List<Camera.Size> supportedSizes =
+                        parameters.getSupportedPreviewSizes();
+                if (supportedSizes == null) {
+                    supportedSizes = new ArrayList<Camera.Size>();
+                }
+                if (supportedSizes.size() == 0) {
+                    supportedSizes.add(camera.new Size(0, 0));
+                }
+                for (Camera.Size size : supportedSizes) {
+                    formatList.add(new CaptureFormat(size.width, size.height,
+                            (fpsRange[0] + 999 ) / 1000, pixelFormat));
+                }
+            }
+        }
+        camera.release();
+        return formatList.toArray(new CaptureFormat[formatList.size()]);
     }
 
     public VideoCapture(
@@ -136,7 +218,7 @@ public class VideoCapture implements PreviewCallback {
         try {
             mCamera = Camera.open(mId);
         } catch (RuntimeException ex) {
-            Log.e(TAG, "allocate:Camera.open: " + ex);
+            Log.e(TAG, "allocate: Camera.open: " + ex);
             return false;
         }
 
@@ -150,25 +232,20 @@ public class VideoCapture implements PreviewCallback {
 
         Camera.Parameters parameters = mCamera.getParameters();
 
-        // Calculate fps.
+        // getSupportedPreviewFpsRange() returns a List with at least one
+        // element, but when camera is in bad state, it can return null pointer.
         List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
         if (listFpsRange == null || listFpsRange.size() == 0) {
             Log.e(TAG, "allocate: no fps range found");
             return false;
         }
         int frameRateInMs = frameRate * 1000;
-        Iterator itFpsRange = listFpsRange.iterator();
-        int[] fpsRange = (int[]) itFpsRange.next();
         // Use the first range as default.
-        int fpsMin = fpsRange[0];
-        int fpsMax = fpsRange[1];
-        int newFrameRate = (fpsMin + 999) / 1000;
-        while (itFpsRange.hasNext()) {
-            fpsRange = (int[]) itFpsRange.next();
-            if (fpsRange[0] <= frameRateInMs &&
-                frameRateInMs <= fpsRange[1]) {
-                fpsMin = fpsRange[0];
-                fpsMax = fpsRange[1];
+        int[] fpsMinMax = listFpsRange.get(0);
+        int newFrameRate = (fpsMinMax[0] + 999) / 1000;
+        for (int[] fpsRange : listFpsRange) {
+            if (fpsRange[0] <= frameRateInMs && frameRateInMs <= fpsRange[1]) {
+                fpsMinMax = fpsRange;
                 newFrameRate = frameRate;
                 break;
             }
@@ -176,21 +253,16 @@ public class VideoCapture implements PreviewCallback {
         frameRate = newFrameRate;
         Log.d(TAG, "allocate: fps set to " + frameRate);
 
-        mCurrentCapability = new CaptureCapability();
-        mCurrentCapability.mDesiredFps = frameRate;
-
         // Calculate size.
         List<Camera.Size> listCameraSize =
                 parameters.getSupportedPreviewSizes();
         int minDiff = Integer.MAX_VALUE;
         int matchedWidth = width;
         int matchedHeight = height;
-        Iterator itCameraSize = listCameraSize.iterator();
-        while (itCameraSize.hasNext()) {
-            Camera.Size size = (Camera.Size) itCameraSize.next();
+        for (Camera.Size size : listCameraSize) {
             int diff = Math.abs(size.width - width) +
                        Math.abs(size.height - height);
-            Log.d(TAG, "allocate: support resolution (" +
+            Log.d(TAG, "allocate: supported (" +
                   size.width + ", " + size.height + "), diff=" + diff);
             // TODO(wjia): Remove this hack (forcing width to be multiple
             // of 32) by supporting stride in video frame buffer.
@@ -206,16 +278,15 @@ public class VideoCapture implements PreviewCallback {
             Log.e(TAG, "allocate: can not find a multiple-of-32 resolution");
             return false;
         }
-        mCurrentCapability.mWidth = matchedWidth;
-        mCurrentCapability.mHeight = matchedHeight;
+
+        mCaptureFormat = new CaptureFormat(
+                matchedWidth, matchedHeight, frameRate,
+                BuggyDeviceHack.getImageFormat());
         // Hack to avoid certain capture resolutions under a minimum one,
         // see http://crbug.com/305294
-        BuggyDeviceHack.applyMinDimensions(mCurrentCapability);
-
-        Log.d(TAG, "allocate: matched (" + mCurrentCapability.mWidth + "x" +
-                  mCurrentCapability.mHeight + ")");
-
-        mImageFormat = BuggyDeviceHack.getImageFormat();
+        BuggyDeviceHack.applyMinDimensions(mCaptureFormat);
+        Log.d(TAG, "allocate: matched (" + mCaptureFormat.mWidth + "x" +
+                mCaptureFormat.mHeight + ")");
 
         if (parameters.isVideoStabilizationSupported()) {
             Log.d(TAG, "Image stabilization supported, currently: "
@@ -224,11 +295,10 @@ public class VideoCapture implements PreviewCallback {
         } else {
             Log.d(TAG, "Image stabilization not supported.");
         }
-
-        parameters.setPreviewSize(mCurrentCapability.mWidth,
-                                  mCurrentCapability.mHeight);
-        parameters.setPreviewFormat(mImageFormat);
-        parameters.setPreviewFpsRange(fpsMin, fpsMax);
+        parameters.setPreviewSize(mCaptureFormat.mWidth,
+                                  mCaptureFormat.mHeight);
+        parameters.setPreviewFormat(mCaptureFormat.mPixelFormat);
+        parameters.setPreviewFpsRange(fpsMinMax[0], fpsMinMax[1]);
         mCamera.setParameters(parameters);
 
         // Set SurfaceTexture. Android Capture needs a SurfaceTexture even if
@@ -258,9 +328,10 @@ public class VideoCapture implements PreviewCallback {
             return false;
         }
 
-        int bufSize = mCurrentCapability.mWidth *
-                      mCurrentCapability.mHeight *
-                      ImageFormat.getBitsPerPixel(mImageFormat) / 8;
+        int bufSize = mCaptureFormat.mWidth *
+                      mCaptureFormat.mHeight *
+                      ImageFormat.getBitsPerPixel(
+                              mCaptureFormat.mPixelFormat) / 8;
         for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
             byte[] buffer = new byte[bufSize];
             mCamera.addCallbackBuffer(buffer);
@@ -272,22 +343,22 @@ public class VideoCapture implements PreviewCallback {
 
     @CalledByNative
     public int queryWidth() {
-        return mCurrentCapability.mWidth;
+        return mCaptureFormat.mWidth;
     }
 
     @CalledByNative
     public int queryHeight() {
-        return mCurrentCapability.mHeight;
+        return mCaptureFormat.mHeight;
     }
 
     @CalledByNative
     public int queryFrameRate() {
-        return mCurrentCapability.mDesiredFps;
+        return mCaptureFormat.mFramerate;
     }
 
     @CalledByNative
     public int getColorspace() {
-        switch (mImageFormat) {
+        switch (mCaptureFormat.mPixelFormat) {
             case ImageFormat.YV12:
                 return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
             case ImageFormat.NV21:
@@ -351,7 +422,7 @@ public class VideoCapture implements PreviewCallback {
             mCamera.setPreviewTexture(null);
             if (mGlTextures != null)
                 GLES20.glDeleteTextures(1, mGlTextures, 0);
-            mCurrentCapability = null;
+            mCaptureFormat = null;
             mCamera.release();
             mCamera = null;
         } catch (IOException ex) {

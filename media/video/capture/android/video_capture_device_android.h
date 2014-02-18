@@ -23,6 +23,13 @@ namespace media {
 // but only VideoCaptureManager would change their value.
 class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
  public:
+  // Automatically generated enum to interface with Java world.
+  enum AndroidImageFormat {
+#define DEFINE_ANDROID_IMAGEFORMAT(name, value) name = value,
+#include "media/video/capture/android/imageformat_list.h"
+#undef DEFINE_ANDROID_IMAGEFORMAT
+  };
+
   virtual ~VideoCaptureDeviceAndroid();
 
   static VideoCaptureDevice* Create(const Name& device_name);
@@ -46,13 +53,6 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     kIdle,  // The device is opened but not in use.
     kCapturing,  // Video is being captured.
     kError  // Hit error. User needs to recover by destroying the object.
-  };
-
-  // Automatically generated enum to interface with Java world.
-  enum AndroidImageFormat {
-#define DEFINE_ANDROID_IMAGEFORMAT(name, value) name = value,
-#include "media/video/capture/android/imageformat_list.h"
-#undef DEFINE_ANDROID_IMAGEFORMAT
   };
 
   explicit VideoCaptureDeviceAndroid(const Name& device_name);
