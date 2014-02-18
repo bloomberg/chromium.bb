@@ -10,6 +10,7 @@ RecalculateStyles Properties:
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     type : "RecalculateStyles"
 }
