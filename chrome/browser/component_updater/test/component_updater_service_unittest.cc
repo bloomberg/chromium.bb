@@ -490,6 +490,13 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_NE(string::npos, elements[1].find(" prodchannel="));
   EXPECT_NE(string::npos, elements[1].find(" prodversion="));
 
+  // Look for additional attributes of the request, such as |version|,
+  // |requestid|, |lang|, and |nacl_arch|.
+  EXPECT_NE(string::npos, elements[1].find(" version="));
+  EXPECT_NE(string::npos, elements[1].find(" requestid="));
+  EXPECT_NE(string::npos, elements[1].find(" lang="));
+  EXPECT_NE(string::npos, elements[1].find(" nacl_arch="));
+
   component_updater()->Stop();
 }
 
