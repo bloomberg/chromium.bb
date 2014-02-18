@@ -64,11 +64,7 @@ namespace WTF {
         PassOwnPtr<DataType> waitForMessage();
         PassOwnPtr<DataType> tryGetMessage();
         PassOwnPtr<DataType> tryGetMessageIgnoringKilled();
-        template<typename Predicate>
-        PassOwnPtr<DataType> waitForMessageFilteredWithTimeout(MessageQueueWaitResult&, Predicate&, double absoluteTime);
-
-        template<typename Predicate>
-        void removeIf(Predicate&);
+        PassOwnPtr<DataType> waitForMessageWithTimeout(MessageQueueWaitResult&, double absoluteTime);
 
         void kill();
         bool killed() const;
@@ -79,8 +75,6 @@ namespace WTF {
         static double infiniteTime() { return std::numeric_limits<double>::max(); }
 
     private:
-        static bool alwaysTruePredicate(DataType*) { return true; }
-
         mutable Mutex m_mutex;
         ThreadCondition m_condition;
         Deque<DataType*> m_queue;
@@ -134,20 +128,18 @@ namespace WTF {
     inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessage()
     {
         MessageQueueWaitResult exitReason;
-        OwnPtr<DataType> result = waitForMessageFilteredWithTimeout(exitReason, MessageQueue<DataType>::alwaysTruePredicate, infiniteTime());
+        OwnPtr<DataType> result = waitForMessageWithTimeout(exitReason, infiniteTime());
         ASSERT(exitReason == MessageQueueTerminated || exitReason == MessageQueueMessageReceived);
         return result.release();
     }
 
     template<typename DataType>
-    template<typename Predicate>
-    inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessageFilteredWithTimeout(MessageQueueWaitResult& result, Predicate& predicate, double absoluteTime)
+    inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessageWithTimeout(MessageQueueWaitResult& result, double absoluteTime)
     {
         MutexLocker lock(m_mutex);
         bool timedOut = false;
 
-        DequeConstIterator<DataType*> found = m_queue.end();
-        while (!m_killed && !timedOut && (found = m_queue.findIf(predicate)) == m_queue.end())
+        while (!m_killed && !timedOut && m_queue.isEmpty())
             timedOut = !m_condition.timedWait(m_mutex, absoluteTime);
 
         ASSERT(!timedOut || absoluteTime != infiniteTime());
@@ -161,6 +153,8 @@ namespace WTF {
             result = MessageQueueTimeout;
             return nullptr;
         }
+
+        DequeConstIterator<DataType*> found = m_queue.begin();
 
         ASSERT_WITH_SECURITY_IMPLICATION(found != m_queue.end());
         OwnPtr<DataType> message = adoptPtr(*found);
@@ -189,19 +183,6 @@ namespace WTF {
             return nullptr;
 
         return adoptPtr(m_queue.takeFirst());
-    }
-
-    template<typename DataType>
-    template<typename Predicate>
-    inline void MessageQueue<DataType>::removeIf(Predicate& predicate)
-    {
-        MutexLocker lock(m_mutex);
-        DequeConstIterator<DataType*> found = m_queue.end();
-        while ((found = m_queue.findIf(predicate)) != m_queue.end()) {
-            DataType* message = *found;
-            m_queue.remove(found);
-            delete message;
-        }
     }
 
     template<typename DataType>

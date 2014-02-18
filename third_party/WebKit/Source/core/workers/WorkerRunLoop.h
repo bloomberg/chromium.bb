@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-    class ModePredicate;
     class WorkerGlobalScope;
     class WorkerSharedTimer;
 
@@ -54,37 +53,34 @@ namespace WebCore {
 
         enum WaitMode { WaitForMessage, DontWaitForMessage };
 
-        // Waits for a single task and returns.
-        MessageQueueWaitResult runInMode(WorkerGlobalScope*, const String& mode, WaitMode = WaitForMessage);
+        // Waits for a single debugger task and returns.
+        MessageQueueWaitResult runDebuggerTask(WorkerGlobalScope*, WaitMode = WaitForMessage);
 
         void terminate();
         bool terminated() const { return m_messageQueue.killed(); }
 
         // Returns true if the loop is still alive, false if it has been terminated.
         bool postTask(PassOwnPtr<ExecutionContextTask>);
-        bool postTask(const Closure&);
 
         void postTaskAndTerminate(PassOwnPtr<ExecutionContextTask>);
 
         // Returns true if the loop is still alive, false if it has been terminated.
-        bool postTaskForMode(PassOwnPtr<ExecutionContextTask>, const String& mode);
-
-        unsigned long createUniqueId() { return ++m_uniqueId; }
+        bool postDebuggerTask(PassOwnPtr<ExecutionContextTask>);
 
         class Task;
 
     private:
         friend class RunLoopSetup;
-        MessageQueueWaitResult runInMode(WorkerGlobalScope*, const ModePredicate&, WaitMode);
+        MessageQueueWaitResult run(MessageQueue<Task>&, WorkerGlobalScope*, WaitMode);
 
         // Runs any clean up tasks that are currently in the queue and returns.
         // This should only be called when the context is closed or loop has been terminated.
         void runCleanupTasks(WorkerGlobalScope*);
 
         MessageQueue<Task> m_messageQueue;
+        MessageQueue<Task> m_debuggerMessageQueue;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         int m_nestedCount;
-        unsigned long m_uniqueId;
     };
 
 } // namespace WebCore

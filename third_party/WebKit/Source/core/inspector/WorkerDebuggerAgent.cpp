@@ -66,7 +66,7 @@ public:
         // Process all queued debugger commands. It is safe to use m_workerGlobalScope here
         // because it is alive if RunWorkerLoop is not terminated, otherwise it will
         // just be ignored. WorkerThread is certainly alive if this task is being executed.
-        while (MessageQueueMessageReceived == m_thread->runLoop().runInMode(m_workerGlobalScope, WorkerDebuggerAgent::debuggerTaskMode, WorkerRunLoop::DontWaitForMessage)) { }
+        while (MessageQueueMessageReceived == m_thread->runLoop().runDebuggerTask(m_workerGlobalScope, WorkerRunLoop::DontWaitForMessage)) { }
     }
 
 private:
@@ -75,8 +75,6 @@ private:
 };
 
 } // namespace
-
-const char WorkerDebuggerAgent::debuggerTaskMode[] = "debugger";
 
 PassOwnPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
 {

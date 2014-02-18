@@ -45,7 +45,7 @@ class WorkerThread;
 class WorkerScriptDebugServer FINAL : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
-    WorkerScriptDebugServer(WorkerGlobalScope*, const String&);
+    WorkerScriptDebugServer(WorkerGlobalScope*);
     virtual ~WorkerScriptDebugServer() { }
 
     void addListener(ScriptDebugListener*);
@@ -61,7 +61,6 @@ private:
     typedef HashMap<WorkerGlobalScope*, ScriptDebugListener*> ListenersMap;
     ScriptDebugListener* m_listener;
     WorkerGlobalScope* m_workerGlobalScope;
-    String m_debuggerTaskMode;
 };
 
 } // namespace WebCore

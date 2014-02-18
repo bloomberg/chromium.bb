@@ -42,19 +42,13 @@
 
 namespace WebCore {
 
-static String defaultMode()
-{
-    return String();
-}
-
 class WorkerRunLoop::Task {
     WTF_MAKE_NONCOPYABLE(Task); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<Task> create(PassOwnPtr<ExecutionContextTask> task, const String& mode)
+    static PassOwnPtr<Task> create(PassOwnPtr<ExecutionContextTask> task)
     {
-        return adoptPtr(new Task(task, mode));
+        return adoptPtr(new Task(task));
     }
-    const String& mode() const { return m_mode; }
     void performTask(const WorkerRunLoop& runLoop, ExecutionContext* context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
@@ -63,14 +57,30 @@ public:
     }
 
 private:
-    Task(PassOwnPtr<ExecutionContextTask> task, const String& mode)
+    Task(PassOwnPtr<ExecutionContextTask> task)
         : m_task(task)
-        , m_mode(mode.isolatedCopy())
     {
     }
 
     OwnPtr<ExecutionContextTask> m_task;
-    String m_mode;
+};
+
+class TickleDebuggerQueueTask FINAL : public ExecutionContextTask {
+public:
+    static PassOwnPtr<TickleDebuggerQueueTask> create(WorkerRunLoop* loop)
+    {
+        return adoptPtr(new TickleDebuggerQueueTask(loop));
+    }
+    virtual void performTask(ExecutionContext* context) OVERRIDE
+    {
+        ASSERT(context->isWorkerGlobalScope());
+        m_loop->runDebuggerTask(toWorkerGlobalScope(context), WorkerRunLoop::DontWaitForMessage);
+    }
+
+private:
+    explicit TickleDebuggerQueueTask(WorkerRunLoop* loop) : m_loop(loop) { }
+
+    WorkerRunLoop* m_loop;
 };
 
 class WorkerSharedTimer : public SharedTimer {
@@ -95,33 +105,9 @@ private:
     double m_nextFireTime;
 };
 
-class ModePredicate {
-public:
-    ModePredicate(const String& mode)
-        : m_mode(mode)
-        , m_defaultMode(mode == defaultMode())
-    {
-    }
-
-    bool isDefaultMode() const
-    {
-        return m_defaultMode;
-    }
-
-    bool operator()(WorkerRunLoop::Task* task) const
-    {
-        return m_defaultMode || m_mode == task->mode();
-    }
-
-private:
-    String m_mode;
-    bool m_defaultMode;
-};
-
 WorkerRunLoop::WorkerRunLoop()
     : m_sharedTimer(adoptPtr(new WorkerSharedTimer))
     , m_nestedCount(0)
-    , m_uniqueId(0)
 {
 }
 
@@ -158,24 +144,21 @@ private:
 void WorkerRunLoop::run(WorkerGlobalScope* context)
 {
     RunLoopSetup setup(*this, context);
-    ModePredicate modePredicate(defaultMode());
     MessageQueueWaitResult result;
     do {
         ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
-        result = runInMode(context, modePredicate, WaitForMessage);
+        result = run(m_messageQueue, context, WaitForMessage);
     } while (result != MessageQueueTerminated);
     runCleanupTasks(context);
 }
 
-MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, const String& mode, WaitMode waitMode)
+MessageQueueWaitResult WorkerRunLoop::runDebuggerTask(WorkerGlobalScope* context, WaitMode waitMode)
 {
     RunLoopSetup setup(*this, context);
-    ModePredicate modePredicate(mode);
-    MessageQueueWaitResult result = runInMode(context, modePredicate, waitMode);
-    return result;
+    return run(m_debuggerMessageQueue, context, waitMode);
 }
 
-MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, const ModePredicate& predicate, WaitMode waitMode)
+MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<Task>& queue, WorkerGlobalScope* context, WaitMode waitMode)
 {
     ASSERT(context);
     ASSERT(context->thread());
@@ -188,11 +171,11 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         double absoluteTime = 0.0;
         nextTimeoutEventIsIdleWatchdog = false;
         if (waitMode == WaitForMessage) {
-            absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
+            absoluteTime = m_sharedTimer->isActive() ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
 
             // Do a script engine idle notification if the next event is distant enough.
             const double kMinIdleTimespan = 0.3; // seconds
-            if (m_messageQueue.isEmpty() && absoluteTime > currentTime() + kMinIdleTimespan) {
+            if (queue.isEmpty() && absoluteTime > currentTime() + kMinIdleTimespan) {
                 bool hasMoreWork = !context->idleNotification();
                 if (hasMoreWork) {
                     // Schedule a watchdog, so if there are no events within a particular time interval
@@ -209,7 +192,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
 
         {
             ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
-            task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
+            task = queue.waitForMessageWithTimeout(result, absoluteTime);
         }
     } while (result == MessageQueueTimeout && nextTimeoutEventIsIdleWatchdog);
 
@@ -241,9 +224,12 @@ void WorkerRunLoop::runCleanupTasks(WorkerGlobalScope* context)
     ASSERT(context->thread());
     ASSERT(context->thread()->isCurrentThread());
     ASSERT(m_messageQueue.killed());
+    ASSERT(m_debuggerMessageQueue.killed());
 
     while (true) {
-        OwnPtr<WorkerRunLoop::Task> task = m_messageQueue.tryGetMessageIgnoringKilled();
+        OwnPtr<WorkerRunLoop::Task> task = m_debuggerMessageQueue.tryGetMessageIgnoringKilled();
+        if (!task)
+            task = m_messageQueue.tryGetMessageIgnoringKilled();
         if (!task)
             return;
         task->performTask(*this, context);
@@ -253,26 +239,26 @@ void WorkerRunLoop::runCleanupTasks(WorkerGlobalScope* context)
 void WorkerRunLoop::terminate()
 {
     m_messageQueue.kill();
+    m_debuggerMessageQueue.kill();
 }
 
 bool WorkerRunLoop::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    return postTaskForMode(task, defaultMode());
-}
-
-bool WorkerRunLoop::postTask(const Closure& closure)
-{
-    return postTask(CallClosureTask::create(closure));
+    return m_messageQueue.append(Task::create(task));
 }
 
 void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_messageQueue.appendAndKill(Task::create(task, defaultMode().isolatedCopy()));
+    m_debuggerMessageQueue.kill();
+    m_messageQueue.appendAndKill(Task::create(task));
 }
 
-bool WorkerRunLoop::postTaskForMode(PassOwnPtr<ExecutionContextTask> task, const String& mode)
+bool WorkerRunLoop::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    return m_messageQueue.append(Task::create(task, mode.isolatedCopy()));
+    bool posted = m_debuggerMessageQueue.append(Task::create(task));
+    if (posted)
+        postTask(TickleDebuggerQueueTask::create(this));
+    return posted;
 }
 
 } // namespace WebCore
