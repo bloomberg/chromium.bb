@@ -791,6 +791,10 @@ void RootWindow::PreDispatchMouseEvent(Window* target,
 
   if (IsEventCandidateForHold(*event) && !dispatching_held_event_) {
     if (move_hold_count_) {
+      if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
+          event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
+        SetLastMouseLocation(window(), event->root_location());
+      }
       held_move_event_.reset(new ui::MouseEvent(*event, target, window()));
       event->SetHandled();
       return;

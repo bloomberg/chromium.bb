@@ -631,8 +631,8 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   filter->Reset();
 
   // Check that we coalesce held MOUSE_DRAGGED events.
-  ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
-                                      gfx::Point(1, 1), 0, 0);
+  ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(10, 10),
+                                      gfx::Point(10, 10), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
   EXPECT_TRUE(filter->events().empty());
@@ -672,6 +672,23 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   filter->Reset();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
+
+  // Check that synthetic mouse move event has a right location when issued
+  // while holding pointer moves.
+  ui::MouseEvent mouse_dragged_event3(ui::ET_MOUSE_DRAGGED, gfx::Point(28, 28),
+                                      gfx::Point(28, 28), 0, 0);
+  dispatcher()->HoldPointerMoves();
+  DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
+  DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
+  window->SetBounds(gfx::Rect(15, 15, 80, 80));
+  DispatchEventUsingWindowDispatcher(&mouse_dragged_event3);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(filter->events().empty());
+  dispatcher()->ReleasePointerMoves();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("MOUSE_MOVED", EventTypesToString(filter->events()));
+  EXPECT_EQ(gfx::Point(13, 13), filter->mouse_location(0));
+  filter->Reset();
 }
 
 TEST_F(RootWindowTest, TouchMovesHeld) {
