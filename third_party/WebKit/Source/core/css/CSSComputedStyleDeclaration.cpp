@@ -437,7 +437,7 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
         }
     }
 
-    RefPtr<Quad> quad = Quad::create();
+    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
     quad->setTop(top);
     quad->setRight(right);
     quad->setBottom(bottom);
@@ -489,7 +489,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(cons
         }
     }
 
-    RefPtr<Quad> quad = Quad::create();
+    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
     quad->setTop(top);
     quad->setRight(right);
     quad->setBottom(bottom);
@@ -2499,7 +2499,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyClip: {
             if (!style->hasClip())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            RefPtr<Rect> rect = Rect::create();
+            RefPtrWillBeRawPtr<Rect> rect = Rect::create();
             rect->setTop(zoomAdjustedPixelValue(style->clip().top().value(), *style));
             rect->setRight(zoomAdjustedPixelValue(style->clip().right().value(), *style));
             rect->setBottom(zoomAdjustedPixelValue(style->clip().bottom().value(), *style));

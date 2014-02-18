@@ -380,6 +380,10 @@ private:
     explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair>);
     explicit CSSPrimitiveValue(Counter*);
     explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter>);
+    explicit CSSPrimitiveValue(Rect*);
+    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Rect>);
+    explicit CSSPrimitiveValue(Quad*);
+    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Quad>);
 
     static void create(int); // compile-time guard
     static void create(unsigned); // compile-time guard
@@ -388,9 +392,9 @@ private:
     void init(const Length&);
     void init(const LengthSize&);
     void init(PassRefPtrWillBeRawPtr<Counter>);
-    void init(PassRefPtr<Rect>);
+    void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);
-    void init(PassRefPtr<Quad>);
+    void init(PassRefPtrWillBeRawPtr<Quad>);
     void init(PassRefPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
     bool getDoubleValueInternal(UnitTypes targetUnitType, double* result) const;
@@ -403,14 +407,14 @@ private:
         int parserOperator;
         double num;
         StringImpl* string;
-        Rect* rect;
-        Quad* quad;
         unsigned rgbcolor;
         CSSBasicShape* shape;
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
         CSSCalcValue* calc;
         Counter* counter;
         Pair* pair;
+        Rect* rect;
+        Quad* quad;
     } m_value;
 };
 

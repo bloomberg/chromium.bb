@@ -794,6 +794,7 @@
             'css/PseudoStyleRequest.h',
             'css/RGBColor.cpp',
             'css/RGBColor.h',
+            'css/Rect.cpp',
             'css/Rect.h',
             'css/RuleFeature.cpp',
             'css/RuleFeature.h',

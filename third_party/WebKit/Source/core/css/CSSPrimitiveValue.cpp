@@ -335,6 +335,26 @@ CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter> value)
 {
     init(value);
 }
+CSSPrimitiveValue::CSSPrimitiveValue(Rect* value)
+    : CSSValue(PrimitiveClass)
+{
+    init(PassRefPtrWillBeRawPtr<Rect>(value));
+}
+CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Rect> value)
+    : CSSValue(PrimitiveClass)
+{
+    init(value);
+}
+CSSPrimitiveValue::CSSPrimitiveValue(Quad* value)
+    : CSSValue(PrimitiveClass)
+{
+    init(PassRefPtrWillBeRawPtr<Quad>(value));
+}
+CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Quad> value)
+    : CSSValue(PrimitiveClass)
+{
+    init(value);
+}
 
 void CSSPrimitiveValue::init(const Length& length)
 {
@@ -403,14 +423,14 @@ void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Counter> c)
     m_value.counter = c.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<Rect> r)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Rect> r)
 {
     m_primitiveUnitType = CSS_RECT;
     m_hasCachedCSSText = false;
     m_value.rect = r.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<Quad> quad)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Quad> quad)
 {
     m_primitiveUnitType = CSS_QUAD;
     m_hasCachedCSSText = false;
@@ -461,10 +481,16 @@ void CSSPrimitiveValue::cleanup()
 #endif
         break;
     case CSS_RECT:
+        // We must not call deref() when oilpan is enabled because m_value.rect is traced.
+#if !ENABLE(OILPAN)
         m_value.rect->deref();
+#endif
         break;
     case CSS_QUAD:
+        // We must not call deref() when oilpan is enabled because m_value.quad is traced.
+#if !ENABLE(OILPAN)
         m_value.quad->deref();
+#endif
         break;
     case CSS_PAIR:
         // We must not call deref() when oilpan is enabled because m_value.pair is traced.
@@ -1289,6 +1315,12 @@ void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
     switch (m_primitiveUnitType) {
     case CSS_COUNTER:
         visitor->trace(m_value.counter);
+        break;
+    case CSS_RECT:
+        visitor->trace(m_value.rect);
+        break;
+    case CSS_QUAD:
+        visitor->trace(m_value.quad);
         break;
     case CSS_PAIR:
         visitor->trace(m_value.pair);

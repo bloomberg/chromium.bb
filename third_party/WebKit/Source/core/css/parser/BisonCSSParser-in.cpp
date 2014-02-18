@@ -4953,7 +4953,7 @@ bool BisonCSSParser::parseClipShape(CSSPropertyID propId, bool important)
     // rect(t, r, b, l) || rect(t r b l)
     if (args->size() != 4 && args->size() != 7)
         return false;
-    RefPtr<Rect> rect = Rect::create();
+    RefPtrWillBeRawPtr<Rect> rect = Rect::create();
     bool valid = true;
     int i = 0;
     CSSParserValue* a = args->current();
@@ -7212,7 +7212,7 @@ public:
             m_left = m_right;
 
         // Now build a rect value to hold all four of our primitive values.
-        RefPtr<Quad> quad = Quad::create();
+        RefPtrWillBeRawPtr<Quad> quad = Quad::create();
         quad->setTop(m_top);
         quad->setRight(m_right);
         quad->setBottom(m_bottom);
@@ -7329,7 +7329,7 @@ public:
             m_left = m_right;
 
         // Now build a quad value to hold all four of our primitive values.
-        RefPtr<Quad> quad = Quad::create();
+        RefPtrWillBeRawPtr<Quad> quad = Quad::create();
         quad->setTop(m_top);
         quad->setRight(m_right);
         quad->setBottom(m_bottom);
