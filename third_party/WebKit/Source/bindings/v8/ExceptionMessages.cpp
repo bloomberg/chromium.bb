@@ -71,6 +71,11 @@ String ExceptionMessages::incorrectArgumentType(int argumentIndex, const String&
     return "The " + ordinalNumber(argumentIndex) + " argument " + detail;
 }
 
+String ExceptionMessages::argumentNullOrIncorrectType(const String& name, const String& expectedType)
+{
+    return "The " + name + " value provided is either null, or an invalid " + expectedType + ".";
+}
+
 String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex)
 {
     String kind;
