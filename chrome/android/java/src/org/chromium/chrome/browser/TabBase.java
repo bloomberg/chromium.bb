@@ -831,6 +831,14 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
+     * Called when the navigation entry containing the historyitem changed,
+     * for example because of a scroll offset or form field change.
+     */
+    @CalledByNative
+    protected void onNavEntryChanged() {
+    }
+
+    /**
      * @return The native pointer representing the native side of this {@link TabBase} object.
      */
     @CalledByNative

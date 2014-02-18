@@ -223,6 +223,9 @@ void TabAndroid::Observe(int type,
     case chrome::NOTIFICATION_FAVICON_UPDATED:
       Java_TabBase_onFaviconUpdated(env, weak_java_tab_.get(env).obj());
       break;
+    case content::NOTIFICATION_NAV_ENTRY_CHANGED:
+      Java_TabBase_onNavEntryChanged(env, weak_java_tab_.get(env).obj());
+      break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
       break;
@@ -269,6 +272,11 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       this,
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<content::WebContents>(web_contents()));
+  notification_registrar_.Add(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_CHANGED,
+      content::Source<content::NavigationController>(
+           &web_contents()->GetController()));
 
   synced_tab_delegate_->SetWebContents(web_contents());
 
