@@ -300,7 +300,8 @@ NSString* GetPlatform() {
       // A report can be sent now.
       if (timeToWait == 0) {
         [self reportWillBeSent];
-        BreakpadUploadNextReport(breakpadRef_, uploadTimeParameters_);
+        BreakpadUploadNextReportWithParameters(breakpadRef_,
+                                               uploadTimeParameters_);
 
         // If more reports must be sent, make sure this method is called again.
         if (BreakpadGetCrashReportCount(breakpadRef_) > 0)

@@ -789,8 +789,13 @@ int BreakpadGetCrashReportCount(BreakpadRef ref) {
 }
 
 //=============================================================================
-void BreakpadUploadNextReport(BreakpadRef ref,
-                              NSDictionary *server_parameters) {
+void BreakpadUploadNextReport(BreakpadRef ref) {
+  BreakpadUploadNextReportWithParameters(ref, nil);
+}
+
+//=============================================================================
+void BreakpadUploadNextReportWithParameters(BreakpadRef ref,
+                                            NSDictionary *server_parameters) {
   try {
     // Not called at exception time
     Breakpad *breakpad = (Breakpad *)ref;
