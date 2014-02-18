@@ -29,7 +29,15 @@ LIB_DICT = {
   'mac': [],
   'win': ['x86_32']
 }
-VALID_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
+VALID_TOOLCHAINS = [
+  'bionic',
+  'newlib',
+  'glibc',
+  'pnacl',
+  'win',
+  'linux',
+  'mac',
+]
 
 # Global verbosity setting.
 # If set to try (normally via a command line arg) then build_projects will
@@ -243,6 +251,8 @@ def main(argv):
     # e.g. If an example supports newlib and glibc, then the default will be
     # newlib.
     options.toolchain = ['pnacl', 'newlib', 'glibc', 'host']
+    if options.experimental:
+      options.toolchain.append('bionic')
 
   if 'host' in options.toolchain:
     options.toolchain.remove('host')

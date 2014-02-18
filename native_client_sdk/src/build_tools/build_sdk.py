@@ -72,6 +72,12 @@ def GetNewlibToolchain():
   return os.path.join(tcdir, tcname)
 
 
+def GetBionicToolchain():
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  tcname = 'naclsdk_%s_arm_bionic.tgz' % getos.GetPlatform()
+  return os.path.join(tcdir, tcname)
+
+
 def GetPNaClToolchain():
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
   tcname = 'naclsdk_pnacl_%s_x86.tgz' % getos.GetPlatform()
@@ -143,12 +149,14 @@ def GetPNaClNativeLib(tcpath, arch):
   return os.path.join(tcpath, 'lib-' + arch)
 
 
-def BuildStepDownloadToolchains():
+def BuildStepDownloadToolchains(toolchains):
   buildbot_common.BuildStep('Running download_toolchains.py')
   download_script = os.path.join('build', 'download_toolchains.py')
-  buildbot_common.Run([sys.executable, download_script,
-                      '--no-arm-trusted', '--arm-untrusted', '--keep'],
-                      cwd=NACL_DIR)
+  args = [sys.executable, download_script, '--no-arm-trusted',
+          '--arm-untrusted', '--keep']
+  if 'bionic' in toolchains:
+    args.append('--allow-bionic')
+  buildbot_common.Run(args, cwd=NACL_DIR)
 
 
 def BuildStepCleanPepperDirs(pepperdir, pepperdir_old):
@@ -219,6 +227,16 @@ def BuildStepUntarToolchains(pepperdir, toolchains):
     tcname = platform + '_x86_newlib'
     newlibdir = os.path.join(pepperdir, 'toolchain', tcname)
     buildbot_common.Move(srcdir, newlibdir)
+
+  if 'bionic' in toolchains:
+    # Untar the bionic toolchains
+    tarfile = GetBionicToolchain()
+    tcname = platform + '_arm_bionic'
+    buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
+                        cwd=NACL_DIR)
+    srcdir = os.path.join(tmpdir, tcname)
+    bionicdir = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.Move(srcdir, bionicdir)
 
   if 'arm' in toolchains:
     # Copy the existing arm toolchain from native_client tree
@@ -884,6 +902,8 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 def main(args):
   parser = optparse.OptionParser()
+  parser.add_option('--bionic', help='Add bionic build.',
+      action='store_true')
   parser.add_option('--tar', help='Force the tar step.',
       action='store_true')
   parser.add_option('--archive', help='Force the archive step.',
@@ -927,6 +947,9 @@ def main(args):
     options.tar = True
 
   toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
+  if options.bionic:
+    toolchains.append('bionic')
+
   print 'Building: ' + ' '.join(toolchains)
 
   if options.archive and not options.tar:
@@ -954,7 +977,7 @@ def main(args):
   if not options.skip_toolchain:
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
-    BuildStepDownloadToolchains()
+    BuildStepDownloadToolchains(toolchains)
     BuildStepUntarToolchains(pepperdir, toolchains)
 
   BuildStepBuildToolchains(pepperdir, toolchains)
