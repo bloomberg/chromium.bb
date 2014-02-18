@@ -43,7 +43,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
         existing_dm_token_(PolicyBuilder::kFakeToken),
-        owning_domain_(PolicyBuilder::kFakeDomain){
+        owning_domain_(PolicyBuilder::kFakeDomain),
+        cached_key_signature_(PolicyBuilder::GetTestSigningKeySignature()) {
     policy_.SetDefaultNewSigningKey();
   }
 
@@ -98,7 +99,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
     validator->ValidateCachedKey(public_key,
-                                 PolicyBuilder::GetTestSigningKeySignature(),
+                                 cached_key_signature_,
                                  GetPolicyVerificationKey(),
                                  owning_domain_);
     validator->ValidateSignature(public_key,
@@ -129,6 +130,7 @@ class CloudPolicyValidatorTest : public testing::Test {
   bool allow_key_rotation_;
   std::string existing_dm_token_;
   std::string owning_domain_;
+  std::string cached_key_signature_;
 
   UserPolicyBuilder policy_;
 
@@ -342,10 +344,29 @@ TEST_F(CloudPolicyValidatorTest, ErrorDomainExtractedFromUsernameMismatch) {
   // failure when we try to verify the signing key with it.
   policy_.policy_data().set_username("wonky@invalid.com");
   policy_.Build();
+  // Pass an empty domain to tell validator to extract the domain from the
+  // policy's |username| field.
   owning_domain_ = "";
   ValidatePolicy(CheckStatus(
       CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE),
                  policy_.GetCopy());
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorNoCachedKeySignature) {
+  // Generate an empty cached_key_signature_ and this should cause a validation
+  // error when we try to verify the signing key with it.
+  cached_key_signature_ = "";
+  Validate(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE));
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorInvalidCachedKeySignature) {
+  // Generate a key signature for a different key (one that does not match
+  // the signing key) and this should cause a validation error when we try to
+  // verify the signing key with it.
+  cached_key_signature_ = PolicyBuilder::GetTestOtherSigningKeySignature();
+  Validate(CheckStatus(
+      CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE));
 }
 #endif
 

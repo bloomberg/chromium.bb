@@ -391,7 +391,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckCachedKey() {
-  if (!cached_key_signature_.empty() && !verification_key_.empty() &&
+  if (!verification_key_.empty() &&
       !CheckVerificationKeySignature(cached_key_, verification_key_,
                                      cached_key_signature_)) {
     LOG(ERROR) << "Cached key signature verification failed";
