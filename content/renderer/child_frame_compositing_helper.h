@@ -151,6 +151,12 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   gfx::Size buffer_size_;
 
+  // The lifetime of this weak pointer should be greater than the lifetime of
+  // other member objects, as they may access this pointer during their
+  // destruction.
+  base::WeakPtr<BrowserPlugin> browser_plugin_;
+  RenderFrameImpl* render_frame_;
+
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
@@ -159,9 +165,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
   blink::WebFrame* frame_;
-
-  base::WeakPtr<BrowserPlugin> browser_plugin_;
-  RenderFrameImpl* render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };

@@ -67,9 +67,9 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       ack_pending_(true),
       software_ack_pending_(false),
       opaque_(true),
-      frame_(frame),
       browser_plugin_(browser_plugin),
-      render_frame_(render_frame) {}
+      render_frame_(render_frame),
+      frame_(frame) {}
 
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {}
 
