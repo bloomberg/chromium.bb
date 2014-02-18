@@ -26,6 +26,8 @@
         'password_manager/core/browser/login_database_posix.cc',
         'password_manager/core/browser/login_database_win.cc',
         'password_manager/core/browser/login_model.h',
+        'password_manager/core/browser/password_manager_metrics_util.cc',
+        'password_manager/core/browser/password_manager_metrics_util.h',
         'password_manager/core/browser/password_store.cc',
         'password_manager/core/browser/password_store.h',
         'password_manager/core/browser/password_store_change.h',
@@ -33,17 +35,42 @@
         'password_manager/core/browser/password_store_consumer.h',
         'password_manager/core/browser/password_store_default.cc',
         'password_manager/core/browser/password_store_default.h',
-        'password_manager/core/browser/password_manager_metrics_util.cc',
-        'password_manager/core/browser/password_manager_metrics_util.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
       ],
+      'variables': {
+        'conditions': [
+          ['android_webview_build == 1', {
+            # Android WebView doesn't support sync.
+            'password_manager_enable_sync%': 0,
+          }, {
+            'password_manager_enable_sync%': 1,
+          }],
+        ],
+      },
       'conditions': [
         ['OS=="mac"', {
           'sources!': [
             # TODO(blundell): Provide the iOS login DB implementation and then
             # also exclude the POSIX one from iOS. http://crbug.com/341429
             'password_manager/core/browser/login_database_posix.cc',
+          ],
+        }],
+        ['password_manager_enable_sync == 1', {
+          'defines': [
+            'PASSWORD_MANAGER_ENABLE_SYNC',
+          ],
+          'dependencies': [
+            '../sync/sync.gyp:sync',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'PASSWORD_MANAGER_ENABLE_SYNC',
+            ],
+          },
+          'sources': [
+            'password_manager/core/browser/password_syncable_service.cc',
+            'password_manager/core/browser/password_syncable_service.h',
           ],
         }],
       ],

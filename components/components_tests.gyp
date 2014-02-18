@@ -42,6 +42,7 @@
             'password_manager/core/browser/psl_matching_helper_unittest.cc',
             'password_manager/core/browser/password_store_default_unittest.cc',
             'password_manager/core/browser/password_store_unittest.cc',
+            'password_manager/core/browser/password_syncable_service_unittest.cc',
             'precache/content/precache_manager_unittest.cc',
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',

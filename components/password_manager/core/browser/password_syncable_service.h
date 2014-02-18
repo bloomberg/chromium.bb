@@ -1,9 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_SYNCABLE_SERVICE_H__
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_SYNCABLE_SERVICE_H__
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__
+
+#if !defined(PASSWORD_MANAGER_ENABLE_SYNC)
+#error "Only build this file when sync is enabled in Password Manager."
+#endif
 
 #include <string>
 #include <vector>
@@ -113,4 +117,4 @@ void PasswordFromSpecifics(const sync_pb::PasswordSpecificsData& password,
 // |password| entry.
 std::string MakePasswordSyncTag(const sync_pb::PasswordSpecificsData& password);
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_SYNCABLE_SERVICE_H__
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__

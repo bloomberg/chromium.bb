@@ -2,8 +2,10 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/password_manager/core",
   "+components/webdata/encryptor",
-  "+net/base/registry_controlled_domains",
+  "+net/base",
   "+sql",
+  "+sync/api",
+  "+sync/protocol",
   # PasswordManager is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.
   "-content/public/common",
