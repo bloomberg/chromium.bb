@@ -194,6 +194,8 @@
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
 
     'SK_USE_DISCARDABLE_SCALEDIMAGECACHE',
+
+    'SK_WILL_NEVER_DRAW_PERSPECTIVE_TEXT',
   ],
 
   'direct_dependent_settings': {
