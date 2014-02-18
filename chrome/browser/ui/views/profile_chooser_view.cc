@@ -124,8 +124,10 @@ BackgroundColorHoverButton::BackgroundColorHoverButton(
 BackgroundColorHoverButton::~BackgroundColorHoverButton() {}
 
 void BackgroundColorHoverButton::OnPaint(gfx::Canvas* canvas) {
-  if ((state() == STATE_PRESSED) || (state() == STATE_HOVERED) || HasFocus())
-    canvas->DrawColor(ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+  if ((state() == STATE_PRESSED) || (state() == STATE_HOVERED) || HasFocus()) {
+    canvas->DrawColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
+  }
   LabelButton::OnPaint(canvas);
 }
 
