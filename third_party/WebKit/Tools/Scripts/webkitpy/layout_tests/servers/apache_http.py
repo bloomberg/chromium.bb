@@ -105,6 +105,15 @@ class ApacheHTTP(server_base.ServerBase):
             if enable_ipv6:
                 start_cmd += ['-C', "Listen [::1]:%d" % port]
 
+        if additional_dirs:
+            self._start_cmd = start_cmd
+            for alias, path in additional_dirs.iteritems():
+                start_cmd += ['-c', 'Alias %s "%s"' % (alias, path),
+                        # Disable CGI handler for additional dirs.
+                        '-c', '<Location %s>' % alias,
+                        '-c', 'RemoveHandler .cgi .pl',
+                        '-c', '</Location>']
+
         self._start_cmd = start_cmd
 
     def _spawn_process(self):
