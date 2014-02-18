@@ -164,11 +164,14 @@ cr.define('login', function() {
     },
 
     /**
-     * Update current header bar UI.
+     * Current header bar UI / sign in state.
      *
      * @type {number} state Current state of the sign-in screen (see
      *       SIGNIN_UI_STATE).
      */
+    get signinUIState() {
+      return this.signinUIState_;
+    },
     set signinUIState(state) {
       this.signinUIState_ = state;
       this.updateUI_();

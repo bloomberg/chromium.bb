@@ -28,7 +28,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'updateAuthExtension',
       'setAuthenticatedUserEmail',
       'doReload',
-      'onFrameError'
+      'onFrameError',
+      'updateCancelButtonState'
     ],
 
     /**
@@ -71,6 +72,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     cancelAllowed_: undefined,
+
+    /**
+     * Whether we should show user pods on the login screen.
+     * @type {boolean}
+     * @private
+     */
+    isShowUsers_: undefined,
 
     /**
      * SAML password confirmation attempt count.
@@ -297,9 +305,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('createManagedUserNoManagerText').textContent =
           data.managedUsersRestrictionReason;
 
-      // Allow cancellation of screen only when user pods can be displayed.
-      this.cancelAllowed_ = data.isShowUsers && $('pod-row').pods.length;
-      $('login-header-bar').allowCancel = this.cancelAllowed_;
+      this.isShowUsers_ = data.isShowUsers;
+      this.updateCancelButtonState();
 
       // Sign-in right panel is hidden if all of its items are hidden.
       var noRightPanel = $('gaia-signin-reason').hidden &&
@@ -319,6 +326,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     setAuthenticatedUserEmail: function(attemptToken, email) {
       this.gaiaAuthHost_.setAuthenticatedUserEmail(attemptToken, email);
+    },
+
+    /**
+     * Updates [Cancel] button state. Allow cancellation of screen only when
+     * user pods can be displayed.
+     */
+    updateCancelButtonState: function() {
+      this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
+      $('login-header-bar').allowCancel = this.cancelAllowed_;
     },
 
     /**

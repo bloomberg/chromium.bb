@@ -1176,7 +1176,10 @@ cr.define('login', function() {
     podsWithPendingImages_: [],
 
     // Whether pod creation is animated.
-    user_add_is_animated_: false,
+    userAddIsAnimated_: false,
+
+    // Whether pod placement has been postponed.
+    podPlacementPostponed_: false,
 
     // Array of apps that are shown in addition to other user pods.
     apps_: [],
@@ -1372,7 +1375,7 @@ cr.define('login', function() {
      */
     loadPods: function(users, animated) {
       this.users_ = users;
-      this.user_add_is_animated_ = animated;
+      this.userAddIsAnimated_ = animated;
 
       this.rebuildPods();
     },
@@ -1382,6 +1385,8 @@ cr.define('login', function() {
      * updated.
      */
     rebuildPods: function() {
+      var emptyPodRow = this.pods.length == 0;
+
       // Clear existing pods.
       this.innerHTML = '';
       this.focusedPod_ = undefined;
@@ -1393,29 +1398,42 @@ cr.define('login', function() {
 
       // Populate the pod row.
       for (var i = 0; i < this.users_.length; ++i)
-        this.addUserPod(this.users_[i], this.user_add_is_animated_);
+        this.addUserPod(this.users_[i], this.userAddIsAnimated_);
 
       for (var i = 0, pod; pod = this.pods[i]; ++i)
         this.podsWithPendingImages_.push(pod);
 
       // TODO(nkostylev): Edge case handling when kiosk apps are not fitting.
       for (var i = 0; i < this.apps_.length; ++i)
-        this.addUserPod(this.apps_[i], this.user_add_is_animated_);
+        this.addUserPod(this.apps_[i], this.userAddIsAnimated_);
 
       // Make sure we eventually show the pod row, even if some image is stuck.
       setTimeout(function() {
         $('pod-row').classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      this.placePods_();
+      if ($('login-header-bar').signinUIState ==
+              SIGNIN_UI_STATE.ACCOUNT_PICKER) {
+        this.placePods_();
 
-      // Without timeout changes in pods positions will be animated even though
-      // it happened when 'flying-pods' class was disabled.
-      setTimeout(function() {
-        Oobe.getInstance().toggleClass('flying-pods', true);
-      }, 0);
+        // Without timeout changes in pods positions will be animated even
+        // though it happened when 'flying-pods' class was disabled.
+        setTimeout(function() {
+          Oobe.getInstance().toggleClass('flying-pods', true);
+        }, 0);
 
-      this.focusPod(this.preselectedPod);
+        this.focusPod(this.preselectedPod);
+      } else {
+        this.podPlacementPostponed_ = true;
+
+        // Update [Cancel] button state.
+        if ($('login-header-bar').signinUIState ==
+                SIGNIN_UI_STATE.GAIA_SIGNIN &&
+            emptyPodRow &&
+            this.pods.length > 0) {
+          login.GaiaSigninScreen.updateCancelButtonState();
+        }
+      }
     },
 
     /**
@@ -1938,6 +1956,12 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
+
+      if (this.podPlacementPostponed_) {
+        this.podPlacementPostponed_ = false;
+        this.placePods_();
+        this.focusPod(this.preselectedPod);
+      }
     },
 
     /**
