@@ -259,7 +259,7 @@ void Player::cancelAnimationOnCompositor()
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
-bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
+bool Player::update(bool* didTriggerStyleRecalc)
 {
     if (!m_timeline)
         return false;
@@ -268,8 +268,6 @@ bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
     m_needsUpdate = false;
 
     if (!m_content) {
-        if (timeToEffectChange)
-            *timeToEffectChange = std::numeric_limits<double>::infinity();
         if (didTriggerStyleRecalc)
             *didTriggerStyleRecalc = false;
         return false;
@@ -277,20 +275,21 @@ bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
 
     bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(inheritedTime);
 
-    if (timeToEffectChange) {
-        if (m_playbackRate > 0) {
-            *timeToEffectChange = m_content->timeToForwardsEffectChange() / m_playbackRate;
-        } else if (m_playbackRate < 0) {
-            *timeToEffectChange = m_content->timeToReverseEffectChange() / abs(m_playbackRate);
-        } else {
-            *timeToEffectChange = std::numeric_limits<double>::infinity();
-        }
-    }
     if (didTriggerStyleRecalc)
         *didTriggerStyleRecalc = didTriggerStyleRecalcLocal;
 
     ASSERT(!m_needsUpdate);
     return m_content->isCurrent() || m_content->isInEffect();
+}
+
+double Player::timeToEffectChange()
+{
+    ASSERT(!m_needsUpdate);
+    if (!m_content || !m_playbackRate)
+        return std::numeric_limits<double>::infinity();
+    if (m_playbackRate > 0)
+        return m_content->timeToForwardsEffectChange() / m_playbackRate;
+    return m_content->timeToReverseEffectChange() / abs(m_playbackRate);
 }
 
 void Player::cancel()

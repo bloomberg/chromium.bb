@@ -76,11 +76,11 @@ protected:
         return Animation::create(0, 0, timing);
     }
 
-    bool updateTimeline(double time, double* timeToEffectChange = 0)
+    bool updateTimeline(double time)
     {
         document->animationClock().updateTime(time);
         // The timeline does not know about our player, so we have to explicitly call update().
-        return player->update(timeToEffectChange);
+        return player->update();
     }
 
     RefPtr<Document> document;
@@ -600,13 +600,10 @@ TEST_F(AnimationPlayerTest, SetSourceUnlimitsPlayer)
 TEST_F(AnimationPlayerTest, EmptyPlayersDontUpdateEffects)
 {
     player = timeline->createPlayer(0);
-    double timeToNextEffect;
-    updateTimeline(0, &timeToNextEffect);
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
-    timeToNextEffect = 0;
-    updateTimeline(1234, &timeToNextEffect);
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+    updateTimeline(1234);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
 TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
@@ -619,45 +616,44 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
     player = timeline->createPlayer(animation.get());
     player->setStartTime(0);
 
-    double timeToNextEffect;
-    updateTimeline(0, &timeToNextEffect);
-    EXPECT_EQ(1, timeToNextEffect);
+    updateTimeline(0);
+    EXPECT_EQ(1, player->timeToEffectChange());
 
-    updateTimeline(0.5, &timeToNextEffect);
-    EXPECT_EQ(0.5, timeToNextEffect);
+    updateTimeline(0.5);
+    EXPECT_EQ(0.5, player->timeToEffectChange());
 
-    updateTimeline(1, &timeToNextEffect);
-    EXPECT_EQ(0, timeToNextEffect);
+    updateTimeline(1);
+    EXPECT_EQ(0, player->timeToEffectChange());
 
-    updateTimeline(1.5, &timeToNextEffect);
-    EXPECT_EQ(0, timeToNextEffect);
+    updateTimeline(1.5);
+    EXPECT_EQ(0, player->timeToEffectChange());
 
-    updateTimeline(2, &timeToNextEffect);
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+    updateTimeline(2);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
-    updateTimeline(3, &timeToNextEffect);
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+    updateTimeline(3);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     player->setCurrentTime(0);
-    player->update(&timeToNextEffect);
-    EXPECT_EQ(1, timeToNextEffect);
+    player->update();
+    EXPECT_EQ(1, player->timeToEffectChange());
 
     player->setPlaybackRate(2);
-    player->update(&timeToNextEffect);
-    EXPECT_EQ(0.5, timeToNextEffect);
+    player->update();
+    EXPECT_EQ(0.5, player->timeToEffectChange());
 
     player->setPlaybackRate(0);
-    player->update(&timeToNextEffect);
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+    player->update();
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 
     player->setCurrentTime(3);
     player->setPlaybackRate(-1);
-    player->update(&timeToNextEffect);
-    EXPECT_EQ(1, timeToNextEffect);
+    player->update();
+    EXPECT_EQ(1, player->timeToEffectChange());
 
     player->setPlaybackRate(-2);
-    player->update(&timeToNextEffect);
-    EXPECT_EQ(0.5, timeToNextEffect);
+    player->update();
+    EXPECT_EQ(0.5, player->timeToEffectChange());
 }
 
 TEST_F(AnimationPlayerTest, AttachedPlayers)

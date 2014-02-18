@@ -98,13 +98,12 @@ bool DocumentTimeline::serviceAnimations()
     double timeToNextEffect = std::numeric_limits<double>::infinity();
     bool didTriggerStyleRecalc = false;
     for (int i = m_currentPlayers.size() - 1; i >= 0; --i) {
-        double playerNextEffect;
+        RefPtr<Player> player = m_currentPlayers[i].get();
         bool playerDidTriggerStyleRecalc;
-        if (!m_currentPlayers[i]->update(&playerNextEffect, &playerDidTriggerStyleRecalc))
+        if (!player->update(&playerDidTriggerStyleRecalc))
             m_currentPlayers.remove(i);
+        timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
         didTriggerStyleRecalc |= playerDidTriggerStyleRecalc;
-        if (playerNextEffect < timeToNextEffect)
-            timeToNextEffect = playerNextEffect;
     }
 
     if (!m_currentPlayers.isEmpty()) {
