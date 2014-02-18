@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/SourceBuffer.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -52,6 +53,24 @@
 using blink::WebSourceBuffer;
 
 namespace WebCore {
+
+namespace {
+
+static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, ExceptionState& exceptionState)
+{
+    if (isRemoved) {
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
+        return true;
+    }
+    if (isUpdating) {
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer is still processing an 'appendBuffer', 'appendStream', or 'remove' operation.");
+        return true;
+    }
+
+    return false;
+}
+
+} // namespace
 
 DEFINE_GC_INFO(SourceBuffer);
 
@@ -115,10 +134,8 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
     // 3. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
     //    an INVALID_STATE_ERR exception and abort these steps.
     // 4. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     // 5. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 5.1 Set the readyState attribute of the parent media source to "open"
@@ -131,7 +148,7 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
     if (newMode == sequenceKeyword())
         appendMode = WebSourceBuffer::AppendModeSequence;
     if (!m_webSourceBuffer->setMode(appendMode)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The mode may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
         return;
     }
 
@@ -145,7 +162,7 @@ PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& exceptionState) co
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
         return 0;
     }
 
@@ -165,10 +182,8 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw an
     //    InvalidStateError exception and abort these steps.
     // 3. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 4.1 Set the readyState attribute of the parent media source to "open"
@@ -178,7 +193,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
     // 5. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
     // 6. If the mode attribute equals "sequence", then set the group start timestamp to new timestamp offset.
     if (!m_webSourceBuffer->setTimestampOffset(offset)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The timestamp offset may not be set while the SourceBuffer's append state is 'PARSING_MEDIA_SEGMENT'.");
         return;
     }
 
@@ -197,7 +212,7 @@ void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionS
     if (std::isnan(start)
         || start == std::numeric_limits<double>::infinity()
         || start == -std::numeric_limits<double>::infinity()) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::notAFiniteNumber(start));
         return;
     }
 
@@ -205,15 +220,13 @@ void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionS
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     // 3. If the new value is less than 0 or greater than or equal to appendWindowEnd then throw an InvalidAccessError
     //    exception and abort these steps.
     if (start < 0 || start >= m_appendWindowEnd) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexOutsideRange("value", start, 0, ExceptionMessages::ExclusiveBound, m_appendWindowEnd, ExceptionMessages::InclusiveBound));
         return;
     }
 
@@ -234,16 +247,19 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     // 3. If the new value equals NaN, then throw an InvalidAccessError and abort these steps.
     // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
     //    exception and abort these steps.
-    if (std::isnan(end) || end <= m_appendWindowStart) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    if (std::isnan(end)) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::notAFiniteNumber(end));
+        return;
+    }
+    if (end <= m_appendWindowStart) {
+        // FIXME: Use ExceptionState::indexExceedsMinimumBound() once it lands.
+        exceptionState.throwDOMException(InvalidAccessError, "The value provided ('" + String::number(end) + "') is less than or equal to the minimum value (" + String::number(m_appendWindowStart) + ").");
         return;
     }
 
@@ -259,7 +275,7 @@ void SourceBuffer::appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState& ex
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The ArrayBuffer provided is invalid.");
         return;
     }
 
@@ -272,7 +288,7 @@ void SourceBuffer::appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The ArrayBuffer provided is invalid.");
         return;
     }
 
@@ -301,8 +317,12 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
     //    then throw an InvalidStateError exception and abort these steps.
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || !m_source->isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (isRemoved()) {
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
+        return;
+    }
+    if (!m_source->isOpen()) {
+        exceptionState.throwDOMException(InvalidStateError, "The parent media source's readyState is not 'open'.");
         return;
     }
 
@@ -324,18 +344,21 @@ void SourceBuffer::remove(double start, double end, ExceptionState& exceptionSta
     // Section 3.2 remove() method steps.
     // 1. If start is negative or greater than duration, then throw an InvalidAccessError exception and abort these steps.
     // 2. If end is less than or equal to start, then throw an InvalidAccessError exception and abort these steps.
-    if (start < 0 || (m_source && (std::isnan(m_source->duration()) || start > m_source->duration())) || end <= start) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+
+    if (start < 0 || (m_source && (std::isnan(m_source->duration()) || start > m_source->duration()))) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexOutsideRange("start", start, 0, ExceptionMessages::ExclusiveBound, !m_source || std::isnan(m_source->duration()) ? 0 : m_source->duration(), ExceptionMessages::ExclusiveBound));
+        return;
+    }
+    if (end <= start) {
+        exceptionState.throwDOMException(InvalidAccessError, "The end value provided (" + String::number(end) + ") must be greater than the start value provided (" + String::number(start) + ").");
         return;
     }
 
     // 3. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     // 4. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::remove", this);
 
@@ -470,10 +493,8 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     // Step 1 is enforced by the caller.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
     // 3. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendBuffer", this);
 
@@ -559,7 +580,7 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendStream-void-Stream-stream-unsigned-long-long-maxSize
     // 1. If stream is null then throw an InvalidAccessError exception and abort these steps.
     if (!stream || stream->isNeutered()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, stream ? "The stream provided has been neutered." : "The stream provided is invalid.");
         return;
     }
 
@@ -568,10 +589,8 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
     //  https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-prepare-append
     //  1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
     //  2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || m_updating) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
         return;
-    }
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendStream", this);
 
