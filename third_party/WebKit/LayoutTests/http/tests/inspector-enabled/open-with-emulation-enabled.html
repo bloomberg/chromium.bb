@@ -1,0 +1,24 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script>
+
+function onload()
+{
+    testRunner.showWebInspector(JSON.stringify({lastActivePanel:"\"console\"", overrideUserAgent: "true"}));
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.dumpLoadedModules();
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>This test checks that loading with emulation turned on by default loads elements module.</p>
+</body>
+</html>

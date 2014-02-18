@@ -1,0 +1,6 @@
+This test checks that loading with emulation turned on by default loads elements module.
+
+Loaded modules:
+    elements
+    console
+
