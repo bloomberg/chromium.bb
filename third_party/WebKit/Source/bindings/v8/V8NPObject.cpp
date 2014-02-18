@@ -81,10 +81,11 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
             element = V8HTMLEmbedElement::toNative(info.Holder());
         else
             element = V8HTMLObjectElement::toNative(info.Holder());
-        if (RefPtr<SharedPersistent<v8::Object> > wrapper = element->pluginWrapper()) {
+        ScriptValue wrapper = element->pluginWrapper();
+        if (!wrapper.hasNoValue()) {
             v8::Isolate* isolate = v8::Isolate::GetCurrent();
             v8::HandleScope handleScope(isolate);
-            npObject = v8ObjectToNPObject(wrapper->newLocal(isolate));
+            npObject = v8ObjectToNPObject(v8::Handle<v8::Object>::Cast(wrapper.v8Value()));
         } else
             npObject = 0;
     } else {

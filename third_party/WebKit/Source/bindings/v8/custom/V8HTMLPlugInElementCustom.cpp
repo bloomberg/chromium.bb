@@ -33,7 +33,7 @@
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
-#include "bindings/v8/SharedPersistent.h"
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPObject.h"
 #include "core/frame/UseCounter.h"
@@ -47,11 +47,7 @@ template <class C>
 static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
-    if (!wrapper)
-        return;
-
-    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    v8::Handle<v8::Object> instanceTemplate = v8::Handle<v8::Object>::Cast(imp->pluginWrapper().v8Value());
     if (instanceTemplate.IsEmpty())
         return;
 
@@ -62,11 +58,7 @@ template <class C>
 static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
-    if (!wrapper)
-        return;
-
-    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    v8::Handle<v8::Object> instanceTemplate = v8::Handle<v8::Object>::Cast(imp->pluginWrapper().v8Value());
     if (instanceTemplate.IsEmpty())
         return;
 
@@ -128,11 +120,7 @@ template <class C>
 void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
-    if (!wrapper)
-        return;
-
-    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    v8::Handle<v8::Object> instanceTemplate = v8::Handle<v8::Object>::Cast(imp->pluginWrapper().v8Value());
     if (instanceTemplate.IsEmpty())
         return;
 
@@ -143,11 +131,7 @@ template <class C>
 void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
-    if (!wrapper)
-        return;
-
-    v8::Local<v8::Object> instanceTemplate = wrapper->newLocal(info.GetIsolate());
+    v8::Handle<v8::Object> instanceTemplate = v8::Handle<v8::Object>::Cast(imp->pluginWrapper().v8Value());
     if (instanceTemplate.IsEmpty())
         return;
 
