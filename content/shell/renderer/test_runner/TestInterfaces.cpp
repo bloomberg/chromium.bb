@@ -10,9 +10,9 @@
 #include "content/shell/renderer/test_runner/AccessibilityController.h"
 #include "content/shell/renderer/test_runner/EventSender.h"
 #include "content/shell/renderer/test_runner/TestRunner.h"
+#include "content/shell/renderer/test_runner/TextInputController.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
-#include "content/shell/renderer/test_runner/text_input_controller.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -29,7 +29,7 @@ TestInterfaces::TestInterfaces()
     : m_accessibilityController(new AccessibilityController())
     , m_eventSender(new EventSender(this))
     , m_gamepadController(new content::GamepadController())
-    , m_textInputController(new content::TextInputController())
+    , m_textInputController(new TextInputController())
     , m_testRunner(new TestRunner(this))
     , m_delegate(0)
 {
@@ -46,7 +46,7 @@ TestInterfaces::~TestInterfaces()
     m_accessibilityController->setWebView(0);
     m_eventSender->setWebView(0);
     // m_gamepadController doesn't depend on WebView.
-    m_textInputController->SetWebView(NULL);
+    m_textInputController->setWebView(0);
     m_testRunner->setWebView(0, 0);
 
     m_accessibilityController->setDelegate(0);
@@ -62,7 +62,7 @@ void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
     m_accessibilityController->setWebView(webView);
     m_eventSender->setWebView(webView);
     // m_gamepadController doesn't depend on WebView.
-    m_textInputController->SetWebView(webView);
+    m_textInputController->setWebView(webView);
     m_testRunner->setWebView(webView, proxy);
 }
 
@@ -81,7 +81,7 @@ void TestInterfaces::bindTo(WebFrame* frame)
     m_accessibilityController->bindToJavascript(frame, WebString::fromUTF8("accessibilityController"));
     m_eventSender->bindToJavascript(frame, WebString::fromUTF8("eventSender"));
     m_gamepadController->Install(frame);
-    m_textInputController->Install(frame);
+    m_textInputController->bindToJavascript(frame, WebString::fromUTF8("textInputController"));
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("testRunner"));
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("layoutTestController"));
 }

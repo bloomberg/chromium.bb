@@ -26,7 +26,6 @@ class WebView;
 
 namespace content {
 class GamepadController;
-class TextInputController;
 }
 
 namespace WebTestRunner {
@@ -34,6 +33,7 @@ namespace WebTestRunner {
 class AccessibilityController;
 class EventSender;
 class TestRunner;
+class TextInputController;
 class WebTestDelegate;
 class WebTestProxyBase;
 
@@ -65,7 +65,7 @@ private:
     scoped_ptr<AccessibilityController> m_accessibilityController;
     scoped_ptr<EventSender> m_eventSender;
     scoped_ptr<content::GamepadController> m_gamepadController;
-    scoped_ptr<content::TextInputController> m_textInputController;
+    scoped_ptr<TextInputController> m_textInputController;
     scoped_ptr<TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
