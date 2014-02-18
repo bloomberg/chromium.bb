@@ -5978,6 +5978,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll.">
         Experimental history navigation in response to horizontal overscroll.
       </message>
+      <message name="IDS_OVERSCROLL_HISTORY_NAVIGATION_SIMPLE_UI" desc="Description for the simple UI for history navigation from horizontal overscroll.">
+        Simple
+      </message>
       <message name="IDS_FLAGS_OVERVIEW_MODE_NAME" desc="Title for the flag to enable window overview mode.">
         Enable overview mode.
       </message>

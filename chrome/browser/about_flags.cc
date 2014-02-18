@@ -174,6 +174,18 @@ const Experiment::Choice kTouchOptimizedUIChoices[] = {
     switches::kTouchOptimizedUIDisabled }
 };
 
+#if defined(USE_AURA)
+const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kOverscrollHistoryNavigation,
+    "0" },
+  { IDS_OVERSCROLL_HISTORY_NAVIGATION_SIMPLE_UI,
+    switches::kOverscrollHistoryNavigation,
+    "2" }
+};
+#endif
+
 const Experiment::Choice kNaClDebugMaskChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   // Secure shell can be used on ChromeOS for forwarding the TCP port opened by
@@ -1340,9 +1352,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME,
     IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION,
     kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
-        switches::kOverscrollHistoryNavigation, "1",
-        switches::kOverscrollHistoryNavigation, "0")
+    MULTI_VALUE_TYPE(kOverscrollHistoryNavigationChoices)
   },
 #endif
   {
