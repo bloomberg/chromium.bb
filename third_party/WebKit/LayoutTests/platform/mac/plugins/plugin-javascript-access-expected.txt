@@ -2,7 +2,7 @@ Name: WebKit Test PlugIn
 
 Description: Simple Netscape plug-in that handles test content for WebKit
 
-Filename: TestNetscapePlugIn.plugin
+Filename: test_netscape_plugin.plugin
 
 Mime Types:
 
