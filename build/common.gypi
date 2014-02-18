@@ -2898,7 +2898,11 @@
           ['win_use_allocator_shim==0', {
             'defines': ['NO_TCMALLOC'],
           }],
-          ['os_posix==1', {
+          # _FORTIFY_SOURCE isn't really supported by Clang now, see
+          # http://llvm.org/bugs/show_bug.cgi?id=16821.
+          # TODO(glider): once the bug is fixed, disable source fortification
+          # under the sanitizer tools only.
+          ['os_posix==1 and (OS!="linux" or clang!=1)', {
             'target_conditions': [
               ['chromium_code==1', {
                 # Non-chromium code is not guaranteed to compile cleanly
