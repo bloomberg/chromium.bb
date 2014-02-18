@@ -43,6 +43,15 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
+static bool throwExceptionIfRemoved(bool isRemoved, ExceptionState& exceptionState)
+{
+    if (isRemoved) {
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from its parent MediaSource.");
+        return true;
+    }
+    return false;
+}
+
 DEFINE_GC_INFO(WebKitSourceBuffer);
 
 PassRefPtrWillBeRawPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtrWillBeRawPtr<WebKitMediaSource> source)
@@ -69,10 +78,8 @@ PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionState& exceptionSta
     // Section 3.1 buffered attribute steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
-    if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemoved(isRemoved(), exceptionState))
         return 0;
-    }
 
     // 2. Return a new static normalized TimeRanges object for the media segments buffered.
     return TimeRanges::create(m_webSourceBuffer->buffered());
@@ -88,10 +95,8 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& excep
     // Section 3.1 timestampOffset attribute setter steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
-    if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemoved(isRemoved(), exceptionState))
         return;
-    }
 
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 4.1 Set the readyState attribute of the parent media source to "open"
@@ -101,7 +106,7 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& excep
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
     // and abort these steps.
     if (!m_webSourceBuffer->setTimestampOffset(offset)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer is waiting for the end of a media segment to be appended.");
         return;
     }
 
@@ -118,16 +123,14 @@ void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& exc
 
     // 2. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The data array provided is invalid.");
         return;
     }
 
     // 3. If this object has been removed from the sourceBuffers attribute of media source then throw
     //    an InvalidStateError exception and abort these steps.
-    if (isRemoved()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemoved(isRemoved(), exceptionState))
         return;
-    }
 
     // 5. If the readyState attribute of media source is in the "ended" state then run the following steps:
     // 5.1. Set the readyState attribute of media source to "open"
@@ -145,8 +148,10 @@ void WebKitSourceBuffer::abort(ExceptionState& exceptionState)
     //    then throw an InvalidStateError exception and abort these steps.
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an InvalidStateError exception and abort these steps.
-    if (isRemoved() || !m_source->isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfRemoved(isRemoved(), exceptionState))
+        return;
+    if (!m_source->isOpen()) {
+        exceptionState.throwDOMException(InvalidStateError, "The parent MediaSource's readyState is not 'open'.");
         return;
     }
 

@@ -38,8 +38,8 @@ running testAppendFailureCases
 EVENT(webkitsourceopen)
 Test a successful append.
 Test append with a null buffer.
-Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+Got expected exception InvalidAccessError: Failed to execute 'append' on 'WebKitSourceBuffer': The data array provided is invalid.
 Test append after buffer has been removed.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to execute 'append' on 'WebKitSourceBuffer': This SourceBuffer has been removed from its parent MediaSource.
 END OF TEST
 
