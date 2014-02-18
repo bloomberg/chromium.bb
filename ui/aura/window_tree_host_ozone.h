@@ -48,7 +48,7 @@ class WindowTreeHostOzone : public WindowTreeHost,
   virtual void PrepareForShutdown() OVERRIDE;
   virtual void SetCursorNative(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
-  virtual void OnCursorVisibilityChanged(bool show) OVERRIDE;
+  virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
 
   // ui::EventSource overrides.
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
