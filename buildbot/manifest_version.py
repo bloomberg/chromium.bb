@@ -302,16 +302,28 @@ class VersionInfo(object):
 
 class BuilderStatus(object):
   """Object representing the status of a build."""
-    # Various status builds can be in.
+  # Various statuses builds can be in.  These status values are retrieved from
+  # Google Storage, which each builder writes to.  The MISSING status is used
+  # for the status of any builder which has no value in Google Storage.
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
   STATUS_INFLIGHT = 'inflight'
+  STATUS_MISSING = 'missing' # i.e. never started.
   COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED)
+
+  MISSING_MESSAGE = ('Unknown run, it probably never started:'
+                     ' %(builder)s, version %(version)s')
 
   def __init__(self, status, message, dashboard_url=None):
     self.status = status
     self.message = message
     self.dashboard_url = dashboard_url
+
+  @staticmethod
+  def GetMissingMessage(builder, version):
+    """Return the MISSING message to use for given |builder| and |version|."""
+    args = {'builder': builder, 'version': version}
+    return BuilderStatus.MISSING_MESSAGE % args
 
   # Helper methods to make checking the status object easy.
 
@@ -326,6 +338,10 @@ class BuilderStatus(object):
   def Inflight(self):
     """Returns True if the Builder is still inflight."""
     return self.status == BuilderStatus.STATUS_INFLIGHT
+
+  def Missing(self):
+    """Returns True if the Builder is missing any status."""
+    return self.status == BuilderStatus.STATUS_MISSING
 
   def Completed(self):
     """Returns True if the Builder has completed."""
@@ -481,7 +497,7 @@ class BuildSpecsManager(object):
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
         self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
-        if self._latest_status is None:
+        if self._latest_status.Missing():
           self.latest_unprocessed = self.latest
 
     return True
@@ -559,14 +575,17 @@ class BuildSpecsManager(object):
 
     Returns:
       A BuilderStatus instance containing the builder status and any optional
-      message associated with the status passed by the builder.
+      message associated with the status passed by the builder.  If no status
+      is found for this builder then the returned BuilderStatus object will
+      have status STATUS_MISSING.
     """
     url = BuildSpecsManager._GetStatusUrl(builder, version)
     ctx = gs.GSContext(retries=retries)
     try:
       output = ctx.Cat(url).output
     except gs.GSNoSuchKey:
-      return None
+      msg = BuilderStatus.GetMissingMessage(builder, version)
+      return BuilderStatus(BuilderStatus.STATUS_MISSING, msg)
 
     return BuilderStatus(**cPickle.loads(output))
 

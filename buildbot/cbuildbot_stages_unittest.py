@@ -504,20 +504,22 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
         manifest_version.BuilderStatus.STATUS_PASSED, '')
     failed = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_FAILED, '')
+    missing = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_MISSING, '')
 
     # If any sanity builder failed, build was not sane.
     slave_statuses = {'builder_a': passed,
-                      'sanity_1' : None,
+                      'sanity_1' : missing,
                       'sanity_2' : passed,
                       'sanity_3' : failed}
     self.assertFalse(
         stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
                                                         slave_statuses))
 
-    # If some sanity builders did not report a status or reported status
-    # None, but the others passed, then build was sane.
+    # If some sanity builders did not report a status but the others passed,
+    # then build was sane.
     slave_statuses = {'builder_a': passed,
-                      'sanity_1' : None,
+                      'sanity_1' : missing,
                       'sanity_2' : passed}
 
     self.assertTrue(

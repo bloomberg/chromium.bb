@@ -380,10 +380,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     """
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetBuildStatus')
     for builder, status in status_runs:
-      # GetBuildStatus returns None if the builder has not even started yet
-      # (e.g. because the builder is down.)
-      if status is not None:
-        status = manifest_version.BuilderStatus(status, None)
+      status = manifest_version.BuilderStatus(status, None)
       lkgm_manager.LKGMManager.GetBuildStatus(
           builder, mox.IgnoreArg()).AndReturn(status)
 
@@ -394,16 +391,19 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
-    status_runs = [('build1', 'fail'), ('build2', 'pass')]
+    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_FAILED),
+                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):
     """Tests GetBuilderStatus where builds are inflight."""
-    status_runs = [('build1', 'inflight'), ('build2', None),
-                   ('build1', 'fail'), ('build2', 'inflight'),
-                   ('build2', 'pass')]
+    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_INFLIGHT),
+                   ('build2', manifest_version.BuilderStatus.STATUS_MISSING),
+                   ('build1', manifest_version.BuilderStatus.STATUS_FAILED),
+                   ('build2', manifest_version.BuilderStatus.STATUS_INFLIGHT),
+                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())

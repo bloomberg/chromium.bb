@@ -465,20 +465,19 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     def _CheckStatusOfBuildersArray(seconds_left):
       """Helper function that iterates through current statuses."""
-      for b in builders_array:
-        cached_status = builder_statuses.get(b)
+      for builder_name in builders_array:
+        cached_status = builder_statuses.get(builder_name)
         if not cached_status or not cached_status.Completed():
-          logging.debug("Checking for builder %s's status", b)
-          builder_status = self.GetBuildStatus(b, self.current_version)
-          builder_statuses[b] = builder_status
-          if builder_status is None:
-            logging.warn('No status found for builder %s.', b)
-          elif builder_status.Passed():
-            builders_completed.add(b)
-            logging.info('Builder %s completed with status passed', b)
-          elif builder_status.Failed():
-            builders_completed.add(b)
-            logging.info('Builder %s completed with status failed', b)
+          logging.debug("Checking for builder %s's status", builder_name)
+          builder_status = self.GetBuildStatus(builder_name,
+                                               self.current_version)
+          builder_statuses[builder_name] = builder_status
+          if builder_status.Missing():
+            logging.warn('No status found for builder %s.', builder_name)
+          elif builder_status.Completed():
+            builders_completed.add(builder_name)
+            logging.info('Builder %s completed with status "%s".',
+                         builder_name, builder_status.status)
 
       if len(builders_completed) < len(builders_array):
         minutes_left = int((seconds_left / 60) + 0.5)

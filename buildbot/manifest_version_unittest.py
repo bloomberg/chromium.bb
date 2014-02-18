@@ -185,13 +185,17 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
     for m in [m1, m2, m3, m4]:
       osutils.Touch(m)
 
+    # Fake BuilderStatus with status MISSING.
+    missing = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_MISSING, None)
+
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
     self.mox.StubOutWithMock(self.manager, 'GetBuildStatus')
-    self.manager.GetBuildStatus(self.build_name, '1.2.5').AndReturn(None)
+    self.manager.GetBuildStatus(self.build_name, '1.2.5').AndReturn(missing)
     self.mox.ReplayAll()
     self.manager.InitializeManifestVariables(info)
     self.mox.VerifyAll()

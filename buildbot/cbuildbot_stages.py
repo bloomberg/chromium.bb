@@ -392,6 +392,7 @@ class ArchivingStageMixin(object):
         if not statuses:
           logging.warning('completion_instance did not have any statuses '
                           'to report. Will not add slave status to metadata.')
+
         metadata['slave_targets'] = {}
         for builder, status in statuses.iteritems():
           metadata['slave_targets'][builder] = status.AsFlatDict()
@@ -1247,8 +1248,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     If this build is not a master then return just the status of this build.
 
     Returns:
-      A build-names->status dictionary of build statuses. Builders that never
-      started may have status None.
+      A dict with "bot id" keys and BuilderStatus objects for values.  All keys
+      will have valid BuilderStatus values, but builders that never started
+      will have a BuilderStatus with status MISSING.
     """
     if not self._run.config.master:
       # This is a slave build, so return the status for this build.
@@ -1361,11 +1363,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     statuses = self._FetchSlaveStatuses()
     self._slave_statuses = statuses
     no_stat = set(builder for builder, status in statuses.iteritems()
-                  if status is None)
+                  if status.Missing())
     failing = set(builder for builder, status in statuses.iteritems()
-                  if status and status.Failed())
+                  if status.Failed())
     inflight = set(builder for builder, status in statuses.iteritems()
-                   if status and status.Inflight())
+                   if status.Inflight())
 
     # If all the failing or inflight builders were sanity checkers
     # then ignore the failure.
@@ -1502,14 +1504,18 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
   @staticmethod
   def _WasBuildSane(sanity_check_slaves, slave_statuses):
-    """Determines weather any of the sanity check slaves failed."""
+    """Determines whether any of the sanity check slaves failed.
+
+    Args:
+      sanity_check_slaves: Names of slave builders that are "sanity check"
+        builders for the current master.
+      slave_statuses: Dict of BuilderStatus objects by builder name keys.
+
+    Returns:
+      True if no sanity builders ran and failed.
+    """
     sanity_check_slaves = sanity_check_slaves or []
-    # Ignore any sanity_check_slaves builders for which we do not have a
-    # status (perhaps because they timed out or never ran).
-    # Of those that do have a status, if any of them failed,
-    # call the build not sane.
-    return not any([slave_statuses.get(x) is not None and
-                    slave_statuses[x].Failed()
+    return not any([x in slave_statuses and slave_statuses[x].Failed()
                     for x in sanity_check_slaves])
 
   def PerformStage(self):
