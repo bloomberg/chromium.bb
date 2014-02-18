@@ -39,15 +39,8 @@
             '-mfpu=neon',
           ],
           'dependencies': [
-            '<(android_ndk_root)/android_tools_ndk.gyp:cpu_features',
             'openmax_dl_armv7',
           ],
-          'link_settings' : {
-            'libraries': [
-              # To get the __android_log_print routine
-              '-llog',
-            ],
-          },
           'sources': [
             # Common files that are used by both the NEON and non-NEON code.
             'api/armCOMM_s.h',
@@ -55,7 +48,6 @@
             'api/omxtypes_s.h',
             'sp/api/armSP.h',
             'sp/src/arm/armSP_FFT_S32TwiddleTable.c',
-            'sp/src/arm/detect.c',
             'sp/src/arm/omxSP_FFTGetBufSize_C_FC32.c',
             'sp/src/arm/omxSP_FFTGetBufSize_C_SC16.c',
             'sp/src/arm/omxSP_FFTGetBufSize_C_SC32.c',
@@ -173,7 +165,18 @@
           'cflags!': [
             '-mfpu=neon',
           ],
+          'dependencies': [
+            '<(android_ndk_root)/android_tools_ndk.gyp:cpu_features',
+          ],
+          'link_settings' : {
+            'libraries': [
+              # To get the __android_log_print routine
+              '-llog',
+            ],
+          },
           'sources': [
+            # Detection routine
+            'sp/src/arm/detect.c',
             # Complex floating-point FFT
             'sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
             'sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',
