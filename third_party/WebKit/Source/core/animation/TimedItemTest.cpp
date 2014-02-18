@@ -75,7 +75,7 @@ public:
         TimedItem::updateInheritedTime(time);
     }
 
-    virtual bool updateChildrenAndEffects() const OVERRIDE { return false; }
+    virtual void updateChildrenAndEffects() const OVERRIDE { }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const OVERRIDE

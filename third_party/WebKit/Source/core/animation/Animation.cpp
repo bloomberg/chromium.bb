@@ -345,11 +345,11 @@ static AnimationStack& ensureAnimationStack(Element* element)
     return element->ensureActiveAnimations()->defaultStack();
 }
 
-bool Animation::applyEffects(bool previouslyInEffect)
+void Animation::applyEffects(bool previouslyInEffect)
 {
     ASSERT(isInEffect());
     if (!m_target || !m_effect)
-        return false;
+        return;
 
     if (player() && !previouslyInEffect) {
         ensureAnimationStack(m_target.get()).add(this);
@@ -360,11 +360,8 @@ bool Animation::applyEffects(bool previouslyInEffect)
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
     m_compositableValues = m_effect->sample(static_cast<int>(iteration), timeFraction());
-    if (player()) {
+    if (player())
         m_target->setNeedsAnimationStyleRecalc();
-        return true;
-    }
-    return false;
 }
 
 void Animation::clearEffects()
@@ -387,19 +384,14 @@ void Animation::clearEffects()
     invalidate();
 }
 
-bool Animation::updateChildrenAndEffects() const
+void Animation::updateChildrenAndEffects() const
 {
     if (!m_effect)
-        return false;
-
+        return;
     if (isInEffect())
-        return const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
-
-    if (m_activeInAnimationStack) {
+        const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
+    else if (m_activeInAnimationStack)
         const_cast<Animation*>(this)->clearEffects();
-        return true;
-    }
-    return false;
 }
 
 double Animation::calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const

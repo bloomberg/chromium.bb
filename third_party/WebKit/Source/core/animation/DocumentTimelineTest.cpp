@@ -166,42 +166,6 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
     EXPECT_FLOAT_EQ(100, timeline->currentTime());
 }
 
-TEST_F(AnimationDocumentTimelineTest, EmptyTimelineDoesNotTriggerStyleRecalc)
-{
-    document->animationClock().updateTime(100);
-    EXPECT_FALSE(timeline->serviceAnimations());
-}
-
-TEST_F(AnimationDocumentTimelineTest, EmptyPlayerDoesNotTriggerStyleRecalc)
-{
-    timeline->play(0);
-    document->animationClock().updateTime(100);
-    EXPECT_FALSE(timeline->serviceAnimations());
-}
-
-TEST_F(AnimationDocumentTimelineTest, EmptyTargetDoesNotTriggerStyleRecalc)
-{
-    timing.iterationDuration = 200;
-    timeline->play(Animation::create(0, KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
-    document->animationClock().updateTime(100);
-    EXPECT_FALSE(timeline->serviceAnimations());
-}
-
-TEST_F(AnimationDocumentTimelineTest, EmptyEffectDoesNotTriggerStyleRecalc)
-{
-    timeline->play(Animation::create(element.get(), 0, timing).get());
-    document->animationClock().updateTime(100);
-    EXPECT_FALSE(timeline->serviceAnimations());
-}
-
-TEST_F(AnimationDocumentTimelineTest, TriggerStyleRecalc)
-{
-    timing.iterationDuration = 200;
-    timeline->play(Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
-    document->animationClock().updateTime(100);
-    EXPECT_TRUE(timeline->serviceAnimations());
-}
-
 TEST_F(AnimationDocumentTimelineTest, ZeroTime)
 {
     timeline = DocumentTimeline::create(document.get());

@@ -259,7 +259,7 @@ void Player::cancelAnimationOnCompositor()
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
-bool Player::update(bool* didTriggerStyleRecalc)
+bool Player::update()
 {
     if (!m_timeline)
         return false;
@@ -267,16 +267,10 @@ bool Player::update(bool* didTriggerStyleRecalc)
     double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
     m_needsUpdate = false;
 
-    if (!m_content) {
-        if (didTriggerStyleRecalc)
-            *didTriggerStyleRecalc = false;
+    if (!m_content)
         return false;
-    }
 
-    bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(inheritedTime);
-
-    if (didTriggerStyleRecalc)
-        *didTriggerStyleRecalc = didTriggerStyleRecalcLocal;
+    m_content->updateInheritedTime(inheritedTime);
 
     ASSERT(!m_needsUpdate);
     return m_content->isCurrent() || m_content->isInEffect();

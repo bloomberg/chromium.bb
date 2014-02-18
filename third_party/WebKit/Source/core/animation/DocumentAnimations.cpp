@@ -48,9 +48,9 @@ namespace {
 
 void updateAnimationTiming(Document& document)
 {
-    bool didTriggerStyleRecalc = document.timeline()->serviceAnimations();
-    didTriggerStyleRecalc |= document.transitionTimeline()->serviceAnimations();
-    if (!didTriggerStyleRecalc)
+    document.timeline()->serviceAnimations();
+    document.transitionTimeline()->serviceAnimations();
+    if (!document.childNeedsStyleRecalc())
         document.animationClock().unfreeze();
 }
 

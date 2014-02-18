@@ -94,7 +94,7 @@ void TimedItem::updateSpecifiedTiming(const Timing& timing)
         m_player->setNeedsUpdate();
 }
 
-bool TimedItem::updateInheritedTime(double inheritedTime) const
+void TimedItem::updateInheritedTime(double inheritedTime) const
 {
     bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
     m_needsUpdate = false;
@@ -167,14 +167,12 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         m_isFirstSample = false;
     }
 
-    bool didTriggerStyleRecalc = false;
     if (needsUpdate)  {
         // FIXME: This probably shouldn't be recursive.
-        didTriggerStyleRecalc = updateChildrenAndEffects();
+        updateChildrenAndEffects();
         m_calculated.timeToForwardsEffectChange = calculateTimeToEffectChange(true, localTime, timeToNextIteration);
         m_calculated.timeToReverseEffectChange = calculateTimeToEffectChange(false, localTime, timeToNextIteration);
     }
-    return didTriggerStyleRecalc;
 }
 
 const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const

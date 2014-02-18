@@ -85,10 +85,9 @@ public:
     void pauseAnimationForTestingOnCompositor(double pauseTime);
 
 protected:
-    // Returns whether style recalc was triggered.
-    bool applyEffects(bool previouslyInEffect);
+    void applyEffects(bool previouslyInEffect);
     void clearEffects();
-    virtual bool updateChildrenAndEffects() const OVERRIDE;
+    virtual void updateChildrenAndEffects() const OVERRIDE;
     virtual void didAttach() OVERRIDE;
     virtual void willDetach() OVERRIDE;
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;

@@ -46,7 +46,7 @@ public:
     static PassRefPtr<Player> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether this player is still current or in effect.
-    bool update(bool* didTriggerStyleRecalc = 0);
+    bool update();
 
     // timeToEffectChange returns:
     //  infinity  - if this player is no longer in effect

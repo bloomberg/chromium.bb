@@ -89,21 +89,18 @@ void DocumentTimeline::wake()
     m_timing->serviceOnNextFrame();
 }
 
-bool DocumentTimeline::serviceAnimations()
+void DocumentTimeline::serviceAnimations()
 {
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
     m_timing->cancelWake();
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
-    bool didTriggerStyleRecalc = false;
     for (int i = m_currentPlayers.size() - 1; i >= 0; --i) {
         RefPtr<Player> player = m_currentPlayers[i].get();
-        bool playerDidTriggerStyleRecalc;
-        if (!player->update(&playerDidTriggerStyleRecalc))
+        if (!player->update())
             m_currentPlayers.remove(i);
         timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
-        didTriggerStyleRecalc |= playerDidTriggerStyleRecalc;
     }
 
     if (!m_currentPlayers.isEmpty()) {
@@ -114,7 +111,6 @@ bool DocumentTimeline::serviceAnimations()
     }
 
     m_hasPlayerNeedingUpdate = false;
-    return didTriggerStyleRecalc;
 }
 
 void DocumentTimeline::setZeroTime(double zeroTime)

@@ -61,8 +61,8 @@ public:
 
     static PassRefPtr<DocumentTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
     ~DocumentTimeline();
-    // Returns whether style recalc was triggered.
-    bool serviceAnimations();
+
+    void serviceAnimations();
 
     // Creates a player attached to this timeline, but without a start time.
     Player* createPlayer(TimedItem*);
