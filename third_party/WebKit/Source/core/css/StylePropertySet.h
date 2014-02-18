@@ -149,6 +149,7 @@ public:
 
     const CSSValue** valueArray() const;
     const StylePropertyMetadata* metadataArray() const;
+    int findPropertyIndex(CSSPropertyID) const;
 
     void* m_storage;
 
@@ -208,6 +209,7 @@ public:
     void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
+    int findPropertyIndex(CSSPropertyID) const;
 
     Vector<CSSProperty, 4> m_propertyVector;
 
@@ -265,6 +267,13 @@ inline void StylePropertySet::deref()
         delete toMutableStylePropertySet(this);
     else
         delete toImmutableStylePropertySet(this);
+}
+
+inline int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
+{
+    if (m_isMutable)
+        return toMutableStylePropertySet(this)->findPropertyIndex(propertyID);
+    return toImmutableStylePropertySet(this)->findPropertyIndex(propertyID);
 }
 
 } // namespace WebCore

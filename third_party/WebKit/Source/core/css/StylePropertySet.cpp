@@ -94,6 +94,22 @@ ImmutableStylePropertySet::~ImmutableStylePropertySet()
         valueArray[i]->deref();
 }
 
+int ImmutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
+{
+    // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
+    // the compiler converting it to an int multiple times in the loop.
+    uint16_t id = static_cast<uint16_t>(propertyID);
+    for (int n = m_arraySize - 1 ; n >= 0; --n) {
+        if (metadataArray()[n].m_propertyID == id) {
+            // Only enabled or internal properties should be part of the style.
+            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
+            return n;
+        }
+    }
+
+    return -1;
+}
+
 MutableStylePropertySet::MutableStylePropertySet(const StylePropertySet& other)
     : StylePropertySet(other.cssParserMode())
 {
@@ -422,21 +438,6 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     return changed;
 }
 
-int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
-{
-    // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
-    // the compiler converting it to an int multiple times in the loop.
-    uint16_t id = static_cast<uint16_t>(propertyID);
-    for (int n = propertyCount() - 1 ; n >= 0; --n) {
-        if (id == propertyAt(n).propertyMetadata().m_propertyID) {
-            // Only enabled or internal properties should be part of the style.
-            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
-            return n;
-        }
-    }
-    return -1;
-}
-
 CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID propertyID)
 {
     int foundPropertyIndex = findPropertyIndex(propertyID);
@@ -509,6 +510,22 @@ CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()
     }
     m_cssomWrapper = adoptPtr(new PropertySetCSSStyleDeclaration(this));
     return m_cssomWrapper.get();
+}
+
+int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
+{
+    // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
+    // the compiler converting it to an int multiple times in the loop.
+    uint16_t id = static_cast<uint16_t>(propertyID);
+    for (int n = m_propertyVector.size() - 1 ; n >= 0; --n) {
+        if (m_propertyVector.at(n).metadata().m_propertyID == id) {
+            // Only enabled or internal properties should be part of the style.
+            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
+            return n;
+        }
+    }
+
+    return -1;
 }
 
 unsigned StylePropertySet::averageSizeInBytes()
