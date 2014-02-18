@@ -500,6 +500,8 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
           parser.GetHeader("last-modified").c_str(),
           parser.GetHeader("etag").c_str(),
           PP_FromBool(parser.CacheControlNoStore()),
+          GetSandboxISA(),
+          "", // No extra compile flags yet.
           &is_cache_hit_,
           temp_nexe_file_->existing_handle(),
           cb.pp_completion_callback());

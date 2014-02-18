@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Feb 13 15:50:26 2014. */
+/* From private/ppb_nacl_private.idl modified Mon Feb 10 11:05:29 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -150,6 +150,8 @@ struct PPB_NaCl_Private_1_0 {
                        const char* last_modified,
                        const char* etag,
                        PP_Bool has_no_store_header,
+                       const char* sandbox_isa,
+                       const char* extra_flags,
                        PP_Bool* is_hit,
                        PP_FileHandle* nexe_handle,
                        struct PP_CompletionCallback callback);

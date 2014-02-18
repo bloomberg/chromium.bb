@@ -398,9 +398,13 @@ int PnaclTranslationCache::Size() {
   return disk_cache_->GetEntryCount();
 }
 
+// Beware that any changes to this function or to PnaclCacheInfo will
+// effectively invalidate existing translation cache entries.
+
 // static
 std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
-  if (!info.pexe_url.is_valid() || info.abi_version < 0 || info.opt_level < 0)
+  if (!info.pexe_url.is_valid() || info.abi_version < 0 || info.opt_level < 0 ||
+      info.extra_flags.size() > 512)
     return std::string();
   std::string retval("ABI:");
   retval += IntToString(info.abi_version) + ";" + "opt:" +
@@ -426,7 +430,9 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
             IntToString(exploded.hour) + ":" + IntToString(exploded.minute) +
             ":" + IntToString(exploded.second) + ":" +
             IntToString(exploded.millisecond) + ":UTC;";
-  retval += "etag:" + info.etag;
+  retval += "etag:" + info.etag + ";";
+  retval += "sandbox:" + info.sandbox_isa + ";";
+  retval += "extra_flags:" + info.extra_flags + ";";
   return retval;
 }
 

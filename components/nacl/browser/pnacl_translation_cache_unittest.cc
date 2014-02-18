@@ -127,57 +127,74 @@ TEST(PnaclTranslationCacheKeyTest, CacheKeyTest) {
   info.pexe_url = GURL("http://www.google.com");
   info.abi_version = 0;
   info.opt_level = 0;
+  info.sandbox_isa = "x86-32";
   std::string test_time("Wed, 15 Nov 1995 06:25:24 GMT");
   base::Time::FromString(test_time.c_str(), &info.last_modified);
   // Basic check for URL and time components
   EXPECT_EQ("ABI:0;opt:0;URL:http://www.google.com/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   // Check that query portion of URL is not stripped
   info.pexe_url = GURL("http://www.google.com/?foo=bar");
   EXPECT_EQ("ABI:0;opt:0;URL:http://www.google.com/?foo=bar;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   // Check that username, password, and normal port are stripped
   info.pexe_url = GURL("https://user:host@www.google.com:443/");
   EXPECT_EQ("ABI:0;opt:0;URL:https://www.google.com/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   // Check that unusual port is not stripped but ref is stripped
   info.pexe_url = GURL("https://www.google.com:444/#foo");
   EXPECT_EQ("ABI:0;opt:0;URL:https://www.google.com:444/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   // Check chrome-extesnsion scheme
   info.pexe_url = GURL("chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/");
   EXPECT_EQ("ABI:0;opt:0;"
             "URL:chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   // Check that ABI version, opt level, and etag are in the key
   info.pexe_url = GURL("http://www.google.com/");
   info.abi_version = 2;
   EXPECT_EQ("ABI:2;opt:0;URL:http://www.google.com/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   info.opt_level = 2;
   EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:;"
+            "sandbox:x86-32;extra_flags:;",
             PnaclTranslationCache::GetKey(info));
   info.etag = std::string("etag");
   EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
-            "modified:1995:11:15:6:25:24:0:UTC;etag:etag",
+            "modified:1995:11:15:6:25:24:0:UTC;etag:etag;"
+            "sandbox:x86-32;extra_flags:;",
+            PnaclTranslationCache::GetKey(info));
+
+  info.extra_flags = "-mavx-neon";
+  EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
+            "modified:1995:11:15:6:25:24:0:UTC;etag:etag;"
+            "sandbox:x86-32;extra_flags:-mavx-neon;",
             PnaclTranslationCache::GetKey(info));
 
   // Check for all the time components, and null time
   info.last_modified = base::Time();
   EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
-            "modified:0:0:0:0:0:0:0:UTC;etag:etag",
+            "modified:0:0:0:0:0:0:0:UTC;etag:etag;"
+            "sandbox:x86-32;extra_flags:-mavx-neon;",
             PnaclTranslationCache::GetKey(info));
   test_time.assign("Fri, 29 Feb 2008 13:04:12 GMT");
   base::Time::FromString(test_time.c_str(), &info.last_modified);
   EXPECT_EQ("ABI:2;opt:2;URL:http://www.google.com/;"
-            "modified:2008:2:29:13:4:12:0:UTC;etag:etag",
+            "modified:2008:2:29:13:4:12:0:UTC;etag:etag;"
+            "sandbox:x86-32;extra_flags:-mavx-neon;",
             PnaclTranslationCache::GetKey(info));
 }
 

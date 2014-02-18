@@ -273,6 +273,8 @@ int32_t GetNexeFd(PP_Instance instance,
                   const char* last_modified,
                   const char* etag,
                   PP_Bool has_no_store_header,
+                  const char* sandbox_isa,
+                  const char* extra_flags,
                   PP_Bool* is_hit,
                   PP_FileHandle* handle,
                   struct PP_CompletionCallback callback) {
@@ -296,6 +298,8 @@ int32_t GetNexeFd(PP_Instance instance,
   cache_info.last_modified = last_modified_time;
   cache_info.etag = std::string(etag);
   cache_info.has_no_store_header = PP_ToBool(has_no_store_header);
+  cache_info.sandbox_isa = std::string(sandbox_isa);
+  cache_info.extra_flags = std::string(extra_flags);
 
   g_pnacl_resource_host.Get()->RequestNexeFd(
       GetRoutingID(instance),

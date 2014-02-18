@@ -134,6 +134,8 @@ interface PPB_NaCl_Private {
                     [in] str_t last_modified,
                     [in] str_t etag,
                     [in] PP_Bool has_no_store_header,
+                    [in] str_t sandbox_isa,
+                    [in] str_t extra_flags,
                     [out] PP_Bool is_hit,
                     [out] PP_FileHandle nexe_handle,
                     [in] PP_CompletionCallback callback);
