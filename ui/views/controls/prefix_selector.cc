@@ -173,7 +173,7 @@ void PrefixSelector::OnTextInput(const base::string16& text) {
   const int start_row = row;
   const base::string16 lower_text(base::i18n::ToLower(current_text_));
   do {
-    if (TextAtRowMatchesText(row, current_text_)) {
+    if (TextAtRowMatchesText(row, lower_text)) {
       prefix_delegate_->SetSelectedRow(row);
       return;
     }
