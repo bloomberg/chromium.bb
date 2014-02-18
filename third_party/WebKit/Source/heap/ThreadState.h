@@ -38,6 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -452,6 +453,11 @@ public:
 
     // List of persistent roots allocated on the given thread.
     PersistentNode* roots() const { return m_persistents; }
+
+    // List of global persistent roots not owned by any particular thread.
+    // globalRootsMutex must be acquired before any modifications.
+    static PersistentNode* globalRoots();
+    static Mutex& globalRootsMutex();
 
     // Visit local thread stack and trace all pointers conservatively.
     void visitStack(Visitor*);

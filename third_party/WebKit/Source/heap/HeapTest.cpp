@@ -284,10 +284,15 @@ private:
             {
                 IntWrapper* wrapper;
 
+                typedef Persistent<IntWrapper, GlobalPersistents> GlobalIntWrapperPersistent;
+                OwnPtr<GlobalIntWrapperPersistent> globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
+
                 for (int i = 0; i < numberOfAllocations; i++) {
                     wrapper = IntWrapper::create(0x0bbac0de);
-                    if (!(i % 10))
+                    if (!(i % 10)) {
+                        globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
                         ThreadState::current()->safePoint(ThreadState::HeapPointersOnStack);
+                    }
                     yield();
                 }
 
@@ -298,6 +303,7 @@ private:
                 }
 
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
+                EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
             yield();
         }

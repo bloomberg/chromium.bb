@@ -35,6 +35,7 @@
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
+#include "wtf/Locker.h"
 #include "wtf/RawPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -76,22 +77,57 @@ private:
     PersistentNode* m_next;
     PersistentNode* m_prev;
 
-    template<ThreadAffinity affinity, typename Owner> friend class PersistentBase;
+    template<typename RootsAccessor, typename Owner> friend class PersistentBase;
     friend class PersistentAnchor;
     friend class ThreadState;
 };
 
-template<ThreadAffinity Affinity, typename Owner>
+// RootsAccessor for Persistent that provides access to thread-local list
+// of persistent handles. Can only be used to create handles that
+// are constructed and destructed on the same thread.
+template<ThreadAffinity Affinity>
+class ThreadLocalPersistents {
+public:
+    static PersistentNode* roots() { return state()->roots(); }
+
+    // No locking required. Just check that we are at the right thread.
+    class Lock {
+    public:
+        Lock() { state()->checkThread(); }
+    };
+
+private:
+    static ThreadState* state() { return ThreadStateFor<Affinity>::state(); }
+};
+
+// RootsAccessor for Persistent that provides synchronized access to global
+// list of persistent handles. Can be used for persistent handles that are
+// passed between threads.
+class GlobalPersistents {
+public:
+    static PersistentNode* roots() { return ThreadState::globalRoots(); }
+
+    class Lock {
+    public:
+        Lock() : m_locker(ThreadState::globalRootsMutex()) { }
+    private:
+        MutexLocker m_locker;
+    };
+};
+
+// Base class for persistent handles. RootsAccessor specifies which list to
+// link resulting handle into. Owner specifies the class containing trace
+// method.
+template<typename RootsAccessor, typename Owner>
 class PersistentBase : public PersistentNode {
 public:
     ~PersistentBase()
     {
-#ifndef NDEBUG
+        typename RootsAccessor::Lock lock;
+        ASSERT(m_roots == RootsAccessor::roots()); // Check that the thread is using the same roots list.
         ASSERT(isAlive());
         ASSERT(m_next->isAlive());
         ASSERT(m_prev->isAlive());
-        m_threadState->checkThread();
-#endif
         m_next->m_prev = m_prev;
         m_prev->m_next = m_next;
     }
@@ -100,29 +136,24 @@ protected:
     inline PersistentBase()
         : PersistentNode(TraceMethodDelegate<Owner, &Owner::trace>::trampoline)
 #ifndef NDEBUG
-        , m_threadState(state())
+        , m_roots(RootsAccessor::roots())
 #endif
     {
-#ifndef NDEBUG
-        m_threadState->checkThread();
-#endif
-        ThreadState* threadState = state();
-        m_prev = threadState->roots();
-        m_next = threadState->roots()->m_next;
-        threadState->roots()->m_next = this;
+        typename RootsAccessor::Lock lock;
+        m_prev = RootsAccessor::roots();
+        m_next = m_prev->m_next;
+        m_prev->m_next = this;
         m_next->m_prev = this;
     }
 
     inline explicit PersistentBase(const PersistentBase& otherref)
         : PersistentNode(otherref.m_trace)
 #ifndef NDEBUG
-        , m_threadState(state())
+        , m_roots(RootsAccessor::roots())
 #endif
     {
-#ifndef NDEBUG
-        m_threadState->checkThread();
-#endif
-        ASSERT(otherref.m_threadState == m_threadState);
+        typename RootsAccessor::Lock lock;
+        ASSERT(otherref.m_roots == m_roots); // Handles must belong to the same list.
         PersistentBase* other = const_cast<PersistentBase*>(&otherref);
         m_prev = other;
         m_next = other->m_next;
@@ -130,16 +161,11 @@ protected:
         m_next->m_prev = this;
     }
 
-    inline PersistentBase& operator=(const PersistentBase& otherref)
-    {
-        return *this;
-    }
-
-    static ThreadState* state() { return ThreadStateFor<Affinity>::state(); }
+    inline PersistentBase& operator=(const PersistentBase& otherref) { return *this; }
 
 #ifndef NDEBUG
 private:
-    ThreadState* m_threadState;
+    PersistentNode* m_roots;
 #endif
 };
 
@@ -147,7 +173,11 @@ private:
 // This removes a test from a hot path.
 class PersistentAnchor : public PersistentNode {
 public:
-    void trace(Visitor*) { }
+    void trace(Visitor* visitor)
+    {
+        for (PersistentNode* current = m_next; current != this; current = current->m_next)
+            current->trace(visitor);
+    }
 
 private:
     virtual ~PersistentAnchor()
@@ -177,8 +207,8 @@ private:
 //
 // A Persistent is always a GC root from the point of view of
 // the garbage collector.
-template<typename T>
-class Persistent : public PersistentBase<ThreadingTrait<T>::Affinity, Persistent<T> > {
+template<typename T, typename RootsAccessor /* = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > */ >
+class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor> > {
 public:
     Persistent() : m_raw(0) { }
 
@@ -187,7 +217,7 @@ public:
     Persistent(const Persistent& other) : m_raw(other) { }
 
     template<typename U>
-    Persistent(const Persistent<U>& other) : m_raw(other) { }
+    Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { }
 
     template<typename U>
     Persistent(const Member<U>& other) : m_raw(other) { }
@@ -239,7 +269,7 @@ public:
     }
 
     template<typename U>
-    Persistent& operator=(const Persistent<U>& other)
+    Persistent& operator=(const Persistent<U, RootsAccessor>& other)
     {
         m_raw = other;
         return *this;
@@ -269,7 +299,7 @@ private:
 template<typename Collection, ThreadAffinity Affinity = AnyThread>
 class PersistentHeapCollectionBase
     : public Collection
-    , public PersistentBase<Affinity, PersistentHeapCollectionBase<Collection, Affinity> > {
+    , public PersistentBase<ThreadLocalPersistents<Affinity>, PersistentHeapCollectionBase<Collection, Affinity> > {
     // Never allocate these objects with new. Use Persistent<Collection> instead.
     DISALLOW_ALLOCATION();
 public:
@@ -478,7 +508,7 @@ public:
 
 template<typename Collection, ThreadAffinity Affinity>
 class CollectionPersistent
-    : public PersistentBase<Affinity, CollectionPersistent<Collection, Affinity> >
+    : public PersistentBase<ThreadLocalPersistents<Affinity>, CollectionPersistent<Collection, Affinity> >
     , public IndexingBehavior<CollectionPersistent<Collection, Affinity> > {
 public:
     typedef Collection CollectionType;

@@ -65,7 +65,8 @@ const uint8_t finalizedZapValue = 24;
 
 class HeapStats;
 class PageMemory;
-template<typename T> class Persistent;
+template<ThreadAffinity affinity> class ThreadLocalPersistents;
+template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
 
 HEAP_EXPORT size_t osPageSize();
 

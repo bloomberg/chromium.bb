@@ -327,6 +327,14 @@ void ThreadState::detach()
 
 void ThreadState::visitRoots(Visitor* visitor)
 {
+    {
+        // All threads are at safepoints so this is not strictly necessary.
+        // However we acquire the mutex to make mutation and traversal of this
+        // list symmetrical.
+        MutexLocker locker(globalRootsMutex());
+        globalRoots()->trace(visitor);
+    }
+
     AttachedThreadStateSet& threads = attachedThreads();
     for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->trace(visitor);
@@ -358,9 +366,7 @@ void ThreadState::visitStack(Visitor* visitor)
 
 void ThreadState::visitPersistents(Visitor* visitor)
 {
-    for (PersistentNode* current = m_persistents->m_next; current != m_persistents; current = current->m_next) {
-        current->trace(visitor);
-    }
+    m_persistents->trace(visitor);
 }
 
 void ThreadState::trace(Visitor* visitor)
@@ -385,6 +391,18 @@ bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
             return true;
     }
     return false;
+}
+
+PersistentNode* ThreadState::globalRoots()
+{
+    AtomicallyInitializedStatic(PersistentNode*, anchor = new PersistentAnchor);
+    return anchor;
+}
+
+Mutex& ThreadState::globalRootsMutex()
+{
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    return mutex;
 }
 
 // Trigger garbage collection on a 50% increase in size, but not for
