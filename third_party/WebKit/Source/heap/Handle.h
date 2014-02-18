@@ -493,55 +493,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
 
-template<typename Collection, ThreadAffinity Affinity = MainThreadOnly> class CollectionPersistent;
-
-// Used to inject correctly typed operator[] into CollectionPersistent when we are wrapping Vector.
-template<typename T> class IndexingBehavior { };
-
-template<typename T, size_t inlineCapacity>
-class IndexingBehavior<CollectionPersistent<Vector<T, inlineCapacity, WTF::DefaultAllocator> > > {
-    typedef CollectionPersistent<Vector<T, inlineCapacity, WTF::DefaultAllocator> > CollectionPersistentType;
-public:
-    T& operator[] (size_t i) { return (**static_cast<CollectionPersistentType*>(this))[i]; }
-    const T& operator[] (size_t i) const { return (**static_cast<const CollectionPersistentType*>(this))[i]; }
-};
-
-template<typename Collection, ThreadAffinity Affinity>
-class CollectionPersistent
-    : public PersistentBase<ThreadLocalPersistents<Affinity>, CollectionPersistent<Collection, Affinity> >
-    , public IndexingBehavior<CollectionPersistent<Collection, Affinity> > {
-public:
-    typedef Collection CollectionType;
-    typedef typename Collection::iterator iterator;
-    typedef typename Collection::const_iterator const_iterator;
-
-    CollectionPersistent() { }
-    explicit CollectionPersistent(size_t size) : m_collection(Collection(size)) { }
-    explicit CollectionPersistent(const Collection& collection) : m_collection(collection) { }
-    CollectionPersistent& operator=(const Collection& collection) { m_collection = collection; return *this; }
-    Collection* operator->() { return &m_collection; }
-    const Collection* operator->() const { return &m_collection; }
-    Collection& operator*() { return m_collection; }
-    const Collection& operator*() const { return m_collection; }
-
-    void trace(Visitor* visitor)
-    {
-        OffHeapCollectionTraceTrait<Collection>::trace(visitor, m_collection);
-    }
-
-#if defined(TRACE_GC_MARKING) && TRACE_GC_MARKING
-    virtual const char* name() OVERRIDE
-    {
-        ASSERT(this == static_cast<PersistentNode*>(this));
-        const char* n = FieldAnnotationBase::fromAddress(this);
-        return n ? n : "CollectionPersistent";
-    }
-#endif
-
-private:
-    Collection m_collection;
-};
-
 // Template aliases for the transition period where we want to support
 // both reference counting and garbage collection based on a
 // compile-time flag.

@@ -1781,51 +1781,12 @@ void SetIteratorCheck(T& it, const T& end, int expected)
     EXPECT_EQ(expected, found);
 }
 
-TEST(HeapTest, CollectionPersistent)
-{
-    HeapStats empty;
-    clearOutOldGarbage(&empty);
-    IntWrapper::s_destructorCalls = 0;
-
-    CollectionPersistent<Vector<Member<IntWrapper> > > vector;
-    CollectionPersistent<HashSet<Member<IntWrapper> > > set;
-    CollectionPersistent<HashMap<Member<IntWrapper>, Member<IntWrapper> > > map;
-    CollectionPersistent<ListHashSet<Member<IntWrapper> > > listSet;
-
-    vector->append(IntWrapper::create(42));
-    set->add(IntWrapper::create(103));
-    map->add(IntWrapper::create(137), IntWrapper::create(139));
-    listSet->add(IntWrapper::create(167));
-    listSet->add(IntWrapper::create(671));
-    listSet->add(IntWrapper::create(176));
-
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-
-    typedef HashSet<Member<IntWrapper> >::iterator SetIterator;
-    typedef HashMap<Member<IntWrapper>, Member<IntWrapper> >::iterator MapIterator;
-    typedef ListHashSet<Member<IntWrapper> >::iterator ListSetIterator;
-
-    SetIterator setIterator = set->begin();
-    MapIterator mapIterator = map->begin();
-    ListSetIterator listSetIterator = listSet->begin();
-
-    EXPECT_EQ(42, vector[0]->value());
-    EXPECT_EQ(103, (*setIterator)->value());
-    EXPECT_EQ(137, mapIterator->key->value());
-    EXPECT_EQ(139, mapIterator->value->value());
-    EXPECT_EQ(167, (*listSetIterator)->value());
-}
-
 TEST(HeapTest, HeapWeakCollectionSimple)
 {
 
     IntWrapper::s_destructorCalls = 0;
 
-    CollectionPersistent<Vector<Member<IntWrapper> > > keepNumbersAlive;
+    PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
 
     typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakStrong;
     typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
@@ -1839,8 +1800,8 @@ TEST(HeapTest, HeapWeakCollectionSimple)
 
     Persistent<IntWrapper> two = IntWrapper::create(2);
 
-    keepNumbersAlive->append(IntWrapper::create(103));
-    keepNumbersAlive->append(IntWrapper::create(10));
+    keepNumbersAlive.append(IntWrapper::create(103));
+    keepNumbersAlive.append(IntWrapper::create(10));
 
     {
         weakStrong->add(IntWrapper::create(1), two);
@@ -1905,12 +1866,12 @@ TEST(HeapTest, HeapWeakCollectionTypes)
 
             Persistent<WeakSet> weakSet = new WeakSet();
 
-            CollectionPersistent<Vector<Member<IntWrapper> > > keepNumbersAlive;
+            PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
             for (int i = 0; i < 128; i += 2) {
                 IntWrapper* wrapped = IntWrapper::create(i);
                 IntWrapper* wrapped2 = IntWrapper::create(i + 1);
-                keepNumbersAlive->append(wrapped);
-                keepNumbersAlive->append(wrapped2);
+                keepNumbersAlive.append(wrapped);
+                keepNumbersAlive.append(wrapped2);
                 weakStrong->add(wrapped, wrapped2);
                 strongWeak->add(wrapped2, wrapped);
                 weakWeak->add(wrapped, wrapped2);
@@ -2007,7 +1968,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
                 if (addAfterwards) {
                     for (int i = 1000; i < 1100; i++) {
                         IntWrapper* wrapped = IntWrapper::create(i);
-                        keepNumbersAlive->append(wrapped);
+                        keepNumbersAlive.append(wrapped);
                         weakStrong->add(wrapped, wrapped);
                         strongWeak->add(wrapped, wrapped);
                         weakWeak->add(wrapped, wrapped);
