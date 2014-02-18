@@ -82,7 +82,7 @@ deps = {
     'src/third_party/libjingle/source/talk':
         Var('git_url') + '/external/webrtc/trunk/talk.git@5a1feaee7445019eac8c125a2cedcd377d90be74',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7220379786c6b814b6b887478fa440bb392e8251',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@966a02fd0c4047a6badca966cd77f1496b690447',
     'src/third_party/libphonenumber/src/phonenumbers':
         Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@8d8b5b3b2035197795d27573d4cf566b5d9ad689',
     'src/third_party/libphonenumber/src/resources':
