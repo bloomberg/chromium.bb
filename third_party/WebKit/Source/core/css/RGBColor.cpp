@@ -30,9 +30,11 @@
 
 namespace WebCore {
 
-PassRefPtr<RGBColor> RGBColor::create(unsigned rgbColor)
+DEFINE_GC_INFO(RGBColor);
+
+PassRefPtrWillBeRawPtr<RGBColor> RGBColor::create(unsigned rgbColor)
 {
-    return adoptRef(new RGBColor(rgbColor));
+    return adoptRefWillBeNoop(new RGBColor(rgbColor));
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::red()

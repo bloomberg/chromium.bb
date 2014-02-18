@@ -314,7 +314,7 @@ public:
     Quad* getQuadValue(ExceptionState&) const;
     Quad* getQuadValue() const { return m_primitiveUnitType != CSS_QUAD ? 0 : m_value.quad; }
 
-    PassRefPtr<RGBColor> getRGBColorValue(ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<RGBColor> getRGBColorValue(ExceptionState&) const;
     RGBA32 getRGBA32Value() const { return m_primitiveUnitType != CSS_RGBCOLOR ? 0 : m_value.rgbcolor; }
 
     Pair* getPairValue(ExceptionState&) const;

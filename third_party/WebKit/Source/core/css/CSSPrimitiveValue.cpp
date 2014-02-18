@@ -922,7 +922,7 @@ Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& exceptionState) const
     return m_value.quad;
 }
 
-PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& exceptionState) const
 {
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
         exceptionState.throwDOMException(InvalidAccessError, "This object is not an RGB color value.");
