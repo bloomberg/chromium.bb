@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,13 +16,29 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_thread.h"
+#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_NOTIFICATIONS)
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/test/ash_test_helper.h"
+#endif
 
 class BackgroundContentsServiceTest : public testing::Test {
  public:
@@ -103,6 +120,94 @@ class MockBackgroundContents : public BackgroundContents {
   // Parent profile
   Profile* profile_;
 };
+
+#if defined(ENABLE_NOTIFICATIONS)
+// Wait for the notification created.
+class NotificationWaiter : public message_center::MessageCenterObserver {
+ public:
+  explicit NotificationWaiter(const std::string& target_id)
+      : target_id_(target_id) {}
+  virtual ~NotificationWaiter() {}
+
+  void WaitForNotificationAdded() {
+    message_center::MessageCenter* message_center =
+        message_center::MessageCenter::Get();
+    if (message_center->HasNotification(target_id_))
+      return;
+
+    message_center->AddObserver(this);
+    base::MessageLoop::current()->Run();
+    message_center->RemoveObserver(this);
+  }
+
+ private:
+  // message_center::MessageCenterObserver overrides:
+  virtual void OnNotificationAdded(
+      const std::string& notification_id) OVERRIDE {
+    if (notification_id == target_id_)
+      base::MessageLoop::current()->Quit();
+  }
+
+  std::string target_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationWaiter);
+};
+
+class BackgroundContentsServiceNotificationTest
+    : public BrowserWithTestWindowTest {
+ public:
+  BackgroundContentsServiceNotificationTest()
+      : profile_(NULL) {}
+  virtual ~BackgroundContentsServiceNotificationTest() {}
+
+  // Overridden from testing::Test
+  virtual void SetUp() {
+    BrowserWithTestWindowTest::SetUp();
+    // In ChromeOS environment, BrowserWithTestWindowTest initializes
+    // MessageCenter.
+#if !defined(OS_CHROMEOS)
+    message_center::MessageCenter::Initialize();
+#endif
+    profile_manager_.reset(new TestingProfileManager(
+        TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("Default");
+  }
+
+  virtual void TearDown() {
+    profile_manager_.reset();
+    profile_ = NULL;
+#if !defined(OS_CHROMEOS)
+    message_center::MessageCenter::Shutdown();
+#endif
+    BrowserWithTestWindowTest::TearDown();
+  }
+
+ protected:
+  Profile* profile() { return profile_; }
+
+  // Creates crash notification for the specified extension and returns
+  // the created one.
+  const Notification* CreateCrashNotification(
+      scoped_refptr<extensions::Extension> extension) {
+    std::string notification_id =
+        BackgroundContentsService::GetNotificationIdForExtensionForTesting(
+            extension->id());
+    NotificationWaiter waiter(notification_id);
+    BackgroundContentsService::ShowBalloonForTesting(extension.get(), profile_);
+    waiter.WaitForNotificationAdded();
+
+    return g_browser_process->notification_ui_manager()->FindById(
+        notification_id);
+  }
+
+ private:
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundContentsServiceNotificationTest);
+};
+#endif  // ENABLE_NOTIFICATIONS
 
 TEST_F(BackgroundContentsServiceTest, Create) {
   // Check for creation and leaks.
@@ -235,3 +340,39 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   EXPECT_EQ(1U, GetPrefs(&profile)->size());
   EXPECT_EQ(url2.spec(), GetPrefURLForApp(&profile, contents2->appid()));
 }
+
+#if defined(ENABLE_NOTIFICATIONS)
+// Test fails because of NOTIMPLEMENTED in fullscreen_aura.cc used by the
+// notification system.
+// TODO(mukai): Fix in notification side.
+#if defined(OS_CHROMEOS) || !defined(OS_LINUX)
+#define MAYBE_TestShowBalloon TestShowBalloon
+#define MAYBE_TestShowBalloonNoIcon TestShowBalloonNoIcon
+#else
+#define MAYBE_TestShowBalloon DISABLED_TestShowBalloon
+#define MAYBE_TestShowBalloonNoIcon DISABLED_TestShowBalloonNoIcon
+#endif
+
+TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloon) {
+  scoped_refptr<extensions::Extension> extension =
+      extension_test_util::LoadManifest("image_loading_tracker", "app.json");
+  ASSERT_TRUE(extension.get());
+  ASSERT_TRUE(extension->GetManifestData("icons"));
+
+  const Notification* notification = CreateCrashNotification(extension);
+  EXPECT_FALSE(notification->icon().IsEmpty());
+}
+
+// Verify if a test notification can show the default extension icon for
+// a crash notification for an extension without icon.
+TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloonNoIcon) {
+  // Extension manifest file with no 'icon' field.
+  scoped_refptr<extensions::Extension> extension =
+      extension_test_util::LoadManifest("app", "manifest.json");
+  ASSERT_TRUE(extension.get());
+  ASSERT_FALSE(extension->GetManifestData("icons"));
+
+  const Notification* notification = CreateCrashNotification(extension);
+  EXPECT_FALSE(notification->icon().IsEmpty());
+}
+#endif

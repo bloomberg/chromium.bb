@@ -166,7 +166,7 @@ void NotificationImageReady(
     Profile* profile,
     const gfx::Image& icon) {
   gfx::Image notification_icon(icon);
-  if (icon.IsEmpty()) {
+  if (notification_icon.IsEmpty()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     notification_icon = rb.GetImageNamed(IDR_EXTENSION_DEFAULT_ICON);
   }
@@ -180,7 +180,7 @@ void NotificationImageReady(
       GURL() /* empty origin */,
       base::string16(),
       message,
-      icon,
+      notification_icon,
       base::string16(),
       delegate.get(),
       profile);
@@ -278,6 +278,19 @@ void BackgroundContentsService::
     SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(
         int restart_delay_in_ms) {
   restart_delay_in_ms_ = restart_delay_in_ms;
+}
+
+// static
+std::string BackgroundContentsService::GetNotificationIdForExtensionForTesting(
+    const std::string& extension_id) {
+  return kNotificationPrefix + extension_id;
+}
+
+// static
+void BackgroundContentsService::ShowBalloonForTesting(
+    const extensions::Extension* extension,
+    Profile* profile) {
+  ShowBalloon(extension, profile);
 }
 
 std::vector<BackgroundContents*>
