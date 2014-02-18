@@ -1,2 +1,6 @@
-bulach@chromium.org
+# Preferred reviewers.
 qinmin@chromium.org
+wjia@chromium.org
+
+# JNI or last resource.
+bulach@chromium.org
