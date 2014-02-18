@@ -5,6 +5,8 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -12,6 +14,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notifier_settings.h"
 
 using extensions::Event;
 using extensions::EventRouter;
@@ -31,6 +35,23 @@ const char kMessagingReceiverApp[] =
 
 const char kMessagingReceiverAppV2[] =
     "platform_apps/ephemeral_apps/messaging_receiver2";
+
+const char kNotificationsTestApp[] =
+    "platform_apps/ephemeral_apps/notification_settings";
+
+typedef std::vector<message_center::Notifier*> NotifierList;
+
+bool IsNotifierInList(const message_center::NotifierId& notifier_id,
+                      const NotifierList& notifiers) {
+  for (NotifierList::const_iterator it = notifiers.begin();
+       it != notifiers.end(); ++it) {
+    const message_center::Notifier* notifier = *it;
+    if (notifier->notifier_id == notifier_id)
+      return true;
+  }
+
+  return false;
+}
 
 class EphemeralAppBrowserTest : public PlatformAppBrowserTest {
  protected:
@@ -199,4 +220,75 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
   ASSERT_TRUE(app_v2);
   EXPECT_TRUE(app_v2->version()->CompareTo(app_original_version) > 0);
   EXPECT_TRUE(app_v2->is_ephemeral());
+}
+
+// Verify that if notifications have been disabled for an ephemeral app, it will
+// remain disabled even after being evicted from the cache.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
+  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+
+  // Disable notifications for this app.
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(notification_service);
+
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, app->id());
+  EXPECT_TRUE(notification_service->IsNotifierEnabled(notifier_id));
+  notification_service->SetNotifierEnabled(notifier_id, false);
+  EXPECT_FALSE(notification_service->IsNotifierEnabled(notifier_id));
+
+  // Uninstall the app, which is what happens when ephemeral apps get evicted
+  // from the cache.
+  content::WindowedNotificationObserver uninstalled_signal(
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      content::Source<Profile>(browser()->profile()));
+
+  ExtensionService* service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ASSERT_TRUE(service);
+  service->UninstallExtension(app->id(), false, NULL);
+
+  uninstalled_signal.Wait();
+
+  // Reinstall the ephemeral app and verify that notifications remain disabled.
+  app = InstallEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  message_center::NotifierId reinstalled_notifier_id(
+      message_center::NotifierId::APPLICATION, app->id());
+  EXPECT_FALSE(notification_service->IsNotifierEnabled(
+      reinstalled_notifier_id));
+}
+
+// Verify that only running ephemeral apps will appear in the Notification
+// Settings UI. Inactive, cached ephemeral apps should not appear.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       IncludeRunningEphmeralAppsInNotifiers) {
+  message_center::NotifierSettingsProvider* settings_provider =
+      message_center::MessageCenter::Get()->GetNotifierSettingsProvider();
+  // TODO(tmdiep): Remove once notifications settings are supported across
+  // all platforms. This test will fail for Linux GTK.
+  if (!settings_provider)
+    return;
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, app->id());
+
+  // Since the ephemeral app is running, it should be included in the list
+  // of notifiers to show in the UI.
+  NotifierList notifiers;
+  settings_provider->GetNotifierList(&notifiers);
+  EXPECT_TRUE(IsNotifierInList(notifier_id, notifiers));
+
+  // Close the ephemeral app.
+  CloseApp(app->id());
+
+  // Inactive ephemeral apps should not be included in the list of notifiers to
+  // show in the UI.
+  notifiers.clear();
+  settings_provider->GetNotifierList(&notifiers);
+  EXPECT_FALSE(IsNotifierInList(notifier_id, notifiers));
 }

@@ -781,6 +781,10 @@ void DesktopNotificationService::Observe(
   if (IsNotifierEnabled(notifier_id))
     return;
 
+  // The settings for ephemeral apps will be persisted across cache evictions.
+  if (extension->is_ephemeral())
+    return;
+
   SetNotifierEnabled(notifier_id, true);
 }
 

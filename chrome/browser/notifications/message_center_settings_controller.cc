@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -226,6 +227,12 @@ void MessageCenterSettingsController::GetNotifierList(
     const extensions::Extension* extension = iter->get();
     if (!extension->HasAPIPermission(
             extensions::APIPermission::kNotification)) {
+      continue;
+    }
+
+    // Exclude cached ephemeral apps that are not currently running.
+    if (extension->is_ephemeral() &&
+        extensions::util::IsExtensionIdle(extension->id(), profile)) {
       continue;
     }
 
