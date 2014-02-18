@@ -707,9 +707,6 @@
         {
           'target_name': 'breakpad_client',
           'type': 'static_library',
-          'dependencies': [
-            '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
-          ],
           'sources': [
             'src/client/ios/Breakpad.h',
             'src/client/ios/Breakpad.mm',
