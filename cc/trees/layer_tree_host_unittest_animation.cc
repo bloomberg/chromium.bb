@@ -1080,6 +1080,8 @@ class LayerTreeHostAnimationTestFrozenAnimationTickTime
 
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
                              base::TimeTicks monotonic_time) OVERRIDE {
+    if (TestEnded())
+      return;
     if (!started_animating_) {
       started_animating_ = true;
       expected_impl_tick_time_ = monotonic_time;
