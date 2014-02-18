@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -296,6 +298,9 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 
 void TabHelper::SetExtensionApp(const Extension* extension) {
   DCHECK(!extension || AppLaunchInfo::GetFullLaunchURL(extension).is_valid());
+  if (extension_app_ == extension)
+    return;
+
   extension_app_ = extension;
 
   UpdateExtensionAppIcon(extension_app_);
@@ -346,7 +351,20 @@ void TabHelper::DidNavigateMainFrame(
   if (!service)
     return;
 
-  UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps)) {
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (browser && browser->is_app()) {
+      SetExtensionApp(service->GetInstalledExtension(
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())));
+    } else {
+      UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+    }
+#endif
+  } else {
+    UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+  }
 
   if (details.is_in_page)
     return;
