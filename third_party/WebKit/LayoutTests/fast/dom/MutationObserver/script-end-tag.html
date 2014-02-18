@@ -12,7 +12,9 @@ var observer = new MutationObserver(callback);
 var div = document.createElement('div');
 observer.observe(div, {attributes: true});
 div.setAttribute('foo', 'bar');
+document.write('<script><\/script>');
 shouldBeFalse('mutationsDelivered');
-document.write('<script><\/script>'); // performs a microtask checkpoint
+</script>
+<script>
 shouldBeTrue('mutationsDelivered');
 </script>

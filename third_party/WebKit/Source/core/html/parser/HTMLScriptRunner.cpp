@@ -288,7 +288,8 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
 
         ASSERT(scriptLoader->isParserInserted());
 
-        Microtask::performCheckpoint();
+        if (!isExecutingScript())
+            Microtask::performCheckpoint();
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
