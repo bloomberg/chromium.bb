@@ -40,7 +40,6 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
-#include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -472,8 +471,6 @@ void WebTestProxyBase::moveValidationMessage(const WebRect&)
 
 string WebTestProxyBase::captureTree(bool debugRenderTree)
 {
-    WebScriptController::flushConsoleMessages();
-
     bool shouldDumpAsText = m_testInterfaces->testRunner()->shouldDumpAsText();
     bool shouldDumpAsMarkup = m_testInterfaces->testRunner()->shouldDumpAsMarkup();
     bool shouldDumpAsPrinted = m_testInterfaces->testRunner()->isPrinting();

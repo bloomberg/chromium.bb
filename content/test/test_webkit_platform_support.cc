@@ -28,7 +28,6 @@
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "v8/include/v8.h"
@@ -39,8 +38,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
-
-using blink::WebScriptController;
 
 namespace content {
 
@@ -59,7 +56,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
       blink::WebString::fromUTF8("test-shell-resource"));
   blink::WebSecurityPolicy::registerURLSchemeAsEmptyDocument(
       blink::WebString::fromUTF8("test-shell-resource"));
-  WebScriptController::enableV8SingleThreadMode();
   blink::WebRuntimeFeatures::enableApplicationCache(true);
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);

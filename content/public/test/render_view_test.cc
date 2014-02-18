@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,7 +35,6 @@
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
-using blink::WebScriptController;
 using blink::WebScriptSource;
 using blink::WebString;
 using blink::WebURLRequest;

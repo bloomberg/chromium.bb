@@ -704,8 +704,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       CompositorOutputSurface::CreateFilter(output_surface_loop.get());
   AddFilter(compositor_output_surface_filter_.get());
 
-  WebScriptController::enableV8SingleThreadMode();
-
   RenderThreadImpl::RegisterSchemes();
 
   EnableBlinkPlatformLogChannels(
