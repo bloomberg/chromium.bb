@@ -119,6 +119,13 @@ DOMWrapperWorld::~DOMWrapperWorld()
     ASSERT(map.size() == isolatedWorldCount);
 }
 
+#ifndef NDEBUG
+static bool isIsolatedWorldId(int worldId)
+{
+    return worldId != MainWorldId && worldId != WorkerWorldId;
+}
+#endif
+
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, int extensionGroup)
 {
     ASSERT(isIsolatedWorldId(worldId));
@@ -140,11 +147,6 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
     return world.release();
 }
 
-v8::Handle<v8::Context> DOMWrapperWorld::context(ScriptController& controller)
-{
-    return controller.windowShell(this)->context();
-}
-
 typedef HashMap<int, RefPtr<SecurityOrigin> > IsolatedWorldSecurityOriginMap;
 static IsolatedWorldSecurityOriginMap& isolatedWorldSecurityOrigins()
 {
@@ -163,7 +165,7 @@ SecurityOrigin* DOMWrapperWorld::isolatedWorldSecurityOrigin()
 
 void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<SecurityOrigin> securityOrigin)
 {
-    ASSERT(DOMWrapperWorld::isIsolatedWorldId(worldId));
+    ASSERT(isIsolatedWorldId(worldId));
     if (securityOrigin)
         isolatedWorldSecurityOrigins().set(worldId, securityOrigin);
     else
@@ -172,7 +174,7 @@ void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<Sec
 
 void DOMWrapperWorld::clearIsolatedWorldSecurityOrigin(int worldId)
 {
-    ASSERT(DOMWrapperWorld::isIsolatedWorldId(worldId));
+    ASSERT(isIsolatedWorldId(worldId));
     isolatedWorldSecurityOrigins().remove(worldId);
 }
 
@@ -194,7 +196,7 @@ bool DOMWrapperWorld::isolatedWorldHasContentSecurityPolicy()
 
 void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const String& policy)
 {
-    ASSERT(DOMWrapperWorld::isIsolatedWorldId(worldId));
+    ASSERT(isIsolatedWorldId(worldId));
     if (!policy.isEmpty())
         isolatedWorldContentSecurityPolicies().set(worldId, true);
     else
@@ -203,7 +205,7 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
 
 void DOMWrapperWorld::clearIsolatedWorldContentSecurityPolicy(int worldId)
 {
-    ASSERT(DOMWrapperWorld::isIsolatedWorldId(worldId));
+    ASSERT(isIsolatedWorldId(worldId));
     isolatedWorldContentSecurityPolicies().remove(worldId);
 }
 

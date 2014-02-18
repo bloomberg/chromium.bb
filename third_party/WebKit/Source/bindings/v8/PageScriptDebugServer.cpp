@@ -248,7 +248,7 @@ bool PageScriptDebugServer::canPreprocess(Frame* frame)
     // Web page to ensure that the debugger's console initialization code has completed.
     if (!m_scriptPreprocessor) {
         TemporaryChange<bool> isPreprocessing(isCreatingPreprocessor, true);
-        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(*m_preprocessorSourceCode.get(), frame->script(), frame->host()->console()));
+        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(*m_preprocessorSourceCode.get(), frame));
     }
 
     if (m_scriptPreprocessor->isValid())

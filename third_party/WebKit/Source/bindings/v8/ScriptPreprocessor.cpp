@@ -34,36 +34,40 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/PageConsole.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, ScriptController& controller, PageConsole& console)
-    : m_isPreprocessing(false)
+ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, Frame* frame)
+    : m_isolate(V8PerIsolateData::mainThreadIsolate())
+    , m_isPreprocessing(false)
 {
+    ASSERT(frame);
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
     Vector<ScriptSourceCode> sources;
     sources.append(preprocessorSourceCode);
     Vector<ScriptValue> scriptResults;
-    controller.executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
+    frame->script().executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
 
     if (scriptResults.size() != 1) {
-        console.addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
+        frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
         return;
     }
 
     ScriptValue preprocessorFunction = scriptResults[0];
     if (!preprocessorFunction.isFunction()) {
-        console.addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
+        frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
         return;
     }
 
     m_world = DOMWrapperWorld::ensureIsolatedWorld(ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
-    v8::Local<v8::Context> context = m_world->context(controller);
-    m_isolate = context->GetIsolate();
+    v8::Local<v8::Context> context = toV8Context(m_isolate, frame, m_world.get());
 
     m_context.set(m_isolate, context);
     m_preprocessorFunction.set(m_isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction.v8Value()));

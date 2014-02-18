@@ -64,7 +64,6 @@ public:
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static bool isIsolatedWorldId(int worldId) { return worldId != MainWorldId && worldId != WorkerWorldId; }
     static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     // FIXME: Replace all call sites of isolatedWorld() with world().
@@ -115,8 +114,6 @@ public:
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
-    v8::Handle<v8::Context> context(ScriptController&);
-
     DOMDataStore& domDataStore() { return *m_domDataStore; }
 
 private:
