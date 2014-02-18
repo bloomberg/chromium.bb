@@ -247,6 +247,7 @@ public:
 
     virtual void didRequestAutocomplete(PassRefPtr<FormState>) OVERRIDE;
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) OVERRIDE;
+    virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) OVERRIDE;
 };
 
 class EmptyTextCheckerClient FINAL : public TextCheckerClient {

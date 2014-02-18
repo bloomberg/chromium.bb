@@ -156,6 +156,8 @@ public:
     virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebServiceWorkerProviderClient>) OVERRIDE;
     virtual WebCore::SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() OVERRIDE;
 
+    virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) OVERRIDE;
+
     virtual void didStopAllLoaders() OVERRIDE;
 
 private:

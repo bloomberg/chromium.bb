@@ -36,6 +36,7 @@
 #include "platform/ColorChooser.h"
 #include "platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 
@@ -146,6 +147,11 @@ void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 }
 
 PassOwnPtr<blink::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>)
+{
+    return nullptr;
+}
+
+PassOwnPtr<blink::WebApplicationCacheHost> EmptyFrameLoaderClient::createApplicationCacheHost(blink::WebApplicationCacheHostClient*)
 {
     return nullptr;
 }

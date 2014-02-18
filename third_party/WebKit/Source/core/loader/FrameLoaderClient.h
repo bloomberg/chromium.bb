@@ -50,6 +50,8 @@ class WebCookieJar;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
 }
 
 namespace WebCore {
@@ -228,6 +230,8 @@ class FetchRequest;
         virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) = 0;
 
         virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
+
+        virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) = 0;
 
         virtual void didStopAllLoaders() { }
 

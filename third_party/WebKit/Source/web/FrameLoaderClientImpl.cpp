@@ -84,6 +84,7 @@
 #include "platform/network/SocketStreamHandleInternal.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebServiceWorkerProvider.h"
@@ -779,6 +780,13 @@ PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerP
 SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClient()
 {
     return m_webFrame->sharedWorkerRepositoryClient();
+}
+
+PassOwnPtr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCacheHost(WebApplicationCacheHostClient* client)
+{
+    if (!m_webFrame->client())
+        return nullptr;
+    return adoptPtr(m_webFrame->client()->createApplicationCacheHost(m_webFrame, client));
 }
 
 void FrameLoaderClientImpl::didStopAllLoaders()

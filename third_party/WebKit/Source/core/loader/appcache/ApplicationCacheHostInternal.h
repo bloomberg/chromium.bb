@@ -28,23 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "WebApplicationCacheHostClient.h"
-#include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "core/frame/Frame.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "public/platform/WebApplicationCacheHostClient.h"
 #include "public/platform/WebURL.h"
 
 namespace WebCore {
 
+// FIXME: This class should go away and WebCore::ApplicationCacheHost should implement blink::WebApplicationCacheHostClient
 class ApplicationCacheHostInternal FINAL : public blink::WebApplicationCacheHostClient {
 public:
     ApplicationCacheHostInternal(ApplicationCacheHost* host)
         : m_innerHost(host)
     {
-        blink::WebFrameImpl* webFrame = blink::WebFrameImpl::fromFrame(host->m_documentLoader->frame());
-        ASSERT(webFrame);
-        m_outerHost = adoptPtr(webFrame->client()->createApplicationCacheHost(webFrame, this));
+        Frame* frame = host->m_documentLoader->frame();
+        ASSERT(frame);
+        ASSERT(frame->loader().client());
+        m_outerHost = frame->loader().client()->createApplicationCacheHost(this);
     }
 
     virtual void didChangeCacheAssociation() OVERRIDE

@@ -31,25 +31,24 @@
 #include "config.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/platform/WebVector.h"
-#include "ApplicationCacheHostInternal.h"
-#include "WebFrameImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/ProgressEvent.h"
+#include "core/frame/Frame.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCache.h"
-#include "core/frame/Frame.h"
+#include "core/loader/appcache/ApplicationCacheHostInternal.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebVector.h"
 
 using namespace blink;
 
@@ -83,9 +82,22 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
     m_internal = adoptPtr(new ApplicationCacheHostInternal(this));
     if (m_internal->m_outerHost) {
         WrappedResourceRequest wrapped(request);
-        m_internal->m_outerHost->willStartMainResourceRequest(wrapped, WebFrameImpl::fromFrame(m_documentLoader->frame()));
-    } else
+
+        const WebApplicationCacheHost* spawningHost = 0;
+        if (Frame* frame = m_documentLoader->frame()) {
+            Frame* spawningFrame = frame->tree().parent();
+            if (!spawningFrame)
+                spawningFrame = frame->loader().opener();
+            if (!spawningFrame)
+                spawningFrame = frame;
+            if (DocumentLoader* spawningDocLoader = spawningFrame->loader().documentLoader())
+                spawningHost = ApplicationCacheHostInternal::toWebApplicationCacheHost(spawningDocLoader->applicationCacheHost());
+        }
+
+        m_internal->m_outerHost->willStartMainResourceRequest(wrapped, spawningHost);
+    } else {
         m_internal.clear();
+    }
 
     // NOTE: The semantics of this method, and others in this interface, are subtly different
     // than the method names would suggest. For example, in this method never returns an appcached
@@ -244,8 +256,7 @@ void ApplicationCacheHost::abort()
 bool ApplicationCacheHost::isApplicationCacheEnabled()
 {
     ASSERT(m_documentLoader->frame());
-    return m_documentLoader->frame()->settings()
-           && m_documentLoader->frame()->settings()->offlineWebApplicationCacheEnabled();
+    return m_documentLoader->frame()->settings() && m_documentLoader->frame()->settings()->offlineWebApplicationCacheEnabled();
 }
 
-}  // namespace WebCore
+} // namespace WebCore

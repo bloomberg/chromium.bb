@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebDataSourceImpl.h"
 
-#include "ApplicationCacheHostInternal.h"
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/appcache/ApplicationCacheHostInternal.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"

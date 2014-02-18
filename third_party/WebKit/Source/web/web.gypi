@@ -1,8 +1,6 @@
 {
   'variables': {
     'web_files': [
-      'ApplicationCacheHost.cpp',
-      'ApplicationCacheHostInternal.h',
       'AssertMatchingEnums.cpp',
       'AssociatedURLLoader.cpp',
       'AssociatedURLLoader.h',
