@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2014 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+  <head>
+    <meta charset="UTF-8">
+
+    <title>Bullet Physics</title>
+
+    <script type="text/javascript" src="NaClAM.js"></script>
+    <script type="text/javascript" src="NaClAMBullet.js"></script>
+    <script type="text/javascript" src="//storage.googleapis.com/gonacl/pnacl-demo-bullet/three.min.js"></script>
+    <script type="text/javascript" src="scene.js"></script>
+    <script type="text/javascript" src="world.js"></script>
+    <script type="text/javascript" src="scenes.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-font-smoothing:antialiased;
+      }
+
+      html, body {
+        background: #FAFAFA;
+        color: #444;
+        font-family: 'Myriad Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        height: 100%;
+        line-height: 1.35;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .intro {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        left: 8px;
+        max-width: 300px;
+        position: absolute;
+        top: 8px;
+        z-index: 1000;
+      }
+
+      #listener {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      #rendererContainer {
+        height: 100%;
+        line-height: 0;
+        width: 100%;
+      }
+
+      h1 {
+        color: #666;
+        font-size: 130%;
+        font-weight: 600;
+        letter-spacing: -0.05em;
+        margin: 0;
+        text-align: center;
+      }
+
+      a {
+        color: #00A3D9;
+      }
+
+      .small {
+        font-size: 75%;
+      }
+
+      .controls {
+        margin: 1em 0;
+      }
+
+      #controls-header {
+      }
+
+      #controls-header-button {
+        padding-left: 20px;
+      }
+
+      #controls-buttons {
+      }
+
+      button {
+        background: #777;
+        color: #FFF;
+        width: calc(100% - 20px);
+        height: 35px;
+        border-radius: 6px;
+        border: none;
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.2s ease-out;
+      }
+
+      button:hover {
+        background: #333;
+      }
+
+      #loading-cover{
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+      }
+
+      #message {
+        bottom: 0;
+        font-size: 44px;
+        height: calc(1em + 80px);  /* not perfect, but pretty close. */
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        text-align: center;
+        top: 0;
+        z-index: 10;
+      }
+
+      #statusField {
+        color: #444;
+        font-weight: 700;
+        width: 100%;
+        letter-spacing: -0.06em;
+      }
+
+      #progress {
+        margin: 20px auto;
+        width: 300px;
+        border-radius: 8px;
+        background: #FFF;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      }
+
+      .progress-bar {
+        border-radius: 8px;
+        height: 40px;
+        background: #6DD900;
+        transition: width 0.1s ease-out;
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <section>
+      <div class="intro">
+        <div>
+          <h1 class="bottom-line">Bullet Physics<br>in Portable Native Client</h1>
+        </div>
+
+        <div class="controls bottom-line">
+          <div id="controls-header">Scenes
+            <span id="controls-header-button">+</span>
+          </div>
+          <div id="controls-buttons" style="display: none">
+            <div><button type="button" id="jenga10">Block Tower (10 blocks)</button></div>
+            <div><button type="button" id="jenga20">Block Tower (20 blocks)</button></div>
+            <div><button type="button" id="randomCube250">Random Cubes (250)</button></div>
+            <div><button type="button" id="randomCube1000">Random Cubes (1000)</button></div>
+            <div><button type="button" id="randomCube2000">Random Cubes (2000)</button></div>
+            <div><button type="button" id="randomCylinder500">Random Cylinders (500)</button></div>
+            <div><button type="button" id="randomShapes">Random Shapes</button></div>
+            <div><button type="button" id="reload">Reload Scene</button></div>
+          </div>
+        </div>
+
+        <div>
+          Curious about Native Client?<br>
+          Get Started <a href="https://developers.google.com/native_client/dev">here</a>.
+        </div>
+
+        <div class="small" style="display: none">
+          Simulation Time: <span id="simulationTime">0</span>&mu;s
+          <br>
+          FPS: <span id="fps">0</span>
+        </div>
+      </div>
+
+      <div id="listener">
+        <div id="rendererContainer"></div>
+      </div>
+
+      <div id="loading-cover">
+        <div id="message">
+          <div id="statusField"></div>
+          <div id="progress" class="progress progress-striped active">
+            <div id="progress-bar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script type="text/javascript" src="main.js"></script>
+  </body>
+</html>
