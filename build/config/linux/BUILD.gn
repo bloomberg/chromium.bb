@@ -12,7 +12,7 @@ config("sdk") {
 
     # Need to get some linker flags out of the sysroot.
     ldflags += [ exec_script("sysroot_ld_path.py",
-        [ rebase_path("//build/linux/sysroot_ld_path.sh", ".", root_build_dir),
+        [ rebase_path("//build/linux/sysroot_ld_path.sh", root_build_dir),
           sysroot ],
         "value") ]
   }

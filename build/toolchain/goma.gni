@@ -8,19 +8,16 @@
 # people during the transition.
 
 declare_args() {
+  # Set to true to enable distributed compilation using Goma.
   use_goma = false
 
-  goma_dir = ""
-}
-
-if (use_goma && goma_dir == "") {
-  # Set the default goma directory. This must be a character-for-character
-  # match for the GYP default or else the compilers for the different targets
-  # won't match and GYP will assert.
+  # Set the default value based on the platform.
   if (is_win) {
-    goma_dir = "c:\goma\goma-win"
+    # Absolute directory containing the Goma source code.
+    goma_dir = "C:\goma\goma-win"
   } else {
-    goma_dir = exec_script("get_default_posix_goma_dir.py", [], "value")
+    # Absolute directory containing the Goma source code.
+    goma_dir = getenv("HOME") + "/goma"
   }
 }
 

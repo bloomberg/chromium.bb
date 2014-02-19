@@ -19,7 +19,7 @@ custom("device_usb_ids") {
   source_prereqs = [ source_ids ]
   outputs = [ generated_ids ]
   args = [
-    "-i", rebase_path(source_ids, ".", root_build_dir),
-    "-o", rebase_path(generated_ids, ".", root_build_dir),
+    "-i", rebase_path(source_ids,  root_build_dir),
+    "-o", rebase_path(generated_ids, root_build_dir),
   ]
 }

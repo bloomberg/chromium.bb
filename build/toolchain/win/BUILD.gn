@@ -14,7 +14,7 @@ import("//build/config/win/visual_studio_version.gni")
 # Its arguments are the VS path and the compiler wrapper tool. It will write
 # "environment.x86" and "environment.x64" to the build directory and return a
 # list to us.
-gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py", ".",
+gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
                                 root_build_dir)
 exec_script("setup_toolchain.py", [ visual_studio_path, gyp_win_tool_path ],
             "string")

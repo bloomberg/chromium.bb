@@ -61,10 +61,10 @@ gcc_toolchain("x86") {
   if (is_clang) {
     if (use_clang_type_profiler) {
       prefix = rebase_path("//third_party/llvm-allocated-type/Linux_ia32/bin",
-                           ".", root_build_dir)
+                           root_build_dir)
     } else {
       prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                           ".", root_build_dir)
+                           root_build_dir)
     }
     cc = "$prefix/clang"
     cxx = "$prefix/clang++"
@@ -84,10 +84,10 @@ gcc_toolchain("x64") {
   if (is_clang) {
     if (use_clang_type_profiler) {
       prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",
-                           ".", root_build_dir)
+                           root_build_dir)
     } else {
       prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                           ".", root_build_dir)
+                           root_build_dir)
     }
     cc = "$prefix/clang"
     cxx = "$prefix/clang++"

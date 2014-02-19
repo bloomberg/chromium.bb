@@ -10,42 +10,20 @@
 # e.g. base, so they need to be global.
 
 declare_args() {
-  # True means the UI is built useing the "views" framework.
-  toolkit_views = false
-
   # Indicates if Ash is enabled. Ash is the Aura SHell which provides a
   # desktop-like environment for Aura. Requires use_aura = true
-  use_ash = false
-
-  # Indicates if Aura is enabled. Aura is a low-level windowing library, sort
-  # of a replacement for GDI or GTK.
-  use_aura = false
+  use_ash = is_win || is_chromeos
 
   # Indicates if Ozone is enabled. Ozone is a low-level library layer for Linux
   # that does not require X11.
   use_ozone = false
-}
 
-if (is_win || is_chromeos) {
-  # Windows currelty implies Aura.
-  # TODO(brettw) bug 342937 move to declare_args block.
-  use_ash = true
-  use_aura = true
-}
+  # Indicates if Aura is enabled. Aura is a low-level windowing library, sort
+  # of a replacement for GDI or GTK.
+  use_aura = is_linux || use_ozone || is_win || is_chromeos || use_ash
 
-if (is_linux || use_ozone) {
-  use_aura = true
-}
-
-if (!use_aura) {
-  use_ash = false  # Ash needs Aura.
-}
-
-# TODO(brettw) bug 342937 move this to the declare_args block above when this
-# is supported. It would look like:
-#  toolkit_views = is_win || is_chromeos || use_aura
-if (is_win || is_chromeos || use_aura) {
-  toolkit_views = true
+  # True means the UI is built useing the "views" framework.
+  toolkit_views = is_win || is_chromeos || use_aura
 }
 
 # Additional dependent variables -----------------------------------------------

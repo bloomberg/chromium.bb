@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 declare_args() {
+  # Enable the optional type profiler in Clang, which will tag heap allocations
+  # with the allocation type.
   use_clang_type_profiler = false
 }
 

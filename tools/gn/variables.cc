@@ -183,7 +183,7 @@ const char kRootOutDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
-    "    args = [ \"-o\", rebase_path(root_out_dir, \".\", root_build_dir) ]\n"
+    "    args = [ \"-o\", rebase_path(root_out_dir, root_build_dir) ]\n"
     "  }\n";
 
 const char kTargetGenDir[] = "target_gen_dir";
@@ -208,7 +208,7 @@ const char kTargetGenDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the generated output dir to the script.\n"
-    "    args = [ \"-o\", rebase_path(target_gen_dir, \".\", root_build_dir) ]"
+    "    args = [ \"-o\", rebase_path(target_gen_dir, root_build_dir) ]"
     "\n"
     "  }\n";
 
@@ -234,7 +234,7 @@ const char kTargetOutDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
-    "    args = [ \"-o\", rebase_path(target_out_dir, \".\", root_build_dir) ]"
+    "    args = [ \"-o\", rebase_path(target_out_dir, root_build_dir) ]"
     "\n"
     "  }\n";
 

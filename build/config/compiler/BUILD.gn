@@ -148,7 +148,7 @@ config("compiler") {
     if (cpu_arch == "x64") {
       # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
       # address space, and it doesn't support cross-compiling).
-      gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
+      gold_path = rebase_path("//third_party/gold", root_build_dir)
       ldflags += [
         "-B$gold_path",
 

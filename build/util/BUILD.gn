@@ -24,8 +24,8 @@ custom("last_change") {
   output_header = "$target_gen_dir/last_change.h"
   outputs = [ output_header ]
 
-  build_relative_src = rebase_path("//", ".", root_build_dir)
-  build_relative_outputs = rebase_path(output_header, ".", root_build_dir)
+  build_relative_src = rebase_path("//", root_build_dir)
+  build_relative_outputs = rebase_path(output_header, root_build_dir)
 
   args = [
     "--source-dir=$build_relative_src",

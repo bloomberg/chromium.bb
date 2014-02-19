@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 
 declare_args() {
   # When set, turns off the (normally-on) iterator debugging and related stuff
-  # that is normall turned on for Debug builds. These are generally useful for
+  # that is normally turned on for Debug builds. These are generally useful for
   # catching bugs but in some cases may cause conflicts or excessive slowness.
   disable_iterator_debugging = false
 }

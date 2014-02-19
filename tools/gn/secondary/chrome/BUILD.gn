@@ -186,7 +186,7 @@ source_set("utility") {
 
 about_credits_file = "$root_gen_dir/about_credits.html"
 build_relative_about_credits_file =
-  rebase_path(about_credits_file, ".", root_build_dir)
+  rebase_path(about_credits_file, root_build_dir)
 
 custom("about_credits") {
   script = "//tools/licenses.py"
