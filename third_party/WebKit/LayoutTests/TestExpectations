@@ -911,4 +911,4 @@ crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure 
 
 crbug.com/308818 [ Mac Win ] svg/dynamic-updates/SVGMarkerElement-svgdom-setOrientToAngle-call.html [ NeedsRebaseline ]
 
-crbug.com/331301 editing/selection/move-left-right.html [ NeedsManualRebaseline ]
+crbug.com/331301 editing/selection/move-left-right.html [ NeedsRebaseline ]
