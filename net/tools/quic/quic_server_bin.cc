@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -22,6 +23,11 @@ int32 FLAGS_port = 6121;
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   CommandLine* line = CommandLine::ForCurrentProcess();
+
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  CHECK(logging::InitLogging(settings));
+
   if (line->HasSwitch("h") || line->HasSwitch("help")) {
     const char* help_str =
         "Usage: quic_server [options]\n"

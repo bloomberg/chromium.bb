@@ -26,6 +26,11 @@ std::string FLAGS_hostname = "localhost";
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   CommandLine* line = CommandLine::ForCurrentProcess();
+
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  CHECK(logging::InitLogging(settings));
+
   if (line->HasSwitch("h") || line->HasSwitch("help")) {
     const char* help_str =
         "Usage: quic_client [options]\n"
