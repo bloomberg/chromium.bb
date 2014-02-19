@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ChromeOS-specific strings (included from ash_strings.grd).
-     Everything in this file is wrapped in <if expr="pp_ifdef('chromeos')">. -->
+     Everything in this file is wrapped in <if expr="chromeos">. -->
 <grit-part>
 
   <!-- Status tray charging strings. -->

@@ -154,7 +154,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_TRACING" file="cros/status/status_tracing.png" />
 
       <!-- ChromeOS specific icons -->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_DARK" file="cros/status/status_managed.png" />
