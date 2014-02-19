@@ -80,6 +80,7 @@ class GpuProcessTransportFactory
   scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
+  bool offscreen_content_bound_to_other_thread_;
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.

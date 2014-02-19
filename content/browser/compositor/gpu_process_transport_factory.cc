@@ -139,7 +139,7 @@ class ImageTransportClientTexture : public OwnedTexture {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : callback_factory_(this) {
+    : callback_factory_(this), offscreen_content_bound_to_other_thread_(false) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
 }
@@ -149,6 +149,13 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
   // Make sure the lost context callback doesn't try to run during destruction.
   callback_factory_.InvalidateWeakPtrs();
+
+  if (offscreen_compositor_contexts_.get() &&
+      offscreen_content_bound_to_other_thread_) {
+    // Leak shared contexts on other threads, as we can not get to the correct
+    // thread to destroy them.
+    offscreen_compositor_contexts_->set_leak_on_destroy();
+  }
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -362,6 +369,8 @@ GpuProcessTransportFactory::OffscreenCompositorContextProvider() {
   offscreen_compositor_contexts_ = ContextProviderCommandBuffer::Create(
       GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
       "Compositor-Offscreen");
+  offscreen_content_bound_to_other_thread_ =
+      ui::Compositor::WasInitializedWithThread();
 
   return offscreen_compositor_contexts_;
 }

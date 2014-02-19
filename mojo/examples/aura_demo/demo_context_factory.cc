@@ -51,7 +51,11 @@ void DemoContextFactory::RemoveReflector(
 scoped_refptr<cc::ContextProvider>
 DemoContextFactory::OffscreenCompositorContextProvider() {
   if (!offscreen_compositor_contexts_.get() ||
-      !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
+      offscreen_compositor_contexts_->DestroyedOnMainThread()) {
+    // If the compositor was initialized with its own thread then we would need
+    // to leak the context provider when we shutdown to avoid destroying the
+    // contexts on the wrong thread.
+    DCHECK(!ui::Compositor::WasInitializedWithThread());
     offscreen_compositor_contexts_ =
         webkit::gpu::ContextProviderInProcess::CreateOffscreen();
   }
@@ -60,22 +64,14 @@ DemoContextFactory::OffscreenCompositorContextProvider() {
 
 scoped_refptr<cc::ContextProvider>
 DemoContextFactory::SharedMainThreadContextProvider() {
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->DestroyedOnMainThread())
-    return shared_main_thread_contexts_;
-
-  if (ui::Compositor::WasInitializedWithThread()) {
+  if (!shared_main_thread_contexts_ ||
+      shared_main_thread_contexts_->DestroyedOnMainThread()) {
     shared_main_thread_contexts_ =
         webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  } else {
-    shared_main_thread_contexts_ =
-        static_cast<webkit::gpu::ContextProviderInProcess*>(
-            OffscreenCompositorContextProvider().get());
+    if (shared_main_thread_contexts_ &&
+        !shared_main_thread_contexts_->BindToCurrentThread())
+      shared_main_thread_contexts_ = NULL;
   }
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->BindToCurrentThread())
-    shared_main_thread_contexts_ = NULL;
-
   return shared_main_thread_contexts_;
 }
 
