@@ -38,6 +38,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
+#include "platform/text/TextBreakIterator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/Unicode.h"
 #include <unicode/normlzr.h>
@@ -208,6 +209,26 @@ static inline float harfBuzzPositionToFloat(hb_position_t value)
     return static_cast<float>(value) / (1 << 16);
 }
 
+static inline unsigned countGraphemesInCluster(const UChar* normalizedBuffer, unsigned normalizedBufferLength, uint16_t startIndex, uint16_t endIndex)
+{
+    if (startIndex > endIndex) {
+        uint16_t tempIndex = startIndex;
+        startIndex = endIndex;
+        endIndex = tempIndex;
+    }
+    uint16_t length = endIndex - startIndex;
+    ASSERT(static_cast<unsigned>(startIndex + length) <= normalizedBufferLength);
+    TextBreakIterator* cursorPosIterator = cursorMovementIterator(&normalizedBuffer[startIndex], length);
+
+    int cursorPos = cursorPosIterator->current();
+    int numGraphemes = -1;
+    while (0 <= cursorPos) {
+        cursorPos = cursorPosIterator->next();
+        numGraphemes++;
+    }
+    return numGraphemes < 0 ? 0 : numGraphemes;
+}
+
 inline HarfBuzzShaper::HarfBuzzRun::HarfBuzzRun(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, TextDirection direction, hb_script_t script)
     : m_fontData(fontData)
     , m_startIndex(startIndex)
@@ -349,7 +370,7 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
     }
 }
 
-HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
+HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis)
     : m_font(font)
     , m_normalizedBufferLength(0)
     , m_run(run)
@@ -360,6 +381,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     , m_letterSpacing(font->fontDescription().letterSpacing())
     , m_fromIndex(0)
     , m_toIndex(m_run.length())
+    , m_forTextEmphasis(forTextEmphasis)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
     normalizeCharacters(m_run, m_run.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
@@ -955,7 +977,6 @@ void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer, Ha
     float* advances = currentRun->advances();
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
-
     for (unsigned i = 0; i < numGlyphs; ++i) {
         uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
         FloatPoint& currentOffset = offsets[i];
@@ -976,6 +997,60 @@ void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer, Ha
     }
 }
 
+void HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, HarfBuzzRun* currentRun)
+{
+    // FIXME: Instead of generating a synthetic GlyphBuffer here which is then used by the
+    // drawEmphasisMarks method of FontFastPath, we should roll our own emphasis mark drawing function.
+
+    float* advances = currentRun->advances();
+    unsigned numGlyphs = currentRun->numGlyphs();
+    uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
+    unsigned graphemesInCluster = 1;
+    float clusterAdvance = 0;
+    uint16_t clusterStart;
+
+    // A "cluster" in this context means a cluster as it is used by HarfBuzz:
+    // The minimal group of characters and corresponding glyphs, that cannot be broken
+    // down further from a text shaping point of view.
+    // A cluster can contain multiple glyphs and grapheme clusters, with mutually
+    // overlapping boundaries. Below we count grapheme clusters per HarfBuzz clusters,
+    // then linearly split the sum of corresponding glyph advances by the number of
+    // grapheme clusters in order to find positions for emphasis mark drawing.
+
+    if (m_run.rtl())
+        clusterStart = currentRun->startIndex() + currentRun->numCharacters();
+    else
+        clusterStart = currentRun->startIndex() + glyphToCharacterIndexes[0];
+
+    for (unsigned i = 0; i < numGlyphs; ++i) {
+        uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
+        bool isRunEnd = (i + 1 == numGlyphs);
+        bool isClusterEnd =  isRunEnd || (currentRun->startIndex() + glyphToCharacterIndexes[i + 1] != currentCharacterIndex);
+        clusterAdvance += advances[i];
+
+        if (isClusterEnd) {
+            uint16_t clusterEnd;
+            if (m_run.rtl())
+                clusterEnd = currentCharacterIndex;
+            else
+                clusterEnd = isRunEnd ? currentRun->startIndex() + currentRun->numCharacters() : currentRun->startIndex() + glyphToCharacterIndexes[i + 1];
+
+            graphemesInCluster = countGraphemesInCluster(m_normalizedBuffer.get(), m_normalizedBufferLength, clusterStart, clusterEnd);
+            if (!graphemesInCluster || !clusterAdvance)
+                continue;
+
+            float glyphAdvanceX = clusterAdvance / graphemesInCluster;
+            for (unsigned j = 0; j < graphemesInCluster; ++j) {
+                // Do not put emphasis marks on space, separator, and control characters.
+                GlyphBufferGlyph glyphToAdd = Character::canReceiveTextEmphasis(m_run[currentCharacterIndex]) ? 1 : 0;
+                glyphBuffer->add(glyphToAdd, currentRun->fontData(), createGlyphBufferAdvance(glyphAdvanceX, 0));
+            }
+            clusterStart = clusterEnd;
+            clusterAdvance = 0;
+        }
+    }
+}
+
 bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
 {
     unsigned numRuns = m_harfBuzzRuns.size();
@@ -984,14 +1059,20 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
         for (int runIndex = numRuns - 1; runIndex >= 0; --runIndex) {
             HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
             FloatPoint firstOffsetOfNextRun = !runIndex ? FloatPoint() : m_harfBuzzRuns[runIndex - 1]->offsets()[0];
-            fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
+            if (m_forTextEmphasis == ForTextEmphasis)
+                fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
+            else
+                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
         }
     } else {
         m_startOffset = m_harfBuzzRuns.first()->offsets()[0];
         for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
             HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
             FloatPoint firstOffsetOfNextRun = runIndex == numRuns - 1 ? FloatPoint() : m_harfBuzzRuns[runIndex + 1]->offsets()[0];
-            fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
+            if (m_forTextEmphasis == ForTextEmphasis)
+                fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
+            else
+                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, firstOffsetOfNextRun);
         }
     }
     return glyphBuffer->size();

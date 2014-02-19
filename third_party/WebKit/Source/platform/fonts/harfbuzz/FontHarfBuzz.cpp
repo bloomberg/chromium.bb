@@ -186,9 +186,24 @@ void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo,
     drawGlyphBuffer(gc, runInfo, glyphBuffer, adjustedPoint);
 }
 
-void Font::drawEmphasisMarksForComplexText(GraphicsContext* /* context */, const TextRunPaintInfo& /* runInfo */, const AtomicString& /* mark */, const FloatPoint& /* point */) const
+void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
-    notImplemented();
+    GlyphBuffer glyphBuffer;
+
+    float initialAdvance = getGlyphsAndAdvancesForComplexText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer, ForTextEmphasis);
+
+    if (glyphBuffer.isEmpty())
+        return;
+
+    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
+}
+
+float Font::getGlyphsAndAdvancesForComplexText(const TextRun& run, int from, int to, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
+{
+    HarfBuzzShaper shaper(this, run, HarfBuzzShaper::ForTextEmphasis);
+    shaper.setDrawRange(from, to);
+    shaper.shape(&glyphBuffer);
+    return 0;
 }
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* /* fallbackFonts */, GlyphOverflow* /* glyphOverflow */) const
