@@ -274,9 +274,10 @@ void MediaGalleriesScanResultDialogCocoa::UpdateScanResultCheckbox(
     [folder_viewer setAction:@selector(onFolderViewClicked:)];
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    [folder_viewer setImage:
-        rb.GetNativeImageNamed(IDR_UPDATE_FAILED).ToNSImage()];
+    [folder_viewer setImage:rb.GetNativeImageNamed(
+        IDR_FILE_FOLDER).ToNSImage()];
     [folder_viewer setTitle:nil];
+    [folder_viewer setBordered:false];
     [folder_viewer setToolTip:
         base::SysUTF16ToNSString(gallery.GetGalleryTooltip())];
     [folder_viewer sizeToFit];
