@@ -2260,11 +2260,11 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
     HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
     FrameView* parentView = ownerElement->document().view();
     if (parentView)
-        clipRect.intersect(parentView->windowClipRectForFrameOwner(ownerElement, true));
+        clipRect.intersect(parentView->windowClipRectForFrameOwner(ownerElement));
     return clipRect;
 }
 
-IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* ownerElement, bool clipToLayerContents) const
+IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* ownerElement) const
 {
     // The renderer can sometimes be null when style="display:none" interacts
     // with external content and plugins.
@@ -2276,17 +2276,12 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     if (!enclosingLayer)
         return windowClipRect();
 
+    // FIXME: childrenClipRect relies on compositingState, which is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=343769
+    DisableCompositingQueryAsserts disabler;
+
     // Apply the clip from the layer.
-    IntRect clipRect;
-    if (clipToLayerContents) {
-        // FIXME: childrenClipRect relies on compositingState, which is not necessarily up to date.
-        // https://code.google.com/p/chromium/issues/detail?id=343769
-        DisableCompositingQueryAsserts disabler;
-        clipRect = pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect());
-    } else {
-        clipRect = pixelSnappedIntRect(enclosingLayer->clipper().selfClipRect());
-    }
-    clipRect = contentsToWindow(clipRect);
+    IntRect clipRect = contentsToWindow(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
     return intersection(clipRect, windowClipRect());
 }
 
