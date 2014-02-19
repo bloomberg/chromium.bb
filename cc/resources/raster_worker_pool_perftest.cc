@@ -244,7 +244,7 @@ class RasterWorkerPoolPerfTest
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_tasks",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -282,7 +282,7 @@ class RasterWorkerPoolPerfTest
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_alternate_tasks",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -314,7 +314,7 @@ class RasterWorkerPoolPerfTest
     RunMessageLoopUntilAllTasksHaveCompleted();
 
     perf_test::PrintResult("schedule_and_execute_tasks",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -322,6 +322,19 @@ class RasterWorkerPoolPerfTest
   }
 
  private:
+  std::string TestModifierString() const {
+    switch (GetParam()) {
+      case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
+        return std::string("_pixel_raster_worker_pool");
+      case RASTER_WORKER_POOL_TYPE_IMAGE:
+        return std::string("_image_raster_worker_pool");
+      case RASTER_WORKER_POOL_TYPE_DIRECT:
+        return std::string("_direct_raster_worker_pool");
+    }
+    NOTREACHED();
+    return std::string();
+  }
+
   scoped_refptr<TestContextProvider> context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;

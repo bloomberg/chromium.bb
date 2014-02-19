@@ -80,7 +80,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("build_task_graph",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -119,7 +119,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     CollectCompletedTasks(&completed_tasks);
 
     perf_test::PrintResult("schedule_tasks",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -165,7 +165,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     CollectCompletedTasks(&completed_tasks);
 
     perf_test::PrintResult("schedule_alternate_tasks",
-                           "",
+                           TestModifierString(),
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
@@ -203,11 +203,19 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult(
-        "execute_tasks", "", test_name, timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PrintResult("execute_tasks",
+                           TestModifierString(),
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
   }
 
  private:
+  static std::string TestModifierString() {
+    return std::string("_task_graph_runner");
+  }
+
   void CreateTasks(int num_tasks, PerfTaskImpl::Vector* tasks) {
     for (int i = 0; i < num_tasks; ++i)
       tasks->push_back(make_scoped_refptr(new PerfTaskImpl));
