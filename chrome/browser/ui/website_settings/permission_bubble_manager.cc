@@ -90,7 +90,13 @@ PermissionBubbleManager::PermissionBubbleManager(
       false));
 }
 
-PermissionBubbleManager::~PermissionBubbleManager() {}
+PermissionBubbleManager::~PermissionBubbleManager() {
+  if (view_ != NULL) {
+    view_->SetDelegate(NULL);
+    view_->Hide();
+    bubble_showing_ = false;
+  }
+}
 
 void PermissionBubbleManager::DidFinishLoad(
     int64 frame_id,

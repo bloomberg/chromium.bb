@@ -25,6 +25,7 @@ class PermissionBubbleView {
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;
+    virtual void SetView(PermissionBubbleView* view) = 0;
   };
 
   // Sets the delegate which will receive UI events forwarded from the bubble.
