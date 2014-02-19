@@ -17,15 +17,6 @@ function ToMegaByteString(bytes) {
 }
 
 /**
- * Updates the Drive related Flags section.
- * @param {Array} flags List of dictionaries describing flags.
- */
-function updateDriveRelatedFlags(flags) {
-  var ul = $('drive-related-flags');
-  updateKeyValueList(ul, flags);
-}
-
-/**
  * Updates the Drive related Preferences section.
  * @param {Array} preferences List of dictionaries describing preferences.
  */

@@ -66,7 +66,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kEnablePrintPreview, prefs::kPrintPreviewDisabled, false },
 #endif
 #if defined(OS_CHROMEOS)
-      { chromeos::switches::kDisableDrive, prefs::kDisableDrive, true },
       { chromeos::switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },
 #endif

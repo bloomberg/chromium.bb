@@ -33,9 +33,6 @@ const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
-// Disables Google Drive integration.
-const char kDisableDrive[]                  = "disable-drive";
-
 // Disables reporting recently logged in users for enterprise-managed devices.
 const char kDisableEnterpriseUserReporting[] =
     "disable-enterprise-user-reporting";

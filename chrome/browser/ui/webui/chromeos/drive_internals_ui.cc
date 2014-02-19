@@ -25,12 +25,10 @@
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/drive/drive_switches.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -234,7 +232,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnPageLoaded(const base::ListValue* args);
 
   // Updates respective sections.
-  void UpdateDriveRelatedFlagsSection();
   void UpdateDriveRelatedPreferencesSection();
   void UpdateConnectionStatusSection(
       drive::DriveServiceInterface* drive_service);
@@ -437,7 +434,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
       integration_service->debug_info_collector();
   DCHECK(debug_info_collector);
 
-  UpdateDriveRelatedFlagsSection();
   UpdateDriveRelatedPreferencesSection();
   UpdateConnectionStatusSection(drive_service);
   UpdateAboutResourceSection(drive_service);
@@ -456,26 +452,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   // and resent whole the logs to the page.
   last_sent_event_id_ = -1;
   UpdateEventLogSection();
-}
-
-void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const char* kDriveRelatedFlags[] = {
-    drive::switches::kEnableDriveV2Api,
-    chromeos::switches::kDisableDrive,
-  };
-
-  base::ListValue flags;
-  for (size_t i = 0; i < arraysize(kDriveRelatedFlags); ++i) {
-    const std::string key = kDriveRelatedFlags[i];
-    std::string value = "(not set)";
-    if (CommandLine::ForCurrentProcess()->HasSwitch(key))
-      value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(key);
-    AppendKeyValue(&flags, key, value.empty() ? "(set)" : value);
-  }
-
-  web_ui()->CallJavascriptFunction("updateDriveRelatedFlags", flags);
 }
 
 void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
