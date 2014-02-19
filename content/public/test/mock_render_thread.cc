@@ -26,6 +26,11 @@ MockRenderThread::MockRenderThread()
 }
 
 MockRenderThread::~MockRenderThread() {
+  while (!filters_.empty()) {
+    scoped_refptr<IPC::ChannelProxy::MessageFilter> filter = filters_.back();
+    filters_.pop_back();
+    filter->OnFilterRemoved();
+  }
 }
 
 void MockRenderThread::VerifyRunJavaScriptMessageSend(

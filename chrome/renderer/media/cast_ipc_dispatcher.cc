@@ -20,8 +20,7 @@ CastIPCDispatcher::CastIPCDispatcher(
 
 CastIPCDispatcher::~CastIPCDispatcher() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  // Unfortunately, you do not always get a OnFilterRemoved call.
-  global_instance_ = NULL;
+  DCHECK(!global_instance_);
 }
 
 CastIPCDispatcher* CastIPCDispatcher::Get() {
@@ -74,7 +73,6 @@ void CastIPCDispatcher::OnFilterRemoved() {
 void CastIPCDispatcher::OnChannelClosing() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(this, global_instance_);
-  channel_ = NULL;
 }
 
 void CastIPCDispatcher::OnReceivedPacket(
