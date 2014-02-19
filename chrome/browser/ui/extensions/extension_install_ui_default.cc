@@ -191,7 +191,11 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
     Profile* profile) {
   Browser* browser = chrome::FindLastActiveWithProfile(profile,
       chrome::GetActiveDesktop());
-  return CreateInstallPromptWithBrowser(browser);
+  if (browser)
+    return CreateInstallPromptWithBrowser(browser);
+  // No browser window is open yet. Create a free-standing dialog associated
+  // with |profile|.
+  return new ExtensionInstallPrompt(profile, NULL, NULL);
 }
 
 

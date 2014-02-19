@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -68,6 +70,17 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 }
 
 void SimpleExtensionLoadPrompt::ShowPrompt() {
+  std::string confirm = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests);
+  if (confirm == "accept") {
+    InstallUIProceed();
+    return;
+  }
+  if (confirm == "cancel") {
+    InstallUIAbort(false);
+    return;
+  }
+
   install_ui_->ConfirmInstall(
       this,
       extension_.get(),
