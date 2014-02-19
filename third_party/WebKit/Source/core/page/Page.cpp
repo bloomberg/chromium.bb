@@ -355,7 +355,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
         m_chrome->client().deviceOrPageScaleFactorChanged();
 
         if (view)
-            view->viewportConstrainedVisibleContentRectChanged(true, true);
+            view->viewportConstrainedVisibleContentSizeChanged(true, true);
     }
 
     if (view && view->scrollPosition() != origin)

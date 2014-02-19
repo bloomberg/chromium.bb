@@ -160,7 +160,7 @@ public:
     // This is different than visibleContentRect() in that it ignores negative (or overly positive)
     // offsets from rubber-banding, and it takes zooming into account.
     LayoutRect viewportConstrainedVisibleContentRect() const;
-    void viewportConstrainedVisibleContentRectChanged(bool viewportWidthChanged, bool viewportHeightChanged);
+    void viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged);
 
     AtomicString mediaType() const;
     void setMediaType(const AtomicString&);

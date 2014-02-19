@@ -5128,4 +5128,16 @@ TEST_F(WebFrameTest, fixedPositionInFixedViewport)
     EXPECT_EQ(200, leftRightFixed->offsetWidth());
 }
 
+TEST_F(WebFrameTest, FrameViewSetFrameRect)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank");
+
+    WebCore::FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    frameView->setFrameRect(WebCore::IntRect(0, 0, 200, 200));
+    EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 200, 200), frameView->frameRect());
+    frameView->setFrameRect(WebCore::IntRect(100, 100, 200, 200));
+    EXPECT_EQ_RECT(WebCore::IntRect(100, 100, 200, 200), frameView->frameRect());
+}
+
 } // namespace

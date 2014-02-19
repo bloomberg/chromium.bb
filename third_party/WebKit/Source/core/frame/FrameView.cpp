@@ -348,13 +348,11 @@ void FrameView::invalidateRect(const IntRect& rect)
 void FrameView::setFrameRect(const IntRect& newRect)
 {
     IntRect oldRect = frameRect();
-    bool widthChanged = oldRect.width() != newRect.width();
-    bool heightChanged = oldRect.height() != newRect.height();
-    if (!widthChanged && !heightChanged)
+    if (newRect == oldRect)
         return;
 
     // Autosized font sizes depend on the width of the viewing area.
-    if (widthChanged) {
+    if (newRect.width() != oldRect.width()) {
         if (isMainFrame()) {
             Page* page = m_frame->page();
             bool textAutosizingEnabled = m_frame->settings()->textAutosizingEnabled();
@@ -377,7 +375,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
             renderView->compositor()->frameViewDidChangeSize();
     }
 
-    viewportConstrainedVisibleContentRectChanged(widthChanged, heightChanged);
+    viewportConstrainedVisibleContentSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 }
 
 bool FrameView::scheduleAnimation()
@@ -1346,7 +1344,7 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
     return viewportRect;
 }
 
-void FrameView::viewportConstrainedVisibleContentRectChanged(bool widthChanged, bool heightChanged)
+void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged)
 {
     // If viewport is not enabled, frameRect change will cause layout size change and then layout.
     // Otherwise, viewport constrained objects need their layout flags set separately to ensure
