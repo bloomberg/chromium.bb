@@ -131,8 +131,11 @@ void TranslateInfoBarDelegate::RevertTranslation() {
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
-  TranslateManager::GetInstance()->ReportLanguageDetectionError(
-      web_contents());
+  TranslateManager* manager =
+      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+  if (!manager)
+    return;
+  manager->ReportLanguageDetectionError();
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
@@ -250,8 +253,10 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
     return;
   }
   // This is the "Try again..." case.
-  TranslateManager::GetInstance()->TranslatePage(
-      web_contents(), original_language_code(), target_language_code());
+  TranslateManager* manager =
+      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+  DCHECK(manager);
+  manager->TranslatePage(original_language_code(), target_language_code());
 }
 
 bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {

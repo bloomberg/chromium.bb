@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 
@@ -29,8 +28,6 @@ void TranslateService::Initialize() {
   g_translate_service = new TranslateService;
   // Initialize the allowed state for resource requests.
   g_translate_service->OnResourceRequestsAllowed();
-  // Create the TranslateManager singleton.
-  TranslateManager::GetInstance();
   TranslateDownloadManager* download_manager =
       TranslateDownloadManager::GetInstance();
   download_manager->set_request_context(

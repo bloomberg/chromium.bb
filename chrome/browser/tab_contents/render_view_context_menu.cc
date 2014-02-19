@@ -1831,8 +1831,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           TranslateTabHelper::CreateTranslatePrefs(profile_->GetPrefs()));
       prefs->UnblockLanguage(original_lang);
       prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      TranslateManager::GetInstance()->TranslatePage(
-          source_web_contents_, original_lang, target_lang);
+      TranslateManager* manager = translate_tab_helper->GetTranslateManager();
+      DCHECK(manager);
+      manager->TranslatePage(original_lang, target_lang);
       break;
     }
 

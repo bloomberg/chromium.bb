@@ -23,6 +23,7 @@ struct LanguageDetectionDetails;
 class PrefService;
 class TranslateAcceptLanguages;
 class TranslatePrefs;
+class TranslateManager;
 
 class TranslateTabHelper
     : public content::WebContentsObserver,
@@ -45,6 +46,18 @@ class TranslateTabHelper
   static TranslateAcceptLanguages* GetTranslateAcceptLanguages(
       content::BrowserContext* browser_context);
 
+  // Helper method to return the TranslateManager instance associated with
+  // |web_contents|, or NULL if there is no such associated instance.
+  static TranslateManager* GetManagerFromWebContents(
+      content::WebContents* web_contents);
+
+  // Gets the associated TranslateManager.
+  TranslateManager* GetTranslateManager();
+
+  // Gets the associated WebContents. Returns NULL if the WebContents is being
+  // destroyed.
+  content::WebContents* GetWebContents();
+
   // Denotes which state the user is in with respect to translate.
   enum TranslateStep {
     BEFORE_TRANSLATE,
@@ -56,7 +69,6 @@ class TranslateTabHelper
   // Called when the embedder should present UI to the user corresponding to the
   // user's current |step|.
   void ShowTranslateUI(TranslateStep step,
-                       content::WebContents* web_contents,
                        const std::string source_language,
                        const std::string target_language,
                        TranslateErrors::Type error_type);
@@ -70,6 +82,8 @@ class TranslateTabHelper
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   void OnLanguageDetermined(const LanguageDetectionDetails& details,
                             bool page_needs_translation);
@@ -79,11 +93,10 @@ class TranslateTabHelper
                         TranslateErrors::Type error_type);
 
   // Shows the translate bubble.
-  void ShowBubble(content::WebContents* web_contents,
-                  TranslateStep step,
-                  TranslateErrors::Type error_type);
+  void ShowBubble(TranslateStep step, TranslateErrors::Type error_type);
 
   ContentTranslateDriver translate_driver_;
+  scoped_ptr<TranslateManager> translate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateTabHelper);
 };

@@ -157,15 +157,19 @@ void TranslateUIDelegate::Translate() {
     prefs_->ResetTranslationDeniedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationAcceptedCount(GetOriginalLanguageCode());
   }
-  TranslateManager::GetInstance()->TranslatePage(web_contents(),
-                                                 GetOriginalLanguageCode(),
-                                                 GetTargetLanguageCode());
+  TranslateManager* manager =
+      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+  DCHECK(manager);
+  manager->TranslatePage(GetOriginalLanguageCode(), GetTargetLanguageCode());
 
   UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
 }
 
 void TranslateUIDelegate::RevertTranslation() {
-  TranslateManager::GetInstance()->RevertTranslation(web_contents());
+  TranslateManager* manager =
+      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+  DCHECK(manager);
+  manager->RevertTranslation();
 
   UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
 }

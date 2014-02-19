@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -27,8 +28,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 
 TranslateTabHelper::TranslateTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      translate_driver_(&web_contents->GetController()) {
-}
+      translate_driver_(&web_contents->GetController()),
+      translate_manager_(new TranslateManager(this)) {}
 
 TranslateTabHelper::~TranslateTabHelper() {
 }
@@ -55,11 +56,28 @@ TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages(
   return TranslateAcceptLanguagesFactory::GetForBrowserContext(browser_context);
 }
 
+// static
+TranslateManager* TranslateTabHelper::GetManagerFromWebContents(
+    content::WebContents* web_contents) {
+  TranslateTabHelper* translate_tab_helper = FromWebContents(web_contents);
+  if (!translate_tab_helper)
+    return NULL;
+  return translate_tab_helper->GetTranslateManager();
+}
+
+TranslateManager* TranslateTabHelper::GetTranslateManager() {
+  return translate_manager_.get();
+}
+
+content::WebContents* TranslateTabHelper::GetWebContents() {
+  return web_contents();
+}
+
 void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
-                                         content::WebContents* web_contents,
                                          const std::string source_language,
                                          const std::string target_language,
                                          TranslateErrors::Type error_type) {
+  DCHECK(web_contents());
   if (error_type != TranslateErrors::NONE)
     step = TranslateTabHelper::TRANSLATE_ERROR;
 
@@ -71,16 +89,16 @@ void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
       if (!GetLanguageState().HasLanguageChanged())
         return;
     }
-    ShowBubble(web_contents, step, error_type);
+    ShowBubble(step, error_type);
     return;
   }
 
   // Infobar UI.
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   TranslateInfoBarDelegate::Create(step != BEFORE_TRANSLATE,
-                                   web_contents,
+                                   web_contents(),
                                    step,
                                    source_language,
                                    target_language,
@@ -107,6 +125,16 @@ void TranslateTabHelper::DidNavigateAnyFrame(
   translate_driver_.DidNavigate(details);
 }
 
+void TranslateTabHelper::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  // Translation process can be interrupted.
+  // Destroying the TranslateManager now guarantees that it never has to deal
+  // with NULL WebContents.
+  // TODO(droger): Simplify the TranslateManager code by removing the handling
+  // of NULL WebContents.
+  translate_manager_.reset();
+}
+
 void TranslateTabHelper::OnLanguageDetermined(
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
@@ -123,6 +151,7 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
                                           const std::string& original_lang,
                                           const std::string& translated_lang,
                                           TranslateErrors::Type error_type) {
+  DCHECK(web_contents());
   translate_driver_.language_state().SetCurrentLanguage(translated_lang);
   translate_driver_.language_state().set_translation_pending(false);
   PageTranslatedDetails details;
@@ -135,21 +164,20 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
       content::Details<PageTranslatedDetails>(&details));
 }
 
-void TranslateTabHelper::ShowBubble(content::WebContents* web_contents,
-                                    TranslateTabHelper::TranslateStep step,
+void TranslateTabHelper::ShowBubble(TranslateTabHelper::TranslateStep step,
                                     TranslateErrors::Type error_type) {
 // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
 
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    TranslateBubbleFactory::Show(NULL, web_contents, step, error_type);
+    TranslateBubbleFactory::Show(NULL, web_contents(), step, error_type);
     return;
   }
 
-  if (web_contents != browser->tab_strip_model()->GetActiveWebContents())
+  if (web_contents() != browser->tab_strip_model()->GetActiveWebContents())
     return;
 
   // This ShowBubble function is also used for upating the existing bubble.
@@ -170,7 +198,7 @@ void TranslateTabHelper::ShowBubble(content::WebContents* web_contents,
   }
 
   TranslateBubbleFactory::Show(
-      browser->window(), web_contents, step, error_type);
+      browser->window(), web_contents(), step, error_type);
 #else
   NOTREACHED();
 #endif

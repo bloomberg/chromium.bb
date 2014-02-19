@@ -230,25 +230,24 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     // TODO(jamescook): Figure out how to move this suite back to unit_tests.
     // Right now it fails to get the translate infobar if you run it there.
     TestingBrowserProcess::CreateInstance();
-    // Access the TranslateManager singleton so it is created before we call
-    // ChromeRenderViewHostTestHarness::SetUp() to match what's done in Chrome,
-    // where the TranslateManager is created before the WebContents.  This
-    // matters as they both register for similar events and we want the
-    // notifications to happen in the same sequence (TranslateManager first,
-    // WebContents second).  Also clears the translate script so it is fetched
-    // everytime and sets the expiration delay to a large value by default (in
-    // case it was zeroed in a previous test).
+
     TranslateService::Initialize();
+    TranslateService::SetUseInfobar(true);
+
+    // Clears the translate script so it is fetched everytime and sets the
+    // expiration delay to a large value by default (in case it was zeroed in a
+    // previous test).
     TranslateDownloadManager* download_manager =
         TranslateDownloadManager::GetInstance();
     download_manager->ClearTranslateScriptForTesting();
     download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
-    TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
-    TranslateService::SetUseInfobar(true);
 
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     TranslateTabHelper::CreateForWebContents(web_contents());
+    TranslateManager* manager =
+        TranslateTabHelper::GetManagerFromWebContents(web_contents());
+    manager->set_translate_max_reload_attemps(0);
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -799,7 +798,9 @@ TEST_F(TranslateManagerBrowserTest, Reload) {
 
   // If we set reload attempts to a high value, we will not see the infobar
   // immediately.
-  TranslateManager::GetInstance()->set_translate_max_reload_attemps(100);
+  TranslateManager* manager =
+      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+  manager->set_translate_max_reload_attemps(100);
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }
