@@ -51,8 +51,12 @@ text, foreignObject {
     display: block
 }
 
-text, tspan, textPath {
+text {
    white-space: nowrap
+}
+
+tspan, textPath {
+   white-space: inherit
 }
 
 /* states */
