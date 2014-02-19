@@ -75,8 +75,8 @@ cr.define('print_preview', function() {
 
       this.tracker.add(
           this.getChildElement('input.copies'),
-          'keyup',
-          this.onTextfieldKeyUp_.bind(this));
+          'input',
+          this.onTextfieldInput_.bind(this));
       this.tracker.add(
           this.getChildElement('input.copies'),
           'blur',
@@ -175,12 +175,11 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when a keyup event occurs on the textfield. Starts an input
+     * Called when a input event occurs on the textfield. Starts an input
      * timeout.
-     * @param {Event} event Contains the pressed key.
      * @private
      */
-    onTextfieldKeyUp_: function(event) {
+    onTextfieldInput_: function() {
       if (this.textfieldTimeout_) {
         clearTimeout(this.textfieldTimeout_);
       }
