@@ -15,8 +15,6 @@ struct timespec;
 struct stat;
 struct dirent;
 
-struct PP_StartFunctions;
-struct PP_ThreadFunctions;
 struct NaClExceptionContext;
 struct NaClMemMappingInfo;
 
@@ -322,11 +320,22 @@ struct nacl_irt_blockhook {
   int (*register_block_hooks)(void (*pre)(void), void (*post)(void));
 };
 
+/*
+ * TODO(mseaborn): Remove ppapihook from here after it has been moved
+ * to the Chromium repo.
+ */
+#if !defined(NACL_IRT_PPAPIHOOK_v0_1)
+
+struct PP_StartFunctions;
+struct PP_ThreadFunctions;
+
 #define NACL_IRT_PPAPIHOOK_v0_1 "nacl-irt-ppapihook-0.1"
 struct nacl_irt_ppapihook {
   int (*ppapi_start)(const struct PP_StartFunctions *);
   void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions *);
 };
+
+#endif
 
 /*
  * In Chromium, open_resource() opens a file listed in the NaCl

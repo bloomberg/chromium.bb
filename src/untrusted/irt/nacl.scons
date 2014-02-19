@@ -20,6 +20,7 @@ blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',
 
 irt_support_sources = [
     'irt_entry.c',
+    'irt_entry_core.c',
     'irt_malloc.c',
     'irt_private_pthread.c',
     'irt_private_tls.c',

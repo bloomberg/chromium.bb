@@ -8,18 +8,12 @@
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
-struct nacl_interface_table {
-  const char *name;
-  const void *table;
-  size_t size;
-  int (*filter)(void);
-};
 
 static int file_access_filter(void) {
   static int nacl_file_access_enabled = -1;
@@ -39,7 +33,7 @@ static int list_mappings_filter(void) {
   return nacl_list_mappings_enabled;
 }
 
-static const struct nacl_interface_table irt_interfaces[] = {
+static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
   { NACL_IRT_DEV_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
@@ -77,15 +71,18 @@ static const struct nacl_interface_table irt_interfaces[] = {
     sizeof(nacl_irt_dev_list_mappings), list_mappings_filter },
 };
 
-size_t nacl_irt_interface(const char *interface_ident,
-                          void *table, size_t tablesize) {
-  int i;
-  for (i = 0; i < NACL_ARRAY_SIZE(irt_interfaces); ++i) {
-    if (0 == strcmp(interface_ident, irt_interfaces[i].name)) {
-      if (NULL == irt_interfaces[i].filter || irt_interfaces[i].filter()) {
-        const size_t size = irt_interfaces[i].size;
+size_t nacl_irt_query_list(const char *interface_ident,
+                           void *table, size_t tablesize,
+                           const struct nacl_irt_interface *available,
+                           size_t available_size) {
+  unsigned available_count = available_size / sizeof(*available);
+  unsigned i;
+  for (i = 0; i < available_count; ++i) {
+    if (0 == strcmp(interface_ident, available[i].name)) {
+      if (NULL == available[i].filter || available[i].filter()) {
+        const size_t size = available[i].size;
         if (size <= tablesize) {
-          memcpy(table, irt_interfaces[i].table, size);
+          memcpy(table, available[i].table, size);
           return size;
         }
       }
@@ -93,4 +90,10 @@ size_t nacl_irt_interface(const char *interface_ident,
     }
   }
   return 0;
+}
+
+size_t nacl_irt_query_core(const char *interface_ident,
+                           void *table, size_t tablesize) {
+  return nacl_irt_query_list(interface_ident, table, tablesize,
+                             irt_interfaces, sizeof(irt_interfaces));
 }

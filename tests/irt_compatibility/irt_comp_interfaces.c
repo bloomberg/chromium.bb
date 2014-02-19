@@ -37,8 +37,8 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio) },
 };
 
-size_t nacl_irt_interface(const char *interface_ident,
-                          void *table, size_t tablesize) {
+size_t nacl_irt_query_core(const char *interface_ident,
+                           void *table, size_t tablesize) {
   int i;
   for (i = 0; i < NACL_ARRAY_SIZE(irt_interfaces); ++i) {
     if (0 == strcmp(interface_ident, irt_interfaces[i].name)) {

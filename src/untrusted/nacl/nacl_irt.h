@@ -56,14 +56,14 @@ extern int __libnacl_irt_init_fn(void *interface_field, void (*init)(void));
  * match those in arglist.
  *
  * This function directly modifies the __libnacl_irt_ ## iface object
- * and depends upon knowledge that nacl_irt_interface (pointed to by
- * __nacl_irt_query) will do a memcpy to update the interface object,
- * and that since memcpy is doing word aligned updates and if two
- * threads doing simultaneous updates to this object is idempotent, we
- * will not run into thread safety issues.  If the interface query
- * fails, we fill the function pointer with the fname ##
- * _not_implemented function.  Note, however, that we do not fill the
- * entire interface table, so that an invocation of a libc wrapper
+ * and depends upon knowledge that the IRT's query function (pointed
+ * to by __nacl_irt_query) will do a memcpy to update the interface
+ * object, and that since memcpy is doing word aligned updates and if
+ * two threads doing simultaneous updates to this object is
+ * idempotent, we will not run into thread safety issues.  If the
+ * interface query fails, we fill the function pointer with the fname
+ * ## _not_implemented function.  Note, however, that we do not fill
+ * the entire interface table, so that an invocation of a libc wrapper
  * function that makes use of a different interface function pointer
  * will re-do the IRT interface lookup.  This is a limitation of this
  * approach, since we cannot enumerate through all struct members.
