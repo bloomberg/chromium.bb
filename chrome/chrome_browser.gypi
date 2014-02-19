@@ -988,6 +988,8 @@
         'browser/jankometer.h',
         'browser/jankometer_android.cc',
         'browser/jankometer_mac.cc',
+        'browser/jumplist_updater_win.cc',
+        'browser/jumplist_updater_win.h',
         'browser/jumplist_win.cc',
         'browser/jumplist_win.h',
         'browser/lifetime/application_lifetime.cc',
