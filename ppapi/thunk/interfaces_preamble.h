@@ -15,11 +15,6 @@
 #define UNDEFINE_PROXIED_API
 #endif
 
-#ifndef UNPROXIED_API
-#define UNPROXIED_API(api_name)
-#define UNDEFINE_UNPROXIED_API
-#endif
-
 #ifndef PROXIED_IFACE
 #define PROXIED_IFACE(iface_str, iface_struct)
 #define UNDEFINE_PROXIED_IFACE

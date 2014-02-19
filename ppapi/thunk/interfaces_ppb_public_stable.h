@@ -21,17 +21,12 @@
 // this directory. One API may implement one or more actual interfaces.
 //
 // For PROXIED_APIs, these also correspond to *_Proxy objects. The proxied ones
-// define factory functions for each of these classes. UNPROXIED_APIs are ones
-// that exist in the webkit/plugins/ppapi/*_impl.h, but not in the proxy.
+// define factory functions for each of these classes.
 PROXIED_API(PPB_Audio)
 PROXIED_API(PPB_Core)
 PROXIED_API(PPB_Graphics3D)
 PROXIED_API(PPB_ImageData)
 PROXIED_API(PPB_Instance)
-
-// AudioConfig isn't proxied in the normal way, we have only local classes and
-// serialize it to a struct when we need it on the host side.
-UNPROXIED_API(PPB_AudioConfig)
 
 // Interfaces
 // ----------
