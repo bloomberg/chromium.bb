@@ -95,9 +95,6 @@ crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
-crbug.com/335552 fast/text/emphasis-complex.html [ NeedsRebaseline ]
-crbug.com/335552 [ Win Linux Android ] fast/text/emphasis.html [ NeedsRebaseline ]
-
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
