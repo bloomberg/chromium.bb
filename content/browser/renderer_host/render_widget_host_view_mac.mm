@@ -129,7 +129,7 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
   return methodDescription.name != NULL || methodDescription.types != NULL;
 }
 
-static float ScaleFactor(NSView* view) {
+static float ScaleFactorForView(NSView* view) {
   return ui::GetImageScale(ui::GetScaleFactorForNativeView(view));
 }
 
@@ -149,7 +149,6 @@ static float ScaleFactor(NSView* view) {
 - (void)drawBackingStore:(BackingStoreMac*)backingStore
                dirtyRect:(CGRect)dirtyRect
                inContext:(CGContextRef)context;
-- (void)updateSoftwareLayerScaleFactor;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
 - (void)setResponderDelegate:
@@ -415,6 +414,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       use_core_animation_(false),
       pending_latency_info_delay_(0),
       pending_latency_info_delay_weak_ptr_factory_(this),
+      backing_store_scale_factor_(1),
       is_loading_(false),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
@@ -491,19 +491,12 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
   [software_layer_ setDelegate:cocoa_view_];
   [software_layer_ setContentsGravity:kCAGravityTopLeft];
   [software_layer_ setFrame:NSRectToCGRect([cocoa_view_ bounds])];
+  if ([software_layer_ respondsToSelector:@selector(setContentsScale:)])
+    [software_layer_ setContentsScale:backing_store_scale_factor_];
   [software_layer_ setNeedsDisplay];
-  [cocoa_view_ updateSoftwareLayerScaleFactor];
 
   [cocoa_view_ setLayer:software_layer_];
   [cocoa_view_ setWantsLayer:YES];
-
-  if (compositing_iosurface_) {
-    if (!CreateCompositedIOSurfaceLayer()) {
-      LOG(ERROR) << "Failed to create CALayer for existing IOSurface";
-      GotAcceleratedCompositingError();
-      return;
-    }
-  }
 }
 
 bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
@@ -551,7 +544,6 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
 }
 
 bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
-  CHECK(compositing_iosurface_context_ && compositing_iosurface_);
   if (compositing_iosurface_layer_ || !use_core_animation_)
     return true;
 
@@ -571,9 +563,7 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
   // Creating the CompositingIOSurfaceLayer may attempt to draw in setLayer,
   // which, if it fails, will promptly tear down everything that was just
   // created. If that happened, return failure.
-  return compositing_iosurface_context_ &&
-         compositing_iosurface_ &&
-         (compositing_iosurface_layer_ || !use_core_animation_);
+  return compositing_iosurface_layer_;
 }
 
 void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
@@ -727,8 +717,40 @@ int RenderWidgetHostViewMac::window_number() const {
   return [window windowNumber];
 }
 
-float RenderWidgetHostViewMac::scale_factor() const {
-  return ScaleFactor(cocoa_view_);
+float RenderWidgetHostViewMac::ViewScaleFactor() const {
+  return ScaleFactorForView(cocoa_view_);
+}
+
+void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
+  if (!render_widget_host_)
+    return;
+
+  float new_scale_factor = ScaleFactorForView(cocoa_view_);
+  if (new_scale_factor == backing_store_scale_factor_)
+    return;
+  backing_store_scale_factor_ = new_scale_factor;
+
+  BackingStoreMac* backing_store = static_cast<BackingStoreMac*>(
+      render_widget_host_->GetBackingStore(false));
+  if (backing_store)
+    backing_store->ScaleFactorChanged(backing_store_scale_factor_);
+
+  ScopedCAActionDisabler disabler;
+
+  if ([software_layer_ respondsToSelector:@selector(setContentsScale:)])
+    [software_layer_ setContentsScale:backing_store_scale_factor_];
+
+  // Dynamically calling setContentsScale on a CAOpenGLLayer for which
+  // setAsynchronous is dynamically toggled can result in flashes of corrupt
+  // content. Work around this by replacing the entire layer when the scale
+  // factor changes.
+  if (compositing_iosurface_layer_) {
+    [compositing_iosurface_layer_ disableCompositing];
+    compositing_iosurface_layer_.reset();
+    CreateCompositedIOSurfaceLayer();
+  }
+
+  render_widget_host_->NotifyScreenInfoChanged();
 }
 
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
@@ -1145,7 +1167,7 @@ bool RenderWidgetHostViewMac::IsPopup() const {
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
-  float scale = ScaleFactor(cocoa_view_);
+  float scale = ScaleFactorForView(cocoa_view_);
   return new BackingStoreMac(render_widget_host_, size, scale);
 }
 
@@ -1160,7 +1182,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   }
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  float scale = ScaleFactor(cocoa_view_);
+  float scale = ScaleFactorForView(cocoa_view_);
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
   if (compositing_iosurface_ && compositing_iosurface_->HasIOSurface()) {
@@ -1468,7 +1490,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   gfx::Rect view_rect(NSRectToCGRect([cocoa_view_ frame]));
   if (!compositing_iosurface_->DrawIOSurface(
           compositing_iosurface_context_, view_rect,
-          scale_factor(), !has_overlay)) {
+          ViewScaleFactor(), !has_overlay)) {
     return false;
   }
 
@@ -1482,7 +1504,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
                             overlay_view_offset_.y());
     if (!overlay_view_->compositing_iosurface_->DrawIOSurface(
             compositing_iosurface_context_, overlay_view_rect,
-            overlay_view_->scale_factor(), true)) {
+            overlay_view_->ViewScaleFactor(), true)) {
       return false;
     }
   }
@@ -1868,10 +1890,6 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
     render_widget_host_->UpdateVSyncParameters(timebase, interval);
   }
 
-  // Update the scale factor of the layer to match the scale factor of the
-  // IOSurface.
-  [compositing_iosurface_layer_ updateScaleFactor];
-
   if (!last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = true;
 
@@ -2002,7 +2020,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   src_gl_subrect.set_y(GetViewBounds().height() - rect.bottom());
 
   return gfx::ToEnclosingRect(gfx::ScaleRect(src_gl_subrect,
-                                             scale_factor()));
+                                             ViewScaleFactor()));
 }
 
 void RenderWidgetHostViewMac::AddPendingLatencyInfo(
@@ -2109,7 +2127,8 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     focusedPluginIdentifier_ = -1;
-    deviceScaleFactor_ = ScaleFactor(self);
+    renderWidgetHostView_->backing_store_scale_factor_ =
+        ScaleFactorForView(self);
 
     // OpenGL support:
     if ([self respondsToSelector:
@@ -2771,21 +2790,7 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
 }
 
 - (void)updateTabBackingStoreScaleFactor {
-  if (!renderWidgetHostView_->render_widget_host_)
-    return;
-
-  float scaleFactor = ScaleFactor(self);
-  if (scaleFactor == deviceScaleFactor_)
-    return;
-  deviceScaleFactor_ = scaleFactor;
-
-  BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
-      renderWidgetHostView_->render_widget_host_->GetBackingStore(false));
-  if (backingStore)  // NULL in hardware path.
-    backingStore->ScaleFactorChanged(scaleFactor);
-
-  [self updateSoftwareLayerScaleFactor];
-  renderWidgetHostView_->render_widget_host_->NotifyScreenInfoChanged();
+  renderWidgetHostView_->UpdateBackingStoreScaleFactor();
 }
 
 // http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
@@ -4051,15 +4056,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)popupWindowWillClose:(NSNotification *)notification {
   renderWidgetHostView_->KillSelf();
-}
-
-- (void)updateSoftwareLayerScaleFactor {
-  if (![renderWidgetHostView_->software_layer_
-          respondsToSelector:@selector(setContentsScale:)])
-    return;
-
-  ScopedCAActionDisabler disabler;
-  [renderWidgetHostView_->software_layer_ setContentsScale:deviceScaleFactor_];
 }
 
 // Delegate methods for the software CALayer

@@ -479,7 +479,15 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   int window_number() const;
 
-  float scale_factor() const;
+  // The scale factor for the screen that the view is currently on.
+  float ViewScaleFactor() const;
+
+  // Update the scale factor for the backing store and for any CALayers.
+  void UpdateBackingStoreScaleFactor();
+
+  // The scale factor of the backing store and all CALayers. Note that this is
+  // updated based on ViewScaleFactor with some delay.
+  float backing_store_scale_factor_;
 
   void AddPendingLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info);

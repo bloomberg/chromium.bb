@@ -32,10 +32,6 @@ class RenderWidgetHostViewMac;
 
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
 
-// Update the scale factor of the layer to match the scale factor of the
-// IOSurface.
-- (void)updateScaleFactor;
-
 // Remove this layer from the layer heirarchy, and mark that
 // |renderWidgetHostView_| is no longer valid and may no longer be dereferenced.
 - (void)disableCompositing;

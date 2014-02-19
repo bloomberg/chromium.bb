@@ -41,30 +41,13 @@
     [self setContentsGravity:kCAGravityTopLeft];
     [self setFrame:NSRectToCGRect(
         [renderWidgetHostView_->cocoa_view() bounds])];
+    if ([self respondsToSelector:(@selector(setContentsScale:))]) {
+      [self setContentsScale:
+          renderWidgetHostView_->backing_store_scale_factor_];
+    }
     [self setNeedsDisplay];
-    [self updateScaleFactor];
   }
   return self;
-}
-
-- (void)updateScaleFactor {
-  if (!renderWidgetHostView_ ||
-      ![self respondsToSelector:(@selector(contentsScale))] ||
-      ![self respondsToSelector:(@selector(setContentsScale:))])
-    return;
-
-  float current_scale_factor = [self contentsScale];
-  float new_scale_factor = current_scale_factor;
-  if (renderWidgetHostView_->compositing_iosurface_) {
-    new_scale_factor =
-        renderWidgetHostView_->compositing_iosurface_->scale_factor();
-  }
-
-  if (new_scale_factor == current_scale_factor)
-    return;
-
-  ScopedCAActionDisabler disabler;
-  [self setContentsScale:new_scale_factor];
 }
 
 - (void)disableCompositing{
