@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -31,6 +33,12 @@ gfx::Point AppListLinux::FindAnchorPoint(const gfx::Size& view_size,
                                          const gfx::Point& cursor,
                                          AppListPositioner::ScreenEdge edge) {
   AppListPositioner positioner(display, view_size, 0);
+
+  // The experimental app list is placed in the center of the screen.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kEnableExperimentalAppList)) {
+    return positioner.GetAnchorPointForScreenCenter();
+  }
 
   gfx::Point anchor;
   // Snap to the shelf edge. If the cursor is greater than the window
