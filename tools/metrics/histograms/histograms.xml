@@ -9819,6 +9819,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PublicResetAddressMismatch"
+    enum="QuicAddressMismatch">
+  <summary>
+    When a public reset packet is received, whether the client IP address and
+    port number in it differ from the client IP address and port number in the
+    ServerHello handshake message. In the comparison, the first address is the
+    one in ServerHello and the second address is the one in public reset.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.QuicVersion">
   <summary>Version of the QUIC protocol used for this connection.</summary>
 </histogram>
@@ -30662,6 +30672,17 @@ other types of suffix sets.
   <int value="20" label="DOMAIN_TWIMG_COM"/>
   <int value="21" label="DOMAIN_AKAMAIHD_NET"/>
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
+</enum>
+
+<enum name="QuicAddressMismatch" type="int">
+  <int value="0" label="Address mismatch: IPv4 IPv4"/>
+  <int value="1" label="Address mismatch: IPv6 IPv6"/>
+  <int value="2" label="Address mismatch: IPv4 IPv6"/>
+  <int value="3" label="Address mismatch: IPv6 IPv4"/>
+  <int value="4" label="Port mismatch: IPv4 IPv4"/>
+  <int value="5" label="Port mismatch: IPv6 IPv6"/>
+  <int value="6" label="Address and port match: IPv4 IPv4"/>
+  <int value="7" label="Address and port match: IPv6 IPv6"/>
 </enum>
 
 <enum name="QuicErrorCodes" type="int">
