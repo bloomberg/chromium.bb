@@ -907,12 +907,3 @@ crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 crbug.com/331301 editing/selection/move-left-right.html [ NeedsManualRebaseline ]
-
-# Needs rebaselining after fixing issue with text-overflow: ellipsis (not showing up).
-crbug.com/166263 fast/css/text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-crbug.com/166263 fast/css/text-overflow-ellipsis-block-with-border-and-padding.html [ NeedsRebaseline ]
