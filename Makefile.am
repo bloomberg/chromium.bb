@@ -69,6 +69,7 @@ libdrm_la_SOURCES =				\
 	xf86drmSL.c				\
 	xf86drmMode.c				\
 	xf86atomic.h				\
+	libdrm.h				\
 	libdrm_lists.h
 
 libdrmincludedir = ${includedir}
