@@ -128,18 +128,11 @@
 static const int kUpdateCheckIntervalHours = 6;
 #endif
 
-#if defined(OS_WIN)
-// Attest to the fact that the call to the file thread to save preferences has
-// run, and it is safe to terminate.  This avoids the potential of some other
-// task prematurely terminating our waiting message loop by posting a
-// QuitTask().
-static bool g_end_session_file_thread_has_completed = false;
-#endif
-
-#if defined(USE_X11)
-// How long to wait for the File thread to complete during EndSession, on
-// Linux. We have a timeout here because we're unable to run the UI messageloop
-// and there's some deadlock risk. Our only option is to exit anyway.
+#if defined(USE_X11) || defined(OS_WIN)
+// How long to wait for the File thread to complete during EndSession, on Linux
+// and Windows. We have a timeout here because we're unable to run the UI
+// messageloop and there's some deadlock risk. Our only option is to exit
+// anyway.
 static const int kEndSessionTimeoutSeconds = 10;
 #endif
 
@@ -312,16 +305,7 @@ void BrowserProcessImpl::PostDestroyThreads() {
   io_thread_.reset();
 }
 
-#if defined(OS_WIN)
-// Send a QuitTask to the given MessageLoop when the (file) thread has processed
-// our (other) recent requests (to save preferences).
-// Change the boolean so that the receiving thread will know that we did indeed
-// send the QuitTask that terminated the message loop.
-static void PostQuit(base::MessageLoop* message_loop) {
-  g_end_session_file_thread_has_completed = true;
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-}
-#elif defined(USE_X11)
+#if defined(USE_X11) || defined(OS_WIN)
 static void Signal(base::WaitableEvent* event) {
   event->Signal();
 }
@@ -403,8 +387,18 @@ void BrowserProcessImpl::EndSession() {
   // We must write that the profile and metrics service shutdown cleanly,
   // otherwise on startup we'll think we crashed. So we block until done and
   // then proceed with normal shutdown.
-#if defined(USE_X11)
-  //  Can't run a local loop on linux. Instead create a waitable event.
+#if defined(USE_X11) || defined(OS_WIN)
+  // Create a waitable event to block on file writing being complete.
+  //
+  // On Windows, we previously posted a message to FILE and then ran a nested
+  // message loop, waiting for that message to be processed until quitting.
+  // However, doing so means that other messages will also be processed. In
+  // particular, if the GPU process host notices that the GPU has been killed
+  // during shutdown, it races exiting the nested loop with the process host
+  // blocking the message loop attempting to re-establish a connection to the
+  // GPU process synchronously. Because the system may not be allowing
+  // processes to launch, this can result in a hang. See
+  // http://crbug.com/318527.
   scoped_ptr<base::WaitableEvent> done_writing(
       new base::WaitableEvent(false, false));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -414,20 +408,6 @@ void BrowserProcessImpl::EndSession() {
   if (!done_writing->TimedWait(
       base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds))) {
     ignore_result(done_writing.release());
-  }
-
-#elif defined(OS_WIN)
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(PostQuit, base::MessageLoop::current()));
-  int quits_received = 0;
-  do {
-    base::MessageLoop::current()->Run();
-    ++quits_received;
-  } while (!g_end_session_file_thread_has_completed);
-  // If we did get extra quits, then we should re-post them to the message loop.
-  while (--quits_received > 0) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
   }
 #else
   NOTIMPLEMENTED();
