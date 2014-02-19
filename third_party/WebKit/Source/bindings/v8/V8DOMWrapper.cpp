@@ -43,11 +43,10 @@ namespace WebCore {
 
 static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int shadowTemplateUniqueKey;
+    static int shadowTemplateKey; // This address is used for a key to look up the dom template.
     WrapperWorldType currentWorldType = worldType(isolate);
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->privateTemplateIfExists(currentWorldType, &shadowTemplateUniqueKey);
+    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(currentWorldType, &shadowTemplateKey);
     if (shadowTemplate.IsEmpty()) {
         shadowTemplate = v8::FunctionTemplate::New(isolate);
         if (shadowTemplate.IsEmpty())
@@ -55,7 +54,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
         shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));
         shadowTemplate->Inherit(V8HTMLDocument::domTemplate(isolate, currentWorldType));
         shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
-        data->setPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey, shadowTemplate);
+        data->setDOMTemplate(currentWorldType, &shadowTemplateKey, shadowTemplate);
     }
 
     v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();

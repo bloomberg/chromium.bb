@@ -1267,11 +1267,10 @@ sub GenerateDomainSafeFunctionGetter
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, $newTemplateParams, $functionLength);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(currentWorldType, &domTemplateKey, $newTemplateParams, $functionLength);
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
@@ -1282,8 +1281,8 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
     }
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
-        static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $functionLength);
+        static int sharedTemplateKey; // This address is used for a key to look up the dom template.
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(currentWorldType, &sharedTemplateKey, $newTemplateParams, $functionLength);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -3257,10 +3256,9 @@ END
     $code = <<END;
 v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(currentWorldType, &domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -3272,7 +3270,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::domTemplate(v8::Isol
     instanceTemplate->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "${implClassName}"));
     result->Inherit(${v8ClassName}::domTemplate(isolate, currentWorldType));
-    data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
+    data->setDOMTemplate(currentWorldType, &domTemplateKey, result);
 
     return scope.Escape(result);
 }

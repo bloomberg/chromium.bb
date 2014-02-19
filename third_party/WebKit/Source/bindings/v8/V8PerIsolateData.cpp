@@ -101,29 +101,29 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     return m_toStringTemplate.newLocal(m_isolate);
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(WrapperWorldType currentWorldType, void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     TemplateMap& templates = templateMap(currentWorldType);
-    TemplateMap::iterator result = templates.find(privatePointer);
+    TemplateMap::iterator result = templates.find(domTemplateKey);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate, callback, data, signature, length);
-    templates.add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    templates.add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
     return templ;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplateIfExists(WrapperWorldType currentWorldType, void* privatePointer)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(WrapperWorldType currentWorldType, void* domTemplateKey)
 {
     TemplateMap& templates = templateMap(currentWorldType);
-    TemplateMap::iterator result = templates.find(privatePointer);
+    TemplateMap::iterator result = templates.find(domTemplateKey);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setPrivateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::Handle<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setDOMTemplate(WrapperWorldType currentWorldType, void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
 {
-    templateMap(currentWorldType).add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    templateMap(currentWorldType).add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()

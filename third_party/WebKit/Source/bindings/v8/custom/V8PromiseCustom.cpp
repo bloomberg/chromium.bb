@@ -57,40 +57,37 @@ namespace WebCore {
 
 namespace {
 
-v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKey, int internalFieldCount, v8::Isolate* isolate)
+v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* domTemplateKey, int internalFieldCount, v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     WrapperWorldType currentWorldType = worldType(isolate);
-    v8::Handle<v8::FunctionTemplate> functionDescriptor = data->privateTemplateIfExists(currentWorldType, privateTemplateUniqueKey);
+    v8::Handle<v8::FunctionTemplate> functionDescriptor = data->existingDOMTemplate(currentWorldType, domTemplateKey);
     if (!functionDescriptor.IsEmpty())
         return functionDescriptor->InstanceTemplate();
 
     functionDescriptor = v8::FunctionTemplate::New(isolate);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(internalFieldCount);
-    data->setPrivateTemplate(currentWorldType, privateTemplateUniqueKey, functionDescriptor);
+    data->setDOMTemplate(currentWorldType, domTemplateKey, functionDescriptor);
     return instanceTemplate;
 }
 
 v8::Local<v8::ObjectTemplate> promiseAllEnvironmentObjectTemplate(v8::Isolate* isolate)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
-    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseAllEnvironmentFieldCount, isolate);
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
+    return cachedObjectTemplate(&domTemplateKey, V8PromiseCustom::PromiseAllEnvironmentFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> primitiveWrapperObjectTemplate(v8::Isolate* isolate)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
-    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PrimitiveWrapperFieldCount, isolate);
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
+    return cachedObjectTemplate(&domTemplateKey, V8PromiseCustom::PrimitiveWrapperFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
-    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::InternalFieldCount, isolate);
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
+    return cachedObjectTemplate(&domTemplateKey, V8PromiseCustom::InternalFieldCount, isolate);
 }
 
 void promiseResolveCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

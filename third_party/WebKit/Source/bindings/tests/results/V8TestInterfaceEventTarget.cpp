@@ -103,10 +103,9 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey;
+    static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(currentWorldType, &domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -118,7 +117,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTempl
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "TestInterfaceEventTarget"));
     result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate, currentWorldType));
-    data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
+    data->setDOMTemplate(currentWorldType, &domTemplateKey, result);
 
     return scope.Escape(result);
 }
