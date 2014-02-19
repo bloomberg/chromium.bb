@@ -18,7 +18,6 @@ CONTENT_EXPORT extern const char kAcceleratedCanvas2dMSAASampleCount[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 extern const char kAllowSandboxDebugging[];
-CONTENT_EXPORT extern const char kAllowWebUICompositing[];
 extern const char kAuditAllHandles[];
 extern const char kAuditHandles[];
 CONTENT_EXPORT extern const char kBlacklistAcceleratedCompositing[];

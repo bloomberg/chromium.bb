@@ -27,9 +27,6 @@ const char kAllowNoSandboxJob[]             = "allow-no-sandbox-job";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
-// Allow compositing on chrome:// pages.
-const char kAllowWebUICompositing[]         = "allow-webui-compositing";
-
 // The same as kAuditHandles except all handles are enumerated.
 const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 

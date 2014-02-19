@@ -112,12 +112,6 @@ class TabCapturePerformanceTest
                                       ScalingMethod());
     }
 
-    // UI tests boot up render views starting from about:blank. This causes
-    // the renderer to start up thinking it cannot use the GPU. To work
-    // around that, and allow the frame rate test to use the GPU, we must
-    // pass kAllowWebUICompositing.
-    command_line->AppendSwitch(switches::kAllowWebUICompositing);
-
     // Some of the tests may launch http requests through JSON or AJAX
     // which causes a security error (cross domain request) when the page
     // is loaded from the local file system ( file:// ). The following switch
