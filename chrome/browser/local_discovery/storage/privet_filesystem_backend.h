@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_context.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
@@ -20,7 +21,8 @@ class PrivetFileSystemAsyncUtil;
 
 class PrivetFileSystemBackend : public fileapi::FileSystemBackend {
  public:
-  explicit PrivetFileSystemBackend(fileapi::ExternalMountPoints* mount_points);
+  PrivetFileSystemBackend(fileapi::ExternalMountPoints* mount_points,
+                          content::BrowserContext* browser_context);
   virtual ~PrivetFileSystemBackend();
 
   // FileSystemBackend implementation.

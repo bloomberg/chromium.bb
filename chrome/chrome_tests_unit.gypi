@@ -1026,6 +1026,7 @@
         'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
         'browser/local_discovery/privet_http_unittest.cc',
         'browser/local_discovery/privet_url_fetcher_unittest.cc',
+        'browser/local_discovery/storage/path_util_unittest.cc',
         'browser/local_discovery/cloud_print_printer_list_unittest.cc',
         'browser/local_discovery/service_discovery_client_mac_unittest.mm',
         'browser/logging_chrome_unittest.cc',

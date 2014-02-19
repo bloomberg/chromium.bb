@@ -13,9 +13,10 @@
 namespace local_discovery {
 
 PrivetFileSystemBackend::PrivetFileSystemBackend(
-    fileapi::ExternalMountPoints* mount_points)
+    fileapi::ExternalMountPoints* mount_points,
+    content::BrowserContext* browser_context)
     : mount_points_(mount_points),
-      async_util_(new PrivetFileSystemAsyncUtil()) {
+      async_util_(new PrivetFileSystemAsyncUtil(browser_context)) {
 }
 
 PrivetFileSystemBackend::~PrivetFileSystemBackend() {

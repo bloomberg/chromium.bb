@@ -5,10 +5,19 @@
 #include "chrome/browser/local_discovery/storage/privet_filesystem_async_util.h"
 
 #include "base/platform_file.h"
+#include "base/stl_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 namespace local_discovery {
+
+PrivetFileSystemAsyncUtil::PrivetFileSystemAsyncUtil(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
+}
+
+PrivetFileSystemAsyncUtil::~PrivetFileSystemAsyncUtil() {
+}
 
 void PrivetFileSystemAsyncUtil::CreateOrOpen(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
@@ -56,16 +65,15 @@ void PrivetFileSystemAsyncUtil::ReadDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  EntryList entry_list;
-
-  fileapi::DirectoryEntry entry("Random file",
-                                fileapi::DirectoryEntry::FILE,
-                                3000,
-                                base::Time());
-  entry_list.push_back(entry);
-
-  callback.Run(base::File::FILE_OK, entry_list, false);
+  PrivetFileSystemAsyncOperation* operation = new PrivetFileSystemListOperation(
+      url.path(),
+      browser_context_,
+      this,
+      callback);
+  async_operations_.insert(operation);
+  operation->Start();
 }
+
 
 void PrivetFileSystemAsyncUtil::Touch(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
@@ -149,6 +157,16 @@ void PrivetFileSystemAsyncUtil::CreateSnapshotFile(
                base::File::Info(),
                base::FilePath(),
                scoped_refptr<webkit_blob::ShareableFileReference>());
+}
+
+void PrivetFileSystemAsyncUtil::RemoveOperation(
+    PrivetFileSystemAsyncOperation* operation) {
+  async_operations_.erase(operation);
+  delete operation;
+}
+
+void PrivetFileSystemAsyncUtil::RemoveAllOperations() {
+  STLDeleteElements(&async_operations_);
 }
 
 }  // namespace local_discovery

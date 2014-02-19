@@ -242,6 +242,11 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
+
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
+#endif
+
 using blink::WebWindowFeatures;
 using base::FileDescriptor;
 using content::AccessTokenStore;
@@ -2574,12 +2579,15 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       new sync_file_system::SyncFileSystemBackend(
           Profile::FromBrowserContext(browser_context)));
 
+#if defined(ENABLE_MDNS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
     additional_backends->push_back(
         new local_discovery::PrivetFileSystemBackend(
-            fileapi::ExternalMountPoints::GetSystemInstance()));
+            fileapi::ExternalMountPoints::GetSystemInstance(),
+            browser_context));
   }
+#endif
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
