@@ -76,16 +76,9 @@ MessageInTransit::MessageInTransit(uint32_t data_size,
                                    Subtype subtype,
                                    uint32_t num_bytes,
                                    uint32_t num_handles)
-    : data_size_(data_size),
-      type_(type),
-      subtype_(subtype),
-      source_id_(kInvalidEndpointId),
-      destination_id_(kInvalidEndpointId),
-      num_bytes_(num_bytes),
-      num_handles_(num_handles),
-      reserved0_(0),
-      reserved1_(0) {
-  DCHECK_GE(data_size_, num_bytes_);
+    : header_(data_size, type, subtype, kInvalidEndpointId, kInvalidEndpointId,
+              num_bytes, num_handles) {
+  DCHECK_GE(header()->data_size, header()->num_bytes);
 }
 
 }  // namespace system

@@ -55,7 +55,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // the data that follows the header, and may include data other than the
   // message data. (See also |num_bytes()|.)
   uint32_t data_size() const {
-    return data_size_;
+    return header()->data_size;
   }
 
   // Gets the data (of size |data_size()| bytes).
@@ -65,7 +65,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // Gets the size of the message data.
   uint32_t num_bytes() const {
-    return num_bytes_;
+    return header()->num_bytes;
   }
 
   // Gets the message data (of size |num_bytes()| bytes).
@@ -74,21 +74,21 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
 
   uint32_t num_handles() const {
-    return num_handles_;
+    return header()->num_handles;
   }
 
   size_t size_with_header_and_padding() const {
-    return RoundUpMessageAlignment(sizeof(*this) + data_size_);
+    return RoundUpMessageAlignment(sizeof(*this) + header()->data_size);
   }
 
-  Type type() const { return type_; }
-  Subtype subtype() const { return subtype_; }
-  EndpointId source_id() const { return source_id_; }
-  EndpointId destination_id() const { return destination_id_; }
+  Type type() const { return header()->type; }
+  Subtype subtype() const { return header()->subtype; }
+  EndpointId source_id() const { return header()->source_id; }
+  EndpointId destination_id() const { return header()->destination_id; }
 
-  void set_source_id(EndpointId source_id) { source_id_ = source_id; }
+  void set_source_id(EndpointId source_id) { header()->source_id = source_id; }
   void set_destination_id(EndpointId destination_id) {
-    destination_id_ = destination_id;
+    header()->destination_id = destination_id;
   }
 
   // TODO(vtl): Add whatever's necessary to transport handles.
@@ -99,27 +99,41 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
 
  private:
+  // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
+  // size.
+  struct Header {
+    Header(uint32_t data_size, Type type, Subtype subtype, EndpointId source_id,
+           EndpointId destination_id, uint32_t num_bytes, uint32_t num_handles)
+        : data_size(data_size), type(type), subtype(subtype),
+          source_id(source_id), destination_id(destination_id),
+          num_bytes(num_bytes), num_handles(num_handles), reserved0(0),
+          reserved1(0) {}
+
+    // Total size of data following the "header".
+    uint32_t data_size;
+    Type type;
+    Subtype subtype;
+    EndpointId source_id;
+    EndpointId destination_id;
+    // Size of actual message data.
+    uint32_t num_bytes;
+    // Number of handles "attached".
+    uint32_t num_handles;
+    // To be used soon.
+    uint32_t reserved0;
+    uint32_t reserved1;
+  };
+
   MessageInTransit(uint32_t data_size,
                    Type type,
                    Subtype subtype,
                    uint32_t num_bytes,
                    uint32_t num_handles);
 
-  // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
-  // size.
-  // Total size of data following the "header".
-  uint32_t data_size_;
-  Type type_;
-  Subtype subtype_;
-  EndpointId source_id_;
-  EndpointId destination_id_;
-  // Size of actual message data.
-  uint32_t num_bytes_;
-  // Number of handles "attached".
-  uint32_t num_handles_;
-  // To be used soon.
-  uint32_t reserved0_;
-  uint32_t reserved1_;
+  const Header* header() const { return &header_; }
+  Header* header() { return &header_; }
+
+  Header header_;
 
   // Intentionally unimplemented (and private): Use |Destroy()| instead (which
   // simply frees the memory).
