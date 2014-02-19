@@ -1,15 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "content/child/worker_task_runner.h"
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "webkit/child/worker_task_runner.h"
 
 using blink::WebWorkerRunLoop;
+
+namespace content {
 
 namespace {
 
@@ -24,9 +27,7 @@ class RunClosureTask : public WebWorkerRunLoop::Task {
   base::Closure task_;
 };
 
-} // unnamed namespace
-
-namespace webkit_glue {
+} // namespace
 
 struct WorkerTaskRunner::ThreadLocalState {
   ThreadLocalState(int id, const WebWorkerRunLoop& loop)
@@ -108,4 +109,4 @@ void WorkerTaskRunner::OnWorkerRunLoopStopped(const WebWorkerRunLoop& loop) {
   current_tls_.Set(NULL);
 }
 
-}  // namespace webkit_glue
+}  // namespace content

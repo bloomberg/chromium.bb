@@ -14,7 +14,6 @@
 using blink::WebServiceWorkerError;
 using blink::WebServiceWorkerProvider;
 using base::ThreadLocalPointer;
-using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 
@@ -90,7 +89,7 @@ ServiceWorkerDispatcher* ServiceWorkerDispatcher::ThreadSpecificInstance(
   ServiceWorkerDispatcher* dispatcher =
       new ServiceWorkerDispatcher(thread_safe_sender);
   if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    webkit_glue::WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;
 }
 

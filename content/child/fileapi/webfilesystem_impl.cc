@@ -15,6 +15,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilewriter_impl.h"
+#include "content/child/worker_task_runner.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebFileSystemCallbacks.h"
@@ -22,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "url/gurl.h"
-#include "webkit/child/worker_task_runner.h"
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -32,7 +32,6 @@ using blink::WebFileSystemEntry;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
-using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 

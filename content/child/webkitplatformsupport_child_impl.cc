@@ -8,11 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/web_discardable_memory_impl.h"
+#include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
 #include "webkit/child/webthread_impl.h"
-#include "webkit/child/worker_task_runner.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/child/fling_animator_impl_android.h"
@@ -120,15 +120,13 @@ blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::waitMultipleEvents(
 
 void WebKitPlatformSupportChildImpl::didStartWorkerRunLoop(
     const blink::WebWorkerRunLoop& runLoop) {
-  webkit_glue::WorkerTaskRunner* worker_task_runner =
-      webkit_glue::WorkerTaskRunner::Instance();
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStarted(runLoop);
 }
 
 void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
     const blink::WebWorkerRunLoop& runLoop) {
-  webkit_glue::WorkerTaskRunner* worker_task_runner =
-      webkit_glue::WorkerTaskRunner::Instance();
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 

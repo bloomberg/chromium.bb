@@ -9,9 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
-#include "webkit/child/worker_task_runner.h"
-
-using webkit_glue::WorkerTaskRunner;
+#include "content/child/worker_task_runner.h"
 
 namespace content {
 

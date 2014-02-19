@@ -1,13 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "content/child/worker_task_runner.h"
 
 #include "base/logging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/child/worker_task_runner.h"
 
-namespace webkit_glue {
+namespace content {
 
 class WorkerTaskRunnerTest : public testing::Test {
  public:
@@ -53,4 +54,4 @@ TEST_F(WorkerTaskRunnerTest, CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
-}
+}  // namespace content

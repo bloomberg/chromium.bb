@@ -10,7 +10,7 @@
 namespace content {
 
 // A task runner that runs tasks on a single webkit worker thread which
-// is managed by webkit_glue::WorkerTaskRunner.
+// is managed by WorkerTaskRunner.
 // Note that this implementation ignores the delay duration for PostDelayedTask
 // and have it behave the same as PostTask.
 class WorkerThreadTaskRunner : public base::TaskRunner {

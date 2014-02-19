@@ -32,7 +32,6 @@ using blink::WebIDBMetadata;
 using blink::WebString;
 using blink::WebVector;
 using base::ThreadLocalPointer;
-using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher> >::Leaky
@@ -75,7 +74,7 @@ IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance(
 
   IndexedDBDispatcher* dispatcher = new IndexedDBDispatcher(thread_safe_sender);
   if (WorkerTaskRunner::Instance()->CurrentWorkerId())
-    webkit_glue::WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;
 }
 

@@ -12,13 +12,13 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
+#include "content/child/worker_task_runner.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
-#include "webkit/child/worker_task_runner.h"
 
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
@@ -42,8 +42,7 @@ CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
 
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
-class CONTENT_EXPORT IndexedDBDispatcher
-    : public webkit_glue::WorkerTaskRunner::Observer {
+class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
  public:
   // Constructor made public to allow RenderThreadImpl to own a copy without
   // failing a NOTREACHED in ThreadSpecificInstance in tests that instantiate
@@ -57,7 +56,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   static IndexedDBDispatcher* ThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender);
 
-  // webkit_glue::WorkerTaskRunner::Observer implementation.
+  // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   static blink::WebIDBMetadata ConvertMetadata(
@@ -176,7 +175,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   enum { kAllCursors = -1 };
 
   static int32 CurrentWorkerId() {
-    return webkit_glue::WorkerTaskRunner::Instance()->CurrentWorkerId();
+    return WorkerTaskRunner::Instance()->CurrentWorkerId();
   }
 
   template <typename T>

@@ -8,9 +8,9 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
-#include "webkit/child/worker_task_runner.h"
 
 class GURL;
 
@@ -30,7 +30,7 @@ class WebServiceWorkerImpl;
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
 // scripts through methods like navigator.registerServiceWorker().
-class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
+class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
  public:
   explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
   virtual ~ServiceWorkerDispatcher();
@@ -54,7 +54,7 @@ class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
       ThreadSafeSender* thread_safe_sender);
 
  private:
-  // webkit_glue::WorkerTaskRunner::Observer implementation.
+  // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // The asynchronous success response to RegisterServiceWorker.

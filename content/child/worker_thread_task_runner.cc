@@ -5,9 +5,7 @@
 #include "content/child/worker_thread_task_runner.h"
 
 #include "base/logging.h"
-#include "webkit/child/worker_task_runner.h"
-
-using webkit_glue::WorkerTaskRunner;
+#include "content/child/worker_task_runner.h"
 
 namespace content {
 

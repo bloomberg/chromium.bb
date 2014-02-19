@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "webkit/child/worker_task_runner.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -26,10 +26,9 @@ class WebFileWriterClient;
 
 namespace content {
 
-class WebFileSystemImpl
-    : public blink::WebFileSystem,
-      public webkit_glue::WorkerTaskRunner::Observer,
-      public base::NonThreadSafe {
+class WebFileSystemImpl : public blink::WebFileSystem,
+                          public WorkerTaskRunner::Observer,
+                          public base::NonThreadSafe {
  public:
   // Returns thread-specific instance.  If non-null |main_thread_loop|
   // is given and no thread-specific instance has been created it may
@@ -45,7 +44,7 @@ class WebFileSystemImpl
   explicit WebFileSystemImpl(base::MessageLoopProxy* main_thread_loop);
   virtual ~WebFileSystemImpl();
 
-  // webkit_glue::WorkerTaskRunner::Observer implementation.
+  // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // WebFileSystem implementation.

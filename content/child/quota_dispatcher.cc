@@ -15,14 +15,11 @@
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/gurl.h"
 
-using quota::QuotaStatusCode;
-using quota::StorageType;
-
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
-
-using webkit_glue::WorkerTaskRunner;
+using quota::QuotaStatusCode;
+using quota::StorageType;
 
 namespace content {
 

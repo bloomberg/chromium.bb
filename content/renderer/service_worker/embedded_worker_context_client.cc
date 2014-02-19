@@ -9,6 +9,7 @@
 #include "base/pickle.h"
 #include "base/threading/thread_local.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
@@ -16,9 +17,6 @@
 #include "content/renderer/service_worker/service_worker_script_context.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/child/worker_task_runner.h"
-
-using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 
