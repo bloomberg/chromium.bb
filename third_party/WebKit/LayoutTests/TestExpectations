@@ -143,11 +143,11 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
-# Untriaged w3c test failures after chromium r242227.
-crbug.com/330086 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/node-document.html [ Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/template-child-nodes.html [ Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-document-type.html [ Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents.html [ Failure ]
+crbug.com/251183 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/node-document.html [ Failure ]
+crbug.com/251183 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/template-child-nodes.html [ Failure ]
+
+crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-document-type.html [ Pass Failure ]
+crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents.html [ Pass Failure ]
 crbug.com/330086 w3c/web-platform-tests/html-templates/parsing-html-templates/creating-an-element-for-the-token/template-owner-document.html [ Pass Failure ]
 
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/csshostrule-interface/csshostrule-attributes/test-001.html [ Failure ]
