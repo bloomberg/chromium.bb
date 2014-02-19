@@ -76,7 +76,7 @@ void Console::reportMessageToClient(MessageLevel level, const String& message, P
     m_frame->host()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
 }
 
-PassRefPtr<MemoryInfo> Console::memory() const
+PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const
 {
     // FIXME: Because we create a new object here each time,
     // console.memory !== console.memory, which seems wrong.

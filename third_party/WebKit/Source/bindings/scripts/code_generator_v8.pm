@@ -6061,7 +6061,7 @@ sub IsWillBeGarbageCollectedType
     my $interfaceName = shift;
     return 0 unless IsWrapperType($interfaceName);
     my $interface = ParseInterface($interfaceName);
-    return $interface->extendedAttributes->{"WillBeGarbageCollected"};
+    return InheritsExtendedAttribute($interface, "WillBeGarbageCollected");
 }
 
 sub IsRefPtrType

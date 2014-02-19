@@ -33,13 +33,15 @@
 #define PerformanceEntry_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PerformanceEntry : public RefCounted<PerformanceEntry>, public ScriptWrappable {
+class PerformanceEntry : public RefCountedWillBeGarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
     virtual ~PerformanceEntry();
 
@@ -52,10 +54,12 @@ public:
     virtual bool isMark() { return false; }
     virtual bool isMeasure() { return false; }
 
-    static bool startTimeCompareLessThan(PassRefPtr<PerformanceEntry> a, PassRefPtr<PerformanceEntry> b)
+    static bool startTimeCompareLessThan(PassRefPtrWillBeRawPtr<PerformanceEntry> a, PassRefPtrWillBeRawPtr<PerformanceEntry> b)
     {
         return a->startTime() < b->startTime();
     }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);

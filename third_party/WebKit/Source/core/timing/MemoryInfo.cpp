@@ -40,6 +40,7 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(MemoryInfo);
 
 class HeapSizeCache {
     WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED;

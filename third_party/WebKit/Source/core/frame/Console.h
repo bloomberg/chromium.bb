@@ -52,7 +52,7 @@ public:
     static PassRefPtr<Console> create(Frame* frame) { return adoptRef(new Console(frame)); }
     virtual ~Console();
 
-    PassRefPtr<MemoryInfo> memory() const;
+    PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;

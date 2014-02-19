@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -40,13 +41,19 @@ namespace WebCore {
 
 class Frame;
 
-class MemoryInfo : public RefCounted<MemoryInfo>, public ScriptWrappable {
+class MemoryInfo : public RefCountedWillBeGarbageCollectedFinalized<MemoryInfo>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<MemoryInfo> create(Frame* frame) { return adoptRef(new MemoryInfo(frame)); }
+    static PassRefPtrWillBeRawPtr<MemoryInfo> create(Frame* frame)
+    {
+        return adoptRefWillBeNoop(new MemoryInfo(frame));
+    }
 
     size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }
     size_t usedJSHeapSize() const { return m_info.usedJSHeapSize; }
     size_t jsHeapSizeLimit() const { return m_info.jsHeapSizeLimit; }
+
+    void trace(Visitor*) { }
 
 private:
     explicit MemoryInfo(Frame*);

@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -40,9 +41,13 @@ namespace WebCore {
 
 class Frame;
 
-class PerformanceNavigation FINAL : public RefCounted<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceNavigation FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<PerformanceNavigation> create(Frame* frame) { return adoptRef(new PerformanceNavigation(frame)); }
+    static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(Frame* frame)
+    {
+        return adoptRefWillBeNoop(new PerformanceNavigation(frame));
+    }
 
     enum PerformanceNavigationType {
         TYPE_NAVIGATE,
@@ -53,6 +58,8 @@ public:
 
     unsigned short type() const;
     unsigned short redirectCount() const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit PerformanceNavigation(Frame*);

@@ -26,7 +26,9 @@
 #ifndef PerformanceUserTiming_h
 #define PerformanceUserTiming_h
 
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceTiming.h"
+#include "heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -40,11 +42,15 @@ class Performance;
 class PerformanceEntry;
 
 typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
-typedef HashMap<String, Vector<RefPtr<PerformanceEntry> > > PerformanceEntryMap;
+typedef WillBeHeapHashMap<String, PerformanceEntryVector> PerformanceEntryMap;
 
-class UserTiming : public RefCounted<UserTiming> {
+class UserTiming : public RefCountedWillBeGarbageCollected<UserTiming> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<UserTiming> create(Performance* performance) { return adoptRef(new UserTiming(performance)); }
+    static PassRefPtrWillBeRawPtr<UserTiming> create(Performance* performance)
+    {
+        return adoptRefWillBeNoop(new UserTiming(performance));
+    }
 
     void mark(const String& markName, ExceptionState&);
     void clearMarks(const String& markName);
@@ -52,17 +58,19 @@ public:
     void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
     void clearMeasures(const String& measureName);
 
-    Vector<RefPtr<PerformanceEntry> > getMarks() const;
-    Vector<RefPtr<PerformanceEntry> > getMeasures() const;
+    PerformanceEntryVector getMarks() const;
+    PerformanceEntryVector getMeasures() const;
 
-    Vector<RefPtr<PerformanceEntry> > getMarks(const String& name) const;
-    Vector<RefPtr<PerformanceEntry> > getMeasures(const String& name) const;
+    PerformanceEntryVector getMarks(const String& name) const;
+    PerformanceEntryVector getMeasures(const String& name) const;
+
+    void trace(Visitor*);
 
 private:
     explicit UserTiming(Performance*);
 
     double findExistingMarkStartTime(const String& markName, ExceptionState&);
-    Performance* m_performance;
+    RawPtrWillBeMember<Performance> m_performance;
     PerformanceEntryMap m_marksMap;
     PerformanceEntryMap m_measuresMap;
 };

@@ -27,6 +27,7 @@
 #define PerformanceMeasure_h
 
 #include "core/timing/PerformanceEntry.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -34,9 +35,17 @@ namespace WebCore {
 
 class PerformanceMeasure FINAL : public PerformanceEntry {
 public:
-    static PassRefPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime) { return adoptRef(new PerformanceMeasure(name, startTime, endTime)); }
+    static PassRefPtrWillBeRawPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime)
+    {
+        return adoptRefWillBeNoop(new PerformanceMeasure(name, startTime, endTime));
+    }
 
     virtual bool isMeasure() OVERRIDE { return true; }
+
+    virtual void trace(Visitor* visitor)
+    {
+        PerformanceEntry::trace(visitor);
+    }
 
 private:
     PerformanceMeasure(const String& name, double startTime, double endTime) : PerformanceEntry(name, "measure", startTime, endTime)

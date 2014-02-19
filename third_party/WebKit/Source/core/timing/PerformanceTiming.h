@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -44,9 +45,13 @@ struct DocumentTiming;
 class Frame;
 class ResourceLoadTiming;
 
-class PerformanceTiming FINAL : public RefCounted<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceTiming FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<PerformanceTiming> create(Frame* frame) { return adoptRef(new PerformanceTiming(frame)); }
+    static PassRefPtrWillBeRawPtr<PerformanceTiming> create(Frame* frame)
+    {
+        return adoptRefWillBeNoop(new PerformanceTiming(frame));
+    }
 
     unsigned long long navigationStart() const;
     unsigned long long unloadEventStart() const;
@@ -69,6 +74,8 @@ public:
     unsigned long long domComplete() const;
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit PerformanceTiming(Frame*);

@@ -30,7 +30,9 @@
  */
 
 // See: http://www.w3.org/TR/navigation-timing/
-interface Performance : EventTarget {
+[
+    WillBeGarbageCollected
+] interface Performance : EventTarget {
     readonly attribute PerformanceNavigation navigation;
     readonly attribute PerformanceTiming timing;
     readonly attribute MemoryInfo memory;

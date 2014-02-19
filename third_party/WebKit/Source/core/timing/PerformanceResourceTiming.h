@@ -33,6 +33,7 @@
 #define PerformanceResourceTiming_h
 
 #include "core/timing/PerformanceEntry.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -46,15 +47,16 @@ class ResourceResponse;
 class ResourceTimingInfo;
 
 class PerformanceResourceTiming FINAL : public PerformanceEntry {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
+    static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
-        return adoptRef(new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails));
+        return adoptRefWillBeNoop(new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails));
     }
 
-    static PassRefPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
+    static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
     {
-        return adoptRef(new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false));
+        return adoptRefWillBeNoop(new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false));
     }
 
     AtomicString initiatorType() const;
@@ -72,6 +74,11 @@ public:
     double responseEnd() const;
 
     virtual bool isResource() OVERRIDE { return true; }
+
+    virtual void trace(Visitor* visitor)
+    {
+        PerformanceEntry::trace(visitor);
+    }
 
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
