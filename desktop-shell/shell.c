@@ -3246,48 +3246,27 @@ xdg_surface_set_output(struct wl_client *client,
 }
 
 static void
-xdg_surface_set_fullscreen(struct shell_surface *shsurf, int serial)
+xdg_surface_change_state(struct shell_surface *shsurf,
+			 uint32_t state, uint32_t value, uint32_t serial)
 {
-	shsurf->requested_state.fullscreen = true;
+	xdg_surface_send_change_state(shsurf->resource, state, value, serial);
 	shsurf->state_requested = true;
 
-	xdg_surface_send_change_state(shsurf->resource,
-				      XDG_SURFACE_STATE_FULLSCREEN, 1, serial);
+	switch (state) {
+	case XDG_SURFACE_STATE_MAXIMIZED:
+		shsurf->requested_state.maximized = value;
+		if (value)
+			set_maximized(shsurf, NULL);
+		break;
+	case XDG_SURFACE_STATE_FULLSCREEN:
+		shsurf->requested_state.fullscreen = value;
 
-	set_fullscreen(shsurf,
-		       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-		       0, shsurf->recommended_output);
-}
-
-static void
-xdg_surface_unset_fullscreen(struct shell_surface *shsurf, int serial)
-{
-	shsurf->requested_state.fullscreen = false;
-	shsurf->state_requested = true;
-
-	xdg_surface_send_change_state(shsurf->resource,
-				      XDG_SURFACE_STATE_FULLSCREEN, 0, serial);
-}
-
-static void
-xdg_surface_set_maximized(struct shell_surface *shsurf, int serial)
-{
-	shsurf->requested_state.maximized = true;
-	shsurf->state_requested = true;
-
-	set_maximized(shsurf, NULL);
-
-	xdg_surface_send_change_state(shsurf->resource,
-				      XDG_SURFACE_STATE_MAXIMIZED, 1, serial);
-}
-static void
-xdg_surface_unset_maximized(struct shell_surface *shsurf, int serial)
-{
-	shsurf->requested_state.maximized = false;
-	shsurf->state_requested = true;
-
-	xdg_surface_send_change_state(shsurf->resource,
-				      XDG_SURFACE_STATE_MAXIMIZED, 0, serial);
+		if (value)
+			set_fullscreen(shsurf,
+				       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+				       0, shsurf->recommended_output);
+		break;
+	}
 }
 
 static void
@@ -3307,18 +3286,14 @@ xdg_surface_request_change_state(struct wl_client *client,
 
 	switch (state) {
 	case XDG_SURFACE_STATE_MAXIMIZED:
-		if (value)
-			xdg_surface_set_maximized(shsurf, serial);
-		else
-			xdg_surface_unset_maximized(shsurf, serial);
-		break;
 	case XDG_SURFACE_STATE_FULLSCREEN:
-		if (value)
-			xdg_surface_set_fullscreen(shsurf, serial);
-		else
-			xdg_surface_unset_fullscreen(shsurf, serial);
 		break;
+	default:
+		/* send error? ignore? send change state with value 0? */
+		return;
 	}
+
+	xdg_surface_change_state(shsurf, state, value, serial);
 }
 
 static void
@@ -3921,6 +3896,7 @@ maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void 
 	struct weston_surface *focus = seat->keyboard->focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
+	uint32_t serial;
 
 	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
@@ -3933,10 +3909,9 @@ maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void 
 	if (!shell_surface_is_xdg_surface(shsurf))
 		return;
 
-	if (shsurf->state.maximized)
-		xdg_surface_unset_maximized(shsurf, wl_display_next_serial(seat->compositor->wl_display));
-	else
-		xdg_surface_set_maximized(shsurf, wl_display_next_serial(seat->compositor->wl_display));
+	serial = wl_display_next_serial(seat->compositor->wl_display);
+	xdg_surface_change_state(shsurf, XDG_SURFACE_STATE_MAXIMIZED,
+				 !shsurf->state.maximized, serial);
 }
 
 static void
@@ -3945,6 +3920,7 @@ fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, voi
 	struct weston_surface *focus = seat->keyboard->focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
+	uint32_t serial;
 
 	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
@@ -3957,10 +3933,9 @@ fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, voi
 	if (!shell_surface_is_xdg_surface(shsurf))
 		return;
 
-	if (shsurf->state.fullscreen)
-		xdg_surface_unset_fullscreen(shsurf, wl_display_next_serial(seat->compositor->wl_display));
-	else
-		xdg_surface_set_fullscreen(shsurf, wl_display_next_serial(seat->compositor->wl_display));
+	serial = wl_display_next_serial(seat->compositor->wl_display);
+	xdg_surface_change_state(shsurf, XDG_SURFACE_STATE_FULLSCREEN,
+				 !shsurf->state.fullscreen, serial);
 }
 
 static void
