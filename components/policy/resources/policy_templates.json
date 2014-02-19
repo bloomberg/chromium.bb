@@ -2562,6 +2562,7 @@
             'chrome.*:11-',
             'chrome_os:11-',
             'ios:34-',
+            'android:34-',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2585,6 +2586,7 @@
             'chrome.*:11-',
             'chrome_os:11-',
             'ios:34-',
+            'android:34-',
           ],
           'features': {
             'dynamic_refresh': True,
