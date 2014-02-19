@@ -66,6 +66,7 @@ cr.define('options', function() {
           this.showAvatarGridOrSubmit_.bind(this);
 
       $('create-new-user-link').onclick = function(event) {
+        options.ManagedUserListData.removeObserver(self);
         OptionsPage.navigateToPage('createProfile');
       };
     },
