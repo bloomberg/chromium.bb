@@ -155,7 +155,6 @@ PNACL_TOOLCHAIN_TRYBOTS = [
 TOOLCHAIN_BUILD_TRYBOTS = [
     'nacl-toolchain-precise64-newlib-arm',
     'nacl-toolchain-mac-newlib-arm',
-    'nacl-toolchain-win7-newlib-arm',
     ]
 
 
