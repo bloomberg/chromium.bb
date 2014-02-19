@@ -37,6 +37,7 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "wtf/RefCountedLeakCounter.h"
 
 using blink::WebExternalTextureLayer;
 using blink::WebGraphicsContext3D;
@@ -45,6 +46,8 @@ namespace {
 enum {
     InvalidMailboxIndex = -1,
 };
+
+DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, canvas2DLayerBridgeInstanceCounter, ("Canvas2DLayerBridge"));
 }
 
 namespace WebCore {
@@ -104,6 +107,9 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DP
     GraphicsLayer::registerContentsLayer(m_layer->layer());
     m_layer->setRateLimitContext(m_rateLimitingEnabled);
     m_canvas->setNotificationClient(this);
+#ifndef NDEBUG
+    canvas2DLayerBridgeInstanceCounter.increment();
+#endif
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
@@ -119,6 +125,9 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     }
 #endif
     m_mailboxes.clear();
+#ifndef NDEBUG
+    canvas2DLayerBridgeInstanceCounter.decrement();
+#endif
 }
 
 void Canvas2DLayerBridge::beginDestruction()
