@@ -2,12 +2,12 @@
 <!-- Bookmarks specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- Begin of Bookmarks Bar strings-->
-  <if expr="not is_android and not is_ios and not pp_ifdef('use_titlecase')">
+  <if expr="not is_android and not is_ios and not use_titlecase">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the Bookmarks Bar folder.">
       Bookmarks bar
     </message>
   </if>
-  <if expr="not is_android and not is_ios and pp_ifdef('use_titlecase')">
+  <if expr="not is_android and not is_ios and use_titlecase">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the Bookmarks Bar folder.">
       Bookmarks Bar
     </message>
@@ -48,7 +48,7 @@
     Imported
   </message>
 
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="Name shown in the tree for the mobile bookmarks folder">
       Mobile bookmarks
     </message>
@@ -59,7 +59,7 @@
       Show apps shortcut
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
       Mobile Bookmarks
     </message>
@@ -79,7 +79,7 @@
   <!-- End of Bookmarks Bar strings. -->
 
   <!-- Begin of Bookmarks Bar Context Menu strings. -->
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
       &amp;Open all bookmarks
     </message>
@@ -155,7 +155,7 @@
       </message>
     </if>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
       &amp;Open All Bookmarks
     </message>
@@ -242,12 +242,12 @@
   <!-- End of Bookmarks Bar Context Menu strings. -->
 
   <!-- Begin of Bookmarks Bubble strings. -->
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking a page.">
       Bookmark added!
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="In Title Case: Title of the bubble after bookmarking a page.">
       Bookmark Added!
     </message>
@@ -276,12 +276,12 @@
   <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
     Edit...
   </message>
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
       Choose another folder...
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
       Choose Another Folder...
     </message>
@@ -348,12 +348,12 @@
       Edit Folder
     </message>
   </if>
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE" desc="The title of the Bookmark All Tabs dialog.">
       Bookmark all tabs
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE" desc="In Title Case: The title of the Bookmark All Tabs dialog.">
       Bookmark All Tabs
     </message>
@@ -376,7 +376,7 @@
   <message name="IDS_BOOKMARK_MANAGER_SEARCH_BUTTON" desc="Title of the button in the bookmark manager that triggers a search">
     Search bookmarks
   </message>
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_MANAGER" desc="The label of the menu item that shows the bookmark manager">
       &amp;Bookmark manager
     </message>
@@ -411,7 +411,7 @@
       Search
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
       &amp;Bookmark Manager
     </message>
@@ -466,22 +466,22 @@
   <message name="IDS_BOOKMARKS_MENU" desc="The title of the Bookmarks menu in the Main menu and in the Mac menu bar.">
     &amp;Bookmarks
   </message>
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_THIS_PAGE" desc="Title of the menu item that bookmarks the current page.">
       Bookmark this page...
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_THIS_PAGE" desc="In Title Case: Title of the menu item that bookmarks the current page.">
       Bookmark This Page...
     </message>
   </if>
-  <if expr="not pp_ifdef('use_titlecase')">
+  <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_OPEN_PAGES" desc="Title of the menu item that bookmarks all the pages opened in this window.">
       Bookmark open pages...
     </message>
   </if>
-  <if expr="pp_ifdef('use_titlecase')">
+  <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_OPEN_PAGES" desc="In Title Case: Title of the menu item that bookmarks all the pages opened in this window.">
       Bookmark Open Pages...
     </message>

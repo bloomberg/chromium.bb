@@ -11,28 +11,28 @@ be available for now. -->
     </output>
     <output filename="chromium_strings_am.pak" type="data_package" lang="am" />
     <output filename="chromium_strings_ar.pak" type="data_package" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_ast.pak" type="data_package" lang="ast" />
     </if>
     <output filename="chromium_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="chromium_strings_bn.pak" type="data_package" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_bs.pak" type="data_package" lang="bs" />
     </if>
     <output filename="chromium_strings_ca.pak" type="data_package" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
     </if>
     <output filename="chromium_strings_cs.pak" type="data_package" lang="cs" />
     <output filename="chromium_strings_da.pak" type="data_package" lang="da" />
     <output filename="chromium_strings_de.pak" type="data_package" lang="de" />
     <output filename="chromium_strings_el.pak" type="data_package" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_en-AU.pak" type="data_package" lang="en-AU" />
     </if>
     <output filename="chromium_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="chromium_strings_en-US.pak" type="data_package" lang="en" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="chromium_strings_es.pak" type="data_package" lang="es" />
@@ -44,7 +44,7 @@ be available for now. -->
       <output filename="chromium_strings_es-419.pak" type="data_package" lang="es-419" />
     </if>
     <output filename="chromium_strings_et.pak" type="data_package" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="chromium_strings_fa.pak" type="data_package" lang="fa" />
@@ -52,7 +52,7 @@ be available for now. -->
     <output filename="chromium_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="chromium_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="chromium_strings_fr.pak" type="data_package" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_gl.pak" type="data_package" lang="gl" />
     </if>
     <output filename="chromium_strings_gu.pak" type="data_package" lang="gu" />
@@ -60,19 +60,19 @@ be available for now. -->
     <output filename="chromium_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="chromium_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="chromium_strings_hu.pak" type="data_package" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_hy.pak" type="data_package" lang="hy" />
       <output filename="chromium_strings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="chromium_strings_id.pak" type="data_package" lang="id" />
     <output filename="chromium_strings_it.pak" type="data_package" lang="it" />
     <output filename="chromium_strings_ja.pak" type="data_package" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_ka.pak" type="data_package" lang="ka" />
     </if>
     <output filename="chromium_strings_kn.pak" type="data_package" lang="kn" />
     <output filename="chromium_strings_ko.pak" type="data_package" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_ku.pak" type="data_package" lang="ku" />
       <output filename="chromium_strings_kw.pak" type="data_package" lang="kw" />
     </if>
@@ -104,7 +104,7 @@ be available for now. -->
     <output filename="chromium_strings_te.pak" type="data_package" lang="te" />
     <output filename="chromium_strings_th.pak" type="data_package" lang="th" />
     <output filename="chromium_strings_tr.pak" type="data_package" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="chromium_strings_ug.pak" type="data_package" lang="ug" />
     </if>
     <output filename="chromium_strings_uk.pak" type="data_package" lang="uk" />
@@ -113,7 +113,7 @@ be available for now. -->
     <output filename="chromium_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
-    <if expr="not pp_ifdef('use_third_party_translations')">
+    <if expr="not use_third_party_translations">
       <file path="resources/chromium_strings_am.xtb" lang="am" />
       <file path="resources/chromium_strings_ar.xtb" lang="ar" />
       <file path="resources/chromium_strings_bg.xtb" lang="bg" />
@@ -168,7 +168,7 @@ be available for now. -->
       <file path="resources/chromium_strings_zh-CN.xtb" lang="zh-CN" />
       <file path="resources/chromium_strings_zh-TW.xtb" lang="zh-TW" />
     </if>
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/chromium_strings_ast.xtb" lang="ast" />
       <file path="../../third_party/launchpad_translations/chromium_strings_bg.xtb" lang="bg" />
       <file path="../../third_party/launchpad_translations/chromium_strings_bs.xtb" lang="bs" />
@@ -229,7 +229,7 @@ be available for now. -->
       <message name="IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION" desc="App Launcher description">
         Chromium App Launcher is a standalone platform for Chromium apps.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Chromium OS
         </message>
@@ -302,12 +302,12 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabs and popup windows">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chromium
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chromium OS
         </message>
@@ -321,7 +321,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_ABOUT_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
         Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
           Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
@@ -384,7 +384,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Chromium the default browser
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Chromium OS Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
           Get Started with Chromium OS
@@ -396,18 +396,18 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
           Welcome
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and not is_ios">
+      <if expr="not chromeos and not is_ios">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
           Welcome to Chromium
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
           Chromium needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
           Chromium OS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
         </message>
@@ -419,22 +419,22 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_UNSUPPORTED_OS" desc="The text used to warn the user that current OS is not supported">
         Chromium does not support <ph name="OS_NAME">$1<ex>Windows 2000</ex></ph>.
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please close all Chromium windows and relaunch Chromium for this change to take effect.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please sign out and sign in again for this change to take effect.
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="In Title Case: The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
           Let Chromium Run In The Background
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
           Let Chromium run in the background
         </message>
@@ -576,7 +576,7 @@ Chromium is unable to recover your settings.
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Chromium isn't your default browser.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
           Set up Sync to save your personalized browser features to the web and access them from Chromium on any computer.
         </message>
@@ -673,12 +673,12 @@ Chromium is unable to recover your settings.
       </message>
 
       <!-- about:flags -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chromium. Shown next to a button that says 'Relaunch Now'.">
           Your changes will take effect the next time you relaunch Chromium.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chromium OS. Shown next to a button that says 'Restart Now'.">
           Your changes will take effect the next time you restart your device.
         </message>
@@ -711,42 +711,42 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </if>
 
       <!-- About Chrome page -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">
           Nearly up-to-date! Relaunch Chromium to finish updating.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium OS">
           Nearly up-to-date! Restart your device to finish updating.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on Chromium OS">
           Channel changed. Restart your device to apply changes.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium)">
           Chromium is up to date.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium OS)">
           Your device is up to date.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium">
           Updating Chromium...
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium OS">
           Updating your device...
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating Chromium OS to a specified channel">
           Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel...
         </message>
@@ -794,7 +794,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
         Customize and control Chromium
       </message>
 
-      <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+      <if expr="use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Chromium
         </message>
@@ -802,7 +802,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
           Update &amp;Chromium
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+      <if expr="not use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
           About &amp;Chromium
         </message>
@@ -810,7 +810,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
           Update &amp;Chromium
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome OS menu item">
           About &amp;Chromium OS
         </message>
@@ -842,7 +842,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </message>
 
       <!-- One click sign-in infobar -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <!-- New one-click sign-in dialog contents for SAML support -->
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign-in.">
           You're signed in to Chromium!
@@ -955,7 +955,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not is_android and not is_ios">
+      <if expr="not chromeos and is_posix and not is_macosx and not is_android and not is_ios">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           the Chromium menu &gt;
@@ -983,7 +983,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- Chrome OS keyboard overlay-->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
           Show the Chromium menu
         </message>
@@ -1019,7 +1019,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- Chrome OS OOBE Terms of Service screen-->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">
           <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Chromium OS Terms.
         </message>

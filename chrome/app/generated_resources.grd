@@ -15,28 +15,28 @@ are declared in build/common.gypi.
     </output>
     <output filename="generated_resources_am.pak" type="data_package" lang="am" />
     <output filename="generated_resources_ar.pak" type="data_package" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_ast.pak" type="data_package" lang="ast" />
     </if>
     <output filename="generated_resources_bg.pak" type="data_package" lang="bg" />
     <output filename="generated_resources_bn.pak" type="data_package" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_bs.pak" type="data_package" lang="bs" />
     </if>
     <output filename="generated_resources_ca.pak" type="data_package" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_ca@valencia.pak" type="data_package" lang="ca@valencia" />
     </if>
     <output filename="generated_resources_cs.pak" type="data_package" lang="cs" />
     <output filename="generated_resources_da.pak" type="data_package" lang="da" />
     <output filename="generated_resources_de.pak" type="data_package" lang="de" />
     <output filename="generated_resources_el.pak" type="data_package" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_en-AU.pak" type="data_package" lang="en-AU" />
     </if>
     <output filename="generated_resources_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="generated_resources_en-US.pak" type="data_package" lang="en" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="generated_resources_es.pak" type="data_package" lang="es" />
@@ -48,7 +48,7 @@ are declared in build/common.gypi.
       <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
     </if>
     <output filename="generated_resources_et.pak" type="data_package" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="generated_resources_fa.pak" type="data_package" lang="fa" />
@@ -56,7 +56,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_fi.pak" type="data_package" lang="fi" />
     <output filename="generated_resources_fil.pak" type="data_package" lang="fil" />
     <output filename="generated_resources_fr.pak" type="data_package" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_gl.pak" type="data_package" lang="gl" />
     </if>
     <output filename="generated_resources_gu.pak" type="data_package" lang="gu" />
@@ -64,19 +64,19 @@ are declared in build/common.gypi.
     <output filename="generated_resources_hi.pak" type="data_package" lang="hi" />
     <output filename="generated_resources_hr.pak" type="data_package" lang="hr" />
     <output filename="generated_resources_hu.pak" type="data_package" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_hy.pak" type="data_package" lang="hy" />
       <output filename="generated_resources_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="generated_resources_id.pak" type="data_package" lang="id" />
     <output filename="generated_resources_it.pak" type="data_package" lang="it" />
     <output filename="generated_resources_ja.pak" type="data_package" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_ka.pak" type="data_package" lang="ka" />
     </if>
     <output filename="generated_resources_kn.pak" type="data_package" lang="kn" />
     <output filename="generated_resources_ko.pak" type="data_package" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_ku.pak" type="data_package" lang="ku" />
       <output filename="generated_resources_kw.pak" type="data_package" lang="kw" />
     </if>
@@ -109,7 +109,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_te.pak" type="data_package" lang="te" />
     <output filename="generated_resources_th.pak" type="data_package" lang="th" />
     <output filename="generated_resources_tr.pak" type="data_package" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="generated_resources_ug.pak" type="data_package" lang="ug" />
     </if>
     <output filename="generated_resources_uk.pak" type="data_package" lang="uk" />
@@ -169,47 +169,47 @@ are declared in build/common.gypi.
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />
     <file path="resources/generated_resources_ar.xtb" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_ast.xtb" lang="ast" />
     </if>
     <file path="resources/generated_resources_bg.xtb" lang="bg" />
     <file path="resources/generated_resources_bn.xtb" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_bs.xtb" lang="bs" />
     </if>
     <file path="resources/generated_resources_ca.xtb" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_ca-valencia.xtb" lang="ca@valencia" />
     </if>
     <file path="resources/generated_resources_cs.xtb" lang="cs" />
     <file path="resources/generated_resources_da.xtb" lang="da" />
     <file path="resources/generated_resources_de.xtb" lang="de" />
     <file path="resources/generated_resources_el.xtb" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_en-AU.xtb" lang="en-AU" />
     </if>
     <file path="resources/generated_resources_en-GB.xtb" lang="en-GB" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_eo.xtb" lang="eo" />
     </if>
     <file path="resources/generated_resources_es.xtb" lang="es" />
     <file path="resources/generated_resources_es-419.xtb" lang="es-419" />
     <file path="resources/generated_resources_et.xtb" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_eu.xtb" lang="eu" />
     </if>
     <file path="resources/generated_resources_fa.xtb" lang="fa" />
     <file path="resources/generated_resources_fi.xtb" lang="fi" />
     <file path="resources/generated_resources_fil.xtb" lang="fil" />
     <file path="resources/generated_resources_fr.xtb" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_gl.xtb" lang="gl" />
     </if>
     <file path="resources/generated_resources_gu.xtb" lang="gu" />
     <file path="resources/generated_resources_hi.xtb" lang="hi" />
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
       <file path="../../third_party/launchpad_translations/generated_resources_ia.xtb" lang="ia" />
     </if>
@@ -218,12 +218,12 @@ are declared in build/common.gypi.
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/generated_resources_iw.xtb" lang="he" />
     <file path="resources/generated_resources_ja.xtb" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_ka.xtb" lang="ka" />
     </if>
     <file path="resources/generated_resources_kn.xtb" lang="kn" />
     <file path="resources/generated_resources_ko.xtb" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_ku.xtb" lang="ku" />
       <file path="../../third_party/launchpad_translations/generated_resources_kw.xtb" lang="kw" />
     </if>
@@ -248,7 +248,7 @@ are declared in build/common.gypi.
     <file path="resources/generated_resources_te.xtb" lang="te" />
     <file path="resources/generated_resources_th.xtb" lang="th" />
     <file path="resources/generated_resources_tr.xtb" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/generated_resources_ug.xtb" lang="ug" />
     </if>
     <file path="resources/generated_resources_uk.xtb" lang="uk" />
@@ -277,12 +277,12 @@ are declared in build/common.gypi.
       <message name="IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension crashes">
         <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click this balloon to reload the extension.
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_BACKGROUND_APP_NOT_INSTALLED" desc="In Title Case: Label displayed in the status icon context menu when a profile does not have any background apps running.">
           No Background Apps Running
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_BACKGROUND_APP_NOT_INSTALLED" desc="Label displayed in the status icon context menu when a profile does not have any background apps running.">
           No background apps running
         </message>
@@ -623,7 +623,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
               Look Up in Dictionary
             </message>
         </if>
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
             &amp;Back
           </message>
@@ -835,7 +835,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             About voice recognition
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
             &amp;Back
           </message>
@@ -1064,7 +1064,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
 
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="The name of the Run command on the blocked plugin context menu">
           Run this plug-in
         </message>
@@ -1072,7 +1072,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           Hide this plug-in
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
           Run This Plug-in
         </message>
@@ -1082,7 +1082,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- Ash multi-user warning dialog -->
-      <if expr="pp_ifdef('use_ash')">
+      <if expr="use_ash">
         <message name="IDS_VISIT_DESKTOP_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
           Careful, this feature may bite
         </message>
@@ -1113,7 +1113,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
       <if expr="not is_macosx">
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
             &amp;Spell-checker options
           </message>
@@ -1127,7 +1127,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             &amp;Hide spelling panel
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
             &amp;Spell-checker Options
           </message>
@@ -1148,7 +1148,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <!-- Page menu. Android has separate strings for its menu -->
       <if expr="not is_android">
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
             New &amp;tab
           </message>
@@ -1234,7 +1234,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Auto detect
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
             New &amp;Tab
           </message>
@@ -1388,7 +1388,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Vietnamese
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
           View s&amp;ource
         </message>
@@ -1417,7 +1417,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           R&amp;eopen closed window
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_VIEW_SOURCE" desc="In Title Case: The text label of the View Page Source menu item">
           View S&amp;ource
         </message>
@@ -1476,7 +1476,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
         Request tablet site
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
           &amp;History
         </message>
@@ -1517,7 +1517,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           E&amp;xit
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
           &amp;History
         </message>
@@ -1573,13 +1573,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
         &lt;enter query&gt;
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_EDIT_SEARCH_ENGINES"
                  desc="Title of the popup menu item for editing search engines">
           &amp;Edit search engines...
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_EDIT_SEARCH_ENGINES"
                  desc="In Title Case: Title of the popup menu item for editing search engines">
           &amp;Edit Search Engines...
@@ -2012,7 +2012,7 @@ Even if you have downloaded files from this website before, the website might ha
 
       <!-- Download Context Menu Items -->
       <if expr="not is_android">
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <if expr="is_macosx">
             <message name="IDS_DOWNLOAD_MENU_SHOW"
                   desc="Mac: Show the file in the Finder, 'Show in Finder' item"
@@ -2072,7 +2072,7 @@ Even if you have downloaded files from this website before, the website might ha
             &amp;More information
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
            <if expr="is_macosx">
             <message name="IDS_DOWNLOAD_MENU_SHOW"
                      desc="In Title Case: Mac: Show the file in the Finder, 'Show in Finder' item"
@@ -2184,7 +2184,7 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- "Create application shortcuts" menu item -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
           Create application &amp;shortcuts...
         </message>
@@ -2192,7 +2192,7 @@ Even if you have downloaded files from this website before, the website might ha
           Create app from this website...
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS" desc="In Title Case: Default installation menu label">
           Create Application &amp;Shortcuts...
         </message>
@@ -2202,7 +2202,7 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- "Application Information" dialog -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_APPLICATION_INFO_TITLE" desc="Title of the dialog that contains information about the current application.">
           Application information
         </message>
@@ -2210,7 +2210,7 @@ Even if you have downloaded files from this website before, the website might ha
           Close
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_APPLICATION_INFO_TITLE" desc="In Title Case: title of the dialog that contains information about the current application.">
           Application Information
         </message>
@@ -2220,12 +2220,12 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- "Create application shortcuts" dialog -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
           Create application shortcuts
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="In Title Case: title of the dialog to create application shortcuts for current page.">
           Create Application Shortcuts
         </message>
@@ -2602,7 +2602,7 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
-      <if expr="pp_ifdef('toolkit_views')">
+      <if expr="toolkit_views">
         <message name="IDS_CERT_SELECTOR_TABLE_CERT_FORMAT" desc="Format for a certificate row in the certificate selector table.">
           <ph name="SUBJECT">$1<ex>FOAF ME Cert http://foaf.me/test</ex></ph> (<ph name="ISSUER">$2<ex>FOAF.ME</ex></ph>)
         </message>
@@ -2662,7 +2662,7 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as GTK Linux. -->
-      <if expr="pp_ifdef('toolkit_uses_gtk')">
+      <if expr="toolkit_uses_gtk">
         <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
           This site has requested that you identify yourself with a certificate:
         </message>
@@ -3421,7 +3421,7 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...
         </message>
@@ -3536,15 +3536,15 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering full screen mode. Clicking on the link exits full screen mode.">
         Exit full screen
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR" desc="Accelerator description shown next to a link showing 'Exit full screen' e.g. 'Exit full screen (Esc)', where 'Exit full screen' is a link.">
           (<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>)
         </message>
       </if>
 
       <!-- Task Manager Window -->
-      <if expr="pp_ifdef('enable_task_manager')">
-        <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="enable_task_manager">
+        <if expr="not use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
             End process
           </message>
@@ -3618,7 +3618,7 @@ Make sure you do not expose any sensitive information.
             Activate
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
             End Process
           </message>
@@ -5010,7 +5010,7 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
           Show button
         </message>
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
             Options
           </message>
@@ -5027,7 +5027,7 @@ Make sure you do not expose any sensitive information.
             Inspect popup
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
             Options
           </message>
@@ -5328,12 +5328,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Pack
       </message>
 
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when suspicious extensions have been disabled">
           Suspicious Extensions Disabled
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="Title of the dialog shown when suspicious extensions have been disabled">
           Suspicious extensions disabled
         </message>
@@ -5347,12 +5347,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to chrome without the user's knowledge">
         This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="In Title Case: Title of a dialog warning users they have development mode extensions running">
           Disable Developer Mode Extensions
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="Title of a dialog warning users they have development mode extensions running">
           Disable developer mode extensions
         </message>
@@ -5362,7 +5362,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- chrome://settings-frame/options_settings_app.html for the App Launcher Settings App -->
-      <if expr="pp_ifdef('enable_settings_app')">
+      <if expr="enable_settings_app">
         <message name="IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME" desc="Product name to use when referring to applications running in the App Launcher inside the non-browser Settings App">
           App Launcher
         </message>
@@ -5397,7 +5397,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Plugins -->
-      <if expr="pp_ifdef('enable_plugins')">
+      <if expr="enable_plugins">
         <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
           Plug-ins
         </message>
@@ -5507,12 +5507,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NOT_AVAILABLE" desc="Shown instead of the Enable/Disable link, to let the user know that an experiment is not available on the current platform.">
         Sorry, this experiment is not available on your platform.
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that relaunches chrome when clicked. ">
           Relaunch Now
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME">
           Alternative shelf layout
         </message>
@@ -6133,7 +6133,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
         This option disables support in WebRTC for encoding video streams using platform hardware.
       </message>
-      <if expr="not pp_ifdef('use_webaudio_enable_message')">
+      <if expr="not use_webaudio_enable_message">
         <message name="IDS_FLAGS_DISABLE_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
           Disable WebAudio
         </message>
@@ -6141,7 +6141,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enabling this option prevents web sites from accessing the WebAudio API.
         </message>
       </if>
-      <if expr="pp_ifdef('use_webaudio_enable_message')">
+      <if expr="use_webaudio_enable_message">
         <message name="IDS_FLAGS_ENABLE_WEBAUDIO_NAME" desc="Name of the 'Enable WebAudio' lab.">
           Enable WebAudio
         </message>
@@ -6506,7 +6506,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables handling of the viewport meta tag to allow pages to set the layout width and user zoom properties.
       </message>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">
           Enable touchpad three-finger-click.
         </message>
@@ -6818,7 +6818,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION" desc="Description of the flag to reset the app launcher install state.">
         Reset the App Launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the App Launcher install flow.
       </message>
-      <if expr="pp_ifdef('enable_app_list')">
+      <if expr="enable_app_list">
         <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">
           Enable the App Launcher.
         </message>
@@ -6862,7 +6862,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_DESCRIPTION" desc="Description for the flag to disable sync of user account image.">
         Disables sync of user account image between different ChromeOS devices.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to disable new first-run UI.">
           Disable new first-run UI.
         </message>
@@ -7147,7 +7147,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page" translateable="false">
         http://support.google.com/chrome/?p=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
       <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
           Learn More
       </message>
@@ -7155,7 +7155,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Not Now
       </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
       <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
           Learn more
       </message>
@@ -7285,22 +7285,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page includes script from unauthenticated sources.
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
           Load unsafe script
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
           Load unsafe script
         </message>
       </if>
-      <if expr="not is_android and pp_ifdef('use_titlecase')">
+      <if expr="not is_android and use_titlecase">
         <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
           Don't Load (Recommended)
         </message>
       </if>
-      <if expr="not is_android and not pp_ifdef('use_titlecase')">
+      <if expr="not is_android and not use_titlecase">
         <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
           Don't load (recommended)
         </message>
@@ -7342,7 +7342,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- Locale Change Notification-->
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
           Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
@@ -7505,7 +7505,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Omnibox -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and go
         </message>
@@ -7516,7 +7516,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Show URL
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PASTE_AND_GO" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and Go
         </message>
@@ -7599,22 +7599,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for zoom icon">
         Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">
           Reset to default
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_ZOOM_SET_DEFAULT" desc="In Title Case: The text label of a button which, when clicked, returns the page to default zoom">
           Reset to Default
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="The short text label of a button which, when clicked, returns the page to default zoom">
           Reset
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="In Title Case: The short text label of a button which, when clicked, returns the page to default zoom">
           Reset
         </message>
@@ -7923,7 +7923,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Skip Import
       </message>
 
-      <if expr="pp_ifdef('enable_extensions')">
+      <if expr="enable_extensions">
         <!-- Feedback Dialog -->
         <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
           Tell us what is happening.
@@ -7940,12 +7940,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system performance data on the bug report dialog box">
           Send performance trace data
         </message>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
             Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph>
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX" desc="Checkbox for including system information and metrics on the bug report dialog box">
             Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="#" id="histograms-url"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
           </message>
@@ -8170,7 +8170,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
-      <if expr="not is_macosx and not pp_ifdef('chromeos')">
+      <if expr="not is_macosx and not chromeos">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
           Clear cookies and other site data when you close your browser
         </message>
@@ -8186,7 +8186,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Clear cookies and other site and plug-in data when you quit your browser
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
           Clear cookies and other site data when you log out
         </message>
@@ -8376,7 +8376,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
         Do not allow any site to disable the mouse cursor
       </message>
-      <if expr="pp_ifdef('chromeos') or is_win">
+      <if expr="chromeos or is_win">
         <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">
           Protected content
         </message>
@@ -8458,12 +8458,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_NO_THANKS" desc="Text for the button the user clicks to refuse settings reset.">
         No thanks
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_RESET_SETTINGS_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
           Reset Altered <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Settings
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_RESET_SETTINGS_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
           Reset altered <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings
         </message>
@@ -8485,12 +8485,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_LATER" desc="Text for the button the user clicks to be reminded of reinstalling the app later.">
         Later
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
           <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is Out of Date
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
           <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is out of date
         </message>
@@ -8537,12 +8537,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Print Preview -->
-      <if expr="pp_ifdef('enable_printing')">
+      <if expr="enable_printing">
         <message name="IDS_PRINT_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid.">
           The selected printer is not available or not installed correctly.  Check your printer or try selecting another printer.
         </message>
       </if>
-      <if expr="pp_ifdef('enable_full_printing')">
+      <if expr="enable_full_printing">
         <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
           Print
         </message>
@@ -8853,7 +8853,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Tab Context Menu -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
           New tab
         </message>
@@ -8897,7 +8897,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Select by opener
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
           New Tab
         </message>
@@ -8943,7 +8943,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </if>
 
       <!-- Application window menu -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_APP_MENU_RELOAD" desc="The reload menu in application windows">
           Reload
         </message>
@@ -8951,7 +8951,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Open browser window
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_APP_MENU_RELOAD" desc="In Title Case: The reload menu in application windows">
           Reload
         </message>
@@ -9026,7 +9026,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It.</ex></ph>
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="ChromeOS instructions for disabling use of a proxy server.">
           You can disable any proxies configured for a connection from the settings page.
         </message>
@@ -9562,7 +9562,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </if>
 
       <!-- Page Information Window -->
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">
           Certificate information
         </message>
@@ -9570,7 +9570,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Certificate transparency
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="In Title Case: Text of button in the page info that shows the SSL certificate.">
           Certificate Information
         </message>
@@ -9936,17 +9936,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
           About
         </message>
-        <if expr="not pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+        <if expr="not chromeos and use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
             Relaunch
           </message>
         </if>
-        <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+        <if expr="not chromeos and not use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
             Relaunch
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+        <if expr="chromeos and use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
             Restart
           </message>
@@ -9954,7 +9954,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             Relaunch and Powerwash
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+        <if expr="chromeos and not use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
             Restart
           </message>
@@ -9962,12 +9962,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             Relaunch and Powerwash
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing Chrome OS">
             The faster, simpler, and more secure computer
           </message>
         </if>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing the Chrome browser">
             A web browser built for speed, simplicity, and security
           </message>
@@ -10049,7 +10049,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
             Internet
           </message>
@@ -10377,13 +10377,13 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             This language is used for spell checking
           </message>
         </if>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
                    desc="The label for the relaunch button for changing UI language">
             Relaunch
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
                    desc="The label for the restart button for changing UI language">
             Restart
@@ -10457,7 +10457,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Check for server certificate revocation
         </message>
 
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
             Powerwash
           </message>
@@ -11368,7 +11368,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
       <if expr="not is_android">
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
               desc="Used when a person enters Guest Session">
               <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
@@ -11376,7 +11376,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
           </message>
         </if>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
               desc="Used when a person enters Guest Session">
               <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
@@ -11425,7 +11425,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
          desc="Title for the app launcher promo box shown on apps pages.">
         Discover the Chrome App Launcher
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_NEW_TAB_APP_OPTIONS"
                  desc="Text for the context menu item that takes the user to the options of an app. (In sentence case.)">
           Options
@@ -11476,7 +11476,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
 
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_NEW_TAB_APP_OPTIONS"
                  desc="Text for the context menu item that takes the user to the options of an app. (In title case.)">
           Options
@@ -11579,7 +11579,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
           Expand
         </message>
@@ -11599,32 +11599,32 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The help text for the avatar bubble.">
         Switch to a different user.
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
           Add new user
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title.">
           Add New User
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="Link in the supervised user bubble view to switch to a different profile.">
           Switch users
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="In title case. Link in the supervised user bubble view to switch to a different profile.">
           Switch Users
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
           New user
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
           Sign in another account
         </message>
@@ -11647,7 +11647,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
           Add person
         </message>
@@ -11667,7 +11667,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Manage accounts
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
           Add Person
         </message>
@@ -11762,12 +11762,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Shady
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="Customize profile menu item and button title.">
           Customize user...
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="In Title Case. Customize profile menu item.">
           Customize User...
         </message>
@@ -11812,7 +11812,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           This account is already being used on this computer.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_MULTI_PROFILES_WARNING" desc="A notification message when user signs into a multiprofile session for the first time.">
           You have enabled multiprofiles, an unsupported experimental mode in Chrome OS. Features may change or break.
         </message>
@@ -12056,7 +12056,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
         External Protocol Request
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that launches the application associated with the protocol">
           Launch Application
         </message>
@@ -12075,7 +12075,7 @@ The following application will be launched if you accept this request:
           Remember my choice for all links of this type.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that closes the dialog">
           Close
         </message>
@@ -12128,7 +12128,7 @@ The following application will be launched if you accept this request:
         Manage certificates...
       </message>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on ChromeOS.">
           Disable Google Drive on this device
         </message>
@@ -12295,12 +12295,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Don't ask again
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
           Use system title bar and borders
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="In Title Case: The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
           Use System Title Bar and Borders
         </message>
@@ -12342,7 +12342,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sync Error
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
           Update...
         </message>
@@ -12352,7 +12352,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to update the passphrase.">
           Sync Error: Update Sync passphrase...
         </message>
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign out and sign in again to Chrome OS.">
             Sign out then sign in again...
           </message>
@@ -12360,7 +12360,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
             Sign out then sign in again...
           </message>
         </if>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
             Sign in again...
           </message>
@@ -12369,7 +12369,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           </message>
         </if>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
           Update...
         </message>
@@ -12400,7 +12400,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
           Sign in
         </message>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
             Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed in to your favorite Google services.
           </message>
@@ -12472,12 +12472,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> could not sync your data because it could not connect to the sync server. Retrying...
         </message>
-        <if expr="not pp_ifdef('chromeos')">
+        <if expr="not chromeos">
           <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
             Sign in again
           </message>
         </if>
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
           <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
             Sign out then sign in again
           </message>
@@ -12525,7 +12525,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
           You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account.
         </message>
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
             OK
           </message>
@@ -12533,7 +12533,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
             Advanced...
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="In title case. The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
             OK
           </message>
@@ -12686,7 +12686,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
 
         <!-- Sync app menu item strings -->
-        <if expr="not pp_ifdef('use_titlecase')">
+        <if expr="not use_titlecase">
           <message name="IDS_SYNC_MENU_PRE_SYNCED_LABEL" desc="The text for the sync app menu item before an account is synced.">
             Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
           </message>
@@ -12694,7 +12694,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
             Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
           </message>
         </if>
-        <if expr="pp_ifdef('use_titlecase')">
+        <if expr="use_titlecase">
           <message name="IDS_SYNC_MENU_PRE_SYNCED_LABEL" desc="The text for the sync app menu item before an account is synced.">
             Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
           </message>
@@ -12727,7 +12727,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- The URL for the Google mailto service. -->
         <message name="IDS_GOOGLE_MAILTO_HANDLER_URL">
           https:////mail.google.com//mail//?extsrc=mailto&amp;url=%s
@@ -13507,7 +13507,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
 
     <!-- Update Recommended dialog -->
-    <if expr="not pp_ifdef('chromeos')">
+    <if expr="not chromeos">
       <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is out of date because it hasn't been relaunched in a while. An update is available and will be applied as soon as you relaunch.
       </message>
@@ -13515,7 +13515,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Relaunch
       </message>
     </if>
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> needs to be restarted to apply the update.
       </message>
@@ -13523,12 +13523,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Restart
       </message>
     </if>
-    <if expr="not pp_ifdef('use_titlecase')">
+    <if expr="not use_titlecase">
       <message name="IDS_NOT_NOW" desc="The button label for delaying the relaunch and updating Chrome.">
         Not now
       </message>
     </if>
-    <if expr="pp_ifdef('use_titlecase')">
+    <if expr="use_titlecase">
       <message name="IDS_NOT_NOW" desc="In Tile Case: The button label for delaying the relaunch and updating Chrome.">
         Not Now
       </message>
@@ -13580,7 +13580,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
 
     <!-- ChromeOS-specific strings -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <part file="chromeos_strings.grdp" />
     </if>
 
@@ -13670,7 +13670,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
 
     <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL" desc="Cancel button text in the device requisition poup.">
         Cancel
       </message>
@@ -13835,12 +13835,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
       Allow
     </message>
-    <if expr="pp_ifdef('use_titlecase')">
+    <if expr="use_titlecase">
       <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="In Title Case: Text in the bubble button that forces a webpage out of fullscreen mode.">
         Exit Full Screen
       </message>
     </if>
-    <if expr="not pp_ifdef('use_titlecase')">
+    <if expr="not use_titlecase">
       <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="Text in the bubble button that forces a webpage out of fullscreen mode.">
         Exit full screen
       </message>
@@ -14150,7 +14150,7 @@ After you create a new supervised user, you can manage their settings at any tim
 
     <if expr="not is_android and not is_ios">
       <!-- User manager web UI -->
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add User
         </message>
@@ -14167,7 +14167,7 @@ After you create a new supervised user, you can manage their settings at any tim
           Remove This User
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add user
         </message>
@@ -14208,12 +14208,12 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME" desc="Text to be spoken when 'Remove user' item is selected on the pod menu.">
         Remove this user
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove an user.">
           Are you sure you want to delete this user and all the data associated with it from this computer? This cannot be undone!
         </message>
@@ -14221,7 +14221,7 @@ After you create a new supervised user, you can manage their settings at any tim
     </if>
 
     <!-- Aura strings -->
-    <if expr="pp_ifdef('use_ash')">
+    <if expr="use_ash">
       <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open in a tab">
         New tab
       </message>
@@ -14485,7 +14485,7 @@ Do you accept?
       <message name="IDS_MEDIA_GALLERIES_LAST_ATTACHED" desc="Explanatory text indicating to the user when a particular location was last attached, i.e. a removable device that isn't plugged in. The date presented will be a day in a localized format providing year, month, and day.">
         last attached on <ph name="DATE">$1<ex>1/22/11</ex></ph>
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In title case: Button for adding a new gallery by choosing a folder.">
           Add Location...
         </message>
@@ -14496,7 +14496,7 @@ Do you accept?
           Apply
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In sentence case: Button for adding a new gallery by choosing a folder."
                  meaning="In sentence case: Button for adding a new gallery by choosing a folder.">
           Add location...
@@ -14524,7 +14524,7 @@ Do you accept?
     </if>
 
     <!-- App List. -->
-    <if expr="pp_ifdef('enable_app_list')">
+    <if expr="enable_app_list">
       <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">
         Chat
       </message>
@@ -14543,7 +14543,7 @@ Do you accept?
       <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
         Click or say "Ok, Google" to start voice search
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
           New tab
         </message>
@@ -14581,7 +14581,7 @@ Do you accept?
           New incognito window
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
           New Tab
         </message>
@@ -14767,7 +14767,7 @@ Do you accept?
     </message>
 
     <!-- About network UI display strings -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <message name="IDS_NETWORK_TITLE" desc="Title of the page">
         Network
       </message>
@@ -14804,7 +14804,7 @@ Do you accept?
     </if>
 
     <!-- About NFC Debug UI display strings. They aren't being internationalized bacause this page is meant for debugging only. -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <message name="IDS_NFC_DEBUG_TITLE" desc="Title of the debug page meant for developers to test NFC functionality" translateable="false">
         NFC API Test Page
       </message>
@@ -14892,7 +14892,7 @@ Do you accept?
     </if>
 
     <!-- About power UI display strings -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="chromeos">
       <message name="IDS_ABOUT_POWER_TITLE" desc="Title of the page">
         Power
       </message>
@@ -14917,7 +14917,7 @@ Do you accept?
     </if>
 
     <!-- Local Device Discovery display strings -->
-    <if expr="pp_ifdef('enable_mdns')">
+    <if expr="enable_mdns">
       <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Table header for registering a service">
         Register
       </message>

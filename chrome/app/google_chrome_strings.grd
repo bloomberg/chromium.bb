@@ -152,7 +152,7 @@ Chrome supports. -->
       <message name="IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION" desc="App Launcher description">
         Google Chrome App Launcher is a standalone platform for Chrome apps.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Google Chrome OS
         </message>
@@ -225,12 +225,12 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabs and popup windows">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chrome
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chrome OS
         </message>
@@ -244,7 +244,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_ABOUT_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
         Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
           Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
@@ -307,7 +307,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
           Get Started with Chrome OS
@@ -319,18 +319,18 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
           Welcome
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and not is_ios">
+      <if expr="not chromeos and not is_ios">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Google Chrome OS Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
           Welcome to Google Chrome
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
           Google Chrome needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
           Google ChromeOS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
         </message>
@@ -342,22 +342,22 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_UNSUPPORTED_OS" desc="The text used to warn the user that current OS is not supported">
         Google Chrome does not support <ph name="OS_NAME">$1<ex>Windows 2000</ex></ph>.
       </message>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please close all Google Chrome windows and relaunch it for this change to take effect.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please sign out and sign in again for this change to take effect.
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
+      <if expr="use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="In Title Case: The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
           Let Google Chrome Run In The Background
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
+      <if expr="not use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
           Let Google Chrome run in the background
         </message>
@@ -500,7 +500,7 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Google Chrome isn't your default browser.
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
           Set up Sync to save your personalized browser features to the web and access them from Google Chrome on any computer.
         </message>
@@ -597,12 +597,12 @@ Google Chrome is unable to recover your settings.
       </message>
 
       <!-- about:flags -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chrome. Shown next to a button that says 'Relaunch Now'.">
           Your changes will take effect the next time you relaunch Google Chrome.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
           Your changes will take effect the next time you restart your device.
         </message>
@@ -635,42 +635,42 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </if>
 
       <!-- About Chrome page -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Google Chrome">
           Nearly up-to-date! Relaunch Google Chrome to finish updating.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chrome OS">
           Nearly up-to-date! Restart your device to finish updating.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on Chrome OS">
           Channel changed. Restart your device to apply changes.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
           Google Chrome is up to date.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chrome OS)">
           Your device is up to date.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Google Chrome">
           Updating Google Chrome...
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chrome OS">
           Updating your device...
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating Chrome OS to a specified channel">
           Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel...
         </message>
@@ -718,7 +718,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
         Customize and control Google Chrome
       </message>
 
-      <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+      <if expr="use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Google Chrome
         </message>
@@ -726,7 +726,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
           Update &amp;Google Chrome
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+      <if expr="not use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
           About &amp;Google Chrome
         </message>
@@ -734,7 +734,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
           Update &amp;Google Chrome
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome OS menu item">
           About &amp;Chrome OS
         </message>
@@ -766,7 +766,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </message>
 
       <!-- One click sign-in infobar -->
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not chromeos">
         <!-- New one-click sign-in dialog contents for SAML support -->
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign-in.">
           You're signed in to Chrome!
@@ -879,7 +879,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not is_android and not is_ios">
+      <if expr="not chromeos and is_posix and not is_macosx and not is_android and not is_ios">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           the Chrome menu &gt;
@@ -907,7 +907,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </if>
 
       <!-- Chrome OS keyboard overlay-->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
           Show the Chrome menu
         </message>
@@ -943,7 +943,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </if>
 
       <!-- Chrome OS OOBE Terms of Service screen-->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">
           <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.
         </message>

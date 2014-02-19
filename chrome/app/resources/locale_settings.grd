@@ -6,28 +6,28 @@
     </output>
     <output filename="locale_settings_am.pak" type="data_package" lang="am" />
     <output filename="locale_settings_ar.pak" type="data_package" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_ast.pak" type="data_package" lang="ast" />
     </if>
     <output filename="locale_settings_bg.pak" type="data_package" lang="bg" />
     <output filename="locale_settings_bn.pak" type="data_package" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_bs.pak" type="data_package" lang="bs" />
     </if>
     <output filename="locale_settings_ca.pak" type="data_package" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
     </if>
     <output filename="locale_settings_cs.pak" type="data_package" lang="cs" />
     <output filename="locale_settings_da.pak" type="data_package" lang="da" />
     <output filename="locale_settings_de.pak" type="data_package" lang="de" />
     <output filename="locale_settings_el.pak" type="data_package" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_en-AU.pak" type="data_package" lang="en-AU" />
     </if>
     <output filename="locale_settings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="locale_settings_en-US.pak" type="data_package" lang="en" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="locale_settings_es.pak" type="data_package" lang="es" />
@@ -39,7 +39,7 @@
       <output filename="locale_settings_es-419.pak" type="data_package" lang="es-419" />
     </if>
     <output filename="locale_settings_et.pak" type="data_package" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="locale_settings_fa.pak" type="data_package" lang="fa" />
@@ -47,7 +47,7 @@
     <output filename="locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="locale_settings_fr.pak" type="data_package" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_gl.pak" type="data_package" lang="gl" />
     </if>
     <output filename="locale_settings_gu.pak" type="data_package" lang="gu" />
@@ -55,19 +55,19 @@
     <output filename="locale_settings_hi.pak" type="data_package" lang="hi" />
     <output filename="locale_settings_hr.pak" type="data_package" lang="hr" />
     <output filename="locale_settings_hu.pak" type="data_package" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_hy.pak" type="data_package" lang="hy" />
       <output filename="locale_settings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="locale_settings_id.pak" type="data_package" lang="id" />
     <output filename="locale_settings_it.pak" type="data_package" lang="it" />
     <output filename="locale_settings_ja.pak" type="data_package" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_ka.pak" type="data_package" lang="ka" />
     </if>
     <output filename="locale_settings_kn.pak" type="data_package" lang="kn" />
     <output filename="locale_settings_ko.pak" type="data_package" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_ku.pak" type="data_package" lang="ku" />
       <output filename="locale_settings_kw.pak" type="data_package" lang="kw" />
     </if>
@@ -100,7 +100,7 @@
     <output filename="locale_settings_te.pak" type="data_package" lang="te" />
     <output filename="locale_settings_th.pak" type="data_package" lang="th" />
     <output filename="locale_settings_tr.pak" type="data_package" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="locale_settings_ug.pak" type="data_package" lang="ug" />
     </if>
     <output filename="locale_settings_uk.pak" type="data_package" lang="uk" />
@@ -166,14 +166,14 @@
   <release seq="1" allow_pseudo="false">
     <includes>
       <!-- The HTML for the about:terms page -->     
-      <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
+      <if expr="chromeos and _google_chrome">
         <include name="IDS_TERMS_HTML" file="terms\chromeos\terms_en.html" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos') and not pp_ifdef('_google_chrome')">
+      <if expr="chromeos and not _google_chrome">
         <include name="IDS_TERMS_HTML" file="terms\terms_chromium.html" type="BINDATA" />
       </if>
 
-      <if expr="not pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
+      <if expr="not chromeos and _google_chrome">
         <if expr="'am' == lang">    <include name="IDS_TERMS_HTML" file="terms\terms_am.html" type="BINDATA" /></if>
         <if expr="'ar' == lang">    <include name="IDS_TERMS_HTML" file="terms\terms_ar.html" type="BINDATA" /></if>
         <if expr="'bg' == lang">    <include name="IDS_TERMS_HTML" file="terms\terms_bg.html" type="BINDATA" /></if>
@@ -228,7 +228,7 @@
         <if expr="'zh-TW' == lang"> <include name="IDS_TERMS_HTML" file="terms\terms_zh-TW.html" type="BINDATA" /></if>
       </if>
 
-      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('_google_chrome')">
+      <if expr="not chromeos and not _google_chrome">
         <include name="IDS_TERMS_HTML" file="terms\terms_chromium.html" type="BINDATA" />
       </if>
     </includes>
@@ -435,7 +435,7 @@
           400
       </message>
 
-        <if expr="pp_ifdef('chromeos')">
+        <if expr="chromeos">
 	<message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
 	  http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
 	</message>
