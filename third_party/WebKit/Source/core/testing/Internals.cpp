@@ -484,9 +484,7 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
         return;
     }
 
-    // https://code.google.com/p/chromium/issues/detail?id=343760
-    DisableCompositingQueryAsserts disabler;
-
+    frame()->view()->updateLayoutAndStyleForPainting();
     frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
     frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
 }
