@@ -656,7 +656,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
           thus passing it around would cause leakage.
        2) Errors cannot be cloned (or serialized):
        http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data #}
-    if (isolatedWorldForIsolate(info.GetIsolate())) {
+    if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {
         {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
             event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, info.GetIsolate()));
@@ -1224,9 +1224,10 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
     {% if is_document %}
     if (wrapper.IsEmpty())
         return wrapper;
-    if (!isolatedWorldForEnteredContext(isolate)) {
+    DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
+    if (world->isMainWorld()) {
         if (Frame* frame = impl->frame())
-            frame->script().windowShell(DOMWrapperWorld::mainWorld())->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }
     {% endif %}
     return wrapper;
