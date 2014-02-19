@@ -595,10 +595,13 @@ CrxUpdateItem* CrxUpdateService::FindReadyComponent() const {
 }
 
 // Prepares the components for an update check and initiates the request.
+// On demand components are always included in the update check request.
+// Otherwise, only include components that have not been checked recently.
 bool CrxUpdateService::CheckForUpdates() {
-  // All components are selected for the update check, regardless of when they
-  // were last checked. More selective algorithms could be implemented in the
-  // future.
+  const base::TimeDelta minimum_recheck_wait_time =
+      base::TimeDelta::FromSeconds(config_->MinimumReCheckWait());
+  const base::Time now(base::Time::Now());
+
   std::vector<CrxUpdateItem*> items_to_check;
   for (size_t i = 0; i != work_items_.size(); ++i) {
     CrxUpdateItem* item = work_items_[i];
@@ -607,9 +610,16 @@ bool CrxUpdateService::CheckForUpdates() {
            item->status == CrxUpdateItem::kUpToDate ||
            item->status == CrxUpdateItem::kUpdated);
 
+    const base::TimeDelta time_since_last_checked(now - item->last_check);
+
+    if (!item->on_demand &&
+        time_since_last_checked < minimum_recheck_wait_time) {
+      continue;
+    }
+
     ChangeItemState(item, CrxUpdateItem::kChecking);
 
-    item->last_check = base::Time::Now();
+    item->last_check = now;
     item->crx_urls.clear();
     item->crx_diffurls.clear();
     item->previous_version = item->component.version;
@@ -761,7 +771,7 @@ void CrxUpdateService::OnUpdateCheckSucceeded(
 
   // If there are updates pending we do a short wait, otherwise we take
   // a longer delay until we check the components again.
-  ScheduleNextRun(num_updates_pending > 0 ? kStepDelayShort : kStepDelayMedium);
+  ScheduleNextRun(num_updates_pending > 0 ? kStepDelayShort : kStepDelayLong);
 }
 
 // TODO: record UMA stats.
