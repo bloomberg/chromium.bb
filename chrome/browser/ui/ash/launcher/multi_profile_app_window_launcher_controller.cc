@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/multi_profile_shell_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 
 #include "apps/app_window.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,20 +14,17 @@ namespace {
 
 bool ControlsWindow(aura::Window* window) {
   return chrome::GetHostDesktopTypeForNativeWindow(window) ==
-      chrome::HOST_DESKTOP_TYPE_ASH;
+         chrome::HOST_DESKTOP_TYPE_ASH;
 }
 
 }  // namespace
 
+MultiProfileAppWindowLauncherController::
+    MultiProfileAppWindowLauncherController(ChromeLauncherController* owner)
+    : AppWindowLauncherController(owner) {}
 
-MultiProfileShellWindowLauncherController::
-    MultiProfileShellWindowLauncherController(
-    ChromeLauncherController* owner)
-    : ShellWindowLauncherController(owner) {
-}
-
-MultiProfileShellWindowLauncherController::
-    ~MultiProfileShellWindowLauncherController() {
+MultiProfileAppWindowLauncherController::
+    ~MultiProfileAppWindowLauncherController() {
   // We need to remove all Registry observers for added users.
   for (AppWindowRegistryList::iterator it = multi_user_registry_.begin();
        it != multi_user_registry_.end();
@@ -35,7 +32,7 @@ MultiProfileShellWindowLauncherController::
     (*it)->RemoveObserver(this);
 }
 
-void MultiProfileShellWindowLauncherController::ActiveUserChanged(
+void MultiProfileAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
   // The active user has changed and we need to traverse our list of items to
   // show / hide them one by one. To avoid that a user dependent state
@@ -63,7 +60,7 @@ void MultiProfileShellWindowLauncherController::ActiveUserChanged(
   }
 }
 
-void MultiProfileShellWindowLauncherController::AdditionalUserAddedToSession(
+void MultiProfileAppWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
   // Each users AppWindowRegistry needs to be observed.
   apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
@@ -71,7 +68,7 @@ void MultiProfileShellWindowLauncherController::AdditionalUserAddedToSession(
   registry->AddObserver(this);
 }
 
-void MultiProfileShellWindowLauncherController::OnAppWindowAdded(
+void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
     apps::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
@@ -81,12 +78,12 @@ void MultiProfileShellWindowLauncherController::OnAppWindowAdded(
     RegisterApp(app_window);
 }
 
-void MultiProfileShellWindowLauncherController::OnAppWindowRemoved(
+void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
     apps::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
-  // If the application is registered with ShellWindowLauncher (because the user
+  // If the application is registered with AppWindowLauncher (because the user
   // is currently active), the OnWindowDestroying observer has already (or will
   // soon) unregister it independently from the shelf. If it was not registered
   // we don't need to do anything anyways. As such, all which is left to do here

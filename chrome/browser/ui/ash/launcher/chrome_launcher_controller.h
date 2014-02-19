@@ -43,7 +43,7 @@ class ExtensionEnableFlow;
 class GURL;
 class LauncherItemController;
 class Profile;
-class ShellWindowLauncherController;
+class AppWindowLauncherController;
 class TabContents;
 
 namespace ash {
@@ -87,8 +87,8 @@ class ChromeLauncherControllerUserSwitchObserver {
 // This incarnation groups running tabs/windows in application specific lists.
 // * Browser app windows have BrowserLauncherItemController, owned by the
 //   BrowserView instance.
-// * App shell windows have ShellWindowLauncherItemController, owned by
-//   ShellWindowLauncherController.
+// * App windows have AppWindowLauncherItemController, owned by
+//   AppWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
 class ChromeLauncherController : public ash::ShelfDelegate,
                                  public ash::ShelfModelObserver,
@@ -387,9 +387,9 @@ class ChromeLauncherController : public ash::ShelfDelegate,
     return browser_status_monitor_.get();
   }
 
-  // Access to the ShellWindowController for tests.
-  ShellWindowLauncherController* shell_window_controller_for_test() {
-    return shell_window_controller_.get();
+  // Access to the AppWindowLauncherController for tests.
+  AppWindowLauncherController* app_window_controller_for_test() {
+    return app_window_controller_.get();
   }
 
  protected:
@@ -555,8 +555,8 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // Direct access to app_id for a web contents.
   WebContentsToAppIDMap web_contents_to_app_id_;
 
-  // Used to track shell windows.
-  scoped_ptr<ShellWindowLauncherController> shell_window_controller_;
+  // Used to track app windows.
+  scoped_ptr<AppWindowLauncherController> app_window_controller_;
 
   // Used to get app info for tabs.
   scoped_ptr<AppTabHelper> app_tab_helper_;

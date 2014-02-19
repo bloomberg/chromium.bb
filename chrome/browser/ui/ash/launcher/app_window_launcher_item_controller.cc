@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
 #include "apps/app_window.h"
 #include "apps/ui/native_app_window.h"
@@ -65,7 +65,7 @@ class AppWindowHasWindow {
 
 }  // namespace
 
-ShellWindowLauncherItemController::ShellWindowLauncherItemController(
+AppWindowLauncherItemController::AppWindowLauncherItemController(
     Type type,
     const std::string& app_shelf_id,
     const std::string& app_id,
@@ -75,10 +75,9 @@ ShellWindowLauncherItemController::ShellWindowLauncherItemController(
       app_shelf_id_(app_shelf_id),
       observed_windows_(this) {}
 
-ShellWindowLauncherItemController::~ShellWindowLauncherItemController() {
-}
+AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 
-void ShellWindowLauncherItemController::AddAppWindow(
+void AppWindowLauncherItemController::AddAppWindow(
     AppWindow* app_window,
     ash::ShelfItemStatus status) {
   if (app_window->window_type_is_panel() && type() != TYPE_APP_PANEL)
@@ -87,7 +86,7 @@ void ShellWindowLauncherItemController::AddAppWindow(
   observed_windows_.Add(app_window->GetNativeWindow());
 }
 
-void ShellWindowLauncherItemController::RemoveShellWindowForWindow(
+void AppWindowLauncherItemController::RemoveAppWindowForWindow(
     aura::Window* window) {
   AppWindowList::iterator iter = std::find_if(
       app_windows_.begin(), app_windows_.end(), AppWindowHasWindow(window));
@@ -99,18 +98,18 @@ void ShellWindowLauncherItemController::RemoveShellWindowForWindow(
   observed_windows_.Remove(window);
 }
 
-void ShellWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
+void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
   AppWindowList::iterator iter = std::find_if(
       app_windows_.begin(), app_windows_.end(), AppWindowHasWindow(window));
   if (iter != app_windows_.end())
     last_active_app_window_ = *iter;
 }
 
-bool ShellWindowLauncherItemController::IsOpen() const {
+bool AppWindowLauncherItemController::IsOpen() const {
   return !app_windows_.empty();
 }
 
-bool ShellWindowLauncherItemController::IsVisible() const {
+bool AppWindowLauncherItemController::IsVisible() const {
   // Return true if any windows are visible.
   for (AppWindowList::const_iterator iter = app_windows_.begin();
        iter != app_windows_.end();
@@ -121,14 +120,12 @@ bool ShellWindowLauncherItemController::IsVisible() const {
   return false;
 }
 
-void ShellWindowLauncherItemController::Launch(ash::LaunchSource source,
-                                               int event_flags) {
-  launcher_controller()->LaunchApp(app_id(),
-                                   source,
-                                   ui::EF_NONE);
+void AppWindowLauncherItemController::Launch(ash::LaunchSource source,
+                                             int event_flags) {
+  launcher_controller()->LaunchApp(app_id(), source, ui::EF_NONE);
 }
 
-bool ShellWindowLauncherItemController::Activate(ash::LaunchSource source) {
+bool AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
   DCHECK(!app_windows_.empty());
   AppWindow* window_to_activate =
       last_active_app_window_ ? last_active_app_window_ : app_windows_.back();
@@ -136,7 +133,7 @@ bool ShellWindowLauncherItemController::Activate(ash::LaunchSource source) {
   return false;
 }
 
-void ShellWindowLauncherItemController::Close() {
+void AppWindowLauncherItemController::Close() {
   // Note: Closing windows may affect the contents of app_windows_.
   AppWindowList windows_to_close = app_windows_;
   for (AppWindowList::iterator iter = windows_to_close.begin();
@@ -146,7 +143,7 @@ void ShellWindowLauncherItemController::Close() {
   }
 }
 
-void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
+void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
   if (index >= app_windows_.size())
     return;
   AppWindowList::iterator it = app_windows_.begin();
@@ -154,8 +151,8 @@ void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
   ShowAndActivateOrMinimize(*it);
 }
 
-ChromeLauncherAppMenuItems
-ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
+ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
+    int event_flags) {
   ChromeLauncherAppMenuItems items;
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
   int index = 0;
@@ -176,7 +173,7 @@ ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
   return items.Pass();
 }
 
-bool ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
+bool AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (app_windows_.empty())
     return false;
   if (type() == TYPE_APP_PANEL) {
@@ -201,7 +198,7 @@ bool ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
     if (app_windows_.size() >= 1 &&
         window_to_show->GetBaseWindow()->IsActive() &&
         event.type() == ui::ET_KEY_RELEASED) {
-      ActivateOrAdvanceToNextShellWindow(window_to_show);
+      ActivateOrAdvanceToNextAppWindow(window_to_show);
     } else {
       ShowAndActivateOrMinimize(window_to_show);
     }
@@ -209,7 +206,7 @@ bool ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   return false;
 }
 
-base::string16 ShellWindowLauncherItemController::GetTitle() {
+base::string16 AppWindowLauncherItemController::GetTitle() {
   // For panels return the title of the contents if set.
   // Otherwise return the title of the app.
   if (type() == TYPE_APP_PANEL && !app_windows_.empty()) {
@@ -223,31 +220,30 @@ base::string16 ShellWindowLauncherItemController::GetTitle() {
   return GetAppTitle();
 }
 
-ui::MenuModel* ShellWindowLauncherItemController::CreateContextMenu(
+ui::MenuModel* AppWindowLauncherItemController::CreateContextMenu(
     aura::Window* root_window) {
-  ash::ShelfItem item =
-      *(launcher_controller()->model()->ItemByID(shelf_id()));
+  ash::ShelfItem item = *(launcher_controller()->model()->ItemByID(shelf_id()));
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
-ash::ShelfMenuModel* ShellWindowLauncherItemController::CreateApplicationMenu(
+ash::ShelfMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
     int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
-bool ShellWindowLauncherItemController::IsDraggable() {
+bool AppWindowLauncherItemController::IsDraggable() {
   if (type() == TYPE_APP_PANEL)
     return true;
   return launcher_controller()->CanPin() ? true : false;
 }
 
-bool ShellWindowLauncherItemController::ShouldShowTooltip() {
+bool AppWindowLauncherItemController::ShouldShowTooltip() {
   if (type() == TYPE_APP_PANEL && IsVisible())
     return false;
   return true;
 }
 
-void ShellWindowLauncherItemController::OnWindowPropertyChanged(
+void AppWindowLauncherItemController::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
@@ -264,14 +260,14 @@ void ShellWindowLauncherItemController::OnWindowPropertyChanged(
   }
 }
 
-void ShellWindowLauncherItemController::ShowAndActivateOrMinimize(
+void AppWindowLauncherItemController::ShowAndActivateOrMinimize(
     AppWindow* app_window) {
   // Either show or minimize windows when shown from the launcher.
   launcher_controller()->ActivateWindowOrMinimizeIfActive(
       app_window->GetBaseWindow(), GetApplicationList(0).size() == 2);
 }
 
-void ShellWindowLauncherItemController::ActivateOrAdvanceToNextShellWindow(
+void AppWindowLauncherItemController::ActivateOrAdvanceToNextAppWindow(
     AppWindow* window_to_show) {
   AppWindowList::iterator i(
       std::find(app_windows_.begin(), app_windows_.end(), window_to_show));

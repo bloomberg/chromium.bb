@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 
 #include <list>
 #include <string>
@@ -27,29 +27,25 @@ class Image;
 
 class ChromeLauncherController;
 
-// This is a ShellWindowItemLauncherController for app windows. There is one
-// instance per app, per launcher id.
-// For apps with multiple windows, each item controller keeps track of all
-// windows associated with the app and their activation order.
-// Instances are owned by ash::ShelfItemDelegateManager.
+// This is a LauncherItemController for app windows. There is one instance per
+// app, per launcher id. For apps with multiple windows, each item controller
+// keeps track of all windows associated with the app and their activation
+// order. Instances are owned by ash::ShelfItemDelegateManager.
 //
 // Tests are in chrome_launcher_controller_browsertest.cc
-//
-// TODO(jamescook): Rename to AppWindowLauncherItemController.
-// http://crbug.com/344079
-class ShellWindowLauncherItemController : public LauncherItemController,
-                                          public aura::WindowObserver {
+class AppWindowLauncherItemController : public LauncherItemController,
+                                        public aura::WindowObserver {
  public:
-  ShellWindowLauncherItemController(Type type,
-                                    const std::string& app_shelf_id,
-                                    const std::string& app_id,
-                                    ChromeLauncherController* controller);
+  AppWindowLauncherItemController(Type type,
+                                  const std::string& app_shelf_id,
+                                  const std::string& app_id,
+                                  ChromeLauncherController* controller);
 
-  virtual ~ShellWindowLauncherItemController();
+  virtual ~AppWindowLauncherItemController();
 
   void AddAppWindow(apps::AppWindow* app_window, ash::ShelfItemStatus status);
 
-  void RemoveShellWindowForWindow(aura::Window* window);
+  void RemoveAppWindowForWindow(aura::Window* window);
 
   void SetActiveWindow(aura::Window* window);
 
@@ -60,8 +56,8 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
   virtual bool Activate(ash::LaunchSource source) OVERRIDE;
-  virtual ChromeLauncherAppMenuItems GetApplicationList(
-      int event_flags) OVERRIDE;
+  virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags)
+      OVERRIDE;
   virtual bool ItemSelected(const ui::Event& eent) OVERRIDE;
   virtual base::string16 GetTitle() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE;
@@ -88,7 +84,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
 
   // Activate the given |window_to_show|, or - if already selected - advance to
   // the next window of similar type.
-  void ActivateOrAdvanceToNextShellWindow(apps::AppWindow* window_to_show);
+  void ActivateOrAdvanceToNextAppWindow(apps::AppWindow* window_to_show);
 
   // List of associated app windows
   AppWindowList app_windows_;
@@ -103,7 +99,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   // Scoped list of observed windows (for removal on destruction)
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowLauncherItemController);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherItemController);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_

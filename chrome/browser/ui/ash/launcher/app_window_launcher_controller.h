@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_CONTROLLER_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 
 #include <list>
 #include <map>
@@ -24,25 +24,22 @@ class Window;
 namespace client {
 class ActivationClient;
 }
-
 }
 
 class ChromeLauncherController;
 class Profile;
-class ShellWindowLauncherItemController;
+class AppWindowLauncherItemController;
 
-// ShellWindowLauncherController observes the app window registry and the
+// AppWindowLauncherController observes the app window registry and the
 // aura window manager. It handles adding and removing launcher items from
 // ChromeLauncherController.
-// TODO(jamescook): Rename this to AppWindowLauncherController.
-// http://crbug.com/344079
-class ShellWindowLauncherController
+class AppWindowLauncherController
     : public apps::AppWindowRegistry::Observer,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
-  explicit ShellWindowLauncherController(ChromeLauncherController* owner);
-  virtual ~ShellWindowLauncherController();
+  explicit AppWindowLauncherController(ChromeLauncherController* owner);
+  virtual ~AppWindowLauncherController();
 
   // Called by ChromeLauncherController when the active user changed and the
   // items need to be updated.
@@ -75,11 +72,11 @@ class ShellWindowLauncherController
   bool IsRegisteredApp(aura::Window* window);
 
  private:
-  typedef std::map<std::string, ShellWindowLauncherItemController*>
+  typedef std::map<std::string, AppWindowLauncherItemController*>
       AppControllerMap;
   typedef std::map<aura::Window*, std::string> WindowToAppShelfIdMap;
 
-  ShellWindowLauncherItemController* ControllerForWindow(aura::Window* window);
+  AppWindowLauncherItemController* ControllerForWindow(aura::Window* window);
 
   ChromeLauncherController* owner_;
   // A set of unowned AppWindowRegistry pointers for loaded users.
@@ -94,7 +91,7 @@ class ShellWindowLauncherController
   // Allows us to get from an aura::Window to the app shelf id.
   WindowToAppShelfIdMap window_to_app_shelf_id_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowLauncherController);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherController);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_SHELL_WINDOW_LAUNCHER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_CONTROLLER_H_

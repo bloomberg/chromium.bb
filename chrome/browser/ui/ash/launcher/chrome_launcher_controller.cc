@@ -38,6 +38,8 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -46,8 +48,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -89,8 +89,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
-#include "chrome/browser/ui/ash/launcher/multi_profile_shell_window_launcher_controller.h"
 #endif
 
 using extensions::Extension;
@@ -355,19 +355,19 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     // If running in separated destkop mode, we create the multi profile version
     // of status monitor.
     browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
-    shell_window_controller_.reset(
-        new MultiProfileShellWindowLauncherController(this));
+    app_window_controller_.reset(
+        new MultiProfileAppWindowLauncherController(this));
   } else {
     // Create our v1/v2 application / browser monitors which will inform the
     // launcher of status changes.
     browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-    shell_window_controller_.reset(new ShellWindowLauncherController(this));
+    app_window_controller_.reset(new AppWindowLauncherController(this));
   }
 #else
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-  shell_window_controller_.reset(new ShellWindowLauncherController(this));
+  app_window_controller_.reset(new AppWindowLauncherController(this));
 #endif
 
   // Right now ash::Shell isn't created for tests.
@@ -390,8 +390,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the BrowserStatusMonitor as it has a weak pointer to this.
   browser_status_monitor_.reset();
 
-  // Reset the shell window controller here since it has a weak pointer to this.
-  shell_window_controller_.reset();
+  // Reset the app window controller here since it has a weak pointer to this.
+  app_window_controller_.reset();
 
   for (std::set<ash::Shelf*>::iterator iter = shelves_.begin();
        iter != shelves_.end();
@@ -1131,7 +1131,7 @@ void ChromeLauncherController::ActiveUserChanged(
   // Update the V1 applications.
   browser_status_monitor_->ActiveUserChanged(user_email);
   // Switch the running applications to the new user.
-  shell_window_controller_->ActiveUserChanged(user_email);
+  app_window_controller_->ActiveUserChanged(user_email);
   // Update the user specific shell properties from the new user profile.
   UpdateAppLaunchersFromPref();
   SetShelfAlignmentFromPrefs();
@@ -1146,7 +1146,7 @@ void ChromeLauncherController::ActiveUserChanged(
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
   // Switch the running applications to the new user.
-  shell_window_controller_->AdditionalUserAddedToSession(profile);
+  app_window_controller_->AdditionalUserAddedToSession(profile);
 }
 
 void ChromeLauncherController::Observe(
@@ -1286,9 +1286,9 @@ void ChromeLauncherController::ActivateShellApp(const std::string& app_id,
   if (id) {
     LauncherItemController* controller = id_to_item_controller_map_[id];
     if (controller->type() == LauncherItemController::TYPE_APP) {
-      ShellWindowLauncherItemController* shell_window_controller =
-          static_cast<ShellWindowLauncherItemController*>(controller);
-      shell_window_controller->ActivateIndexedApp(index);
+      AppWindowLauncherItemController* app_window_controller =
+          static_cast<AppWindowLauncherItemController*>(controller);
+      app_window_controller->ActivateIndexedApp(index);
     }
   }
 }

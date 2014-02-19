@@ -24,9 +24,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -53,8 +53,8 @@
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
-#include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -890,7 +890,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     GetFakeUserManager()->SwitchActiveUser(name);
     launcher_controller_->browser_status_monitor_for_test()->
         ActiveUserChanged(name);
-    launcher_controller_->shell_window_controller_for_test()->
+    launcher_controller_->app_window_controller_for_test()->
         ActiveUserChanged(name);
   }
 
@@ -2569,8 +2569,8 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
 
   // Test adding an app panel
   std::string app_id = extension1_->id();
-  ShellWindowLauncherItemController* app_panel_controller =
-      new ShellWindowLauncherItemController(
+  AppWindowLauncherItemController* app_panel_controller =
+      new AppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL,
           "id",
           app_id,
@@ -2595,8 +2595,8 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
 
   // Add a second app panel and verify that it get the same index as the first
   // one had, being added to the left of the existing panel.
-  ShellWindowLauncherItemController* app_panel_controller2 =
-      new ShellWindowLauncherItemController(
+  AppWindowLauncherItemController* app_panel_controller2 =
+      new AppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL,
           "id",
           app_id,
