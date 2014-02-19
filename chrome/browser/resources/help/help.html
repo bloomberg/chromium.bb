@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
   <link rel="stylesheet" href="../uber/uber_shared.css">
   <link rel="stylesheet" href="help.css">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <link rel="stylesheet" href="chrome://resources/css/bubble.css">
   <link rel="stylesheet" href="chrome://resources/css/overlay.css">
   <link rel="stylesheet" href="channel_change_page.css">
@@ -19,7 +19,7 @@
   <script src="chrome://resources/js/cr/ui/focus_manager.js"></script>
   <script src="chrome://help-frame/help_focus_manager.js"></script>
   <script src="chrome://help-frame/help_base_page.js"></script>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <script src="chrome://resources/js/cr/ui/bubble.js"></script>
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
   <script src="chrome://resources/js/event_tracker.js"></script>
@@ -30,7 +30,7 @@
 <body class="uber-frame"
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="overlay-container" class="overlay" hidden>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
     <include src="channel_change_page.html">
 </if>
   </div>
@@ -47,13 +47,13 @@
     </div>
     <div id="help-container">
       <button id="get-help" i18n-content="getHelpWithChrome"></button>
-<if expr="pp_ifdef('_google_chrome')">
+<if expr="_google_chrome">
       <button id="report-issue" i18n-content="reportAnIssue"></button>
 </if>
     </div>
     <div id="version-container">
       <div i18n-content="browserVersion" dir="ltr"></div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div>
         <span i18n-content="platform"></span>&nbsp;<span id="os-version"></span>
       </div>
@@ -61,7 +61,7 @@
         <span i18n-content="firmware"></span>&nbsp;<span id="firmware"></span>
       </div>
 </if>
-<if expr="pp_ifdef('chromeos') or pp_ifdef('_google_chrome') or is_linux">
+<if expr="chromeos or _google_chrome or is_linux">
       <div id="update-status-container" hidden>
         <div id="update-status-icon" class="help-page-icon up-to-date"></div>
         <div id="update-status-message-container">
@@ -84,14 +84,14 @@
         <button id="promote" i18n-content="promote" hidden></button>
 </if>
         <button id="relaunch" i18n-content="relaunch" hidden></button>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
         <button id="relaunch-and-powerwash"
             i18n-content="relaunchAndPowerwash" hidden>
         </button>
 </if>
       </div>
 </if>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div id="more-info-container">
         <section id="channel-changer-container" hidden>
           <h3 i18n-content="channel"></h3>
@@ -142,10 +142,10 @@
       <div i18n-content="productName"></div>
       <div i18n-content="productCopyright"></div>
       <div id="product-license"></div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div id="product-os-license"></div>
 </if>
-<if expr="pp_ifdef('_google_chrome')">
+<if expr="_google_chrome">
       <div id="product-tos"></div>
 </if>
     </div>

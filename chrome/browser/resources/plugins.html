@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title i18n-content="pluginsTitle"></title>
 <link rel="stylesheet" href="plugins.css">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <link rel="stylesheet"
       href="chrome://resources/css/chromeos/ui_account_tweaks.css">
 </if>
@@ -205,7 +205,7 @@
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://plugins/plugins.js"></script>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <script src="chrome://resources/js/chromeos/ui_account_tweaks.js"></script>
 </if>
 

@@ -26,10 +26,10 @@ about:version template page
   <body>
     <div id="outer">
       <div id="logo">
-<if expr="pp_ifdef('enable_themes')">
+<if expr="enable_themes">
         <img src="chrome://theme/IDR_PRODUCT_LOGO">
 </if>
-<if expr="not pp_ifdef('enable_themes')">
+<if expr="not enable_themes">
         <img src="../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo.png">
 </if>
         <div id="company" i18n-content="company"></div>
@@ -51,14 +51,14 @@ about:version template page
 </if>
           </td>
         </tr>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
         <tr><td class="label" i18n-content="os_name"></td>
           <td class="version" id="os_type">
             <span i18n-content="os_type"></span>
             <span id="os_version" i18n-content="os_version"></span>
           </td>
 </if>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
         <tr><td class="label" i18n-content="platform"></td>
           <td class="version" id="os_type">
             <span id="os_version" i18n-content="os_version"></span>

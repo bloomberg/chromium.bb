@@ -9,7 +9,7 @@
 <include src="pack_extension_overlay.js"></include>
 <include src="extension_error_overlay.js"></include>
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
 <include src="chromeos/kiosk_apps.js"></include>
 </if>
 

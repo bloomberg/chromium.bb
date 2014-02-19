@@ -4,7 +4,7 @@
   </header>
   <include src="reset_profile_settings_banner.html">
   <include src="automatic_settings_reset_banner.html">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <include src="secondary_user_banner.html">
   <section>
     <div id="network-section-header" class="section-header">
@@ -24,25 +24,25 @@
     </div>
   </section>
 </if>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
   <include src="sync_section.html">
   <include src="startup_section.html">
 </if>
   <section>
     <h3 i18n-content="sectionTitleAppearance"></h3>
     <div class="settings-row">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <button id="set-wallpaper" i18n-content="setWallpaper"
           guest-visibility="disabled"></button>
 </if>
-<if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
+<if expr="not chromeos and is_posix and not is_macosx">
       <button id="themes-gallery" i18n-content="themesGallery"></button>
       <button id="themes-native-button"
           i18n-content="themesNativeButton"></button>
       <button id="themes-reset"
           i18n-content="themesSetClassic"></button>
 </if>
-<if expr="pp_ifdef('chromeos') or is_win or is_macosx">
+<if expr="chromeos or is_win or is_macosx">
       <button id="themes-gallery" i18n-content="themesGallery"></button>
       <button id="themes-reset" i18n-content="themesReset"></button>
 </if>
@@ -85,7 +85,7 @@
         </span>
       </span>
     </div>
-<if expr="is_posix and not pp_ifdef('chromeos') and not is_macosx">
+<if expr="is_posix and not chromeos and not is_macosx">
     <div class="checkbox"><label>
         <input id="show-window-decorations" type="checkbox"
             pref="browser.custom_chrome_frame" metric="Options_CustomFrame"
@@ -94,7 +94,7 @@
     </label></div>
 </if>
   </section>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <section>
     <h3 i18n-content="sectionTitleDevice"></h3>
     <div>
@@ -145,7 +145,7 @@
   </section>
   <section id="sync-users-section" guest-visibility="hidden" hidden>
     <h3 i18n-content="sectionTitleUsers"></h3>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
     <include src="sync_section.html">
 </if>
     <div id="profiles-section" hidden>
@@ -155,7 +155,7 @@
       </div>
       <div id="profiles-buttons">
         <button id="profiles-create" i18n-content="profilesCreate"></button>
-<if expr="pp_ifdef('enable_settings_app')">
+<if expr="enable_settings_app">
         <button id="profiles-app-list-switch"
             i18n-content="profilesAppListSwitch" hidden>
         </button>
@@ -163,7 +163,7 @@
         <button id="profiles-manage" i18n-content="profilesManage" disabled>
         </button>
         <button id="profiles-delete" i18n-content="profilesDelete"></button>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
         <button id="import-data" i18n-content="importData"></button>
 </if>
       </div>
@@ -173,7 +173,7 @@
     </div>
   </section>
   <section id="set-default-browser-section">
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
     <h3 i18n-content="sectionTitleDefaultBrowser"></h3>
     <div>
       <button id="set-as-default-browser"
@@ -188,11 +188,11 @@
         </label>
       </div>
     </div>
-</if>  <!-- not pp_ifdef('chromeos') -->
+</if>  <!-- not chromeos -->
   </section>
 <div id="advanced-settings" hidden>
 <div id="advanced-settings-container">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <section>
     <h3 i18n-content="datetimeTitle"></h3>
     <div class="option-control-table">
@@ -303,7 +303,7 @@
           </span>
         </span>
       </div>
-<if expr="pp_ifdef('_google_chrome')">
+<if expr="_google_chrome">
       <div class="checkbox">
         <span class="controlled-setting-with-label">
           <input id="spelling-enabled-control" type="checkbox"
@@ -320,7 +320,7 @@
       </div>
       <div id="metricsReportingSetting" class="checkbox">
         <span class="controlled-setting-with-label">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
           <input id="metricsReportingEnabled"
               pref="cros.metrics.reportingEnabled" type="checkbox">
           <span>
@@ -331,7 +331,7 @@
             </span>
           </span>
 </if>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
           <input id="metricsReportingEnabled"
               pref="user_experience_metrics.reporting_enabled" type="checkbox">
           <span>
@@ -344,7 +344,7 @@
 </if>
         </span>
       </div>
-</if>  <!-- pp_ifdef('_google_chrome') -->
+</if>  <!-- _google_chrome -->
       <div class="checkbox">
         <label>
           <input id="do-not-track-enabled" pref="enable_do_not_track"
@@ -352,7 +352,7 @@
           <span i18n-content="doNotTrack"></span>
         </label>
       </div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div class="checkbox">
         <span class="controlled-setting-with-label">
           <input id="content-protection-attestation-enabled" type="checkbox"
@@ -395,7 +395,7 @@
       </div>
     </div>
   </section>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <!-- By default, the bluetooth section is hidden.  It is only visible if a
        bluetooth adapter is discovered -->
   <section id="bluetooth-devices" hidden>
@@ -422,7 +422,7 @@
       </div>
     </div>
   </section>
-</if>  <!-- pp_ifdef('chromeos') -->
+</if>  <!-- chromeos -->
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox">
@@ -500,7 +500,7 @@
 </if>
     </div>
   </section>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
   <section id="network-section">
     <h3 i18n-content="advancedSectionTitleNetwork"></h3>
     <div>
@@ -572,7 +572,7 @@
           </span>
         </span>
       </div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div class="checkbox" id="disable-drive-row" guest-visibility="disabled">
         <span class="controlled-setting-with-label">
           <input id="drive-disabled" type="checkbox"
@@ -586,7 +586,7 @@
         </span>
       </div>
 </if>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
       <div id="auto-open-file-types-section" hidden>
         <div id="auto-open-file-types-container">
           <div id="auto-open-file-types-label"
@@ -601,7 +601,7 @@
   <section>
       <h3 i18n-content="advancedSectionTitleSecurity"></h3>
       <div>
-<if expr="pp_ifdef('use_nss') or is_win or is_macosx">
+<if expr="use_nss or is_win or is_macosx">
         <div class="settings-row">
           <button id="certificatesManageButton"
               i18n-content="certificatesManageButton"></button>
@@ -618,7 +618,7 @@
   </section>
   <section id="cloud-print-connector-section">
     <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
-<if expr="pp_ifdef('enable_mdns')">
+<if expr="enable_mdns">
     <div id="cloudprint-options-mdns" hidden>
       <div class="settings-row">
         <span i18n-content="cloudPrintOptionLabel"></span>
@@ -649,7 +649,7 @@
 </if>
 
     <div id="cloudprint-options-nomdns">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div>
         <span i18n-content="cloudPrintOptionLabel"></span>
         <a target="_blank" i18n-content="learnMore"
@@ -657,13 +657,13 @@
       </div>
 </if>
 
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
       <p id="cloudPrintConnectorLabel" class="settings-row"
          i18n-content="cloudPrintConnectorDisabledLabel"></p>
 </if>
 
       <div class="settings-row">
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
         <button id="cloudPrintConnectorSetupButton"
                 i18n-content="cloudPrintConnectorDisabledButton"></button>
 </if>
@@ -675,7 +675,7 @@
     </div>
   </section>
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <include src="startup_section.html">
   <section>
     <h3 i18n-content="accessibilityTitle"></h3>
@@ -850,7 +850,7 @@
         </div>
       </div>
   </section>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <section id="factory-reset-section" hidden>
     <h3 i18n-content="factoryResetTitle"></h3>
     <div>
@@ -863,7 +863,7 @@
   </section>
 </if>
 </if>
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
   <section id="system-section">
     <h3 i18n-content="advancedSectionTitleSystem"></h3>
 <if expr="not is_macosx">

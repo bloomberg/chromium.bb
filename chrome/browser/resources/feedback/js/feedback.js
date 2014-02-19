@@ -140,7 +140,7 @@ function sendReport() {
     // Send histograms along with system info.
     useSystemInfo = useHistograms = true;
   }
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   if ($('performance-info-checkbox') == null ||
       !($('performance-info-checkbox').checked)) {
     feedbackInfo.traceId = null;
@@ -196,7 +196,7 @@ function dataUrlToBlob(url) {
   return new Blob([new Uint8Array(dataArray)], {type: mimeString});
 }
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
 /**
  * Update the page when performance feedback state is changed.
  */
@@ -291,7 +291,7 @@ function initialize() {
         $('attach-file').hidden = true;
       }
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       if (feedbackInfo.traceId && ($('performance-info-area'))) {
         $('performance-info-area').hidden = false;
         $('performance-info-checkbox').checked = true;
@@ -329,7 +329,7 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
     $('performance-info-checkbox').addEventListener(
         'change', performanceFeedbackChanged);
 </if>

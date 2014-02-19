@@ -13,15 +13,15 @@
   <release seq="1">
     <structures>
       <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      <if expr="pp_ifdef('enable_enhanced_bookmarks')">
+      <if expr="enable_enhanced_bookmarks">
         <structure name="IDR_ENHANCED_BOOKMARK_MANAGER_MAIN" file="enhanced_bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <if expr="not pp_ifdef('_google_chrome')">
+        <if expr="not _google_chrome">
           <structure name="IDR_FIRST_RUN_DIALOG_MAIN" file="chromeos/first_run/app/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" variables="GREETING_IMAGE=disabled" expand_variables="true"/>
         </if>
-        <if expr="pp_ifdef('_google_chrome')">
+        <if expr="_google_chrome">
           <structure name="IDR_FIRST_RUN_DIALOG_MAIN" file="chromeos/first_run/app/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" variables="GREETING_IMAGE=enabled" expand_variables="true"/>
         </if>
       </if>
@@ -37,7 +37,7 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="bookmark_manager/js/dnd.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
-      <if expr="pp_ifdef('enable_enhanced_bookmarks')">
+      <if expr="enable_enhanced_bookmarks">
         <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="enhanced_bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
         <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH_RTL" file="enhanced_bookmark_manager/images/bookmark_manager_search_rtl.png" type="BINDATA" />
         <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="enhanced_bookmark_manager/js/main.js" type="BINDATA" />
@@ -63,7 +63,7 @@
       <include name="IDR_GAIA_AUTH_CHANNEL_JS" file="gaia_auth/channel.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_DESKTOP_INJECTED_JS" file="gaia_auth/desktop_injected.js" type="BINDATA" />
       <!-- Hangout Services extension, included in Google Chrome builds only. -->
-      <if expr="pp_ifdef('_google_chrome') or pp_ifdef('enable_hangout_services_extension')">
+      <if expr="_google_chrome or enable_hangout_services_extension">
         <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />
         <include name="IDR_HANGOUT_SERVICES_THUNK_JS" file="hangout_services/thunk.js" type="BINDATA" />
       </if>
@@ -71,7 +71,7 @@
       <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
       <include name="IDR_HOTWORD_HELPER_OPTIN_CLIENT_JS" file="hotword_helper/optin_client.js" type="BINDATA" />
       <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- Background page loader  -->
         <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />
         <include name="IDR_BACKLOADER_BACKGROUND_JS" file="backloader/scripts/background.js" type="BINDATA" />
@@ -85,7 +85,7 @@
       <include name="IDR_FEEDBACK_FEEDBACK_CSS" file="feedback/css/feedback.css" type="BINDATA" />
       <include name="IDR_FEEDBACK_ICON_32" file="feedback/images/icon32.png" type="BINDATA" />
       <include name="IDR_FEEDBACK_ICON_64" file="feedback/images/icon64.png" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- App pages and scripts. -->
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
@@ -159,7 +159,7 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_SWNE" file="file_manager/foreground/images/gallery/2x/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_UPDOWN" file="file_manager/foreground/images/gallery/2x/cursor_updown.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('image_loader_extension')">
+      <if expr="image_loader_extension">
         <include name="IDR_IMAGE_LOADER_IMAGE_LOADER_JS" file="image_loader/image_loader.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_CACHE_JS" file="image_loader/cache.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_WORKER_JS" file="image_loader/worker.js" type="BINDATA" />
@@ -167,7 +167,7 @@
         <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('enable_google_now')">
+      <if expr="enable_google_now">
         <include name="IDR_GOOGLE_NOW_BACKGROUND_JS" file="google_now/background.js" type="BINDATA" />
         <include name="IDR_GOOGLE_NOW_CARDS_JS" file="google_now/cards.js" type="BINDATA" />
         <include name="IDR_GOOGLE_NOW_UTILITY_JS" file="google_now/utility.js" type="BINDATA" />
@@ -179,7 +179,7 @@
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_CSS" file="identity_scope_approval_dialog/scope_approval_dialog.css" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG" file="identity_scope_approval_dialog/scope_approval_dialog.html" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_JS" file="identity_scope_approval_dialog/scope_approval_dialog.js" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <include name="IDR_WALLPAPER_MANAGER_CONSTANTS_JS" file="chromeos/wallpaper_manager/js/constants.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_EVENT_JS" file="chromeos/wallpaper_manager/js/event_page.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_ICON_128" file="chromeos/wallpaper_manager/images/icon128.png" type="BINDATA" />
@@ -195,7 +195,7 @@
         <include name="IDR_FIRST_RUN_DIALOG_ICON_128" file="chromeos/first_run/app/icon/128.png" type="BINDATA" />
         <include name="IDR_FIRST_RUN_DIALOG_ICON_256" file="chromeos/first_run/app/icon/256.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- Network status. -->
         <include name="IDR_NETWORK_CONFIGURATION_STATUS_HTML" file="chromeos/network_configuration/status.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_NETWORK_CONFIGURATION_STATUS_CSS" file="chromeos/network_configuration/css/status.css" type="BINDATA" />
@@ -207,10 +207,10 @@
         <include name="IDR_NETWORK_CONFIGURATION_NETWORK_CONFIG_JS" file="chromeos/network_configuration/js/network_config.js" type="BINDATA" />
         <include name="IDR_NETWORK_CONFIGURATION_MAIN_CONFIG_JS" file="chromeos/network_configuration/js/main_config.js" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('enable_settings_app')">
+      <if expr="enable_settings_app">
         <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('enable_plugins')">
+      <if expr="enable_plugins">
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_INDEX_JS" file="pdf/index.js" type="BINDATA" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />

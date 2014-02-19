@@ -724,15 +724,14 @@ cr.define('print_preview', function() {
           this.metrics_.incrementDestinationSearchBucket(
               print_preview.Metrics.DestinationSearchBucket.CANCELED);
         } else {
-          // <if expr="pp_ifdef('toolkit_views')">
+          <if expr="toolkit_views">
           // On the toolkit_views environment, ESC key is handled by C++-side
           // instead of JS-side.
           return;
-          // </if>
-          // <if expr="not pp_ifdef('toolkit_views')">
-          // Dummy comment to absorb previous line's comment symbol.
+          </if>
+          <if expr="not toolkit_views">
           this.close_();
-          // </if>
+          </if>
         }
         e.preventDefault();
         return;

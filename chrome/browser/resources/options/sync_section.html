@@ -1,8 +1,8 @@
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
 <section id="sync-section">
   <h3 i18n-content="sectionTitleSync"></h3>
 </if>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
 <div id="sync-section">
 </if>
 
@@ -12,7 +12,7 @@
         target="_blank"></a>
   </div>
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   <div id="account-picture-wrapper">
     <div id="account-picture-control">
       <input type="image" id="account-picture" tabindex="0"
@@ -23,14 +23,14 @@
     </span>
   </div>
   <div id="sync-general">
-</if>  <!-- pp_ifdef('chromeos') -->
+</if>  <!-- chromeos -->
 
     <div id="sync-status" class="settings-row" hidden>
       <span id="sync-status-text"></span>
       <button id="sync-action-link" class="link-button"></button>
     </div>
 
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
     <div class="checkbox">
       <span class="controlled-setting-with-label">
         <input id="enable-screen-lock" type="checkbox"
@@ -45,7 +45,7 @@
       </span>
     </div>
   </div>
-</if>  <!-- pp_ifdef('chromeos') -->
+</if>  <!-- chromeos -->
 
   <div id="sync-buttons" class="settings-row">
     <button id="start-stop-sync" hidden></button>
@@ -55,11 +55,11 @@
     <button id="customize-sync" i18n-content="customizeSync"
         pref="sync.managed" hidden>
     </button>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
     <button id="manage-accounts-button"
         i18n-content="manageAccountsButtonTitle">
     </button>
-</if>  <!-- pp_ifdef('chromeos') -->
+</if>  <!-- chromeos -->
     <div id="enable-auto-login-checkbox" class="checkbox" hidden>
       <label>
         <input id="enable-auto-login" pref="autologin.enabled"
@@ -69,9 +69,9 @@
     </div>
   </div>
 
-<if expr="not pp_ifdef('chromeos')">
+<if expr="not chromeos">
 </section>
 </if>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
 </div>
 </if>

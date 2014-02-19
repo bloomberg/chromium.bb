@@ -25,7 +25,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
 
       <!-- Extension libraries. -->
-      <if expr="pp_ifdef('enable_extensions')">
+      <if expr="enable_extensions">
         <!-- Custom bindings for extension APIs. -->
         <include name="IDR_AD_VIEW_DENY_JS" file="extensions\ad_view_deny.js" type="BINDATA" />
         <include name="IDR_AD_VIEW_JS" file="extensions\ad_view.js" type="BINDATA" />

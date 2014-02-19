@@ -8,7 +8,7 @@
     </div>
     <div class="language-options-header">
       <span i18n-content="addLanguageInstructions"></span>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <span i18n-content="inputMethodInstructions"></span>
 </if>
       <a target="_blank" i18n-content="learnMore"
@@ -27,7 +27,7 @@
       </div>
       <div id="language-options-details">
         <h3 id="language-options-language-name"></h3>
-<if expr="os == 'win32' or pp_ifdef('chromeos')">
+<if expr="os == 'win32' or chromeos">
         <div class="language-options-contents">
           <button id="language-options-ui-language-button"
               i18n-content="displayInThisLanguage">
@@ -62,7 +62,7 @@
         <div id="language-options-ui-notification-bar"
             class="language-options-notification" hidden>
           <div i18n-content="restartRequired"></div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
           <button id="language-options-ui-restart-button"
               i18n-content="restartButton">
           </button>
@@ -81,7 +81,7 @@
           <span id="cannot-translate-in-this-language"
                i18n-content="cannotTranslateInThisLanguage" hidden></span>
         </div>
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
         <h3 i18n-content="inputMethod"></h3>
         <div id="language-options-input-method-template" class="input-method"
             hidden>
@@ -102,14 +102,14 @@
       </div>
     </div>
     <div class="language-options-footer">
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
       <div i18n-content="switchInputMethodsHint"></div>
       <div i18n-content="selectPreviousInputMethodHint"></div>
       <button id="edit-dictionary-button"
           class="link-button standalone-link-button"
           i18n-content="languageDictionaryOverlayTitle"></button>
 </if>
-<if expr="not pp_ifdef('chromeos') and not is_macosx">
+<if expr="not chromeos and not is_macosx">
       <div id="spell-check-option" class="checkbox">
         <label>
           <input id="enable-spell-check" pref="browser.enable_spellchecking"
