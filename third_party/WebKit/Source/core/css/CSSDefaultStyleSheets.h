@@ -23,13 +23,16 @@
 #ifndef CSSDefaultStyleSheets_h
 #define CSSDefaultStyleSheets_h
 
+#include "heap/Handle.h"
+
 namespace WebCore {
 
 class Element;
 class RuleSet;
 class StyleSheetContents;
 
-class CSSDefaultStyleSheets {
+class CSSDefaultStyleSheets : public NoBaseWillBeGarbageCollected<CSSDefaultStyleSheets> {
+    DECLARE_GC_INFO
 public:
     static CSSDefaultStyleSheets& instance();
 
@@ -44,12 +47,14 @@ public:
     // FIXME: Remove WAP support.
     RuleSet* defaultXHTMLMobileProfileStyle();
 
-    StyleSheetContents* defaultStyleSheet() { return m_viewportStyleSheet; }
-    StyleSheetContents* viewportStyleSheet() { return m_viewportStyleSheet; }
-    StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet; }
-    StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet; }
-    StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet; }
-    StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet; }
+    StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
+    StyleSheetContents* viewportStyleSheet() { return m_viewportStyleSheet.get(); }
+    StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
+    StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
+    StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet.get(); }
+    StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet.get(); }
+
+    void trace(Visitor*);
 
 private:
     CSSDefaultStyleSheets();
@@ -61,12 +66,12 @@ private:
     RuleSet* m_defaultViewSourceStyle;
     RuleSet* m_defaultXHTMLMobileProfileStyle;
 
-    StyleSheetContents* m_defaultStyleSheet;
-    StyleSheetContents* m_viewportStyleSheet;
-    StyleSheetContents* m_quirksStyleSheet;
-    StyleSheetContents* m_svgStyleSheet;
-    StyleSheetContents* m_mediaControlsStyleSheet;
-    StyleSheetContents* m_fullscreenStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_defaultStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_viewportStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_quirksStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_svgStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_mediaControlsStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_fullscreenStyleSheet;
 };
 
 } // namespace WebCore
