@@ -300,62 +300,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     }
 }
 
-// Remove below specialized constructors once all callers of CSSPrimitiveValue(...)
-// have been converted to PassRefPtrWillBeRawPtr, ie. when
-//    template<typename T> CSSPrimitiveValue(T* val)
-//    template<typename T> CSSPrimitiveValue(PassRefPtr<T> val)
-// both can be converted to use PassRefPtrWillBeRawPtr.
-CSSPrimitiveValue::CSSPrimitiveValue(CSSCalcValue* value)
-    : CSSValue(PrimitiveClass)
-{
-    init(PassRefPtrWillBeRawPtr<CSSCalcValue>(value));
-}
-CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue> value)
-    : CSSValue(PrimitiveClass)
-{
-    init(value);
-}
-CSSPrimitiveValue::CSSPrimitiveValue(Pair* value)
-    : CSSValue(PrimitiveClass)
-{
-    init(PassRefPtrWillBeRawPtr<Pair>(value));
-}
-CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair> value)
-    : CSSValue(PrimitiveClass)
-{
-    init(value);
-}
-CSSPrimitiveValue::CSSPrimitiveValue(Counter* value)
-    : CSSValue(PrimitiveClass)
-{
-    init(PassRefPtrWillBeRawPtr<Counter>(value));
-}
-CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter> value)
-    : CSSValue(PrimitiveClass)
-{
-    init(value);
-}
-CSSPrimitiveValue::CSSPrimitiveValue(Rect* value)
-    : CSSValue(PrimitiveClass)
-{
-    init(PassRefPtrWillBeRawPtr<Rect>(value));
-}
-CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Rect> value)
-    : CSSValue(PrimitiveClass)
-{
-    init(value);
-}
-CSSPrimitiveValue::CSSPrimitiveValue(Quad* value)
-    : CSSValue(PrimitiveClass)
-{
-    init(PassRefPtrWillBeRawPtr<Quad>(value));
-}
-CSSPrimitiveValue::CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Quad> value)
-    : CSSValue(PrimitiveClass)
-{
-    init(value);
-}
-
 void CSSPrimitiveValue::init(const Length& length)
 {
     switch (length.type()) {
@@ -451,7 +395,7 @@ void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
     m_value.calc = c.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtr<CSSBasicShape> shape)
+void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSBasicShape> shape)
 {
     m_primitiveUnitType = CSS_SHAPE;
     m_hasCachedCSSText = false;
@@ -509,7 +453,10 @@ void CSSPrimitiveValue::cleanup()
         ASSERT_NOT_REACHED();
         break;
     case CSS_SHAPE:
+        // We must not call deref() when oilpan is enabled because m_value.shape is traced.
+#if !ENABLE(OILPAN)
         m_value.shape->deref();
+#endif
         break;
     case CSS_NUMBER:
     case CSS_PARSER_INTEGER:
@@ -1327,6 +1274,9 @@ void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
         break;
     case CSS_CALC:
         visitor->trace(m_value.calc);
+        break;
+    case CSS_SHAPE:
+        visitor->trace(m_value.shape);
         break;
     default:
         break;

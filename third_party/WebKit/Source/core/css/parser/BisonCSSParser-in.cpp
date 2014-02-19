@@ -5014,7 +5014,7 @@ static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
 
 // FIXME: This should be refactored with CSSParser::parseBorderRadius.
 // CSSParser::parseBorderRadius contains support for some legacy radius construction.
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseInsetRoundedCorners(PassRefPtr<CSSBasicShapeInset> shape, CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInset> shape, CSSParserValueList* args)
 {
     CSSParserValue* argument = args->next();
 
@@ -5078,11 +5078,11 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseInsetRoundedCorners(PassRefPtr
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInset(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInset(CSSParserValueList* args)
 {
     ASSERT(args);
 
-    RefPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
+    RefPtrWillBeRawPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
 
     CSSParserValue* argument = args->current();
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > widthArguments;
@@ -5187,7 +5187,7 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
     return true;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeRectangle(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeRectangle(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5195,7 +5195,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeRectangle(CSSParserV
     if (args->size() != 7 && args->size() != 9 && args->size() != 11)
         return 0;
 
-    RefPtr<CSSBasicShapeRectangle> shape = CSSBasicShapeRectangle::create();
+    RefPtrWillBeRawPtr<CSSBasicShapeRectangle> shape = CSSBasicShapeRectangle::create();
 
     unsigned argumentNumber = 0;
     CSSParserValue* argument = args->current();
@@ -5245,7 +5245,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeRectangle(CSSParserV
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInsetRectangle(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInsetRectangle(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5253,7 +5253,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInsetRectangle(CSSPa
     if (args->size() != 7 && args->size() != 9 && args->size() != 11)
         return 0;
 
-    RefPtr<CSSBasicShapeInsetRectangle> shape = CSSBasicShapeInsetRectangle::create();
+    RefPtrWillBeRawPtr<CSSBasicShapeInsetRectangle> shape = CSSBasicShapeInsetRectangle::create();
 
     unsigned argumentNumber = 0;
     CSSParserValue* argument = args->current();
@@ -5310,7 +5310,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseShapeRadius(CS
     return createPrimitiveNumericValue(value);
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5318,7 +5318,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(CSSParserValu
     // circle(radius at <position>
     // circle(at <position>)
     // where position defines centerX and centerY using a CSS <position> data type.
-    RefPtr<CSSBasicShapeCircle> shape = CSSBasicShapeCircle::create();
+    RefPtrWillBeRawPtr<CSSBasicShapeCircle> shape = CSSBasicShapeCircle::create();
 
     for (CSSParserValue* argument = args->current(); argument; argument = args->next()) {
         // The call to parseFillPosition below should consume all of the
@@ -5357,7 +5357,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(CSSParserValu
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeCircle(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeCircle(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5365,7 +5365,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeCircle(CSS
     if (args->size() != 5)
         return 0;
 
-    RefPtr<CSSDeprecatedBasicShapeCircle> shape = CSSDeprecatedBasicShapeCircle::create();
+    RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeCircle> shape = CSSDeprecatedBasicShapeCircle::create();
 
     unsigned argumentNumber = 0;
     CSSParserValue* argument = args->current();
@@ -5407,7 +5407,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeCircle(CSS
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5417,7 +5417,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(CSSParserVal
     // ellipse(radiusX radiusY at <position>
     // ellipse(at <position>)
     // where position defines centerX and centerY using a CSS <position> data type.
-    RefPtr<CSSBasicShapeEllipse> shape = CSSBasicShapeEllipse::create();
+    RefPtrWillBeRawPtr<CSSBasicShapeEllipse> shape = CSSBasicShapeEllipse::create();
 
     for (CSSParserValue* argument = args->current(); argument; argument = args->next()) {
         // The call to parseFillPosition below should consume all of the
@@ -5456,7 +5456,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(CSSParserVal
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeEllipse(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeEllipse(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5464,7 +5464,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeEllipse(CS
     if (args->size() != 7)
         return 0;
 
-    RefPtr<CSSDeprecatedBasicShapeEllipse> shape = CSSDeprecatedBasicShapeEllipse::create();
+    RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeEllipse> shape = CSSDeprecatedBasicShapeEllipse::create();
     unsigned argumentNumber = 0;
     CSSParserValue* argument = args->current();
     while (argument) {
@@ -5507,7 +5507,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseDeprecatedBasicShapeEllipse(CS
     return shape;
 }
 
-PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapePolygon(CSSParserValueList* args)
+PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapePolygon(CSSParserValueList* args)
 {
     ASSERT(args);
 
@@ -5515,7 +5515,7 @@ PassRefPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapePolygon(CSSParserVal
     if (!size)
         return 0;
 
-    RefPtr<CSSBasicShapePolygon> shape = CSSBasicShapePolygon::create();
+    RefPtrWillBeRawPtr<CSSBasicShapePolygon> shape = CSSBasicShapePolygon::create();
 
     CSSParserValue* argument = args->current();
     if (argument->id == CSSValueEvenodd || argument->id == CSSValueNonzero) {
@@ -5655,7 +5655,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBasicShape()
     if (!args)
         return 0;
 
-    RefPtr<CSSBasicShape> shape;
+    RefPtrWillBeRawPtr<CSSBasicShape> shape;
     if (equalIgnoringCase(value->function->name, "rectangle("))
         shape = parseBasicShapeRectangle(args);
     else if (equalIgnoringCase(value->function->name, "circle("))

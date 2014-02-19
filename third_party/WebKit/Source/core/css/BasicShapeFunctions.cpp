@@ -82,11 +82,11 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
 {
     CSSValuePool& pool = cssValuePool();
 
-    RefPtr<CSSBasicShape> basicShapeValue;
+    RefPtrWillBeRawPtr<CSSBasicShape> basicShapeValue;
     switch (basicShape->type()) {
     case BasicShape::BasicShapeRectangleType: {
         const BasicShapeRectangle* rectangle = static_cast<const BasicShapeRectangle*>(basicShape);
-        RefPtr<CSSBasicShapeRectangle> rectangleValue = CSSBasicShapeRectangle::create();
+        RefPtrWillBeRawPtr<CSSBasicShapeRectangle> rectangleValue = CSSBasicShapeRectangle::create();
 
         rectangleValue->setX(pool.createValue(rectangle->x(), style));
         rectangleValue->setY(pool.createValue(rectangle->y(), style));
@@ -100,7 +100,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::DeprecatedBasicShapeCircleType: {
         const DeprecatedBasicShapeCircle* circle = static_cast<const DeprecatedBasicShapeCircle*>(basicShape);
-        RefPtr<CSSDeprecatedBasicShapeCircle> circleValue = CSSDeprecatedBasicShapeCircle::create();
+        RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeCircle> circleValue = CSSDeprecatedBasicShapeCircle::create();
 
         circleValue->setCenterX(pool.createValue(circle->centerX(), style));
         circleValue->setCenterY(pool.createValue(circle->centerY(), style));
@@ -111,7 +111,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::BasicShapeCircleType: {
         const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
-        RefPtr<CSSBasicShapeCircle> circleValue = CSSBasicShapeCircle::create();
+        RefPtrWillBeRawPtr<CSSBasicShapeCircle> circleValue = CSSBasicShapeCircle::create();
 
         circleValue->setCenterX(valueForCenterCoordinate(pool, style, circle->centerX()));
         circleValue->setCenterY(valueForCenterCoordinate(pool, style, circle->centerY()));
@@ -121,7 +121,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::DeprecatedBasicShapeEllipseType: {
         const DeprecatedBasicShapeEllipse* ellipse = static_cast<const DeprecatedBasicShapeEllipse*>(basicShape);
-        RefPtr<CSSDeprecatedBasicShapeEllipse> ellipseValue = CSSDeprecatedBasicShapeEllipse::create();
+        RefPtrWillBeRawPtr<CSSDeprecatedBasicShapeEllipse> ellipseValue = CSSDeprecatedBasicShapeEllipse::create();
 
         ellipseValue->setCenterX(pool.createValue(ellipse->centerX(), style));
         ellipseValue->setCenterY(pool.createValue(ellipse->centerY(), style));
@@ -133,7 +133,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::BasicShapeEllipseType: {
         const BasicShapeEllipse* ellipse = static_cast<const BasicShapeEllipse*>(basicShape);
-        RefPtr<CSSBasicShapeEllipse> ellipseValue = CSSBasicShapeEllipse::create();
+        RefPtrWillBeRawPtr<CSSBasicShapeEllipse> ellipseValue = CSSBasicShapeEllipse::create();
 
         ellipseValue->setCenterX(valueForCenterCoordinate(pool, style, ellipse->centerX()));
         ellipseValue->setCenterY(valueForCenterCoordinate(pool, style, ellipse->centerY()));
@@ -144,7 +144,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::BasicShapePolygonType: {
         const BasicShapePolygon* polygon = static_cast<const BasicShapePolygon*>(basicShape);
-        RefPtr<CSSBasicShapePolygon> polygonValue = CSSBasicShapePolygon::create();
+        RefPtrWillBeRawPtr<CSSBasicShapePolygon> polygonValue = CSSBasicShapePolygon::create();
 
         polygonValue->setWindRule(polygon->windRule());
         const Vector<Length>& values = polygon->values();
@@ -156,7 +156,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::BasicShapeInsetRectangleType: {
         const BasicShapeInsetRectangle* rectangle = static_cast<const BasicShapeInsetRectangle*>(basicShape);
-        RefPtr<CSSBasicShapeInsetRectangle> rectangleValue = CSSBasicShapeInsetRectangle::create();
+        RefPtrWillBeRawPtr<CSSBasicShapeInsetRectangle> rectangleValue = CSSBasicShapeInsetRectangle::create();
 
         rectangleValue->setTop(cssValuePool().createValue(rectangle->top()));
         rectangleValue->setRight(cssValuePool().createValue(rectangle->right()));
@@ -170,7 +170,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
     }
     case BasicShape::BasicShapeInsetType: {
         const BasicShapeInset* inset = static_cast<const BasicShapeInset*>(basicShape);
-        RefPtr<CSSBasicShapeInset> insetValue = CSSBasicShapeInset::create();
+        RefPtrWillBeRawPtr<CSSBasicShapeInset> insetValue = CSSBasicShapeInset::create();
 
         insetValue->setTop(CSSPrimitiveValue::create(inset->top()));
         insetValue->setRight(CSSPrimitiveValue::create(inset->right()));
@@ -346,7 +346,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         RefPtr<BasicShapePolygon> polygon = BasicShapePolygon::create();
 
         polygon->setWindRule(polygonValue->windRule());
-        const Vector<RefPtr<CSSPrimitiveValue> >& values = polygonValue->values();
+        const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> >& values = polygonValue->values();
         for (unsigned i = 0; i < values.size(); i += 2)
             polygon->appendPoint(convertToLength(state, values.at(i).get()), convertToLength(state, values.at(i + 1).get()));
 

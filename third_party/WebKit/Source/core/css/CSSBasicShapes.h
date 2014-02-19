@@ -38,7 +38,8 @@
 
 namespace WebCore {
 
-class CSSBasicShape : public RefCounted<CSSBasicShape> {
+class CSSBasicShape : public RefCountedWillBeGarbageCollected<CSSBasicShape> {
+    DECLARE_GC_INFO;
 public:
     enum Type {
         CSSBasicShapeRectangleType,
@@ -56,19 +57,21 @@ public:
     virtual bool equals(const CSSBasicShape&) const = 0;
 
     CSSPrimitiveValue* layoutBox() const { return m_layoutBox.get(); }
-    void setLayoutBox(PassRefPtr<CSSPrimitiveValue> layoutBox) { m_layoutBox = layoutBox; }
+    void setLayoutBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> layoutBox) { m_layoutBox = layoutBox; }
+
+    virtual void trace(Visitor* visitor) { visitor->trace(m_layoutBox); }
 
 public:
     virtual ~CSSBasicShape() { }
 
 protected:
     CSSBasicShape() { }
-    RefPtr<CSSPrimitiveValue> m_layoutBox;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_layoutBox;
 };
 
 class CSSBasicShapeRectangle FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapeRectangle> create() { return adoptRef(new CSSBasicShapeRectangle); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeRectangle> create() { return adoptRefWillBeNoop(new CSSBasicShapeRectangle); }
 
     CSSPrimitiveValue* x() const { return m_x.get(); }
     CSSPrimitiveValue* y() const { return m_y.get(); }
@@ -77,31 +80,33 @@ public:
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
-    void setX(PassRefPtr<CSSPrimitiveValue> x) { m_x = x; }
-    void setY(PassRefPtr<CSSPrimitiveValue> y) { m_y = y; }
-    void setWidth(PassRefPtr<CSSPrimitiveValue> width) { m_width = width; }
-    void setHeight(PassRefPtr<CSSPrimitiveValue> height) { m_height = height; }
-    void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
-    void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+    void setX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x) { m_x = x; }
+    void setY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y) { m_y = y; }
+    void setWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> width) { m_width = width; }
+    void setHeight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> height) { m_height = height; }
+    void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
     virtual Type type() const OVERRIDE { return CSSBasicShapeRectangleType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
+    virtual void trace(Visitor*);
+
 private:
     CSSBasicShapeRectangle() { }
 
-    RefPtr<CSSPrimitiveValue> m_y;
-    RefPtr<CSSPrimitiveValue> m_x;
-    RefPtr<CSSPrimitiveValue> m_width;
-    RefPtr<CSSPrimitiveValue> m_height;
-    RefPtr<CSSPrimitiveValue> m_radiusX;
-    RefPtr<CSSPrimitiveValue> m_radiusY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_y;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_x;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_width;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_height;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
 class CSSBasicShapeInsetRectangle FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapeInsetRectangle> create() { return adoptRef(new CSSBasicShapeInsetRectangle); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeInsetRectangle> create() { return adoptRefWillBeNoop(new CSSBasicShapeInsetRectangle); }
 
     CSSPrimitiveValue* top() const { return m_top.get(); }
     CSSPrimitiveValue* right() const { return m_right.get(); }
@@ -110,31 +115,33 @@ public:
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
-    void setTop(PassRefPtr<CSSPrimitiveValue> top) { m_top = top; }
-    void setRight(PassRefPtr<CSSPrimitiveValue> right) { m_right = right; }
-    void setBottom(PassRefPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
-    void setLeft(PassRefPtr<CSSPrimitiveValue> left) { m_left = left; }
-    void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
-    void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+    void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top) { m_top = top; }
+    void setRight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right) { m_right = right; }
+    void setBottom(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
+    void setLeft(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left) { m_left = left; }
+    void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
     virtual Type type() const OVERRIDE { return CSSBasicShapeInsetRectangleType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
+    virtual void trace(Visitor*);
+
 private:
     CSSBasicShapeInsetRectangle() { }
 
-    RefPtr<CSSPrimitiveValue> m_right;
-    RefPtr<CSSPrimitiveValue> m_top;
-    RefPtr<CSSPrimitiveValue> m_bottom;
-    RefPtr<CSSPrimitiveValue> m_left;
-    RefPtr<CSSPrimitiveValue> m_radiusX;
-    RefPtr<CSSPrimitiveValue> m_radiusY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_right;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_top;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_left;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
 class CSSBasicShapeCircle FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapeCircle> create() { return adoptRef(new CSSBasicShapeCircle); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeCircle> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircle); }
 
     virtual Type type() const OVERRIDE { return CSSBasicShapeCircleType; }
     virtual String cssText() const OVERRIDE;
@@ -144,46 +151,50 @@ public:
     CSSPrimitiveValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radius() const { return m_radius.get(); }
 
-    void setCenterX(PassRefPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
-    void setRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
+
+    virtual void trace(Visitor*);
 
 private:
     CSSBasicShapeCircle() { }
 
-    RefPtr<CSSPrimitiveValue> m_centerX;
-    RefPtr<CSSPrimitiveValue> m_centerY;
-    RefPtr<CSSPrimitiveValue> m_radius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
 };
 
 class CSSDeprecatedBasicShapeCircle FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSDeprecatedBasicShapeCircle> create() { return adoptRef(new CSSDeprecatedBasicShapeCircle); }
+    static PassRefPtrWillBeRawPtr<CSSDeprecatedBasicShapeCircle> create() { return adoptRefWillBeNoop(new CSSDeprecatedBasicShapeCircle); }
 
     CSSPrimitiveValue* centerX() const { return m_centerX.get(); }
     CSSPrimitiveValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radius() const { return m_radius.get(); }
 
-    void setCenterX(PassRefPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
-    void setRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
     virtual Type type() const OVERRIDE { return CSSDeprecatedBasicShapeCircleType; }
 
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
+    virtual void trace(Visitor*);
+
 private:
     CSSDeprecatedBasicShapeCircle() { }
 
-    RefPtr<CSSPrimitiveValue> m_centerY;
-    RefPtr<CSSPrimitiveValue> m_centerX;
-    RefPtr<CSSPrimitiveValue> m_radius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
 };
 
 class CSSBasicShapeEllipse FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapeEllipse> create() { return adoptRef(new CSSBasicShapeEllipse); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipse> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipse); }
 
     virtual Type type() const OVERRIDE { return CSSBasicShapeEllipseType; }
     virtual String cssText() const OVERRIDE;
@@ -194,60 +205,64 @@ public:
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
-    void setCenterX(PassRefPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
-    void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
-    void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+
+    virtual void trace(Visitor*);
 
 private:
     CSSBasicShapeEllipse() { }
 
-    RefPtr<CSSPrimitiveValue> m_centerX;
-    RefPtr<CSSPrimitiveValue> m_centerY;
-    RefPtr<CSSPrimitiveValue> m_radiusX;
-    RefPtr<CSSPrimitiveValue> m_radiusY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
 class CSSDeprecatedBasicShapeEllipse FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSDeprecatedBasicShapeEllipse> create() { return adoptRef(new CSSDeprecatedBasicShapeEllipse); }
+    static PassRefPtrWillBeRawPtr<CSSDeprecatedBasicShapeEllipse> create() { return adoptRefWillBeNoop(new CSSDeprecatedBasicShapeEllipse); }
 
     CSSPrimitiveValue* centerX() const { return m_centerX.get(); }
     CSSPrimitiveValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
-    void setCenterX(PassRefPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
-    void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
-    void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
     virtual Type type() const OVERRIDE { return CSSDeprecatedBasicShapeEllipseType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
+    virtual void trace(Visitor*);
+
 private:
     CSSDeprecatedBasicShapeEllipse() { }
 
-    RefPtr<CSSPrimitiveValue> m_centerX;
-    RefPtr<CSSPrimitiveValue> m_centerY;
-    RefPtr<CSSPrimitiveValue> m_radiusX;
-    RefPtr<CSSPrimitiveValue> m_radiusY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusX;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
 class CSSBasicShapePolygon FINAL : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapePolygon> create() { return adoptRef(new CSSBasicShapePolygon); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapePolygon> create() { return adoptRefWillBeNoop(new CSSBasicShapePolygon); }
 
-    void appendPoint(PassRefPtr<CSSPrimitiveValue> x, PassRefPtr<CSSPrimitiveValue> y)
+    void appendPoint(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y)
     {
         m_values.append(x);
         m_values.append(y);
     }
 
-    PassRefPtr<CSSPrimitiveValue> getXAt(unsigned i) const { return m_values.at(i * 2); }
-    PassRefPtr<CSSPrimitiveValue> getYAt(unsigned i) const { return m_values.at(i * 2 + 1); }
-    const Vector<RefPtr<CSSPrimitiveValue> >& values() const { return m_values; }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> getXAt(unsigned i) const { return m_values.at(i * 2); }
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> getYAt(unsigned i) const { return m_values.at(i * 2 + 1); }
+    const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> >& values() const { return m_values; }
 
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
@@ -255,19 +270,22 @@ public:
     virtual Type type() const OVERRIDE { return CSSBasicShapePolygonType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
+
+    virtual void trace(Visitor*);
+
 private:
     CSSBasicShapePolygon()
         : m_windRule(RULE_NONZERO)
     {
     }
 
-    Vector<RefPtr<CSSPrimitiveValue> > m_values;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > m_values;
     WindRule m_windRule;
 };
 
 class CSSBasicShapeInset : public CSSBasicShape {
 public:
-    static PassRefPtr<CSSBasicShapeInset> create() { return adoptRef(new CSSBasicShapeInset); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeInset> create() { return adoptRefWillBeNoop(new CSSBasicShapeInset); }
 
     CSSPrimitiveValue* top() const { return m_top.get(); }
     CSSPrimitiveValue* right() const { return m_right.get(); }
@@ -279,10 +297,10 @@ public:
     CSSPrimitiveValue* bottomRightRadius() const { return m_bottomRightRadius.get(); }
     CSSPrimitiveValue* bottomLeftRadius() const { return m_bottomLeftRadius.get(); }
 
-    void setTop(PassRefPtr<CSSPrimitiveValue> top) { m_top = top; }
-    void setRight(PassRefPtr<CSSPrimitiveValue> right) { m_right = right; }
-    void setBottom(PassRefPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
-    void setLeft(PassRefPtr<CSSPrimitiveValue> left) { m_left = left; }
+    void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top) { m_top = top; }
+    void setRight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right) { m_right = right; }
+    void setBottom(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
+    void setLeft(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left) { m_left = left; }
 
     void updateShapeSize4Values(CSSPrimitiveValue* top, CSSPrimitiveValue* right, CSSPrimitiveValue* bottom, CSSPrimitiveValue* left)
     {
@@ -308,27 +326,29 @@ public:
     }
 
 
-    void setTopLeftRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_topLeftRadius = radius; }
-    void setTopRightRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_topRightRadius = radius; }
-    void setBottomRightRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_bottomRightRadius = radius; }
-    void setBottomLeftRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_bottomLeftRadius = radius; }
+    void setTopLeftRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_topLeftRadius = radius; }
+    void setTopRightRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_topRightRadius = radius; }
+    void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomRightRadius = radius; }
+    void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomLeftRadius = radius; }
 
     virtual Type type() const OVERRIDE { return CSSBasicShapeInsetType; }
     virtual String cssText() const OVERRIDE;
     virtual bool equals(const CSSBasicShape&) const OVERRIDE;
 
+    virtual void trace(Visitor*);
+
 private:
     CSSBasicShapeInset() { }
 
-    RefPtr<CSSPrimitiveValue> m_top;
-    RefPtr<CSSPrimitiveValue> m_right;
-    RefPtr<CSSPrimitiveValue> m_bottom;
-    RefPtr<CSSPrimitiveValue> m_left;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_top;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_right;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_left;
 
-    RefPtr<CSSPrimitiveValue> m_topLeftRadius;
-    RefPtr<CSSPrimitiveValue> m_topRightRadius;
-    RefPtr<CSSPrimitiveValue> m_bottomRightRadius;
-    RefPtr<CSSPrimitiveValue> m_bottomLeftRadius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_topLeftRadius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_topRightRadius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottomRightRadius;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_bottomLeftRadius;
 };
 
 } // namespace WebCore

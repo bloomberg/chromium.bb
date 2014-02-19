@@ -363,27 +363,14 @@ private:
     template<typename T> CSSPrimitiveValue(T* val)
         : CSSValue(PrimitiveClass)
     {
-        init(PassRefPtr<T>(val));
+        init(PassRefPtrWillBeRawPtr<T>(val));
     }
 
-    template<typename T> CSSPrimitiveValue(PassRefPtr<T> val)
+    template<typename T> CSSPrimitiveValue(PassRefPtrWillBeRawPtr<T> val)
         : CSSValue(PrimitiveClass)
     {
         init(val);
     }
-
-    // Remove below overloaded constructors once all callers of CSSPrimitiveValue(...)
-    // have been converted to PassRefPtrWillBeRawPtr.
-    explicit CSSPrimitiveValue(CSSCalcValue*);
-    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<CSSCalcValue>);
-    explicit CSSPrimitiveValue(Pair*);
-    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Pair>);
-    explicit CSSPrimitiveValue(Counter*);
-    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Counter>);
-    explicit CSSPrimitiveValue(Rect*);
-    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Rect>);
-    explicit CSSPrimitiveValue(Quad*);
-    explicit CSSPrimitiveValue(PassRefPtrWillBeRawPtr<Quad>);
 
     static void create(int); // compile-time guard
     static void create(unsigned); // compile-time guard
@@ -395,7 +382,7 @@ private:
     void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);
     void init(PassRefPtrWillBeRawPtr<Quad>);
-    void init(PassRefPtr<CSSBasicShape>);
+    void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
     bool getDoubleValueInternal(UnitTypes targetUnitType, double* result) const;
 
@@ -408,8 +395,8 @@ private:
         double num;
         StringImpl* string;
         unsigned rgbcolor;
-        CSSBasicShape* shape;
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
+        CSSBasicShape* shape;
         CSSCalcValue* calc;
         Counter* counter;
         Pair* pair;

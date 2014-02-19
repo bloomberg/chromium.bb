@@ -166,14 +166,14 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBasicShape();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
 
-    PassRefPtr<CSSBasicShape> parseBasicShapeRectangle(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeCircle(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseBasicShapeEllipse(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeEllipse(CSSParserValueList*);
-    PassRefPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseBasicShapeInsetRectangle(CSSParserValueList* args);
-    PassRefPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeRectangle(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseDeprecatedBasicShapeCircle(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeEllipse(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseDeprecatedBasicShapeEllipse(CSSParserValueList*);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInsetRectangle(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
@@ -270,7 +270,7 @@ private:
 
     bool validWidthOrHeight(CSSParserValue*);
 
-    PassRefPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtr<CSSBasicShapeInset>, CSSParserValueList*);
+    PassRefPtrWillBeRawPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInset>, CSSParserValueList*);
 
     enum SizeParameterType {
         None,

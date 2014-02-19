@@ -224,8 +224,8 @@ private:
     unsigned m_classType : ClassTypeBits; // ClassType
 };
 
-template<typename CSSValueType>
-inline bool compareCSSValueVector(const Vector<RefPtr<CSSValueType> >& firstVector, const Vector<RefPtr<CSSValueType> >& secondVector)
+template<typename CSSValueType, size_t inlineCapacity>
+inline bool compareCSSValueVector(const Vector<RefPtr<CSSValueType>, inlineCapacity>& firstVector, const Vector<RefPtr<CSSValueType>, inlineCapacity>& secondVector)
 {
     size_t size = firstVector.size();
     if (size != secondVector.size())
@@ -234,6 +234,25 @@ inline bool compareCSSValueVector(const Vector<RefPtr<CSSValueType> >& firstVect
     for (size_t i = 0; i < size; i++) {
         const RefPtr<CSSValueType>& firstPtr = firstVector[i];
         const RefPtr<CSSValueType>& secondPtr = secondVector[i];
+        if (firstPtr == secondPtr || (firstPtr && secondPtr && firstPtr->equals(*secondPtr)))
+            continue;
+        return false;
+    }
+    return true;
+}
+
+// FIXME: oilpan: this will be merged with the above compareCSSVector method
+// once CSSValue is moved to the transition types.
+template<typename CSSValueType, size_t inlineCapacity>
+inline bool compareCSSValueVector(const HeapVector<Member<CSSValueType>, inlineCapacity>& firstVector, const HeapVector<Member<CSSValueType>, inlineCapacity>& secondVector)
+{
+    size_t size = firstVector.size();
+    if (size != secondVector.size())
+        return false;
+
+    for (size_t i = 0; i < size; i++) {
+        const Member<CSSValueType>& firstPtr = firstVector[i];
+        const Member<CSSValueType>& secondPtr = secondVector[i];
         if (firstPtr == secondPtr || (firstPtr && secondPtr && firstPtr->equals(*secondPtr)))
             continue;
         return false;
