@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DRIVER_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DRIVER_H_
 
+#include <vector>
+
 class PasswordGenerationManager;
 class PasswordManager;
 
 namespace autofill {
 class AutofillManager;
+struct FormData;
 struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -43,6 +46,10 @@ class PasswordManagerDriver {
 
   // Informs the driver that |form| can be used for password generation.
   virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form) = 0;
+
+  // Notifies the driver that account creation |forms| were found.
+  virtual void AccountCreationFormsFound(
+      const std::vector<autofill::FormData>& forms) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);

@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
@@ -53,10 +52,8 @@ void PasswordGenerationManager::DetectAccountCreationForms(
       }
     }
   }
-  if (!account_creation_forms.empty() && IsGenerationEnabled()) {
-    SendAccountCreationFormsToRenderer(web_contents_->GetRenderViewHost(),
-                                       account_creation_forms);
-  }
+  if (!account_creation_forms.empty() && IsGenerationEnabled())
+    driver_->AccountCreationFormsFound(account_creation_forms);
 }
 
 // In order for password generation to be enabled, we need to make sure:
@@ -74,13 +71,6 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   }
 
   return true;
-}
-
-void PasswordGenerationManager::SendAccountCreationFormsToRenderer(
-    content::RenderViewHost* host,
-    const std::vector<autofill::FormData>& forms) {
-  host->Send(new AutofillMsg_AccountCreationFormsDetected(
-      host->GetRoutingID(), forms));
 }
 
 gfx::RectF PasswordGenerationManager::GetBoundsInScreenSpace(

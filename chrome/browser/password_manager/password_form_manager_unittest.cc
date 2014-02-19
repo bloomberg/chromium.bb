@@ -37,15 +37,15 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MockPasswordManagerDriver() {}
   virtual ~MockPasswordManagerDriver() {}
 
-  MOCK_METHOD1(FillPasswordForm,
-               void(const autofill::PasswordFormFillData& form_data));
+  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
-  MOCK_METHOD1(AllowPasswordGenerationForForm,
-               void(autofill::PasswordForm* form));
+  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
+  MOCK_METHOD1(AccountCreationFormsFound,
+               void(const std::vector<autofill::FormData>&));
 };
 
 class TestPasswordManagerClient : public PasswordManagerClient {

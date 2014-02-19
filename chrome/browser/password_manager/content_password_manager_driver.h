@@ -24,8 +24,8 @@ class WebContents;
 class ContentPasswordManagerDriver : public PasswordManagerDriver,
                                      public content::WebContentsObserver {
  public:
-  explicit ContentPasswordManagerDriver(content::WebContents* web_contents,
-                                        PasswordManagerClient* client);
+  ContentPasswordManagerDriver(content::WebContents* web_contents,
+                               PasswordManagerClient* client);
   virtual ~ContentPasswordManagerDriver();
 
   // PasswordManagerDriver implementation.
@@ -38,6 +38,8 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
   virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE;
   virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
       OVERRIDE;
+  virtual void AccountCreationFormsFound(
+      const std::vector<autofill::FormData>& forms) OVERRIDE;
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -6,11 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,6 +25,78 @@ using base::ASCIIToUTF16;
 
 namespace {
 
+class TestPasswordManagerDriver : public PasswordManagerDriver {
+ public:
+  TestPasswordManagerDriver(content::WebContents* web_contents,
+                            PasswordManagerClient* client)
+      : password_manager_(client),
+        password_generation_manager_(web_contents, client),
+        is_off_the_record_(false) {}
+  virtual ~TestPasswordManagerDriver() {}
+
+  // PasswordManagerDriver implementation.
+  virtual void FillPasswordForm(const autofill::PasswordFormFillData& form_data)
+      OVERRIDE {}
+  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE { return false; }
+  virtual bool IsOffTheRecord() OVERRIDE { return is_off_the_record_; }
+  virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE {
+    return &password_generation_manager_;
+  }
+  virtual PasswordManager* GetPasswordManager() OVERRIDE {
+    return &password_manager_;
+  }
+  virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE {
+    return NULL;
+  }
+  virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
+      OVERRIDE {}
+  virtual void AccountCreationFormsFound(
+      const std::vector<autofill::FormData>& forms) OVERRIDE {
+    found_account_creation_forms_.insert(
+        found_account_creation_forms_.begin(), forms.begin(), forms.end());
+  }
+
+  const std::vector<autofill::FormData>& GetFoundAccountCreationForms() {
+    return found_account_creation_forms_;
+  }
+  void set_is_off_the_record(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
+
+ private:
+  PasswordManager password_manager_;
+  PasswordGenerationManager password_generation_manager_;
+  std::vector<autofill::FormData> found_account_creation_forms_;
+  bool is_off_the_record_;
+};
+
+class TestPasswordManagerClient : public PasswordManagerClient {
+ public:
+  explicit TestPasswordManagerClient(content::WebContents* web_contents,
+                                     Profile* profile)
+      : profile_(profile),
+        driver_(web_contents, this),
+        is_sync_enabled_(false) {}
+
+  virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
+      OVERRIDE {}
+  virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
+  virtual PrefService* GetPrefs() OVERRIDE { return profile_->GetPrefs(); }
+  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
+  virtual void AuthenticateAutofillAndFillForm(
+      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {}
+  virtual bool IsPasswordSyncEnabled() OVERRIDE { return is_sync_enabled_; }
+
+  void set_is_password_sync_enabled(bool enabled) {
+    is_sync_enabled_ = enabled;
+  }
+
+ private:
+  Profile* profile_;
+  TestPasswordManagerDriver driver_;
+  bool is_sync_enabled_;
+};
+
 // Unlike the base AutofillMetrics, exposes copy and assignment constructors,
 // which are handy for briefer test code.  The AutofillMetrics class is
 // stateless, so this is safe.
@@ -38,104 +108,64 @@ class TestAutofillMetrics : public autofill::AutofillMetrics {
 
 }  // anonymous namespace
 
-class TestPasswordGenerationManager : public PasswordGenerationManager {
- public:
-  explicit TestPasswordGenerationManager(content::WebContents* contents)
-      : PasswordGenerationManager(
-            contents,
-            ChromePasswordManagerClient::FromWebContents(contents)) {}
-  virtual ~TestPasswordGenerationManager() {}
-
-  virtual void SendAccountCreationFormsToRenderer(
-      content::RenderViewHost* host,
-      const std::vector<autofill::FormData>& forms) OVERRIDE {
-    sent_account_creation_forms_.insert(
-        sent_account_creation_forms_.begin(), forms.begin(), forms.end());
-  }
-
-  const std::vector<autofill::FormData>& GetSentAccountCreationForms() {
-    return sent_account_creation_forms_;
-  }
-
-  void ClearSentAccountCreationForms() {
-    sent_account_creation_forms_.clear();
-  }
-
- private:
-  std::vector<autofill::FormData> sent_account_creation_forms_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPasswordGenerationManager);
-};
-
 class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
 
-    ChromePasswordManagerClient::CreateForWebContents(web_contents());
-    password_generation_manager_.reset(
-        new TestPasswordGenerationManager(web_contents()));
+    client_.reset(new TestPasswordManagerClient(web_contents(), profile()));
   }
 
   virtual void TearDown() OVERRIDE {
+    client_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  PasswordGenerationManager* GetGenerationManager() {
+    return client_->GetDriver()->GetPasswordGenerationManager();
+  }
+
+  TestPasswordManagerDriver* GetTestDriver() {
+    return static_cast<TestPasswordManagerDriver*>(client_->GetDriver());
+  }
+
   bool IsGenerationEnabled() {
-    return password_generation_manager_->IsGenerationEnabled();
+    return GetGenerationManager()->IsGenerationEnabled();
   }
 
   void DetectAccountCreationForms(
       const std::vector<autofill::FormStructure*>& forms) {
-    password_generation_manager_->DetectAccountCreationForms(forms);
+    GetGenerationManager()->DetectAccountCreationForms(forms);
   }
 
-  scoped_ptr<TestPasswordGenerationManager> password_generation_manager_;
-};
-
-class IncognitoPasswordGenerationManagerTest :
-    public PasswordGenerationManagerTest {
- public:
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
-    // Create an incognito profile.
-    TestingProfile::Builder builder;
-    builder.SetIncognito();
-    scoped_ptr<TestingProfile> profile = builder.Build();
-    return profile.release();
-  }
+  scoped_ptr<TestPasswordManagerClient> client_;
 };
 
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
-  PrefService* prefs = profile()->GetPrefs();
-
-  // Enable syncing. Generation should be enabled.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
-  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
-      profile());
-  sync_service->SetSyncSetupCompleted();
-  syncer::ModelTypeSet preferred_set;
-  preferred_set.Put(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(preferred_set);
+  // Enabling the PasswordManager and password sync should cause generation to
+  // be enabled.
+  PrefService* prefs = client_->GetPrefs();
+  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  client_->set_is_password_sync_enabled(true);
   EXPECT_TRUE(IsGenerationEnabled());
 
-  // Change syncing preferences to not include passwords. Generation should
-  // be disabled.
-  preferred_set.Put(syncer::EXTENSIONS);
-  preferred_set.Remove(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(preferred_set);
+  // Disabling password syncing should cause generation to be disabled.
+  client_->set_is_password_sync_enabled(false);
   EXPECT_FALSE(IsGenerationEnabled());
 
-  // Disable syncing. Generation should also be disabled.
-  sync_service->DisableForUser();
+  // Disabling the PasswordManager should cause generation to be disabled even
+  // if syncing is enabled.
+  prefs->SetBoolean(prefs::kPasswordManagerEnabled, false);
+  client_->set_is_password_sync_enabled(true);
   EXPECT_FALSE(IsGenerationEnabled());
 }
 
 TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Setup so that IsGenerationEnabled() returns true.
-  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
-      profile());
-  sync_service->SetSyncSetupCompleted();
+  PrefService* prefs = client_->GetPrefs();
+  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  client_->set_is_password_sync_enabled(true);
 
   autofill::FormData login_form;
   login_form.origin = GURL("http://www.yahoo.com/login/");
@@ -179,23 +209,19 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
       TestAutofillMetrics());
 
   DetectAccountCreationForms(forms);
-  EXPECT_EQ(1u,
-            password_generation_manager_->GetSentAccountCreationForms().size());
-  EXPECT_EQ(
-      GURL("http://accounts.yahoo.com/"),
-      password_generation_manager_->GetSentAccountCreationForms()[0].origin);
+  EXPECT_EQ(1u, GetTestDriver()->GetFoundAccountCreationForms().size());
+  EXPECT_EQ(GURL("http://accounts.yahoo.com/"),
+            GetTestDriver()->GetFoundAccountCreationForms()[0].origin);
 }
 
-TEST_F(IncognitoPasswordGenerationManagerTest,
-       UpdatePasswordSyncStateIncognito) {
-  // Disable password manager by going incognito. Even though syncing is
-  // enabled, generation should still be disabled.
-  PrefService* prefs = profile()->GetPrefs();
+TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
+  // Disable password manager by going incognito. Even though password
+  // syncing is enabled, generation should still
+  // be disabled.
+  GetTestDriver()->set_is_off_the_record(true);
+  PrefService* prefs = client_->GetPrefs();
+  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  client_->set_is_password_sync_enabled(true);
 
-  // Allow this test to control what should get synced.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
-
-  browser_sync::SyncPrefs sync_prefs(profile()->GetPrefs());
-  sync_prefs.SetSyncSetupCompleted();
   EXPECT_FALSE(IsGenerationEnabled());
 }

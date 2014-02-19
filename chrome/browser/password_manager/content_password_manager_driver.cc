@@ -6,6 +6,7 @@
 
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/content/common/autofill_messages.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
@@ -59,6 +60,13 @@ ContentPasswordManagerDriver::GetPasswordGenerationManager() {
 
 PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
   return &password_manager_;
+}
+
+void ContentPasswordManagerDriver::AccountCreationFormsFound(
+    const std::vector<autofill::FormData>& forms) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_AccountCreationFormsDetected(host->GetRoutingID(),
+                                                          forms));
 }
 
 void ContentPasswordManagerDriver::DidNavigateMainFrame(

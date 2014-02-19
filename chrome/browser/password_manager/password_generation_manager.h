@@ -85,12 +85,6 @@ class PasswordGenerationManager {
   // Determines current state of password generation
   bool IsGenerationEnabled() const;
 
-  // Sends a message to the renderer specifying form(s) that we should enable
-  // password generation on. This is a separate function to aid in testing.
-  virtual void SendAccountCreationFormsToRenderer(
-      content::RenderViewHost* host,
-      const std::vector<autofill::FormData>& forms);
-
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
