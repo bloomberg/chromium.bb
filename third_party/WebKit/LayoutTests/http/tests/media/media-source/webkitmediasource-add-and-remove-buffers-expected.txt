@@ -2,29 +2,29 @@ CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' ins
 Tests webkitSourceAddId() & webkitSourceRemoveId() methods
 
 Test adding an ID while closed.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': This MediaSource's readyState is not 'open'.
 
 running testAddBufferFailureCases
 EVENT(webkitsourceopen)
 Test empty type.
-Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+Got expected exception InvalidAccessError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': The type provided is empty.
 Test an unsupported type.
-Got expected exception NotSupportedError: The implementation did not support the requested type of object or operation.
+Got expected exception NotSupportedError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': The type provided ('audio/x-unsupported-format') is not supported.
 Test a supported type with an unsupported codec.
-Got expected exception NotSupportedError: The implementation did not support the requested type of object or operation.
+Got expected exception NotSupportedError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': The type provided ('video/webm; codecs="vp8, speex"') is not supported.
 Test reaching sourceID limit.
 Test that SourceBuffers can't be added while in the ended state.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': This MediaSource's readyState is not 'open'.
 
 running testRemoveNullBuffer
 EVENT(webkitsourceopen)
 Test null buffer case
-Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+Got expected exception InvalidAccessError: Failed to execute 'removeSourceBuffer' on 'WebKitMediaSource': The SourceBuffer provided is invalid.
 
 running testRemoveAgain
 EVENT(webkitsourceopen)
 Test removing a buffer that was already removed.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to execute 'removeSourceBuffer' on 'WebKitMediaSource': This MediaSource does not contain any SourceBuffers.
 
 running testRemoveBufferAfterEnded
 EVENT(webkitsourceopen)

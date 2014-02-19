@@ -48,7 +48,7 @@ Test that buffered throws an error after SourceBuffer has been removed.
 Got expected exception InvalidStateError: Failed to read the 'buffered' property from 'WebKitSourceBuffer': This SourceBuffer has been removed from its parent MediaSource.
 EXPECTED (mediaSource.sourceBuffers.length == '0') OK
 Test that addSourceBuffer() throws and error when the MediaSource is not associated with a media element.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to execute 'addSourceBuffer' on 'WebKitMediaSource': This MediaSource's readyState is not 'open'.
 Test that setting timestampOffset throws an error when the MediaSource is not associated with a media element.
 Got expected exception InvalidStateError: Failed to set the 'timestampOffset' property on 'WebKitSourceBuffer': This SourceBuffer has been removed from its parent MediaSource.
 END OF TEST

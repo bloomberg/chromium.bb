@@ -78,21 +78,21 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     // 1. If type is null or an empty then throw an InvalidAccessError exception and
     // abort these steps.
     if (type.isNull() || type.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The type provided is empty.");
         return 0;
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
     // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is not supported.");
         return 0;
     }
 
     // 4. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "This MediaSource's readyState is not 'open'.");
         return 0;
     }
 
@@ -117,14 +117,18 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     // 1. If sourceBuffer is null then throw an InvalidAccessError exception and
     // abort these steps.
     if (!buffer) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The SourceBuffer provided is invalid.");
         return;
     }
 
     // 2. If sourceBuffers is empty then throw an InvalidStateError exception and
     // abort these steps.
-    if (isClosed() || !m_sourceBuffers->length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (isClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, "This MediaSource's readyState is 'closed'.");
+        return;
+    }
+    if (!m_sourceBuffers->length()) {
+        exceptionState.throwDOMException(InvalidStateError, "This MediaSource does not contain any SourceBuffers.");
         return;
     }
 
@@ -133,7 +137,7 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     // 6. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
     // on that object.
     if (!m_sourceBuffers->remove(buffer)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, "The SourceBuffer provided was not contained in this MediaSource.");
         return;
     }
 
