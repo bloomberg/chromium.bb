@@ -177,6 +177,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       cc::switches::kEnableGPURasterization,
       cc::switches::kEnableImplSidePainting,
       cc::switches::kEnableMapImage,
+      cc::switches::kEnablePartialSwap,
       cc::switches::kEnablePerTilePainting,
       cc::switches::kEnablePinchVirtualViewport,
       cc::switches::kEnableTopControlsPositionCalculation,
@@ -234,6 +235,15 @@ std::string DeriveCommandLine(const GURL& start_url,
         ::switches::kRegisterPepperPlugins,
         base_command_line.GetSwitchValueNative(
             ::switches::kRegisterPepperPlugins).c_str());
+  }
+
+  // TODO(zelidrag): Remove this hack that get us around compositing bug from
+  // http://crbug.com/179256 once that bug is resolved.
+  if (command_line->HasSwitch(::switches::kForceAppMode)) {
+    std::string switch_to_remove("--");
+    switch_to_remove.append(cc::switches::kEnablePartialSwap);
+    cmd_line_str = cmd_line_str.replace(cmd_line_str.find(switch_to_remove),
+                                        switch_to_remove.length(), "");
   }
 
   return cmd_line_str;

@@ -170,7 +170,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.partial_swap_enabled = widget->AllowPartialSwap();
+  settings.partial_swap_enabled = widget->AllowPartialSwap() &&
+      cmd->HasSwitch(cc::switches::kEnablePartialSwap);
   settings.background_color_instead_of_checkerboard =
       cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
   settings.show_overdraw_in_tracing =
