@@ -258,7 +258,6 @@ custom("about_credits") {
 #  if (!is_ios) {
 #    deps += [
 #      ":component_extension_resources",
-#      ":devtools_discovery_page_resources",
 #      ":options_resources",
 #      ":quota_internals_resources",
 #      ":sync_file_system_internals_resources",
@@ -267,9 +266,6 @@ custom("about_credits") {
 #}
 #grit("component_extension_resources") {
 #  source = "browser/resources/component_extension_resources.grd"
-#}
-#grit("devtools_discovery_page_resources") {
-#  source = "browser/devtools/frontend/devtools_discovery_page_resources.grd"
 #}
 #grit("memory_internals_resources") {
 #  source = "browser/resources/memory_internals_resources.grd"

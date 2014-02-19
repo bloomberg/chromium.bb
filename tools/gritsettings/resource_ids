@@ -131,9 +131,6 @@
   "devtools_resources.grd": {
     "includes": [22000],
   },
-  "chrome/browser/devtools/frontend/devtools_discovery_page_resources.grd": {
-    "includes": [22500],
-  },
   "chrome/browser/resources/options_resources.grd": {
     "includes": [23000],
   },

@@ -90,14 +90,6 @@
               'includes': [ '../build/grit_action.gypi' ],
             },
             {
-              'action_name': 'devtools_discovery_page_resources',
-              'variables': {
-                'grit_grd_file':
-                   'browser/devtools/frontend/devtools_discovery_page_resources.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ]
-            },
-            {
               'action_name': 'sync_file_system_internals_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',

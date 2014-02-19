@@ -37,7 +37,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "grit/devtools_discovery_page_resources.h"
+#include "grit/browser_resources.h"
 #include "jni/DevToolsServer_jni.h"
 #include "net/socket/unix_domain_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
