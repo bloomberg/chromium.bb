@@ -14,6 +14,8 @@
 //   should have protected or private destructors.
 // - WeakPtrFactory members that refer to their outer class should be the last
 //   member.
+// - Enum types with a xxxx_LAST or xxxxLast const actually have that constant
+//   have the maximal value for that type.
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/AST.h"
@@ -48,6 +50,9 @@ const char kProtectedNonVirtualDtor[] =
 const char kWeakPtrFactoryOrder[] =
     "[chromium-style] WeakPtrFactory members which refer to their outer class "
     "must be the last member in the outer class definition.";
+const char kBadLastEnumValue[] =
+    "[chromium-style] _LAST/Last constants of enum types must have the maximal "
+    "value for any constant of that type.";
 const char kNoteInheritance[] =
     "[chromium-style] %0 inherits from %1 here";
 const char kNoteImplicitDtor[] =
@@ -107,6 +112,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         getErrorLevel(), kProtectedNonVirtualDtor);
     diag_weak_ptr_factory_order_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kWeakPtrFactoryOrder);
+    diag_bad_enum_last_value_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kBadLastEnumValue);
 
     // Registers notes to make it easier to interpret warnings.
     diag_note_inheritance_ = diagnostic().getCustomDiagID(
@@ -143,6 +150,32 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       CheckWeakPtrFactoryMembers(record_location, record);
   }
 
+  virtual void CheckChromeEnum(SourceLocation enum_location,
+                               EnumDecl* enum_decl) {
+    bool got_one = false;
+    llvm::APSInt max_so_far;
+    EnumDecl::enumerator_iterator iter;
+    for (iter = enum_decl->enumerator_begin();
+         iter != enum_decl->enumerator_end(); ++iter) {
+      if (!got_one) {
+        max_so_far = iter->getInitVal();
+        got_one = true;
+      } else if (iter->getInitVal() > max_so_far)
+        max_so_far = iter->getInitVal();
+    }
+    for (iter = enum_decl->enumerator_begin();
+         iter != enum_decl->enumerator_end(); ++iter) {
+      std::string name = iter->getNameAsString();
+      if (((name.size() > 4 &&
+            name.compare(name.size() - 4, 4, "Last") == 0) ||
+           (name.size() > 5 &&
+            name.compare(name.size() - 5, 5, "_LAST") == 0)) &&
+          iter->getInitVal() < max_so_far) {
+        diagnostic().Report(iter->getLocation(), diag_bad_enum_last_value_);
+      }
+    }
+  }
+
  private:
   // The type of problematic ref-counting pattern that was encountered.
   enum RefcountIssue {
@@ -159,6 +192,7 @@ class FindBadConstructsConsumer : public ChromeClassTester {
   unsigned diag_public_dtor_;
   unsigned diag_protected_non_virtual_dtor_;
   unsigned diag_weak_ptr_factory_order_;
+  unsigned diag_bad_enum_last_value_;
   unsigned diag_note_inheritance_;
   unsigned diag_note_implicit_dtor_;
   unsigned diag_note_public_dtor_;
