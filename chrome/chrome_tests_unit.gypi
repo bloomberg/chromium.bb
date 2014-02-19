@@ -2347,16 +2347,6 @@
                 'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
               ],
             }],
-            ['chromeos==0', {
-              'conditions': [
-                ['use_gnome_keyring==1', {
-                  # We use a few library functions directly, so link directly.
-                  'dependencies': [
-                    '../build/linux/system.gyp:gnome_keyring_direct',
-                  ],
-                }],
-              ],
-            }],
           ],
           'dependencies': [
             '../build/linux/system.gyp:dbus',
@@ -2379,6 +2369,11 @@
           # Disable the GNOME Keyring tests if we are not using it.
           'sources!': [
             'browser/password_manager/native_backend_gnome_x_unittest.cc',
+          ],
+        }, {
+          # We use a few library functions directly, so link directly.
+          'dependencies': [
+            '../build/linux/system.gyp:gnome_keyring_direct',
           ],
         }],
         ['OS=="linux" and use_aura==1', {
