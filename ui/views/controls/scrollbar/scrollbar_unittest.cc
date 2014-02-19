@@ -156,4 +156,15 @@ TEST_F(NativeScrollBarTest, MAYBE_ScrollBarFitsToBottom) {
       scrollbar_->GetPosition());
 }
 
+TEST_F(NativeScrollBarTest, ScrollToEndAfterShrinkAndExpand) {
+  // Scroll to the end of the content.
+  scrollbar_->Update(100, 101, 0);
+  EXPECT_TRUE(scrollbar_->ScrollByContentsOffset(-1));
+  // Shrink and then re-exapnd the content.
+  scrollbar_->Update(100, 100, 0);
+  scrollbar_->Update(100, 101, 0);
+  // Ensure the scrollbar allows scrolling to the end.
+  EXPECT_TRUE(scrollbar_->ScrollByContentsOffset(-1));
+}
+
 }  // namespace views
