@@ -32,6 +32,7 @@
 #define WebCrypto_h
 
 #include "WebCommon.h"
+#include "WebCryptoAlgorithm.h"
 #include "WebCryptoKey.h"
 #include "WebPrivatePtr.h"
 
@@ -177,6 +178,13 @@ public:
     virtual void wrapKey(WebCryptoKeyFormat, const WebCryptoKey& key, const WebCryptoKey& wrappingKey, const WebCryptoAlgorithm&, WebCryptoResult result) { result.completeWithError(); }
     // It is possible that unwrappedKeyAlgorithm.isNull()
     virtual void unwrapKey(WebCryptoKeyFormat, const unsigned char* wrappedKey, unsigned wrappedKeySize, const WebCryptoKey&, const WebCryptoAlgorithm& unwrapAlgorithm, const WebCryptoAlgorithm& unwrappedKeyAlgorithm, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
+
+    // This is the one exception to the "Completing the request" guarantees
+    // outlined above. digestSynchronous must provide the result into result
+    // synchronously. It must return |true| on successful calculation of the
+    // digest and |false| otherwise. This is useful for Blink internal crypto
+    // and is not part of the WebCrypto standard.
+    virtual bool digestSynchronous(const WebCryptoAlgorithmId algorithmId, const unsigned char* data, unsigned dataSize, WebArrayBuffer& result) { return false; }
 
 protected:
     virtual ~WebCrypto() { }
