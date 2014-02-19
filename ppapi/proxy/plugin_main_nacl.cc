@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unistd.h>
+
 #include <map>
 #include <set>
 
@@ -12,6 +14,7 @@
 // ViewMsgLog et al. functions.
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -56,9 +59,10 @@ namespace {
 // This class manages communication between the plugin and the browser, and
 // manages the PluginDispatcher instances for communication between the plugin
 // and the renderer.
-class PpapiDispatcher : public ProxyChannel,
-                        public PluginDispatcher::PluginDelegate,
-                        public PluginProxyDelegate {
+class PpapiDispatcher : public PluginDispatcher::PluginDelegate,
+                        public PluginProxyDelegate,
+                        public IPC::Listener,
+                        public IPC::Sender {
  public:
   explicit PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop);
 
@@ -86,6 +90,10 @@ class PpapiDispatcher : public ProxyChannel,
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
+
+  // IPC::Sender implementation
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
  private:
   void OnMsgInitializeNaClDispatcher(const ppapi::PpapiNaClPluginArgs& args);
@@ -98,6 +106,7 @@ class PpapiDispatcher : public ProxyChannel,
   uint32 next_plugin_dispatcher_id_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WaitableEvent shutdown_event_;
+  scoped_ptr<IPC::SyncChannel> channel_;
 };
 
 PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
@@ -110,11 +119,13 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
       "NaCl IPC", base::FileDescriptor(NACL_CHROME_DESC_BASE, false));
   // We don't have/need a PID since handle sharing happens outside of the
   // NaCl sandbox.
-  InitWithChannel(this, base::kNullProcessId, channel_handle,
-                  false);  // Channel is server.
-  channel()->AddFilter(new ppapi::proxy::PluginMessageFilter(
+  channel_.reset(new IPC::SyncChannel(
+      channel_handle, IPC::Channel::MODE_SERVER, this,
+      GetIPCMessageLoop(), true, GetShutdownEvent()));
+
+  channel_->AddFilter(new ppapi::proxy::PluginMessageFilter(
       NULL, PluginGlobals::Get()->resource_reply_thread_registrar()));
-  channel()->AddFilter(
+  channel_->AddFilter(
       new tracing::ChildTraceMessageFilter(message_loop_.get()));
 }
 
@@ -192,6 +203,14 @@ bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(OnPluginDispatcherMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
   return true;
+}
+
+void PpapiDispatcher::OnChannelError() {
+  exit(1);
+}
+
+bool PpapiDispatcher::Send(IPC::Message* msg) {
+  return channel_->Send(msg);
 }
 
 void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
