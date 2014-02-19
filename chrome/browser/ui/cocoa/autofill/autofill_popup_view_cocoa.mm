@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
@@ -135,8 +135,7 @@ NSColor* SubtextColor() {
     if (!NSIntersectsRect(rowBounds, dirtyRect))
       continue;
 
-    if (controller_->identifiers()[i] ==
-            blink::WebAutofillClient::MenuItemIDSeparator) {
+    if (controller_->identifiers()[i] == autofill::POPUP_ITEM_ID_SEPARATOR) {
       [self drawSeparatorWithBounds:rowBounds];
     } else {
       NSString* name = SysUTF16ToNSString(controller_->names()[i]);

@@ -7,12 +7,6 @@ include_rules = [
   "+sql",
   "+third_party/libjingle",
   "+third_party/libphonenumber",  # For phone number i18n.
-
-  # TODO(blundell): Bring this list to zero.
-  #
-  # Do not add to the list of temporarily-allowed dependencies below,
-  # and please do not introduce more #includes of these files.
-  "!third_party/WebKit/public/web/WebAutofillClient.h",
 ]
 
 specific_include_rules = {

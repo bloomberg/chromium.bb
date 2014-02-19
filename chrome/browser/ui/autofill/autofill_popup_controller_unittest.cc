@@ -16,12 +16,12 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "grit/webkit_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -32,7 +32,6 @@ using ::testing::AtLeast;
 using ::testing::NiceMock;
 using base::ASCIIToUTF16;
 using base::WeakPtr;
-using blink::WebAutofillClient;
 
 namespace autofill {
 namespace {
@@ -237,7 +236,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   std::vector<int> autofill_ids;
   autofill_ids.push_back(1);
   autofill_ids.push_back(1);
-  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  autofill_ids.push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
   autofill_popup_controller_->Show(names, names, names, autofill_ids);
 
   // Generate a popup, so it can be hidden later. It doesn't matter what the
@@ -292,8 +291,8 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
   std::vector<base::string16> names(3, base::string16());
   std::vector<int> autofill_ids;
   autofill_ids.push_back(1);
-  autofill_ids.push_back(WebAutofillClient::MenuItemIDSeparator);
-  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  autofill_ids.push_back(POPUP_ITEM_ID_SEPARATOR);
+  autofill_ids.push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
   autofill_popup_controller_->Show(names, names, names, autofill_ids);
 
   autofill_popup_controller_->SetSelectedLine(0);
@@ -364,8 +363,8 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   // Update the expected values.
   items.insert(items.begin(), data_list_values[0]);
   items.insert(items.begin() + 1, base::string16());
-  ids.insert(ids.begin(), WebAutofillClient::MenuItemIDDataListEntry);
-  ids.insert(ids.begin() + 1, WebAutofillClient::MenuItemIDSeparator);
+  ids.insert(ids.begin(), POPUP_ITEM_ID_DATALIST_ENTRY);
+  ids.insert(ids.begin() + 1, POPUP_ITEM_ID_SEPARATOR);
 
   EXPECT_EQ(items, autofill_popup_controller_->names());
   EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
@@ -378,7 +377,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   // Update the expected values.
   items.insert(items.begin() + 1, data_list_values[1]);
-  ids.insert(ids.begin(), WebAutofillClient::MenuItemIDDataListEntry);
+  ids.insert(ids.begin(), POPUP_ITEM_ID_DATALIST_ENTRY);
 
   EXPECT_EQ(items, autofill_popup_controller_->names());
   EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
@@ -403,7 +402,7 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
   std::vector<base::string16> items;
   items.push_back(base::string16());
   std::vector<int> ids;
-  ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
+  ids.push_back(POPUP_ITEM_ID_DATALIST_ENTRY);
 
   autofill_popup_controller_->Show(items, items, items, ids);
 

@@ -99,7 +99,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
-  "+third_party/WebKit/public/web/WebAutofillClient.h",
   "+third_party/WebKit/public/web/WebCache.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",

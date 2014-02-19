@@ -8,11 +8,9 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/component_strings.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using blink::WebAutofillClient;
 
 namespace autofill {
 
@@ -65,7 +63,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   values.push_back(base::string16());
   labels.push_back(base::string16());
   icons.push_back(base::string16());
-  ids.push_back(WebAutofillClient::MenuItemIDSeparator);
+  ids.push_back(POPUP_ITEM_ID_SEPARATOR);
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
@@ -82,7 +80,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Remove the separator if it is the last element.
   DCHECK_GT(ids.size(), 0U);
-  if (ids.back() == WebAutofillClient::MenuItemIDSeparator) {
+  if (ids.back() == POPUP_ITEM_ID_SEPARATOR) {
     values.pop_back();
     labels.pop_back();
     icons.pop_back();
@@ -128,7 +126,7 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 
   std::vector<base::string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
-                                WebAutofillClient::MenuItemIDPasswordEntry);
+                                POPUP_ITEM_ID_PASSWORD_ENTRY);
   autofill_manager_->delegate()->ShowAutofillPopup(
       element_bounds_,
       autofill_query_field_.text_direction,
@@ -174,19 +172,19 @@ void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
 
 void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int identifier) {
-  if (identifier == WebAutofillClient::MenuItemIDAutofillOptions) {
+  if (identifier == POPUP_ITEM_ID_AUTOFILL_OPTIONS) {
     // User selected 'Autofill Options'.
     autofill_manager_->ShowAutofillSettings();
-  } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
+  } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
     autofill_driver_->RendererShouldClearFilledForm();
-  } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry) {
+  } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY) {
     bool success = password_autofill_manager_.DidAcceptAutofillSuggestion(
         autofill_query_field_, value);
     DCHECK(success);
-  } else if (identifier == WebAutofillClient::MenuItemIDDataListEntry) {
+  } else if (identifier == POPUP_ITEM_ID_DATALIST_ENTRY) {
     autofill_driver_->RendererShouldAcceptDataListSuggestion(value);
-  } else if (identifier == WebAutofillClient::MenuItemIDAutocompleteEntry) {
+  } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
     autofill_driver_->RendererShouldSetNodeText(value);
   } else {
@@ -235,7 +233,7 @@ base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                                                     bool is_preview) {
   // If the selected element is a warning we don't want to do anything.
-  if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
+  if (unique_id == POPUP_ITEM_ID_WARNING_MESSAGE)
     return;
 
   AutofillDriver::RendererFormDataAction renderer_action = is_preview ?
@@ -266,8 +264,7 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
           1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
       autofill_labels->assign(1, base::string16());
       autofill_icons->assign(1, base::string16());
-      autofill_unique_ids->assign(1,
-                                  WebAutofillClient::MenuItemIDWarningMessage);
+      autofill_unique_ids->assign(1, POPUP_ITEM_ID_WARNING_MESSAGE);
     } else {
       autofill_values->clear();
       autofill_labels->clear();
@@ -275,8 +272,7 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
       autofill_unique_ids->clear();
     }
   } else if (autofill_unique_ids->size() > 1 &&
-             (*autofill_unique_ids)[0] ==
-                 WebAutofillClient::MenuItemIDWarningMessage) {
+             (*autofill_unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE) {
     // If we received a warning instead of suggestions from autofill but regular
     // suggestions from autocomplete, don't show the autofill warning.
     autofill_values->erase(autofill_values->begin());
@@ -287,8 +283,7 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
 
   // If we were about to show a warning and we shouldn't, don't.
   if (!autofill_unique_ids->empty() &&
-      (*autofill_unique_ids)[0] ==
-          WebAutofillClient::MenuItemIDWarningMessage &&
+      (*autofill_unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE &&
       !display_warning_if_disabled_) {
     autofill_values->clear();
     autofill_labels->clear();
@@ -309,7 +304,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
     autofill_labels->push_back(base::string16());
     autofill_icons->push_back(base::string16());
-    autofill_unique_ids->push_back(WebAutofillClient::MenuItemIDClearForm);
+    autofill_unique_ids->push_back(POPUP_ITEM_ID_CLEAR_FORM);
   }
 
   // Append the 'Chrome Autofill options' menu item;
@@ -317,7 +312,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
   autofill_labels->push_back(base::string16());
   autofill_icons->push_back(base::string16());
-  autofill_unique_ids->push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  autofill_unique_ids->push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
 }
 
 void AutofillExternalDelegate::InsertDataListValues(
@@ -335,7 +330,7 @@ void AutofillExternalDelegate::InsertDataListValues(
     autofill_labels->insert(autofill_labels->begin(), base::string16());
     autofill_icons->insert(autofill_icons->begin(), base::string16());
     autofill_unique_ids->insert(autofill_unique_ids->begin(),
-                                WebAutofillClient::MenuItemIDSeparator);
+                                POPUP_ITEM_ID_SEPARATOR);
   }
 
   // Insert the datalist elements.
@@ -352,7 +347,7 @@ void AutofillExternalDelegate::InsertDataListValues(
                          base::string16());
   autofill_unique_ids->insert(autofill_unique_ids->begin(),
                               data_list_values_.size(),
-                              WebAutofillClient::MenuItemIDDataListEntry);
+                              POPUP_ITEM_ID_DATALIST_ENTRY);
 }
 
 }  // namespace autofill

@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -23,8 +23,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/text_utils.h"
-
-using blink::WebAutofillClient;
 
 namespace {
 
@@ -144,7 +142,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     if (!line_rect.Intersects(damage_rect))
       continue;
 
-    if (controller_->identifiers()[i] == WebAutofillClient::MenuItemIDSeparator)
+    if (controller_->identifiers()[i] == POPUP_ITEM_ID_SEPARATOR)
       DrawSeparator(cr, line_rect);
     else
       DrawAutofillEntry(cr, i, line_rect);

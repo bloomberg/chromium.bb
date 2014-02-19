@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -17,8 +17,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
-
-using blink::WebAutofillClient;
 
 namespace autofill {
 
@@ -54,8 +52,7 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   for (size_t i = 0; i < controller_->names().size(); ++i) {
     gfx::Rect line_rect = controller_->GetRowBounds(i);
 
-    if (controller_->identifiers()[i] ==
-            WebAutofillClient::MenuItemIDSeparator) {
+    if (controller_->identifiers()[i] == POPUP_ITEM_ID_SEPARATOR) {
       canvas->DrawRect(line_rect, kItemTextColor);
     } else {
       DrawAutofillEntry(canvas, i, line_rect);

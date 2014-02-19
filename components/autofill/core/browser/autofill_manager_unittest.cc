@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
@@ -47,7 +48,6 @@
 #include "grit/component_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -916,8 +916,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   };
   base::string16 expected_labels[] = {base::string16()};
   base::string16 expected_icons[] = {base::string16()};
-  int expected_unique_ids[] =
-      {blink::WebAutofillClient::MenuItemIDWarningMessage};
+  int expected_unique_ids[] = {POPUP_ITEM_ID_WARNING_MESSAGE};
   external_delegate_->CheckSuggestions(
       kDefaultPageID, arraysize(expected_values), expected_values,
       expected_labels, expected_icons, expected_unique_ids);

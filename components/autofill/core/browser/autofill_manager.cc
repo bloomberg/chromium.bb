@@ -35,6 +35,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -44,7 +45,6 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "grit/component_strings.h"
-#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -416,8 +416,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         values.assign(1, l10n_util::GetStringUTF16(warning));
         labels.assign(1, base::string16());
         icons.assign(1, base::string16());
-        unique_ids.assign(1,
-                          blink::WebAutofillClient::MenuItemIDWarningMessage);
+        unique_ids.assign(1, POPUP_ITEM_ID_WARNING_MESSAGE);
       } else {
         bool section_is_autofilled =
             SectionIsAutofilled(*form_structure, form,
