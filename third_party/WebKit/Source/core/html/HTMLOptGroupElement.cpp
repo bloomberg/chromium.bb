@@ -84,7 +84,10 @@ void HTMLOptGroupElement::recalcSelectOptions()
 
 void HTMLOptGroupElement::attach(const AttachContext& context)
 {
-    updateNonRenderStyle();
+    if (context.resolvedStyle) {
+        ASSERT(!m_style || m_style == context.resolvedStyle);
+        m_style = context.resolvedStyle;
+    }
     HTMLElement::attach(context);
 }
 
@@ -106,13 +109,8 @@ RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
 
 PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
 {
+    updateNonRenderStyle();
     return m_style;
-}
-
-void HTMLOptGroupElement::willRecalcStyle(StyleRecalcChange change)
-{
-    if (!needsAttach() && (needsStyleRecalc() || change >= Inherit))
-        updateNonRenderStyle();
 }
 
 String HTMLOptGroupElement::groupLabelText() const

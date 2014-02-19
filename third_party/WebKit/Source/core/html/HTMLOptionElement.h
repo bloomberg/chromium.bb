@@ -85,9 +85,7 @@ private:
     void updateNonRenderStyle();
     virtual RenderStyle* nonRendererStyle() const OVERRIDE;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-
     virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
-    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     String collectOptionInnerText() const;
 

@@ -81,8 +81,15 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 
 void HTMLOptionElement::attach(const AttachContext& context)
 {
-    updateNonRenderStyle();
-    HTMLElement::attach(context);
+    AttachContext optionContext(context);
+    if (context.resolvedStyle) {
+        ASSERT(!m_style || m_style == context.resolvedStyle);
+        m_style = context.resolvedStyle;
+    } else {
+        updateNonRenderStyle();
+        optionContext.resolvedStyle = m_style.get();
+    }
+    HTMLElement::attach(optionContext);
 }
 
 void HTMLOptionElement::detach(const AttachContext& context)
@@ -296,19 +303,16 @@ RenderStyle* HTMLOptionElement::nonRendererStyle() const
 
 PassRefPtr<RenderStyle> HTMLOptionElement::customStyleForRenderer()
 {
+    updateNonRenderStyle();
     return m_style;
 }
 
-void HTMLOptionElement::willRecalcStyle(StyleRecalcChange change)
+void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
 {
-    if (!needsAttach() && (needsStyleRecalc() || change >= Inherit))
-        updateNonRenderStyle();
-}
+    if (change == NoChange)
+        return;
 
-void HTMLOptionElement::didRecalcStyle(StyleRecalcChange)
-{
-    // FIXME: This is nasty, we ask our owner select to repaint even if the new
-    // style is exactly the same.
+    // FIXME: We ask our owner select to repaint regardless of which property changed.
     if (HTMLSelectElement* select = ownerSelectElement()) {
         if (RenderObject* renderer = select->renderer())
             renderer->repaint();
