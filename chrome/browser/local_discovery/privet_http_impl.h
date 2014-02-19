@@ -288,8 +288,6 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       net::URLRequestContextGetter* request_context);
   virtual ~PrivetHTTPClientImpl();
 
-  virtual const base::DictionaryValue* GetCachedInfo() const OVERRIDE;
-
   virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) OVERRIDE;
@@ -318,10 +316,6 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) const;
 
-  void CacheInfo(const base::DictionaryValue* cached_info);
-
-  bool HasToken() const;
-
   void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback);
 
@@ -331,9 +325,8 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   void OnPrivetInfoDone(const base::DictionaryValue* value);
 
   std::string name_;
-  PrivetURLFetcherFactory fetcher_factory_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
   net::HostPortPair host_port_;
-  scoped_ptr<base::DictionaryValue> cached_info_;
 
   scoped_ptr<PrivetJSONOperation> info_operation_;
   TokenCallbackVector token_callbacks_;

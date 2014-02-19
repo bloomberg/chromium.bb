@@ -107,8 +107,6 @@ void PrivetInfoOperationImpl::OnError(PrivetURLFetcher* fetcher,
 void PrivetInfoOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
                                            const base::DictionaryValue* value,
                                            bool has_error) {
-  if (!has_error)
-    privet_client_->CacheInfo(value);
   callback_.Run(value);
 }
 
@@ -787,16 +785,9 @@ PrivetHTTPClientImpl::PrivetHTTPClientImpl(
     const std::string& name,
     const net::HostPortPair& host_port,
     net::URLRequestContextGetter* request_context)
-    : name_(name),
-      fetcher_factory_(request_context),
-      host_port_(host_port) {
-}
+    : name_(name), request_context_(request_context), host_port_(host_port) {}
 
 PrivetHTTPClientImpl::~PrivetHTTPClientImpl() {
-}
-
-const base::DictionaryValue* PrivetHTTPClientImpl::GetCachedInfo() const {
-  return cached_info_.get();
 }
 
 scoped_ptr<PrivetRegisterOperation>
@@ -861,21 +852,12 @@ scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
   replacements.SetHostStr(host_port_.host());
   std::string port(base::IntToString(host_port_.port()));  // Keep string alive.
   replacements.SetPortStr(port);
-  return fetcher_factory_.CreateURLFetcher(url.ReplaceComponents(replacements),
-                                           request_type, delegate);
+  return scoped_ptr<PrivetURLFetcher>(
+      new PrivetURLFetcher(url.ReplaceComponents(replacements),
+                           request_type,
+                           request_context_.get(),
+                           delegate));
 }
-
-void PrivetHTTPClientImpl::CacheInfo(const base::DictionaryValue* cached_info) {
-  cached_info_.reset(cached_info->DeepCopy());
-  std::string token;
-  if (cached_info_->GetString(kPrivetInfoKeyToken, &token)) {
-    fetcher_factory_.set_token(token);
-  }
-}
-
-bool PrivetHTTPClientImpl::HasToken() const {
-  return fetcher_factory_.get_token() != "";
-};
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(
     const PrivetURLFetcher::TokenCallback& callback) {

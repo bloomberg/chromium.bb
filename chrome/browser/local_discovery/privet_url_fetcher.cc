@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +21,18 @@
 namespace local_discovery {
 
 namespace {
+
+typedef std::map<std::string, std::string> TokenMap;
+
+struct TokenMapHolder {
+ public:
+  static TokenMapHolder* GetInstance() {
+    return Singleton<TokenMapHolder>::get();
+  }
+
+  TokenMap map;
+};
+
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
 const char kRangeHeaderFormat[] = "Range: bytes=%d-%d";
 const char kXPrivetEmptyToken[] = "\"\"";
@@ -50,13 +63,11 @@ bool PrivetURLFetcher::Delegate::OnRawData(PrivetURLFetcher* fetcher,
 }
 
 PrivetURLFetcher::PrivetURLFetcher(
-    const std::string& token,
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLRequestContextGetter* request_context,
     PrivetURLFetcher::Delegate* delegate)
-    : privet_access_token_(token),
-      url_(url),
+    : url_(url),
       request_type_(request_type),
       request_context_(request_context),
       delegate_(delegate),
@@ -67,10 +78,20 @@ PrivetURLFetcher::PrivetURLFetcher(
       byte_range_start_(0),
       byte_range_end_(0),
       tries_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PrivetURLFetcher::~PrivetURLFetcher() {
+}
+
+// static
+void PrivetURLFetcher::SetTokenForHost(const std::string& host,
+                                       const std::string& token) {
+  TokenMapHolder::GetInstance()->map[host] = token;
+}
+
+// static
+void PrivetURLFetcher::ResetTokenMapForTests() {
+  TokenMapHolder::GetInstance()->map.clear();
 }
 
 void PrivetURLFetcher::DoNotRetryOnTransientError() {
@@ -81,6 +102,16 @@ void PrivetURLFetcher::DoNotRetryOnTransientError() {
 void PrivetURLFetcher::AllowEmptyPrivetToken() {
   DCHECK(tries_ == 0);
   allow_empty_privet_token_ = true;
+}
+
+std::string PrivetURLFetcher::GetPrivetAccessToken() {
+  TokenMapHolder* token_map_holder = TokenMapHolder::GetInstance();
+  TokenMap::iterator found = token_map_holder->map.find(GetHostString());
+  return found != token_map_holder->map.end() ? found->second : std::string();
+}
+
+std::string PrivetURLFetcher::GetHostString() {
+  return url_.GetOrigin().spec();
 }
 
 void PrivetURLFetcher::SaveResponseToFile() {
@@ -98,7 +129,7 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 void PrivetURLFetcher::Try() {
   tries_++;
   if (tries_ < kPrivetMaxRetries) {
-    std::string token = privet_access_token_;
+    std::string token = GetPrivetAccessToken();
 
     if (token.empty())
       token = kXPrivetEmptyToken;
@@ -142,7 +173,8 @@ void PrivetURLFetcher::Try() {
 void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
 
-  if (privet_access_token_.empty() && !allow_empty_privet_token_) {
+  std::string privet_access_token = GetPrivetAccessToken();
+  if (privet_access_token.empty() && !allow_empty_privet_token_) {
     RequestTokenRefresh();
   } else {
     Try();
@@ -298,7 +330,7 @@ void PrivetURLFetcher::RefreshToken(const std::string& token) {
   if (token.empty()) {
     delegate_->OnError(this, TOKEN_ERROR);
   } else {
-    privet_access_token_ = token;
+    SetTokenForHost(GetHostString(), token);
     Try();
   }
 }
@@ -307,22 +339,6 @@ bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
          (error == kPrivetErrorPendingUserAction) ||
          (error == kPrivetErrorPrinterBusy);
-}
-
-PrivetURLFetcherFactory::PrivetURLFetcherFactory(
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {
-}
-
-PrivetURLFetcherFactory::~PrivetURLFetcherFactory() {
-}
-
-scoped_ptr<PrivetURLFetcher> PrivetURLFetcherFactory::CreateURLFetcher(
-    const GURL& url, net::URLFetcher::RequestType request_type,
-    PrivetURLFetcher::Delegate* delegate) const {
-  return scoped_ptr<PrivetURLFetcher>(
-      new PrivetURLFetcher(token_, url, request_type, request_context_.get(),
-                           delegate));
 }
 
 }  // namespace local_discovery

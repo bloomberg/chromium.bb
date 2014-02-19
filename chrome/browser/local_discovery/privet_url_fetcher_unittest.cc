@@ -89,11 +89,13 @@ class PrivetURLFetcherTest : public ::testing::Test {
     request_context_= new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
     privet_urlfetcher_.reset(new PrivetURLFetcher(
-        kSamplePrivetToken,
         GURL(kSamplePrivetURL),
         net::URLFetcher::POST,
         request_context_.get(),
         &delegate_));
+
+    PrivetURLFetcher::SetTokenForHost(GURL(kSamplePrivetURL).GetOrigin().spec(),
+                                      kSamplePrivetToken);
   }
   virtual ~PrivetURLFetcherTest() {
   }
@@ -204,12 +206,8 @@ TEST_F(PrivetURLFetcherTest, Header) {
 }
 
 TEST_F(PrivetURLFetcherTest, Header2) {
-  privet_urlfetcher_.reset(new PrivetURLFetcher(
-      "",
-      GURL(kSamplePrivetURL),
-      net::URLFetcher::POST,
-      request_context_.get(),
-      &delegate_));
+  PrivetURLFetcher::SetTokenForHost(GURL(kSamplePrivetURL).GetOrigin().spec(),
+                                    "");
 
   privet_urlfetcher_->AllowEmptyPrivetToken();
   privet_urlfetcher_->Start();

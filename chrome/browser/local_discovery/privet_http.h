@@ -161,7 +161,6 @@ class PrivetLocalPrintOperation {
 class PrivetHTTPClient {
  public:
   virtual ~PrivetHTTPClient() {}
-  virtual const base::DictionaryValue* GetCachedInfo() const = 0;
 
   virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,

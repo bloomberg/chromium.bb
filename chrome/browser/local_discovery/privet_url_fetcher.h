@@ -62,12 +62,17 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   };
 
   PrivetURLFetcher(
-      const std::string& token,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       net::URLRequestContextGetter* request_context,
       Delegate* delegate);
+
   virtual ~PrivetURLFetcher();
+
+  static void SetTokenForHost(const std::string& host,
+                              const std::string& token);
+
+  static void ResetTokenMapForTests();
 
   void DoNotRetryOnTransientError();
 
@@ -97,13 +102,14 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   int response_code() const { return url_fetcher_->GetResponseCode(); }
 
  private:
+  std::string GetHostString();  // Get string representing the host.
+  std::string GetPrivetAccessToken();
   void Try();
   void ScheduleRetry(int timeout_seconds);
   bool PrivetErrorTransient(const std::string& error);
   void RequestTokenRefresh();
   void RefreshToken(const std::string& token);
 
-  std::string privet_access_token_;
   GURL url_;
   net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -125,27 +131,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);
-};
-
-class PrivetURLFetcherFactory {
- public:
-  explicit PrivetURLFetcherFactory(
-      net::URLRequestContextGetter* request_context);
-  ~PrivetURLFetcherFactory();
-
-  scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      PrivetURLFetcher::Delegate* delegate) const;
-
-  void set_token(const std::string& token) { token_ = token; }
-  const std::string& get_token() const { return token_; }
-
- private:
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  std::string token_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcherFactory);
 };
 
 }  // namespace local_discovery
