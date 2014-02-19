@@ -18,8 +18,6 @@ const char kUIEnableDeadlineScheduling[] = "ui-enable-deadline-scheduling";
 
 const char kUIEnableSoftwareCompositing[] = "ui-enable-software-compositing";
 
-const char kUIEnableThreadedCompositing[] = "ui-enable-threaded-compositing";
-
 const char kUIMaxFramesPending[] = "ui-max-frames-pending";
 
 const char kUIShowPaintRects[] = "ui-show-paint-rects";

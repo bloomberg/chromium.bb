@@ -278,11 +278,7 @@ void Compositor::Initialize() {
   bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUIDisableThreadedCompositing);
 #else
-  bool use_thread =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUIEnableThreadedCompositing) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUIDisableThreadedCompositing);
+  bool use_thread = false;
 #endif
   if (use_thread) {
     g_compositor_thread = new base::Thread("Browser Compositor");
