@@ -29,14 +29,6 @@ void SystemTrayNotifier::RemoveAccessibilityObserver(
   accessibility_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
-  audio_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
-  audio_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.AddObserver(observer);
 }
@@ -176,41 +168,6 @@ void SystemTrayNotifier::NotifyAccessibilityModeChanged(
       AccessibilityObserver,
       accessibility_observers_,
       OnAccessibilityModeChanged(notify));
-}
-
-void SystemTrayNotifier::NotifyAudioOutputVolumeChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnOutputVolumeChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioOutputMuteChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnOutputMuteChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioNodesChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnAudioNodesChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioActiveOutputNodeChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnActiveOutputNodeChanged());
-}
-
-void SystemTrayNotifier::NotifyAudioActiveInputNodeChanged() {
-  FOR_EACH_OBSERVER(
-      AudioObserver,
-      audio_observers_,
-      OnActiveInputNodeChanged());
 }
 
 void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {

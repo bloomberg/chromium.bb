@@ -256,16 +256,12 @@ bool UseDockedWindows() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);
 }
 
-bool ShowAudioDeviceMenu() {
 #if defined(OS_CHROMEOS)
+bool ShowAudioDeviceMenu() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kAshDisableAudioDeviceMenu);
-#else
-  return false;
-#endif
 }
 
-#if defined(OS_CHROMEOS)
 bool UseUsbChargerNotification() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kAshDisableUsbChargerNotification);

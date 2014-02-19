@@ -314,9 +314,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
 
   if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
-
-  if (CrasAudioHandler::IsInitialized())
-    CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::Shutdown() {
@@ -372,10 +369,7 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
       ->RemoveSessionStateObserver(this);
   LoginState::Get()->RemoveObserver(this);
 
-  if (CrasAudioHandler::IsInitialized())
-    CrasAudioHandler::Get()->RemoveAudioObserver(this);
-
-// Stop observing Drive operations.
+  // Stop observing Drive operations.
   UnobserveDriveUpdates();
 
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -1214,33 +1208,6 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ash::ime::InputMethodMenuManager* manager) {
   GetSystemTrayNotifier()->NotifyRefreshIME(false);
-}
-
-// Overridden from CrasAudioHandler::AudioObserver.
-void SystemTrayDelegateChromeOS::OnOutputVolumeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnOutputMuteChanged() {
-  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnInputGainChanged() {
-}
-
-void SystemTrayDelegateChromeOS::OnInputMuteChanged() {
-}
-
-void SystemTrayDelegateChromeOS::OnAudioNodesChanged() {
-  GetSystemTrayNotifier()->NotifyAudioNodesChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnActiveOutputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnActiveInputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
 }
 
 // drive::JobListObserver overrides.

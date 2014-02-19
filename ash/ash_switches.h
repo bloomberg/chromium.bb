@@ -101,10 +101,10 @@ ASH_EXPORT bool UseOverviewMode();
 // Returns true if docked windows feature is enabled.
 ASH_EXPORT bool UseDockedWindows();
 
+#if defined(OS_CHROMEOS)
 // Returns true if we should show the audio device switching UI.
 ASH_EXPORT bool ShowAudioDeviceMenu();
 
-#if defined(OS_CHROMEOS)
 // Returns true if a notification should appear when a low-power USB charger
 // is connected.
 ASH_EXPORT bool UseUsbChargerNotification();
