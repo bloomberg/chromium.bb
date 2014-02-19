@@ -828,6 +828,33 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, OneMegFrame) {
   }
 }
 
+// A frame with reserved flag(s) set that arrives in chunks should only have the
+// reserved flag(s) set on the first chunk when split.
+TEST_F(WebSocketBasicStreamSocketChunkedReadTest, ReservedFlagCleared) {
+  static const char kReservedFlagFrame[] = "\x41\x05Hello";
+  const size_t kReservedFlagFrameSize = arraysize(kReservedFlagFrame) - 1;
+  const size_t kChunkSize = 5;
+
+  CreateChunkedRead(ASYNC,
+                    kReservedFlagFrame,
+                    kReservedFlagFrameSize,
+                    kChunkSize,
+                    2,
+                    LAST_FRAME_BIG);
+
+  TestCompletionCallback cb[2];
+  ASSERT_EQ(ERR_IO_PENDING, stream_->ReadFrames(&frames_, cb[0].callback()));
+  EXPECT_EQ(OK, cb[0].WaitForResult());
+  ASSERT_EQ(1U, frames_.size());
+  EXPECT_TRUE(frames_[0]->header.reserved1);
+
+  frames_.clear();
+  ASSERT_EQ(ERR_IO_PENDING, stream_->ReadFrames(&frames_, cb[1].callback()));
+  EXPECT_EQ(OK, cb[1].WaitForResult());
+  ASSERT_EQ(1U, frames_.size());
+  EXPECT_FALSE(frames_[0]->header.reserved1);
+}
+
 // Check that writing a frame all at once works.
 TEST_F(WebSocketBasicStreamSocketWriteTest, WriteAtOnce) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, kWriteFrame, kWriteFrameSize)};

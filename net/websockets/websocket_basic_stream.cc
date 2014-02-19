@@ -378,9 +378,16 @@ scoped_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
     result_frame->header.payload_length = data_size;
     result_frame->data = data;
     // Ensure that opcodes Text and Binary are only used for the first frame in
-    // the message.
-    if (WebSocketFrameHeader::IsKnownDataOpCode(opcode))
+    // the message. Also clear the reserved bits.
+    // TODO(ricea): If a future extension requires the reserved bits to be
+    // retained on continuation frames, make this behaviour conditional on a
+    // flag set at construction time.
+    if (!is_final_chunk && WebSocketFrameHeader::IsKnownDataOpCode(opcode)) {
       current_frame_header_->opcode = WebSocketFrameHeader::kOpCodeContinuation;
+      current_frame_header_->reserved1 = false;
+      current_frame_header_->reserved2 = false;
+      current_frame_header_->reserved3 = false;
+    }
   }
   // Make sure that a frame header is not applied to any chunks that do not
   // belong to it.
