@@ -867,6 +867,7 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
+            'content.gyp:content_browser',
             'content.gyp:content_common',
             'test_support_content',
             '../base/base.gyp:test_support_base',
@@ -881,8 +882,16 @@
             '..',
           ],
           'sources': [
+            'browser/renderer_host/input/input_router_impl_perftest.cc',
             'common/cc_messages_perftest.cc',
             'test/run_all_perftests.cc',
+          ],
+          'conditions': [
+            ['OS == "android" and gtest_target_type == "shared_library"', {
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }],
           ],
         },
         {
@@ -1422,6 +1431,19 @@
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
           },
           'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
+          'target_name': 'content_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'content.gyp:content_java',
+            'content_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'content_perftests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_perftests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
         },
         {
           'target_name': 'chromium_linker_test_apk',
