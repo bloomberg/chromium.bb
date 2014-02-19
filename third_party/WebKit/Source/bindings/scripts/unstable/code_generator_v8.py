@@ -79,6 +79,7 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
         generate_contents = v8_interface.generate_interface
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(templates_dir),
+        bytecode_cache=jinja2.FileSystemBytecodeCache(output_directory),
         keep_trailing_newline=True,  # newline-terminate generated files
         lstrip_blocks=True,  # so can indent control flow tags
         trim_blocks=True)

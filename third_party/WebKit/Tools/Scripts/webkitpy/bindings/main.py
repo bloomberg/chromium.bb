@@ -238,8 +238,9 @@ class BindingsTests(object):
         file_pairs = [(os.path.join(reference_directory, output_file),
                        os.path.join(output_directory, output_file))
                       for output_file in os.listdir(output_directory)
-                      # FIXME: add option to compiler to not generate tables
-                      if output_file != 'parsetab.py']
+                      # Skip cache
+                      if (output_file != 'parsetab.py' and  # PLY cache
+                          not output_file.endswith('.cache'))]  # Jinja cache
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 
