@@ -148,7 +148,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
 
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
-  return SyntheticGestureParams::MOUSE_INPUT;
+  return SyntheticGestureParams::TOUCH_INPUT;
 }
 
 bool SyntheticGestureTargetAura::SupportsSyntheticGestureSourceType(
