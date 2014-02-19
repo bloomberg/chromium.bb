@@ -18,6 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
@@ -88,7 +89,7 @@ const float kMaximumLengthMovedToActivate = 4.0f;
 
 // Returns true if the mnemonic of |menu| matches key.
 bool MatchesMnemonic(MenuItemView* menu, base::char16 key) {
-  return menu->GetMnemonic() == key;
+  return key != 0 && menu->GetMnemonic() == key;
 }
 
 // Returns true if |menu| doesn't have a mnemonic and first character of the its
@@ -1071,7 +1072,9 @@ uint32_t MenuController::Dispatch(const base::NativeEvent& event) {
         if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
           return POST_DISPATCH_QUIT_LOOP;
 
-        bool should_exit = SelectByChar(ui::KeyboardCodeFromNative(event));
+        char c = ui::GetCharacterFromKeyCode(
+            ui::KeyboardCodeFromNative(event), flags);
+        bool should_exit = SelectByChar(c);
         return should_exit ? POST_DISPATCH_QUIT_LOOP : POST_DISPATCH_NONE;
       }
       case ui::ET_KEY_RELEASED:

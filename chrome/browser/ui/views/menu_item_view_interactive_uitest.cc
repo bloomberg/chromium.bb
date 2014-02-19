@@ -1,129 +1,27 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/base/view_event_test_base.h"
-#include "ui/base/test/ui_controls.h"
-#include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/menu/menu_controller.h"
+#include "chrome/browser/ui/views/menu_test_base.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
-
-// This is a convenience base class for all tests to provide some
-// common functionality.  It sets up a MenuButton and a MenuItemView
-// and clicks the MenuButton.
-//
-// Subclasses should implement:
-//  BuildMenu()            populate the menu
-//  DoTestOnMessageLoop()  initiate the test
-//
-// Subclasses can call:
-//  Click()       to post a mouse click on a View
-//
-// Although it should be possible to post a menu multiple times,
-// MenuItemView prevents repeated activation of a menu by clicks too
-// close in time.
-class MenuItemViewTestBase : public ViewEventTestBase,
-                             public views::MenuButtonListener,
-                             public views::MenuDelegate {
- public:
-  MenuItemViewTestBase()
-      : ViewEventTestBase(),
-        button_(NULL),
-        menu_(NULL) {
-  }
-
-  virtual ~MenuItemViewTestBase() {
-  }
-
-  // ViewEventTestBase implementation.
-
-  virtual void SetUp() OVERRIDE {
-    button_ = new views::MenuButton(
-        NULL, ASCIIToUTF16("Menu Test"), this, true);
-    menu_ = new views::MenuItemView(this);
-    BuildMenu(menu_);
-    menu_runner_.reset(new views::MenuRunner(menu_));
-
-    ViewEventTestBase::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    menu_runner_.reset(NULL);
-    menu_ = NULL;
-    ViewEventTestBase::TearDown();
-  }
-
-  virtual views::View* CreateContentsView() OVERRIDE {
-    return button_;
-  }
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return button_->GetPreferredSize();
-  }
-
-  // views::MenuButtonListener implementation.
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE {
-    gfx::Point screen_location;
-    views::View::ConvertPointToScreen(source, &screen_location);
-    gfx::Rect bounds(screen_location, source->size());
-    ignore_result(menu_runner_->RunMenuAt(
-        source->GetWidget(),
-        button_,
-        bounds,
-        views::MenuItemView::TOPLEFT,
-        ui::MENU_SOURCE_NONE,
-        views::MenuRunner::HAS_MNEMONICS));
-  }
-
- protected:
-  // Generate a mouse click on the specified view and post a new task.
-  virtual void Click(views::View* view, const base::Closure& next) {
-    ui_test_utils::MoveMouseToCenterAndPress(
-        view,
-        ui_controls::LEFT,
-        ui_controls::DOWN | ui_controls::UP,
-        next);
-  }
-
-  virtual void BuildMenu(views::MenuItemView* menu) {
-  }
-
-  views::MenuButton* button_;
-  views::MenuItemView* menu_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
-};
 
 // Simple test for clicking a menu item.  This template class clicks on an
 // item and checks that the returned id matches.  The index of the item
 // is the template argument.
 template<int INDEX>
-class MenuItemViewTestBasic : public MenuItemViewTestBase {
+class MenuItemViewTestBasic : public MenuTestBase {
  public:
-  MenuItemViewTestBasic() :
-      last_command_(0) {
+  MenuItemViewTestBasic() {
   }
 
   virtual ~MenuItemViewTestBasic() {
   }
 
-  // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE {
-    last_command_ = id;
-  }
-
-  // MenuItemViewTestBase implementation
+  // MenuTestBase implementation
   virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
@@ -131,16 +29,9 @@ class MenuItemViewTestBasic : public MenuItemViewTestBase {
     menu->AppendMenuItemWithLabel(3, ASCIIToUTF16("item 3"));
   }
 
-  // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
-    Click(button_, CreateEventTask(this, &MenuItemViewTestBasic::Step1));
-  }
-
   // Click on item INDEX.
-  void Step1() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+  virtual void DoTestWithMenuOpen() OVERRIDE {
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(3, submenu->GetMenuItemCount());
@@ -153,13 +44,13 @@ class MenuItemViewTestBasic : public MenuItemViewTestBase {
 
   // Check the clicked item and complete the test.
   void Step2() {
-    ASSERT_FALSE(menu_->GetSubmenu()->IsShowing());
-    ASSERT_EQ(INDEX + 1,last_command_);
+    ASSERT_FALSE(menu()->GetSubmenu()->IsShowing());
+    ASSERT_EQ(INDEX + 1, last_command());
     Done();
   }
 
  private:
-  int last_command_;
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestBasic);
 };
 
 // Click each item of a 3-item menu (with separator).
@@ -172,51 +63,37 @@ VIEW_TEST(MenuItemViewTestBasic2, SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
 template<int INSERT_INDEX, int SELECT_INDEX>
-class MenuItemViewTestInsert : public MenuItemViewTestBase {
+class MenuItemViewTestInsert : public MenuTestBase {
  public:
-  MenuItemViewTestInsert() :
-      last_command_(0),
-      inserted_item_(NULL) {
+  MenuItemViewTestInsert() : inserted_item_(NULL) {
   }
 
   virtual ~MenuItemViewTestInsert() {
   }
 
-  // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE {
-    last_command_ = id;
-  }
-
-  // MenuItemViewTestBase implementation
+  // MenuTestBase implementation
   virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
   }
 
-  // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
-    Click(button_, CreateEventTask(this, &MenuItemViewTestInsert::Step1));
-  }
-
   // Insert item at INSERT_INDEX and click item at SELECT_INDEX.
-  void Step1() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+  virtual void DoTestWithMenuOpen() OVERRIDE {
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(2, submenu->GetMenuItemCount());
 
-    inserted_item_ = menu_->AddMenuItemAt(INSERT_INDEX,
-                                          1000,
-                                          ASCIIToUTF16("inserted item"),
-                                          base::string16(),
-                                          base::string16(),
-                                          gfx::ImageSkia(),
-                                          views::MenuItemView::NORMAL,
-                                          ui::NORMAL_SEPARATOR);
+    inserted_item_ = menu()->AddMenuItemAt(INSERT_INDEX,
+                                           1000,
+                                           ASCIIToUTF16("inserted item"),
+                                           base::string16(),
+                                           base::string16(),
+                                           gfx::ImageSkia(),
+                                           views::MenuItemView::NORMAL,
+                                           ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
-    menu_->ChildrenChanged();
+    menu()->ChildrenChanged();
 
     // click an item and pass control to the next step
     views::MenuItemView* item = submenu->GetMenuItemAt(SELECT_INDEX);
@@ -226,26 +103,25 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
 
   // Check clicked item and complete test.
   void Step2() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
     ASSERT_EQ(3, submenu->GetMenuItemCount());
 
     if (SELECT_INDEX == INSERT_INDEX)
-      ASSERT_EQ(1000, last_command_);
+      ASSERT_EQ(1000, last_command());
     else if (SELECT_INDEX < INSERT_INDEX)
-      ASSERT_EQ(SELECT_INDEX + 1, last_command_);
+      ASSERT_EQ(SELECT_INDEX + 1, last_command());
     else
-      ASSERT_EQ(SELECT_INDEX, last_command_);
+      ASSERT_EQ(SELECT_INDEX, last_command());
 
     Done();
   }
 
  private:
-  int last_command_;
   views::MenuItemView* inserted_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestInsert);
 };
 
 // MenuItemViewTestInsertXY inserts an item at index X and selects the
@@ -267,10 +143,9 @@ VIEW_TEST(MenuItemViewTestInsert22, InsertItem22)
 
 // Test class for inserting a menu item while a submenu is open.
 template<int INSERT_INDEX>
-class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
+class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
  public:
   MenuItemViewTestInsertWithSubmenu() :
-      last_command_(0),
       submenu_(NULL),
       inserted_item_(NULL) {
   }
@@ -278,12 +153,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
   virtual ~MenuItemViewTestInsertWithSubmenu() {
   }
 
-  // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE {
-    last_command_ = id;
-  }
-
-  // MenuItemViewTestBase implementation
+  // MenuTestBase implementation
   virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
     submenu_ = menu->AppendSubMenu(1, ASCIIToUTF16("My Submenu"));
     submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 1"));
@@ -291,30 +161,24 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
   }
 
-  // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
-    Click(button_,
-          CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step1));
-  }
-
   // Post submenu.
-  void Step1() {
+  virtual void DoTestWithMenuOpen() OVERRIDE {
     Click(submenu_,
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step2));
   }
 
   // Insert item at INSERT_INDEX.
   void Step2() {
-    inserted_item_ = menu_->AddMenuItemAt(INSERT_INDEX,
-                                          1000,
-                                          ASCIIToUTF16("inserted item"),
-                                          base::string16(),
-                                          base::string16(),
-                                          gfx::ImageSkia(),
-                                          views::MenuItemView::NORMAL,
-                                          ui::NORMAL_SEPARATOR);
+    inserted_item_ = menu()->AddMenuItemAt(INSERT_INDEX,
+                                           1000,
+                                           ASCIIToUTF16("inserted item"),
+                                           base::string16(),
+                                           base::string16(),
+                                           gfx::ImageSkia(),
+                                           views::MenuItemView::NORMAL,
+                                           ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
-    menu_->ChildrenChanged();
+    menu()->ChildrenChanged();
 
     Click(inserted_item_,
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step3));
@@ -325,9 +189,10 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
   }
 
  private:
-  int last_command_;
   views::MenuItemView* submenu_;
   views::MenuItemView* inserted_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestInsertWithSubmenu);
 };
 
 // MenuItemViewTestInsertWithSubmenuX posts a menu and its submenu,
@@ -339,44 +204,31 @@ VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, InsertItemWithSubmenu1)
 
 // Test class for removing a menu item while the menu is open.
 template<int REMOVE_INDEX, int SELECT_INDEX>
-class MenuItemViewTestRemove : public MenuItemViewTestBase {
+class MenuItemViewTestRemove : public MenuTestBase {
  public:
-  MenuItemViewTestRemove()
-      : last_command_(0) {
+  MenuItemViewTestRemove() {
   }
 
   virtual ~MenuItemViewTestRemove() {
   }
 
-  // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE {
-    last_command_ = id;
-  }
-
-  // MenuItemViewTestBase implementation
+  // MenuTestBase implementation
   virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
     menu->AppendMenuItemWithLabel(3, ASCIIToUTF16("item 3"));
   }
 
-  // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
-    Click(button_, CreateEventTask(this, &MenuItemViewTestRemove::Step1));
-  }
-
   // Remove item at REMOVE_INDEX and click item at SELECT_INDEX.
-  void Step1() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+  virtual void DoTestWithMenuOpen() OVERRIDE {
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(3, submenu->GetMenuItemCount());
 
     // remove
-    menu_->RemoveMenuItemAt(REMOVE_INDEX);
-    menu_->ChildrenChanged();
+    menu()->RemoveMenuItemAt(REMOVE_INDEX);
+    menu()->ChildrenChanged();
 
     // click
     views::MenuItemView* item = submenu->GetMenuItemAt(SELECT_INDEX);
@@ -386,23 +238,21 @@ class MenuItemViewTestRemove : public MenuItemViewTestBase {
 
   // Check clicked item and complete test.
   void Step2() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
     ASSERT_EQ(2, submenu->GetMenuItemCount());
 
     if (SELECT_INDEX < REMOVE_INDEX)
-      ASSERT_EQ(SELECT_INDEX + 1, last_command_);
+      ASSERT_EQ(SELECT_INDEX + 1, last_command());
     else
-      ASSERT_EQ(SELECT_INDEX + 2, last_command_);
+      ASSERT_EQ(SELECT_INDEX + 2, last_command());
 
     Done();
   }
 
  private:
-  int last_command_;
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestRemove);
 };
 
 typedef MenuItemViewTestRemove<0,0> MenuItemViewTestRemove00;
@@ -420,22 +270,15 @@ VIEW_TEST(MenuItemViewTestRemove21, RemoveItem21)
 
 // Test class for removing a menu item while a submenu is open.
 template<int REMOVE_INDEX>
-class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
+class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
  public:
-  MenuItemViewTestRemoveWithSubmenu() :
-      last_command_(0),
-      submenu_(NULL) {
+  MenuItemViewTestRemoveWithSubmenu() : submenu_(NULL) {
   }
 
   virtual ~MenuItemViewTestRemoveWithSubmenu() {
   }
 
-  // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) OVERRIDE {
-    last_command_ = id;
-  }
-
-  // MenuItemViewTestBase implementation
+  // MenuTestBase implementation
   virtual void BuildMenu(views::MenuItemView* menu) OVERRIDE {
     menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
     submenu_ = menu->AppendSubMenu(2, ASCIIToUTF16("My Submenu"));
@@ -443,17 +286,9 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
     submenu_->AppendMenuItemWithLabel(102, ASCIIToUTF16("submenu item 2"));
   }
 
-  // ViewEventTestBase implementation
-  virtual void DoTestOnMessageLoop() OVERRIDE {
-    Click(button_,
-          CreateEventTask(this, &MenuItemViewTestRemoveWithSubmenu::Step1));
-  }
-
   // Post submenu.
-  void Step1() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+  virtual void DoTestWithMenuOpen() OVERRIDE {
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
 
@@ -461,28 +296,24 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
           CreateEventTask(this, &MenuItemViewTestRemoveWithSubmenu::Step2));
   }
 
-  // Remove item at REMOVE_INDEX and select it to exit the menu loop.
+  // Remove item at REMOVE_INDEX and press escape to exit the menu loop.
   void Step2() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(2, submenu->GetMenuItemCount());
 
     // remove
-    menu_->RemoveMenuItemAt(REMOVE_INDEX);
-    menu_->ChildrenChanged();
+    menu()->RemoveMenuItemAt(REMOVE_INDEX);
+    menu()->ChildrenChanged();
 
     // click
-    Click(button_,
-          CreateEventTask(this, &MenuItemViewTestRemoveWithSubmenu::Step3));
+    KeyPress(ui::VKEY_ESCAPE,
+             CreateEventTask(this, &MenuItemViewTestRemoveWithSubmenu::Step3));
   }
 
   void Step3() {
-    ASSERT_TRUE(menu_);
-
-    views::SubmenuView* submenu = menu_->GetSubmenu();
+    views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
     ASSERT_EQ(1, submenu->GetMenuItemCount());
@@ -491,8 +322,9 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
   }
 
  private:
-  int last_command_;
   views::MenuItemView* submenu_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewTestRemoveWithSubmenu);
 };
 
 typedef MenuItemViewTestRemoveWithSubmenu<0> MenuItemViewTestRemoveWithSubmenu0;
