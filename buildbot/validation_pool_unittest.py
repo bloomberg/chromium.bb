@@ -1474,6 +1474,16 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     notify_error = validation_pool.PatchFailedToSubmit(self.patches[0], error)
     self.assertEqualNotifyArg(notify_error, self.patches[0], 'error')
 
+  def testDraftCL(self):
+    """Test that a draft CL is rejected."""
+    self.patches[1].patch_dict['currentPatchSet']['draft'] = True
+    self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
+
+  def testNotCommitReady(self):
+    """Test that a CL without the commit ready bit is rejected."""
+    self.PatchObject(self.patches[1], 'HasApproval', return_value=False)
+    self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
+
 
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
   """Test the SubmitPartialPool function."""

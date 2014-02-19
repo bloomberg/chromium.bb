@@ -1393,6 +1393,7 @@ class ValidationPool(object):
     Returns:
       List of changes that match our query.
     """
+    filtered_changes = []
     for change in changes:
       # Because the gerrit cache sometimes gets stale, double-check that the
       # change hasn't already been merged.
@@ -1414,7 +1415,9 @@ class ValidationPool(object):
         if not change.HasApproval(field, value):
           break
       else:
-        yield change
+        filtered_changes.append(change)
+
+    return filtered_changes
 
   @classmethod
   def AcquirePreCQPool(cls, *args, **kwargs):
@@ -1897,14 +1900,17 @@ class ValidationPool(object):
     for change in set(changes) - set(published_changes):
       errors[change] = PatchNotPublished(change)
 
+    # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
+    # case the patch status changed during the CQ run.
     filtered_changes = self.FilterNonMatchingChanges(published_changes)
     for change in set(published_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
-    patch_series.InjectLookupCache(changes)
-    for change in changes:
-      errors = self._SubmitChangeWithDeps(patch_series, change, errors, changes)
+    patch_series.InjectLookupCache(filtered_changes)
+    for change in filtered_changes:
+      errors = self._SubmitChangeWithDeps(patch_series, change, errors,
+                                          filtered_changes)
 
     for patch, error in errors.iteritems():
       logging.error('Could not submit %s', patch)
