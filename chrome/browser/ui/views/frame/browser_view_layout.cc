@@ -79,7 +79,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
-    views::View* view = browser_view_layout_->delegate_->GetContentsWebView();
+    views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
     const int middle_x = content_area.x() + content_area.width() / 2;
     const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
@@ -87,7 +87,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
-    views::View* view = browser_view_layout_->delegate_->GetContentsWebView();
+    views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
     const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
     return gfx::Size(content_area.width(), content_area.bottom() - top);
