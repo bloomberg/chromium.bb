@@ -2,11 +2,14 @@
 <script src="../../../resources/js-test.js"></script>
 
 <style>
-  .outer .inner {}
+  div { width: 100px }
+  .outer .inner { width: 200px }
 </style>
 
 <div id="outer">
     <div id="inner" class="inner">
+        <div id="innerChild">
+        </div>
     </div>
     <div id="inner2">
     </div>
@@ -23,18 +26,29 @@ function insertStyleSheet(css)
 }
 
 var outer = document.getElementById('outer');
-
-outer.offsetTop;
-outer.className = 'outer';
-
-// Style recalc should happen on "inner" and "outer", but not "inner2".
+var inner = document.getElementById('inner');
 
 var count;
 if (internals.runtimeFlags.targetedStyleRecalcEnabled)
     count = 2;
 else
-    count = 3;
+    count = 4;
 
+// Style recalc should happen on "inner" and "outer", but not "inner2".
+outer.offsetTop;
+outer.className = 'outer';
 shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
+shouldBe("getComputedStyle(inner).width", '"200px"');
+
+if (internals.runtimeFlags.targetedStyleRecalcEnabled)
+    count = 1;
+else
+    count = 2;
+
+// Style recalc should happen on "inner", but not "innerChild".
+inner.offsetTop;
+inner.className = '';
+shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
+shouldBe("getComputedStyle(inner).width", '"100px"');
 
 </script>

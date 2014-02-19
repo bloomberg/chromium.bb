@@ -371,6 +371,7 @@ public:
     void clearChildNeedsStyleInvalidation()  { clearFlag(ChildNeedsStyleInvalidation); }
     void markAncestorsWithChildNeedsStyleInvalidation();
     bool needsStyleInvalidation() { return getFlag(NeedsStyleInvalidation); }
+    void clearNeedsStyleInvalidation() { clearFlag(NeedsStyleInvalidation); }
     void setNeedsStyleInvalidation();
 
     void recalcDistribution();

@@ -380,23 +380,25 @@ bool RuleFeatureSet::invalidateStyleForClassChangeOnChildren(Element* element, V
 
 bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet)
 {
+    bool thisElementNeedsStyleRecalc = false;
     int oldSize = invalidationClasses.size();
+
     if (element->needsStyleInvalidation()) {
-        if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(element)) {
-            foundInvalidationSet = true;
-            for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
-                if ((*it)->wholeSubtreeInvalid()) {
-                    element->setNeedsStyleRecalc(SubtreeStyleChange);
-                    invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
-                    element->clearChildNeedsStyleInvalidation();
-                    return true;
-                }
-                (*it)->getClasses(invalidationClasses);
+        InvalidationList* invalidationList = m_pendingInvalidationMap.get(element);
+        ASSERT(invalidationList);
+        // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
+        thisElementNeedsStyleRecalc = true;
+        foundInvalidationSet = true;
+        for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
+            if ((*it)->wholeSubtreeInvalid()) {
+                element->setNeedsStyleRecalc(SubtreeStyleChange);
+                invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
+                element->clearChildNeedsStyleInvalidation();
+                return true;
             }
+            (*it)->getClasses(invalidationClasses);
         }
     }
-
-    bool thisElementNeedsStyleRecalc = false;
 
     if (element->hasClass()) {
         const SpaceSplitString& classNames = element->classNames();
@@ -413,6 +415,7 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
     if (foundInvalidationSet || element->childNeedsStyleInvalidation()) {
         bool someChildrenNeedStyleRecalc = invalidateStyleForClassChangeOnChildren(element, invalidationClasses, foundInvalidationSet);
         // We only need to possibly recalc style if this node is in the subtree of a node with a DescendantInvalidationSet on it.
+        // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
         if (foundInvalidationSet)
             thisElementNeedsStyleRecalc = thisElementNeedsStyleRecalc || someChildrenNeedStyleRecalc;
     }
@@ -422,6 +425,8 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
 
     invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
     element->clearChildNeedsStyleInvalidation();
+    element->clearNeedsStyleInvalidation();
+
     return thisElementNeedsStyleRecalc;
 }
 
