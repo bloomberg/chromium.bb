@@ -39,7 +39,8 @@ struct AudioManagerBase::DispatcherParams {
                    const AudioParameters& output,
                    const std::string& output_device_id)
       : input_params(input),
-        output_params(output) {}
+        output_params(output),
+        output_device_id(output_device_id) {}
   ~DispatcherParams() {}
 
   const AudioParameters input_params;
