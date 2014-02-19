@@ -13,6 +13,8 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,7 +37,13 @@ const int kDialogMaxWidthInPixel = 400;
 void PlatformVerificationDialog::ShowDialog(
     content::WebContents* web_contents,
     const PlatformVerificationFlow::Delegate::ConsentCallback& callback) {
-  std::string origin = web_contents->GetLastCommittedURL().GetOrigin().spec();
+  GURL url = web_contents->GetLastCommittedURL();
+  // In the case of an extension or hosted app, the origin of the request is
+  // best described by the extension / app name.
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())->
+          enabled_extensions().GetExtensionOrAppByURL(url);
+  std::string origin = extension ? extension->name() : url.GetOrigin().spec();
 
   PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
       chrome::FindBrowserWithWebContents(web_contents),
