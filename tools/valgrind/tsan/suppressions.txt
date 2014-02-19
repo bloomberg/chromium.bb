@@ -1166,3 +1166,12 @@
   fun:gcm::GCMProfileServiceRegisterTest_GCMClientLoadingCompletedAfterReadingRegistration_Test::TestBody
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
+{
+  bug_344704
+  ThreadSanitizer:Race
+  fun:base::Thread::message_loop
+  fun:printing::PrintJob::UpdatePrintedDocument
+  fun:printing::PrintJob::ControlledWorkerShutdown
+  fun:printing::PrintJob::Stop
+  fun:PrintJobTest_SimplePrint_Test::TestBody
+}
