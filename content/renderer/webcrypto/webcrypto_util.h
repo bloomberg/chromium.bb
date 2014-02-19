@@ -5,17 +5,19 @@
 #ifndef CONTENT_RENDERER_WEBCRYPTO_WEBCRYPTO_UTIL_H_
 #define CONTENT_RENDERER_WEBCRYPTO_WEBCRYPTO_UTIL_H_
 
-#include <map>
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
+#include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
 
 namespace webcrypto {
+
+// TODO(eroman): Move Status class to a separate file
 
 // Status indicates whether an operation completed successfully, or with an
 // error. The error is used for verification in unit-tests, as well as for
@@ -199,6 +201,7 @@ void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size);
 blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
                                         unsigned int data_size);
 
+// TODO(eroman): Move this to JWK file.
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.

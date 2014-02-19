@@ -513,10 +513,16 @@
     'renderer/web_ui_extension_data.h',
     'renderer/webclipboard_impl.cc',
     'renderer/webclipboard_impl.h',
+    'renderer/webcrypto/crypto_data.cc',
+    'renderer/webcrypto/crypto_data.h',
+    'renderer/webcrypto/jwk.cc',
+    'renderer/webcrypto/platform_crypto.h',
+    'renderer/webcrypto/platform_crypto_nss.cc',
+    'renderer/webcrypto/platform_crypto_openssl.cc',
+    'renderer/webcrypto/shared_crypto.cc',
+    'renderer/webcrypto/shared_crypto.h',
     'renderer/webcrypto/webcrypto_impl.cc',
     'renderer/webcrypto/webcrypto_impl.h',
-    'renderer/webcrypto/webcrypto_impl_nss.cc',
-    'renderer/webcrypto/webcrypto_impl_openssl.cc',
     'renderer/webcrypto/webcrypto_util.cc',
     'renderer/webcrypto/webcrypto_util.h',
     'renderer/webgraphicscontext3d_provider_impl.cc',
@@ -739,14 +745,14 @@
     }],
     ['use_openssl==1', {
       'sources!': [
-        'renderer/webcrypto/webcrypto_impl_nss.cc',
+        'renderer/webcrypto/platform_crypto_nss.cc',
       ],
       'dependencies': [
         '../third_party/openssl/openssl.gyp:openssl',
       ],
     }, {
       'sources!': [
-        'renderer/webcrypto/webcrypto_impl_openssl.cc',
+        'renderer/webcrypto/platform_crypto_openssl.cc',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
