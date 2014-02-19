@@ -180,6 +180,28 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
   return !tabs_needing_before_unload_fired_.empty();
 }
 
+void UnloadController::CancelWindowClose() {
+  // Closing of window can be canceled from a beforeunload handler.
+  DCHECK(is_attempting_to_close_browser_);
+  tabs_needing_before_unload_fired_.clear();
+  for (UnloadListenerSet::iterator it = tabs_needing_unload_fired_.begin();
+      it != tabs_needing_unload_fired_.end(); ++it) {
+    DevToolsWindow::OnPageCloseCanceled(*it);
+  }
+  tabs_needing_unload_fired_.clear();
+  if (is_calling_before_unload_handlers()) {
+    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
+    on_close_confirmed_.Reset();
+    on_close_confirmed.Run(false);
+  }
+  is_attempting_to_close_browser_ = false;
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+      content::Source<Browser>(browser_),
+      content::NotificationService::NoDetails());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // UnloadController, content::NotificationObserver implementation:
 
@@ -306,28 +328,6 @@ bool UnloadController::HasCompletedUnloadProcessing() const {
   return is_attempting_to_close_browser_ &&
       tabs_needing_before_unload_fired_.empty() &&
       tabs_needing_unload_fired_.empty();
-}
-
-void UnloadController::CancelWindowClose() {
-  // Closing of window can be canceled from a beforeunload handler.
-  DCHECK(is_attempting_to_close_browser_);
-  tabs_needing_before_unload_fired_.clear();
-  for (UnloadListenerSet::iterator it = tabs_needing_unload_fired_.begin();
-      it != tabs_needing_unload_fired_.end(); ++it) {
-    DevToolsWindow::OnPageCloseCanceled(*it);
-  }
-  tabs_needing_unload_fired_.clear();
-  if (is_calling_before_unload_handlers()) {
-    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
-    on_close_confirmed_.Reset();
-    on_close_confirmed.Run(false);
-  }
-  is_attempting_to_close_browser_ = false;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-      content::Source<Browser>(browser_),
-      content::NotificationService::NoDetails());
 }
 
 bool UnloadController::RemoveFromSet(UnloadListenerSet* set,

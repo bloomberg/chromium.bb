@@ -109,6 +109,10 @@ class FastUnloadController : public content::NotificationObserver,
   // Returns true if all tabs' beforeunload/unload events have fired.
   bool HasCompletedUnloadProcessing() const;
 
+  // Clears all the state associated with processing tabs' beforeunload/unload
+  // events since the user cancelled closing the window.
+  void CancelWindowClose();
+
  private:
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -137,10 +141,6 @@ class FastUnloadController : public content::NotificationObserver,
 
   // Processes the next tab that needs it's beforeunload/unload event fired.
   void ProcessPendingTabs();
-
-  // Clears all the state associated with processing tabs' beforeunload/unload
-  // events since the user cancelled closing the window.
-  void CancelWindowClose();
 
   // Cleans up state appropriately when we are trying to close the
   // browser or close a tab in the background. We also use this in the

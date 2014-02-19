@@ -219,6 +219,51 @@ bool FastUnloadController::TabsNeedBeforeUnloadFired() {
   return !tabs_needing_before_unload_.empty();
 }
 
+bool FastUnloadController::HasCompletedUnloadProcessing() const {
+  return is_attempting_to_close_browser_ &&
+      tabs_needing_before_unload_.empty() &&
+      tab_needing_before_unload_ack_ == NULL &&
+      tabs_needing_unload_.empty() &&
+      tabs_needing_unload_ack_.empty();
+}
+
+void FastUnloadController::CancelWindowClose() {
+  // Closing of window can be canceled from a beforeunload handler.
+  DCHECK(is_attempting_to_close_browser_);
+  tabs_needing_before_unload_.clear();
+  if (tab_needing_before_unload_ack_ != NULL) {
+    CoreTabHelper* core_tab_helper =
+        CoreTabHelper::FromWebContents(tab_needing_before_unload_ack_);
+    core_tab_helper->OnCloseCanceled();
+    DevToolsWindow::OnPageCloseCanceled(tab_needing_before_unload_ack_);
+    tab_needing_before_unload_ack_ = NULL;
+  }
+  for (WebContentsSet::iterator it = tabs_needing_unload_.begin();
+       it != tabs_needing_unload_.end(); it++) {
+    content::WebContents* contents = *it;
+
+    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+    core_tab_helper->OnCloseCanceled();
+    DevToolsWindow::OnPageCloseCanceled(contents);
+  }
+  tabs_needing_unload_.clear();
+
+  // No need to clear tabs_needing_unload_ack_. Those tabs are already detached.
+
+  if (is_calling_before_unload_handlers()) {
+    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
+    on_close_confirmed_.Reset();
+    on_close_confirmed.Run(false);
+  }
+
+  is_attempting_to_close_browser_ = false;
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+      content::Source<Browser>(browser_),
+      content::NotificationService::NoDetails());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FastUnloadController, content::NotificationObserver implementation:
 
@@ -403,51 +448,6 @@ void FastUnloadController::ProcessPendingTabs() {
     }
     return;
   }
-}
-
-bool FastUnloadController::HasCompletedUnloadProcessing() const {
-  return is_attempting_to_close_browser_ &&
-      tabs_needing_before_unload_.empty() &&
-      tab_needing_before_unload_ack_ == NULL &&
-      tabs_needing_unload_.empty() &&
-      tabs_needing_unload_ack_.empty();
-}
-
-void FastUnloadController::CancelWindowClose() {
-  // Closing of window can be canceled from a beforeunload handler.
-  DCHECK(is_attempting_to_close_browser_);
-  tabs_needing_before_unload_.clear();
-  if (tab_needing_before_unload_ack_ != NULL) {
-    CoreTabHelper* core_tab_helper =
-        CoreTabHelper::FromWebContents(tab_needing_before_unload_ack_);
-    core_tab_helper->OnCloseCanceled();
-    DevToolsWindow::OnPageCloseCanceled(tab_needing_before_unload_ack_);
-    tab_needing_before_unload_ack_ = NULL;
-  }
-  for (WebContentsSet::iterator it = tabs_needing_unload_.begin();
-       it != tabs_needing_unload_.end(); it++) {
-    content::WebContents* contents = *it;
-
-    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
-    core_tab_helper->OnCloseCanceled();
-    DevToolsWindow::OnPageCloseCanceled(contents);
-  }
-  tabs_needing_unload_.clear();
-
-  // No need to clear tabs_needing_unload_ack_. Those tabs are already detached.
-
-  if (is_calling_before_unload_handlers()) {
-    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
-    on_close_confirmed_.Reset();
-    on_close_confirmed.Run(false);
-  }
-
-  is_attempting_to_close_browser_ = false;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-      content::Source<Browser>(browser_),
-      content::NotificationService::NoDetails());
 }
 
 void FastUnloadController::ClearUnloadState(content::WebContents* contents) {
