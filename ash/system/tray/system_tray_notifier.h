@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/audio/audio_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
@@ -38,12 +39,15 @@ class NetworkStateNotifier;
 #endif
 
 class ASH_EXPORT SystemTrayNotifier {
-public:
+ public:
   SystemTrayNotifier();
   ~SystemTrayNotifier();
 
   void AddAccessibilityObserver(AccessibilityObserver* observer);
   void RemoveAccessibilityObserver(AccessibilityObserver* observer);
+
+  void AddAudioObserver(AudioObserver* observer);
+  void RemoveAudioObserver(AudioObserver* observer);
 
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
@@ -94,6 +98,11 @@ public:
 
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
+  void NotifyAudioOutputVolumeChanged();
+  void NotifyAudioOutputMuteChanged();
+  void NotifyAudioNodesChanged();
+  void NotifyAudioActiveOutputNodeChanged();
+  void NotifyAudioActiveInputNodeChanged();
   void NotifyTracingModeChanged(bool value);
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
@@ -131,6 +140,7 @@ public:
 
  private:
   ObserverList<AccessibilityObserver> accessibility_observers_;
+  ObserverList<AudioObserver> audio_observers_;
   ObserverList<BluetoothObserver> bluetooth_observers_;
   ObserverList<CapsLockObserver> caps_lock_observers_;
   ObserverList<ClockObserver> clock_observers_;

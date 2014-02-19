@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/audio/tray_audio.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
@@ -47,7 +48,8 @@
 #include "ui/views/view.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/audio/tray_audio.h"
+#include "ash/system/chromeos/audio/tray_audio_chromeos.h"
+#include "ash/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/managed/tray_locally_managed_user.h"
@@ -195,7 +197,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayDisplay(this));
   AddTrayItem(new internal::ScreenCaptureTrayItem(this));
   AddTrayItem(new internal::ScreenShareTrayItem(this));
-  AddTrayItem(new internal::TrayAudio(this));
+  AddTrayItem(
+      new internal::TrayAudioChromeOs(this,
+                                      new system::TrayAudioDelegateChromeOs()));
   AddTrayItem(new internal::TrayBrightness(this));
   AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TraySettings(this));

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
@@ -36,6 +37,7 @@ class SystemTrayDelegateChromeOS
       public content::NotificationObserver,
       public input_method::InputMethodManager::Observer,
       public chromeos::LoginState::Observer,
+      public chromeos::CrasAudioHandler::AudioObserver,
       public device::BluetoothAdapter::Observer,
       public SystemKeyEventListener::CapsLockObserver,
       public policy::CloudPolicyStore::Observer,
@@ -182,6 +184,15 @@ class SystemTrayDelegateChromeOS
 
   virtual void InputMethodPropertyChanged(
       input_method::InputMethodManager* manager) OVERRIDE;
+
+  // Overridden from CrasAudioHandler::AudioObserver.
+  virtual void OnOutputVolumeChanged() OVERRIDE;
+  virtual void OnOutputMuteChanged() OVERRIDE;
+  virtual void OnInputGainChanged() OVERRIDE;
+  virtual void OnInputMuteChanged() OVERRIDE;
+  virtual void OnAudioNodesChanged() OVERRIDE;
+  virtual void OnActiveOutputNodeChanged() OVERRIDE;
+  virtual void OnActiveInputNodeChanged() OVERRIDE;
 
   // drive::JobListObserver overrides.
   virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;
