@@ -47,16 +47,7 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 }
 
 void BrowserCompositorOutputSurface::Initialize() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUIMaxFramesPending)) {
-    std::string string_value = command_line->GetSwitchValueASCII(
-        switches::kUIMaxFramesPending);
-    int int_value;
-    if (base::StringToInt(string_value, &int_value))
-      capabilities_.max_frames_pending = int_value;
-    else
-      LOG(ERROR) << "Trouble parsing --" << switches::kUIMaxFramesPending;
-  }
+  capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = false;
 
   DetachFromThread();
