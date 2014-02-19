@@ -16,6 +16,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -222,6 +223,12 @@ bool ValidateSubProtocol(
   return true;
 }
 
+bool DeflateError(std::string* message, const base::StringPiece& piece) {
+  *message = "Error in permessage-deflate: ";
+  AppendToString(piece, message);
+  return false;
+}
+
 bool ValidatePerMessageDeflateExtension(const WebSocketExtension& extension,
                                         std::string* failure_message,
                                         WebSocketExtensionParams* params) {
@@ -241,44 +248,42 @@ bool ValidatePerMessageDeflateExtension(const WebSocketExtension& extension,
        it != parameters.end(); ++it) {
     const std::string& name = it->name();
     if (seen_names.count(name) != 0) {
-      *failure_message =
-          "Received duplicate permessage-deflate extension parameter " + name;
-      return false;
+      return DeflateError(
+          failure_message,
+          "Received duplicate permessage-deflate extension parameter " + name);
     }
     seen_names.insert(name);
     const std::string client_or_server(name, 0, kPrefixLen);
     const bool is_client = (client_or_server == kClientPrefix);
     if (!is_client && client_or_server != kServerPrefix) {
-      *failure_message =
-          "Received an unexpected permessage-deflate extension parameter";
-      return false;
+      return DeflateError(
+          failure_message,
+          "Received an unexpected permessage-deflate extension parameter");
     }
     const std::string rest(name, kPrefixLen);
     if (rest == kNoContextTakeover) {
       if (it->HasValue()) {
-        *failure_message = "Received invalid " + name + " parameter";
-        return false;
+        return DeflateError(failure_message,
+                            "Received invalid " + name + " parameter");
       }
       if (is_client)
         params->deflate_mode = WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
     } else if (rest == kMaxWindowBits) {
-      if (!it->HasValue()) {
-        *failure_message = name + " must have value";
-        return false;
-      }
+      if (!it->HasValue())
+        return DeflateError(failure_message, name + " must have value");
       int bits = 0;
       if (!base::StringToInt(it->value(), &bits) || bits < 8 || bits > 15 ||
           it->value()[0] == '0' ||
           it->value().find_first_not_of("0123456789") != std::string::npos) {
-        *failure_message = "Received invalid " + name + " parameter";
-        return false;
+        return DeflateError(failure_message,
+                            "Received invalid " + name + " parameter");
       }
       if (is_client)
         params->client_window_bits = bits;
     } else {
-      *failure_message =
-          "Received an unexpected permessage-deflate extension parameter";
-      return false;
+      return DeflateError(
+          failure_message,
+          "Received an unexpected permessage-deflate extension parameter");
     }
   }
   params->deflate_enabled = true;
