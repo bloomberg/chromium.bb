@@ -95,7 +95,11 @@ const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
 const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
 const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =
     "AsyncTpmAttestationCreateEnrollRequest";
+const char kCryptohomeAsyncTpmAttestationCreateEnrollRequestNew[] =
+    "AsyncTpmAttestationCreateEnrollRequestNew";
 const char kCryptohomeAsyncTpmAttestationEnroll[] = "AsyncTpmAttestationEnroll";
+const char kCryptohomeAsyncTpmAttestationEnrollNew[] =
+    "AsyncTpmAttestationEnrollNew";
 const char kCryptohomeAsyncTpmAttestationCreateCertRequest[] =
     "AsyncTpmAttestationCreateCertRequest";
 const char kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile[] =
