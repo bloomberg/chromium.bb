@@ -148,7 +148,8 @@ void SafeGetImageInfo(const base::win::PEImage& pe,
           *flags |= sandbox::MODULE_HAS_CODE;
       }
     }
-  } __except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ?
+  } __except((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ||
+              GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR) ?
              EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
     out_name->clear();
   }
