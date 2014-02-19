@@ -70,6 +70,7 @@ function mockInitializeDependencies(fixture) {
     'instrumented.notifications.getPermissionLevel',
     'instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get',
     'instrumented.storage.local.get',
+    'instrumented.webstorePrivate.getBrowserLogin',
     'tasks.add',
     'updateCardsAttempts.isRunning',
     'updateCardsAttempts.stop'
@@ -99,14 +100,11 @@ function expectStateMachineCalls(
     testExperimentVariationParams,
     testNotificationPermissionLevel,
     testGoogleNowEnabled) {
-  var authenticationManagerIsSignedInSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
-      authenticationManager_isSignedIn(
-          authenticationManagerIsSignedInSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          authenticationManagerIsSignedInSavedArgs,
-          0,
-          testIdentityToken));
+      authenticationManager_isSignedIn().
+      will(returnValue(new Promise(function(resolve) {
+        resolve(!!testIdentityToken);
+      })));
 
   var getVariationParamsSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
@@ -133,13 +131,13 @@ function expectStateMachineCalls(
           0,
           testNotificationPermissionLevel))
 
-   var storageGetSavedArgs = new SaveMockArguments();	 
-   fixture.mockApis.expects(once()).	 
-       instrumented_storage_local_get(	 
-           storageGetSavedArgs.match(eq('googleNowEnabled')),	 
-           storageGetSavedArgs.match(ANYTHING)).	 
+   var storageGetSavedArgs = new SaveMockArguments();
+   fixture.mockApis.expects(once()).
+       instrumented_storage_local_get(
+           storageGetSavedArgs.match(eq('googleNowEnabled')),
+           storageGetSavedArgs.match(ANYTHING)).
        will(invokeCallback(
-          storageGetSavedArgs, 1, {googleNowEnabled: testGoogleNowEnabled}));	 
+          storageGetSavedArgs, 1, {googleNowEnabled: testGoogleNowEnabled}));
 
   fixture.mockGlobals.expects(once()).
       setBackgroundEnable(ANYTHING);
@@ -597,7 +595,7 @@ TEST_F(
       // Check the output value.
       var expectedCombinedCards = {
         'EXISTING CARD': [
-          1, 
+          1,
           {
             receivedNotification: receivedNotificationNoShowTime,
             hideTime: 11000
