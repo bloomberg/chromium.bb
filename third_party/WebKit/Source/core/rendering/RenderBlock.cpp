@@ -1749,9 +1749,10 @@ void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, 
 
     RenderBox* box = toRenderBox(child);
     if (hasStaticInlinePosition) {
-        LayoutUnit oldLeft = box->logicalLeft();
-        box->updateLogicalWidth();
-        if (box->logicalLeft() != oldLeft)
+        LogicalExtentComputedValues computedValues;
+        box->computeLogicalWidth(computedValues);
+        LayoutUnit newLeft = computedValues.m_position;
+        if (newLeft != box->logicalLeft())
             layoutScope.setChildNeedsLayout(child);
     } else if (hasStaticBlockPosition) {
         LayoutUnit oldTop = box->logicalTop();
