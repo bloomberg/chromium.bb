@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/files/scoped_platform_file_closer.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -16,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/drive/drive_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
@@ -148,21 +146,6 @@ std::string Identity(const std::string& resource_id) { return resource_id; }
 
 }  // namespace
 
-
-bool IsDriveV2ApiEnabled() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  // Enable Drive API v2 by default.
-  if (!command_line->HasSwitch(switches::kEnableDriveV2Api))
-    return true;
-
-  std::string value =
-      command_line->GetSwitchValueASCII(switches::kEnableDriveV2Api);
-  StringToLowerASCII(&value);
-  // The value must be "" or "true" for true, or "false" for false.
-  DCHECK(value.empty() || value == "true" || value == "false");
-  return value != "false";
-}
 
 std::string EscapeQueryStringValue(const std::string& str) {
   std::string result;

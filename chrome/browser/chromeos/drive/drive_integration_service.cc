@@ -30,7 +30,6 @@
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/event_logger.h"
-#include "chrome/browser/drive/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -229,7 +228,7 @@ DriveIntegrationService::DriveIntegrationService(
 
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
-  } else if (util::IsDriveV2ApiEnabled()) {
+  } else {
     drive_service_.reset(new DriveAPIService(
         oauth_service,
         g_browser_process->system_request_context(),
@@ -237,14 +236,6 @@ DriveIntegrationService::DriveIntegrationService(
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-        GetDriveUserAgent()));
-  } else {
-    drive_service_.reset(new GDataWapiService(
-        oauth_service,
-        g_browser_process->system_request_context(),
-        blocking_task_runner_.get(),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(

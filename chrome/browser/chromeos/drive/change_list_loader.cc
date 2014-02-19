@@ -189,7 +189,6 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
     DCHECK(!directory_resource_id_.empty());
-    DCHECK(util::IsDriveV2ApiEnabled() || !root_folder_id_.empty());
 
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
@@ -197,10 +196,10 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     // We use WAPI's GetResourceListInDirectory even if Drive API v2 is
     // enabled. This is the short term work around of the performance
     // regression.
+    // TODO(hashimoto): Remove this. crbug.com/340931.
 
     std::string resource_id = directory_resource_id_;
-    if (util::IsDriveV2ApiEnabled() &&
-        directory_resource_id_ == root_folder_id_) {
+    if (directory_resource_id_ == root_folder_id_) {
       // GData WAPI doesn't accept the root directory id which is used in Drive
       // API v2. So it is necessary to translate it here.
       resource_id = util::kWapiRootDirectoryResourceId;
@@ -229,8 +228,7 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     // Add the current change list to the list of collected lists.
     DCHECK(resource_list);
     ChangeList* change_list = new ChangeList(*resource_list);
-    if (util::IsDriveV2ApiEnabled())
-      FixResourceIdInChangeList(change_list);
+    FixResourceIdInChangeList(change_list);
     change_lists_.push_back(change_list);
 
     GURL next_url;

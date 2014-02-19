@@ -38,9 +38,6 @@ class ResourceList;
 namespace drive {
 namespace util {
 
-// Returns true if Drive v2 API is enabled via commandline switch.
-bool IsDriveV2ApiEnabled();
-
 // Escapes ' to \' in the |str|. This is designed to use for string value of
 // search parameter on Drive API v2.
 // See also: https://developers.google.com/drive/search-parameters

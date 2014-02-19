@@ -650,8 +650,6 @@
         'browser/drive/drive_notification_observer.h',
         'browser/drive/drive_service_interface.cc',
         'browser/drive/drive_service_interface.h',
-        'browser/drive/drive_switches.cc',
-        'browser/drive/drive_switches.h',
         'browser/drive/drive_uploader.cc',
         'browser/drive/drive_uploader.h',
         'browser/drive/event_logger.cc',
