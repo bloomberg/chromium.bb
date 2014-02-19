@@ -185,7 +185,7 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <if expr="pp_ifdef('_google_chrome')">
+      <if expr="_google_chrome">
         <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chrome Remote Desktop session.
         </message>
@@ -281,7 +281,7 @@
         </message>
       </if>
 
-      <if expr="not pp_ifdef('_google_chrome')">
+      <if expr="not _google_chrome">
         <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chromoting session.
         </message>

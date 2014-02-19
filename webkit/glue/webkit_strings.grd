@@ -50,34 +50,34 @@ below:
 
     <output filename="webkit_strings_am.pak" type="data_package" lang="am" />
     <output filename="webkit_strings_ar.pak" type="data_package" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_ast.pak" type="data_package" lang="ast" />
     </if>
     <output filename="webkit_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="webkit_strings_bn.pak" type="data_package" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_bs.pak" type="data_package" lang="bs" />
     </if>
     <output filename="webkit_strings_ca.pak" type="data_package" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
     </if>
     <output filename="webkit_strings_cs.pak" type="data_package" lang="cs" />
     <output filename="webkit_strings_da.pak" type="data_package" lang="da" />
     <output filename="webkit_strings_de.pak" type="data_package" lang="de" />
     <output filename="webkit_strings_el.pak" type="data_package" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_en-AU.pak" type="data_package" lang="en-AU" />
     </if>
     <output filename="webkit_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="webkit_strings_en-US.pak" type="data_package" lang="en" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="webkit_strings_es.pak" type="data_package" lang="es" />
     <output filename="webkit_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="webkit_strings_et.pak" type="data_package" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="webkit_strings_fa.pak" type="data_package" lang="fa" />
@@ -85,7 +85,7 @@ below:
     <output filename="webkit_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="webkit_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="webkit_strings_fr.pak" type="data_package" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_gl.pak" type="data_package" lang="gl" />
     </if>
     <output filename="webkit_strings_gu.pak" type="data_package" lang="gu" />
@@ -93,19 +93,19 @@ below:
     <output filename="webkit_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="webkit_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="webkit_strings_hu.pak" type="data_package" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_hy.pak" type="data_package" lang="hy" />
       <output filename="webkit_strings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="webkit_strings_id.pak" type="data_package" lang="id" />
     <output filename="webkit_strings_it.pak" type="data_package" lang="it" />
     <output filename="webkit_strings_ja.pak" type="data_package" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_ka.pak" type="data_package" lang="ka" />
     </if>
     <output filename="webkit_strings_kn.pak" type="data_package" lang="kn" />
     <output filename="webkit_strings_ko.pak" type="data_package" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_ku.pak" type="data_package" lang="ku" />
       <output filename="webkit_strings_kw.pak" type="data_package" lang="kw" />
     </if>
@@ -132,7 +132,7 @@ below:
     <output filename="webkit_strings_te.pak" type="data_package" lang="te" />
     <output filename="webkit_strings_th.pak" type="data_package" lang="th" />
     <output filename="webkit_strings_tr.pak" type="data_package" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="webkit_strings_ug.pak" type="data_package" lang="ug" />
     </if>
     <output filename="webkit_strings_uk.pak" type="data_package" lang="uk" />
@@ -143,44 +143,44 @@ below:
   <translations>
     <file path="resources/webkit_strings_am.xtb" lang="am" />
     <file path="resources/webkit_strings_ar.xtb" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_ast.xtb" lang="ast" />
     </if>
     <file path="resources/webkit_strings_bg.xtb" lang="bg" />
     <file path="resources/webkit_strings_bn.xtb" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_bs.xtb" lang="bs" />
     </if>
     <file path="resources/webkit_strings_ca.xtb" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_ca-valencia.xtb" lang="ca@valencia" />
     </if>
     <file path="resources/webkit_strings_cs.xtb" lang="cs" />
     <file path="resources/webkit_strings_da.xtb" lang="da" />
     <file path="resources/webkit_strings_de.xtb" lang="de" />
     <file path="resources/webkit_strings_el.xtb" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_en-AU.xtb" lang="en-AU" />
     </if>
     <file path="resources/webkit_strings_en-GB.xtb" lang="en-GB" />
     <file path="resources/webkit_strings_es.xtb" lang="es" />
     <file path="resources/webkit_strings_es-419.xtb" lang="es-419" />
     <file path="resources/webkit_strings_et.xtb" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_eu.xtb" lang="eu" />
     </if>
     <file path="resources/webkit_strings_fa.xtb" lang="fa" />
     <file path="resources/webkit_strings_fi.xtb" lang="fi" />
     <file path="resources/webkit_strings_fil.xtb" lang="fil" />
     <file path="resources/webkit_strings_fr.xtb" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_gl.xtb" lang="gl" />
     </if>
     <file path="resources/webkit_strings_gu.xtb" lang="gu" />
     <file path="resources/webkit_strings_hi.xtb" lang="hi" />
     <file path="resources/webkit_strings_hr.xtb" lang="hr" />
     <file path="resources/webkit_strings_hu.xtb" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_hy.xtb" lang="hy" />
     </if>
     <file path="resources/webkit_strings_id.xtb" lang="id" />
@@ -188,12 +188,12 @@ below:
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/webkit_strings_iw.xtb" lang="he" />
     <file path="resources/webkit_strings_ja.xtb" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_ka.xtb" lang="ka" />
     </if>
     <file path="resources/webkit_strings_kn.xtb" lang="kn" />
     <file path="resources/webkit_strings_ko.xtb" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_ku.xtb" lang="ku" />
       <file path="../../third_party/launchpad_translations/webkit_strings_kw.xtb" lang="kw" />
     </if>
@@ -218,7 +218,7 @@ below:
     <file path="resources/webkit_strings_te.xtb" lang="te" />
     <file path="resources/webkit_strings_th.xtb" lang="th" />
     <file path="resources/webkit_strings_tr.xtb" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <file path="../../third_party/launchpad_translations/webkit_strings_ug.xtb" lang="ug" />
     </if>
     <file path="resources/webkit_strings_uk.xtb" lang="uk" />
