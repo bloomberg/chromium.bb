@@ -30,7 +30,7 @@ from optparse import OptionParser
 # success. This allows us to "kind of emulate" a Linux build from other
 # platforms.
 if sys.platform.find("linux") == -1:
-  print "[[],[],[],[]]"
+  print "[[],[],[],[],[]]"
   sys.exit(0)
 
 
