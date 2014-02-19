@@ -19,9 +19,6 @@ class PasswordAuthenticationManager {
   // JNI registration
   static bool RegisterPasswordAuthenticationManager(JNIEnv* env);
 
-  // Whether authenticating autofill passwords is currently enabled by the OS.
-  static bool IsAutofillPasswordAuthenticationEnabled();
-
   // Request an authentication challenge for the specified webcontents to allow
   // password autofill.  If the authentication is successful, run the
   // |success_callback|.

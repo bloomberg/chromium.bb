@@ -41,11 +41,6 @@ bool PasswordAuthenticationManager::RegisterPasswordAuthenticationManager(
   return RegisterNativesImpl(env);
 }
 
-bool PasswordAuthenticationManager::IsAutofillPasswordAuthenticationEnabled() {
-  return Java_PasswordAuthenticationManager_isPasswordAuthenticationEnabled(
-      base::android::AttachCurrentThread());
-}
-
 void PasswordAuthenticationManager::AuthenticatePasswordAutofill(
     content::WebContents* web_contents,
     const base::Closure& success_callback) {

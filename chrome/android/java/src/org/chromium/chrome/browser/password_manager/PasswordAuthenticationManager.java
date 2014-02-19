@@ -73,7 +73,6 @@ public class PasswordAuthenticationManager {
 
         @Override
         public void requestAuthentication(TabBase tab, PasswordAuthenticationCallback callback) {
-            assert false : "Should check isAuthenticationRequiredForUrl before calling this.";
             callback.onResult(true);
         }
 
@@ -104,7 +103,6 @@ public class PasswordAuthenticationManager {
     /**
      * @return Whether password authentication is enabled.
      */
-    @CalledByNative
     public static boolean isPasswordAuthenticationEnabled() {
         return getDelegate().isPasswordAuthenticationEnabled();
     }

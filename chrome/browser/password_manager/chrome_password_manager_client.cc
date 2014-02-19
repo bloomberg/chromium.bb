@@ -91,20 +91,16 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
 void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) {
 #if defined(OS_ANDROID)
-  if (PasswordAuthenticationManager
-      ::IsAutofillPasswordAuthenticationEnabled()) {
-    PasswordAuthenticationManager::AuthenticatePasswordAutofill(
-        web_contents_,
-        base::Bind(&ChromePasswordManagerClient::CommitFillPasswordForm,
-                   weak_factory_.GetWeakPtr(),
-                   base::Owned(fill_data.release())));
-    return;
-  }
-#endif  // OS_ANDROID
-
+  PasswordAuthenticationManager::AuthenticatePasswordAutofill(
+      web_contents_,
+      base::Bind(&ChromePasswordManagerClient::CommitFillPasswordForm,
+                 weak_factory_.GetWeakPtr(),
+                 base::Owned(fill_data.release())));
+#else
   // Additional authentication is currently only available for Android, so all
   // other plaftorms should just fill the password form directly.
   CommitFillPasswordForm(fill_data.get());
+#endif  // OS_ANDROID
 }
 
 Profile* ChromePasswordManagerClient::GetProfile() {
