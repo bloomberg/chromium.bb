@@ -50,7 +50,6 @@
 //
 // TODO(erg): There's still a lot that needs ported or done for the first time:
 //
-// - Render and inject the button overlay from the gtk theme.
 // - Render and inject the omnibox background.
 // - Listen for the "style-set" signal on |fake_frame_| and recreate theme
 //   colors and images.
@@ -315,7 +314,7 @@ color_utils::HSL GetDefaultTint(int id) {
 
 namespace libgtk2ui {
 
-Gtk2UI::Gtk2UI() : use_gtk_(false) {
+Gtk2UI::Gtk2UI() {
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 }
 
@@ -366,7 +365,7 @@ gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
   if (it != gtk_images_.end())
     return it->second;
 
-  if (/*use_gtk_ && */ IsOverridableImage(id)) {
+  if (IsOverridableImage(id)) {
     gfx::Image image = gfx::Image(
         gfx::ImageSkia::CreateFrom1xBitmap(GenerateGtkThemeBitmap(id)));
     gtk_images_[id] = image;
@@ -443,19 +442,7 @@ double Gtk2UI::GetCursorBlinkInterval() const {
 }
 
 ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
-  return use_gtk_ ? NativeThemeGtk2::instance() :
-                    ui::NativeTheme::instance();
-}
-
-void Gtk2UI::SetUseSystemTheme(bool use_system_theme) {
-  use_gtk_ = use_system_theme;
-
-  FOR_EACH_OBSERVER(Gtk2Border, border_list_,
-                    InvalidateAndSetUsesGtk(use_system_theme));
-}
-
-bool Gtk2UI::GetUseSystemTheme() const {
-  return use_gtk_;
+  return NativeThemeGtk2::instance();
 }
 
 bool Gtk2UI::GetDefaultUsesSystemTheme() const {

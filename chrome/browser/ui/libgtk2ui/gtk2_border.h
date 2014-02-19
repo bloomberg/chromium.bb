@@ -30,9 +30,9 @@ class Gtk2Border : public views::Border {
              scoped_ptr<views::Border> border);
   virtual ~Gtk2Border();
 
-  // Called on theme changes. We invalidate the layout, drop our cached images,
-  // and update our GTK state.
-  void InvalidateAndSetUsesGtk(bool use_gtk);
+  // Called on theme changes. We invalidate the layout and drop our cached GTK
+  // rendered images.
+  void InvalidateGtkImages();
 
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
@@ -48,7 +48,6 @@ class Gtk2Border : public views::Border {
   bool ShouldDrawBorder(bool focused, views::Button::ButtonState state);
 
   Gtk2UI* gtk2_ui_;
-  bool use_gtk_;
 
   gfx::ImageSkia button_images_[2][views::Button::STATE_COUNT];
 

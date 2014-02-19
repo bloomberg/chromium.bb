@@ -24,6 +24,7 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
   virtual ~DefaultThemeProvider();
 
   // Overridden from ui::ThemeProvider:
+  virtual bool UsingNativeTheme() const OVERRIDE;
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual int GetDisplayProperty(int id) const OVERRIDE;

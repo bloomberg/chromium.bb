@@ -39,6 +39,9 @@ class DesktopThemeProvider : public ui::ThemeProvider {
       : delegate_(delegate) {
   }
 
+  virtual bool UsingNativeTheme() const OVERRIDE {
+    return delegate_->UsingNativeTheme();
+  }
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
     return delegate_->GetImageSkiaNamed(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));

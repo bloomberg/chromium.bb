@@ -50,6 +50,10 @@ class UI_BASE_EXPORT ThemeProvider {
  public:
   virtual ~ThemeProvider();
 
+  // Whether we're using the native theme (which may or may not be the
+  // same as the default theme).
+  virtual bool UsingNativeTheme() const = 0;
+
   // Get the image specified by |id|. An implementation of ThemeProvider should
   // have its own source of ids (e.g. an enum, or external resource bundle).
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const = 0;

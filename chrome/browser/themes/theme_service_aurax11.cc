@@ -41,16 +41,10 @@ NativeThemeX11::NativeThemeX11(PrefService* pref_service)
       pref_service_(pref_service) {}
 
 void NativeThemeX11::StartUsingTheme() {
-  if (linux_ui_)
-    linux_ui_->SetUseSystemTheme(true);
-
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, true);
 }
 
 void NativeThemeX11::StopUsingTheme() {
-  if (linux_ui_)
-    linux_ui_->SetUseSystemTheme(false);
-
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, false);
 }
 

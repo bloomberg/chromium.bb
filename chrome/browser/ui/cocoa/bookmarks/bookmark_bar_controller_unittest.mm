@@ -209,6 +209,9 @@ class FakeTheme : public ui::ThemeProvider {
   FakeTheme(NSColor* color) : color_(color) {}
   base::scoped_nsobject<NSColor> color_;
 
+  virtual bool UsingNativeTheme() const OVERRIDE {
+    return true;
+  }
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
     return NULL;
   }

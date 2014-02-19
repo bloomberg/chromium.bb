@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "third_party/skia/include/effects/SkLerpXfermode.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -73,7 +74,6 @@ Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
                        views::LabelButton* owning_button,
                        scoped_ptr<views::Border> border)
     : gtk2_ui_(gtk2_ui),
-      use_gtk_(gtk2_ui_->GetUseSystemTheme()),
       owning_button_(owning_button),
       border_(border.Pass()) {
   gtk2_ui_->AddGtkBorder(this);
@@ -83,7 +83,7 @@ Gtk2Border::~Gtk2Border() {
   gtk2_ui_->RemoveGtkBorder(this);
 }
 
-void Gtk2Border::InvalidateAndSetUsesGtk(bool use_gtk) {
+void Gtk2Border::InvalidateGtkImages() {
   for (int i = 0; i < kNumberOfFocusedStates; ++i) {
     for (int j = 0; j < views::Button::STATE_COUNT; ++j) {
       button_images_[i][j] = gfx::ImageSkia();
@@ -93,12 +93,11 @@ void Gtk2Border::InvalidateAndSetUsesGtk(bool use_gtk) {
   // Our owning view must have its layout invalidated because the insets could
   // have changed.
   owning_button_->InvalidateLayout();
-
-  use_gtk_ = use_gtk;
 }
 
 void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
-  if (!use_gtk_) {
+  ui::ThemeProvider* provider = owning_button_->GetThemeProvider();
+  if (!provider || !provider->UsingNativeTheme()) {
     border_->Paint(view, canvas);
     return;
   }
@@ -133,14 +132,16 @@ void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets Gtk2Border::GetInsets() const {
-  if (!use_gtk_)
+  ui::ThemeProvider* provider = owning_button_->GetThemeProvider();
+  if (!provider || !provider->UsingNativeTheme())
     return border_->GetInsets();
 
   return gtk2_ui_->GetButtonInsets();
 }
 
 gfx::Size Gtk2Border::GetMinimumSize() const {
-  if (!use_gtk_)
+  ui::ThemeProvider* provider = owning_button_->GetThemeProvider();
+  if (!provider || !provider->UsingNativeTheme())
     return border_->GetMinimumSize();
 
   gfx::Insets insets = GetInsets();

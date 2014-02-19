@@ -27,6 +27,10 @@ BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
 
 BackgroundTheme::~BackgroundTheme() {}
 
+bool BackgroundTheme::UsingNativeTheme() const {
+  return true;
+}
+
 gfx::ImageSkia* BackgroundTheme::GetImageSkiaNamed(int id) const {
   return NULL;
 }

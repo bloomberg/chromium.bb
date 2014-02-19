@@ -118,6 +118,10 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
   return image;
 }
 
+bool ThemeService::UsingNativeTheme() const {
+  return UsingDefaultTheme();
+}
+
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
   gfx::Image image = GetImageNamed(id);
   if (image.IsEmpty())
@@ -382,10 +386,6 @@ bool ThemeService::UsingDefaultTheme() const {
   std::string id = GetThemeID();
   return id == ThemeService::kDefaultThemeID ||
       id == kDefaultThemeGalleryID;
-}
-
-bool ThemeService::UsingNativeTheme() const {
-  return UsingDefaultTheme();
 }
 
 std::string ThemeService::GetThemeID() const {

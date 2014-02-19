@@ -89,8 +89,6 @@ class Gtk2UI : public views::LinuxUI {
   virtual SkColor GetInactiveSelectionFgColor() const OVERRIDE;
   virtual double GetCursorBlinkInterval() const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
-  virtual void SetUseSystemTheme(bool use_system_theme) OVERRIDE;
-  virtual bool GetUseSystemTheme() const OVERRIDE;
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
   virtual void SetDownloadCount(int count) const OVERRIDE;
   virtual void SetProgressFraction(float percentage) const OVERRIDE;

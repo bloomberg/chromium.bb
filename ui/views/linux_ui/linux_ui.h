@@ -77,9 +77,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // style widgets.
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
 
-  virtual void SetUseSystemTheme(bool use_system_theme) = 0;
-  virtual bool GetUseSystemTheme() const = 0;
-
   // Returns whether we should be using the native theme provided by this
   // object by default.
   virtual bool GetDefaultUsesSystemTheme() const = 0;
