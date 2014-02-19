@@ -657,9 +657,10 @@ static inline unsigned lengthOfContentsInNode(Node* node)
     case Node::ELEMENT_NODE:
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
-        return node->childNodeCount();
+        return toContainerNode(node)->childNodeCount();
+    case Node::DOCUMENT_TYPE_NODE:
+        return 0;
     }
     ASSERT_NOT_REACHED();
     return 0;

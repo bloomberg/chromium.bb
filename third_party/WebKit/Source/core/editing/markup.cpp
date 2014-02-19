@@ -369,7 +369,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 appendStartTag(*n);
 
             // If node has no children, close the tag now.
-            if (!n->childNodeCount()) {
+            if (!n->hasChildNodes()) {
                 if (shouldEmit)
                     appendEndTag(*n);
                 lastClosed = n;
@@ -782,15 +782,19 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
     }
 }
 
-bool isPlainTextMarkup(Node *node)
+bool isPlainTextMarkup(Node* node)
 {
-    if (!node->isElementNode() || !node->hasTagName(divTag) || toElement(node)->hasAttributes())
+    if (!node->isElementNode())
         return false;
 
-    if (node->childNodeCount() == 1 && (node->firstChild()->isTextNode() || (node->firstChild()->firstChild())))
+    Element* element = toElement(node);
+    if (!element->hasTagName(divTag) || !element->hasAttributes())
+        return false;
+
+    if (element->hasOneChild() && (element->firstChild()->isTextNode() || (element->firstChild()->firstChild())))
         return true;
 
-    return (node->childNodeCount() == 2 && isTabSpanTextNode(node->firstChild()->firstChild()) && node->firstChild()->nextSibling()->isTextNode());
+    return element->hasChildCount(2) && isTabSpanTextNode(element->firstChild()->firstChild()) && element->lastChild()->isTextNode();
 }
 
 static bool shouldPreserveNewline(const Range& range)

@@ -829,7 +829,7 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
     ASSERT(style && runStart);
 
     for (Node* node = runStart; node && node != pastEndNode; node = NodeTraversal::next(*node)) {
-        if (node->childNodeCount())
+        if (node->hasChildNodes())
             continue;
         // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
         if (!style->styleIsPresentInComputedStyleOfNode(node))
@@ -995,7 +995,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 
     // Since addInlineStyleIfNeeded can't add styles to block-flow render objects, add style attribute instead.
     // FIXME: applyInlineStyleToRange should be used here instead.
-    if ((node->renderer()->isRenderBlockFlow() || node->childNodeCount()) && node->isHTMLElement()) {
+    if ((node->renderer()->isRenderBlockFlow() || node->hasChildNodes()) && node->isHTMLElement()) {
         setNodeAttribute(toHTMLElement(node), styleAttr, AtomicString(newInlineStyle->style()->asText()));
         return;
     }
@@ -1409,8 +1409,11 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtr<Node> passedStart, Pas
         if (container->isHTMLElement() && container->hasTagName(fontTag))
             fontContainer = toHTMLElement(container);
         bool styleContainerIsNotSpan = !styleContainer || !styleContainer->hasTagName(spanTag);
-        if (container->isHTMLElement() && (container->hasTagName(spanTag) || (styleContainerIsNotSpan && container->childNodeCount())))
-            styleContainer = toHTMLElement(container);
+        if (container->isHTMLElement()) {
+            HTMLElement* containerElement = toHTMLElement(container);
+            if (containerElement->hasTagName(spanTag) || (styleContainerIsNotSpan && containerElement->hasChildNodes()))
+                styleContainer = toHTMLElement(container);
+        }
         if (!container->firstChild())
             break;
         startNode = container->firstChild();

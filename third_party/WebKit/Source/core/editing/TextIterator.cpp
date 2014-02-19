@@ -1183,15 +1183,19 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     int startOffset = r->startOffset();
     int endOffset = r->endOffset();
 
-    if (!startNode->offsetInCharacters()) {
-        if (startOffset >= 0 && startOffset < static_cast<int>(startNode->childNodeCount())) {
-            startNode = startNode->childNode(startOffset);
+    if (!startNode->offsetInCharacters() && startOffset >= 0) {
+        // childNode() will return 0 if the offset is out of range. We rely on this behavior
+        // instead of calling childNodeCount() to avoid traversing the children twice.
+        if (Node* childAtOffset = startNode->childNode(startOffset)) {
+            startNode = childAtOffset;
             startOffset = 0;
         }
     }
-    if (!endNode->offsetInCharacters()) {
-        if (endOffset > 0 && endOffset <= static_cast<int>(endNode->childNodeCount())) {
-            endNode = endNode->childNode(endOffset - 1);
+    if (!endNode->offsetInCharacters() && endOffset > 0) {
+        // childNode() will return 0 if the offset is out of range. We rely on this behavior
+        // instead of calling childNodeCount() to avoid traversing the children twice.
+        if (Node* childAtOffset = endNode->childNode(endOffset - 1)) {
+            endNode = childAtOffset;
             endOffset = lastOffsetInNode(endNode);
         }
     }

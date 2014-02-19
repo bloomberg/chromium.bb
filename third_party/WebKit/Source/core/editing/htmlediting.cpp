@@ -503,7 +503,7 @@ Node* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 VisiblePosition visiblePositionBeforeNode(Node* node)
 {
     ASSERT(node);
-    if (node->childNodeCount())
+    if (node->hasChildNodes())
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());
@@ -514,7 +514,7 @@ VisiblePosition visiblePositionBeforeNode(Node* node)
 VisiblePosition visiblePositionAfterNode(Node* node)
 {
     ASSERT(node);
-    if (node->childNodeCount())
+    if (node->hasChildNodes())
         return VisiblePosition(lastPositionInOrAfterNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());

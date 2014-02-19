@@ -86,6 +86,7 @@ public:
 
     bool hasOneChild() const { return m_firstChild && !m_firstChild->nextSibling(); }
     bool hasOneTextChild() const { return hasOneChild() && m_firstChild->isTextNode(); }
+    bool hasChildCount(unsigned) const;
 
     PassRefPtr<HTMLCollection> children();
 
@@ -175,6 +176,16 @@ bool childAttachedAllowedWhenAttachingChildren(ContainerNode*);
 #endif
 
 DEFINE_NODE_TYPE_CASTS(ContainerNode, isContainerNode());
+
+inline bool ContainerNode::hasChildCount(unsigned count) const
+{
+    Node* child = m_firstChild;
+    while (count && child) {
+        child = child->nextSibling();
+        --count;
+    }
+    return !count && !child;
+}
 
 inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
     : Node(treeScope, type)
