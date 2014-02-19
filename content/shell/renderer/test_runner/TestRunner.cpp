@@ -1387,7 +1387,7 @@ void TestRunner::findString(const CppArgumentList& arguments, CppVariant* result
 void TestRunner::setValueForUser(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
-    if (arguments.size() != 2 || !arguments[0].isObject() || !arguments[0].isString())
+    if (arguments.size() != 2 || !arguments[0].isObject() || !arguments[1].isString())
         return;
 
     WebElement element;
