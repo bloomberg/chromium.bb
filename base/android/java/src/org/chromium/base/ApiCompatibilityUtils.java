@@ -9,6 +9,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
@@ -236,6 +237,17 @@ public class ApiCompatibilityUtils {
             view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
         } else {
             view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
+        }
+    }
+
+    /**
+     * @see android.widget.ImageView#setImageAlpha(int)
+     */
+    public static void setImageAlpha(ImageView iv, int alpha) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            iv.setImageAlpha(alpha);
+        } else {
+            iv.setAlpha(alpha);
         }
     }
 }
