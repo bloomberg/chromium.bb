@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
-struct StorageInfo {
+class StorageInfo {
  public:
   enum Type {
     // A removable mass storage device with a DCIM directory.

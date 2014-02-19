@@ -15,7 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 
-struct StorageInfo;
+class StorageInfo;
 
 class MediaStorageUtil {
  public:
