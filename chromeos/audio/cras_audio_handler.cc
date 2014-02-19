@@ -130,6 +130,10 @@ bool CrasAudioHandler::IsInputMutedForDevice(uint64 device_id) {
   return audio_pref_handler_->GetMuteValue(*device);
 }
 
+int CrasAudioHandler::GetOutputDefaultVolumeMuteThreshold() {
+  return kMuteThresholdPercent;
+}
+
 int CrasAudioHandler::GetOutputVolumePercent() {
   return output_volume_;
 }

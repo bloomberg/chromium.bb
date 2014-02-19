@@ -1,26 +1,42 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
-#define ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
+#ifndef ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#define ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
 
+#include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "chromeos/audio/cras_audio_handler.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
+
+namespace system {
+class TrayAudioDelegate;
+}
+
 namespace internal {
 
 namespace tray {
 class VolumeView;
-class AudioDetailedView;
 }
 
 class TrayAudio : public TrayImageItem,
-                  public chromeos::CrasAudioHandler::AudioObserver {
+                  public AudioObserver {
  public:
-  explicit TrayAudio(SystemTray* system_tray);
+  TrayAudio(SystemTray* system_tray,
+            scoped_ptr<system::TrayAudioDelegate> audio_delegate);
   virtual ~TrayAudio();
+
+ protected:
+  virtual void Update();
+
+  scoped_ptr<system::TrayAudioDelegate> audio_delegate_;
+  tray::VolumeView* volume_view_;
+
+  // True if VolumeView should be created for accelerator pop up;
+  // Otherwise, it should be created for detailed view in ash tray bubble.
+  bool pop_up_volume_view_;
 
  private:
   // Overridden from TrayImageItem.
@@ -34,23 +50,12 @@ class TrayAudio : public TrayImageItem,
   virtual bool ShouldHideArrow() const OVERRIDE;
   virtual bool ShouldShowShelf() const OVERRIDE;
 
-  // Overridden from chromeos::CrasAudioHandler::AudioObserver.
+  // Overridden from AudioObserver.
   virtual void OnOutputVolumeChanged() OVERRIDE;
   virtual void OnOutputMuteChanged() OVERRIDE;
-  virtual void OnInputGainChanged() OVERRIDE;
-  virtual void OnInputMuteChanged() OVERRIDE;
   virtual void OnAudioNodesChanged() OVERRIDE;
   virtual void OnActiveOutputNodeChanged() OVERRIDE;
   virtual void OnActiveInputNodeChanged() OVERRIDE;
-
-  void Update();
-
-  tray::VolumeView* volume_view_;
-  tray::AudioDetailedView* audio_detail_;
-
-  // True if VolumeView should be created for accelerator pop up;
-  // Otherwise, it should be created for detailed view in ash tray bubble.
-  bool pop_up_volume_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAudio);
 };
@@ -58,4 +63,4 @@ class TrayAudio : public TrayImageItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
+#endif  // ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_
