@@ -32,6 +32,7 @@ class AutofillDialogViewTesterCocoa: public AutofillDialogViewTester {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual content::WebContents* GetSignInWebContents() OVERRIDE;
   virtual bool IsShowingOverlay() const OVERRIDE;
+  virtual bool IsShowingSection(DialogSection section) const OVERRIDE;
 
  private:
   AutofillDialogWindowController* controller() const;

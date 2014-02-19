@@ -22,6 +22,7 @@
 - (void)activateFieldForType:(autofill::ServerFieldType)type;
 - (content::WebContents*)getSignInWebContents;
 - (BOOL)isShowingOverlay;
+- (BOOL)isShowingSection:(autofill::DialogSection)section;
 
 @end
 
@@ -59,6 +60,10 @@
 
 - (BOOL)isShowingOverlay {
   return ![[overlayController_ view] isHidden];
+}
+
+- (BOOL)isShowingSection:(autofill::DialogSection)section {
+  return ![[[mainContainer_ sectionForId:section] view] isHidden];
 }
 
 @end
@@ -131,6 +136,11 @@ content::WebContents* AutofillDialogViewTesterCocoa::GetSignInWebContents() {
 
 bool AutofillDialogViewTesterCocoa::IsShowingOverlay() const {
   return [controller() isShowingOverlay];
+}
+
+bool AutofillDialogViewTesterCocoa::IsShowingSection(
+    autofill::DialogSection section) const {
+  return [controller() isShowingSection:section];
 }
 
 AutofillDialogWindowController*

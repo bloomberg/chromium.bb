@@ -55,6 +55,9 @@ class AutofillDialogViewTester {
 
   // Whether the overlay is visible.
   virtual bool IsShowingOverlay() const = 0;
+
+  // Whether |section| is currently showing.
+  virtual bool IsShowingSection(DialogSection section) const = 0;
 };
 
 }  // namespace autofill

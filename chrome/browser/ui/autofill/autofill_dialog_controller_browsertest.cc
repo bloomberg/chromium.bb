@@ -1304,6 +1304,34 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RefreshOnManageTabClose) {
   GetActiveWebContents()->Close();
 }
 
+// Changes from Wallet to Autofill and verifies that the combined billing/cc
+// sections are showing (or not) at the correct times.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       ChangingDataSourceShowsCorrectSections) {
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
+  EXPECT_TRUE(view->IsShowingSection(SECTION_CC));
+  EXPECT_TRUE(view->IsShowingSection(SECTION_BILLING));
+  EXPECT_FALSE(view->IsShowingSection(SECTION_CC_BILLING));
+
+  // Switch the dialog to paying with Wallet.
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
+  ASSERT_TRUE(controller()->IsPayingWithWallet());
+
+  EXPECT_FALSE(view->IsShowingSection(SECTION_CC));
+  EXPECT_FALSE(view->IsShowingSection(SECTION_BILLING));
+  EXPECT_TRUE(view->IsShowingSection(SECTION_CC_BILLING));
+
+  // Now switch back to Autofill to ensure this direction works as well.
+  ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
+  account_chooser->ActivatedAt(account_chooser->GetItemCount() - 1);
+
+  EXPECT_TRUE(view->IsShowingSection(SECTION_CC));
+  EXPECT_TRUE(view->IsShowingSection(SECTION_BILLING));
+  EXPECT_FALSE(view->IsShowingSection(SECTION_CC_BILLING));
+}
+
 // http://crbug.com/318526
 #if defined(OS_MACOSX)
 #define MAYBE_DoesWorkOnHttpWithFlag DISABLED_DoesWorkOnHttpWithFlag

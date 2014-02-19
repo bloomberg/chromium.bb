@@ -93,4 +93,9 @@ bool AutofillDialogViewTesterViews::IsShowingOverlay() const {
   return view_->overlay_view_->visible();
 }
 
+bool AutofillDialogViewTesterViews::IsShowingSection(DialogSection section)
+    const {
+  return view_->GroupForSection(section)->container->visible();
+}
+
 }  // namespace autofill
