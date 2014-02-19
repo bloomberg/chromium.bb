@@ -7,15 +7,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "sync/engine/get_updates_delegate.h"
-#include "sync/engine/sync_directory_update_handler.h"
+#include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/nudge_tracker.h"
 #include "sync/sessions/status_controller.h"
-#include "sync/syncable/directory.h"
 #include "sync/test/engine/fake_model_worker.h"
-#include "sync/test/engine/test_directory_setter_upper.h"
+#include "sync/test/engine/mock_update_handler.h"
 #include "sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,23 +30,13 @@ class DownloadUpdatesTest : public ::testing::Test {
     update_handler_deleter_(&update_handler_map_) {}
 
   virtual void SetUp() {
-    dir_maker_.SetUp();
-
-    AddUpdateHandler(AUTOFILL, GROUP_DB);
-    AddUpdateHandler(BOOKMARKS, GROUP_UI);
-    AddUpdateHandler(PREFERENCES, GROUP_UI);
-  }
-
-  virtual void TearDown() {
-    dir_maker_.TearDown();
+    AddUpdateHandler(AUTOFILL);
+    AddUpdateHandler(BOOKMARKS);
+    AddUpdateHandler(PREFERENCES);
   }
 
   ModelTypeSet request_types() {
     return request_types_;
-  }
-
-  syncable::Directory* directory() {
-    return dir_maker_.directory();
   }
 
   scoped_ptr<GetUpdatesProcessor> BuildGetUpdatesProcessor(
@@ -72,19 +61,12 @@ class DownloadUpdatesTest : public ::testing::Test {
   const base::TimeTicks kTestStartTime;
 
  private:
-  void AddUpdateHandler(ModelType type, ModelSafeGroup group) {
-    DCHECK(directory());
-
+  void AddUpdateHandler(ModelType type) {
     request_types_.Put(type);
 
-    scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(group);
-    SyncDirectoryUpdateHandler* handler =
-        new SyncDirectoryUpdateHandler(directory(), type, worker);
+    UpdateHandler* handler = new MockUpdateHandler(type);
     update_handler_map_.insert(std::make_pair(type, handler));
   }
-
-  base::MessageLoop loop_;  // Needed for directory init.
-  TestDirectorySetterUpper dir_maker_;
 
   ModelTypeSet request_types_;
   UpdateHandlerMap update_handler_map_;

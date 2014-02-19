@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_directory_commit_contribution.h"
+#include "sync/engine/directory_commit_contribution.h"
 
 #include "base/message_loop/message_loop.h"
 #include "sync/sessions/status_controller.h"
@@ -17,7 +17,7 @@
 
 namespace syncer {
 
-class SyncDirectoryCommitContributionTest : public ::testing::Test {
+class DirectoryCommitContributionTest : public ::testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     dir_maker_.SetUp();
@@ -74,9 +74,9 @@ class SyncDirectoryCommitContributionTest : public ::testing::Test {
   TestDirectorySetterUpper dir_maker_;
 };
 
-// Verify that the SyncDirectoryCommitContribution contains only entries of its
+// Verify that the DirectoryCommitContribution contains only entries of its
 // specified type.
-TEST_F(SyncDirectoryCommitContributionTest, GatherByTypes) {
+TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
   int64 pref1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
@@ -85,8 +85,8 @@ TEST_F(SyncDirectoryCommitContributionTest, GatherByTypes) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  scoped_ptr<SyncDirectoryCommitContribution> cc(
-      SyncDirectoryCommitContribution::Build(dir(), PREFERENCES, 5));
+  scoped_ptr<DirectoryCommitContribution> cc(
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 5));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
   const std::vector<int64>& metahandles = cc->metahandles_;
@@ -98,9 +98,9 @@ TEST_F(SyncDirectoryCommitContributionTest, GatherByTypes) {
   cc->CleanUp();
 }
 
-// Verify that the SyncDirectoryCommitContributionTest builder function
+// Verify that the DirectoryCommitContributionTest builder function
 // truncates if necessary.
-TEST_F(SyncDirectoryCommitContributionTest, GatherAndTruncate) {
+TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
   int64 pref1;
   int64 pref2;
   {
@@ -110,8 +110,8 @@ TEST_F(SyncDirectoryCommitContributionTest, GatherAndTruncate) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  scoped_ptr<SyncDirectoryCommitContribution> cc(
-      SyncDirectoryCommitContribution::Build(dir(), PREFERENCES, 1));
+  scoped_ptr<DirectoryCommitContribution> cc(
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 1));
   ASSERT_EQ(1U, cc->GetNumEntries());
 
   int64 only_metahandle = cc->metahandles_[0];
@@ -120,11 +120,11 @@ TEST_F(SyncDirectoryCommitContributionTest, GatherAndTruncate) {
   cc->CleanUp();
 }
 
-// Sanity check for building commits from SyncDirectoryCommitContributions.
+// Sanity check for building commits from DirectoryCommitContributions.
 // This test makes two CommitContribution objects of different types and uses
 // them to initialize a commit message.  Then it checks that the contents of the
 // commit message match those of the directory they came from.
-TEST_F(SyncDirectoryCommitContributionTest, PrepareCommit) {
+TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
@@ -132,10 +132,10 @@ TEST_F(SyncDirectoryCommitContributionTest, PrepareCommit) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  scoped_ptr<SyncDirectoryCommitContribution> pref_cc(
-      SyncDirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
-  scoped_ptr<SyncDirectoryCommitContribution> ext_cc(
-      SyncDirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
+  scoped_ptr<DirectoryCommitContribution> pref_cc(
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
+  scoped_ptr<DirectoryCommitContribution> ext_cc(
+      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
 
   sync_pb::ClientToServerMessage message;
   pref_cc->AddToCommitMessage(&message);
@@ -173,7 +173,7 @@ TEST_F(SyncDirectoryCommitContributionTest, PrepareCommit) {
 // Creates some unsynced items, pretends to commit them, and hands back a
 // specially crafted response to the syncer in order to test commit response
 // processing.  The response simulates a succesful commit scenario.
-TEST_F(SyncDirectoryCommitContributionTest, ProcessCommitResponse) {
+TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
   int64 pref1_handle;
   int64 pref2_handle;
   int64 ext1_handle;
@@ -184,10 +184,10 @@ TEST_F(SyncDirectoryCommitContributionTest, ProcessCommitResponse) {
     ext1_handle = CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  scoped_ptr<SyncDirectoryCommitContribution> pref_cc(
-      SyncDirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
-  scoped_ptr<SyncDirectoryCommitContribution> ext_cc(
-      SyncDirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
+  scoped_ptr<DirectoryCommitContribution> pref_cc(
+      DirectoryCommitContribution::Build(dir(), PREFERENCES, 25));
+  scoped_ptr<DirectoryCommitContribution> ext_cc(
+      DirectoryCommitContribution::Build(dir(), EXTENSIONS, 25));
 
   sync_pb::ClientToServerMessage message;
   pref_cc->AddToCommitMessage(&message);

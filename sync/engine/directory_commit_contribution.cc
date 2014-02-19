@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_directory_commit_contribution.h"
+#include "sync/engine/directory_commit_contribution.h"
 
 #include "sync/engine/commit_util.h"
 #include "sync/engine/get_commit_ids.h"
@@ -15,12 +15,12 @@ namespace syncer {
 using syncable::GET_BY_HANDLE;
 using syncable::SYNCER;
 
-SyncDirectoryCommitContribution::~SyncDirectoryCommitContribution() {
+DirectoryCommitContribution::~DirectoryCommitContribution() {
   DCHECK(!syncing_bits_set_);
 }
 
 // static.
-SyncDirectoryCommitContribution* SyncDirectoryCommitContribution::Build(
+scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     syncable::Directory* dir,
     ModelType type,
     size_t max_entries) {
@@ -30,7 +30,7 @@ SyncDirectoryCommitContribution* SyncDirectoryCommitContribution::Build(
   GetCommitIdsForType(&trans, type, max_entries, &metahandles);
 
   if (metahandles.empty())
-    return NULL;
+    return scoped_ptr<DirectoryCommitContribution>();
 
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities;
   for (std::vector<int64>::iterator it = metahandles.begin();
@@ -41,10 +41,11 @@ SyncDirectoryCommitContribution* SyncDirectoryCommitContribution::Build(
     entry.PutSyncing(true);
   }
 
-  return new SyncDirectoryCommitContribution(metahandles, entities, dir);
+  return scoped_ptr<DirectoryCommitContribution>(
+      new DirectoryCommitContribution(metahandles, entities, dir));
 }
 
-void SyncDirectoryCommitContribution::AddToCommitMessage(
+void DirectoryCommitContribution::AddToCommitMessage(
     sync_pb::ClientToServerMessage* msg) {
   DCHECK(syncing_bits_set_);
   sync_pb::CommitMessage* commit_message = msg->mutable_commit();
@@ -54,7 +55,7 @@ void SyncDirectoryCommitContribution::AddToCommitMessage(
             RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
 }
 
-SyncerError SyncDirectoryCommitContribution::ProcessCommitResponse(
+SyncerError DirectoryCommitContribution::ProcessCommitResponse(
     const sync_pb::ClientToServerResponse& response,
     sessions::StatusController* status) {
   DCHECK(syncing_bits_set_);
@@ -131,16 +132,16 @@ SyncerError SyncDirectoryCommitContribution::ProcessCommitResponse(
   }
 }
 
-void SyncDirectoryCommitContribution::CleanUp() {
+void DirectoryCommitContribution::CleanUp() {
   DCHECK(syncing_bits_set_);
   UnsetSyncingBits();
 }
 
-size_t SyncDirectoryCommitContribution::GetNumEntries() const {
+size_t DirectoryCommitContribution::GetNumEntries() const {
   return metahandles_.size();
 }
 
-SyncDirectoryCommitContribution::SyncDirectoryCommitContribution(
+DirectoryCommitContribution::DirectoryCommitContribution(
     const std::vector<int64>& metahandles,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     syncable::Directory* dir)
@@ -151,7 +152,7 @@ SyncDirectoryCommitContribution::SyncDirectoryCommitContribution(
     syncing_bits_set_(true) {
 }
 
-void SyncDirectoryCommitContribution::UnsetSyncingBits() {
+void DirectoryCommitContribution::UnsetSyncingBits() {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
   for (std::vector<int64>::const_iterator it = metahandles_.begin();
        it != metahandles_.end(); ++it) {

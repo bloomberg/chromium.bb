@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_directory_update_handler.h"
+#include "sync/engine/directory_update_handler.h"
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
@@ -34,13 +34,13 @@ using syncable::UNITTEST;
 // Update processing is what occurs when we first download updates.  It converts
 // the received protobuf message into information in the syncable::Directory.
 // Any invalid or redundant updates will be dropped at this point.
-class SyncDirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
+class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
  public:
-  SyncDirectoryUpdateHandlerProcessUpdateTest()
+  DirectoryUpdateHandlerProcessUpdateTest()
       : ui_worker_(new FakeModelWorker(GROUP_UI)) {
   }
 
-  virtual ~SyncDirectoryUpdateHandlerProcessUpdateTest() {}
+  virtual ~DirectoryUpdateHandlerProcessUpdateTest() {}
 
   virtual void SetUp() OVERRIDE {
     dir_maker_.SetUp();
@@ -62,13 +62,13 @@ class SyncDirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   // This exists mostly to give tests access to the protected member function.
   // Warning: This takes the syncable directory lock.
   void UpdateSyncEntities(
-      SyncDirectoryUpdateHandler* handler,
+      DirectoryUpdateHandler* handler,
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status);
 
   // Another function to access private member functions.
   void UpdateProgressMarkers(
-      SyncDirectoryUpdateHandler* handler,
+      DirectoryUpdateHandler* handler,
       const sync_pb::DataTypeProgressMarker& progress);
 
   scoped_refptr<FakeModelWorker> ui_worker() {
@@ -82,7 +82,7 @@ class SyncDirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
 };
 
 scoped_ptr<sync_pb::SyncEntity>
-SyncDirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
+DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
     const std::string& id,
     const std::string& parent,
     const ModelType& type) {
@@ -96,16 +96,16 @@ SyncDirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
   return e.Pass();
 }
 
-void SyncDirectoryUpdateHandlerProcessUpdateTest::UpdateSyncEntities(
-    SyncDirectoryUpdateHandler* handler,
+void DirectoryUpdateHandlerProcessUpdateTest::UpdateSyncEntities(
+    DirectoryUpdateHandler* handler,
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, UNITTEST, dir());
   handler->UpdateSyncEntities(&trans, applicable_updates, status);
 }
 
-void SyncDirectoryUpdateHandlerProcessUpdateTest::UpdateProgressMarkers(
-    SyncDirectoryUpdateHandler* handler,
+void DirectoryUpdateHandlerProcessUpdateTest::UpdateProgressMarkers(
+    DirectoryUpdateHandler* handler,
     const sync_pb::DataTypeProgressMarker& progress) {
   handler->UpdateProgressMarker(progress);
 }
@@ -113,8 +113,8 @@ void SyncDirectoryUpdateHandlerProcessUpdateTest::UpdateProgressMarkers(
 static const char kCacheGuid[] = "IrcjZ2jyzHDV9Io4+zKcXQ==";
 
 // Test that the bookmark tag is set on newly downloaded items.
-TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
-  SyncDirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -150,9 +150,9 @@ TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
 }
 
 // Test the receipt of a type root node.
-TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest,
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
        ReceiveServerCreatedBookmarkFolders) {
-  SyncDirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -185,8 +185,8 @@ TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest,
 }
 
 // Test the receipt of a non-bookmark item.
-TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
-  SyncDirectoryUpdateHandler handler(dir(), PREFERENCES, ui_worker());
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
+  DirectoryUpdateHandler handler(dir(), PREFERENCES, ui_worker());
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
@@ -216,8 +216,8 @@ TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
 }
 
 // Tests the setting of progress markers.
-TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
-  SyncDirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
+  DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker());
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(BOOKMARKS));
@@ -247,9 +247,9 @@ TEST_F(SyncDirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
 // update processing tests.  Currently, we're bypassing most of those issues by
 // using FakeModelWorkers, so there's not much difference between the two test
 // harnesses.
-class SyncDirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
+class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
  public:
-  SyncDirectoryUpdateHandlerApplyUpdateTest()
+  DirectoryUpdateHandlerApplyUpdateTest()
       : ui_worker_(new FakeModelWorker(GROUP_UI)),
         password_worker_(new FakeModelWorker(GROUP_PASSWORD)),
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
@@ -261,10 +261,10 @@ class SyncDirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
-        new SyncDirectoryUpdateHandler(directory(), BOOKMARKS, ui_worker_)));
+        new DirectoryUpdateHandler(directory(), BOOKMARKS, ui_worker_)));
     update_handler_map_.insert(std::make_pair(
         PASSWORDS,
-        new SyncDirectoryUpdateHandler(directory(),
+        new DirectoryUpdateHandler(directory(),
                                        PASSWORDS,
                                        password_worker_)));
   }
@@ -291,7 +291,7 @@ class SyncDirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   }
 
  private:
-  typedef std::map<ModelType, SyncDirectoryUpdateHandler*> UpdateHandlerMap;
+  typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
@@ -314,7 +314,7 @@ sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
 } // namespace
 
 // Test update application for a few bookmark items.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
   sessions::StatusController status;
 
   std::string root_server_id = syncable::GetNullId().GetServerId();
@@ -351,7 +351,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
 }
 
 // Test that the applicator can handle updates delivered out of order.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
        BookmarkChildrenBeforeParent) {
   // Start with some bookmarks whose parents are unknown.
   std::string root_server_id = syncable::GetNullId().GetServerId();
@@ -409,7 +409,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
 
 // Try to apply changes on an item that is both IS_UNSYNCED and
 // IS_UNAPPLIED_UPDATE.  Conflict resolution should be performed.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, SimpleBookmarkConflict) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmarkConflict) {
   int64 handle = entry_factory()->CreateUnappliedAndUnsyncedBookmarkItem("x");
 
   int original_server_version = -10;
@@ -445,7 +445,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, SimpleBookmarkConflict) {
 // follow the normal "server wins" logic, we'd end up violating hierarchy
 // constraints.  The hierarchy conflict must take precedence.  We can not allow
 // the update to be applied.  The item must remain in the conflict state.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, HierarchyAndSimpleConflict) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, HierarchyAndSimpleConflict) {
   // Create a simply-conflicting item.  It will start with valid parent ids.
   int64 handle = entry_factory()->CreateUnappliedAndUnsyncedBookmarkItem(
       "orphaned_by_server");
@@ -476,7 +476,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, HierarchyAndSimpleConflict) {
 
 // Attempt to apply an udpate that would create a bookmark folder loop.  This
 // application should fail.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
   // Item 'X' locally has parent of 'root'.  Server is updating it to have
   // parent of 'Y'.
 
@@ -521,7 +521,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
 
 // Test update application where the update has been orphaned by a local folder
 // deletion.  The update application attempt should fail.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
        HierarchyConflictDeletedParent) {
   // Create a locally deleted parent item.
   int64 parent_handle;
@@ -559,7 +559,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
 
 // Attempt to apply an update that deletes a folder where the folder has
 // locally-created children.  The update application should fail.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
        HierarchyConflictDeleteNonEmptyDirectory) {
   // Create a server-deleted folder as a child of root node.
   int64 parent_handle =
@@ -603,7 +603,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
 
 // Attempt to apply updates where the updated item's parent is not known to this
 // client.  The update application attempt should fail.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
        HierarchyConflictUnknownParent) {
   // We shouldn't be able to do anything with either of these items.
   int64 x_handle = entry_factory()->CreateUnappliedNewItemWithParent(
@@ -634,7 +634,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest,
 
 // Attempt application of a mix of items.  Some update application attempts will
 // fail due to hierarchy conflicts.  Others should succeed.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
   // See what happens when there's a mixture of good and bad updates.
   std::string root_server_id = syncable::GetNullId().GetServerId();
   int64 u1_handle = entry_factory()->CreateUnappliedNewItemWithParent(
@@ -682,7 +682,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
 }
 
 // Attempt application of password upates where the passphrase is known.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
   // Decryptable password updates should be applied.
   Cryptographer* cryptographer;
   {
@@ -720,7 +720,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
 }
 
 // Attempt application of encrypted items when the passphrase is not known.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
   // Undecryptable updates should not be applied.
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
@@ -765,7 +765,7 @@ TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
 }
 
 // Test a mix of decryptable and undecryptable updates.
-TEST_F(SyncDirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
   Cryptographer* cryptographer;
 
   int64 decryptable_handle = -1;

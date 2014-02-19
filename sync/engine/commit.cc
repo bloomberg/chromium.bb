@@ -5,9 +5,9 @@
 #include "sync/engine/commit.h"
 
 #include "base/debug/trace_event.h"
+#include "sync/engine/commit_contribution.h"
 #include "sync/engine/commit_processor.h"
 #include "sync/engine/commit_util.h"
-#include "sync/engine/sync_directory_commit_contribution.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/sessions/sync_session.h"
@@ -15,7 +15,7 @@
 namespace syncer {
 
 Commit::Commit(
-    const std::map<ModelType, SyncDirectoryCommitContribution*>& contributions,
+    const std::map<ModelType, CommitContribution*>& contributions,
     const sync_pb::ClientToServerMessage& message,
     ExtensionsActivity::Records extensions_activity_buffer)
   : contributions_(contributions),
@@ -71,7 +71,7 @@ Commit* Commit::Init(
       commit_message);
 
   // Finally, serialize all our contributions.
-  for (std::map<ModelType, SyncDirectoryCommitContribution*>::iterator it =
+  for (std::map<ModelType, CommitContribution*>::iterator it =
            contributions.begin(); it != contributions.end(); ++it) {
     it->second->AddToCommitMessage(&message);
   }
@@ -130,7 +130,7 @@ SyncerError Commit::PostAndProcessResponse(
 
   // Let the contributors process the responses to each of their requests.
   SyncerError processing_result = SYNCER_OK;
-  for (std::map<ModelType, SyncDirectoryCommitContribution*>::iterator it =
+  for (std::map<ModelType, CommitContribution*>::iterator it =
        contributions_.begin(); it != contributions_.end(); ++it) {
     TRACE_EVENT1("sync", "ProcessCommitResponse",
                  "type", ModelTypeToString(it->first));

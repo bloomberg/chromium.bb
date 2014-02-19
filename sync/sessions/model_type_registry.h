@@ -20,12 +20,11 @@ namespace syncable {
 class Directory;
 }  // namespace syncable
 
-class SyncDirectoryUpdateHandler;
-class SyncDirectoryCommitContributor;
+class UpdateHandler;
+class CommitContributor;
 
-typedef std::map<ModelType, SyncDirectoryUpdateHandler*> UpdateHandlerMap;
-typedef std::map<ModelType, SyncDirectoryCommitContributor*>
-    CommitContributorMap;
+typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
+typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
 class SYNC_EXPORT_PRIVATE ModelTypeRegistry {

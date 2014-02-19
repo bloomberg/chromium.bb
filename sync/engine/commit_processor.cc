@@ -6,8 +6,8 @@
 
 #include <map>
 
-#include "sync/engine/sync_directory_commit_contribution.h"
-#include "sync/engine/sync_directory_commit_contributor.h"
+#include "sync/engine/commit_contribution.h"
+#include "sync/engine/commit_contributor.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -35,11 +35,11 @@ void CommitProcessor::GatherCommitContributions(
       continue;
     }
     size_t spaces_remaining = max_entries - num_entries;
-    SyncDirectoryCommitContribution* contribution =
+    scoped_ptr<CommitContribution> contribution =
         cm_it->second->GetContribution(spaces_remaining);
     if (contribution) {
       num_entries += contribution->GetNumEntries();
-      contributions->insert(std::make_pair(it.Get(), contribution));
+      contributions->insert(std::make_pair(it.Get(), contribution.release()));
     }
     if (num_entries >= max_entries) {
       DCHECK_EQ(num_entries, max_entries)

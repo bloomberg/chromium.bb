@@ -20,8 +20,8 @@ namespace syncable {
 class Directory;
 }  // namespace syncable
 
-class SyncDirectoryCommitContributor;
-class SyncDirectoryCommitContribution;
+class CommitContributor;
+class CommitContribution;
 
 // This class manages the set of per-type committer objects.
 //
@@ -31,12 +31,19 @@ class SyncDirectoryCommitContribution;
 // contains a type which was not previously registered.
 class SYNC_EXPORT_PRIVATE CommitProcessor {
  public:
-  typedef std::map<ModelType, SyncDirectoryCommitContribution*> ContributionMap;
+  typedef std::map<ModelType, CommitContribution*> ContributionMap;
 
+  // Contructs a CommitProcessor from a map of CommitContributors.
+  // The CommitProcessor does not own this map.
   explicit CommitProcessor(CommitContributorMap* commit_contributor_map);
   ~CommitProcessor();
 
   // Gathers a set of contributions to be used to populate a commit message.
+  //
+  // For each of the |commit_types| in this CommitProcessor's CommitContributor
+  // map, gather any entries queued for commit into CommitContributions.  The
+  // total number of entries in all the returned CommitContributions shall not
+  // exceed |max_entries|.
   void GatherCommitContributions(
       ModelTypeSet commit_types,
       size_t max_entries,

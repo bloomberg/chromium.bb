@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/sync_directory_update_handler.h"
+#include "sync/engine/directory_update_handler.h"
 
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/process_updates_util.h"
@@ -16,7 +16,7 @@ namespace syncer {
 
 using syncable::SYNCER;
 
-SyncDirectoryUpdateHandler::SyncDirectoryUpdateHandler(
+DirectoryUpdateHandler::DirectoryUpdateHandler(
     syncable::Directory* dir,
     ModelType type,
     scoped_refptr<ModelSafeWorker> worker)
@@ -24,14 +24,14 @@ SyncDirectoryUpdateHandler::SyncDirectoryUpdateHandler(
     type_(type),
     worker_(worker) {}
 
-SyncDirectoryUpdateHandler::~SyncDirectoryUpdateHandler() {}
+DirectoryUpdateHandler::~DirectoryUpdateHandler() {}
 
-void SyncDirectoryUpdateHandler::GetDownloadProgress(
+void DirectoryUpdateHandler::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   dir_->GetDownloadProgress(type_, progress_marker);
 }
 
-void SyncDirectoryUpdateHandler::ProcessGetUpdatesResponse(
+void DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
@@ -40,8 +40,7 @@ void SyncDirectoryUpdateHandler::ProcessGetUpdatesResponse(
   UpdateProgressMarker(progress_marker);
 }
 
-void SyncDirectoryUpdateHandler::ApplyUpdates(
-    sessions::StatusController* status) {
+void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
   if (!IsApplyUpdatesRequired()) {
     return;
   }
@@ -49,14 +48,14 @@ void SyncDirectoryUpdateHandler::ApplyUpdates(
   // This will invoke handlers that belong to the model and its thread, so we
   // switch to the appropriate thread before we start this work.
   WorkCallback c = base::Bind(
-      &SyncDirectoryUpdateHandler::ApplyUpdatesImpl,
+      &DirectoryUpdateHandler::ApplyUpdatesImpl,
       // We wait until the callback is executed.  We can safely use Unretained.
       base::Unretained(this),
       base::Unretained(status));
   worker_->DoWorkAndWaitUntilDone(c);
 }
 
-void SyncDirectoryUpdateHandler::PassiveApplyUpdates(
+void DirectoryUpdateHandler::PassiveApplyUpdates(
     sessions::StatusController* status) {
   if (!IsApplyUpdatesRequired()) {
     return;
@@ -66,7 +65,7 @@ void SyncDirectoryUpdateHandler::PassiveApplyUpdates(
   ApplyUpdatesImpl(status);
 }
 
-SyncerError SyncDirectoryUpdateHandler::ApplyUpdatesImpl(
+SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
     sessions::StatusController* status) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir_);
 
@@ -133,7 +132,7 @@ SyncerError SyncDirectoryUpdateHandler::ApplyUpdatesImpl(
   return SYNCER_OK;
 }
 
-bool SyncDirectoryUpdateHandler::IsApplyUpdatesRequired() {
+bool DirectoryUpdateHandler::IsApplyUpdatesRequired() {
   if (IsControlType(type_)) {
     return false;  // We don't process control types here.
   }
@@ -141,14 +140,14 @@ bool SyncDirectoryUpdateHandler::IsApplyUpdatesRequired() {
   return dir_->TypeHasUnappliedUpdates(type_);
 }
 
-void SyncDirectoryUpdateHandler::UpdateSyncEntities(
+void DirectoryUpdateHandler::UpdateSyncEntities(
     syncable::ModelNeutralWriteTransaction* trans,
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
   ProcessDownloadedUpdates(dir_, trans, type_, applicable_updates, status);
 }
 
-void SyncDirectoryUpdateHandler::UpdateProgressMarker(
+void DirectoryUpdateHandler::UpdateProgressMarker(
     const sync_pb::DataTypeProgressMarker& progress_marker) {
   int field_number = progress_marker.data_type_id();
   ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);

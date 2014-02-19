@@ -4,8 +4,8 @@
 
 #include "sync/engine/get_updates_delegate.h"
 
+#include "sync/engine/directory_update_handler.h"
 #include "sync/engine/get_updates_processor.h"
-#include "sync/engine/sync_directory_update_handler.h"
 
 namespace syncer {
 

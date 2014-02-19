@@ -7,8 +7,11 @@
 #include <map>
 
 #include "sync/engine/get_updates_delegate.h"
-#include "sync/engine/sync_directory_update_handler.h"
+#include "sync/engine/update_handler.h"
 #include "sync/protocol/sync.pb.h"
+
+typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
+typedef std::map<syncer::ModelType, SyncEntityList> TypeSyncEntityMap;
 
 namespace syncer {
 

@@ -9,7 +9,7 @@
 
 #include "base/stl_util.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/sync_directory_commit_contribution.h"
+#include "sync/engine/commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
@@ -37,7 +37,7 @@ class Syncer;
 class SYNC_EXPORT_PRIVATE Commit {
  public:
   Commit(
-      const std::map<ModelType, SyncDirectoryCommitContribution*>&
+      const std::map<ModelType, CommitContribution*>&
           contributions,
       const sync_pb::ClientToServerMessage& message,
       ExtensionsActivity::Records extensions_activity_buffer);
@@ -64,7 +64,7 @@ class SYNC_EXPORT_PRIVATE Commit {
   void CleanUp();
 
  private:
-  typedef std::map<ModelType, SyncDirectoryCommitContribution*> ContributionMap;
+  typedef std::map<ModelType, CommitContribution*> ContributionMap;
 
   ContributionMap contributions_;
   STLValueDeleter<ContributionMap> deleter_;

@@ -30,10 +30,6 @@ class Directory;
 }  // namespace syncable
 
 class GetUpdatesDelegate;
-class SyncDirectoryUpdateHandler;
-
-typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
-typedef std::map<ModelType, SyncEntityList> TypeSyncEntityMap;
 
 // This class manages the set of per-type syncer objects.
 //

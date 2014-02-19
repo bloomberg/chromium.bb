@@ -4,8 +4,8 @@
 
 #include "sync/sessions/model_type_registry.h"
 
-#include "sync/engine/sync_directory_commit_contributor.h"
-#include "sync/engine/sync_directory_update_handler.h"
+#include "sync/engine/directory_commit_contributor.h"
+#include "sync/engine/directory_update_handler.h"
 
 namespace syncer {
 
@@ -39,10 +39,10 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     DCHECK(worker_it != workers_map_.end());
     scoped_refptr<ModelSafeWorker> worker = worker_it->second;
 
-    SyncDirectoryCommitContributor* committer =
-        new SyncDirectoryCommitContributor(directory_, type);
-    SyncDirectoryUpdateHandler* updater =
-        new SyncDirectoryUpdateHandler(directory_, type, worker);
+    DirectoryCommitContributor* committer =
+        new DirectoryCommitContributor(directory_, type);
+    DirectoryUpdateHandler* updater =
+        new DirectoryUpdateHandler(directory_, type, worker);
 
     bool inserted1 =
         update_handler_map_.insert(std::make_pair(type, updater)).second;
