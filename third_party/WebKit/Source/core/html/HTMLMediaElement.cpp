@@ -1607,13 +1607,11 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     }
 
     if (m_readyState == HAVE_ENOUGH_DATA && oldState < HAVE_ENOUGH_DATA && tracksAreReady) {
-        if (oldState <= HAVE_CURRENT_DATA)
+        if (oldState <= HAVE_CURRENT_DATA) {
             scheduleEvent(EventTypeNames::canplay);
-
-        scheduleEvent(EventTypeNames::canplaythrough);
-
-        if (isPotentiallyPlaying && oldState <= HAVE_CURRENT_DATA)
-            scheduleEvent(EventTypeNames::playing);
+            if (isPotentiallyPlaying)
+                scheduleEvent(EventTypeNames::playing);
+        }
 
         if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForPlay()) {
             m_paused = false;
@@ -1621,6 +1619,8 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
             scheduleEvent(EventTypeNames::play);
             scheduleEvent(EventTypeNames::playing);
         }
+
+        scheduleEvent(EventTypeNames::canplaythrough);
 
         shouldUpdateDisplayState = true;
     }

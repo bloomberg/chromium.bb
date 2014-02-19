@@ -4,13 +4,13 @@ start preview
 EVENT(loadstart)
 EVENT(loadeddata)
 EVENT(canplay)
-EVENT(canplaythrough)
 EVENT(play)
+EVENT(canplaythrough)
 restart preview
 EVENT(loadstart)
 EVENT(loadeddata)
 EVENT(canplay)
-EVENT(canplaythrough)
 EVENT(play)
+EVENT(canplaythrough)
 END OF TEST
 
