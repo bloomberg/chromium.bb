@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -48,10 +49,15 @@ const char kEmptyPathError[] = "The path property must not be empty.";
 
 // Views implementation of browser action button will return icon whose
 // background will be set.
-gfx::ImageSkia AddBackgroundForViews(const gfx::ImageSkia& icon) {
+gfx::ImageSkia AddBackgroundForViews(const Extension* extension,
+                                     const gfx::ImageSkia& icon) {
 #if defined(TOOLKIT_VIEWS)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
+  // We may have a different background than the default - see
+  // BrowserActionButton::UpdateState.
+  if (extensions::DevModeBubbleController::IsDevModeExtension(extension))
+    bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_HIGHLIGHT);
   return gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon);
 #endif
 
@@ -175,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -193,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
       action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -211,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -228,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -246,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -264,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      AddBackgroundForViews(extension, *action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
       1.0f));
 
@@ -288,10 +294,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
       *action_icon.ToSkBitmap(),
       action_icon_skia->GetRepresentation(2.0f).sk_bitmap()));
 
-  EXPECT_TRUE(ImagesAreEqualAtScale(
-      AddBackgroundForViews(*action_icon_skia),
-      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      2.0f));
+  EXPECT_TRUE(
+      ImagesAreEqualAtScale(AddBackgroundForViews(extension, *action_icon_skia),
+                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            2.0f));
 
   // Try setting icon with empty dictionary of ImageData objects.
   GetBrowserActionsBar().Press(0);
@@ -338,11 +344,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
 // http://code.google.com/p/chromium/issues/detail?id=70829
 // Mac used to be ok, but then mac 10.5 started failing too. =(
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
-      "browser_action/popup")));
-  BrowserActionTestUtil actions_bar = GetBrowserActionsBar();
-  const Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("browser_action/popup"));
   ASSERT_TRUE(extension) << message_;
+  BrowserActionTestUtil actions_bar = GetBrowserActionsBar();
 
   // The extension's popup's size grows by |growFactor| each click.
   const int growFactor = 500;
@@ -609,9 +614,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
 // Disabled because of failures (crashes) on ASAN bot.
 // See http://crbug.com/98861.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
-      "browser_action/close_background")));
-  const Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("browser_action/close_background"));
+  ASSERT_TRUE(extension) << message_;
 
   // There is a background page and a browser action with no badge text.
   extensions::ProcessManager* manager =
