@@ -50,7 +50,7 @@ Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
 }
 
 Status ToPlatformPrivateKey(const blink::WebCryptoKey& key,
-                           platform::PrivateKey** out) {
+                            platform::PrivateKey** out) {
   *out = static_cast<platform::Key*>(key.handle())->AsPrivateKey();
   if (!*out)
     return Status::ErrorUnexpectedKeyType();
@@ -103,9 +103,14 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
   if (tag_length_bits > 128)
     return Status::ErrorInvalidAesGcmTagLength();
 
-  return platform::EncryptDecryptAesGcm(mode, sym_key, data,
-      CryptoData(params->iv()), CryptoData(params->optionalAdditionalData()),
-      tag_length_bits, buffer);
+  return platform::EncryptDecryptAesGcm(
+      mode,
+      sym_key,
+      data,
+      CryptoData(params->iv()),
+      CryptoData(params->optionalAdditionalData()),
+      tag_length_bits,
+      buffer);
 }
 
 Status EncryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
@@ -252,9 +257,7 @@ Status ImportKeyRaw(const CryptoData& key_data,
 
 }  // namespace
 
-void Init() {
-  platform::Init();
-}
+void Init() { platform::Init(); }
 
 Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,

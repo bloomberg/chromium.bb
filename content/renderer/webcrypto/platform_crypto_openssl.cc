@@ -59,10 +59,7 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
 }
 
 // OpenSSL constants for EVP_CipherInit_ex(), do not change
-enum CipherOperation {
-  kDoDecrypt = 0,
-  kDoEncrypt = 1
-};
+enum CipherOperation { kDoDecrypt = 0, kDoEncrypt = 1 };
 
 Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                             SymKey* key,
@@ -142,9 +139,7 @@ Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer) {
   return Status::Success();
 }
 
-void Init() {
-  crypto::EnsureOpenSSLInit();
-}
+void Init() { crypto::EnsureOpenSSLInit(); }
 
 Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
                             SymKey* key,
@@ -189,7 +184,7 @@ Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
 
   if (!EVP_DigestInit_ex(digest_context.get(), digest_algorithm, NULL) ||
       !EVP_DigestUpdate(
-           digest_context.get(), data.bytes(), data.byte_length())) {
+          digest_context.get(), data.bytes(), data.byte_length())) {
     return Status::Error();
   }
 
@@ -212,12 +207,11 @@ Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
   return Status::Success();
 }
 
-Status GenerateSecretKey(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    unsigned keylen_bytes,
-    blink::WebCryptoKey* key) {
+Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         unsigned keylen_bytes,
+                         blink::WebCryptoKey* key) {
   // TODO(eroman): Is this right?
   if (keylen_bytes == 0)
     return Status::ErrorGenerateKeyLength();
@@ -237,12 +231,11 @@ Status GenerateSecretKey(
   return Status::Success();
 }
 
-Status GenerateRsaKeyPair(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    blink::WebCryptoKey* public_key,
-    blink::WebCryptoKey* private_key) {
+Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
+                          bool extractable,
+                          blink::WebCryptoKeyUsageMask usage_mask,
+                          blink::WebCryptoKey* public_key,
+                          blink::WebCryptoKey* private_key) {
   // TODO(padolph): Placeholder for OpenSSL implementation.
   // Issue http://crbug.com/267888.
   return Status::ErrorUnsupported();
@@ -268,63 +261,61 @@ Status SignHmac(SymKey* key,
                 blink::WebArrayBuffer* buffer) {
   blink::WebArrayBuffer result;
 
-  // TODO(eroman): De-indent this code.
-      const EVP_MD* evp_sha = 0;
-      unsigned int hmac_expected_length = 0;
-      // Note that HMAC length is determined by the hash used.
-      switch (hash.id()) {
-        case blink::WebCryptoAlgorithmIdSha1:
-          evp_sha = EVP_sha1();
-          hmac_expected_length = SHA_DIGEST_LENGTH;
-          break;
-        case blink::WebCryptoAlgorithmIdSha224:
-          evp_sha = EVP_sha224();
-          hmac_expected_length = SHA224_DIGEST_LENGTH;
-          break;
-        case blink::WebCryptoAlgorithmIdSha256:
-          evp_sha = EVP_sha256();
-          hmac_expected_length = SHA256_DIGEST_LENGTH;
-          break;
-        case blink::WebCryptoAlgorithmIdSha384:
-          evp_sha = EVP_sha384();
-          hmac_expected_length = SHA384_DIGEST_LENGTH;
-          break;
-        case blink::WebCryptoAlgorithmIdSha512:
-          evp_sha = EVP_sha512();
-          hmac_expected_length = SHA512_DIGEST_LENGTH;
-          break;
-        default:
-          // Not a digest algorithm.
-          return Status::ErrorUnsupported();
-      }
+  const EVP_MD* evp_sha = 0;
+  unsigned int hmac_expected_length = 0;
+  // Note that HMAC length is determined by the hash used.
+  switch (hash.id()) {
+    case blink::WebCryptoAlgorithmIdSha1:
+      evp_sha = EVP_sha1();
+      hmac_expected_length = SHA_DIGEST_LENGTH;
+      break;
+    case blink::WebCryptoAlgorithmIdSha224:
+      evp_sha = EVP_sha224();
+      hmac_expected_length = SHA224_DIGEST_LENGTH;
+      break;
+    case blink::WebCryptoAlgorithmIdSha256:
+      evp_sha = EVP_sha256();
+      hmac_expected_length = SHA256_DIGEST_LENGTH;
+      break;
+    case blink::WebCryptoAlgorithmIdSha384:
+      evp_sha = EVP_sha384();
+      hmac_expected_length = SHA384_DIGEST_LENGTH;
+      break;
+    case blink::WebCryptoAlgorithmIdSha512:
+      evp_sha = EVP_sha512();
+      hmac_expected_length = SHA512_DIGEST_LENGTH;
+      break;
+    default:
+      // Not a digest algorithm.
+      return Status::ErrorUnsupported();
+  }
 
-      const std::vector<unsigned char>& raw_key = key->key();
+  const std::vector<unsigned char>& raw_key = key->key();
 
-      // OpenSSL wierdness here.
-      // First, HMAC() needs a void* for the key data, so make one up front as a
-      // cosmetic to avoid a cast. Second, OpenSSL does not like a NULL key,
-      // which will result if the raw_key vector is empty; an entirely valid
-      // case. Handle this specific case by pointing to an empty array.
-      const unsigned char null_key[] = {};
-      const void* const raw_key_voidp = raw_key.size() ? &raw_key[0] : null_key;
+  // OpenSSL wierdness here.
+  // First, HMAC() needs a void* for the key data, so make one up front as a
+  // cosmetic to avoid a cast. Second, OpenSSL does not like a NULL key,
+  // which will result if the raw_key vector is empty; an entirely valid
+  // case. Handle this specific case by pointing to an empty array.
+  const unsigned char null_key[] = {};
+  const void* const raw_key_voidp = raw_key.size() ? &raw_key[0] : null_key;
 
-      result = blink::WebArrayBuffer::create(hmac_expected_length, 1);
-      crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
-          reinterpret_cast<unsigned char*>(result.data()),
-          hmac_expected_length);
+  result = blink::WebArrayBuffer::create(hmac_expected_length, 1);
+  crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
+      reinterpret_cast<unsigned char*>(result.data()), hmac_expected_length);
 
-      crypto::OpenSSLErrStackTracer(FROM_HERE);
+  crypto::OpenSSLErrStackTracer(FROM_HERE);
 
-      unsigned int hmac_actual_length;
-      unsigned char* const success = HMAC(evp_sha,
-                                          raw_key_voidp,
-                                          raw_key.size(),
-                                          data.bytes(),
-                                          data.byte_length(),
-                                          hmac_result.safe_buffer(),
-                                          &hmac_actual_length);
-      if (!success || hmac_actual_length != hmac_expected_length)
-        return Status::Error();
+  unsigned int hmac_actual_length;
+  unsigned char* const success = HMAC(evp_sha,
+                                      raw_key_voidp,
+                                      raw_key.size(),
+                                      data.bytes(),
+                                      data.byte_length(),
+                                      hmac_result.safe_buffer(),
+                                      &hmac_actual_length);
+  if (!success || hmac_actual_length != hmac_expected_length)
+    return Status::Error();
 
   *buffer = result;
   return Status::Success();

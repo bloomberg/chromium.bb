@@ -13,29 +13,19 @@ namespace content {
 
 namespace webcrypto {
 
-bool Status::IsError() const {
-  return type_ == TYPE_ERROR;
-}
+bool Status::IsError() const { return type_ == TYPE_ERROR; }
 
-bool Status::IsSuccess() const {
-  return type_ == TYPE_SUCCESS;
-}
+bool Status::IsSuccess() const { return type_ == TYPE_SUCCESS; }
 
-bool Status::HasErrorDetails() const {
-  return !error_details_.empty();
-}
+bool Status::HasErrorDetails() const { return !error_details_.empty(); }
 
 std::string Status::ToString() const {
   return IsSuccess() ? "Success" : error_details_;
 }
 
-Status Status::Success() {
-  return Status(TYPE_SUCCESS);
-}
+Status Status::Success() { return Status(TYPE_SUCCESS); }
 
-Status Status::Error() {
-  return Status(TYPE_ERROR);
-}
+Status Status::Error() { return Status(TYPE_ERROR); }
 
 Status Status::ErrorJwkNotDictionary() {
   return Status("JWK input could not be parsed to a JSON dictionary");
@@ -57,8 +47,9 @@ Status Status::ErrorJwkBase64Decode(const std::string& property) {
 }
 
 Status Status::ErrorJwkExtractableInconsistent() {
-  return Status("The \"extractable\" property of the JWK dictionary is "
-                "inconsistent what that specified by the Web Crypto call");
+  return Status(
+      "The \"extractable\" property of the JWK dictionary is "
+      "inconsistent what that specified by the Web Crypto call");
 }
 
 Status Status::ErrorJwkUnrecognizedAlgorithm() {
@@ -66,13 +57,15 @@ Status Status::ErrorJwkUnrecognizedAlgorithm() {
 }
 
 Status Status::ErrorJwkAlgorithmInconsistent() {
-  return Status("The JWK \"alg\" property was inconsistent with that specified "
-                "by the Web Crypto call");
+  return Status(
+      "The JWK \"alg\" property was inconsistent with that specified "
+      "by the Web Crypto call");
 }
 
 Status Status::ErrorJwkAlgorithmMissing() {
-  return Status("The JWK optional \"alg\" property is missing or not a string, "
-                "and one wasn't specified by the Web Crypto call");
+  return Status(
+      "The JWK optional \"alg\" property is missing or not a string, "
+      "and one wasn't specified by the Web Crypto call");
 }
 
 Status Status::ErrorJwkUnrecognizedUsage() {
@@ -80,14 +73,16 @@ Status Status::ErrorJwkUnrecognizedUsage() {
 }
 
 Status Status::ErrorJwkUsageInconsistent() {
-  return Status("The JWK \"use\" property was inconsistent with that specified "
-                "by the Web Crypto call. The JWK usage must be a superset of "
-                "those requested");
+  return Status(
+      "The JWK \"use\" property was inconsistent with that specified "
+      "by the Web Crypto call. The JWK usage must be a superset of "
+      "those requested");
 }
 
 Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
-  return Status("JWK RSA key contained \"d\" property: Private key import is "
-                "not yet supported");
+  return Status(
+      "JWK RSA key contained \"d\" property: Private key import is "
+      "not yet supported");
 }
 
 Status Status::ErrorJwkUnrecognizedKty() {
@@ -95,8 +90,9 @@ Status Status::ErrorJwkUnrecognizedKty() {
 }
 
 Status Status::ErrorJwkIncorrectKeyLength() {
-  return Status("The JWK \"k\" property did not include the right length "
-                "of key data for the given algorithm.");
+  return Status(
+      "The JWK \"k\" property did not include the right length "
+      "of key data for the given algorithm.");
 }
 
 Status Status::ErrorImportEmptyKeyData() {
@@ -124,8 +120,9 @@ Status Status::ErrorUnexpected() {
 }
 
 Status Status::ErrorInvalidAesGcmTagLength() {
-  return Status("The tag length is invalid: either too large or not a multiple "
-                "of 8 bits");
+  return Status(
+      "The tag length is invalid: either too large or not a multiple "
+      "of 8 bits");
 }
 
 Status Status::ErrorGenerateKeyPublicExponent() {
@@ -133,8 +130,9 @@ Status Status::ErrorGenerateKeyPublicExponent() {
 }
 
 Status Status::ErrorMissingAlgorithmImportRawKey() {
-  return Status("The key's algorithm must be specified when importing "
-                "raw-formatted key.");
+  return Status(
+      "The key's algorithm must be specified when importing "
+      "raw-formatted key.");
 }
 
 Status Status::ErrorImportRsaEmptyModulus() {
@@ -154,8 +152,9 @@ Status Status::ErrorKeyNotExtractable() {
 }
 
 Status Status::ErrorGenerateKeyLength() {
-  return Status("Invalid key length: it is either zero or not a multiple of 8 "
-                "bits");
+  return Status(
+      "Invalid key length: it is either zero or not a multiple of 8 "
+      "bits");
 }
 
 Status::Status(const std::string& error_details_utf8)

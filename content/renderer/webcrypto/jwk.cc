@@ -28,14 +28,11 @@ class JwkAlgorithmInfo {
  public:
   JwkAlgorithmInfo()
       : creation_func_(NULL),
-        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {
-
-  }
+        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {}
 
   explicit JwkAlgorithmInfo(AlgorithmCreationFunc algorithm_creation_func)
       : creation_func_(algorithm_creation_func),
-        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {
-  }
+        required_key_length_bytes_(NO_KEY_SIZE_REQUIREMENT) {}
 
   JwkAlgorithmInfo(AlgorithmCreationFunc algorithm_creation_func,
                    unsigned int required_key_length_bits)
@@ -52,7 +49,7 @@ class JwkAlgorithmInfo {
   bool IsInvalidKeyByteLength(size_t byte_length) const {
     if (required_key_length_bytes_ == NO_KEY_SIZE_REQUIREMENT)
       return false;
-    return required_key_length_bytes_  != byte_length;
+    return required_key_length_bytes_ != byte_length;
   }
 
  private:
@@ -62,7 +59,6 @@ class JwkAlgorithmInfo {
 
   // The expected key size for the algorithm or NO_KEY_SIZE_REQUIREMENT.
   unsigned int required_key_length_bytes_;
-
 };
 
 typedef std::map<std::string, JwkAlgorithmInfo> JwkAlgorithmInfoMap;
@@ -74,30 +70,30 @@ class JwkAlgorithmRegistry {
     // http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-20
     // says HMAC with SHA-2 should have a key size at least as large as the
     // hash output.
-    alg_to_info_["HS256"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateHmacAlgorithmByHashId,
-                        blink::WebCryptoAlgorithmIdSha256>);
-    alg_to_info_["HS384"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateHmacAlgorithmByHashId,
-                        blink::WebCryptoAlgorithmIdSha384>);
-    alg_to_info_["HS512"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateHmacAlgorithmByHashId,
-                         blink::WebCryptoAlgorithmIdSha512>);
-    alg_to_info_["RS256"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateRsaSsaAlgorithm,
-                         blink::WebCryptoAlgorithmIdSha256>);
-    alg_to_info_["RS384"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateRsaSsaAlgorithm,
-                         blink::WebCryptoAlgorithmIdSha384>);
-    alg_to_info_["RS512"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateRsaSsaAlgorithm,
-                         blink::WebCryptoAlgorithmIdSha512>);
+    alg_to_info_["HS256"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateHmacAlgorithmByHashId,
+                                          blink::WebCryptoAlgorithmIdSha256>);
+    alg_to_info_["HS384"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateHmacAlgorithmByHashId,
+                                          blink::WebCryptoAlgorithmIdSha384>);
+    alg_to_info_["HS512"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateHmacAlgorithmByHashId,
+                                          blink::WebCryptoAlgorithmIdSha512>);
+    alg_to_info_["RS256"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha256>);
+    alg_to_info_["RS384"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha384>);
+    alg_to_info_["RS512"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha512>);
     alg_to_info_["RSA1_5"] = JwkAlgorithmInfo(
         &BindAlgorithmId<CreateAlgorithm,
                          blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5>);
-    alg_to_info_["RSA-OAEP"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateRsaOaepAlgorithm,
-                         blink::WebCryptoAlgorithmIdSha1>);
+    alg_to_info_["RSA-OAEP"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha1>);
     // TODO(padolph): The Web Crypto spec does not enumerate AES-KW 128 yet
     alg_to_info_["A128KW"] =
         JwkAlgorithmInfo(&blink::WebCryptoAlgorithm::createNull, 128);
@@ -105,20 +101,20 @@ class JwkAlgorithmRegistry {
     alg_to_info_["A256KW"] =
         JwkAlgorithmInfo(&blink::WebCryptoAlgorithm::createNull, 256);
     alg_to_info_["A128GCM"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdAesGcm>, 128);
+        &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesGcm>,
+        128);
     alg_to_info_["A256GCM"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdAesGcm>, 256);
+        &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesGcm>,
+        256);
     alg_to_info_["A128CBC"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdAesCbc>, 128);
+        &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesCbc>,
+        128);
     alg_to_info_["A192CBC"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdAesCbc>, 192);
+        &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesCbc>,
+        192);
     alg_to_info_["A256CBC"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdAesCbc>, 256);
+        &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesCbc>,
+        256);
   }
 
   // Returns NULL if the algorithm name was not registered.
@@ -155,9 +151,8 @@ bool WebCryptoAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
     case blink::WebCryptoAlgorithmIdHmac:
     case blink::WebCryptoAlgorithmIdRsaOaep:
     case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-      if (WebCryptoAlgorithmsConsistent(
-              GetInnerHashAlgorithm(alg1),
-              GetInnerHashAlgorithm(alg2))) {
+      if (WebCryptoAlgorithmsConsistent(GetInnerHashAlgorithm(alg1),
+                                        GetInnerHashAlgorithm(alg2))) {
         return true;
       }
       break;
@@ -251,12 +246,11 @@ Status GetOptionalJwkBool(base::DictionaryValue* dict,
 
 }  // namespace
 
-Status ImportKeyJwk(
-    const CryptoData& key_data,
-    const blink::WebCryptoAlgorithm& algorithm_or_null,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    blink::WebCryptoKey* key) {
+Status ImportKeyJwk(const CryptoData& key_data,
+                    const blink::WebCryptoAlgorithm& algorithm_or_null,
+                    bool extractable,
+                    blink::WebCryptoKeyUsageMask usage_mask,
+                    blink::WebCryptoKey* key) {
 
   // The goal of this method is to extract key material and meta data from the
   // incoming JWK, combine them with the input parameters, and ultimately import
@@ -465,13 +459,13 @@ Status ImportKeyJwk(
       // input algorithm specified
       if (!WebCryptoAlgorithmsConsistent(jwk_algorithm, algorithm_or_null))
         return Status::ErrorJwkAlgorithmInconsistent();  // case 3
-      algorithm = algorithm_or_null;  // case 4
+      algorithm = algorithm_or_null;                     // case 4
     }
   } else {
     // JWK alg missing
     if (algorithm_or_null.isNull())
       return Status::ErrorJwkAlgorithmMissing();  // case 5
-    algorithm = algorithm_or_null;  // case 6
+    algorithm = algorithm_or_null;                // case 6
   }
   DCHECK(!algorithm.isNull());
 

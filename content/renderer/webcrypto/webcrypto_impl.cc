@@ -32,21 +32,17 @@ bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
           algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep);
 }
 
-
 }  // namespace
 
-WebCryptoImpl::WebCryptoImpl() {
-  webcrypto::Init();
-}
+WebCryptoImpl::WebCryptoImpl() { webcrypto::Init(); }
 
 WebCryptoImpl::~WebCryptoImpl() {}
 
-void WebCryptoImpl::encrypt(
-    const blink::WebCryptoAlgorithm& algorithm,
-    const blink::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned int data_size,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::encrypt(const blink::WebCryptoAlgorithm& algorithm,
+                            const blink::WebCryptoKey& key,
+                            const unsigned char* data,
+                            unsigned int data_size,
+                            blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = webcrypto::Encrypt(
@@ -57,12 +53,11 @@ void WebCryptoImpl::encrypt(
     result.completeWithBuffer(buffer);
 }
 
-void WebCryptoImpl::decrypt(
-    const blink::WebCryptoAlgorithm& algorithm,
-    const blink::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned int data_size,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::decrypt(const blink::WebCryptoAlgorithm& algorithm,
+                            const blink::WebCryptoKey& key,
+                            const unsigned char* data,
+                            unsigned int data_size,
+                            blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = webcrypto::Decrypt(
@@ -73,11 +68,10 @@ void WebCryptoImpl::decrypt(
     result.completeWithBuffer(buffer);
 }
 
-void WebCryptoImpl::digest(
-    const blink::WebCryptoAlgorithm& algorithm,
-    const unsigned char* data,
-    unsigned int data_size,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::digest(const blink::WebCryptoAlgorithm& algorithm,
+                           const unsigned char* data,
+                           unsigned int data_size,
+                           blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = webcrypto::Digest(
@@ -88,11 +82,10 @@ void WebCryptoImpl::digest(
     result.completeWithBuffer(buffer);
 }
 
-void WebCryptoImpl::generateKey(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::generateKey(const blink::WebCryptoAlgorithm& algorithm,
+                                bool extractable,
+                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   if (IsAlgorithmAsymmetric(algorithm)) {
     blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -154,10 +147,9 @@ void WebCryptoImpl::importKey(
   }
 }
 
-void WebCryptoImpl::exportKey(
-    blink::WebCryptoKeyFormat format,
-    const blink::WebCryptoKey& key,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::exportKey(blink::WebCryptoKeyFormat format,
+                              const blink::WebCryptoKey& key,
+                              blink::WebCryptoResult result) {
   blink::WebArrayBuffer buffer;
   Status status = webcrypto::ExportKey(format, key, &buffer);
   if (status.IsError())
@@ -166,12 +158,11 @@ void WebCryptoImpl::exportKey(
     result.completeWithBuffer(buffer);
 }
 
-void WebCryptoImpl::sign(
-    const blink::WebCryptoAlgorithm& algorithm,
-    const blink::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned int data_size,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::sign(const blink::WebCryptoAlgorithm& algorithm,
+                         const blink::WebCryptoKey& key,
+                         const unsigned char* data,
+                         unsigned int data_size,
+                         blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = webcrypto::Sign(
@@ -182,14 +173,13 @@ void WebCryptoImpl::sign(
     result.completeWithBuffer(buffer);
 }
 
-void WebCryptoImpl::verifySignature(
-    const blink::WebCryptoAlgorithm& algorithm,
-    const blink::WebCryptoKey& key,
-    const unsigned char* signature,
-    unsigned int signature_size,
-    const unsigned char* data,
-    unsigned int data_size,
-    blink::WebCryptoResult result) {
+void WebCryptoImpl::verifySignature(const blink::WebCryptoAlgorithm& algorithm,
+                                    const blink::WebCryptoKey& key,
+                                    const unsigned char* signature,
+                                    unsigned int signature_size,
+                                    const unsigned char* data,
+                                    unsigned int data_size,
+                                    blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   bool signature_match = false;
   Status status = webcrypto::VerifySignature(

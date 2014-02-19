@@ -13,10 +13,7 @@
 
 namespace content {
 
-enum EncryptOrDecrypt {
-  ENCRYPT,
-  DECRYPT
-};
+enum EncryptOrDecrypt { ENCRYPT, DECRYPT };
 
 namespace webcrypto {
 

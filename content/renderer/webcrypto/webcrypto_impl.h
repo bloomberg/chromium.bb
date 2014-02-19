@@ -20,54 +20,46 @@ class WebCryptoImpl : public blink::WebCrypto {
   WebCryptoImpl();
   virtual ~WebCryptoImpl();
 
-  virtual void encrypt(
-      const blink::WebCryptoAlgorithm& algorithm,
-      const blink::WebCryptoKey& key,
-      const unsigned char* data,
-      unsigned int data_size,
-      blink::WebCryptoResult result);
-  virtual void decrypt(
-      const blink::WebCryptoAlgorithm& algorithm,
-      const blink::WebCryptoKey& key,
-      const unsigned char* data,
-      unsigned int data_size,
-      blink::WebCryptoResult result);
-  virtual void digest(
-      const blink::WebCryptoAlgorithm& algorithm,
-      const unsigned char* data,
-      unsigned int data_size,
-      blink::WebCryptoResult result);
-  virtual void generateKey(
-      const blink::WebCryptoAlgorithm& algorithm,
-      bool extractable,
-      blink::WebCryptoKeyUsageMask usage_mask,
-      blink::WebCryptoResult result);
-  virtual void importKey(
-      blink::WebCryptoKeyFormat format,
-      const unsigned char* key_data,
-      unsigned int key_data_size,
-      const blink::WebCryptoAlgorithm& algorithm_or_null,
-      bool extractable,
-      blink::WebCryptoKeyUsageMask usage_mask,
-      blink::WebCryptoResult result);
-  virtual void exportKey(
-      blink::WebCryptoKeyFormat format,
-      const blink::WebCryptoKey& key,
-      blink::WebCryptoResult result);
-  virtual void sign(
-      const blink::WebCryptoAlgorithm& algorithm,
-      const blink::WebCryptoKey& key,
-      const unsigned char* data,
-      unsigned int data_size,
-      blink::WebCryptoResult result);
-  virtual void verifySignature(
-      const blink::WebCryptoAlgorithm& algorithm,
-      const blink::WebCryptoKey& key,
-      const unsigned char* signature,
-      unsigned int signature_size,
-      const unsigned char* data,
-      unsigned int data_size,
-      blink::WebCryptoResult result);
+  virtual void encrypt(const blink::WebCryptoAlgorithm& algorithm,
+                       const blink::WebCryptoKey& key,
+                       const unsigned char* data,
+                       unsigned int data_size,
+                       blink::WebCryptoResult result);
+  virtual void decrypt(const blink::WebCryptoAlgorithm& algorithm,
+                       const blink::WebCryptoKey& key,
+                       const unsigned char* data,
+                       unsigned int data_size,
+                       blink::WebCryptoResult result);
+  virtual void digest(const blink::WebCryptoAlgorithm& algorithm,
+                      const unsigned char* data,
+                      unsigned int data_size,
+                      blink::WebCryptoResult result);
+  virtual void generateKey(const blink::WebCryptoAlgorithm& algorithm,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usage_mask,
+                           blink::WebCryptoResult result);
+  virtual void importKey(blink::WebCryptoKeyFormat format,
+                         const unsigned char* key_data,
+                         unsigned int key_data_size,
+                         const blink::WebCryptoAlgorithm& algorithm_or_null,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoResult result);
+  virtual void exportKey(blink::WebCryptoKeyFormat format,
+                         const blink::WebCryptoKey& key,
+                         blink::WebCryptoResult result);
+  virtual void sign(const blink::WebCryptoAlgorithm& algorithm,
+                    const blink::WebCryptoKey& key,
+                    const unsigned char* data,
+                    unsigned int data_size,
+                    blink::WebCryptoResult result);
+  virtual void verifySignature(const blink::WebCryptoAlgorithm& algorithm,
+                               const blink::WebCryptoKey& key,
+                               const unsigned char* signature,
+                               unsigned int signature_size,
+                               const unsigned char* data,
+                               unsigned int data_size,
+                               blink::WebCryptoResult result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);
