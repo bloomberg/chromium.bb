@@ -53,182 +53,14 @@ namespace chromeos {
 static DBusThreadManager* g_dbus_thread_manager = NULL;
 static DBusThreadManager* g_dbus_thread_manager_for_testing = NULL;
 
-// The DBusThreadManager implementation used in production.
-class DBusThreadManagerImpl : public DBusThreadManager {
+// The bundle of all D-Bus clients used in DBusThreadManagerImpl. The bundle
+// is used to delete them at once in the right order before shutting down the
+// system bus. See also the comment in the destructor of DBusThreadManagerImpl.
+class DBusClientBundle {
  public:
-  explicit DBusThreadManagerImpl() {
-    // Create the D-Bus thread.
-    base::Thread::Options thread_options;
-    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-    dbus_thread_.reset(new base::Thread("D-Bus thread"));
-    dbus_thread_->StartWithOptions(thread_options);
-
-    // Create the connection to the system bus.
-    dbus::Bus::Options system_bus_options;
-    system_bus_options.bus_type = dbus::Bus::SYSTEM;
-    system_bus_options.connection_type = dbus::Bus::PRIVATE;
-    system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    system_bus_ = new dbus::Bus(system_bus_options);
-
-    CreateDefaultClients();
-  }
-
-  virtual ~DBusThreadManagerImpl() {
-    FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
-                      OnDBusThreadManagerDestroying(this));
-
-    // Shut down the bus. During the browser shutdown, it's ok to shut down
-    // the bus synchronously.
-    system_bus_->ShutdownOnDBusThreadAndBlock();
-
-    // Stop the D-Bus thread.
-    dbus_thread_->Stop();
-  }
-
-  // DBusThreadManager overrides:
-  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.AddObserver(observer);
-  }
-
-  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.RemoveObserver(observer);
-  }
-
-  virtual dbus::Bus* GetSystemBus() OVERRIDE {
-    return system_bus_.get();
-  }
-
-  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
-    return bluetooth_adapter_client_.get();
-  }
-
-  virtual BluetoothAgentManagerClient* GetBluetoothAgentManagerClient()
-      OVERRIDE {
-    return bluetooth_agent_manager_client_.get();
-  }
-
-  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
-    return bluetooth_device_client_.get();
-  }
-
-  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
-    return bluetooth_input_client_.get();
-  }
-
-  virtual BluetoothProfileManagerClient* GetBluetoothProfileManagerClient()
-      OVERRIDE {
-    return bluetooth_profile_manager_client_.get();
-  }
-
-  virtual CrasAudioClient* GetCrasAudioClient() OVERRIDE {
-    return cras_audio_client_.get();
-  }
-
-  virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE {
-    return cros_disks_client_.get();
-  }
-
-  virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE {
-    return cryptohome_client_.get();
-  }
-
-  virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE {
-    return debug_daemon_client_.get();
-  }
-
-  virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
-    return shill_device_client_.get();
-  }
-
-  virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE {
-    return shill_ipconfig_client_.get();
-  }
-
-  virtual ShillManagerClient* GetShillManagerClient() OVERRIDE {
-    return shill_manager_client_.get();
-  }
-
-  virtual ShillServiceClient* GetShillServiceClient() OVERRIDE {
-    return shill_service_client_.get();
-  }
-
-  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
-    return shill_profile_client_.get();
-  }
-
-  virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE {
-    return gsm_sms_client_.get();
-  }
-
-  virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
-    return image_burner_client_.get();
-  }
-
-  virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE {
-    return introspectable_client_.get();
-  }
-
-  virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE {
-    return modem_messaging_client_.get();
-  }
-
-  virtual NfcAdapterClient* GetNfcAdapterClient() OVERRIDE {
-    return nfc_adapter_client_.get();
-  }
-
-  virtual NfcDeviceClient* GetNfcDeviceClient() OVERRIDE {
-    return nfc_device_client_.get();
-  }
-
-  virtual NfcManagerClient* GetNfcManagerClient() OVERRIDE {
-    return nfc_manager_client_.get();
-  }
-
-  virtual NfcRecordClient* GetNfcRecordClient() OVERRIDE {
-    return nfc_record_client_.get();
-  }
-
-  virtual NfcTagClient* GetNfcTagClient() OVERRIDE {
-    return nfc_tag_client_.get();
-  }
-
-  virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE {
-    return permission_broker_client_.get();
-  }
-
-  virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
-    return power_manager_client_.get();
-  }
-
-  virtual PowerPolicyController* GetPowerPolicyController() OVERRIDE {
-    return power_policy_controller_.get();
-  }
-
-  virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
-    return session_manager_client_.get();
-  }
-
-  virtual SMSClient* GetSMSClient() OVERRIDE {
-    return sms_client_.get();
-  }
-
-  virtual SystemClockClient* GetSystemClockClient() OVERRIDE {
-    return system_clock_client_.get();
-  }
-
-  virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
-    return update_engine_client_.get();
-  }
-
- private:
-  // Constructs all clients and stores them in the respective *_client_ member
-  // variable.
-  void CreateDefaultClients() {
+  DBusClientBundle() {
     DBusClientImplementationType client_type = REAL_DBUS_CLIENT_IMPLEMENTATION;
-    DBusClientImplementationType client_type_override =
-        REAL_DBUS_CLIENT_IMPLEMENTATION;
+    DBusClientImplementationType client_type_override = client_type;
     // If --dbus-stub was requested, pass STUB to specific components;
     // Many components like login are not useful with a stub implementation.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -264,7 +96,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         NfcDeviceClient::Create(nfc_adapter_client_.get()));
     nfc_tag_client_.reset(NfcTagClient::Create(nfc_adapter_client_.get()));
     nfc_record_client_.reset(NfcRecordClient::Create(nfc_device_client_.get(),
-                                                     nfc_tag_client_.get()));
+                                                    nfc_tag_client_.get()));
     permission_broker_client_.reset(PermissionBrokerClient::Create());
     power_manager_client_.reset(
         PowerManagerClient::Create(client_type_override));
@@ -272,16 +104,97 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     sms_client_.reset(SMSClient::Create());
     system_clock_client_.reset(SystemClockClient::Create());
     update_engine_client_.reset(UpdateEngineClient::Create(client_type));
-
-    power_policy_controller_.reset(new PowerPolicyController);
   }
 
-  // Note: Keep this before other members so they can call AddObserver() in
-  // their c'tors.
-  ObserverList<DBusThreadManagerObserver> observers_;
+  BluetoothAdapterClient* bluetooth_adapter_client() {
+    return bluetooth_adapter_client_.get();
+  }
+  BluetoothAgentManagerClient* bluetooth_agent_manager_client() {
+    return bluetooth_agent_manager_client_.get();
+  }
+  BluetoothDeviceClient* bluetooth_device_client() {
+    return bluetooth_device_client_.get();
+  }
+  BluetoothInputClient* bluetooth_input_client() {
+    return bluetooth_input_client_.get();
+  }
+  BluetoothProfileManagerClient* bluetooth_profile_manager_client() {
+    return bluetooth_profile_manager_client_.get();
+  }
+  CrasAudioClient* cras_audio_client() {
+    return cras_audio_client_.get();
+  }
+  CrosDisksClient* cros_disks_client() {
+    return cros_disks_client_.get();
+  }
+  CryptohomeClient* cryptohome_client() {
+    return cryptohome_client_.get();
+  }
+  DebugDaemonClient* debug_daemon_client() {
+    return debug_daemon_client_.get();
+  }
+  ShillDeviceClient* shill_device_client() {
+    return shill_device_client_.get();
+  }
+  ShillIPConfigClient* shill_ipconfig_client() {
+    return shill_ipconfig_client_.get();
+  }
+  ShillManagerClient* shill_manager_client() {
+    return shill_manager_client_.get();
+  }
+  ShillServiceClient* shill_service_client() {
+    return shill_service_client_.get();
+  }
+  ShillProfileClient* shill_profile_client() {
+    return shill_profile_client_.get();
+  }
+  GsmSMSClient* gsm_sms_client() {
+    return gsm_sms_client_.get();
+  }
+  ImageBurnerClient* image_burner_client() {
+    return image_burner_client_.get();
+  }
+  IntrospectableClient* introspectable_client() {
+    return introspectable_client_.get();
+  }
+  ModemMessagingClient* modem_messaging_client() {
+    return modem_messaging_client_.get();
+  }
+  NfcManagerClient* nfc_manager_client() {
+    return nfc_manager_client_.get();
+  }
+  NfcAdapterClient* nfc_adapter_client() {
+    return nfc_adapter_client_.get();
+  }
+  NfcDeviceClient* nfc_device_client() {
+    return nfc_device_client_.get();
+  }
+  NfcTagClient* nfc_tag_client() {
+    return nfc_tag_client_.get();
+  }
+  NfcRecordClient* nfc_record_client() {
+    return nfc_record_client_.get();
+  }
+  PermissionBrokerClient* permission_broker_client() {
+    return permission_broker_client_.get();
+  }
+  SystemClockClient* system_clock_client() {
+    return system_clock_client_.get();
+  }
+  PowerManagerClient* power_manager_client() {
+    return power_manager_client_.get();
+  }
+  SessionManagerClient* session_manager_client() {
+    return session_manager_client_.get();
+  }
+  SMSClient* sms_client() {
+    return sms_client_.get();
+  }
+  UpdateEngineClient* update_engine_client() {
+    return update_engine_client_.get();
+  }
 
-  scoped_ptr<base::Thread> dbus_thread_;
-  scoped_refptr<dbus::Bus> system_bus_;
+ private:
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
@@ -314,6 +227,196 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
 
+  DISALLOW_COPY_AND_ASSIGN(DBusClientBundle);
+};
+
+// The DBusThreadManager implementation used in production.
+class DBusThreadManagerImpl : public DBusThreadManager {
+ public:
+  explicit DBusThreadManagerImpl() {
+    // Create the D-Bus thread.
+    base::Thread::Options thread_options;
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    dbus_thread_.reset(new base::Thread("D-Bus thread"));
+    dbus_thread_->StartWithOptions(thread_options);
+
+    // Create the connection to the system bus.
+    dbus::Bus::Options system_bus_options;
+    system_bus_options.bus_type = dbus::Bus::SYSTEM;
+    system_bus_options.connection_type = dbus::Bus::PRIVATE;
+    system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+    system_bus_ = new dbus::Bus(system_bus_options);
+
+    CreateDefaultClients();
+  }
+
+  virtual ~DBusThreadManagerImpl() {
+    FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
+                      OnDBusThreadManagerDestroying(this));
+
+    // Delete all D-Bus clients before shutting down the system bus.
+    client_bundle_.reset();
+
+    // Shut down the bus. During the browser shutdown, it's ok to shut down
+    // the bus synchronously.
+    system_bus_->ShutdownOnDBusThreadAndBlock();
+
+    // Stop the D-Bus thread.
+    dbus_thread_->Stop();
+  }
+
+  // DBusThreadManager overrides:
+  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE {
+    DCHECK(observer);
+    observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE {
+    DCHECK(observer);
+    observers_.RemoveObserver(observer);
+  }
+
+  virtual dbus::Bus* GetSystemBus() OVERRIDE {
+    return system_bus_.get();
+  }
+
+  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
+    return client_bundle_->bluetooth_adapter_client();
+  }
+
+  virtual BluetoothAgentManagerClient* GetBluetoothAgentManagerClient()
+      OVERRIDE {
+    return client_bundle_->bluetooth_agent_manager_client();
+  }
+
+  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
+    return client_bundle_->bluetooth_device_client();
+  }
+
+  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
+    return client_bundle_->bluetooth_input_client();
+  }
+
+  virtual BluetoothProfileManagerClient* GetBluetoothProfileManagerClient()
+      OVERRIDE {
+    return client_bundle_->bluetooth_profile_manager_client();
+  }
+
+  virtual CrasAudioClient* GetCrasAudioClient() OVERRIDE {
+    return client_bundle_->cras_audio_client();
+  }
+
+  virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE {
+    return client_bundle_->cros_disks_client();
+  }
+
+  virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE {
+    return client_bundle_->cryptohome_client();
+  }
+
+  virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE {
+    return client_bundle_->debug_daemon_client();
+  }
+
+  virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
+    return client_bundle_->shill_device_client();
+  }
+
+  virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE {
+    return client_bundle_->shill_ipconfig_client();
+  }
+
+  virtual ShillManagerClient* GetShillManagerClient() OVERRIDE {
+    return client_bundle_->shill_manager_client();
+  }
+
+  virtual ShillServiceClient* GetShillServiceClient() OVERRIDE {
+    return client_bundle_->shill_service_client();
+  }
+
+  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
+    return client_bundle_->shill_profile_client();
+  }
+
+  virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE {
+    return client_bundle_->gsm_sms_client();
+  }
+
+  virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
+    return client_bundle_->image_burner_client();
+  }
+
+  virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE {
+    return client_bundle_->introspectable_client();
+  }
+
+  virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE {
+    return client_bundle_->modem_messaging_client();
+  }
+
+  virtual NfcAdapterClient* GetNfcAdapterClient() OVERRIDE {
+    return client_bundle_->nfc_adapter_client();
+  }
+
+  virtual NfcDeviceClient* GetNfcDeviceClient() OVERRIDE {
+    return client_bundle_->nfc_device_client();
+  }
+
+  virtual NfcManagerClient* GetNfcManagerClient() OVERRIDE {
+    return client_bundle_->nfc_manager_client();
+  }
+
+  virtual NfcRecordClient* GetNfcRecordClient() OVERRIDE {
+    return client_bundle_->nfc_record_client();
+  }
+
+  virtual NfcTagClient* GetNfcTagClient() OVERRIDE {
+    return client_bundle_->nfc_tag_client();
+  }
+
+  virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE {
+    return client_bundle_->permission_broker_client();
+  }
+
+  virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
+    return client_bundle_->power_manager_client();
+  }
+
+  virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
+    return client_bundle_->session_manager_client();
+  }
+
+  virtual SMSClient* GetSMSClient() OVERRIDE {
+    return client_bundle_->sms_client();
+  }
+
+  virtual SystemClockClient* GetSystemClockClient() OVERRIDE {
+    return client_bundle_->system_clock_client();
+  }
+
+  virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
+    return client_bundle_->update_engine_client();
+  }
+
+  virtual PowerPolicyController* GetPowerPolicyController() OVERRIDE {
+    return power_policy_controller_.get();
+  }
+
+ private:
+  // Constructs all clients and stores them in the respective *_client_ member
+  // variable.
+  void CreateDefaultClients() {
+    client_bundle_.reset(new DBusClientBundle);
+    power_policy_controller_.reset(new PowerPolicyController);
+  }
+
+  // Note: Keep this before other members so they can call AddObserver() in
+  // their c'tors.
+  ObserverList<DBusThreadManagerObserver> observers_;
+
+  scoped_ptr<base::Thread> dbus_thread_;
+  scoped_refptr<dbus::Bus> system_bus_;
+  scoped_ptr<DBusClientBundle> client_bundle_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
 };
 
