@@ -177,7 +177,7 @@ test("changesetURL", 1, function() {
 
 test("recentCommitData", 3, function() {
     var simulator = new NetworkSimulator();
-    simulator.get = function(url, callback)
+    simulator.xml = function(url, callback)
     {
         equals(url, 'http://blink.lc/blink/atom');
         simulator.scheduleCallback(function() {

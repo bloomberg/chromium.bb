@@ -333,7 +333,18 @@ test("walkHistory", 5, function() {
         });
     };
 
-    simulator.get = function(url, callback) {
+    simulator.json = function(url, callback) {
+        simulator.scheduleCallback(function() {
+            if (/Mock Builder/.test(url))
+                callback({cachedBuilds: [11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108]});
+            else if (/Another Builder/.test(url))
+                callback({cachedBuilds: [22201, 22202]});
+            else
+                ok(false, 'Unexpected URL: ' + url);
+        });
+    };
+
+    simulator.xml = function(url, callback) {
         simulator.scheduleCallback(function() {
             if (/Mock_Builder/.test(url))
                 callback('<ListBucketResult>' +
@@ -351,10 +362,6 @@ test("walkHistory", 5, function() {
                          '<Prefix>Another_Builder/22201/</Prefix>' +
                          '<Prefix>Another_Builder/22202/</Prefix>' +
                          '</ListBucketResult>');
-            else if (/Mock Builder/.test(url))
-                callback({cachedBuilds: [11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108]});
-            else if (/Another Builder/.test(url))
-                callback({cachedBuilds: [22201, 22202]});
             else
                 ok(false, 'Unexpected URL: ' + url);
         });
@@ -404,12 +411,15 @@ test("walkHistory (no revision)", 3, function() {
         });
     };
 
-    simulator.get = function(url, callback) {
+    simulator.xml = function(url, callback) {
         simulator.scheduleCallback(function() {
             callback('<a href="11101/"></a><a href="11102/"></a><a href="11103/"></a>');
         });
     };
 
+    simulator.json = function(url, callback) {
+        callback({});
+    };
 
     simulator.runTest(function() {
         results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html", function(oldestFailingRevision, newestPassingRevision) {

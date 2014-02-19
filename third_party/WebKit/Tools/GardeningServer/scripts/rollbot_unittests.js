@@ -156,7 +156,7 @@ var kStoppedIssue = {
 
 test("fetchCurrentRoll", 6, function() {
     var simulator = new NetworkSimulator();
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         simulator.scheduleCallback(function() {
             callback(kSearchResults);

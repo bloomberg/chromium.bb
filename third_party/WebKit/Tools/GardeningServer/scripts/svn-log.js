@@ -67,7 +67,7 @@ function parseCommitMessage(message) {
         bugID: findBugID(summary),
         reviewer: findReviewer(summary),
         revision: findRevision(summary),
-    }
+    };
 }
 
 // FIXME: Consider exposing this method for unit testing.

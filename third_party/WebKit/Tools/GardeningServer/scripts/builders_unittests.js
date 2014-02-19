@@ -701,7 +701,7 @@ test("buildersFailing", 3, function() {
     failingBuildInfoJSON.steps[2].results[0] = 1;
 
     var requestedURLs = [];
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         requestedURLs.push(url);
         simulator.scheduleCallback(function() {
@@ -757,7 +757,7 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
     failingBuildInfoJSON.number = 21460;
 
     var requestedURLs = [];
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         requestedURLs.push(url);
         simulator.scheduleCallback(function() {
@@ -814,7 +814,7 @@ test("buildersFailing (taskkill warning)", 3, function() {
     failingBuildInfoJSON.number = 21460;
 
     var requestedURLs = [];
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         requestedURLs.push(url);
         simulator.scheduleCallback(function() {

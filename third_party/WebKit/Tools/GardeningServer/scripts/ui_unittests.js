@@ -208,7 +208,7 @@ var openTreeJson = {
 test("TreeStatus", 2, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         simulator.scheduleCallback(function() {
             callback(openTreeJson);

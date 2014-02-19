@@ -50,6 +50,10 @@ NetworkSimulator.prototype.runTest = function(testCase)
         net.post = self.post;
     if (self.ajax)
         net.ajax = self.ajax;
+    if (self.json)
+        net.json = self.json;
+    if (self.xml)
+        net.xml = self.xml;
 
     testCase();
 

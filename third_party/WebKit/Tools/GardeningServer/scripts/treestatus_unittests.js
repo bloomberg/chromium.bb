@@ -52,7 +52,7 @@ test('urlByName', 3, function() {
 test('fetchTreeStatus', 4, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.get = function(url, callback)
+    simulator.json = function(url, callback)
     {
         simulator.scheduleCallback(function() {
             if (url.indexOf('closed') != -1)

@@ -120,7 +120,7 @@ test("rebaselineQueue", 3, function() {
 test("updateRecentCommits", 2, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.get = function(url, callback)
+    simulator.xml = function(url, callback)
     {
         simulator.scheduleCallback(function() {
             var parser = new DOMParser();
@@ -174,7 +174,7 @@ test("updateRecentCommits", 2, function() {
 test("commitDataListForRevisionRange", 6, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.get = function(url, callback)
+    simulator.xml = function(url, callback)
     {
         simulator.scheduleCallback(function() {
             var parser = new DOMParser();
