@@ -28,42 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedAngle_h
-#define SVGAnimatedAngle_h
-
-#include "core/svg/SVGAngleTearOff.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
+#include "config.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 
-class SVGMarkerElement;
-
-class SVGAnimatedAngle FINAL : public NewSVGAnimatedProperty<SVGAngle> {
-public:
-    static PassRefPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
-    {
-        return adoptRef(new SVGAnimatedAngle(contextElement));
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitTypes::SVGUnitType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN, emptyString()));
+        entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE, "userSpaceOnUse"));
+        entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX, "objectBoundingBox"));
     }
+    return entries;
+}
 
-    virtual ~SVGAnimatedAngle();
-
-    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
-
-    // NewSVGAnimatedPropertyBase:
-
-    virtual void synchronizeAttribute() OVERRIDE;
-
-    virtual void animationStarted() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
-    virtual void animationEnded() OVERRIDE;
-
-protected:
-    SVGAnimatedAngle(SVGMarkerElement* contextElement);
-
-private:
-    RefPtr<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
-};
-
-} // namespace WebCore
-
-#endif // SVGAnimatedAngle_h
+}

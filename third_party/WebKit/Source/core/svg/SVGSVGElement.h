@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class SVGAngle;
+class SVGAngleTearOff;
 class SVGMatrix;
 class SVGNumberTearOff;
 class SVGTransform;
@@ -108,7 +108,7 @@ public:
 
     static PassRefPtr<SVGNumberTearOff> createSVGNumber();
     static PassRefPtr<SVGLengthTearOff> createSVGLength();
-    static SVGAngle createSVGAngle();
+    static PassRefPtr<SVGAngleTearOff> createSVGAngle();
     static PassRefPtr<SVGPointTearOff> createSVGPoint();
     static SVGMatrix createSVGMatrix();
     static PassRefPtr<SVGRectTearOff> createSVGRect();

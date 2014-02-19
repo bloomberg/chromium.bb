@@ -22,16 +22,45 @@
 #ifndef SVGAngle_h
 #define SVGAngle_h
 
-#include "core/svg/properties/SVGPropertyTraits.h"
+#include "core/svg/SVGEnumeration.h"
 
 namespace WebCore {
 
-class ExceptionState;
+class SVGAngle;
+class SVGAngleTearOff;
 
-class SVGAngle {
-    WTF_MAKE_FAST_ALLOCATED;
+enum SVGMarkerOrientType {
+    SVGMarkerOrientUnknown = 0,
+    SVGMarkerOrientAuto,
+    SVGMarkerOrientAngle
+};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerOrientType>();
+
+class SVGMarkerOrientEnumeration : public SVGEnumeration<SVGMarkerOrientType> {
 public:
-    SVGAngle();
+    static PassRefPtr<SVGMarkerOrientEnumeration> create(SVGAngle* angle)
+    {
+        return adoptRef(new SVGMarkerOrientEnumeration(angle));
+    }
+
+    virtual ~SVGMarkerOrientEnumeration();
+
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+
+private:
+    SVGMarkerOrientEnumeration(SVGAngle*);
+
+    virtual void notifyChange() OVERRIDE;
+
+    // FIXME: oilpan: This is kept as raw-ptr to avoid reference cycles. Should be Member in oilpan.
+    SVGAngle* m_angle;
+};
+
+class SVGAngle : public NewSVGPropertyBase {
+public:
+    typedef SVGAngleTearOff TearOffType;
 
     enum SVGAngleType {
         SVG_ANGLETYPE_UNKNOWN = 0,
@@ -41,6 +70,13 @@ public:
         SVG_ANGLETYPE_GRAD = 4
     };
 
+    static PassRefPtr<SVGAngle> create()
+    {
+        return adoptRef(new SVGAngle());
+    }
+
+    virtual ~SVGAngle();
+
     SVGAngleType unitType() const { return m_unitType; }
 
     void setValue(float);
@@ -49,22 +85,41 @@ public:
     void setValueInSpecifiedUnits(float valueInSpecifiedUnits) { m_valueInSpecifiedUnits = valueInSpecifiedUnits; }
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
 
-    void setValueAsString(const String&, ExceptionState&);
-    String valueAsString() const;
+    void newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecifiedUnits);
+    void convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState&);
 
-    void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
-    void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
+    SVGEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
+    void orientTypeChanged();
+
+    // NewSVGPropertyBase:
+
+    PassRefPtr<SVGAngle> clone() const;
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    virtual String valueAsString() const OVERRIDE;
+    void setValueAsString(const String&, ExceptionState&);
+
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+
+    static AnimatedPropertyType classType() { return AnimatedAngle; }
 
 private:
+    SVGAngle();
+    SVGAngle(SVGAngleType, float, SVGMarkerOrientType);
+
     SVGAngleType m_unitType;
     float m_valueInSpecifiedUnits;
+    RefPtr<SVGMarkerOrientEnumeration> m_orientType;
 };
 
-template<>
-struct SVGPropertyTraits<SVGAngle> {
-    static SVGAngle initialValue() { return SVGAngle(); }
-    static String toString(const SVGAngle& type) { return type.valueAsString(); }
-};
+inline PassRefPtr<SVGAngle> toSVGAngle(PassRefPtr<NewSVGPropertyBase> passBase)
+{
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGAngle::classType());
+    return static_pointer_cast<SVGAngle>(base.release());
+}
 
 } // namespace WebCore
 

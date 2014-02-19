@@ -21,6 +21,8 @@
  */
 
 [
+    ImplementedAs=SVGAngleTearOff,
+    SetWrapperReferenceTo(SVGElement contextElement),
     StrictTypeChecking,
 ] interface SVGAngle {
     // Angle Unit Types
@@ -31,8 +33,8 @@
     const unsigned short SVG_ANGLETYPE_GRAD = 4;
 
     readonly attribute unsigned short unitType;
-    attribute float value;
-    attribute float valueInSpecifiedUnits;
+    [RaisesException=Setter] attribute float value;
+    [RaisesException=Setter] attribute float valueInSpecifiedUnits;
 
     [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString valueAsString;
 

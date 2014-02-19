@@ -235,6 +235,7 @@ my %svgAttributesInHTMLHash = ("class" => 1, "id" => 1, "onabort" => 1, "onclick
                                "onunload" => 1);
 
 my %svgTypeNewPropertyImplementation = (
+    "SVGAngle" => 1,
     "SVGLength" => 1,
     "SVGLengthList" => 1,
     "SVGNumber" => 1,
@@ -248,7 +249,6 @@ my %svgTypeNewPropertyImplementation = (
 );
 
 my %svgTypeNeedingTearOff = (
-    "SVGAngle" => "SVGPropertyTearOff<SVGAngle>",
     "SVGMatrix" => "SVGMatrixTearOff",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
     "SVGTransform" => "SVGPropertyTearOff<SVGTransform>",
@@ -1671,8 +1671,6 @@ END
     } else {
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
         $expression = $getterString;
-        # Fix amigious conversion problem, by casting to the base type first ($getterString returns a type that inherits from SVGAnimatedEnumeration, not the base class directly).
-        $expression = "static_pointer_cast<SVGAnimatedEnumeration>($expression)" if $attrType eq "SVGAnimatedEnumeration";
     }
 
     if (ShouldKeepAttributeAlive($interface, $attribute, $attrType)) {

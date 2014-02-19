@@ -747,8 +747,10 @@ void SVGElement::animatedPropertyTypeForAttribute(const QualifiedName& attribute
         return;
 
     RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = m_newAttributeToPropertyMap.get(attributeName);
-    if (animatedProperty)
+    if (animatedProperty) {
         propertyTypes.append(animatedProperty->type());
+        return;
+    }
 
     AttributeToPropertyTypeMap& cssPropertyTypeMap = cssPropertyToTypeMap();
     if (cssPropertyTypeMap.contains(attributeName))

@@ -37,6 +37,17 @@
 
 namespace WebCore {
 
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAdjustType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(SVGLengthAdjustUnknown, emptyString()));
+        entries.append(std::make_pair(SVGLengthAdjustSpacing, "spacing"));
+        entries.append(std::make_pair(SVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
+    }
+    return entries;
+}
+
 // Animated property definitions
 
 // SVGTextContentElement's 'textLength' attribute needs special handling.
@@ -64,10 +75,7 @@ private:
     }
 };
 
-DEFINE_ANIMATED_ENUMERATION(SVGTextContentElement, SVGNames::lengthAdjustAttr, LengthAdjust, lengthAdjust, SVGLengthAdjustType)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextContentElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(lengthAdjust)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -75,11 +83,12 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
     : SVGGraphicsElement(tagName, document)
     , m_textLength(SVGAnimatedTextLength::create(this))
     , m_textLengthIsSpecifiedByUser(false)
-    , m_lengthAdjust(SVGLengthAdjustSpacing)
+    , m_lengthAdjust(SVGAnimatedEnumeration<SVGLengthAdjustType>::create(this, SVGNames::lengthAdjustAttr, SVGLengthAdjustSpacing))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_textLength);
+    addToPropertyMap(m_lengthAdjust);
     registerAnimatedPropertiesForSVGTextContentElement();
 }
 
@@ -233,9 +242,7 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
     if (!isSupportedAttribute(name))
         SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::lengthAdjustAttr) {
-        SVGLengthAdjustType propertyValue = SVGPropertyTraits<SVGLengthAdjustType>::fromString(value);
-        if (propertyValue > 0)
-            setLengthAdjustBaseValue(propertyValue);
+        m_lengthAdjust->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::textLengthAttr) {
         m_textLength->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     } else if (name.matches(XMLNames::spaceAttr)) {

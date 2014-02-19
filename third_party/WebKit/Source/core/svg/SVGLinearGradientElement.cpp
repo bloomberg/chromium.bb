@@ -117,11 +117,11 @@ RenderObject* SVGLinearGradientElement::createRenderer(RenderStyle*)
 
 static void setGradientAttributes(SVGGradientElement* element, LinearGradientAttributes& attributes, bool isLinear = true)
 {
-    if (!attributes.hasSpreadMethod() && element->spreadMethodSpecified())
-        attributes.setSpreadMethod(element->spreadMethodCurrentValue());
+    if (!attributes.hasSpreadMethod() && element->spreadMethod()->isSpecified())
+        attributes.setSpreadMethod(element->spreadMethod()->currentValue()->enumValue());
 
-    if (!attributes.hasGradientUnits() && element->gradientUnitsSpecified())
-        attributes.setGradientUnits(element->gradientUnitsCurrentValue());
+    if (!attributes.hasGradientUnits() && element->gradientUnits()->isSpecified())
+        attributes.setGradientUnits(element->gradientUnits()->currentValue()->enumValue());
 
     if (!attributes.hasGradientTransform() && element->gradientTransformSpecified()) {
         AffineTransform transform;

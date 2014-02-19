@@ -44,7 +44,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
-#include "core/svg/SVGAngle.h"
+#include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -389,9 +389,9 @@ PassRefPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
     return SVGLengthTearOff::create(SVGLength::create(), 0, PropertyIsNotAnimVal);
 }
 
-SVGAngle SVGSVGElement::createSVGAngle()
+PassRefPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
 {
-    return SVGAngle();
+    return SVGAngleTearOff::create(SVGAngle::create(), 0, PropertyIsNotAnimVal);
 }
 
 PassRefPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()

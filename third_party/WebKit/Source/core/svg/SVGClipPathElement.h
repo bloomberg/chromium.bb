@@ -34,6 +34,7 @@ class RenderObject;
 class SVGClipPathElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGClipPathElement> create(Document&);
+    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
 
 private:
     explicit SVGClipPathElement(Document&);
@@ -47,8 +48,8 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
+    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGClipPathElement)
-        DECLARE_ANIMATED_ENUMERATION(ClipPathUnits, clipPathUnits, SVGUnitTypes::SVGUnitType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

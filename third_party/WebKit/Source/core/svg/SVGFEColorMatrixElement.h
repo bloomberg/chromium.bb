@@ -28,42 +28,7 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<ColorMatrixType> {
-    static unsigned highestEnumValue() { return FECOLORMATRIX_TYPE_LUMINANCETOALPHA; }
-
-    static String toString(ColorMatrixType type)
-    {
-        switch (type) {
-        case FECOLORMATRIX_TYPE_UNKNOWN:
-            return emptyString();
-        case FECOLORMATRIX_TYPE_MATRIX:
-            return "matrix";
-        case FECOLORMATRIX_TYPE_SATURATE:
-            return "saturate";
-        case FECOLORMATRIX_TYPE_HUEROTATE:
-            return "hueRotate";
-        case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
-            return "luminanceToAlpha";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static ColorMatrixType fromString(const String& value)
-    {
-        if (value == "matrix")
-            return FECOLORMATRIX_TYPE_MATRIX;
-        if (value == "saturate")
-            return FECOLORMATRIX_TYPE_SATURATE;
-        if (value == "hueRotate")
-            return FECOLORMATRIX_TYPE_HUEROTATE;
-        if (value == "luminanceToAlpha")
-            return FECOLORMATRIX_TYPE_LUMINANCETOALPHA;
-        return FECOLORMATRIX_TYPE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>();
 
 class SVGFEColorMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -71,6 +36,7 @@ public:
 
     SVGAnimatedNumberList* values() { return m_values.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
 
 private:
     explicit SVGFEColorMatrixElement(Document&);
@@ -83,8 +49,8 @@ private:
 
     RefPtr<SVGAnimatedNumberList> m_values;
     RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedEnumeration<ColorMatrixType> > m_type;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEColorMatrixElement)
-        DECLARE_ANIMATED_ENUMERATION(Type, type, ColorMatrixType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

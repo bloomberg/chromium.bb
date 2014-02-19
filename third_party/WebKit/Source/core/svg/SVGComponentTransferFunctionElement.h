@@ -29,46 +29,7 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<ComponentTransferType> {
-    static unsigned highestEnumValue() { return FECOMPONENTTRANSFER_TYPE_GAMMA; }
-
-    static String toString(ComponentTransferType type)
-    {
-        switch (type) {
-        case FECOMPONENTTRANSFER_TYPE_UNKNOWN:
-            return emptyString();
-        case FECOMPONENTTRANSFER_TYPE_IDENTITY:
-            return "identity";
-        case FECOMPONENTTRANSFER_TYPE_TABLE:
-            return "table";
-        case FECOMPONENTTRANSFER_TYPE_DISCRETE:
-            return "discrete";
-        case FECOMPONENTTRANSFER_TYPE_LINEAR:
-            return "linear";
-        case FECOMPONENTTRANSFER_TYPE_GAMMA:
-            return "gamma";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static ComponentTransferType fromString(const String& value)
-    {
-        if (value == "identity")
-            return FECOMPONENTTRANSFER_TYPE_IDENTITY;
-        if (value == "table")
-            return FECOMPONENTTRANSFER_TYPE_TABLE;
-        if (value == "discrete")
-            return FECOMPONENTTRANSFER_TYPE_DISCRETE;
-        if (value == "linear")
-            return FECOMPONENTTRANSFER_TYPE_LINEAR;
-        if (value == "gamma")
-            return FECOMPONENTTRANSFER_TYPE_GAMMA;
-        return FECOMPONENTTRANSFER_TYPE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<ComponentTransferType>();
 
 class SVGComponentTransferFunctionElement : public SVGElement {
 public:
@@ -80,6 +41,7 @@ public:
     SVGAnimatedNumber* amplitude() { return m_amplitude.get(); }
     SVGAnimatedNumber* exponent() { return m_exponent.get(); }
     SVGAnimatedNumber* offset() { return m_offset.get(); }
+    SVGAnimatedEnumeration<ComponentTransferType>* type() { return m_type.get(); }
 
 protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
@@ -97,9 +59,8 @@ private:
     RefPtr<SVGAnimatedNumber> m_amplitude;
     RefPtr<SVGAnimatedNumber> m_exponent;
     RefPtr<SVGAnimatedNumber> m_offset;
-
+    RefPtr<SVGAnimatedEnumeration<ComponentTransferType> > m_type;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGComponentTransferFunctionElement)
-        DECLARE_ANIMATED_ENUMERATION(Type, type, ComponentTransferType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

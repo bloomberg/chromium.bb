@@ -28,42 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedAngle_h
-#define SVGAnimatedAngle_h
+#ifndef SVGAnimatedEnumerationBase_h
+#define SVGAnimatedEnumerationBase_h
 
-#include "core/svg/SVGAngleTearOff.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGEnumeration.h"
+#include "core/svg/properties/NewSVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGMarkerElement;
-
-class SVGAnimatedAngle FINAL : public NewSVGAnimatedProperty<SVGAngle> {
+class SVGAnimatedEnumerationBase : public NewSVGAnimatedProperty<SVGEnumerationBase> {
 public:
-    static PassRefPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
-    {
-        return adoptRef(new SVGAnimatedAngle(contextElement));
-    }
+    virtual ~SVGAnimatedEnumerationBase();
 
-    virtual ~SVGAnimatedAngle();
-
-    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
-
-    // NewSVGAnimatedPropertyBase:
-
-    virtual void synchronizeAttribute() OVERRIDE;
-
-    virtual void animationStarted() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
-    virtual void animationEnded() OVERRIDE;
+    void setBaseVal(unsigned short, ExceptionState&);
 
 protected:
-    SVGAnimatedAngle(SVGMarkerElement* contextElement);
-
-private:
-    RefPtr<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
+    SVGAnimatedEnumerationBase(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumerationBase> initialValue)
+        : NewSVGAnimatedProperty<SVGEnumerationBase>(contextElement, attributeName, initialValue)
+    {
+    }
 };
 
-} // namespace WebCore
+}
 
-#endif // SVGAnimatedAngle_h
+#endif // SVGAnimatedEnumerationBase_h

@@ -28,50 +28,7 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<CompositeOperationType> {
-    static unsigned highestEnumValue() { return FECOMPOSITE_OPERATOR_ARITHMETIC; }
-
-    static String toString(CompositeOperationType type)
-    {
-        switch (type) {
-        case FECOMPOSITE_OPERATOR_UNKNOWN:
-            return emptyString();
-        case FECOMPOSITE_OPERATOR_OVER:
-            return "over";
-        case FECOMPOSITE_OPERATOR_IN:
-            return "in";
-        case FECOMPOSITE_OPERATOR_OUT:
-            return "out";
-        case FECOMPOSITE_OPERATOR_ATOP:
-            return "atop";
-        case FECOMPOSITE_OPERATOR_XOR:
-            return "xor";
-        case FECOMPOSITE_OPERATOR_ARITHMETIC:
-            return "arithmetic";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static CompositeOperationType fromString(const String& value)
-    {
-        if (value == "over")
-            return FECOMPOSITE_OPERATOR_OVER;
-        if (value == "in")
-            return FECOMPOSITE_OPERATOR_IN;
-        if (value == "out")
-            return FECOMPOSITE_OPERATOR_OUT;
-        if (value == "atop")
-            return FECOMPOSITE_OPERATOR_ATOP;
-        if (value == "xor")
-            return FECOMPOSITE_OPERATOR_XOR;
-        if (value == "arithmetic")
-            return FECOMPOSITE_OPERATOR_ARITHMETIC;
-        return FECOMPOSITE_OPERATOR_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOperationType>();
 
 class SVGFECompositeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -83,6 +40,7 @@ public:
     SVGAnimatedNumber* k4() { return m_k4.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedString* in2() { return m_in2.get(); }
+    SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() { return m_svgOperator.get(); }
 
 private:
     explicit SVGFECompositeElement(Document&);
@@ -99,8 +57,8 @@ private:
     RefPtr<SVGAnimatedNumber> m_k4;
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
+    RefPtr<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFECompositeElement)
-        DECLARE_ANIMATED_ENUMERATION(SVGOperator, svgOperator, CompositeOperationType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

@@ -28,42 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedAngle_h
-#define SVGAnimatedAngle_h
+#include "config.h"
 
-#include "core/svg/SVGAngleTearOff.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedEnumerationBase.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
-class SVGMarkerElement;
+SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase()
+{
+}
 
-class SVGAnimatedAngle FINAL : public NewSVGAnimatedProperty<SVGAngle> {
-public:
-    static PassRefPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
-    {
-        return adoptRef(new SVGAnimatedAngle(contextElement));
+void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value, ExceptionState& exceptionState)
+{
+    if (this->isReadOnly()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
     }
 
-    virtual ~SVGAnimatedAngle();
+    baseValue()->setValue(value, exceptionState);
+    if (exceptionState.hadException())
+        return;
 
-    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
+    m_baseValueUpdated = true;
 
-    // NewSVGAnimatedPropertyBase:
+    ASSERT(this->attributeName() != nullQName());
+    contextElement()->invalidateSVGAttributes();
+    contextElement()->svgAttributeChanged(this->attributeName());
+}
 
-    virtual void synchronizeAttribute() OVERRIDE;
-
-    virtual void animationStarted() OVERRIDE;
-    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
-    virtual void animationEnded() OVERRIDE;
-
-protected:
-    SVGAnimatedAngle(SVGMarkerElement* contextElement);
-
-private:
-    RefPtr<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
-};
-
-} // namespace WebCore
-
-#endif // SVGAnimatedAngle_h
+}

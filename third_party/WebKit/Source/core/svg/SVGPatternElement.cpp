@@ -33,13 +33,9 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternUnitsAttr, PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
-DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternContentUnitsAttr, PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(patternUnits)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(patternContentUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -53,8 +49,8 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
-    , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-    , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
+    , m_patternUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
+    , m_patternContentUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
 {
     ScriptWrappable::init(this);
 
@@ -62,6 +58,8 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+    addToPropertyMap(m_patternUnits);
+    addToPropertyMap(m_patternContentUnits);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 
@@ -95,15 +93,9 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
     if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
     } else if (name == SVGNames::patternUnitsAttr) {
-        SVGUnitTypes::SVGUnitType propertyValue = SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::fromString(value);
-        if (propertyValue > 0)
-            setPatternUnitsBaseValue(propertyValue);
-        return;
+        m_patternUnits->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::patternContentUnitsAttr) {
-        SVGUnitTypes::SVGUnitType propertyValue = SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::fromString(value);
-        if (propertyValue > 0)
-            setPatternContentUnitsBaseValue(propertyValue);
-        return;
+        m_patternContentUnits->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::patternTransformAttr) {
         SVGTransformList newList;
         newList.parse(value);
@@ -184,11 +176,11 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
     if (!attributes.hasPreserveAspectRatio() && element->preserveAspectRatio()->isSpecified())
         attributes.setPreserveAspectRatio(element->preserveAspectRatio()->currentValue());
 
-    if (!attributes.hasPatternUnits() && element->patternUnitsSpecified())
-        attributes.setPatternUnits(element->patternUnitsCurrentValue());
+    if (!attributes.hasPatternUnits() && element->patternUnits()->isSpecified())
+        attributes.setPatternUnits(element->patternUnits()->currentValue()->enumValue());
 
-    if (!attributes.hasPatternContentUnits() && element->patternContentUnitsSpecified())
-        attributes.setPatternContentUnits(element->patternContentUnitsCurrentValue());
+    if (!attributes.hasPatternContentUnits() && element->patternContentUnits()->isSpecified())
+        attributes.setPatternContentUnits(element->patternContentUnits()->currentValue()->enumValue());
 
     if (!attributes.hasPatternTransform() && element->patternTransformSpecified()) {
         AffineTransform transform;

@@ -35,14 +35,22 @@
 
 namespace WebCore {
 
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMethodType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(SVGSpreadMethodUnknown, emptyString()));
+        entries.append(std::make_pair(SVGSpreadMethodPad, "pad"));
+        entries.append(std::make_pair(SVGSpreadMethodReflect, "reflect"));
+        entries.append(std::make_pair(SVGSpreadMethodRepeat, "repeat"));
+    }
+    return entries;
+}
+
 // Animated property definitions
-DEFINE_ANIMATED_ENUMERATION(SVGGradientElement, SVGNames::spreadMethodAttr, SpreadMethod, spreadMethod, SVGSpreadMethodType)
-DEFINE_ANIMATED_ENUMERATION(SVGGradientElement, SVGNames::gradientUnitsAttr, GradientUnits, gradientUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGGradientElement, SVGNames::gradientTransformAttr, GradientTransform, gradientTransform)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGradientElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(spreadMethod)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(gradientUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(gradientTransform)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -50,10 +58,12 @@ END_REGISTER_ANIMATED_PROPERTIES
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , SVGURIReference(this)
-    , m_spreadMethod(SVGSpreadMethodPad)
-    , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    , m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(this, SVGNames::spreadMethodAttr, SVGSpreadMethodPad))
+    , m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_spreadMethod);
+    addToPropertyMap(m_gradientUnits);
     registerAnimatedPropertiesForSVGGradientElement();
 }
 
@@ -76,13 +86,6 @@ void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (name == SVGNames::gradientUnitsAttr) {
-        SVGUnitTypes::SVGUnitType propertyValue = SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::fromString(value);
-        if (propertyValue > 0)
-            setGradientUnitsBaseValue(propertyValue);
-        return;
-    }
-
     if (name == SVGNames::gradientTransformAttr) {
         SVGTransformList newList;
         newList.parse(value);
@@ -91,19 +94,15 @@ void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (name == SVGNames::spreadMethodAttr) {
-        SVGSpreadMethodType propertyValue = SVGPropertyTraits<SVGSpreadMethodType>::fromString(value);
-        if (propertyValue > 0)
-            setSpreadMethodBaseValue(propertyValue);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (SVGURIReference::parseAttribute(name, value, parseError)) {
-    } else {
+    if (name == SVGNames::gradientUnitsAttr)
+        m_gradientUnits->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::spreadMethodAttr)
+        m_spreadMethod->setBaseValueAsString(value, parseError);
+    else if (SVGURIReference::parseAttribute(name, value, parseError)) {
+    } else
         ASSERT_NOT_REACHED();
-    }
 
     reportAttributeParsingError(parseError, name, value);
 }

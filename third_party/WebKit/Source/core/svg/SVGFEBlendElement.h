@@ -27,52 +27,14 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<BlendModeType> {
-    static unsigned highestEnumValue() { return FEBLEND_MODE_LIGHTEN; }
-
-    static String toString(BlendModeType type)
-    {
-        switch (type) {
-        case FEBLEND_MODE_UNKNOWN:
-            return emptyString();
-        case FEBLEND_MODE_NORMAL:
-            return "normal";
-        case FEBLEND_MODE_MULTIPLY:
-            return "multiply";
-        case FEBLEND_MODE_SCREEN:
-            return "screen";
-        case FEBLEND_MODE_DARKEN:
-            return "darken";
-        case FEBLEND_MODE_LIGHTEN:
-            return "lighten";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static BlendModeType fromString(const String& value)
-    {
-        if (value == "normal")
-            return FEBLEND_MODE_NORMAL;
-        if (value == "multiply")
-            return FEBLEND_MODE_MULTIPLY;
-        if (value == "screen")
-            return FEBLEND_MODE_SCREEN;
-        if (value == "darken")
-            return FEBLEND_MODE_DARKEN;
-        if (value == "lighten")
-            return FEBLEND_MODE_LIGHTEN;
-        return FEBLEND_MODE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeType>();
 
 class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
     static PassRefPtr<SVGFEBlendElement> create(Document&);
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedString* in2() { return m_in2.get(); }
+    SVGAnimatedEnumeration<BlendModeType>* mode() { return m_mode.get(); }
 
 private:
     explicit SVGFEBlendElement(Document&);
@@ -85,8 +47,8 @@ private:
 
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
+    RefPtr<SVGAnimatedEnumeration<BlendModeType> > m_mode;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEBlendElement)
-        DECLARE_ANIMATED_ENUMERATION(Mode, mode, BlendModeType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

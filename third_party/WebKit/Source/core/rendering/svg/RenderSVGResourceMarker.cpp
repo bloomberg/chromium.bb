@@ -110,8 +110,8 @@ float RenderSVGResourceMarker::angle() const
     ASSERT(marker);
 
     float angle = -1;
-    if (marker->orientTypeCurrentValue() == SVGMarkerOrientAngle)
-        angle = marker->orientAngleCurrentValue().value();
+    if (marker->orientType()->currentValue()->enumValue() == SVGMarkerOrientAngle)
+        angle = marker->orientAngle()->currentValue()->value();
 
     return angle;
 }
@@ -122,7 +122,7 @@ AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& 
     ASSERT(marker);
 
     float markerAngle = angle();
-    bool useStrokeWidth = marker->markerUnitsCurrentValue() == SVGMarkerUnitsStrokeWidth;
+    bool useStrokeWidth = marker->markerUnits()->currentValue()->enumValue() == SVGMarkerUnitsStrokeWidth;
 
     AffineTransform transform;
     transform.translate(origin.x(), origin.y());

@@ -48,6 +48,8 @@ public:
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
+    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* filterUnits() { return m_filterUnits.get(); }
+    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* primitiveUnits() { return m_primitiveUnits.get(); }
     SVGAnimatedInteger* filterResX() { return m_filterRes->firstInteger(); }
     SVGAnimatedInteger* filterResY() { return m_filterRes->secondInteger(); }
 
@@ -69,10 +71,10 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
+    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_filterUnits;
+    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_primitiveUnits;
     RefPtr<SVGAnimatedIntegerOptionalInteger> m_filterRes;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterElement)
-        DECLARE_ANIMATED_ENUMERATION(FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)
-        DECLARE_ANIMATED_ENUMERATION(PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
     END_DECLARE_ANIMATED_PROPERTIES
 
     HashSet<RefPtr<Node> > m_clientsToAdd;

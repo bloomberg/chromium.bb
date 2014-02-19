@@ -29,11 +29,23 @@
 
 namespace WebCore {
 
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(FEBLEND_MODE_UNKNOWN, emptyString()));
+        entries.append(std::make_pair(FEBLEND_MODE_NORMAL, "normal"));
+        entries.append(std::make_pair(FEBLEND_MODE_MULTIPLY, "multiply"));
+        entries.append(std::make_pair(FEBLEND_MODE_SCREEN, "screen"));
+        entries.append(std::make_pair(FEBLEND_MODE_DARKEN, "darken"));
+        entries.append(std::make_pair(FEBLEND_MODE_LIGHTEN, "lighten"));
+    }
+    return entries;
+}
+
 // Animated property definitions
-DEFINE_ANIMATED_ENUMERATION(SVGFEBlendElement, SVGNames::modeAttr, Mode, mode, BlendModeType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEBlendElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(mode)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -41,11 +53,12 @@ inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
-    , m_mode(FEBLEND_MODE_NORMAL)
+    , m_mode(SVGAnimatedEnumeration<BlendModeType>::create(this, SVGNames::modeAttr, FEBLEND_MODE_NORMAL))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
+    addToPropertyMap(m_mode);
     registerAnimatedPropertiesForSVGFEBlendElement();
 }
 
@@ -72,19 +85,14 @@ void SVGFEBlendElement::parseAttribute(const QualifiedName& name, const AtomicSt
         return;
     }
 
-    if (name == SVGNames::modeAttr) {
-        BlendModeType propertyValue = SVGPropertyTraits<BlendModeType>::fromString(value);
-        if (propertyValue > 0)
-            setModeBaseValue(propertyValue);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
     if (name == SVGNames::inAttr)
         m_in1->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::in2Attr)
         m_in2->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::modeAttr)
+        m_mode->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -95,7 +103,7 @@ bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 {
     FEBlend* blend = static_cast<FEBlend*>(effect);
     if (attrName == SVGNames::modeAttr)
-        return blend->setBlendMode(modeCurrentValue());
+        return blend->setBlendMode(m_mode->currentValue()->enumValue());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -131,7 +139,7 @@ PassRefPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilde
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEBlend::create(filter, modeCurrentValue());
+    RefPtr<FilterEffect> effect = FEBlend::create(filter, m_mode->currentValue()->enumValue());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);

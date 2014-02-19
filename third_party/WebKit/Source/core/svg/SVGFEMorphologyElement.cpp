@@ -29,11 +29,20 @@
 
 namespace WebCore {
 
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyOperatorType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_UNKNOWN, emptyString()));
+        entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_ERODE, "erode"));
+        entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_DILATE, "dilate"));
+    }
+    return entries;
+}
+
 // Animated property definitions
-DEFINE_ANIMATED_ENUMERATION(SVGFEMorphologyElement, SVGNames::operatorAttr, SVGOperator, svgOperator, MorphologyOperatorType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEMorphologyElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(svgOperator)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -41,12 +50,13 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMorphologyTag, document)
     , m_radius(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::radiusAttr))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
-    , m_svgOperator(FEMORPHOLOGY_OPERATOR_ERODE)
+    , m_svgOperator(SVGAnimatedEnumeration<MorphologyOperatorType>::create(this, SVGNames::operatorAttr, FEMORPHOLOGY_OPERATOR_ERODE))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_radius);
     addToPropertyMap(m_in1);
+    addToPropertyMap(m_svgOperator);
     registerAnimatedPropertiesForSVGFEMorphologyElement();
 }
 
@@ -80,19 +90,14 @@ void SVGFEMorphologyElement::parseAttribute(const QualifiedName& name, const Ato
         return;
     }
 
-    if (name == SVGNames::operatorAttr) {
-        MorphologyOperatorType propertyValue = SVGPropertyTraits<MorphologyOperatorType>::fromString(value);
-        if (propertyValue > 0)
-            setSVGOperatorBaseValue(propertyValue);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
     if (name == SVGNames::inAttr)
         m_in1->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::radiusAttr)
         m_radius->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::operatorAttr)
+        m_svgOperator->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -103,7 +108,7 @@ bool SVGFEMorphologyElement::setFilterEffectAttribute(FilterEffect* effect, cons
 {
     FEMorphology* morphology = static_cast<FEMorphology*>(effect);
     if (attrName == SVGNames::operatorAttr)
-        return morphology->setMorphologyOperator(svgOperatorCurrentValue());
+        return morphology->setMorphologyOperator(m_svgOperator->currentValue()->enumValue());
     if (attrName == SVGNames::radiusAttr) {
         // Both setRadius functions should be evaluated separately.
         bool isRadiusXChanged = morphology->setRadiusX(radiusX()->currentValue()->value());
@@ -149,7 +154,7 @@ PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterB
     if (xRadius < 0 || yRadius < 0)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEMorphology::create(filter, svgOperatorCurrentValue(), xRadius, yRadius);
+    RefPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);
     return effect.release();
 }

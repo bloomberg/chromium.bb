@@ -36,9 +36,7 @@ class SVGAnimatedType FINAL {
 public:
     ~SVGAnimatedType();
 
-    static PassOwnPtr<SVGAnimatedType> createAngleAndEnumeration(std::pair<SVGAngle, unsigned>*);
     static PassOwnPtr<SVGAnimatedType> createColor(StyleColor*);
-    static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
@@ -47,22 +45,10 @@ public:
 
     AnimatedPropertyType type() const { return m_type; }
 
-    std::pair<SVGAngle, unsigned>& angleAndEnumeration()
-    {
-        ASSERT(m_type == AnimatedAngle);
-        return *m_data.angleAndEnumeration;
-    }
-
     StyleColor& color()
     {
         ASSERT(m_type == AnimatedColor);
         return *m_data.color;
-    }
-
-    unsigned& enumeration()
-    {
-        ASSERT(m_type == AnimatedEnumeration);
-        return *m_data.enumeration;
     }
 
     SVGPathByteStream* path()
@@ -96,9 +82,7 @@ private:
         {
         }
 
-        std::pair<SVGAngle, unsigned>* angleAndEnumeration;
         StyleColor* color;
-        unsigned* enumeration;
         SVGPathByteStream* path;
         SVGTransformList* transformList;
     } m_data;

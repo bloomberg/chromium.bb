@@ -38,39 +38,7 @@ enum SVGSpreadMethodType {
     SVGSpreadMethodReflect,
     SVGSpreadMethodRepeat
 };
-
-template<>
-struct SVGPropertyTraits<SVGSpreadMethodType> {
-    static unsigned highestEnumValue() { return SVGSpreadMethodRepeat; }
-
-    static String toString(SVGSpreadMethodType type)
-    {
-        switch (type) {
-        case SVGSpreadMethodUnknown:
-            return emptyString();
-        case SVGSpreadMethodPad:
-            return "pad";
-        case SVGSpreadMethodReflect:
-            return "reflect";
-        case SVGSpreadMethodRepeat:
-            return "repeat";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static SVGSpreadMethodType fromString(const String& value)
-    {
-        if (value == "pad")
-            return SVGSpreadMethodPad;
-        if (value == "reflect")
-            return SVGSpreadMethodReflect;
-        if (value == "repeat")
-            return SVGSpreadMethodRepeat;
-        return SVGSpreadMethodUnknown;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMethodType>();
 
 class SVGGradientElement : public SVGElement,
                            public SVGURIReference {
@@ -84,6 +52,9 @@ public:
 
     Vector<Gradient::ColorStop> buildStops();
 
+    SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() { return m_spreadMethod.get(); }
+    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() { return m_gradientUnits.get(); }
+
 protected:
     SVGGradientElement(const QualifiedName&, Document&);
 
@@ -96,9 +67,9 @@ private:
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE FINAL;
 
+    RefPtr<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
+    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGradientElement)
-        DECLARE_ANIMATED_ENUMERATION(SpreadMethod, spreadMethod, SVGSpreadMethodType)
-        DECLARE_ANIMATED_ENUMERATION(GradientUnits, gradientUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(GradientTransform, gradientTransform)
     END_DECLARE_ANIMATED_PROPERTIES
 };

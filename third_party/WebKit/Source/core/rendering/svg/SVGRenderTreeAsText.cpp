@@ -154,15 +154,35 @@ static TextStream& operator<<(TextStream& ts, const WindRule rule)
     return ts;
 }
 
+namespace {
+
+template<typename Enum>
+String SVGEnumerationToString(Enum value)
+{
+    const SVGEnumerationStringEntries& entries = getStaticStringEntries<Enum>();
+
+    SVGEnumerationStringEntries::const_iterator it = entries.begin();
+    SVGEnumerationStringEntries::const_iterator itEnd = entries.end();
+    for (; it != itEnd; ++it) {
+        if (value == it->first)
+            return it->second;
+    }
+
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+}
+
 static TextStream& operator<<(TextStream& ts, const SVGUnitTypes::SVGUnitType& unitType)
 {
-    ts << SVGPropertyTraits<SVGUnitTypes::SVGUnitType>::toString(unitType);
+    ts << SVGEnumerationToString<SVGUnitTypes::SVGUnitType>(unitType);
     return ts;
 }
 
 static TextStream& operator<<(TextStream& ts, const SVGMarkerUnitsType& markerUnit)
 {
-    ts << SVGPropertyTraits<SVGMarkerUnitsType>::toString(markerUnit);
+    ts << SVGEnumerationToString<SVGMarkerUnitsType>(markerUnit);
     return ts;
 }
 
@@ -221,7 +241,7 @@ static TextStream& operator<<(TextStream& ts, LineJoin style)
 
 static TextStream& operator<<(TextStream& ts, const SVGSpreadMethodType& type)
 {
-    ts << SVGPropertyTraits<SVGSpreadMethodType>::toString(type).upper();
+    ts << SVGEnumerationToString<SVGSpreadMethodType>(type).upper();
     return ts;
 }
 

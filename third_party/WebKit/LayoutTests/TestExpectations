@@ -909,4 +909,6 @@ crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
+crbug.com/308818 [ Mac Win ] svg/dynamic-updates/SVGMarkerElement-svgdom-setOrientToAngle-call.html [ NeedsRebaseline ]
+
 crbug.com/331301 editing/selection/move-left-right.html [ NeedsManualRebaseline ]

@@ -80,14 +80,7 @@ AnimatedPropertyType SVGAnimateElement::determineAnimatedPropertyType(SVGElement
     if (type == AnimatedTransformList && !hasTagName(SVGNames::animateTransformTag))
         return AnimatedUnknown;
 
-    // Fortunately there's just one special case needed here: SVGMarkerElements orientAttr, which
-    // corresponds to SVGAnimatedAngle orientAngle and SVGAnimatedEnumeration orientType. We have to
-    // figure out whose value to change here.
-    if (targetElement->hasTagName(SVGNames::markerTag) && type == AnimatedAngle) {
-        ASSERT(propertyTypes.size() == 2);
-        ASSERT(propertyTypes[0] == AnimatedAngle);
-        ASSERT(propertyTypes[1] == AnimatedEnumeration);
-    } else if (propertyTypes.size() == 2)
+    if (propertyTypes.size() == 2)
         ASSERT(propertyTypes[0] == propertyTypes[1]);
 
     return type;

@@ -35,64 +35,9 @@ enum SVGStitchOptions {
     SVG_STITCHTYPE_STITCH   = 1,
     SVG_STITCHTYPE_NOSTITCH = 2
 };
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>();
 
-template<>
-struct SVGPropertyTraits<SVGStitchOptions> {
-    static unsigned highestEnumValue() { return SVG_STITCHTYPE_NOSTITCH; }
-
-    static String toString(SVGStitchOptions type)
-    {
-        switch (type) {
-        case SVG_STITCHTYPE_UNKNOWN:
-            return emptyString();
-        case SVG_STITCHTYPE_STITCH:
-            return "stitch";
-        case SVG_STITCHTYPE_NOSTITCH:
-            return "noStitch";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static SVGStitchOptions fromString(const String& value)
-    {
-        if (value == "stitch")
-            return SVG_STITCHTYPE_STITCH;
-        if (value == "noStitch")
-            return SVG_STITCHTYPE_NOSTITCH;
-        return SVG_STITCHTYPE_UNKNOWN;
-    }
-};
-
-template<>
-struct SVGPropertyTraits<TurbulenceType> {
-    static unsigned highestEnumValue() { return FETURBULENCE_TYPE_TURBULENCE; }
-
-    static String toString(TurbulenceType type)
-    {
-        switch (type) {
-        case FETURBULENCE_TYPE_UNKNOWN:
-            return emptyString();
-        case FETURBULENCE_TYPE_FRACTALNOISE:
-            return "fractalNoise";
-        case FETURBULENCE_TYPE_TURBULENCE:
-            return "turbulence";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static TurbulenceType fromString(const String& value)
-    {
-        if (value == "fractalNoise")
-            return FETURBULENCE_TYPE_FRACTALNOISE;
-        if (value == "turbulence")
-            return FETURBULENCE_TYPE_TURBULENCE;
-        return FETURBULENCE_TYPE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>();
 
 class SVGFETurbulenceElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -101,6 +46,8 @@ public:
     SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
     SVGAnimatedNumber* baseFrequencyY() { return m_baseFrequency->secondNumber(); }
     SVGAnimatedNumber* seed() { return m_seed.get(); }
+    SVGAnimatedEnumeration<SVGStitchOptions>* stitchTiles() { return m_stitchTiles.get(); }
+    SVGAnimatedEnumeration<TurbulenceType>* type() { return m_type.get(); }
     SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
 
 private:
@@ -114,10 +61,10 @@ private:
 
     RefPtr<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
     RefPtr<SVGAnimatedNumber> m_seed;
+    RefPtr<SVGAnimatedEnumeration<SVGStitchOptions> > m_stitchTiles;
+    RefPtr<SVGAnimatedEnumeration<TurbulenceType> > m_type;
     RefPtr<SVGAnimatedInteger> m_numOctaves;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFETurbulenceElement)
-        DECLARE_ANIMATED_ENUMERATION(StitchTiles, stitchTiles, SVGStitchOptions)
-        DECLARE_ANIMATED_ENUMERATION(Type, type, TurbulenceType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

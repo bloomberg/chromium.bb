@@ -1,152 +1,81 @@
 /*
- * Copyright (C) Research In Motion Limited 2011, 2012. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
 #include "core/svg/SVGAnimatedAngle.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/svg/SVGAnimateElement.h"
+#include "SVGNames.h"
+#include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGMarkerElement.h"
 
 namespace WebCore {
 
-SVGAnimatedAngleAnimator::SVGAnimatedAngleAnimator(SVGAnimationElement* animationElement, SVGElement* contextElement)
-    : SVGAnimatedTypeAnimator(AnimatedAngle, animationElement, contextElement)
+SVGAnimatedAngle::SVGAnimatedAngle(SVGMarkerElement* contextElement)
+    : NewSVGAnimatedProperty<SVGAngle>(contextElement, SVGNames::orientAttr, SVGAngle::create())
+    , m_orientType(SVGAnimatedEnumeration<SVGMarkerOrientType>::create(contextElement, SVGNames::orientAttr, baseValue()->orientType()))
 {
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedAngleAnimator::constructFromString(const String& string)
+SVGAnimatedAngle::~SVGAnimatedAngle()
 {
-    OwnPtr<SVGAnimatedType> animatedType = SVGAnimatedType::createAngleAndEnumeration(new pair<SVGAngle, unsigned>);
-    pair<SVGAngle, unsigned>& animatedPair = animatedType->angleAndEnumeration();
-
-    SVGAngle angle;
-    SVGMarkerOrientType orientType = SVGPropertyTraits<SVGMarkerOrientType>::fromString(string,  angle);
-    if (orientType > 0)
-        animatedPair.second = orientType;
-    if (orientType == SVGMarkerOrientAngle)
-        animatedPair.first = angle;
-
-    return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedAngleAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& animatedTypes)
+void SVGAnimatedAngle::synchronizeAttribute()
 {
-    return SVGAnimatedType::createAngleAndEnumeration(constructFromBaseValues<SVGAnimatedAngle, SVGAnimatedEnumeration>(animatedTypes));
+    ASSERT(needsSynchronizeAttribute());
+
+    AtomicString value;
+    if (m_orientType->currentValue()->enumValue() == SVGMarkerOrientAuto)
+        value = "auto";
+    else
+        value = AtomicString(currentValue()->valueAsString());
+
+    contextElement()->setSynchronizedLazyAttribute(attributeName(), value);
 }
 
-void SVGAnimatedAngleAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList& animatedTypes)
+void SVGAnimatedAngle::animationStarted()
 {
-    stopAnimValAnimationForTypes<SVGAnimatedAngle, SVGAnimatedEnumeration>(animatedTypes);
+    NewSVGAnimatedProperty<SVGAngle>::animationStarted();
+    m_orientType->animationStarted();
 }
 
-void SVGAnimatedAngleAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& animatedTypes, SVGAnimatedType* type)
+void SVGAnimatedAngle::setAnimatedValue(PassRefPtr<NewSVGPropertyBase> value)
 {
-    resetFromBaseValues<SVGAnimatedAngle, SVGAnimatedEnumeration>(animatedTypes, type, &SVGAnimatedType::angleAndEnumeration);
+    NewSVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);
+    m_orientType->setAnimatedValue(currentValue()->orientType());
 }
 
-void SVGAnimatedAngleAnimator::animValWillChange(const SVGElementAnimatedPropertyList& animatedTypes)
+void SVGAnimatedAngle::animationEnded()
 {
-    animValWillChangeForTypes<SVGAnimatedAngle, SVGAnimatedEnumeration>(animatedTypes);
-}
-
-void SVGAnimatedAngleAnimator::animValDidChange(const SVGElementAnimatedPropertyList& animatedTypes)
-{
-    animValDidChangeForTypes<SVGAnimatedAngle, SVGAnimatedEnumeration>(animatedTypes);
-}
-
-void SVGAnimatedAngleAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)
-{
-    ASSERT(from->type() == AnimatedAngle);
-    ASSERT(from->type() == to->type());
-
-    const pair<SVGAngle, unsigned>& fromAngleAndEnumeration = from->angleAndEnumeration();
-    pair<SVGAngle, unsigned>& toAngleAndEnumeration = to->angleAndEnumeration();
-    // Only respect by animations, if from and by are both specified in angles (and not eg. 'auto').
-    if (fromAngleAndEnumeration.second != toAngleAndEnumeration.second || fromAngleAndEnumeration.second != SVGMarkerOrientAngle)
-        return;
-    const SVGAngle& fromAngle = fromAngleAndEnumeration.first;
-    SVGAngle& toAngle = toAngleAndEnumeration.first;
-    toAngle.setValue(toAngle.value() + fromAngle.value());
-}
-
-void SVGAnimatedAngleAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType* from, SVGAnimatedType* to, SVGAnimatedType* toAtEndOfDuration, SVGAnimatedType* animated)
-{
-    ASSERT(m_animationElement);
-    ASSERT(m_contextElement);
-
-    const pair<SVGAngle, unsigned>& fromAngleAndEnumeration = m_animationElement->animationMode() == ToAnimation ? animated->angleAndEnumeration() : from->angleAndEnumeration();
-    const pair<SVGAngle, unsigned>& toAngleAndEnumeration = to->angleAndEnumeration();
-    const pair<SVGAngle, unsigned>& toAtEndOfDurationAngleAndEnumeration = toAtEndOfDuration->angleAndEnumeration();
-    pair<SVGAngle, unsigned>& animatedAngleAndEnumeration = animated->angleAndEnumeration();
-
-    if (fromAngleAndEnumeration.second != toAngleAndEnumeration.second) {
-        // Animating from eg. auto to 90deg, or auto to 90deg.
-        if (fromAngleAndEnumeration.second == SVGMarkerOrientAngle) {
-            // Animating from an angle value to eg. 'auto' - this disabled additive as 'auto' is a keyword..
-            if (toAngleAndEnumeration.second == SVGMarkerOrientAuto) {
-                if (percentage < 0.5f) {
-                    animatedAngleAndEnumeration.first = fromAngleAndEnumeration.first;
-                    animatedAngleAndEnumeration.second = SVGMarkerOrientAngle;
-                    return;
-                }
-                animatedAngleAndEnumeration.first.setValue(0);
-                animatedAngleAndEnumeration.second = SVGMarkerOrientAuto;
-                return;
-            }
-            animatedAngleAndEnumeration.first.setValue(0);
-            animatedAngleAndEnumeration.second = SVGMarkerOrientUnknown;
-            return;
-        }
-    }
-
-    // From 'auto' to 'auto'.
-    if (fromAngleAndEnumeration.second == SVGMarkerOrientAuto) {
-        animatedAngleAndEnumeration.first.setValue(0);
-        animatedAngleAndEnumeration.second = SVGMarkerOrientAuto;
-        return;
-    }
-
-    // If the enumeration value is not angle or auto, its unknown.
-    if (fromAngleAndEnumeration.second != SVGMarkerOrientAngle) {
-        animatedAngleAndEnumeration.first.setValue(0);
-        animatedAngleAndEnumeration.second = SVGMarkerOrientUnknown;
-        return;
-    }
-
-    // Regular from angle to angle animation, with all features like additive etc.
-    animatedAngleAndEnumeration.second = SVGMarkerOrientAngle;
-
-    SVGAngle& animatedSVGAngle = animatedAngleAndEnumeration.first;
-    const SVGAngle& toAtEndOfDurationSVGAngle = toAtEndOfDurationAngleAndEnumeration.first;
-    float animatedAngle = animatedSVGAngle.value();
-    m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromAngleAndEnumeration.first.value(), toAngleAndEnumeration.first.value(), toAtEndOfDurationSVGAngle.value(), animatedAngle);
-    animatedSVGAngle.setValue(animatedAngle);
-}
-
-float SVGAnimatedAngleAnimator::calculateDistance(const String& fromString, const String& toString)
-{
-    SVGAngle from = SVGAngle();
-    from.setValueAsString(fromString, ASSERT_NO_EXCEPTION);
-    SVGAngle to = SVGAngle();
-    to.setValueAsString(toString, ASSERT_NO_EXCEPTION);
-    return fabsf(to.value() - from.value());
+    NewSVGAnimatedProperty<SVGAngle>::animationEnded();
+    m_orientType->animationEnded();
 }
 
 }

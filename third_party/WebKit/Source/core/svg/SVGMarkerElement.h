@@ -36,60 +36,7 @@ enum SVGMarkerUnitsType {
     SVGMarkerUnitsUserSpaceOnUse,
     SVGMarkerUnitsStrokeWidth
 };
-
-enum SVGMarkerOrientType {
-    SVGMarkerOrientUnknown = 0,
-    SVGMarkerOrientAuto,
-    SVGMarkerOrientAngle
-};
-
-template<>
-struct SVGPropertyTraits<SVGMarkerUnitsType> {
-    static unsigned highestEnumValue() { return SVGMarkerUnitsStrokeWidth; }
-
-    static String toString(SVGMarkerUnitsType type)
-    {
-        switch (type) {
-        case SVGMarkerUnitsUnknown:
-            return emptyString();
-        case SVGMarkerUnitsUserSpaceOnUse:
-            return "userSpaceOnUse";
-        case SVGMarkerUnitsStrokeWidth:
-            return "strokeWidth";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static SVGMarkerUnitsType fromString(const String& value)
-    {
-        if (value == "userSpaceOnUse")
-            return SVGMarkerUnitsUserSpaceOnUse;
-        if (value == "strokeWidth")
-            return SVGMarkerUnitsStrokeWidth;
-        return SVGMarkerUnitsUnknown;
-    }
-};
-
-template<>
-struct SVGPropertyTraits<SVGMarkerOrientType> {
-    static unsigned highestEnumValue() { return SVGMarkerOrientAngle; }
-
-    // toString is not needed, synchronizeOrientType() handles this on its own.
-
-    static SVGMarkerOrientType fromString(const String& value, SVGAngle& angle)
-    {
-        if (value == "auto")
-            return SVGMarkerOrientAuto;
-
-        TrackExceptionState exceptionState;
-        angle.setValueAsString(value, exceptionState);
-        if (!exceptionState.hadException())
-            return SVGMarkerOrientAngle;
-        return SVGMarkerOrientUnknown;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>();
 
 class SVGMarkerElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
@@ -112,7 +59,7 @@ public:
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
     void setOrientToAuto();
-    void setOrientToAngle(const SVGAngle&);
+    void setOrientToAngle(PassRefPtr<SVGAngleTearOff>);
 
     static const SVGPropertyInfo* orientTypePropertyInfo();
 
@@ -120,14 +67,9 @@ public:
     SVGAnimatedLength* refY() const { return m_refY.get(); }
     SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
     SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
-
-    // Custom 'orientType' property.
-    static void synchronizeOrientType(SVGElement* contextElement);
-    static PassRefPtr<SVGAnimatedProperty> lookupOrCreateOrientTypeWrapper(SVGElement* contextElement);
-    SVGMarkerOrientType& orientTypeCurrentValue() const { return m_orientType.value; }
-    SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
-    void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
-    PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
+    SVGAnimatedEnumeration<SVGMarkerUnitsType>* markerUnits() { return m_markerUnits.get(); }
+    SVGAnimatedAngle* orientAngle() { return m_orientAngle.get(); }
+    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientAngle->orientType(); }
 
 private:
     explicit SVGMarkerElement(Document&);
@@ -144,19 +86,13 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
-    void synchronizeOrientType();
-
-    static const AtomicString& orientTypeIdentifier();
-    static const AtomicString& orientAngleIdentifier();
-
     RefPtr<SVGAnimatedLength> m_refX;
     RefPtr<SVGAnimatedLength> m_refY;
     RefPtr<SVGAnimatedLength> m_markerWidth;
     RefPtr<SVGAnimatedLength> m_markerHeight;
-    mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
+    RefPtr<SVGAnimatedAngle> m_orientAngle;
+    RefPtr<SVGAnimatedEnumeration<SVGMarkerUnitsType> > m_markerUnits;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
-        DECLARE_ANIMATED_ENUMERATION(MarkerUnits, markerUnits, SVGMarkerUnitsType)
-        DECLARE_ANIMATED_ANGLE(OrientAngle, orientAngle)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

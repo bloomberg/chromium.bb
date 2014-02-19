@@ -27,42 +27,7 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<ChannelSelectorType> {
-    static unsigned highestEnumValue() { return CHANNEL_A; }
-
-    static String toString(ChannelSelectorType type)
-    {
-        switch (type) {
-        case CHANNEL_UNKNOWN:
-            return emptyString();
-        case CHANNEL_R:
-            return "R";
-        case CHANNEL_G:
-            return "G";
-        case CHANNEL_B:
-            return "B";
-        case CHANNEL_A:
-            return "A";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static ChannelSelectorType fromString(const String& value)
-    {
-        if (value == "R")
-            return CHANNEL_R;
-        if (value == "G")
-            return CHANNEL_G;
-        if (value == "B")
-            return CHANNEL_B;
-        if (value == "A")
-            return CHANNEL_A;
-        return CHANNEL_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSelectorType>();
 
 class SVGFEDisplacementMapElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -73,6 +38,8 @@ public:
     SVGAnimatedNumber* scale() { return m_scale.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedString* in2() { return m_in2.get(); }
+    SVGAnimatedEnumeration<ChannelSelectorType>* xChannelSelector() { return m_xChannelSelector.get(); }
+    SVGAnimatedEnumeration<ChannelSelectorType>* yChannelSelector() { return m_yChannelSelector.get(); }
 
 private:
     SVGFEDisplacementMapElement(Document&);
@@ -86,9 +53,9 @@ private:
     RefPtr<SVGAnimatedNumber> m_scale;
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
+    RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_xChannelSelector;
+    RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
-        DECLARE_ANIMATED_ENUMERATION(XChannelSelector, xChannelSelector, ChannelSelectorType)
-        DECLARE_ANIMATED_ENUMERATION(YChannelSelector, yChannelSelector, ChannelSelectorType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

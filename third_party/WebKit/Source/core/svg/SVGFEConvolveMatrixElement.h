@@ -32,38 +32,7 @@
 
 namespace WebCore {
 
-template<>
-struct SVGPropertyTraits<EdgeModeType> {
-    static unsigned highestEnumValue() { return EDGEMODE_NONE; }
-
-    static String toString(EdgeModeType type)
-    {
-        switch (type) {
-        case EDGEMODE_UNKNOWN:
-            return emptyString();
-        case EDGEMODE_DUPLICATE:
-            return "duplicate";
-        case EDGEMODE_WRAP:
-            return "wrap";
-        case EDGEMODE_NONE:
-            return "none";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static EdgeModeType fromString(const String& value)
-    {
-        if (value == "duplicate")
-            return EDGEMODE_DUPLICATE;
-        if (value == "wrap")
-            return EDGEMODE_WRAP;
-        if (value == "none")
-            return EDGEMODE_NONE;
-        return EDGEMODE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>();
 
 class SVGFEConvolveMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -76,6 +45,7 @@ public:
     SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
     SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedEnumeration<EdgeModeType>* edgeMode() { return m_edgeMode.get(); }
     SVGAnimatedInteger* orderX() { return m_order->firstInteger(); }
     SVGAnimatedInteger* orderY() { return m_order->secondInteger(); }
     SVGAnimatedInteger* targetX() { return m_targetX.get(); }
@@ -93,6 +63,7 @@ private:
     RefPtr<SVGAnimatedNumber> m_bias;
     RefPtr<SVGAnimatedNumber> m_divisor;
     RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedEnumeration<EdgeModeType> > m_edgeMode;
     RefPtr<SVGAnimatedNumberList> m_kernelMatrix;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     RefPtr<SVGAnimatedIntegerOptionalInteger> m_order;
@@ -100,7 +71,6 @@ private:
     RefPtr<SVGAnimatedInteger> m_targetX;
     RefPtr<SVGAnimatedInteger> m_targetY;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
-        DECLARE_ANIMATED_ENUMERATION(EdgeMode, edgeMode, EdgeModeType)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

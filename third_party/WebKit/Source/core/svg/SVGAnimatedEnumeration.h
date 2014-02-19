@@ -1,57 +1,75 @@
 /*
- * Copyright (C) Research In Motion Limited 2010, 2012. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVGAnimatedEnumeration_h
 #define SVGAnimatedEnumeration_h
 
-#include "core/svg/SVGAnimatedTypeAnimator.h"
-#include "core/svg/properties/SVGAnimatedEnumerationPropertyTearOff.h"
-#include "core/svg/properties/SVGAnimatedPropertyMacros.h"
+#include "core/svg/SVGAnimatedEnumerationBase.h"
 
 namespace WebCore {
 
-typedef SVGAnimatedStaticPropertyTearOff<unsigned> SVGAnimatedEnumeration;
-
-// Helper macros to declare/define a SVGAnimatedEnumeration object
-#define DECLARE_ANIMATED_ENUMERATION(UpperProperty, LowerProperty, EnumType) \
-DECLARE_ANIMATED_PROPERTY(SVGAnimatedEnumerationPropertyTearOff<EnumType>, EnumType, UpperProperty, LowerProperty)
-
-#define DEFINE_ANIMATED_ENUMERATION(OwnerType, DOMAttribute, UpperProperty, LowerProperty, EnumType) \
-DEFINE_ANIMATED_PROPERTY(AnimatedEnumeration, OwnerType, DOMAttribute, DOMAttribute.localName(), UpperProperty, LowerProperty, SVGAnimatedEnumerationPropertyTearOff<EnumType>, EnumType)
-
-class SVGAnimatedEnumerationAnimator FINAL : public SVGAnimatedTypeAnimator {
+template<typename Enum>
+class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
 public:
-    SVGAnimatedEnumerationAnimator(SVGAnimationElement*, SVGElement*);
-    virtual ~SVGAnimatedEnumerationAnimator() { }
+    static PassRefPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, Enum initialValue)
+    {
+        return adoptRef(new SVGAnimatedEnumeration(contextElement, attributeName, SVGEnumeration<Enum>::create(initialValue)));
+    }
 
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&) OVERRIDE;
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*) OVERRIDE;
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    static PassRefPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumeration<Enum> > initialValue)
+    {
+        return adoptRef(new SVGAnimatedEnumeration(contextElement, attributeName, initialValue));
+    }
 
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
-    virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
+    SVGEnumeration<Enum>* baseValue()
+    {
+        return static_cast<SVGEnumeration<Enum>*>(SVGAnimatedEnumerationBase::baseValue());
+    }
+
+    SVGEnumeration<Enum>* currentValue()
+    {
+        return static_cast<SVGEnumeration<Enum>*>(SVGAnimatedEnumerationBase::currentValue());
+    }
+
+    const SVGEnumeration<Enum>* currentValue() const
+    {
+        return static_cast<const SVGEnumeration<Enum>*>(SVGAnimatedEnumerationBase::currentValue());
+    }
+
+protected:
+    SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumeration<Enum> > initialValue)
+        : SVGAnimatedEnumerationBase(contextElement, attributeName, initialValue)
+    {
+    }
 };
 
 } // namespace WebCore
 
-#endif
+#endif // SVGAnimatedEnumeration_h

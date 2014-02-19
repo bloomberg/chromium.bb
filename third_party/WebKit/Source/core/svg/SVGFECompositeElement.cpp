@@ -29,11 +29,24 @@
 
 namespace WebCore {
 
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOperationType>()
+{
+    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+    if (entries.isEmpty()) {
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_UNKNOWN, emptyString()));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
+        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"));
+    }
+    return entries;
+}
+
 // Animated property definitions
-DEFINE_ANIMATED_ENUMERATION(SVGFECompositeElement, SVGNames::operatorAttr, SVGOperator, svgOperator, CompositeOperationType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFECompositeElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(svgOperator)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -45,7 +58,7 @@ inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     , m_k4(SVGAnimatedNumber::create(this, SVGNames::k4Attr, SVGNumber::create()))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
-    , m_svgOperator(FECOMPOSITE_OPERATOR_OVER)
+    , m_svgOperator(SVGAnimatedEnumeration<CompositeOperationType>::create(this, SVGNames::operatorAttr, FECOMPOSITE_OPERATOR_OVER))
 {
     ScriptWrappable::init(this);
 
@@ -55,6 +68,7 @@ inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     addToPropertyMap(m_k4);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
+    addToPropertyMap(m_svgOperator);
     registerAnimatedPropertiesForSVGFECompositeElement();
 }
 
@@ -85,13 +99,6 @@ void SVGFECompositeElement::parseAttribute(const QualifiedName& name, const Atom
         return;
     }
 
-    if (name == SVGNames::operatorAttr) {
-        CompositeOperationType propertyValue = SVGPropertyTraits<CompositeOperationType>::fromString(value);
-        if (propertyValue > 0)
-            setSVGOperatorBaseValue(propertyValue);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
     if (name == SVGNames::inAttr)
@@ -106,6 +113,8 @@ void SVGFECompositeElement::parseAttribute(const QualifiedName& name, const Atom
         m_k3->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::k4Attr)
         m_k4->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::operatorAttr)
+        m_svgOperator->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -116,7 +125,7 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
 {
     FEComposite* composite = static_cast<FEComposite*>(effect);
     if (attrName == SVGNames::operatorAttr)
-        return composite->setOperation(svgOperatorCurrentValue());
+        return composite->setOperation(m_svgOperator->currentValue()->enumValue());
     if (attrName == SVGNames::k1Attr)
         return composite->setK1(m_k1->currentValue()->value());
     if (attrName == SVGNames::k2Attr)
@@ -165,7 +174,7 @@ PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBu
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEComposite::create(filter, svgOperatorCurrentValue(), m_k1->currentValue()->value(), m_k2->currentValue()->value(), m_k3->currentValue()->value(), m_k4->currentValue()->value());
+    RefPtr<FilterEffect> effect = FEComposite::create(filter, m_svgOperator->currentValue()->enumValue(), m_k1->currentValue()->value(), m_k2->currentValue()->value(), m_k3->currentValue()->value(), m_k4->currentValue()->value());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);

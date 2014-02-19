@@ -34,12 +34,6 @@ SVGAnimatedType::SVGAnimatedType(AnimatedPropertyType type)
 SVGAnimatedType::~SVGAnimatedType()
 {
     switch (m_type) {
-    case AnimatedAngle:
-        delete m_data.angleAndEnumeration;
-        break;
-    case AnimatedEnumeration:
-        delete m_data.enumeration;
-        break;
     case AnimatedPath:
         delete m_data.path;
         break;
@@ -47,8 +41,10 @@ SVGAnimatedType::~SVGAnimatedType()
         delete m_data.transformList;
         break;
     // Below properties are migrated to new property implementation.
+    case AnimatedAngle:
     case AnimatedBoolean:
     case AnimatedColor:
+    case AnimatedEnumeration:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
     case AnimatedNumber:
@@ -73,22 +69,6 @@ SVGAnimatedType::~SVGAnimatedType()
         ASSERT_NOT_REACHED();
         break;
     }
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createAngleAndEnumeration(std::pair<SVGAngle, unsigned>* angleAndEnumeration)
-{
-    ASSERT(angleAndEnumeration);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedAngle));
-    animatedType->m_data.angleAndEnumeration = angleAndEnumeration;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createEnumeration(unsigned* enumeration)
-{
-    ASSERT(enumeration);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedEnumeration));
-    animatedType->m_data.enumeration = enumeration;
-    return animatedType.release();
 }
 
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteStream> path)

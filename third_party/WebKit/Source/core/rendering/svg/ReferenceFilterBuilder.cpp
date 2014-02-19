@@ -164,7 +164,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
             continue;
 
         effectElement->setStandardAttributes(effect.get());
-        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnitsCurrentValue(), parentFilter->sourceImageRect()));
+        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnits()->currentValue()->enumValue(), parentFilter->sourceImageRect()));
         ColorSpace colorSpace = filterColorSpace;
         if (useFilterColorSpace || getSVGElementColorSpace(effectElement, colorSpace))
             effect->setOperatingColorSpace(colorSpace);

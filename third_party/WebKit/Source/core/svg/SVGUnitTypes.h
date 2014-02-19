@@ -20,7 +20,7 @@
 #ifndef SVGUnitTypes_h
 #define SVGUnitTypes_h
 
-#include "core/svg/properties/SVGPropertyTraits.h"
+#include "core/svg/SVGEnumeration.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -36,35 +36,7 @@ public:
 private:
     SVGUnitTypes() { }
 };
-
-template<>
-struct SVGPropertyTraits<SVGUnitTypes::SVGUnitType> {
-    static unsigned highestEnumValue() { return SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX; }
-
-    static String toString(SVGUnitTypes::SVGUnitType type)
-    {
-        switch (type) {
-        case SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN:
-            return emptyString();
-        case SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE:
-            return "userSpaceOnUse";
-        case SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX:
-            return "objectBoundingBox";
-        }
-
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-
-    static SVGUnitTypes::SVGUnitType fromString(const String& value)
-    {
-        if (value == "userSpaceOnUse")
-            return SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE;
-        if (value == "objectBoundingBox")
-            return SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-        return SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN;
-    }
-};
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitTypes::SVGUnitType>();
 
 }
 
