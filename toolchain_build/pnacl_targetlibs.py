@@ -455,7 +455,8 @@ def NativeLibs(host, arch):
       Mangle('libs_support_native', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
-          'dependencies': [ 'newlib_portable', H('llvm'), H('binutils_pnacl')],
+          'dependencies': [ 'newlib_src', 'newlib_portable',
+                            H('llvm'), H('binutils_pnacl')],
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
@@ -479,7 +480,19 @@ def NativeLibs(host, arch):
                                    'setjmp.o', arch),
               BuildTargetNativeCmd('string.c', 'string.o', arch,
                                    ['-std=c99'],
-                                   source_dir='%(newlib_subset)s')] +
+                                   source_dir='%(newlib_subset)s'),
+              # Pull in non-errno __ieee754_fmod from newlib and rename it to
+              # fmod. This is to support the LLVM frem instruction.
+              BuildTargetNativeCmd(
+                  'e_fmod.c', 'e_fmod.o', arch,
+                  ['-std=c99', '-I%(abs_newlib_src)s/newlib/libm/common/',
+                   '-D__ieee754_fmod=fmod'],
+                  source_dir='%(abs_newlib_src)s/newlib/libm/math'),
+              BuildTargetNativeCmd(
+                  'ef_fmod.c', 'ef_fmod.o', arch,
+                  ['-std=c99', '-I%(abs_newlib_src)s/newlib/libm/common/',
+                   '-D__ieee754_fmodf=fmodf'],
+                  source_dir='%(abs_newlib_src)s/newlib/libm/math')] +
               AeabiReadTpCmd(arch) + [
               command.Command(' '.join([
                   PnaclTool('ar'), 'rc',

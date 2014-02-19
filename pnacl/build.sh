@@ -2455,6 +2455,18 @@ libs-support-native() {
   ${cc_cmd} \
     -c "${NACL_SRC_THIRD_PARTY_MOD}/pnacl_native_newlib_subset/string.c" \
     -std=c99 -o "${tmpdir}"/string.o
+  # Pull in the no-errno __ieee754_fmod from newlib and rename it to fmod.
+  # This is to support the LLVM frem instruction.
+  ${cc_cmd} \
+    -c "${TC_SRC_NEWLIB}/newlib/libm/math/e_fmod.c" \
+    -I"${TC_SRC_NEWLIB}/newlib/libm/common/" \
+    -D__ieee754_fmod=fmod \
+    -std=c99 -o "${tmpdir}"/e_fmod.o
+  ${cc_cmd} \
+    -c "${TC_SRC_NEWLIB}/newlib/libm/math/ef_fmod.c" \
+    -I"${TC_SRC_NEWLIB}/newlib/libm/common/" \
+    -D__ieee754_fmodf=fmodf \
+    -std=c99 -o "${tmpdir}"/ef_mod.o
 
   # For ARM, also compile aeabi_read_tp.S
   if  [ ${arch} == arm ] ; then
