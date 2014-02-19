@@ -860,12 +860,8 @@ bool BrowserActionsContainer::ShowPopup(
   // since buttons can be activated from the overflow menu (chevron). In that
   // case we show the popup as originating from the chevron.
   View* reference_view = button->parent()->visible() ? button : chevron_;
-  views::BubbleBorder::Arrow arrow = base::i18n::IsRTL() ?
-      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
-  popup_ = ExtensionPopup::ShowPopup(popup_url,
-                                     browser_,
-                                     reference_view,
-                                     arrow,
+  popup_ = ExtensionPopup::ShowPopup(popup_url, browser_, reference_view,
+                                     views::BubbleBorder::TOP_RIGHT,
                                      show_action);
   popup_->GetWidget()->AddObserver(this);
   popup_button_ = button;
