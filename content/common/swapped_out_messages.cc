@@ -44,6 +44,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_ReclaimCompositorResources::ID:
     // Input events propagate from parent to child.
     case FrameHostMsg_ForwardInputEvent::ID:
+    case FrameHostMsg_InitializeChildFrame::ID:
       return true;
     default:
       break;

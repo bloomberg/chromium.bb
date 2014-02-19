@@ -177,8 +177,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // sent through it are routed to the embedding renderer process.
   CrossProcessFrameConnector* frame_connector_;
 
-  gfx::Size size_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };

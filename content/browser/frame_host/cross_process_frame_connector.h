@@ -99,6 +99,7 @@ class CrossProcessFrameConnector {
   void OnReclaimCompositorResources(
       const FrameHostMsg_ReclaimCompositorResources_Params& params);
   void OnForwardInputEvent(const blink::WebInputEvent* event);
+  void OnInitializeChildFrame(gfx::Rect frame_rect, float scale_factor);
 
   // The RenderFrameHost that routes messages to the parent frame's renderer
   // process.
@@ -110,6 +111,7 @@ class CrossProcessFrameConnector {
   RenderWidgetHostViewChildFrame* view_;
 
   gfx::Rect child_frame_rect_;
+  float device_scale_factor_;
 };
 
 }  // namespace content

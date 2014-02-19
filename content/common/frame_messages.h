@@ -289,6 +289,11 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
 // existing navigation.
 IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)
 
+// Instructs the frame to swap out for a cross-site transition, including
+// running the unload event handler. Expects a SwapOut_ACK message when
+// finished.
+IPC_MESSAGE_ROUTED0(FrameMsg_SwapOut)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -426,13 +431,14 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ReclaimCompositorResources,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
                     IPC::WebInputEventPointer /* event */)
 
-// Instructs the frame to swap out for a cross-site transition, including
-// running the unload event handler. Expects a SwapOut_ACK message when
-// finished.
-IPC_MESSAGE_ROUTED0(FrameMsg_SwapOut)
-
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the
 // user right clicked.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ContextMenu, content::ContextMenuParams)
+
+// Initial drawing parameters for a child frame that has been swapped out to
+// another process.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_InitializeChildFrame,
+                    gfx::Rect /* frame_rect */,
+                    float /* scale_factor */)

@@ -325,6 +325,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didLoseWebGLContext(blink::WebFrame* frame,
                                    int arb_robustness_status_code);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
+  virtual void initializeChildFrame(const blink::WebRect& frame_rect,
+                                    float scale_factor);
 
   // TODO(jam): move this to WebFrameClient
   virtual void showContextMenu(const blink::WebContextMenuData& data);

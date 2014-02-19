@@ -77,11 +77,4 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
   ASSERT_FALSE(view_->IsShowing());
 }
 
-TEST_F(RenderWidgetHostViewChildFrameTest, SetSizeTest) {
-  gfx::Size size(100, 100);
-
-  view_->SetSize(size);
-  ASSERT_TRUE(view_->GetViewBounds().size() == size);
-}
-
 }  // namespace content

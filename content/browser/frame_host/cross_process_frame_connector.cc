@@ -17,7 +17,8 @@ namespace content {
 CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameHostImpl* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
-      view_(NULL) {
+      view_(NULL),
+      device_scale_factor_(1) {
   frame_proxy_in_parent_renderer->set_cross_process_frame_connector(this);
 }
 
@@ -37,6 +38,8 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_InitializeChildFrame,
+                        OnInitializeChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -117,6 +120,24 @@ void CrossProcessFrameConnector::OnReclaimCompositorResources(
                                                        params.output_surface_id,
                                                        params.renderer_host_id,
                                                        params.ack);
+}
+
+void CrossProcessFrameConnector::OnInitializeChildFrame(gfx::Rect frame_rect,
+                                                        float scale_factor) {
+  if (scale_factor != device_scale_factor_) {
+    device_scale_factor_ = scale_factor;
+    if (view_) {
+      RenderWidgetHostImpl* child_widget =
+          RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
+      child_widget->NotifyScreenInfoChanged();
+    }
+  }
+
+  if (!frame_rect.size().IsEmpty()) {
+    child_frame_rect_ = frame_rect;
+    if (view_)
+      view_->SetSize(frame_rect.size());
+  }
 }
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {

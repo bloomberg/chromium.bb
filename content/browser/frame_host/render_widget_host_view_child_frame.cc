@@ -32,7 +32,6 @@ RenderWidgetHost* RenderWidgetHostViewChildFrame::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewChildFrame::SetSize(const gfx::Size& size) {
-  size_ = size;
   host_->WasResized();
 }
 
@@ -68,8 +67,6 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   gfx::Rect rect;
   if (frame_connector_)
     rect = frame_connector_->ChildFrameRect();
-  rect.set_width(size_.width());
-  rect.set_height(size_.height());
   return rect;
 }
 
@@ -94,7 +91,10 @@ void RenderWidgetHostViewChildFrame::SetBackground(
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
-  return size_;
+  gfx::Size size;
+  if (frame_connector_)
+    size = frame_connector_->ChildFrameRect().size();
+  return size;
 }
 
 void RenderWidgetHostViewChildFrame::InitAsPopup(

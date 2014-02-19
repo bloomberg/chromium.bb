@@ -534,10 +534,23 @@ void RenderFrameHostManager::SwapOutOldPage() {
   // to resume.
   // Note: This must be done on the RFH or else we'll swap out the top-level
   // page when subframes navigate.
-  if (frame_tree_node_->IsMainFrame())
+  if (frame_tree_node_->IsMainFrame()) {
     render_frame_host_->render_view_host()->SwapOut();
-  else
+  } else {
+    // The RenderFrameHost being swapped out becomes the proxy for this
+    // frame in its parent's process. CrossProcessFrameConnector
+    // initialization only needs to happen on an initial cross-process
+    // navigation, when the RenderFrame leaves the same process as its parent.
+    // The same CrossProcessFrameConnector is used for subsequent cross-
+    // process navigations, but it will be destroyed if the Frame is
+    // navigated back to the same site instance as its parent.
+    // TODO(kenrb): This will change when RenderFrameProxyHost is created.
+    if (!cross_process_frame_connector_) {
+      cross_process_frame_connector_ =
+          new CrossProcessFrameConnector(render_frame_host_);
+    }
     render_frame_host_->SwapOut();
+  }
 
   // ResourceDispatcherHost has told us to run the onunload handler, which
   // means it is not a download or unsafe page, and we are going to perform the
@@ -936,20 +949,6 @@ int RenderFrameHostManager::CreateRenderFrame(
     new_render_frame_host = CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
                                                   MSG_ROUTING_NONE, swapped_out,
                                                   hidden);
-    if (parent_node && !cross_process_frame_connector_) {
-      // The proxy RenderFrameHost to the parent process is either the current
-      // RenderFrameHost, or it has been added to the swapped out list.
-      // TODO(kenrb): This will change when RenderFrameProxyHost is created.
-      RenderFrameHostImpl* proxy_to_parent = render_frame_host_;
-      if (render_frame_host_->render_view_host()->GetSiteInstance() !=
-          parent_node->render_manager()->current_host()->GetSiteInstance()) {
-        GetSwappedOutRenderFrameHost(
-            parent_node->render_manager()->current_host()->GetSiteInstance());
-      }
-      CHECK(proxy_to_parent);
-      cross_process_frame_connector_ =
-          new CrossProcessFrameConnector(proxy_to_parent);
-    }
 
     // If the new RFH is swapped out already, store it.  Otherwise prevent the
     // process from exiting while we're trying to navigate in it.

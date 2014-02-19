@@ -714,6 +714,8 @@ void RenderFrameImpl::OnSwapOut() {
     // frame?
     frame_->stopLoading();
 
+    frame_->setIsRemote(true);
+
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
@@ -2014,6 +2016,12 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
 
 void RenderFrameImpl::forwardInputEvent(const blink::WebInputEvent* event) {
   Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
+}
+
+void RenderFrameImpl::initializeChildFrame(const blink::WebRect& frame_rect,
+                                           float scale_factor) {
+  Send(new FrameHostMsg_InitializeChildFrame(
+      routing_id_, frame_rect, scale_factor));
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
