@@ -11,8 +11,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 
 
 class TestOsutils(cros_test_lib.TempDirTestCase):
@@ -256,6 +258,43 @@ declare -x ENVA=('a b c' 'd' 'e 1234 %')
 
     env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',), ifs=' ')
     self.assertEquals(env_dict, {'ENVA': 'a b c d e 1234 %'})
+
+
+class DeviceInfoTests(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests methods retrieving information about devices."""
+
+  FULL_OUTPUT = """
+NAME="sda" RM="0" TYPE="disk" SIZE="128G"
+NAME="sda1" RM="1" TYPE="part" SIZE="100G"
+NAME="sda2" RM="1" TYPE="part" SIZE="28G"
+NAME="sdc" RM="1" TYPE="disk" SIZE="7.4G"
+NAME="sdc1" RM="1" TYPE="part" SIZE="1G"
+NAME="sdc2" RM="1" TYPE="part" SIZE="6.4G"
+"""
+
+  PARTIAL_OUTPUT = """
+NAME="sdc" RM="1" TYPE="disk" SIZE="7.4G"
+NAME="sdc1" RM="1" TYPE="part" SIZE="1G"
+NAME="sdc2" RM="1" TYPE="part" SIZE="6.4G"
+"""
+
+  def testListBlockDevices(self):
+    """Tests that we can list al block devices correctly."""
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.FULL_OUTPUT)
+    devices = osutils.ListBlockDevices()
+    self.assertEqual(devices[0].NAME, 'sda')
+    self.assertEqual(devices[0].RM, '0')
+    self.assertEqual(devices[0].TYPE, 'disk')
+    self.assertEqual(devices[0].SIZE, '128G')
+    self.assertEqual(devices[3].NAME, 'sdc')
+    self.assertEqual(devices[3].RM, '1')
+    self.assertEqual(devices[3].TYPE, 'disk')
+    self.assertEqual(devices[3].SIZE, '7.4G')
+
+  def testGetDeviceSize(self):
+    """Tests that we can get the size of a device."""
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.PARTIAL_OUTPUT)
+    self.assertEqual(osutils.GetDeviceSize('/dev/sdc'), '7.4G')
 
 
 if __name__ == '__main__':

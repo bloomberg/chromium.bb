@@ -22,16 +22,17 @@ from chromite.lib import remote_access
 # pylint: disable=W0212
 class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
   """Test xbuddy helper functions."""
-  def testGenerateXbuddyRequest(self):
+  def testGenerateXbuddyRequestForUpdate(self):
     """Test we generate correct xbuddy requests."""
     # Use the latest build when 'latest' is given.
     req = 'xbuddy/latest?for_update=true&return_dir=true'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest('latest', None), req)
+    self.assertEqual(
+        cros_flash.GenerateXbuddyRequestForUpdate('latest', None), req)
 
     # Convert the path starting with 'xbuddy://' to 'xbuddy/'
     path = 'xbuddy://remote/stumpy/version'
     req = 'xbuddy/remote/stumpy/version?for_update=true&return_dir=true'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(path, None), req)
+    self.assertEqual(cros_flash.GenerateXbuddyRequestForUpdate(path, None), req)
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
   @mock.patch('os.path.exists', return_value=True)
@@ -40,8 +41,34 @@ class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
     image_path = '/foo/bar/chromiumos_test_image.bin'
     link = os.path.join(self.tempdir, 'others',
                         '2fdcf2f57d2bca72cf2f698363a4da1c')
-    cros_flash.GenerateXbuddyRequest(image_path, self.tempdir)
+    cros_flash.GenerateXbuddyRequestForUpdate(image_path, self.tempdir)
     self.assertTrue(os.path.lexists(link))
+
+  def testGenerateXbuddyRequestForImage(self):
+    """Tests that we generate correct requests."""
+    image_path = 'foo/bar/taco'
+    self.assertEqual(cros_flash.GenerateXbuddyRequestForImage(image_path),
+                     'xbuddy/foo/bar/taco?return_dir=true')
+
+    image_path = 'xbuddy://foo/bar/taco'
+    self.assertEqual(cros_flash.GenerateXbuddyRequestForImage(image_path),
+                     'xbuddy/foo/bar/taco?return_dir=true')
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testDevserverURLToLocalPath(self, _mock1):
+    """Tests that we convert a devserver URL to a local path correctly."""
+    url = 'http://localhost:8080/static/peppy-release/R33-5116.87.0'
+    base_path = os.path.join(self.tempdir, 'peppy-release/R33-5116.87.0')
+
+    local_path = os.path.join(base_path, 'recovery_image.bin')
+    self.assertEqual(
+      cros_flash.DevserverURLToLocalPath(
+          url, self.tempdir, 'recovery'), local_path)
+
+    # Default to test image.
+    local_path = os.path.join(base_path, 'chromiumos_test_image.bin')
+    self.assertEqual(
+      cros_flash.DevserverURLToLocalPath(url, self.tempdir, 'taco'), local_path)
 
 
 class MockFlashCommand(init_unittest.MockCommand):
@@ -58,7 +85,7 @@ class MockFlashCommand(init_unittest.MockCommand):
 
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
-  """Mock out RemoteDeviceUpdater"""
+  """Mock out RemoteDeviceUpdater."""
   TARGET = 'chromite.cros.commands.cros_flash.RemoteDeviceUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads',
            'SetupRootfsUpdate', 'Verify')
@@ -82,8 +109,8 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
     """Mock out SetupRootfsUpdate."""
 
 
-class RunTest(cros_test_lib.MockTempDirTestCase,
-              cros_test_lib.LoggingTestCase):
+class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
+                           cros_test_lib.LoggingTestCase):
   """Test the flow of FlashCommand.run with the update methods mocked out."""
 
   IMAGE = '/path/to/image'
@@ -99,7 +126,7 @@ class RunTest(cros_test_lib.MockTempDirTestCase,
     """Patches objects."""
     self.cmd_mock = None
     self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
-    self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
+    self.PatchObject(cros_flash, 'GenerateXbuddyRequestForUpdate',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
@@ -135,6 +162,79 @@ class RunTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
     with mock.patch('os.path.exists', return_value=False) as _m1:
       self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+
+
+class USBImagerMock(partial_mock.PartialCmdMock):
+  """Mock out USBImager."""
+  TARGET = 'chromite.cros.commands.cros_flash.USBImager'
+  ATTRS = ('GetImagePathFromDevserver', 'CopyImageToDevice',
+           'ChooseRemovableDevice', 'ListAllRemovableDevices',
+           'GetRemovableDeviceDescription')
+
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self)
+
+  def GetImagePathFromDevserver(self, _inst, *_args, **_kwargs):
+    """Mock out GetImagePathFromDevserver."""
+
+  def CopyImageToDevice(self, _inst, *_args, **_kwargs):
+    """Mock out CopyImageToDevice."""
+
+  def ChooseRemovableDevice(self, _inst, *_args, **_kwargs):
+    """Mock out ChooseRemovableDevice."""
+
+  def ListAllRemovableDevices(self, _inst, *_args, **_kwargs):
+    """Mock out ListAllRemovableDevices."""
+    return ['foo', 'taco', 'milk']
+
+  def GetRemovableDeviceDescription(self, _inst, *_args, **_kwargs):
+    """Mock out GetRemovableDeviceDescription."""
+
+
+class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
+                            cros_test_lib.LoggingTestCase):
+  """Test the flow of FlashCommand.run with the imaging methods mocked out."""
+  IMAGE = '/path/to/image'
+
+  def SetupCommandMock(self, cmd_args):
+    """Setup comand mock."""
+    self.cmd_mock = MockFlashCommand(
+        cmd_args, base_args=['--cache-dir', self.tempdir])
+    self.StartPatcher(self.cmd_mock)
+
+  def setUp(self):
+    """Patches objects."""
+    self.cmd_mock = None
+    self.imager_mock = self.StartPatcher(USBImagerMock())
+    self.PatchObject(cros_flash, 'GenerateXbuddyRequestForImage',
+                     return_value='xbuddy/local/latest')
+
+  def testLocalImagePath(self):
+    """Tests that imaging methods are called correctly."""
+    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
+    with mock.patch('os.path.isfile', return_value=True) as _m:
+      self.cmd_mock.inst.Run()
+      self.assertTrue(self.imager_mock.patched['CopyImageToDevice'].called)
+
+  def testNonLocalImgePath(self):
+    """Tests that we try to get the image path from devserver."""
+    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
+    with mock.patch('os.path.isfile', return_value=False) as _m:
+      self.cmd_mock.inst.Run()
+      self.assertTrue(
+          self.imager_mock.patched['GetImagePathFromDevserver'].called)
+      self.assertTrue(self.imager_mock.patched['CopyImageToDevice'].called)
+
+  def testNotRemovableDevice(self):
+    """Tests that exception is raised when the given device is not removable."""
+    self.SetupCommandMock(['usb:///dev/dummy', self.IMAGE])
+    self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+
+  def testChooseRemovableDevice(self):
+    """Tests that we ask user to choose a device if none is given."""
+    self.SetupCommandMock(['usb://', self.IMAGE])
+    self.cmd_mock.inst.Run()
+    self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
 
 
 if __name__ == '__main__':

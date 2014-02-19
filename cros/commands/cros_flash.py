@@ -21,6 +21,9 @@ from chromite.lib import osutils
 from chromite.lib import remote_access
 
 
+DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
+    os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
+
 # The folder in devserver's static_dir that cros flash uses to store
 # symlinks to local images given by user. Note that this means if
 # there is a board or board-version (e.g. peppy-release) named
@@ -30,12 +33,44 @@ DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR = 'others'
 IMAGE_NAME_TO_TYPE = {
     'chromiumos_test_image.bin': 'test',
     'chromiumos_image.bin': 'dev',
-    'chromiumos_base_image.bin': 'base'
+    'chromiumos_base_image.bin': 'base',
+    'recovery_image.bin': 'recovery',
+}
+
+IMAGE_TYPE_TO_NAME = {
+    'test': 'chromiumos_test_image.bin',
+    'dev': 'chromiumos_image.bin',
+    'base': 'chromiumos_base_image.bin',
+    'recovery': 'recovery_image.bin',
 }
 
 
-# pylint: disable=E1101
-def GenerateXbuddyRequest(path, static_dir):
+def _GetXbuddyPath(path):
+  """A helper function to parse an xbuddy path.
+
+  Args:
+    path: Either a path without no scheme or an xbuddy://path/for/xbuddy
+
+  Returns:
+    path/for/xbuddy if |path| is xbuddy://path/for/xbuddy; otherwise,
+    returns |path|.
+
+  Raises:
+    ValueError if |path| uses any scheme other than xbuddy://.
+  """
+  parsed = urlparse.urlparse(path)
+
+  # pylint: disable=E1101
+  if parsed.scheme == 'xbuddy':
+    return '%s%s' % (parsed.netloc, parsed.path)
+  elif parsed.scheme == '':
+    logging.debug('Assuming %s is an xbuddy path.', path)
+    return path
+  else:
+    raise ValueError('Do not support scheme %s.', parsed.scheme)
+
+
+def GenerateXbuddyRequestForUpdate(path, static_dir):
   """Generate an xbuddy request used to retreive payloads.
 
   This function generates a xbuddy request based on |path|. If the
@@ -58,17 +93,14 @@ def GenerateXbuddyRequest(path, static_dir):
   """
   # Path used to store the string that xbuddy understands when finding an image.
   xbuddy_path = None
-  parsed = urlparse.urlparse(path)
 
-  # For xbuddy paths, we should do a sanity check / confirmation when the xbuddy
-  # board doesn't match the board on the device. Unfortunately this isn't
-  # currently possible since we don't want to duplicate xbuddy code.
-  # TODO(sosa): crbug.com/340722 and use it to compare boards.
-  if parsed.scheme == 'xbuddy':
-    xbuddy_path = '%s%s' % (parsed.netloc, parsed.path)
-  elif not os.path.exists(path):
-    logging.debug('Cannot find path "%s". Assuming it is an xbuddy path.', path)
-    xbuddy_path = path
+  if not os.path.exists(path):
+    xbuddy_path = _GetXbuddyPath(path)
+    # For xbuddy paths, we should do a sanity check / confirmation
+    # when the xbuddy board doesn't match the board on the
+    # device. Unfortunately this isn't currently possible since we
+    # don't want to duplicate xbuddy code.  TODO(sosa):
+    # crbug.com/340722 and use it to compare boards.
   else:
     # We have a list of known image names that are recognized by
     # devserver. User cannot arbitrarily rename their images.
@@ -97,6 +129,194 @@ def GenerateXbuddyRequest(path, static_dir):
   return 'xbuddy/%s?for_update=true&return_dir=true' % xbuddy_path
 
 
+def GenerateXbuddyRequestForImage(path):
+  """Generate an xbuddy request used to retrieve an image.
+
+  This function generates a xbuddy request based on |path|. If the
+  request is sent to the devserver, the server will respond with a
+  URL pointing to the folder of image.
+
+  Args:
+    path: Either a local path to an image or an xbuddy path (with or without
+      xbuddy://).
+
+  Returns:
+    A xbuddy request.
+  """
+  return 'xbuddy/%s?return_dir=true' % _GetXbuddyPath(path)
+
+
+def DevserverURLToLocalPath(url, static_dir, file_type):
+  """Convert the devserver returned URL to a local path.
+
+  Devserver returns only the directory where the files are. This
+  function converts such a URL to a local path based on |file_type| so
+  that we can access the file without downloading it.
+
+  Args:
+    url: The URL returned by devserver (when return_dir=true).
+    static_dir: The static directory used by the devserver.
+    file_type: The image (in IMAGE_TYPE_TO_NAME) that we want to access.
+
+  Returns:
+    A local path to the file.
+  """
+  # pylint: disable=E1101
+  # Example URL: http://localhost:8080/static/peppy-release/R33-5116.87.0
+  relative_path = urlparse.urlparse(url).path[len('/static/'):]
+  # Defaults to test image because that is how Xbuddy handles the path.
+  filename = IMAGE_TYPE_TO_NAME.get(file_type, IMAGE_TYPE_TO_NAME['test'])
+  # Expand the path because devserver may use symlinks.
+  real_path = osutils.ExpandPath(
+      os.path.join(static_dir, relative_path, filename))
+
+  # If devserver uses a symlink within chroot, and we are running
+  # outside of chroot, we need to convert the path.
+  if os.path.exists(real_path):
+    return real_path
+  else:
+    return cros_build_lib.FromChrootPath(real_path)
+
+
+class USBImager(object):
+  """Copy image to the target removable device."""
+
+  def __init__(self, device, image, debug=False):
+    """Initalizes USBImager."""
+    self.device = device
+    self.image = image
+    self.debug = debug
+    self.debug_level = logging.DEBUG if debug else logging.INFO
+
+  def DeviceNameToPath(self, device_name):
+    return '/dev/%s' % device_name
+
+  def GetRemovableDeviceDescription(self, device):
+    """Returns a informational description of the removable |device|.
+
+    Args:
+      device: the device name (e.g. sdc).
+
+    Returns:
+      A string describing |device| (e.g. Patriot Memory 7918 MB).
+    """
+    desc = []
+    desc.append(osutils.GetDeviceInfo(device, keyword='manufacturer'))
+    desc.append(osutils.GetDeviceInfo(device, keyword='product'))
+    desc.append(osutils.GetDeviceSize(self.DeviceNameToPath(device)))
+    return ' '.join([x for x in desc if x])
+
+  def ListAllRemovableDevices(self):
+    """Returns a list of removable devices.
+
+    Returns:
+      A list of device names (e.g. ['sdb', 'sdc']).
+    """
+    devices = osutils.ListBlockDevices()
+    removable_devices = []
+    for d in devices:
+      if d.TYPE == 'disk' and d.RM == '1':
+        removable_devices.append(d.NAME)
+
+    return removable_devices
+
+  def ChooseRemovableDevice(self, devices):
+    """Lists all removable devices and ask user to select/confirm.
+
+    Args:
+      devices: a list of device names (e.g. ['sda', 'sdb']).
+
+    Returns:
+      The device name chosen by the user.
+    """
+    idx = cros_build_lib.GetChoice(
+      'Removable device(s) found. Please select/confirm to continue:',
+      [self.GetRemovableDeviceDescription(x) for x in devices])
+
+    return devices[idx]
+
+  def CopyImageToDevice(self, image, device):
+    """Copies |image |to the removable |device|.
+
+    Args:
+      image: Path to the image to copy.
+      device: Device to copy to.
+    """
+    cmd = ['dd', 'if=%s' % image, 'of=%s' % device, 'bs=4M', 'oflag=sync',
+           'status=noxfer']
+    cros_build_lib.SudoRunCommand(cmd, debug_level=self.debug_level)
+    cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
+
+  def GetImagePathFromDevserver(self, path):
+    """Gets image path from devserver.
+
+    Asks devserver to stage the image and convert the returned URL to a
+    local path to the image.
+
+    Args:
+      path: An xbuddy path with or without (xbuddy://).
+
+    Returns:
+      A local path to the image.
+    """
+    static_dir = DEVSERVER_STATIC_DIR
+    osutils.SafeMakedirsNonRoot(static_dir)
+
+    ds = ds_wrapper.DevServerWrapper(static_dir=static_dir)
+    req = GenerateXbuddyRequestForImage(path)
+    logging.info('Starting local devserver to get image path...')
+    try:
+      ds.Start()
+      url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
+
+    except ds_wrapper.DevServerException:
+      logging.error('Could not find or download %s.', path)
+      ds_log = ds.TailLog()
+      if ds_log:
+        logging.error(ds_log)
+      raise
+    else:
+      # Print out the log when debug is on.
+      if self.debug:
+        ds_log = ds.TailLog()
+        if ds_log:
+          logging.error(ds_log)
+    finally:
+      ds.Stop()
+
+    return DevserverURLToLocalPath(url, static_dir,
+                                   path.rsplit(os.path.sep)[-1])
+
+  def Run(self):
+    """Image the removable device."""
+    devices = self.ListAllRemovableDevices()
+    if not devices:
+      cros_build_lib.Die('No removable devices detected.')
+
+    target = None
+    if self.device:
+      # If user has specified a device, check if it is removable.
+      if self.device not in [self.DeviceNameToPath(x) for x in devices]:
+        cros_build_lib.Die('Device %s is not a removable device.', self.device)
+      else:
+        # Get device name from path (e.g. sdc in /dev/sdc).
+        target = self.device.rsplit(os.path.sep, 1)[-1]
+    else:
+      # Ask user to choose from the list.
+      target = self.ChooseRemovableDevice(devices)
+
+    image_path = self.image
+    if not os.path.isfile(self.image):
+      image_path = self.GetImagePathFromDevserver(self.image)
+
+    logging.info('Using image %s', image_path)
+    try:
+      self.CopyImageToDevice(image_path, self.DeviceNameToPath(target))
+    except cros_build_lib.RunCommandError:
+      logging.error('Failed copying image to device %s',
+                    self.DeviceNameToPath(target))
+
+
 class DeviceUpdateError(Exception):
   """Thrown when there is an error during device update."""
 
@@ -105,8 +325,6 @@ class RemoteDeviceUpdater(object):
   """Performs update on a remote device."""
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
-  DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
-      os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
   DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
@@ -302,7 +520,7 @@ class RemoteDeviceUpdater(object):
       src_image: Image used as the base to generate the delta payloads.
       timeout: Timeout for launching devserver (seconds).
     """
-    static_dir = self.DEVSERVER_STATIC_DIR
+    static_dir = DEVSERVER_STATIC_DIR
     # SafeMakedirsNonroot has a side effect that 'chown' an existing
     # root-owned directory with a non-root user. This makes sure
     # we can write to static_dir later.
@@ -310,7 +528,7 @@ class RemoteDeviceUpdater(object):
 
     ds = ds_wrapper.DevServerWrapper(
         static_dir=static_dir, src_image=src_image, board=board)
-    req = GenerateXbuddyRequest(path, static_dir)
+    req = GenerateXbuddyRequestForUpdate(path, static_dir)
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
@@ -437,8 +655,12 @@ class RemoteDeviceUpdater(object):
 class FlashCommand(cros.CrosCommand):
   """Update the device with an image.
 
-  This command updates the device with the image. It assumes that
-  device is able to accept ssh connections.
+  This command updates the device with the image
+  (ssh://<hostname>:{port} or copy an image to a removable device
+  (usb://<device_path).
+
+  For device update, it assumes that device is able to accept ssh
+  connections.
 
   For rootfs partition update, this command may launch a devserver to
   generate payloads. As a side effect, it may create symlinks in
@@ -446,28 +668,36 @@ class FlashCommand(cros.CrosCommand):
   """
 
   EPILOG = """
-To update the device with the latest locally built image:
+To update/image the device with the latest locally built image:
   cros flash device latest
   cros flash device
 
-To update the device with an xbuddy path:
+To update/image the device with an xbuddy path:
   cros flash device xbuddy://{local, remote}/<board>/<version>
 
   Common xbuddy version aliases are 'latest' (alias for 'latest-stable')
   latest-{dev, beta, stable, canary}, and latest-official.
 
-To update the device with a local image path:
+To update/image the device with a local image path:
   cros flash device /path/to/image.bin
 
-There are certain constraints on the local image path:
+To device
+
+When updating the device, there are certain constraints on the local image path:
   1. The image path has to be in your source tree.
   2. The image name should be one of the following:
+       chromiumos_test_image.bin, chromiumos_base_image.bin, or
+       chromiumos_image.bin
   3. You should create a separate directory for each image as devserve
     writes temp files to it and reuses payloads it finds.
 
   For more information and known problems/fixes, please see:
   http://dev.chromium.org/chromium-os/build/cros-flash
 """
+
+  SSH_MODE = 'ssh'
+  USB_MODE = 'usb'
+
   # Override base class property to enable stats upload.
   upload_stats = True
 
@@ -476,13 +706,15 @@ There are certain constraints on the local image path:
     """Add parser arguments."""
     super(FlashCommand, cls).AddParser(parser)
     parser.add_argument(
-        'device', help='The hostname/IP[:port] address of the device.')
+        'device', help='ssh://device_hostname[:port] or usb://{device_path}. '
+        'If no device_path is given (i.e. usb://), user will be prompted to '
+        'choose from a list of removable devices.')
     parser.add_argument(
-        'image', nargs='?', default='latest', help="Image to install; "
-        "can be a local path or an xbuddy path "
-        "(xbuddy://{local|remote}/board/version). Note any strings that do not "
-        "map to a real file path will be converted to an xbuddy path i.e. "
-        "latest, will map to xbuddy://latest if latest isn't a local file.")
+        'image', nargs='?', default='latest', help="A local path or an xbuddy "
+        "path: xbuddy://{local|remote}/board/version/{image_type} image_type "
+        "can be: 'test', 'dev', 'base', or 'recovery'. Note any strings that "
+        "do not map to a real file path will be converted to an xbuddy path "
+        "i.e., latest, will map to xbuddy://latest.")
 
     update = parser.add_argument_group('Advanced device update options')
     update.add_argument(
@@ -518,9 +750,11 @@ There are certain constraints on the local image path:
   def __init__(self, options):
     """Initializes cros flash."""
     cros.CrosCommand.__init__(self, options)
-    self.ssh_mode = False
+    self.run_mode = None
     self.ssh_hostname = None
     self.ssh_port = None
+    self.usb_dev = None
+    self.any = False
 
   def _ParseDevice(self, device):
     """Parse |device| and set corresponding variables ."""
@@ -530,10 +764,13 @@ There are certain constraints on the local image path:
       device = 'ssh://%s' % device
 
     parsed = urlparse.urlparse(device)
-    if parsed.scheme == 'ssh':
-      self.ssh_mode = True
+    if parsed.scheme == self.SSH_MODE:
+      self.run_mode = self.SSH_MODE
       self.ssh_hostname = parsed.hostname
       self.ssh_port = parsed.port
+    elif parsed.scheme == self.USB_MODE:
+      self.run_mode = self.USB_MODE
+      self.usb_dev = device[len('%s://' % self.USB_MODE):]
     else:
       cros_build_lib.Die('Does not support device %s' % device)
 
@@ -544,7 +781,7 @@ There are certain constraints on the local image path:
     self._ParseDevice(self.options.device)
 
     try:
-      if self.ssh_mode:
+      if self.run_mode == 'ssh':
         logging.info('Preparing to update the remote device %s',
                      self.options.device)
         updater = RemoteDeviceUpdater(
@@ -563,6 +800,13 @@ There are certain constraints on the local image path:
 
         # Perform device update.
         updater.Run()
+      elif self.run_mode == 'usb':
+        logging.info('Preparing to image the removable device %s',
+                     self.options.device)
+        imager = USBImager(self.usb_dev,
+                           self.options.image,
+                           debug=self.options.debug)
+        imager.Run()
 
     except (Exception, KeyboardInterrupt):
       logging.error('Cros Flash failed before completing.')

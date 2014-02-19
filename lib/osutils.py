@@ -4,10 +4,12 @@
 
 """Common file and os related utilities, including tempdir manipulation."""
 
+import collections
 import errno
 import logging
 import os
 import pwd
+import re
 import shutil
 import signal
 import cStringIO
@@ -618,3 +620,82 @@ def StrSignal(sig_num):
     return '|'.join(sig_names)
   else:
     return 'SIG_%i' % sig_num
+
+
+def ListBlockDevices(device_path=None, in_bytes=False):
+  """Lists all block devices.
+
+  Args:
+    device_path: device path (e.g. /dev/sdc).
+    in_bytes: whether to display size in bytes.
+
+  Returns:
+    A list of BlockDevice items with attributes 'NAME', 'RM', 'TYPE',
+    'SIZE' (RM stands for removable).
+  """
+  keys = ['NAME', 'RM', 'TYPE', 'SIZE']
+  BlockDevice = collections.namedtuple('BlockDevice', keys)
+
+  cmd = ['lsblk', '--pairs']
+  if in_bytes:
+    cmd.append('--bytes')
+
+  if device_path:
+    cmd.append(device_path)
+
+  cmd += ['--output', ','.join(keys)]
+  output = cros_build_lib.RunCommand(cmd, capture_output=True).output.strip()
+  devices = []
+  for line in output.splitlines():
+    d = {}
+    for k, v in re.findall(r'(\S+?)=\"(.+?)\"', line):
+      d[k] = v
+
+    devices.append(BlockDevice(**d))
+
+  return devices
+
+
+def GetDeviceInfo(device, keyword='model'):
+  """Get information of |device| by searching through device path.
+
+    Looks for the file named |keyword| in the path upwards from
+    /sys/block/|device|/device. This path is a symlink and will be fully
+    expanded when searching.
+
+  Args:
+    device: Device name (e.g. 'sdc').
+    keyword: The filename to look for (e.g. product, model).
+
+  Returns:
+    The content of the |keyword| file.
+  """
+  device_path = os.path.join('/sys', 'block', device)
+  if not os.path.isdir(device_path):
+    raise ValueError('%s is not a valid device path.' % device_path)
+
+  path_list = ExpandPath(os.path.join(device_path, 'device')).split(os.path.sep)
+  while len(path_list) > 2:
+    target = os.path.join(os.path.sep.join(path_list), keyword)
+    if os.path.isfile(target):
+      return ReadFile(target).strip()
+
+    path_list = path_list[:-1]
+
+
+def GetDeviceSize(device_path, in_bytes=False):
+  """Returns the size of |device|.
+
+  Args:
+    device_path: Device path (e.g. '/dev/sdc').
+    in_bytes: If set True, returns the size in bytes.
+
+  Returns:
+    Size of the device in human readable format unless |in_bytes| is set.
+  """
+  devices = ListBlockDevices(device_path=device_path, in_bytes=in_bytes)
+  for d in devices:
+    if d.TYPE == 'disk':
+      return int(d.SIZE) if in_bytes else d.SIZE
+
+  raise ValueError('No size info of %s is found.' % device_path)
