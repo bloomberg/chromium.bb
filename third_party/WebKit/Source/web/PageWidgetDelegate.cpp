@@ -81,7 +81,13 @@ void PageWidgetDelegate::layout(Page* page)
 
     // setFrameRect may have the side-effect of causing existing page layout to
     // be invalidated, so layout needs to be called last.
-    view->updateLayoutAndStyleForPainting();
+    view->updateLayoutAndStyleIfNeededRecursive();
+
+    // For now, as we know this is the point in code where the compositor has
+    // actually asked for Blink to update the composited layer tree. So finally
+    // do all the deferred work for updateCompositingLayers() here.
+    if (RenderView* renderView = view->renderView())
+        renderView->compositor()->updateCompositingLayers();
 }
 
 void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background)

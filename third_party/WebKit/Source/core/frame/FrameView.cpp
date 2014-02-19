@@ -2622,13 +2622,12 @@ void FrameView::updateControlTints()
 
     // FIXME: Why do we need this for hasCustomScrollbars?
     // FIXME: supportsControlTints is currently true for a bunch of platforms.
+    // It should only be for Mac 10.6.
     if (!RenderTheme::theme().supportsControlTints() && !hasCustomScrollbars())
         return;
 
-    // Updating layout can run script, which can tear down the FrameView.
-    RefPtr<FrameView> protector(this);
-    updateLayoutAndStyleForPainting();
-
+    if (needsLayout())
+        layout();
     // FIXME: The use of paint seems like overkill: crbug.com/236892
     GraphicsContext context(0); // NULL canvas to get a non-painting context.
     context.setUpdatingControlTints(true);
@@ -2772,16 +2771,6 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
     }
 
     ScrollView::paintOverhangAreas(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect);
-}
-
-void FrameView::updateLayoutAndStyleForPainting()
-{
-    // Updating layout can run script, which can tear down the FrameView.
-    RefPtr<FrameView> protector(this);
-
-    updateLayoutAndStyleIfNeededRecursive();
-    if (RenderView* view = renderView())
-        view->compositor()->updateCompositingLayers();
 }
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()

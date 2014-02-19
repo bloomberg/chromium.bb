@@ -674,8 +674,12 @@ void FocusController::setActive(bool active)
 
     m_isActive = active;
 
-    if (FrameView* view = m_page->mainFrame()->view())
+    if (FrameView* view = m_page->mainFrame()->view()) {
+        view->updateLayoutAndStyleIfNeededRecursive();
+        // https://code.google.com/p/chromium/issues/detail?id=343758
+        DisableCompositingQueryAsserts disabler;
         view->updateControlTints();
+    }
 
     focusedOrMainFrame()->selection().pageActivationChanged();
 }
