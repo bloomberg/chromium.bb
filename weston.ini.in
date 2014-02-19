@@ -35,7 +35,7 @@ path=/usr/bin/google-chrome
 
 [launcher]
 icon=/usr/share/icons/gnome/24x24/apps/arts.png
-path=@abs_top_builddir@/clients/weston-flower
+path=@abs_top_builddir@/weston-flower
 
 [screensaver]
 # Uncomment path to disable screensaver
