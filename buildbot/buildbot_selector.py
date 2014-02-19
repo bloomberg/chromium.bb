@@ -339,9 +339,6 @@ def Main():
       'show_perf_results': True,
       'step_name': 'naclperf',  # Seems unused, but is required.
       'test_name': 'naclperf',  # Really "Test Suite"
-      'expectations': True,
-      'perf_filename': ('native_client/tools/'
-                        'nacl_perf_expectations/nacl_perf_expectations.json'),
   }
   # Locate the buildbot build directory by relative path, as it's absolute
   # location varies by platform and configuration.

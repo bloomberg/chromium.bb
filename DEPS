@@ -24,8 +24,6 @@ deps = {
   "breakpad":
     ((Var("googlecode_url") % "google-breakpad") + "/trunk@" +
      Var('breakpad_rev')),
-  "native_client/tools/perf_expectations":
-    Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party":

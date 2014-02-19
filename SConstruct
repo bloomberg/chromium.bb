@@ -1650,12 +1650,11 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['trusted_sigabrt',
 
 
 def GetPerfEnvDescription(env):
-  """ Return a string describing architecture, library, etc. options that may
-      affect performance.
+  """Return a string describing architecture, library, etc. options.
 
-      NOTE: If any of these labels are changed, be sure to update the graph
-      labels used in tools/nacl_perf_expectations/nacl_perf_expectations.json,
-      after a few data-points have been collected.  """
+  This function attempts to gather a string that might inform why a performance
+  change has occurred.
+  """
   description_list = [env['TARGET_FULLARCH']]
   # Using a list to keep the order consistent.
   bit_to_description = [ ('bitcode', ('pnacl', 'nnacl')),
