@@ -843,7 +843,7 @@ DirectoryModel.prototype.search = function(query,
 
   if (!(query || '').trimLeft()) {
     if (this.isSearching()) {
-      var newDirContents = DirectoryContents.createForDirectory(
+      var newDirContents = this.createDirectoryContents_(
           this.currentFileListContext_,
           currentDirEntry);
       this.clearAndScan_(newDirContents);
