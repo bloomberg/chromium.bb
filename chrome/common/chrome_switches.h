@@ -79,7 +79,6 @@ extern const char kDataReductionProxyProbeURL[];
 #endif
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
-extern const char kDebugPrint[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
@@ -454,6 +453,7 @@ extern const char kUseMockKeychain[];
 #endif
 
 #if defined(OS_WIN)
+extern const char kDebugPrint[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kForceImmersive[];
 extern const char kForceDesktop[];

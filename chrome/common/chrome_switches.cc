@@ -249,9 +249,6 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // apps.
 const char kDebugPackedApps[]               = "debug-packed-apps";
 
-// Enables support to debug printing subsystem.
-const char kDebugPrint[]                    = "debug-print";
-
 // Triggers a plethora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
@@ -1189,11 +1186,6 @@ const char kPrerenderModeSwitchValueDisabled[] = "disabled";
 //   enabled: Prerendering.
 const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 
-#if defined(OS_WIN)
-// Enable conversion from vector to raster for any page.
-const char kPrintRaster[]                   = "print-raster";
-#endif
-
 // Use IPv6 only for privet HTTP.
 const char kPrivetIPv6Only[]                   = "privet-ipv6-only";
 
@@ -1625,6 +1617,9 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 const char kEnablePermissionsBubbles[]      = "enable-permissions-bubbles";
 
 #if defined(OS_WIN)
+// Enables support to debug printing subsystem.
+const char kDebugPrint[]                    = "debug-print";
+
 // Force-enables the profile shortcut manager. This is needed for tests since
 // they use a custom-user-data-dir which disables this.
 const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";
@@ -1636,6 +1631,9 @@ const char kForceImmersive[]                = "force-immersive";
 // For the DelegateExecute verb handler to launch Chrome in desktop mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceDesktop[]                  = "force-desktop";
+
+// Enable conversion from vector to raster for any page.
+const char kPrintRaster[]                   = "print-raster";
 
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]              = "relaunch-shortcut";
