@@ -94,7 +94,8 @@ class ReplayServer(object):
       archive_path: a path to a specific WPR archive (required).
       replay_host: the hostname to serve traffic.
       dns_port: an integer port on which to serve DNS traffic. May be zero
-          to let the OS choose an available port.
+          to let the OS choose an available port. If None DNS forwarding is
+          disabled.
       http_port: an integer port on which to serve HTTP traffic. May be zero
           to let the OS choose an available port.
       https_port: an integer port on which to serve HTTPS traffic. May be zero
@@ -133,12 +134,13 @@ class ReplayServer(object):
     self.replay_options = [
         '--host', str(self._replay_host),
         '--port', str(self.http_port),
-        '--dns_port', str(self.dns_port),
         '--ssl_port', str(self.https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
         '--log_level', 'warning'
         ] + self.replay_options
+    if self.dns_port is not None:
+      self.replay_options.extend(['--dns_port', str(self.dns_port)])
 
   def _CheckPath(self, label, path):
     if not os.path.exists(path):
