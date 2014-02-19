@@ -636,15 +636,6 @@ FileOperationManager.CopyTask.prototype.run = function(
         this.processEntry_(
             entry, this.targetDirEntry,
             function(sourceEntry, destinationEntry) {
-              // Finalize the entry's progress state.
-              var sourceEntryURL = sourceEntry.toURL();
-              var processedEntry =
-                  this.processingEntries[index][sourceEntryURL];
-
-              // Update current source index.
-              this.processingSourceIndex_ = index + 1;
-              this.processedBytes = this.calcProcessedBytes_();
-
               // The destination entry may be null, if the copied file got
               // deleted just after copying.
               if (destinationEntry) {
@@ -662,7 +653,12 @@ FileOperationManager.CopyTask.prototype.run = function(
                 progressCallback();
               }
             }.bind(this),
-            callback,
+            function() {
+              // Update current source index and processing bytes.
+              this.processingSourceIndex_ = index + 1;
+              this.processedBytes = this.calcProcessedBytes_();
+              callback();
+            }.bind(this),
             errorCallback);
       },
       function() {
