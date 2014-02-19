@@ -74,6 +74,9 @@ struct NaClChromeMainArgs {
   /* Whether to enable NaCl's dynamic code system calls.  Boolean. */
   int enable_dyncode_syscalls;
 
+  /* Whether or not the app is a PNaCl app. Boolean. */
+  int pnacl_mode;
+
   /*
    * Maximum size of the initially loaded nexe's code segment, in
    * bytes.  0 for no limit, which is the default.

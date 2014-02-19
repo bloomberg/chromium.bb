@@ -367,6 +367,8 @@ struct NaClApp {
   int                       validator_stub_out_mode;
 
   int                       enable_list_mappings;
+  /* Whether or not the app is a PNaCl app.  Boolean. */
+  int                       pnacl_mode;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uint16_t                  code_seg_sel;

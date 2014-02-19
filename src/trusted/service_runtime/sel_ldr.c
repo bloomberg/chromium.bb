@@ -245,6 +245,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     NaClLog(LOG_INFO, "DANGER: ENABLED LIST_MAPPINGS\n");
     nap->enable_list_mappings = 1;
   }
+  nap->pnacl_mode = 0;
 
   if (!NaClMutexCtor(&nap->threads_mu)) {
     goto cleanup_name_service;

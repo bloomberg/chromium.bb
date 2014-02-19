@@ -774,6 +774,10 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       result_value = nap->enable_list_mappings;
       break;
     }
+    case NACL_ABI__SC_NACL_PNACL_MODE: {
+      result_value = nap->pnacl_mode;
+      break;
+    }
     default: {
       retval = -NACL_ABI_EINVAL;
       goto cleanup;

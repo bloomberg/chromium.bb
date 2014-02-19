@@ -71,6 +71,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->enable_dyncode_syscalls = 1;
+  args->pnacl_mode = 0;
   args->initial_nexe_max_code_bytes = 0;  /* No limit */
 #if NACL_LINUX || NACL_OSX
   args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
@@ -166,6 +167,7 @@ void NaClChromeMainStartApp(struct NaClApp *nap,
   /* Allow or disallow dyncode API based on args. */
   nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;
   nap->initial_nexe_max_code_bytes = args->initial_nexe_max_code_bytes;
+  nap->pnacl_mode = args->pnacl_mode;
 
 #if NACL_LINUX
   g_prereserved_sandbox_size = args->prereserved_sandbox_size;
