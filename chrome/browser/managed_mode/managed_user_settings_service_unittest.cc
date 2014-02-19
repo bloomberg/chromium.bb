@@ -8,44 +8,14 @@
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class MockChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  MockChangeProcessor() {}
-  virtual ~MockChangeProcessor() {}
-
-  // SyncChangeProcessor implementation:
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE;
-
-  const syncer::SyncChangeList& changes() const { return change_list_; }
-
- private:
-  syncer::SyncChangeList change_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockChangeProcessor);
-};
-
-syncer::SyncError MockChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  change_list_ = change_list;
-  return syncer::SyncError();
-}
-
-syncer::SyncDataList MockChangeProcessor::GetAllSyncData(
-    syncer::ModelType type) const {
-  return syncer::SyncDataList();
-}
 
 class MockSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
@@ -90,8 +60,9 @@ class ManagedUserSettingsServiceTest : public ::testing::Test {
   virtual ~ManagedUserSettingsServiceTest() {}
 
   scoped_ptr<syncer::SyncChangeProcessor> CreateSyncProcessor() {
-    sync_processor_ = new MockChangeProcessor();
-    return scoped_ptr<syncer::SyncChangeProcessor>(sync_processor_);
+    sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
+    return scoped_ptr<syncer::SyncChangeProcessor>(
+        new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
@@ -169,8 +140,7 @@ class ManagedUserSettingsServiceTest : public ::testing::Test {
   ManagedUserSettingsService settings_service_;
   scoped_ptr<base::DictionaryValue> settings_;
 
-  // Owned by the ManagedUserSettingsService.
-  MockChangeProcessor* sync_processor_;
+  scoped_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };
 
 TEST_F(ManagedUserSettingsServiceTest, ProcessAtomicSetting) {
@@ -250,10 +220,11 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
 
   // Uploading should produce changes when we start syncing.
   StartSyncing(syncer::SyncDataList());
-  const syncer::SyncChangeList& changes = sync_processor_->changes();
-  ASSERT_EQ(3u, changes.size());
-  for (syncer::SyncChangeList::const_iterator it = changes.begin();
-       it != changes.end(); ++it) {
+  ASSERT_EQ(3u, sync_processor_->changes().size());
+  for (syncer::SyncChangeList::const_iterator it =
+           sync_processor_->changes().begin();
+       it != sync_processor_->changes().end();
+       ++it) {
     ASSERT_TRUE(it->IsValid());
     EXPECT_EQ(syncer::SyncChange::ACTION_ADD, it->change_type());
     VerifySyncDataItem(it->sync_data());
@@ -269,6 +240,7 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
   }
 
   // Uploading after we have started syncing should work too.
+  sync_processor_->changes().clear();
   UploadSplitItem("froodle", "narf");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   syncer::SyncChange change = sync_processor_->changes()[0];
@@ -285,6 +257,7 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
 
   // Uploading an item with a previously seen key should create an UPDATE
   // action.
+  sync_processor_->changes().clear();
   UploadSplitItem("blurp", "snarl");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   change = sync_processor_->changes()[0];
@@ -299,6 +272,7 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
     VerifySyncDataItem(*it);
   }
 
+  sync_processor_->changes().clear();
   UploadAtomicItem("fjord");
   ASSERT_EQ(1u, sync_processor_->changes().size());
   change = sync_processor_->changes()[0];

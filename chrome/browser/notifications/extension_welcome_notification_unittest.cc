@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -122,25 +123,6 @@ public:
   DISALLOW_COPY_AND_ASSIGN(WelcomeNotificationDelegate);
 };
 
-class TestSyncProcessor : public syncer::SyncChangeProcessor {
- public:
-  TestSyncProcessor() {}
-
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    return syncer::SyncError();
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE {
-    return syncer::SyncDataList();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestSyncProcessor);
-};
-
 class ExtensionWelcomeNotificationTest : public testing::Test {
  protected:
   ExtensionWelcomeNotificationTest() {
@@ -170,12 +152,12 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   void StartPreferenceSyncing() const {
     PrefServiceSyncable::FromProfile(profile_.get())
         ->GetSyncableService(syncer::PREFERENCES)
-        ->MergeDataAndStartSyncing(
-              syncer::PREFERENCES,
-              syncer::SyncDataList(),
-              scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessor),
-              scoped_ptr<syncer::SyncErrorFactory>(
-                  new syncer::SyncErrorFactoryMock()));
+        ->MergeDataAndStartSyncing(syncer::PREFERENCES,
+                                   syncer::SyncDataList(),
+                                   scoped_ptr<syncer::SyncChangeProcessor>(
+                                       new syncer::FakeSyncChangeProcessor),
+                                   scoped_ptr<syncer::SyncErrorFactory>(
+                                       new syncer::SyncErrorFactoryMock()));
   }
 
   void ShowChromeNowNotification() const {

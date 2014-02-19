@@ -19,8 +19,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/value_builder.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,49 +60,6 @@ const syncer::ModelType kModelType = syncer::EXTENSION_SETTINGS;
 // its extension ID is well-known and the policy system can push policies for
 // the extension.
 const char kManagedStorageExtensionId[] = "kjmkgkdkpedkejedfhmfcenooemhbpbo";
-
-class NoopSyncChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    return syncer::SyncError();
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return syncer::SyncDataList();
-  }
-
-  virtual ~NoopSyncChangeProcessor() {};
-};
-
-class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
- public:
-  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient)
-      : recipient_(recipient) {
-    DCHECK(recipient_);
-  }
-  virtual ~SyncChangeProcessorDelegate() {}
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    return recipient_->ProcessSyncChanges(from_here, change_list);
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return recipient_->GetAllSyncData(type);
-  }
-
- private:
-  // The recipient of all sync changes.
-  syncer::SyncChangeProcessor* recipient_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
-};
 
 class MockSchemaRegistryObserver : public policy::SchemaRegistry::Observer {
  public:
@@ -229,13 +188,17 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   void InitSyncWithSyncableService(
       syncer::SyncChangeProcessor* sync_processor,
       syncer::SyncableService* settings_service) {
-    EXPECT_FALSE(settings_service->MergeDataAndStartSyncing(
-        kModelType,
-        syncer::SyncDataList(),
-        scoped_ptr<syncer::SyncChangeProcessor>(
-            new SyncChangeProcessorDelegate(sync_processor)),
-        scoped_ptr<syncer::SyncErrorFactory>(
-            new syncer::SyncErrorFactoryMock())).error().IsSet());
+    EXPECT_FALSE(
+        settings_service->MergeDataAndStartSyncing(
+                              kModelType,
+                              syncer::SyncDataList(),
+                              scoped_ptr<syncer::SyncChangeProcessor>(
+                                  new syncer::SyncChangeProcessorWrapperForTest(
+                                      sync_processor)),
+                              scoped_ptr<syncer::SyncErrorFactory>(
+                                  new syncer::SyncErrorFactoryMock()))
+            .error()
+            .IsSet());
   }
 
   void SendChangesToSyncableService(
@@ -370,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
           "assertNoNotifications", "assertNoNotifications", "split_incognito");
   const std::string& extension_id = extension->id();
 
-  NoopSyncChangeProcessor sync_processor;
+  syncer::FakeSyncChangeProcessor sync_processor;
   InitSync(&sync_processor);
 
   // Set "foo" to "bar" via sync.
@@ -415,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
           "assertNoNotifications", "assertNoNotifications", "split_incognito");
   const std::string& extension_id = extension->id();
 
-  NoopSyncChangeProcessor sync_processor;
+  syncer::FakeSyncChangeProcessor sync_processor;
   InitSync(&sync_processor);
 
   // Set "foo" to "bar" via sync.

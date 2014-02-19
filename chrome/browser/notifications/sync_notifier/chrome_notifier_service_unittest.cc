@@ -26,6 +26,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +37,7 @@ using sync_pb::EntitySpecifics;
 using syncer::SyncData;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
+using syncer::SyncChangeProcessorWrapperForTest;
 using syncer::SyncDataList;
 using syncer::SYNCED_NOTIFICATIONS;
 using notifier::SyncedNotification;
@@ -99,39 +101,12 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
-class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
- public:
-  explicit SyncChangeProcessorDelegate(SyncChangeProcessor* recipient)
-      : recipient_(recipient) {
-    EXPECT_TRUE(recipient_);
-  }
-  virtual ~SyncChangeProcessorDelegate() {}
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE {
-    return recipient_->ProcessSyncChanges(from_here, change_list);
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return recipient_->GetAllSyncData(type);
-  }
-
- private:
-  // The recipient of all sync changes.
-  SyncChangeProcessor* recipient_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
-};
-
 class ChromeNotifierServiceTest : public testing::Test {
  public:
   ChromeNotifierServiceTest()
       : sync_processor_(new TestChangeProcessor),
-        sync_processor_delegate_(new SyncChangeProcessorDelegate(
-            sync_processor_.get())) {}
+        sync_processor_wrapper_(
+            new SyncChangeProcessorWrapperForTest(sync_processor_.get())) {}
   virtual ~ChromeNotifierServiceTest() {}
 
   // Methods from testing::Test.
@@ -164,7 +139,7 @@ class ChromeNotifierServiceTest : public testing::Test {
   }
 
   scoped_ptr<syncer::SyncChangeProcessor> PassProcessor() {
-    return sync_processor_delegate_.Pass();
+    return sync_processor_wrapper_.Pass();
   }
 
   SyncedNotification* CreateNotification(
@@ -200,7 +175,7 @@ class ChromeNotifierServiceTest : public testing::Test {
 
  private:
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_delegate_;
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_wrapper_;
   scoped_ptr<StubNotificationUIManager> notification_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
 

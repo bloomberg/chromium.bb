@@ -11,6 +11,8 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/public/browser/notification_types.h"
+#include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -31,37 +33,6 @@ const int kMaxTypedUrlVisits = 100;
 
 // Visits with this timestamp are treated as expired.
 const int EXPIRED_VISIT = -1;
-
-// TestChangeProcessor --------------------------------------------------------
-
-class TestChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  TestChangeProcessor() : change_output_(NULL) {}
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    change_output_->insert(change_output_->end(), change_list.begin(),
-                           change_list.end());
-    return syncer::SyncError();
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return syncer::SyncDataList();
-  }
-
-  // Set pointer location to write SyncChanges to in ProcessSyncChanges.
-  void SetChangeOutput(syncer::SyncChangeList *change_output) {
-    change_output_ = change_output;
-  }
-
- private:
-  syncer::SyncChangeList *change_output_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
-};
 
 // TestHistoryBackend ----------------------------------------------------------
 
@@ -147,13 +118,11 @@ class TypedUrlSyncableServiceTest : public testing::Test {
             (row.hidden() == specifics.hidden()));
   }
 
-  bool InitiateServerState(
-      unsigned int num_typed_urls,
-      unsigned int num_reload_urls,
-      URLRows* rows,
-      std::vector<VisitVector>* visit_vectors,
-      const std::vector<const char*>& urls,
-      syncer::SyncChangeList* change_list);
+  bool InitiateServerState(unsigned int num_typed_urls,
+                           unsigned int num_reload_urls,
+                           URLRows* rows,
+                           std::vector<VisitVector>* visit_vectors,
+                           const std::vector<const char*>& urls);
 
  protected:
   TypedUrlSyncableServiceTest() {}
@@ -164,12 +133,12 @@ class TypedUrlSyncableServiceTest : public testing::Test {
     fake_history_backend_ = new TestHistoryBackend();
     typed_url_sync_service_.reset(
         new TypedUrlSyncableService(fake_history_backend_.get()));
-    fake_change_processor_.reset(new TestChangeProcessor);
+    fake_change_processor_.reset(new syncer::FakeSyncChangeProcessor);
   }
 
   scoped_refptr<HistoryBackend> fake_history_backend_;
   scoped_ptr<TypedUrlSyncableService> typed_url_sync_service_;
-  scoped_ptr<syncer::SyncChangeProcessor> fake_change_processor_;
+  scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
 };
 
 URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
@@ -246,22 +215,20 @@ bool TypedUrlSyncableServiceTest::InitiateServerState(
     unsigned int num_reload_urls,
     URLRows* rows,
     std::vector<VisitVector>* visit_vectors,
-    const std::vector<const char*>& urls,
-    syncer::SyncChangeList* change_list) {
+    const std::vector<const char*>& urls) {
   unsigned int total_urls = num_typed_urls + num_reload_urls;
   DCHECK(urls.size() >= total_urls);
   if (!typed_url_sync_service_.get())
     return false;
-
-  static_cast<TestChangeProcessor*>(fake_change_processor_.get())->
-      SetChangeOutput(change_list);
 
   // Set change processor.
   syncer::SyncMergeResult result =
       typed_url_sync_service_->MergeDataAndStartSyncing(
           syncer::TYPED_URLS,
           syncer::SyncDataList(),
-          fake_change_processor_.Pass(),
+          scoped_ptr<syncer::SyncChangeProcessor>(
+              new syncer::SyncChangeProcessorWrapperForTest(
+                  fake_change_processor_.get())),
           scoped_ptr<syncer::SyncErrorFactory>(
               new syncer::SyncErrorFactoryMock()));
   EXPECT_FALSE(result.error().IsSet()) << result.error().message();
@@ -285,7 +252,7 @@ bool TypedUrlSyncableServiceTest::InitiateServerState(
     typed_url_sync_service_->OnUrlsModified(&changed_urls);
   }
   // Check that communication with sync was successful.
-  if (num_typed_urls != change_list->size())
+  if (num_typed_urls != fake_change_processor_->changes().size())
     return false;
   return true;
 }
@@ -293,28 +260,26 @@ bool TypedUrlSyncableServiceTest::InitiateServerState(
 TEST_F(TypedUrlSyncableServiceTest, AddLocalTypedUrlAndSync) {
   // Create a local typed URL (simulate a typed visit) that is not already
   // in sync. Check that sync is sent an ADD change for the existing URL.
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(1, 0, &url_rows, &visit_vectors, urls, &change_list));
+  ASSERT_TRUE(InitiateServerState(1, 0, &url_rows, &visit_vectors, urls));
 
   URLRow url_row = url_rows.front();
   VisitVector visits = visit_vectors.front();
 
   // Check change processor.
-  ASSERT_EQ(1u, change_list.size());
-  ASSERT_TRUE(change_list[0].IsValid());
-  EXPECT_EQ(syncer::TYPED_URLS, change_list[0].sync_data().GetDataType());
-  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change_list[0].change_type());
+  const syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_TRUE(changes[0].IsValid());
+  EXPECT_EQ(syncer::TYPED_URLS, changes[0].sync_data().GetDataType());
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[0].change_type());
 
   // Get typed url specifics.
   sync_pb::TypedUrlSpecifics url_specifics =
-      change_list[0].sync_data().GetSpecifics().typed_url();
+      changes[0].sync_data().GetSpecifics().typed_url();
 
   EXPECT_TRUE(URLsEqual(url_row, url_specifics));
   ASSERT_EQ(1, url_specifics.visits_size());
@@ -332,16 +297,14 @@ TEST_F(TypedUrlSyncableServiceTest, AddLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, UpdateLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(1, 0, &url_rows, &visit_vectors, urls, &change_list));
-  change_list.clear();
+  ASSERT_TRUE(InitiateServerState(1, 0, &url_rows, &visit_vectors, urls));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
 
   // Update the URL row, adding another typed visit to the visit vector.
   URLRow url_row = url_rows.front();
@@ -356,13 +319,13 @@ TEST_F(TypedUrlSyncableServiceTest, UpdateLocalTypedUrlAndSync) {
   // Notify typed url sync service of the update.
   typed_url_sync_service_->OnUrlsModified(&changed_urls);
 
-  ASSERT_EQ(1u, change_list.size());
-  ASSERT_TRUE(change_list[0].IsValid());
-  EXPECT_EQ(syncer::TYPED_URLS, change_list[0].sync_data().GetDataType());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change_list[0].change_type());
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_TRUE(changes[0].IsValid());
+  EXPECT_EQ(syncer::TYPED_URLS, changes[0].sync_data().GetDataType());
+  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[0].change_type());
 
   sync_pb::TypedUrlSpecifics url_specifics =
-      change_list[0].sync_data().GetSpecifics().typed_url();
+      changes[0].sync_data().GetSpecifics().typed_url();
 
   EXPECT_TRUE(URLsEqual(url_row, url_specifics));
   ASSERT_EQ(2, url_specifics.visits_size());
@@ -387,16 +350,14 @@ TEST_F(TypedUrlSyncableServiceTest, UpdateLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, LinkVisitLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(1, 0, &url_rows, &visit_vectors, urls, &change_list));
-  change_list.clear();
+  ASSERT_TRUE(InitiateServerState(1, 0, &url_rows, &visit_vectors, urls));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
 
   URLRow url_row = url_rows.front();
   VisitVector visits = visit_vectors.front();
@@ -409,20 +370,18 @@ TEST_F(TypedUrlSyncableServiceTest, LinkVisitLocalTypedUrlAndSync) {
   content::PageTransition transition = content::PAGE_TRANSITION_LINK;
   // Notify typed url sync service of non-typed visit, expect no change.
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
-  ASSERT_EQ(0u, change_list.size());
+  ASSERT_EQ(0u, changes.size());
 }
 
 TEST_F(TypedUrlSyncableServiceTest, TypedVisitLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(1, 0, &url_rows, &visit_vectors, urls, &change_list));
-  change_list.clear();
+  ASSERT_TRUE(InitiateServerState(1, 0, &url_rows, &visit_vectors, urls));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
 
   URLRow url_row = url_rows.front();
   VisitVector visits = visit_vectors.front();
@@ -438,13 +397,13 @@ TEST_F(TypedUrlSyncableServiceTest, TypedVisitLocalTypedUrlAndSync) {
   content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
-  ASSERT_EQ(1u, change_list.size());
-  ASSERT_TRUE(change_list[0].IsValid());
-  EXPECT_EQ(syncer::TYPED_URLS, change_list[0].sync_data().GetDataType());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change_list[0].change_type());
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_TRUE(changes[0].IsValid());
+  EXPECT_EQ(syncer::TYPED_URLS, changes[0].sync_data().GetDataType());
+  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[0].change_type());
 
   sync_pb::TypedUrlSpecifics url_specifics =
-      change_list[0].sync_data().GetSpecifics().typed_url();
+      changes[0].sync_data().GetSpecifics().typed_url();
 
   EXPECT_TRUE(URLsEqual(url_row, url_specifics));
   ASSERT_EQ(4u, visits.size());
@@ -469,8 +428,6 @@ TEST_F(TypedUrlSyncableServiceTest, TypedVisitLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, DeleteLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
@@ -480,9 +437,9 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteLocalTypedUrlAndSync) {
   urls.push_back("http://foo.com/");
   urls.push_back("http://bar.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(4, 1, &url_rows, &visit_vectors, urls, &change_list));
-  change_list.clear();
+  ASSERT_TRUE(InitiateServerState(4, 1, &url_rows, &visit_vectors, urls));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
 
   // Check that in-memory representation of sync state is accurate.
   std::set<GURL> sync_state;
@@ -509,13 +466,13 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteLocalTypedUrlAndSync) {
   // Notify typed url sync service.
   typed_url_sync_service_->OnUrlsDeleted(false, false, &rows);
 
-  ASSERT_EQ(3u, change_list.size());
-  for (size_t i = 0; i < change_list.size(); ++i) {
-    ASSERT_TRUE(change_list[i].IsValid());
-    ASSERT_EQ(syncer::TYPED_URLS, change_list[i].sync_data().GetDataType());
-    EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, change_list[i].change_type());
+  ASSERT_EQ(3u, changes.size());
+  for (size_t i = 0; i < changes.size(); ++i) {
+    ASSERT_TRUE(changes[i].IsValid());
+    ASSERT_EQ(syncer::TYPED_URLS, changes[i].sync_data().GetDataType());
+    EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[i].change_type());
     sync_pb::TypedUrlSpecifics url_specifics =
-        change_list[i].sync_data().GetSpecifics().typed_url();
+        changes[i].sync_data().GetSpecifics().typed_url();
     EXPECT_EQ(url_rows[i].url().spec(), url_specifics.url());
   }
 
@@ -528,8 +485,6 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, DeleteAllLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
@@ -539,9 +494,9 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteAllLocalTypedUrlAndSync) {
   urls.push_back("http://foo.com/");
   urls.push_back("http://bar.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(4, 1, &url_rows, &visit_vectors, urls, &change_list));
-  change_list.clear();
+  ASSERT_TRUE(InitiateServerState(4, 1, &url_rows, &visit_vectors, urls));
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  changes.clear();
 
   // Check that in-memory representation of sync state is accurate.
   std::set<GURL> sync_state;
@@ -559,11 +514,11 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteAllLocalTypedUrlAndSync) {
   // Notify typed url sync service.
   typed_url_sync_service_->OnUrlsDeleted(all_history, false, NULL);
 
-  ASSERT_EQ(4u, change_list.size());
-  for (size_t i = 0; i < change_list.size(); ++i) {
-    ASSERT_TRUE(change_list[i].IsValid());
-    ASSERT_EQ(syncer::TYPED_URLS, change_list[i].sync_data().GetDataType());
-    EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, change_list[i].change_type());
+  ASSERT_EQ(4u, changes.size());
+  for (size_t i = 0; i < changes.size(); ++i) {
+    ASSERT_TRUE(changes[i].IsValid());
+    ASSERT_EQ(syncer::TYPED_URLS, changes[i].sync_data().GetDataType());
+    EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[i].change_type());
   }
   // Check that in-memory representation of sync state is accurate.
   std::set<GURL> sync_state_deleted;
@@ -572,15 +527,12 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteAllLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrlAndSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(0, 1, &url_rows, &visit_vectors, urls, &change_list));
+  ASSERT_TRUE(InitiateServerState(0, 1, &url_rows, &visit_vectors, urls));
 
   URLRow url_row = url_rows.front();
   VisitVector visits;
@@ -602,10 +554,11 @@ TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrlAndSync) {
   content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
-  ASSERT_EQ(1u, change_list.size());
-  ASSERT_TRUE(change_list[0].IsValid());
+  const syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  ASSERT_EQ(1u, changes.size());
+  ASSERT_TRUE(changes[0].IsValid());
   sync_pb::TypedUrlSpecifics url_specifics =
-      change_list[0].sync_data().GetSpecifics().typed_url();
+      changes[0].sync_data().GetSpecifics().typed_url();
   ASSERT_EQ(kMaxTypedUrlVisits, url_specifics.visits_size());
 
   // Check that each visit has been translated/communicated correctly.
@@ -626,15 +579,12 @@ TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrlAndSync) {
 }
 
 TEST_F(TypedUrlSyncableServiceTest, ThrottleVisitLocalTypedUrlSync) {
-  syncer::SyncChangeList change_list;
-
   URLRows url_rows;
   std::vector<VisitVector> visit_vectors;
   std::vector<const char*> urls;
   urls.push_back("http://pie.com/");
 
-  ASSERT_TRUE(
-      InitiateServerState(0, 1, &url_rows, &visit_vectors, urls, &change_list));
+  ASSERT_TRUE(InitiateServerState(0, 1, &url_rows, &visit_vectors, urls));
 
   URLRow url_row = url_rows.front();
   VisitVector visits;
@@ -652,7 +602,8 @@ TEST_F(TypedUrlSyncableServiceTest, ThrottleVisitLocalTypedUrlSync) {
   typed_url_sync_service_->OnUrlVisited(transition, &url_row);
 
   // Should throttle, so sync and local cache should not update.
-  ASSERT_EQ(0u, change_list.size());
+  const syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  ASSERT_EQ(0u, changes.size());
   std::set<GURL> sync_state;
   typed_url_sync_service_.get()->GetSyncedUrls(&sync_state);
   EXPECT_TRUE(sync_state.empty());

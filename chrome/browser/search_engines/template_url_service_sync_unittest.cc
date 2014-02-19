@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_util.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/search_engine_specifics.pb.h"
@@ -145,45 +146,6 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
 }
 
 
-// SyncChangeProcessorDelegate ------------------------------------------------
-
-class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
- public:
-  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient);
-  virtual ~SyncChangeProcessorDelegate();
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return recipient_->GetAllSyncData(type);
-  }
-
- private:
-  // The recipient of all sync changes.
-  syncer::SyncChangeProcessor* recipient_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
-};
-
-SyncChangeProcessorDelegate::SyncChangeProcessorDelegate(
-    syncer::SyncChangeProcessor* recipient)
-    : recipient_(recipient) {
-  DCHECK(recipient_);
-}
-
-SyncChangeProcessorDelegate::~SyncChangeProcessorDelegate() {
-}
-
-syncer::SyncError SyncChangeProcessorDelegate::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  return recipient_->ProcessSyncChanges(from_here, change_list);
-}
-
 }  // namespace
 
 
@@ -257,16 +219,15 @@ class TemplateURLServiceSyncTest : public testing::Test {
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
   scoped_ptr<TestChangeProcessor> sync_processor_;
-  scoped_ptr<SyncChangeProcessorDelegate> sync_processor_delegate_;
+  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> sync_processor_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceSyncTest);
 };
 
 TemplateURLServiceSyncTest::TemplateURLServiceSyncTest()
     : sync_processor_(new TestChangeProcessor),
-      sync_processor_delegate_(new SyncChangeProcessorDelegate(
-          sync_processor_.get())) {
-}
+      sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
+          sync_processor_.get())) {}
 
 void TemplateURLServiceSyncTest::SetUp() {
   test_util_a_.SetUp();
@@ -287,7 +248,7 @@ void TemplateURLServiceSyncTest::TearDown() {
 
 scoped_ptr<syncer::SyncChangeProcessor>
 TemplateURLServiceSyncTest::PassProcessor() {
-  return sync_processor_delegate_.PassAs<syncer::SyncChangeProcessor>();
+  return sync_processor_wrapper_.PassAs<syncer::SyncChangeProcessor>();
 }
 
 scoped_ptr<syncer::SyncErrorFactory> TemplateURLServiceSyncTest::
@@ -1321,8 +1282,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsBasic) {
 
   // Merge A and B. All of B's data should transfer over to A, which initially
   // has no data.
-  scoped_ptr<SyncChangeProcessorDelegate> delegate_b(
-      new SyncChangeProcessorDelegate(model_b()));
+  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> delegate_b(
+      new syncer::SyncChangeProcessorWrapperForTest(model_b()));
   model_a()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
       model_b()->GetAllSyncData(syncer::SEARCH_ENGINES),
       delegate_b.PassAs<syncer::SyncChangeProcessor>(),
@@ -1350,8 +1311,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
                                        "key6", 10));  // Conflict with key1
 
   // Merge A and B.
-  scoped_ptr<SyncChangeProcessorDelegate> delegate_b(
-      new SyncChangeProcessorDelegate(model_b()));
+  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> delegate_b(
+      new syncer::SyncChangeProcessorWrapperForTest(model_b()));
   model_a()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
       model_b()->GetAllSyncData(syncer::SEARCH_ENGINES),
       delegate_b.PassAs<syncer::SyncChangeProcessor>(),
@@ -1468,8 +1429,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   // Remerge the data again. This simulates shutting down and syncing again
   // at a different time, but the cloud data has not changed.
   model()->StopSyncing(syncer::SEARCH_ENGINES);
-  sync_processor_delegate_.reset(new SyncChangeProcessorDelegate(
-      sync_processor_.get()));
+  sync_processor_wrapper_.reset(
+      new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   error = model()->MergeDataAndStartSyncing(
       syncer::SEARCH_ENGINES,
       initial_data,

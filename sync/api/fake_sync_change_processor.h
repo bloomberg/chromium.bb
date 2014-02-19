@@ -14,12 +14,27 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   FakeSyncChangeProcessor();
   virtual ~FakeSyncChangeProcessor();
 
+  // SyncChangeProcessor implementation.
+  //
+  // ProcessSyncChanges will accumulate changes in changes() until they are
+  // cleared.
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
+  // SyncChangeProcessor implementation.
+  //
+  // Returns an empty list.
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
       const OVERRIDE;
+
+  virtual const syncer::SyncChangeList& changes() const;
+  virtual syncer::SyncChangeList& changes();
+
+ private:
+  syncer::SyncChangeList change_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSyncChangeProcessor);
 };
 
 }  // namespace syncer

@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -32,19 +33,6 @@ namespace {
 
 using testing::Return;
 using testing::_;
-
-class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    return syncer::SyncError();
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return syncer::SyncDataList();
-  }
-};
 
 class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
  public:
@@ -114,7 +102,8 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     syncer_->MergeDataAndStartSyncing(
         syncer::PREFERENCES,
         syncer::SyncDataList(),
-        scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
+        scoped_ptr<syncer::SyncChangeProcessor>(
+            new syncer::FakeSyncChangeProcessor),
         scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
     registrar_.reset(new SyncedPrefChangeRegistrar(prefs_));
   }

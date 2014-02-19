@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/api/time.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"
@@ -99,46 +100,6 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
     change_map_[iter->sync_data().GetTitle()] = *iter;
   }
   return syncer::SyncError();
-}
-
-
-// SyncChangeProcessorDelegate ------------------------------------------------
-
-class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
- public:
-  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient);
-  virtual ~SyncChangeProcessorDelegate();
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return recipient_->GetAllSyncData(type);
-  }
-
- private:
-  // The recipient of all sync changes.
-  syncer::SyncChangeProcessor* recipient_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
-};
-
-SyncChangeProcessorDelegate::SyncChangeProcessorDelegate(
-    syncer::SyncChangeProcessor* recipient)
-    : recipient_(recipient) {
-  DCHECK(recipient_);
-}
-
-SyncChangeProcessorDelegate::~SyncChangeProcessorDelegate() {
-}
-
-syncer::SyncError SyncChangeProcessorDelegate::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  return recipient_->ProcessSyncChanges(from_here, change_list);
 }
 
 // TestFaviconData ------------------------------------------------------------
@@ -315,15 +276,14 @@ class SyncFaviconCacheTest : public testing::Test {
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
   scoped_ptr<TestChangeProcessor> sync_processor_;
-  scoped_ptr<SyncChangeProcessorDelegate> sync_processor_delegate_;
+  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> sync_processor_wrapper_;
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
     : cache_(NULL, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
-      sync_processor_delegate_(new SyncChangeProcessorDelegate(
-                                   sync_processor_.get())) {
-}
+      sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
+          sync_processor_.get())) {}
 
 void SyncFaviconCacheTest::SetUpInitialSync(
     const syncer::SyncDataList& initial_image_data,
@@ -418,7 +378,7 @@ testing::AssertionResult SyncFaviconCacheTest::VerifyLocalCustomIcons(
 scoped_ptr<syncer::SyncChangeProcessor>
 SyncFaviconCacheTest::CreateAndPassProcessor() {
   return scoped_ptr<syncer::SyncChangeProcessor>(
-      new SyncChangeProcessorDelegate(sync_processor_.get()));
+      new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
 }
 
 scoped_ptr<syncer::SyncErrorFactory> SyncFaviconCacheTest::

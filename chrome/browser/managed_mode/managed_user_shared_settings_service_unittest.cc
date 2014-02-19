@@ -8,7 +8,9 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +24,7 @@ using syncer::MANAGED_USER_SHARED_SETTINGS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncChangeProcessor;
+using syncer::SyncChangeProcessorWrapperForTest;
 using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncError;
@@ -29,38 +32,6 @@ using syncer::SyncErrorFactory;
 using syncer::SyncMergeResult;
 
 namespace {
-
-class MockChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  MockChangeProcessor() {}
-  virtual ~MockChangeProcessor() {}
-
-  // SyncChangeProcessor implementation:
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE;
-
-  const syncer::SyncChangeList& changes() const { return change_list_; }
-
- private:
-  syncer::SyncChangeList change_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockChangeProcessor);
-};
-
-syncer::SyncError MockChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  change_list_ = change_list;
-  return syncer::SyncError();
-}
-
-syncer::SyncDataList
-MockChangeProcessor::GetAllSyncData(syncer::ModelType type) const {
-  return syncer::SyncDataList();
-}
 
 class MockSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
@@ -111,13 +82,14 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
   virtual ~ManagedUserSharedSettingsServiceTest() {}
 
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
-    sync_processor_ = new MockChangeProcessor();
+    sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
     scoped_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(MANAGED_USER_SHARED_SETTINGS));
     SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
         MANAGED_USER_SHARED_SETTINGS,
         initial_sync_data,
-        scoped_ptr<SyncChangeProcessor>(sync_processor_),
+        scoped_ptr<SyncChangeProcessor>(
+            new SyncChangeProcessorWrapperForTest(sync_processor_.get())),
         error_handler.Pass());
     EXPECT_FALSE(result.error().IsSet());
   }
@@ -127,8 +99,8 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
         prefs::kManagedUserSharedSettings);
   }
 
-  void VerifySyncChanges() {
-    const SyncChangeList& changes = sync_processor_->changes();
+  void VerifySyncChangesAndClear() {
+    SyncChangeList& changes = sync_processor_->changes();
     for (SyncChangeList::const_iterator it = changes.begin();
          it != changes.end();
          ++it) {
@@ -138,6 +110,7 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
           setting.value(),
           ToJson(settings_service_.GetValue(setting.mu_id(), setting.key())));
     }
+    changes.clear();
   }
 
   // testing::Test overrides:
@@ -163,8 +136,7 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
 
   scoped_ptr<CallbackList::Subscription> subscription_;
 
-  // Owned by the ManagedUserSettingsService.
-  MockChangeProcessor* sync_processor_;
+  scoped_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };
 
 TEST_F(ManagedUserSharedSettingsServiceTest, Empty) {
@@ -189,16 +161,16 @@ TEST_F(ManagedUserSharedSettingsServiceTest, SetAndGet) {
   StringValue bar("bar");
   settings_service_.SetValue(kIdA, "name", name);
   ASSERT_EQ(1u, sync_processor_->changes().size());
-  VerifySyncChanges();
+  VerifySyncChangesAndClear();
   settings_service_.SetValue(kIdA, "age", FundamentalValue(6));
   ASSERT_EQ(1u, sync_processor_->changes().size());
-  VerifySyncChanges();
+  VerifySyncChangesAndClear();
   settings_service_.SetValue(kIdA, "age", age);
   ASSERT_EQ(1u, sync_processor_->changes().size());
-  VerifySyncChanges();
+  VerifySyncChangesAndClear();
   settings_service_.SetValue(kIdB, "foo", bar);
   ASSERT_EQ(1u, sync_processor_->changes().size());
-  VerifySyncChanges();
+  VerifySyncChangesAndClear();
 
   EXPECT_EQ(
       3u,
@@ -240,7 +212,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, Merge) {
 
   StartSyncing(sync_data);
   EXPECT_EQ(2u, sync_processor_->changes().size());
-  VerifySyncChanges();
+  VerifySyncChangesAndClear();
   EXPECT_EQ(2u, changed_settings_.size());
 
   EXPECT_EQ(

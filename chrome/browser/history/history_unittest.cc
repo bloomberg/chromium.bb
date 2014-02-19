@@ -60,8 +60,10 @@
 #include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
@@ -1537,71 +1539,6 @@ TEST_F(HistoryTest, HistoryDBTaskCanceled) {
   ASSERT_FALSE(task->done_invoked);
 }
 
-// Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
-// back up to Sync.
-//
-// TODO(akalin): Unify all the various test implementations of
-// syncer::SyncChangeProcessor.
-class TestChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  TestChangeProcessor() {}
-  virtual ~TestChangeProcessor() {}
-
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    changes_.insert(changes_.end(), change_list.begin(), change_list.end());
-    return syncer::SyncError();
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return syncer::SyncDataList();
-  }
-
-  const syncer::SyncChangeList& GetChanges() const {
-    return changes_;
-  }
-
- private:
-  syncer::SyncChangeList changes_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
-};
-
-// SyncChangeProcessor implementation that delegates to another one.
-// This is necessary since most things expect a
-// scoped_ptr<SyncChangeProcessor>.
-//
-// TODO(akalin): Unify this too.
-class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
- public:
-  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient)
-      : recipient_(recipient) {
-    DCHECK(recipient_);
-  }
-
-  virtual ~SyncChangeProcessorDelegate() {}
-
-  // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE {
-    return recipient_->ProcessSyncChanges(from_here, change_list);
-  }
-
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE {
-    return recipient_->GetAllSyncData(type);
-  }
-
- private:
-  // The recipient of all sync changes.
-  syncer::SyncChangeProcessor* const recipient_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
-};
-
 // Create a local delete directive and process it while sync is
 // online, and then when offline. The delete directive should be sent to sync,
 // no error should be returned for the first time, and an error should be
@@ -1626,35 +1563,39 @@ TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOnline) {
       (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1))
       .ToInternalValue());
 
-  TestChangeProcessor change_processor;
+  syncer::FakeSyncChangeProcessor change_processor;
 
   EXPECT_FALSE(
       history_service_->MergeDataAndStartSyncing(
-          syncer::HISTORY_DELETE_DIRECTIVES,
-          syncer::SyncDataList(),
-          scoped_ptr<syncer::SyncChangeProcessor>(
-              new SyncChangeProcessorDelegate(&change_processor)),
-          scoped_ptr<syncer::SyncErrorFactory>()).error().IsSet());
+                            syncer::HISTORY_DELETE_DIRECTIVES,
+                            syncer::SyncDataList(),
+                            scoped_ptr<syncer::SyncChangeProcessor>(
+                                new syncer::SyncChangeProcessorWrapperForTest(
+                                    &change_processor)),
+                            scoped_ptr<syncer::SyncErrorFactory>())
+          .error()
+          .IsSet());
 
   syncer::SyncError err =
       history_service_->ProcessLocalDeleteDirective(delete_directive);
   EXPECT_FALSE(err.IsSet());
-  EXPECT_EQ(1u, change_processor.GetChanges().size());
+  EXPECT_EQ(1u, change_processor.changes().size());
 
   history_service_->StopSyncing(syncer::HISTORY_DELETE_DIRECTIVES);
   err = history_service_->ProcessLocalDeleteDirective(delete_directive);
   EXPECT_TRUE(err.IsSet());
-  EXPECT_EQ(1u, change_processor.GetChanges().size());
+  EXPECT_EQ(1u, change_processor.changes().size());
 }
 
 // Closure function that runs periodically to check result of delete directive
 // processing. Stop when timeout or processing ends indicated by the creation
 // of sync changes.
 void CheckDirectiveProcessingResult(
-    Time timeout, const TestChangeProcessor* change_processor,
+    Time timeout,
+    const syncer::FakeSyncChangeProcessor* change_processor,
     uint32 num_changes) {
   if (base::Time::Now() > timeout ||
-      change_processor->GetChanges().size() >= num_changes) {
+      change_processor->changes().size() >= num_changes) {
     return;
   }
 
@@ -1707,14 +1648,17 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   directives.push_back(
       syncer::SyncData::CreateRemoteData(2, entity_specs, base::Time()));
 
-  TestChangeProcessor change_processor;
+  syncer::FakeSyncChangeProcessor change_processor;
   EXPECT_FALSE(
       history_service_->MergeDataAndStartSyncing(
-          syncer::HISTORY_DELETE_DIRECTIVES,
-          directives,
-          scoped_ptr<syncer::SyncChangeProcessor>(
-              new SyncChangeProcessorDelegate(&change_processor)),
-          scoped_ptr<syncer::SyncErrorFactory>()).error().IsSet());
+                            syncer::HISTORY_DELETE_DIRECTIVES,
+                            directives,
+                            scoped_ptr<syncer::SyncChangeProcessor>(
+                                new syncer::SyncChangeProcessorWrapperForTest(
+                                    &change_processor)),
+                            scoped_ptr<syncer::SyncErrorFactory>())
+          .error()
+          .IsSet());
 
   // Inject a task to check status and keep message loop filled before directive
   // processing finishes.
@@ -1738,7 +1682,7 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
             query_url_visits_[4].visit_time);
 
   // Expect two sync changes for deleting processed directives.
-  const syncer::SyncChangeList& sync_changes = change_processor.GetChanges();
+  const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
   EXPECT_EQ(1, sync_changes[0].sync_data().GetRemoteId());
@@ -1783,14 +1727,17 @@ TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
                                                           entity_specs,
                                                           base::Time()));
 
-  TestChangeProcessor change_processor;
+  syncer::FakeSyncChangeProcessor change_processor;
   EXPECT_FALSE(
       history_service_->MergeDataAndStartSyncing(
-          syncer::HISTORY_DELETE_DIRECTIVES,
-          directives,
-          scoped_ptr<syncer::SyncChangeProcessor>(
-              new SyncChangeProcessorDelegate(&change_processor)),
-          scoped_ptr<syncer::SyncErrorFactory>()).error().IsSet());
+                            syncer::HISTORY_DELETE_DIRECTIVES,
+                            directives,
+                            scoped_ptr<syncer::SyncChangeProcessor>(
+                                new syncer::SyncChangeProcessorWrapperForTest(
+                                    &change_processor)),
+                            scoped_ptr<syncer::SyncErrorFactory>())
+          .error()
+          .IsSet());
 
   // Inject a task to check status and keep message loop filled before
   // directive processing finishes.
@@ -1810,7 +1757,7 @@ TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
             query_url_visits_[2].visit_time);
 
   // Expect two sync changes for deleting processed directives.
-  const syncer::SyncChangeList& sync_changes = change_processor.GetChanges();
+  const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
   EXPECT_EQ(1, sync_changes[0].sync_data().GetRemoteId());
