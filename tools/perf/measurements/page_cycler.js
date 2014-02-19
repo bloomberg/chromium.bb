@@ -33,19 +33,12 @@ function __onbeforeunload() {
 
 // The function |__onload| is used by the DHTML tests.
 window.__onload = function() {
-  // window.storeCreated is used by the Indexed DB tests.
-  if ((!__install_onload_handler || window.storeCreated) &&
-      !performance.timing.loadEventEnd)
+  if (!__install_onload_handler && !performance.timing.loadEventEnd)
     return;
 
   var unused = document.body.offsetHeight;  // force layout
 
-  testComplete(window.performance.now());
-};
-
-// The function |testComplete| is used by the Indexed DB tests.
-window.testComplete = function(time) {
-  window.__pc_load_time = time;
+  window.__pc_load_time = window.performance.now();
 };
 
 // The function |__eval_later| now is only used by the DHTML tests.
