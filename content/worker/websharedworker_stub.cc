@@ -102,11 +102,11 @@ void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
 }
 
 void WebSharedWorkerStub::OnTerminateWorkerContext() {
-  impl_->terminateWorkerContext();
-
+  running_ = false;
   // Call the client to make sure context exits.
   EnsureWorkerContextTerminates();
-  running_ = false;
+  // This may call "delete this" via WorkerScriptLoadFailed and Shutdown.
+  impl_->terminateWorkerContext();
 }
 
 void WebSharedWorkerStub::WorkerScriptLoaded() {
