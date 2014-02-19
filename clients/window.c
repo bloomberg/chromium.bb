@@ -2354,8 +2354,10 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 	if (status & FRAME_STATUS_REPAINT)
 		widget_schedule_redraw(frame->widget);
 
-	if (status & FRAME_STATUS_MINIMIZE)
-		fprintf(stderr,"Minimize stub\n");
+	if (status & FRAME_STATUS_MINIMIZE) {
+		window_set_minimized(window);
+		frame_status_clear(frame->frame, FRAME_STATUS_MINIMIZE);
+	}
 
 	if (status & FRAME_STATUS_MENU) {
 		window_show_frame_menu(window, input, time);
@@ -4202,6 +4204,15 @@ window_set_maximized(struct window *window, int maximized)
 		xdg_surface_unset_maximized(window->xdg_surface);
 
 	window_delay_redraw(window);
+}
+
+void
+window_set_minimized(struct window *window)
+{
+	if (!window->xdg_surface)
+		return;
+
+	xdg_surface_set_minimized(window->xdg_surface);
 }
 
 void
