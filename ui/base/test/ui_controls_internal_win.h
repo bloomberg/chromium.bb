@@ -20,7 +20,7 @@ bool SendKeyPressImpl(HWND hwnd,
                       bool shift,
                       bool alt,
                       const base::Closure& task);
-bool SendMouseMoveImpl(long x, long y, const base::Closure& task);
+bool SendMouseMoveImpl(long screen_x, long screen_y, const base::Closure& task);
 bool SendMouseEventsImpl(MouseButton type,
                          int state,
                          const base::Closure& task);

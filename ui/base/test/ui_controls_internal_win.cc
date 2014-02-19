@@ -255,11 +255,13 @@ bool SendKeyPressImpl(HWND window,
   return true;
 }
 
-bool SendMouseMoveImpl(long x, long y, const base::Closure& task) {
+bool SendMouseMoveImpl(long screen_x,
+                       long screen_y,
+                       const base::Closure& task) {
   // First check if the mouse is already there.
   POINT current_pos;
   ::GetCursorPos(&current_pos);
-  if (x == current_pos.x && y == current_pos.y) {
+  if (screen_x == current_pos.x && screen_y == current_pos.y) {
     if (!task.is_null())
       base::MessageLoop::current()->PostTask(FROM_HERE, task);
     return true;
@@ -269,8 +271,8 @@ bool SendMouseMoveImpl(long x, long y, const base::Closure& task) {
 
   int screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
   int screen_height  = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-  LONG pixel_x  = static_cast<LONG>(x * (65535.0f / screen_width));
-  LONG pixel_y = static_cast<LONG>(y * (65535.0f / screen_height));
+  LONG pixel_x  = static_cast<LONG>(screen_x * (65535.0f / screen_width));
+  LONG pixel_y = static_cast<LONG>(screen_y * (65535.0f / screen_height));
 
   input.type = INPUT_MOUSE;
   input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;

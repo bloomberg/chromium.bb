@@ -158,30 +158,27 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return true;
   }
 
-  // Simulate a mouse move. (x,y) are absolute screen coordinates.
-  virtual bool SendMouseMove(long x, long y) OVERRIDE {
-    return SendMouseMoveNotifyWhenDone(x, y, base::Closure());
+  virtual bool SendMouseMove(long screen_x, long screen_y) OVERRIDE {
+    return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
   }
   virtual bool SendMouseMoveNotifyWhenDone(
-      long x,
-      long y,
+      long screen_x,
+      long screen_y,
       const base::Closure& closure) OVERRIDE {
-    gfx::Point screen_point(x, y);
-    gfx::Point window_point = screen_point;
+    gfx::Point screen_point(screen_x, screen_y);
+    gfx::Point root_point = screen_point;
     aura::Window* root_window = RootWindowForPoint(screen_point);
 
     aura::client::ScreenPositionClient* screen_position_client =
           aura::client::GetScreenPositionClient(root_window);
-    if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(root_window,
-                                                     &window_point);
-    }
+    if (screen_position_client)
+      screen_position_client->ConvertPointFromScreen(root_window, &root_point);
 
     XEvent xevent = {0};
     XMotionEvent* xmotion = &xevent.xmotion;
     xmotion->type = MotionNotify;
-    xmotion->x = window_point.x();
-    xmotion->y = window_point.y();
+    xmotion->x = root_point.x();
+    xmotion->y = root_point.y();
     xmotion->state = button_down_mask;
     xmotion->same_screen = True;
     // RootWindow will take care of other necessary fields.

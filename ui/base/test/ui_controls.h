@@ -58,10 +58,10 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 const base::Closure& task);
 
-// Simulate a mouse move. (x,y) are absolute screen coordinates.
-bool SendMouseMove(long x, long y);
-bool SendMouseMoveNotifyWhenDone(long x,
-                                 long y,
+// Simulate a mouse move.
+bool SendMouseMove(long screen_x, long screen_y);
+bool SendMouseMoveNotifyWhenDone(long screen_x,
+                                 long screen_y,
                                  const base::Closure& task);
 
 enum MouseButton {

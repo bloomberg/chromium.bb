@@ -54,15 +54,13 @@ class UIControlsWin : public UIControlsAura {
         native_window->GetDispatcher()->host()->GetAcceleratedWidget();
     return SendKeyPressImpl(window, key, control, shift, alt, task);
   }
-  virtual bool SendMouseMove(long x, long y) {
-    gfx::Point point(x, y);
-    return SendMouseMoveImpl(point.x(), point.y(), base::Closure());
+  virtual bool SendMouseMove(long screen_x, long screen_y) {
+    return SendMouseMoveImpl(screen_x, screen_y, base::Closure());
   }
-  virtual bool SendMouseMoveNotifyWhenDone(long x,
-                                           long y,
+  virtual bool SendMouseMoveNotifyWhenDone(long screen_x,
+                                           long screen_y,
                                            const base::Closure& task) {
-    gfx::Point point(x, y);
-    return SendMouseMoveImpl(point.x(), point.y(), task);
+    return SendMouseMoveImpl(screen_x, screen_y, task);
   }
   virtual bool SendMouseEvents(MouseButton type, int state) {
     return SendMouseEventsImpl(type, state, base::Closure());
