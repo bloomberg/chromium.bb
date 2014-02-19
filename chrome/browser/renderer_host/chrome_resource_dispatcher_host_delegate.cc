@@ -128,6 +128,31 @@ prerender::PrerenderContents* FindPrerenderContents(int render_process_id,
   return prerender::PrerenderContents::FromWebContents(web_contents);
 }
 
+prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
+                                                 int render_view_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return NULL;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  if (!web_contents)
+    return NULL;
+
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if (!browser_context)
+    return NULL;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return NULL;
+
+  return prerender::PrerenderManagerFactory::GetForProfile(profile);
+}
+
 void UpdatePrerenderNetworkBytesCallback(int render_process_id,
                                          int render_view_id,
                                          int64 bytes) {
@@ -136,11 +161,13 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
   prerender::PrerenderContents* prerender_contents =
       FindPrerenderContents(render_process_id, render_view_id);
 
-  if (!prerender_contents)
-    return;
-  prerender_contents->AddNetworkBytes(bytes);
-  prerender_contents->prerender_manager()->AddProfileNetworkBytesIfEnabled(
-      bytes);
+  if (prerender_contents)
+    prerender_contents->AddNetworkBytes(bytes);
+
+  prerender::PrerenderManager* prerender_manager =
+      GetPrerenderManager(render_process_id, render_view_id);
+  if (prerender_manager)
+    prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
 }
 
 #if !defined(OS_ANDROID)
@@ -173,13 +200,8 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
   if (!web_contents)
     return;
 
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  if (!browser_context)
-    return;
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile)
-    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   StreamsPrivateAPI* streams_private = StreamsPrivateAPI::Get(profile);
   if (!streams_private)

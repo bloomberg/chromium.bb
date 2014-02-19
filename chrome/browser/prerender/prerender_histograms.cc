@@ -436,7 +436,7 @@ void PrerenderHistograms::RecordNetworkBytes(bool used,
   UMA_HISTOGRAM_CUSTOM_COUNTS("Prerender.NetworkBytes.TotalForProfile",
                               profile_bytes,
                               kHistogramMin,
-                              kHistogramMax,
+                              1000000000,  // 1G
                               kBucketCount);
 }
 
