@@ -337,8 +337,6 @@
         'browser/extensions/api/image_writer_private/operation_win.cc',
         'browser/extensions/api/image_writer_private/image_writer_private_api.cc',
         'browser/extensions/api/image_writer_private/image_writer_private_api.h',
-        'browser/extensions/api/image_writer_private/image_writer_utils.cc',
-        'browser/extensions/api/image_writer_private/image_writer_utils.h',
         'browser/extensions/api/image_writer_private/removable_storage_provider.h',
         'browser/extensions/api/image_writer_private/removable_storage_provider_linux.cc',
         'browser/extensions/api/image_writer_private/removable_storage_provider_mac.cc',

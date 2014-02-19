@@ -31,6 +31,7 @@ const int kDevicePattern = 0xAAAAAAAA; // 10101010
 class MockOperationManager : public OperationManager {
  public:
   MockOperationManager();
+  explicit MockOperationManager(Profile* profile);
   virtual ~MockOperationManager();
 
   MOCK_METHOD3(OnProgress, void(const ExtensionId& extension_id,
@@ -57,21 +58,17 @@ class ImageWriterUnitTestBase : public testing::Test {
 
   virtual void TearDown() OVERRIDE;
 
-  // Compare the image and device files, returning true if they are the same,
-  // false if different.
-  bool CompareImageAndDevice();
-
-  base::ScopedTempDir temp_dir_;
-  base::FilePath test_image_path_;
-  base::FilePath test_device_path_;
-
- private:
   // Fills |file| with |length| bytes of |pattern|, overwriting any existing
   // data.
   bool FillFile(const base::FilePath& file,
                 const int pattern,
                 const int length);
 
+  base::ScopedTempDir temp_dir_;
+  base::FilePath test_image_path_;
+  base::FilePath test_device_path_;
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

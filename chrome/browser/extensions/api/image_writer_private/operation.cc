@@ -15,34 +15,36 @@ namespace image_writer {
 
 using content::BrowserThread;
 
-namespace {
-
 const int kMD5BufferSize = 1024;
-
-void RemoveTempDirectory(const base::FilePath path) {
-  base::DeleteFile(path, true);
-}
-
-}  // namespace
+#if defined(OS_CHROMEOS)
+// Chrome OS only has a 1 GB temporary partition.  This is too small to hold our
+// unzipped image. Fortunately we mount part of the temporary partition under
+// /var/tmp.
+const char kChromeOSTempRoot[] = "/var/tmp";
+#endif
 
 Operation::Operation(base::WeakPtr<OperationManager> manager,
                      const ExtensionId& extension_id,
-                     const std::string& storage_unit_id)
+                     const std::string& device_path)
     : manager_(manager),
       extension_id_(extension_id),
-      storage_unit_id_(storage_unit_id),
-      verify_write_(true),
+#if defined(OS_WIN)
+      device_path_(base::FilePath::FromUTF8Unsafe(device_path)),
+#else
+      device_path_(device_path),
+#endif
+#if defined(OS_LINUX) && !defined(CHROMEOS)
+      image_file_(base::kInvalidPlatformFileValue),
+      device_file_(base::kInvalidPlatformFileValue),
+#endif
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0) {
 }
 
-Operation::~Operation() {
-}
+Operation::~Operation() {}
 
 void Operation::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  DVLOG(1) << "Cancelling image writing operation for ext: " << extension_id_;
 
   stage_ = image_writer_api::STAGE_NONE;
 
@@ -59,6 +61,82 @@ int Operation::GetProgress() {
 
 image_writer_api::Stage Operation::GetStage() {
   return stage_;
+}
+
+void Operation::Start() {
+#if defined(OS_CHROMEOS)
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(
+           base::FilePath(kChromeOSTempRoot))) {
+#else
+  if (!temp_dir_.CreateUniqueTempDir()) {
+#endif
+    Error(error::kTempDirError);
+    return;
+  }
+
+  AddCleanUpFunction(
+      base::Bind(base::IgnoreResult(&base::ScopedTempDir::Delete),
+                 base::Unretained(&temp_dir_)));
+
+  StartImpl();
+}
+
+void Operation::Unzip(const base::Closure& continuation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (IsCancelled()) {
+    return;
+  }
+
+  if (image_path_.Extension() != FILE_PATH_LITERAL(".zip")) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
+    return;
+  }
+
+  SetStage(image_writer_api::STAGE_UNZIP);
+
+  if (!(zip_reader_.Open(image_path_) && zip_reader_.AdvanceToNextEntry() &&
+        zip_reader_.OpenCurrentEntryInZip())) {
+    Error(error::kUnzipGenericError);
+    return;
+  }
+
+  if (zip_reader_.HasMore()) {
+    Error(error::kUnzipInvalidArchive);
+    return;
+  }
+
+  // Create a new target to unzip to.  The original file is opened by the
+  // zip_reader_.
+  zip::ZipReader::EntryInfo* entry_info = zip_reader_.current_entry_info();
+  if (entry_info) {
+    image_path_ = temp_dir_.path().Append(entry_info->file_path().BaseName());
+  } else {
+    Error(error::kTempDirError);
+    return;
+  }
+
+  zip_reader_.ExtractCurrentEntryToFilePathAsync(
+      image_path_,
+      base::Bind(&Operation::OnUnzipSuccess, this, continuation),
+      base::Bind(&Operation::OnUnzipFailure, this),
+      base::Bind(&Operation::OnUnzipProgress,
+                 this,
+                 zip_reader_.current_entry_info()->original_size()));
+}
+
+void Operation::Finish() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE, base::Bind(&Operation::Finish, this));
+    return;
+  }
+
+  CleanUp();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&OperationManager::OnComplete, manager_, extension_id_));
 }
 
 void Operation::Error(const std::string& error_message) {
@@ -90,6 +168,10 @@ void Operation::SetProgress(int progress) {
         base::Bind(&Operation::SetProgress,
                    this,
                    progress));
+    return;
+  }
+
+  if (progress <= progress_) {
     return;
   }
 
@@ -137,124 +219,51 @@ void Operation::SetStage(image_writer_api::Stage stage) {
                  progress_));
 }
 
-void Operation::Finish() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Finish, this));
-    return;
-  }
-  DVLOG(1) << "Write operation complete.";
-
-  CleanUp();
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationManager::OnComplete,
-                 manager_,
-                 extension_id_));
-}
-
 bool Operation::IsCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   return stage_ == image_writer_api::STAGE_NONE;
 }
 
-void Operation::AddCleanUpFunction(base::Closure callback) {
+void Operation::AddCleanUpFunction(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   cleanup_functions_.push_back(callback);
 }
 
-void Operation::CleanUp() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  for (std::vector<base::Closure>::iterator it = cleanup_functions_.begin();
-       it != cleanup_functions_.end();
-       ++it) {
-    it->Run();
-  }
-  cleanup_functions_.clear();
-}
-
-void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (IsCancelled()) {
-    return;
-  }
-
-  DVLOG(1) << "Starting unzip stage for " << zip_path->value();
-
-  SetStage(image_writer_api::STAGE_UNZIP);
-
-  base::FilePath tmp_dir;
-  if (!base::CreateTemporaryDirInDir(zip_path->DirName(),
-                                     FILE_PATH_LITERAL("image_writer"),
-                                     &tmp_dir)) {
-    Error(error::kTempDirError);
-    return;
-  }
-
-  AddCleanUpFunction(base::Bind(&RemoveTempDirectory, tmp_dir));
-
-  if (!base::CreateTemporaryFileInDir(tmp_dir, &image_path_)) {
-    DLOG(ERROR) << "Failed create temporary unzip target in "
-                << tmp_dir.value();
-    Error(error::kTempDirError);
-    return;
-  }
-
-  if (!(zip_reader_.Open(*zip_path) &&
-        zip_reader_.AdvanceToNextEntry() &&
-        zip_reader_.OpenCurrentEntryInZip())) {
-    DLOG(ERROR) << "Failed to open zip file.";
-    Error(error::kUnzipGenericError);
-    return;
-  }
-
-  if (zip_reader_.HasMore()) {
-    DLOG(ERROR) << "Image zip has more than one file.";
-    Error(error::kUnzipInvalidArchive);
-    return;
-  }
-
-  zip_reader_.ExtractCurrentEntryToFilePathAsync(
-      image_path_,
-      base::Bind(&Operation::OnUnzipSuccess, this),
-      base::Bind(&Operation::OnUnzipFailure, this),
-      base::Bind(&Operation::OnUnzipProgress,
-                 this,
-                 zip_reader_.current_entry_info()->original_size()));
-}
-
 void Operation::GetMD5SumOfFile(
-    scoped_ptr<base::FilePath> file_path,
+    const base::FilePath& file_path,
     int64 file_size,
     int progress_offset,
     int progress_scale,
-    const base::Callback<void(scoped_ptr<std::string>)>& callback) {
+    const base::Callback<void(const std::string&)>& callback) {
   if (IsCancelled()) {
     return;
   }
 
   base::MD5Init(&md5_context_);
-  scoped_ptr<image_writer_utils::ImageReader> reader(
-      new image_writer_utils::ImageReader());
 
-  if (!reader->Open(*file_path)) {
+  base::PlatformFile file = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      NULL,
+      NULL);
+  if (file == base::kInvalidPlatformFileValue) {
     Error(error::kImageOpenError);
     return;
   }
+
   if (file_size <= 0) {
-    file_size = reader->GetSize();
+    if (!base::GetFileSize(file_path, &file_size)) {
+      Error(error::kImageOpenError);
+      return;
+    }
   }
 
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&Operation::MD5Chunk,
                                      this,
-                                     base::Passed(&reader),
+                                     file,
                                      0,
                                      file_size,
                                      progress_offset,
@@ -263,68 +272,64 @@ void Operation::GetMD5SumOfFile(
 }
 
 void Operation::MD5Chunk(
-    scoped_ptr<image_writer_utils::ImageReader> reader,
+    const base::PlatformFile& file,
     int64 bytes_processed,
     int64 bytes_total,
     int progress_offset,
     int progress_scale,
-    const base::Callback<void(scoped_ptr<std::string>)>& callback) {
+    const base::Callback<void(const std::string&)>& callback) {
   if (IsCancelled()) {
-    reader->Close();
+    base::ClosePlatformFile(file);
     return;
   }
 
-  char buffer[kMD5BufferSize];
-  int len;
+  CHECK_LE(bytes_processed, bytes_total);
 
-  if (bytes_total - bytes_processed <= kMD5BufferSize) {
-    len = reader->Read(buffer, bytes_total - bytes_processed);
+  scoped_ptr<char[]> buffer(new char[kMD5BufferSize]);
+  int read_size = std::min(bytes_total - bytes_processed,
+                           static_cast<int64>(kMD5BufferSize));
+
+  if (read_size == 0) {
+    // Nothing to read, we are done.
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &md5_context_);
+    callback.Run(base::MD5DigestToBase16(digest));
   } else {
-    len = reader->Read(buffer, kMD5BufferSize);
-  }
+    int len =
+        base::ReadPlatformFile(file, bytes_processed, buffer.get(), read_size);
 
-  if (len > 0) {
-    base::MD5Update(&md5_context_, base::StringPiece(buffer, len));
-    int percent_prev = (bytes_processed * progress_scale + progress_offset) /
-                       (bytes_total);
-    int percent_curr = ((bytes_processed + len) * progress_scale +
-                        progress_offset) /
-                       (bytes_total);
-    if (percent_curr > percent_prev) {
-      SetProgress(progress_);
-    }
+    if (len == read_size) {
+      // Process data.
+      base::MD5Update(&md5_context_, base::StringPiece(buffer.get(), len));
+      int percent_curr =
+          ((bytes_processed + len) * progress_scale) / bytes_total +
+          progress_offset;
+      SetProgress(percent_curr);
 
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::MD5Chunk,
-                                       this,
-                                       base::Passed(&reader),
-                                       bytes_processed + len,
-                                       bytes_total,
-                                       progress_offset,
-                                       progress_scale,
-                                       callback));
-  } else if (len == 0) {
-    if (bytes_processed + len < bytes_total) {
-      reader->Close();
-      Error(error::kHashReadError);
+      BrowserThread::PostTask(BrowserThread::FILE,
+                              FROM_HERE,
+                              base::Bind(&Operation::MD5Chunk,
+                                         this,
+                                         file,
+                                         bytes_processed + len,
+                                         bytes_total,
+                                         progress_offset,
+                                         progress_scale,
+                                         callback));
+      // Skip closing the file.
+      return;
     } else {
-      base::MD5Digest digest;
-      base::MD5Final(&digest, &md5_context_);
-      scoped_ptr<std::string> hash(
-          new std::string(base::MD5DigestToBase16(digest)));
-      callback.Run(hash.Pass());
+      // We didn't read the bytes we expected.
+      Error(error::kHashReadError);
     }
-  } else {  // len < 0
-    reader->Close();
-    Error(error::kHashReadError);
   }
+  base::ClosePlatformFile(file);
 }
 
-void Operation::OnUnzipSuccess() {
+void Operation::OnUnzipSuccess(const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SetProgress(kProgressComplete);
-  WriteStart();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
 void Operation::OnUnzipFailure() {
@@ -337,6 +342,16 @@ void Operation::OnUnzipProgress(int64 total_bytes, int64 progress_bytes) {
 
   int progress_percent = 100 * progress_bytes / total_bytes;
   SetProgress(progress_percent);
+}
+
+void Operation::CleanUp() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  for (std::vector<base::Closure>::iterator it = cleanup_functions_.begin();
+       it != cleanup_functions_.end();
+       ++it) {
+    it->Run();
+  }
+  cleanup_functions_.clear();
 }
 
 }  // namespace image_writer
