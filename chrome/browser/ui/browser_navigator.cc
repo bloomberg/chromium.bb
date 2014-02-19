@@ -737,14 +737,16 @@ bool IsURLAllowedInIncognito(const GURL& url,
        url.host() == chrome::kChromeUIUberHost ||
        url.host() == chrome::kChromeUIThumbnailHost ||
        url.host() == chrome::kChromeUIThumbnailHost2 ||
-       url.host() == chrome::kChromeUIThumbnailListHost)) {
+       url.host() == chrome::kChromeUIThumbnailListHost ||
+       url.host() == chrome::kChromeUISuggestionsHost)) {
     return false;
   }
 
   if (url.scheme() == chrome::kChromeSearchScheme &&
       (url.host() == chrome::kChromeUIThumbnailHost ||
        url.host() == chrome::kChromeUIThumbnailHost2 ||
-       url.host() == chrome::kChromeUIThumbnailListHost)) {
+       url.host() == chrome::kChromeUIThumbnailListHost ||
+       url.host() == chrome::kChromeUISuggestionsHost)) {
     return false;
   }
 

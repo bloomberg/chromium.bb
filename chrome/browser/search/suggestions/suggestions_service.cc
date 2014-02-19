@@ -48,6 +48,18 @@ std::string GetExperimentParam(const std::string& key) {
                                                    key);
 }
 
+// Runs each callback in |requestors| on |suggestions|, then deallocates
+// |requestors|.
+void DispatchRequestsAndClear(
+    const SuggestionsProfile& suggestions,
+    std::vector<SuggestionsService::ResponseCallback>* requestors) {
+  std::vector<SuggestionsService::ResponseCallback>::iterator it;
+  for (it = requestors->begin(); it != requestors->end(); ++it) {
+    it->Run(suggestions);
+  }
+  std::vector<SuggestionsService::ResponseCallback>().swap(*requestors);
+}
+
 }  // namespace
 
 const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
@@ -70,8 +82,19 @@ bool SuggestionsService::IsEnabled() {
       kSuggestionsFieldTrialStateEnabled;
 }
 
-void SuggestionsService::FetchSuggestionsData() {
+void SuggestionsService::FetchSuggestionsData(
+    SuggestionsService::ResponseCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (pending_request_.get()) {
+    // Request already exists, so just add requestor to queue.
+    waiting_requestors_.push_back(callback);
+    return;
+  }
+
+  // Form new request.
+  DCHECK(waiting_requestors_.empty());
+  waiting_requestors_.push_back(callback);
 
   pending_request_.reset(net::URLFetcher::Create(
       0, suggestions_url_, net::URLFetcher::GET, this));
@@ -79,9 +102,9 @@ void SuggestionsService::FetchSuggestionsData() {
   pending_request_->SetRequestContext(profile_->GetRequestContext());
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      pending_request_->GetOriginalURL(), profile_->IsOffTheRecord(), false,
-      &headers);
+  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
+      AppendHeaders(pending_request_->GetOriginalURL(),
+                    profile_->IsOffTheRecord(), false, &headers);
   pending_request_->SetExtraRequestHeaders(headers.ToString());
   pending_request_->Start();
 
@@ -89,6 +112,7 @@ void SuggestionsService::FetchSuggestionsData() {
 }
 
 void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(pending_request_.get(), source);
 
   // The fetcher will be deleted when the request is handled.
@@ -114,15 +138,28 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::string suggestions_data;
   bool success = request->GetResponseAsString(&suggestions_data);
-
   DCHECK(success);
+
+  // Compute suggestions, and dispatch then to requestors. On error still
+  // dispatch empty suggestions.
+  SuggestionsProfile suggestions;
   if (suggestions_data.empty()) {
     LogResponseState(RESPONSE_EMPTY);
-  } else if (suggestions_.ParseFromString(suggestions_data)) {
+  } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
   } else {
     LogResponseState(RESPONSE_INVALID);
   }
+
+  DispatchRequestsAndClear(suggestions, &waiting_requestors_);
+}
+
+void SuggestionsService::Shutdown() {
+  // Cancel pending request.
+  pending_request_.reset(NULL);
+
+  // Dispatch empty suggestions to requestors.
+  DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
 }
 
 }  // namespace suggestions
