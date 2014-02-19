@@ -51,7 +51,7 @@ if (is_android) {
   } else if (cpu_arch == "mipsel") {
     android_app_abi = "mips"
   } else {
-    assert(false, "Unknown Android ABI")
+    assert(false, "Unknown Android ABI: " + cpu_arch)
   }
 } else {
   if (!defined(is_android_webview_build)) {
