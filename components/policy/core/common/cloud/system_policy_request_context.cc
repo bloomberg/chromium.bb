@@ -43,6 +43,11 @@ SystemPolicyRequestContext::GetURLRequestContext() {
     context_->set_ssl_config_service(
         system_context->ssl_config_service());
 
+    // Share the job factory (if there is one). This allows tests to intercept
+    // requests made via this request context if they install protocol handlers
+    // at the system request context.
+    context_->set_job_factory(system_context->job_factory());
+
     // Set our custom UserAgent.
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
 
