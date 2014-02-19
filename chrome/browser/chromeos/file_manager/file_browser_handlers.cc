@@ -480,9 +480,11 @@ bool ExecuteFileBrowserHandler(
   // files to be directly opened with the browser.
   if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
     const bool result = OpenFilesWithBrowser(profile, file_urls);
-    done.Run(result
-                 ? extensions::api::file_browser_private::TASK_RESULT_OPENED
-                 : extensions::api::file_browser_private::TASK_RESULT_FAILED);
+    if (!done.is_null()) {
+      done.Run(result
+                   ? extensions::api::file_browser_private::TASK_RESULT_OPENED
+                   : extensions::api::file_browser_private::TASK_RESULT_FAILED);
+    }
     return result;
   }
 
