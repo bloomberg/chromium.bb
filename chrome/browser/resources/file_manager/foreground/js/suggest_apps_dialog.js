@@ -304,7 +304,7 @@ SuggestAppsDialog.prototype.showInternal_ =
 SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
   var webStoreUrl =
       FileTasks.createWebStoreLink(this.extension_, this.mimeType_);
-  chrome.windows.create({url: webStoreUrl});
+  util.visitURL(webStoreUrl);
   this.state_ = SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING;
   this.hide();
 };
