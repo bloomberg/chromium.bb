@@ -193,9 +193,7 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
   // We need to duplicate the message, because |EnqueueMessage()| will take
   // ownership of it.
   // TODO(vtl): Need to enforce limits on message size and handle count.
-  MessageInTransit* own_message = MessageInTransit::Create(
-      message.type(), message.subtype(), message.bytes(), message.num_bytes(),
-      message.num_handles());
+  MessageInTransit* own_message = message.Clone();
   std::vector<DispatcherTransport> transports(message.num_handles());
   // TODO(vtl): Create dispatchers for handles.
   // TODO(vtl): It's bad that the current API will create equivalent dispatchers

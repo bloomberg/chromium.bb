@@ -48,8 +48,24 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                                   uint32_t num_bytes,
                                   uint32_t num_handles);
 
-  // Destroys a |MessageInTransit| created using |Create()|.
+  MessageInTransit* Clone() const;
+
+  // Destroys a |MessageInTransit| created using |Create()| or |Clone()|.
   void Destroy();
+
+  // Gets the "main" buffer for a |MessageInTransit|. A |MessageInTransit| can
+  // be serialized by writing the main buffer. The returned pointer will be
+  // aligned to a multiple of |kMessageAlignment| bytes, and the size of the
+  // buffer (see below) will also be a multiple of |kMessageAlignment|.
+  // TODO(vtl): Add a "secondary" buffer, so that this makes more sense.
+  const void* main_buffer() const {
+    return static_cast<const void*>(this);
+  }
+
+  // Gets the size of the main buffer (in number of bytes).
+  size_t main_buffer_size() const {
+    return RoundUpMessageAlignment(sizeof(*this) + header()->data_size);
+  }
 
   // Gets the size of the data (in number of bytes). This is the full size of
   // the data that follows the header, and may include data other than the
@@ -75,10 +91,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   uint32_t num_handles() const {
     return header()->num_handles;
-  }
-
-  size_t size_with_header_and_padding() const {
-    return RoundUpMessageAlignment(sizeof(*this) + header()->data_size);
   }
 
   Type type() const { return header()->type; }

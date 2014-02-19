@@ -51,19 +51,25 @@ MessageInTransit* MessageInTransit::Create(Type type,
 
   const size_t data_size = num_bytes;
   const size_t size_with_header = sizeof(MessageInTransit) + data_size;
-  const size_t size_with_header_and_padding =
-      RoundUpMessageAlignment(size_with_header);
+  const size_t buffer_size = RoundUpMessageAlignment(size_with_header);
 
-  char* buffer = static_cast<char*>(
-      base::AlignedAlloc(size_with_header_and_padding, kMessageAlignment));
+  char* buffer = static_cast<char*>(base::AlignedAlloc(buffer_size,
+                                                       kMessageAlignment));
   // The buffer consists of the header (a |MessageInTransit|, constructed using
   // a placement new), followed by the data, followed by padding (of zeros).
   MessageInTransit* rv = new (buffer) MessageInTransit(
       static_cast<uint32_t>(data_size), type, subtype, num_bytes, num_handles);
   memcpy(buffer + sizeof(MessageInTransit), bytes, num_bytes);
-  memset(buffer + size_with_header, 0,
-         size_with_header_and_padding - size_with_header);
+  memset(buffer + size_with_header, 0, buffer_size - size_with_header);
   return rv;
+}
+
+MessageInTransit* MessageInTransit::Clone() const {
+  size_t buffer_size = main_buffer_size();
+  char* buffer = static_cast<char*>(base::AlignedAlloc(buffer_size,
+                                                       kMessageAlignment));
+  memcpy(buffer, main_buffer(), buffer_size);
+  return reinterpret_cast<MessageInTransit*>(buffer);
 }
 
 void MessageInTransit::Destroy() {

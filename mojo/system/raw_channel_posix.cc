@@ -258,8 +258,7 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       DCHECK_EQ(reinterpret_cast<size_t>(message) %
                     MessageInTransit::kMessageAlignment, 0u);
       // If we have the header, not the whole message....
-      if (read_buffer_num_valid_bytes_ <
-              message->size_with_header_and_padding())
+      if (read_buffer_num_valid_bytes_ < message->main_buffer_size())
         break;
 
       // Dispatch the message.
@@ -272,8 +271,8 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       did_dispatch_message = true;
 
       // Update our state.
-      read_buffer_start += message->size_with_header_and_padding();
-      read_buffer_num_valid_bytes_ -= message->size_with_header_and_padding();
+      read_buffer_start += message->main_buffer_size();
+      read_buffer_num_valid_bytes_ -= message->main_buffer_size();
     }
 
     // If we dispatched any messages, stop reading for now (and let the message
@@ -353,12 +352,12 @@ bool RawChannelPosix::WriteFrontMessageNoLock() {
   DCHECK(!write_message_queue_.empty());
 
   MessageInTransit* message = write_message_queue_.front();
-  DCHECK_LT(write_message_offset_, message->size_with_header_and_padding());
-  size_t bytes_to_write =
-      message->size_with_header_and_padding() - write_message_offset_;
+  DCHECK_LT(write_message_offset_, message->main_buffer_size());
+  size_t bytes_to_write = message->main_buffer_size() - write_message_offset_;
   ssize_t bytes_written = HANDLE_EINTR(
       write(fd_.get().fd,
-            reinterpret_cast<char*>(message) + write_message_offset_,
+            static_cast<const char*>(message->main_buffer()) +
+                write_message_offset_,
             bytes_to_write));
   if (bytes_written < 0) {
     if (errno != EAGAIN && errno != EWOULDBLOCK) {

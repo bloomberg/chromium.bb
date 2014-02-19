@@ -67,9 +67,8 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
   MessageInTransit* message = MakeTestMessage(num_bytes);
 
   ssize_t write_size = HANDLE_EINTR(
-     write(handle.fd, message, message->size_with_header_and_padding()));
-  bool result = write_size ==
-      static_cast<ssize_t>(message->size_with_header_and_padding());
+     write(handle.fd, message->main_buffer(), message->main_buffer_size()));
+  bool result = write_size == static_cast<ssize_t>(message->main_buffer_size());
   message->Destroy();
   return result;
 }
@@ -159,7 +158,7 @@ class TestMessageReaderAndChecker {
         }
 
         // If we've read the whole message....
-        if (bytes_.size() >= message->size_with_header_and_padding()) {
+        if (bytes_.size() >= message->main_buffer_size()) {
           if (!CheckMessageData(message->data(), message->data_size())) {
             LOG(ERROR) << "Incorrect message data.";
             return false;
@@ -168,7 +167,7 @@ class TestMessageReaderAndChecker {
           // Erase message data.
           bytes_.erase(bytes_.begin(),
                        bytes_.begin() +
-                           message->size_with_header_and_padding());
+                           message->main_buffer_size());
           return true;
         }
       }
