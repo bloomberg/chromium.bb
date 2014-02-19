@@ -690,9 +690,7 @@ var kExampleBuildInfoWithTaskKillWarning = {
     "times": [1318364210.066524, 1318366408.0732119]
 };
 
-
-
-test("buildersFailing", 3, function() {
+asyncTest("buildersFailing", 3, function() {
     var simulator = new NetworkSimulator();
     builders.clearBuildInfoCache();
 
@@ -701,23 +699,21 @@ test("buildersFailing", 3, function() {
     failingBuildInfoJSON.steps[2].results[0] = 1;
 
     var requestedURLs = [];
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
         requestedURLs.push(url);
-        simulator.scheduleCallback(function() {
-            if (/\/json\/builders$/.exec(url))
-                callback(kExampleBuilderStatusJSON);
-            else if (/WebKit%20Linux/.exec(url))
-                callback(kExampleBuildInfoJSON);
-            else if (/WebKit%20Mac10\.6/.exec(url))
-                callback(failingBuildInfoJSON);
-            else if (/WebKit%20ASAN/.exec(url))
-                callback(failingBuildInfoJSON);
-            else {
-                ok(false, "Unexpected URL: " + url);
-                callback();
-            }
-        });
+        if (/\/json\/builders$/.exec(url))
+            return Promise.resolve(kExampleBuilderStatusJSON);
+        else if (/WebKit%20Linux/.exec(url))
+            return Promise.resolve(kExampleBuildInfoJSON);
+        else if (/WebKit%20Mac10\.6/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else if (/WebKit%20ASAN/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else {
+            ok(false, "Unexpected URL: " + url);
+            return Promise.reject("Unexpected URL: " + url);
+        };
     };
 
     simulator.runTest(function() {
@@ -734,17 +730,19 @@ test("buildersFailing", 3, function() {
                 ],
             });
         });
-    });
+    }).then(function() {
 
-    deepEqual(requestedURLs, [
-      "http://build.chromium.org/p/chromium.webkit/json/builders",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/11461",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Mac10.6/builds/11460",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
-    ]);
+        deepEqual(requestedURLs, [
+            "http://build.chromium.org/p/chromium.webkit/json/builders",
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/11461",
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Mac10.6/builds/11460",
+                            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
+        ]);
+        start();
+    });
 });
 
-test("buildersFailing (run-webkit-tests crash)", 3, function() {
+asyncTest("buildersFailing (run-webkit-tests crash)", 3, function() {
     var simulator = new NetworkSimulator();
     builders.clearBuildInfoCache();
 
@@ -757,21 +755,19 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
     failingBuildInfoJSON.number = 21460;
 
     var requestedURLs = [];
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
         requestedURLs.push(url);
-        simulator.scheduleCallback(function() {
-            if (/\/json\/builders$/.exec(url))
-                callback(builderStatusJSON);
-            else if (/WebKit%20Linux/.exec(url))
-                callback(failingBuildInfoJSON);
-            else if (/WebKit%20ASAN/.exec(url))
-                callback(failingBuildInfoJSON);
-            else {
-                ok(false, "Unexpected URL: " + url);
-                callback();
-            }
-        });
+        if (/\/json\/builders$/.exec(url))
+            return Promise.resolve(builderStatusJSON);
+        else if (/WebKit%20Linux/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else if (/WebKit%20ASAN/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else {
+            ok(false, "Unexpected URL: " + url);
+            return Promise.reject("Unexpected URL: " + url);
+        }
     };
 
     simulator.runTest(function() {
@@ -791,17 +787,18 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
                 ],
             });
         });
+    }).then(function() {
+        deepEqual(requestedURLs, [
+            "http://build.chromium.org/p/chromium.webkit/json/builders",
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
+            // FIXME: This looks wrong?  Why is ASAN here and with the wrong build number?
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460"
+        ]);
+        start();
     });
-
-    deepEqual(requestedURLs, [
-      "http://build.chromium.org/p/chromium.webkit/json/builders",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
-      // FIXME: This looks wrong?  Why is ASAN here and with the wrong build number?
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460"
-    ]);
 });
 
-test("buildersFailing (taskkill warning)", 3, function() {
+asyncTest("buildersFailing (taskkill warning)", 3, function() {
     var simulator = new NetworkSimulator();
     builders.clearBuildInfoCache();
 
@@ -814,34 +811,34 @@ test("buildersFailing (taskkill warning)", 3, function() {
     failingBuildInfoJSON.number = 21460;
 
     var requestedURLs = [];
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
         requestedURLs.push(url);
-        simulator.scheduleCallback(function() {
-            if (/\/json\/builders$/.exec(url))
-                callback(builderStatusJSON);
-            else if (/WebKit%20Linux/.exec(url))
-                callback(failingBuildInfoJSON);
-            else if (/WebKit%20ASAN/.exec(url))
-                callback(failingBuildInfoJSON);
-            else {
-                ok(false, "Unexpected URL: " + url);
-                callback();
-            }
-        });
+        if (/\/json\/builders$/.exec(url))
+            return Promise.resolve(builderStatusJSON);
+        else if (/WebKit%20Linux/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else if (/WebKit%20ASAN/.exec(url))
+            return Promise.resolve(failingBuildInfoJSON);
+        else {
+            ok(false, "Unexpected URL: " + url);
+            return Promise.reject("Unexpected URL: " + url);
+        }
     };
 
     simulator.runTest(function() {
         builders.buildersFailingNonLayoutTests(function(builderNameList) {
             deepEqual(builderNameList, {});
         });
-    });
+    }).then(function() {
 
-    deepEqual(requestedURLs, [
-      "http://build.chromium.org/p/chromium.webkit/json/builders",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
-      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
-    ]);
+        deepEqual(requestedURLs, [
+            "http://build.chromium.org/p/chromium.webkit/json/builders",
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
+            "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
+        ]);
+        start();
+    });
 });
 
 })();

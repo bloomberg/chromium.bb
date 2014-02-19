@@ -72,7 +72,7 @@ function mostRecentCompletedBuildNumber(individualBuilderStatus)
 
 var g_buildInfoCache = new base.AsynchronousCache(function(key, callback) {
     var explodedKey = key.split('\n');
-    net.json(urlForBuildInfo(explodedKey[0], explodedKey[1]), callback);
+    net.json(urlForBuildInfo(explodedKey[0], explodedKey[1])).then(callback);
 });
 
 builders.clearBuildInfoCache = function()
@@ -82,7 +82,7 @@ builders.clearBuildInfoCache = function()
 
 function fetchMostRecentBuildInfoByBuilder(callback)
 {
-    net.json(config.buildConsoleURL + '/json/builders', function(builderStatus) {
+    net.json(config.buildConsoleURL + '/json/builders').then(function(builderStatus) {
         var buildInfoByBuilder = {};
         var builderNames = Object.keys(builderStatus);
         var requestTracker = new base.RequestTracker(builderNames.length, callback, [buildInfoByBuilder]);
@@ -123,7 +123,7 @@ builders.buildersFailingNonLayoutTests = function(callback)
 };
 
 builders.mostRecentBuildForBuilder = function(builderName, callback) {
-    net.json(config.buildConsoleURL + '/json/builders/' + builderName, function(builderStatus) {
+    net.json(config.buildConsoleURL + '/json/builders/' + builderName).then(function(builderStatus) {
         var cachedBuilds = builderStatus.cachedBuilds;
         var mostRecentBuild = Math.max.apply(Math, cachedBuilds);
         callback(mostRecentBuild);

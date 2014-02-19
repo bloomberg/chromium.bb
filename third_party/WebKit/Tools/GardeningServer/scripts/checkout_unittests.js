@@ -27,20 +27,23 @@
 
 module("checkout");
 
-test("lastBlinkRollRevision", 0, function() {
+asyncTest("lastBlinkRollRevision", 0, function() {
     var simulator = new NetworkSimulator();
 
     var requests = [];
-    simulator.get = function(url, callback)
+    simulator.get = function(url)
     {
         requests.push([url]);
-        simulator.scheduleCallback(callback);
+        return Promise.resolve();
     };
+
     simulator.ajax = function(options)
     {
-        if (options.url.indexOf('/ping') == -1)
+        if (options.url.indexOf('/ping') == -1) {
             ok(false, 'Received non-ping ajax request: ' + options.url);
-        simulator.scheduleCallback(options.success);
+            return Promise.reject('Received non-ping ajax request: ' + options.url);
+        }
+        return Promise.resolve();
     };
 
     simulator.runTest(function() {
@@ -49,27 +52,30 @@ test("lastBlinkRollRevision", 0, function() {
         }, function() {
             ok(false, 'Checkout should be available.');
         });
-    });
-
-    deepEqual(requests, [
-        ["/lastroll"]
-    ]);
+    }).then(function() {
+        deepEqual(requests, [
+            ["/lastroll"]
+        ]);
+        start();
+    });;
 });
 
-test("rebaseline", 3, function() {
+asyncTest("rebaseline", 3, function() {
     var simulator = new NetworkSimulator();
 
     var requests = [];
-    simulator.post = function(url, body, callback)
+    simulator.post = function(url, body)
     {
         requests.push([url, body]);
-        simulator.scheduleCallback(callback);
+        return Promise.resolve();
     };
     simulator.ajax = function(options)
     {
-        if (options.url.indexOf('/ping') == -1)
+        if (options.url.indexOf('/ping') == -1) {
             ok(false, 'Received non-ping ajax request: ' + options.url);
-        simulator.scheduleCallback(options.success);
+            return Promise.reject('Received non-ping ajax request: ' + options.url);
+        }
+        return Promise.resolve();
     };
 
     var kExpectedTestNameProgressStack = [
@@ -100,29 +106,31 @@ test("rebaseline", 3, function() {
         }, function() {
             ok(false, 'There are no debug bots in the list');
         });
-    });
+    }).then(function() {
 
-    deepEqual(requests, [
-        ["/rebaselineall",
-         JSON.stringify({
-             "another/test.svg": {
-                 "WebKit Linux": ["png"],
-                 "WebKit Mac10.6": ["png","txt"]},
-             "fast/test.html": {
-                 "Webkit Win7": ["txt","png"]
-             }})]
-    ]);
+        deepEqual(requests, [
+            ["/rebaselineall",
+             JSON.stringify({
+                 "another/test.svg": {
+                     "WebKit Linux": ["png"],
+                     "WebKit Mac10.6": ["png","txt"]},
+                 "fast/test.html": {
+                     "Webkit Win7": ["txt","png"]
+                 }})]
+        ]);
+        start();
+    });
 });
 
-test("rebaseline-debug-bot", 3, function() {
+asyncTest("rebaseline-debug-bot", 3, function() {
     var simulator = new NetworkSimulator();
-    simulator.post = function(url, body, callback)
+    simulator.post = function(url, body)
     {
-        simulator.scheduleCallback(callback);
+        return Promise.resolve();
     };
     simulator.ajax = function(options)
     {
-        simulator.scheduleCallback(options.success);
+        return Promise.resolve();
     };
 
     simulator.runTest(function() {
@@ -139,7 +147,7 @@ test("rebaseline-debug-bot", 3, function() {
         }, function(failureInfo) {
             ok(true);
         });
-    });
+    }).then(start);
 });
 
 })();

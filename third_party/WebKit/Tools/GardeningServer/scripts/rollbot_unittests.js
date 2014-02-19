@@ -154,13 +154,11 @@ var kStoppedIssue = {
   "issue": 16606004
 };
 
-test("fetchCurrentRoll", 6, function() {
+asyncTest("fetchCurrentRoll", 6, function() {
     var simulator = new NetworkSimulator();
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
-        simulator.scheduleCallback(function() {
-            callback(kSearchResults);
-        });
+        return Promise.resolve(kSearchResults);
     };
 
     simulator.runTest(function() {
@@ -171,7 +169,7 @@ test("fetchCurrentRoll", 6, function() {
             equals(roll.fromRevision, "151668");
             equals(roll.toRevision, "151677");
         });
-    });
+    }).then(start);
 });
 
 test("_isRollbotStopped", 1, function() {

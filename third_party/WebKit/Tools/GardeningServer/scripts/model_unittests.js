@@ -117,16 +117,14 @@ test("rebaselineQueue", 3, function() {
     deepEqual(queue, []);
 });
 
-test("updateRecentCommits", 2, function() {
+asyncTest("updateRecentCommits", 2, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.xml = function(url, callback)
+    simulator.xml = function(url)
     {
-        simulator.scheduleCallback(function() {
-            var parser = new DOMParser();
-            var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
-            callback(responseDOM);
-        });
+        var parser = new DOMParser();
+        var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
+        return Promise.resolve(responseDOM);
     };
 
     simulator.runTest(function() {
@@ -168,19 +166,17 @@ test("updateRecentCommits", 2, function() {
               }
             ]);
         });
-    });
+    }).then(start);
 });
 
-test("commitDataListForRevisionRange", 6, function() {
+asyncTest("commitDataListForRevisionRange", 6, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.xml = function(url, callback)
+    simulator.xml = function(url)
     {
-        simulator.scheduleCallback(function() {
-            var parser = new DOMParser();
-            var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
-            callback(responseDOM);
-        });
+        var parser = new DOMParser();
+        var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
+        return Promise.resolve(responseDOM);
     };
 
     simulator.runTest(function() {
@@ -197,7 +193,7 @@ test("commitDataListForRevisionRange", 6, function() {
             deepEqual(model.commitDataListForRevisionRange(4, 0).map(extractBugIDs), []);
             delete model.state.recentCommits;
         });
-    });
+    }).then(start);
 });
 
 test("buildersInFlightForRevision", 3, function() {

@@ -175,16 +175,14 @@ test("changesetURL", 1, function() {
     equals(trac.changesetURL(1234), "http://src.chromium.org/viewvc/blink?view=rev&revision=1234");
 });
 
-test("recentCommitData", 3, function() {
+asyncTest("recentCommitData", 3, function() {
     var simulator = new NetworkSimulator();
-    simulator.xml = function(url, callback)
+    simulator.xml = function(url)
     {
         equals(url, 'http://blink.lc/blink/atom');
-        simulator.scheduleCallback(function() {
-            var parser = new DOMParser();
-            var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
-            callback(responseDOM);
-        });
+        var parser = new DOMParser();
+        var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");
+        return Promise.resolve(responseDOM);
     };
 
     simulator.runTest(function() {
@@ -195,7 +193,7 @@ test("recentCommitData", 3, function() {
             });
             deepEqual(commitDataList, kExampleCommitDataList);
         });
-    });
+    }).then(start);
 });
 
 })();

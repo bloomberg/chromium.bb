@@ -107,7 +107,7 @@ trac.changesetURL = function(revision)
 
 trac.recentCommitData = function(path, limit, callback)
 {
-    net.xml('http://blink.lc/blink/atom', function(commitData) {
+    net.xml('http://blink.lc/blink/atom').then(function(commitData) {
         callback(parseCommitData(commitData));
     });
 };

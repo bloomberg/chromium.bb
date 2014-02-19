@@ -50,19 +50,15 @@ checkout.isAvailable = function(callback)
 {
     net.ajax({
         url: '/ping',
-        success: function() {
-            callback(true);
-        },
-        error: function() {
-            callback(false);
-        },
-    });
+    }).then(function() { return true; },
+            function() { return false; })
+    .then(callback);
 };
 
 checkout.lastBlinkRollRevision = function(callback, checkoutUnavailable)
 {
     callIfCheckoutAvailable(function() {
-        net.get('/lastroll', callback);
+        net.get('/lastroll').then(callback);
     }, checkoutUnavailable);
 }
 
@@ -72,9 +68,7 @@ checkout.rollout = function(revision, reason, callback, checkoutUnavailable)
         net.post('/rollout?' + $.param({
             'revision': revision,
             'reason': reason
-        }), function() {
-            callback();
-        });
+        })).then(callback);
     }, checkoutUnavailable);
 };
 
@@ -92,7 +86,7 @@ checkout.rebaseline = function(failureInfoList, callback, progressCallback, chec
             tests[failureInfo.testName][failureInfo.builderName] =
                 base.uniquifyArray(base.flattenArray(failureInfo.failureTypeList.map(results.failureTypeToExtensionList)));
         }
-        net.post('/rebaselineall', JSON.stringify(tests), function() { callback() });
+        net.post('/rebaselineall', JSON.stringify(tests)).then(callback);
     }, checkoutUnavailable);
 };
 

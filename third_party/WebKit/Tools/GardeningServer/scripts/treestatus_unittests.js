@@ -49,30 +49,33 @@ test('urlByName', 3, function() {
     equal(treestatus.urlByName('foo'), null);
 });
 
-test('fetchTreeStatus', 4, function() {
+asyncTest('fetchTreeStatus', 4, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
-        simulator.scheduleCallback(function() {
-            if (url.indexOf('closed') != -1)
-                callback(closedTreeJson);
-            else
-                callback(openTreeJson);
-        });
+        if (url.indexOf('closed') != -1)
+            return Promise.resolve(closedTreeJson);
+        else
+            return Promise.resolve(openTreeJson);
     };
 
     var span = document.createElement('span');
     simulator.runTest(function() {
-        treestatus.fetchTreeStatus('http://opentree', span);
-    });
-    equal(span.textContent, 'OPEN');
+        treestatus.fetchTreeStatus('http://opentree', span)
+            .then(function(result) {
+                equal(span.textContent, 'OPEN');
 
-    var span = document.createElement('span');
-    simulator.runTest(function() {
-        treestatus.fetchTreeStatus('http://closedtree', span);
+                span = document.createElement('span');
+                simulator.runTest(function() {
+                    treestatus.fetchTreeStatus('http://closedtree', span)
+                        .then(function() {
+                            equal(span.textContent, 'Tree is closed by ojan@chromium.org');
+                            start();
+                        });
+                });
+            });
     });
-    equal(span.textContent, 'Tree is closed by ojan@chromium.org');
 });
 
 })();

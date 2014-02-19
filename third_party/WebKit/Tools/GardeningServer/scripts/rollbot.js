@@ -54,7 +54,7 @@ function isRollbotStopped(issue) {
 }
 
 rollbot.fetchCurrentRoll = function(callback) {
-    net.json(issueSearchURL, function(searchJSON) {
+    net.json(issueSearchURL).then(function(searchJSON) {
         var issue = findRollIssue(searchJSON);
         if (!issue) {
             callback(null);

@@ -196,7 +196,7 @@ function resultsSummaryURLForBuildNumber(builderName, buildNumber)
 }
 
 var g_resultsCache = new base.AsynchronousCache(function (key, callback) {
-    net.jsonp(key, callback);
+    net.jsonp(key).then(callback);
 });
 
 results.ResultAnalyzer = base.extends(Object, {
@@ -332,7 +332,7 @@ function historicalResultsLocations(builderName, callback)
         var nextMarker = $(prefixListingDocument).find('NextMarker').get();
         if (nextMarker.length) {
             var nextListingURL = resultsPrefixListingURL(builderName, nextMarker[0].textContent);
-            net.xml(nextListingURL, parseListingDocument);
+            net.xml(nextListingURL).then(parseListingDocument);
         } else {
             callback(historicalResultsData);
         }
@@ -341,7 +341,7 @@ function historicalResultsLocations(builderName, callback)
     builders.mostRecentBuildForBuilder(builderName, function (mostRecentBuildNumber) {
         var marker = config.resultsDirectoryNameFromBuilderName(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
         var listingURL = resultsPrefixListingURL(builderName, marker);
-        net.xml(listingURL, parseListingDocument);
+        net.xml(listingURL).then(parseListingDocument);
     });
 }
 
@@ -517,15 +517,14 @@ results.fetchResultsURLs = function(failureInfo, callback)
     });
     $.each(suffixList, function(index, suffix) {
         var url = urlStem + testNameStem + suffix;
-        net.probe(url, {
-            success: function() {
+        net.probe(url).then(
+            function() {
                 resultURLs.push(url);
                 tracker.requestComplete();
             },
-            error: function() {
+            function() {
                 tracker.requestComplete();
-            },
-        });
+            });
     });
 };
 
@@ -537,7 +536,7 @@ results.fetchResultsByBuilder = function(builderNameList, callback)
     });
     $.each(builderNameList, function(index, builderName) {
         var resultsURL = resultsSummaryURL(builderName);
-        net.jsonp(resultsURL, function(resultsTree) {
+        net.jsonp(resultsURL).then(function(resultsTree) {
             resultsByBuilder[builderName] = resultsTree;
             tracker.requestComplete();
         });

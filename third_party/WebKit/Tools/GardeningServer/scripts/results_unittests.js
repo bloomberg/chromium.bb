@@ -246,7 +246,7 @@ test("resultNodeForTest", 4, function() {
     equals(results.resultNodeForTest(unittest.kExampleResultsJSON, "userscripts/foo/bar.html"), null);
 });
 
-test("walkHistory", 5, function() {
+asyncTest("walkHistory", 5, function() {
     var simulator = new NetworkSimulator();
 
     var keyMap = {
@@ -326,45 +326,43 @@ test("walkHistory", 5, function() {
         },
     };
 
-    simulator.jsonp = function(url, callback) {
-        simulator.scheduleCallback(function() {
-            var result = keyMap[/[^/]+_Builder/.exec(url)][/\d+/.exec(url)];
-            callback(result ? result : {});
-        });
+    simulator.jsonp = function(url) {
+        var result = keyMap[/[^/]+_Builder/.exec(url)][/\d+/.exec(url)];
+        return Promise.resolve(result ? result : {});
     };
 
-    simulator.json = function(url, callback) {
-        simulator.scheduleCallback(function() {
-            if (/Mock Builder/.test(url))
-                callback({cachedBuilds: [11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108]});
-            else if (/Another Builder/.test(url))
-                callback({cachedBuilds: [22201, 22202]});
-            else
-                ok(false, 'Unexpected URL: ' + url);
-        });
+    simulator.json = function(url) {
+        if (/Mock Builder/.test(url))
+            return Promise.resolve({cachedBuilds: [11101, 11102, 11103, 11104, 11105, 11106, 11107, 11108]});
+        else if (/Another Builder/.test(url))
+            return Promise.resolve({cachedBuilds: [22201, 22202]});
+        else
+            return Promise.reject(false, 'Unexpected URL: ' + url);
     };
 
-    simulator.xml = function(url, callback) {
-        simulator.scheduleCallback(function() {
-            if (/Mock_Builder/.test(url))
-                callback('<ListBucketResult>' +
-                         '<Prefix>Mock_Builder/11101/</Prefix>' +
-                         '<Prefix>Mock_Builder/11102/</Prefix>' +
-                         '<Prefix>Mock_Builder/11103/</Prefix>' +
-                         '<Prefix>Mock_Builder/11104/</Prefix>' +
-                         '<Prefix>Mock_Builder/11105/</Prefix>' +
-                         '<Prefix>Mock_Builder/11106/</Prefix>' +
-                         '<Prefix>Mock_Builder/11107/</Prefix>' +
-                         '<Prefix>Mock_Builder/11108/</Prefix>' +
-                         '</ListBucketResult>');
-            else if (/Another_Builder/.test(url))
-                callback('<ListBucketResult>' +
-                         '<Prefix>Another_Builder/22201/</Prefix>' +
-                         '<Prefix>Another_Builder/22202/</Prefix>' +
-                         '</ListBucketResult>');
-            else
-                ok(false, 'Unexpected URL: ' + url);
-        });
+    simulator.xml = function(url) {
+        if (/Mock_Builder/.test(url))
+            return Promise.resolve(
+                '<ListBucketResult>' +
+                    '<Prefix>Mock_Builder/11101/</Prefix>' +
+                    '<Prefix>Mock_Builder/11102/</Prefix>' +
+                    '<Prefix>Mock_Builder/11103/</Prefix>' +
+                    '<Prefix>Mock_Builder/11104/</Prefix>' +
+                    '<Prefix>Mock_Builder/11105/</Prefix>' +
+                    '<Prefix>Mock_Builder/11106/</Prefix>' +
+                    '<Prefix>Mock_Builder/11107/</Prefix>' +
+                    '<Prefix>Mock_Builder/11108/</Prefix>' +
+                    '</ListBucketResult>');
+        else if (/Another_Builder/.test(url))
+                return Promise.resolve(
+                    '<ListBucketResult>' +
+                        '<Prefix>Another_Builder/22201/</Prefix>' +
+                        '<Prefix>Another_Builder/22202/</Prefix>' +
+                        '</ListBucketResult>');
+        else {
+            ok(false, 'Unexpected URL: ' + url);
+            return Promise.reject('Unexpected URL: ' + url);
+        }
     };
 
     simulator.runTest(function() {
@@ -377,10 +375,10 @@ test("walkHistory", 5, function() {
             equals(oldestFailingRevision, 90426);
             equals(newestPassingRevision, 90425);
         });
-    });
+    }).then(start);
 });
 
-test("walkHistory (no revision)", 3, function() {
+asyncTest("walkHistory (no revision)", 3, function() {
     var simulator = new NetworkSimulator();
 
     var keyMap = {
@@ -404,21 +402,17 @@ test("walkHistory (no revision)", 3, function() {
         },
     };
 
-    simulator.jsonp = function(url, callback) {
-        simulator.scheduleCallback(function() {
-            var result = keyMap[/[^/]+_Builder/.exec(url)][/\d+/.exec(url)];
-            callback(result ? result : {});
-        });
+    simulator.jsonp = function(url) {
+        var result = keyMap[/[^/]+_Builder/.exec(url)][/\d+/.exec(url)];
+        return Promise.resolve(result ? result : {});
     };
 
-    simulator.xml = function(url, callback) {
-        simulator.scheduleCallback(function() {
-            callback('<a href="11101/"></a><a href="11102/"></a><a href="11103/"></a>');
-        });
+    simulator.xml = function(url) {
+        return Promise.resolve('<a href="11101/"></a><a href="11102/"></a><a href="11103/"></a>');
     };
 
-    simulator.json = function(url, callback) {
-        callback({});
+    simulator.json = function(url) {
+        return Promise.resolve({});
     };
 
     simulator.runTest(function() {
@@ -426,7 +420,7 @@ test("walkHistory (no revision)", 3, function() {
             equals(oldestFailingRevision, 0);
             equals(newestPassingRevision, 0);
         });
-    });
+    }).then(start);
 });
 
 test("collectUnexpectedResults", 1, function() {
@@ -465,21 +459,19 @@ test("failureTypeToExtensionList", 5, function() {
     deepEqual(results.failureTypeToExtensionList('TIMEOUT'), []);
 });
 
-test("fetchResultsURLs", 5, function() {
+asyncTest("fetchResultsURLs", 5, function() {
     var simulator = new NetworkSimulator();
 
     var probedURLs = [];
-    simulator.probe = function(url, options)
+    simulator.probe = function(url)
     {
-        simulator.scheduleCallback(function() {
-            probedURLs.push(url);
-            if (base.endsWith(url, '.txt'))
-                options.success.call();
-            else if (/taco.+png$/.test(url))
-                options.success.call();
-            else
-                options.error.call();
-        });
+        probedURLs.push(url);
+        if (base.endsWith(url, '.txt'))
+            return Promise.resolve();
+        else if (/taco.+png$/.test(url))
+            return Promise.resolve();
+        else
+            return Promise.reject();
     };
 
     simulator.runTest(function() {
@@ -513,32 +505,31 @@ test("fetchResultsURLs", 5, function() {
                 MockResultsBaseURL + "/userscripts/taco-diff.txt",
             ]);
         });
+    }).then(function() {
+        deepEqual(probedURLs, [
+            MockResultsBaseURL + "/userscripts/another-test-expected.png",
+            MockResultsBaseURL + "/userscripts/another-test-actual.png",
+            MockResultsBaseURL + "/userscripts/another-test-diff.png",
+            MockResultsBaseURL + "/userscripts/another-test-crash-log.txt",
+            MockResultsBaseURL + "/userscripts/taco-expected.png",
+            MockResultsBaseURL + "/userscripts/taco-actual.png",
+            MockResultsBaseURL + "/userscripts/taco-diff.png",
+            MockResultsBaseURL + "/userscripts/taco-actual.txt",
+            MockResultsBaseURL + "/userscripts/taco-expected.txt",
+            MockResultsBaseURL + "/userscripts/taco-diff.txt",
+        ]);
+        start();
     });
-
-    deepEqual(probedURLs, [
-        MockResultsBaseURL + "/userscripts/another-test-expected.png",
-        MockResultsBaseURL + "/userscripts/another-test-actual.png",
-        MockResultsBaseURL + "/userscripts/another-test-diff.png",
-        MockResultsBaseURL + "/userscripts/another-test-crash-log.txt",
-        MockResultsBaseURL + "/userscripts/taco-expected.png",
-        MockResultsBaseURL + "/userscripts/taco-actual.png",
-        MockResultsBaseURL + "/userscripts/taco-diff.png",
-        MockResultsBaseURL + "/userscripts/taco-actual.txt",
-        MockResultsBaseURL + "/userscripts/taco-expected.txt",
-        MockResultsBaseURL + "/userscripts/taco-diff.txt",
-    ]);
 });
 
-test("fetchResultsByBuilder", 3, function() {
+asyncTest("fetchResultsByBuilder", 3, function() {
     var simulator = new NetworkSimulator();
 
     var probedURLs = [];
-    simulator.jsonp = function(url, callback)
+    simulator.jsonp = function(url)
     {
-        simulator.scheduleCallback(function() {
-            probedURLs.push(url);
-            callback(base.endsWith(url, 'results/layout-test-results/failing_results.json'));
-        });
+        probedURLs.push(url);
+        return Promise.resolve(base.endsWith(url, 'results/layout-test-results/failing_results.json'));
     };
 
     simulator.runTest(function() {
@@ -548,7 +539,7 @@ test("fetchResultsByBuilder", 3, function() {
                 "MockBuilder2": true,
             });
         });
-    });
+    }).then(start);
 
     deepEqual(probedURLs, [
         MockResultsBaseURL.replace('Mock_Builder', 'MockBuilder1') + "/failing_results.json",

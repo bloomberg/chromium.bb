@@ -205,7 +205,6 @@ ui.results.FlakinessData = base.extends('iframe', {
             return;
 
         if (event.data.command != 'heightChanged') {
-            console.log('Unknown postMessage command: ' + event.data);
             return;
         }
 
@@ -251,7 +250,7 @@ ui.results.TestSelector = base.extends('div', {
         }, this);
 
         // If we have a small amount of content, don't show the resize handler.
-        // Otherwise, set the minHeight so that the percentage height of the 
+        // Otherwise, set the minHeight so that the percentage height of the
         // topPanel is not too small.
         if (testNames.length <= 4)
             this.removeChild(this.querySelector('.resize-handle'));

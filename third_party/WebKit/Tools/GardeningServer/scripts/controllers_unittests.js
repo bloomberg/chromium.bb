@@ -31,10 +31,11 @@ var kExampleResultsByBuilder = {
 
 module("controllers");
 
-test("UnexpectedFailures", 3, function() {
+asyncTest("UnexpectedFailures", 3, function() {
     var simulator = new NetworkSimulator();
 
     simulator.probe = function() {
+        return Promise.resolve();
     };
 
     simulator.runTest(function() {
@@ -71,7 +72,7 @@ test("UnexpectedFailures", 3, function() {
           }
         };
         controller.onExamine(mockFailures);
-    });
+    }).then(start);
 });
 
 test("controllers.FailingBuilders", 3, function() {

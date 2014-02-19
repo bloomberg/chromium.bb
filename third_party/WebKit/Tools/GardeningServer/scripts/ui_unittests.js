@@ -205,21 +205,21 @@ var openTreeJson = {
     "general_state": "open"
 };
 
-test("TreeStatus", 2, function() {
+asyncTest("TreeStatus", 2, function() {
     var simulator = new NetworkSimulator();
 
-    simulator.json = function(url, callback)
+    simulator.json = function(url)
     {
-        simulator.scheduleCallback(function() {
-            callback(openTreeJson);
-        });
+        return Promise.resolve(openTreeJson);
     };
 
     var treestatus;
     simulator.runTest(function() {
         treeStatus = new ui.TreeStatus();
+    }).then(function() {
+        equal(treeStatus.innerHTML, '<div> blink status: <span>OPEN</span></div><div> chromium status: <span>OPEN</span></div>');
+        start();
     });
-    equal(treeStatus.innerHTML, '<div> blink status: <span>OPEN</span></div><div> chromium status: <span>OPEN</span></div>');
 });
 
 
