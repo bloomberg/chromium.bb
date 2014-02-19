@@ -25,6 +25,7 @@ _EXCLUDED_PATHS = (
     r".+_autogen\.h$",
     r".+[\\\/]pnacl_shim\.c$",
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
+    r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js"
 )
 
 # TestRunner and NetscapePlugIn library is temporarily excluded from pan-project

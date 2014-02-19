@@ -47,8 +47,11 @@ def _CommonChecks(input_api, output_api):
     def _html_css_js_resource(p):
       return p.endswith(('.html', '.css', '.js')) and p.startswith(resources)
 
+    BLACKLIST = ['chrome/browser/resources/pdf/index.html',
+                 'chrome/browser/resources/pdf/index.js']
     def is_resource(maybe_resource):
-      return _html_css_js_resource(maybe_resource.AbsoluteLocalPath())
+      return (maybe_resource.LocalPath() not in BLACKLIST and
+          _html_css_js_resource(maybe_resource.AbsoluteLocalPath()))
 
     results.extend(css_checker.CSSChecker(
         input_api, output_api, file_filter=is_resource).RunChecks())
