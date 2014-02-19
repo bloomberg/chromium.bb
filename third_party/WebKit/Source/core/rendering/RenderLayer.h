@@ -469,6 +469,8 @@ public:
 
     bool scrollsOverflow() const;
 
+    bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
+
 private:
     bool hasOverflowControls() const;
 
