@@ -680,6 +680,12 @@
       <message name="IDS_REMOTING_HOST_PLUGIN_DESCRIPTION" desc="The file description specified in the version information of remoting_host_plugin.dll.">
         Allow another user to access your computer securely over the Internet.
       </message>
+      <message name="IDS_REMOTING_NATIVE_MESSAGING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_native_messaging_host.exe.">
+        Native messaging host for remoting host management
+      </message>
+      <message name="IDS_REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION" desc="The file description specified in the version information of remote_assistance_host.exe.">
+        Native messaging host for remote assistance
+      </message>
       <message name="IDS_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
         Account
       </message>

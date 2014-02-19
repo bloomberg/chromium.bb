@@ -577,6 +577,22 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+            ['OS=="win"', {
+              'defines' : [
+                'BINARY=BINARY_NATIVE_MESSAGING_HOST',
+              ],
+              'dependencies': [
+                'remoting_windows_resources',
+              ],
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+                },
+              },
+            }],
           ],
         },  # end of target 'remoting_me2me_native_messaging_host'
         {
@@ -609,6 +625,15 @@
             }],
             ['OS=="win"', {
               'product_name': 'remote_assistance_host',
+              'defines' : [
+                'BINARY=BINARY_REMOTE_ASSISTANCE_HOST',
+              ],
+              'dependencies': [
+                'remoting_windows_resources',
+              ],
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+              ],
               'msvs_settings': {
                 'VCManifestTool': {
                   'EmbedManifest': 'true',
@@ -618,6 +643,7 @@
                   ],
                 },
                 'VCLinkerTool': {
+                  'SubSystem': '1', # /SUBSYSTEM:CONSOLE
                   'AdditionalDependencies': [
                     'comctl32.lib',
                   ],
