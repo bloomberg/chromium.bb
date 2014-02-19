@@ -14,6 +14,7 @@
 #include "ash/shell_window_ids.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
@@ -166,7 +167,16 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     aura::Window* root_window = window->GetRootWindow();
     aura::Window* container = GetRootWindowController(root_window)->
         GetContainer(kShellWindowId_AppListContainer);
-    if (ash::switches::UseAlternateShelfLayout()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            app_list::switches::kEnableExperimentalAppList)) {
+      // The experimental app list is centered over the primary display.
+      view->InitAsBubbleAtFixedLocation(
+          NULL,
+          pagination_model_.get(),
+          Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint(),
+          views::BubbleBorder::FLOAT,
+          true /* border_accepts_events */);
+    } else if (ash::switches::UseAlternateShelfLayout()) {
       gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
           GetAppListButtonView()->GetBoundsInScreen();
       // We need the location of the button within the local screen.
