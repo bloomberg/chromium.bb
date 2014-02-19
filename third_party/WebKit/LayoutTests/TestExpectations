@@ -250,7 +250,7 @@ crbug.com/322272 virtual/threaded/animations/animation-offscreen-to-onscreen.htm
 crbug.com/322272 [ Win ] virtual/threaded/animations/change-transform-style-during-animation.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/322272 [ Win Debug ] virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/322272 [ Mac Linux Debug ] virtual/threaded/animations/negative-delay.html [ Pass Failure ]
-crbug.com/322272 [ Win Debug ] virtual/threaded/animations/negative-delay.html [ Pass Failure Timeout ]
+crbug.com/322272 [ Win ] virtual/threaded/animations/negative-delay.html [ Pass Failure Timeout ]
 crbug.com/322272 virtual/threaded/animations/play-state-initially-paused.html [ Pass Timeout Failure ]
 crbug.com/322272 [ Win ] virtual/threaded/animations/transition-and-animation-2.html [ Pass Timeout ]
 crbug.com/322272 [ Win Debug ] virtual/threaded/transitions/default-timing-function.html [ Pass Timeout ]
@@ -387,7 +387,7 @@ crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failu
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Timeout Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-all-properties.html [ Pass Failure ]
@@ -435,6 +435,23 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/sample-on-last-keyframe.htm
 crbug.com/248938 [ Win ] virtual/threaded/animations/state-at-end-event.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/animation-direction-reverse-hardware-opacity.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/fill-mode-iteration-count-non-integer.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/fill-mode-multiple-keyframes.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/fill-mode-transform.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/interrupted-immediately.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/position-background-transition.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/svg-text-shadow-transition.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-destroy-renderer.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-prefixed-03.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-hit-test-transform.html [ Timeout Pass ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/animations/animation-end-event-destroy-renderer.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/repeated-firing-background-color.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-prefixed-01.html [ Pass Timeout ]
 
 crbug.com/344367 [ Debug ] virtual/threaded/animations/timing-model.html [ Pass Failure ]
 
@@ -796,7 +813,7 @@ crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ P
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
-crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
+crbug.com/328749 [ Linux Mac ] virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
 crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
