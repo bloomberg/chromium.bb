@@ -114,6 +114,7 @@ struct fd_ringmarker {
 struct fd_ringbuffer_funcs {
 	void * (*hostptr)(struct fd_ringbuffer *ring);
 	int (*flush)(struct fd_ringbuffer *ring, uint32_t *last_start);
+	void (*reset)(struct fd_ringbuffer *ring);
 	void (*emit_reloc)(struct fd_ringbuffer *ring,
 			const struct fd_reloc *reloc);
 	void (*emit_reloc_ring)(struct fd_ringbuffer *ring,

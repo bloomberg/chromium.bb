@@ -72,6 +72,8 @@ void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 	if (ring->pipe->id == FD_PIPE_2D)
 		start = &ring->start[0x140];
 	ring->cur = ring->last_start = start;
+	if (ring->funcs->reset)
+		ring->funcs->reset(ring);
 }
 
 /* maybe get rid of this and use fd_ringmarker_flush() from DDX too? */

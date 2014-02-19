@@ -169,6 +169,22 @@ static uint32_t find_next_reloc_idx(struct msm_ringbuffer *msm_ring,
 	return i;
 }
 
+static void flush_reset(struct fd_ringbuffer *ring)
+{
+	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
+	unsigned i;
+
+	/* for each of the cmd buffers, clear their reloc's: */
+	for (i = 0; i < msm_ring->nr_cmds; i++) {
+		struct msm_ringbuffer *target_ring = to_msm_ringbuffer(msm_ring->rings[i]);
+		target_ring->nr_relocs = 0;
+	}
+
+	msm_ring->nr_relocs = 0;
+	msm_ring->nr_cmds = 0;
+	msm_ring->nr_bos = 0;
+}
+
 static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
@@ -205,8 +221,16 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 
 	ret = drmCommandWriteRead(ring->pipe->dev->fd, DRM_MSM_GEM_SUBMIT,
 			&req, sizeof(req));
-	if (ret)
+	if (ret) {
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
+	} else {
+		/* update timestamp on all rings associated with submit: */
+		for (i = 0; i < msm_ring->nr_cmds; i++) {
+			struct fd_ringbuffer *target_ring = msm_ring->rings[i];
+			if (!ret)
+				target_ring->last_timestamp = req.fence;
+		}
+	}
 
 	LIST_FOR_EACH_ENTRY_SAFE(msm_bo, tmp, &msm_ring->submit_list, list[id]) {
 		struct list_head *list = &msm_bo->list[id];
@@ -215,16 +239,14 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		fd_bo_del(&msm_bo->base);
 	}
 
-	/* for each of the cmd buffers, clear their reloc's: */
-	for (i = 0; i < msm_ring->nr_cmds; i++) {
-		struct msm_ringbuffer *target_ring = to_msm_ringbuffer(msm_ring->rings[i]);
-		target_ring->nr_relocs = 0;
-	}
-
-	msm_ring->nr_cmds = 0;
-	msm_ring->nr_bos = 0;
+	flush_reset(ring);
 
 	return ret;
+}
+
+static void msm_ringbuffer_reset(struct fd_ringbuffer *ring)
+{
+	flush_reset(ring);
 }
 
 static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
@@ -285,6 +307,7 @@ static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 static struct fd_ringbuffer_funcs funcs = {
 		.hostptr = msm_ringbuffer_hostptr,
 		.flush = msm_ringbuffer_flush,
+		.reset = msm_ringbuffer_reset,
 		.emit_reloc = msm_ringbuffer_emit_reloc,
 		.emit_reloc_ring = msm_ringbuffer_emit_reloc_ring,
 		.destroy = msm_ringbuffer_destroy,
