@@ -437,10 +437,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  // If a caller has set this, then when the caller tries to re-set it sometime
-  // in the future, we will crash.
-  DCHECK(!about_to_validate_and_paint_);
-
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
   cocoa_view_ = nil;
@@ -568,9 +564,6 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
 
 void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
     DestroyContextBehavior destroy_context_behavior) {
-  // Any pending frames will not be displayed, so ack them now.
-  SendPendingSwapAck();
-
   ScopedCAActionDisabler disabler;
 
   compositing_iosurface_.reset();
@@ -776,10 +769,6 @@ void RenderWidgetHostViewMac::WasShown() {
 void RenderWidgetHostViewMac::WasHidden() {
   if (render_widget_host_->is_hidden())
     return;
-
-  // Any pending frames will not be displayed until this is shown again. Ack
-  // them now.
-  SendPendingSwapAck();
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -1354,7 +1343,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), frame,
             base::Bind(callback, present_time));
-        SendPendingSwapAck();
         return;
       }
     }
@@ -1474,7 +1462,6 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
       underlay_view_->compositing_iosurface_ &&
       underlay_view_has_drawn_) {
     [underlay_view_->cocoa_view() setNeedsDisplay:YES];
-    SendPendingSwapAck();
     return true;
   }
 
@@ -1510,7 +1497,6 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   }
 
   SendPendingLatencyInfoToHost();
-  SendPendingSwapAck();
   return true;
 }
 
@@ -1688,14 +1674,19 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AddPendingSwapAck(params.route_id,
-                    gpu_host_id,
-                    compositing_iosurface_ ?
-                        compositing_iosurface_->GetRendererID() : 0);
   CompositorSwapBuffers(params.surface_handle,
                         params.size,
                         params.scale_factor,
                         params.latency_info);
+
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = compositing_iosurface_ ?
+      compositing_iosurface_->GetRendererID() : 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
+                                                 gpu_host_id,
+                                                 ack_params);
+  render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1705,14 +1696,19 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AddPendingSwapAck(params.route_id,
-                    gpu_host_id,
-                    compositing_iosurface_ ?
-                        compositing_iosurface_->GetRendererID() : 0);
   CompositorSwapBuffers(params.surface_handle,
                         params.surface_size,
                         params.surface_scale_factor,
                         params.latency_info);
+
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = compositing_iosurface_ ?
+      compositing_iosurface_->GetRendererID() : 0;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
+                                                 gpu_host_id,
+                                                 ack_params);
+  render_widget_host_->AcknowledgeSwapBuffersToRenderer();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
@@ -2080,32 +2076,6 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
                  pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
   [software_layer_ setNeedsDisplay];
   [compositing_iosurface_layer_ setNeedsDisplay];
-}
-
-void RenderWidgetHostViewMac::AddPendingSwapAck(
-    int32 route_id, int gpu_host_id, int32 renderer_id) {
-  DCHECK(!pending_swap_ack_);
-  pending_swap_ack_.reset(new PendingSwapAck(
-      route_id, gpu_host_id, renderer_id));
-  // If we're about to paint, ack this immediatley.
-  if (about_to_validate_and_paint_)
-    SendPendingSwapAck();
-}
-
-void RenderWidgetHostViewMac::SendPendingSwapAck() {
-  if (!pending_swap_ack_)
-    return;
-
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.sync_point = 0;
-  ack_params.renderer_id = pending_swap_ack_->renderer_id;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(pending_swap_ack_->route_id,
-                                                 pending_swap_ack_->gpu_host_id,
-                                                 ack_params);
-  if (render_widget_host_)
-    render_widget_host_->AcknowledgeSwapBuffersToRenderer();
-
-  pending_swap_ack_.reset();
 }
 
 }  // namespace content
