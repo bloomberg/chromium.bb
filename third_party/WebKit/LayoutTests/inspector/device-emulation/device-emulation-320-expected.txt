@@ -15,7 +15,7 @@ Widths:
 screen.width = 1200px
 screen.availWidth = 1200px
 window.outerWidth = 1200px
-window.innerWidth = 320px
+window.innerWidth = 321px
 @media width = 320px
 doc.docElem.clientWidth = 320px
 doc.docElem.offsetWidth = 320px

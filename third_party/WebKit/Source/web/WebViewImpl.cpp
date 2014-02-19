@@ -2715,16 +2715,11 @@ IntPoint WebViewImpl::clampOffsetAtScale(const IntPoint& offset, float scale)
         return offset;
 
     IntPoint maxScrollExtent(contentsSize().width() - view->scrollOrigin().x(), contentsSize().height() - view->scrollOrigin().y());
-
-    // TODO(bokan): This method should be folded into ScrollView
-    // In virtual viewport the scrollbars can be panned into view.
-    if (page()->settings().pinchVirtualViewportEnabled() && scale > 1.0f)
-        maxScrollExtent += view->scrollbarSizes();
-
-    IntRect scaledVisibleRect = view->visibleContentRectAtScale(scale, ScrollableArea::ExcludeScrollbars);
+    FloatSize scaledSize = view->unscaledVisibleContentSize();
+    scaledSize.scale(1 / scale);
 
     IntPoint clampedOffset = offset;
-    clampedOffset = clampedOffset.shrunkTo(maxScrollExtent - scaledVisibleRect.size());
+    clampedOffset = clampedOffset.shrunkTo(maxScrollExtent - expandedIntSize(scaledSize));
     clampedOffset = clampedOffset.expandedTo(-view->scrollOrigin());
 
     return clampedOffset;

@@ -39,7 +39,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/Frame.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -142,7 +141,6 @@ FrameView::FrameView(Frame* frame)
     if (!isMainFrame())
         return;
 
-    setPinchVirtualViewportEnabled(m_frame->host()->settings().pinchVirtualViewportEnabled());
     ScrollableArea::setVerticalScrollElasticity(ScrollElasticityAllowed);
     ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
 }
@@ -1633,7 +1631,7 @@ void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint
 
 IntSize FrameView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    return scrollbarInclusion == ExcludeScrollbars ? (m_layoutSize - scrollbarSizes())  : m_layoutSize;
+    return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(m_layoutSize) : m_layoutSize;
 }
 
 void FrameView::setLayoutSize(const IntSize& size)
