@@ -10,7 +10,7 @@
 #include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
-#include "ui/base/ime/input_method_imm32.h"
+#include "ui/base/ime/input_method_win.h"
 #include "ui/base/ime/remote_input_method_win.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_auralinux.h"
@@ -42,7 +42,7 @@ scoped_ptr<InputMethod> CreateInputMethod(
 #elif defined(OS_WIN)
   if (IsRemoteInputMethodWinRequired(widget))
     return CreateRemoteInputMethodWin(delegate);
-  return scoped_ptr<InputMethod>(new InputMethodIMM32(delegate, widget));
+  return scoped_ptr<InputMethod>(new InputMethodWin(delegate, widget));
 #elif defined(USE_AURA) && defined(OS_LINUX)
   return scoped_ptr<InputMethod>(new InputMethodAuraLinux(delegate));
 #else

@@ -36,8 +36,6 @@
     'input_method_factory.h',
     'input_method_chromeos.cc',
     'input_method_chromeos.h',
-    'input_method_imm32.cc',
-    'input_method_imm32.h',
     'input_method_initializer.cc',
     'input_method_initializer.h',
     'input_method_auralinux.cc',
