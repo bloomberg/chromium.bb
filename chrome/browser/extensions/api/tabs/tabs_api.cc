@@ -35,7 +35,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
+#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -528,7 +528,7 @@ bool WindowsCreateFunction::RunImpl() {
       create_params.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
       AppWindow* app_window = new AppWindow(
-          window_profile, new ChromeShellWindowDelegate(), GetExtension());
+          window_profile, new ChromeAppWindowDelegate(), GetExtension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
       app_window->Init(urls[0], ash_panel_contents, create_params);
       SetResult(ash_panel_contents->GetExtensionWindowController()->

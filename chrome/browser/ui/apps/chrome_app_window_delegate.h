@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
-#define CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_DELEGATE_H_
+#define CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_DELEGATE_H_
 
 #include "apps/app_window.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,24 +16,23 @@ namespace content {
 class BrowserContext;
 }
 
-class ShellWindowLinkDelegate : public content::WebContentsDelegate {
+class AppWindowLinkDelegate : public content::WebContentsDelegate {
  public:
-  ShellWindowLinkDelegate();
-  virtual ~ShellWindowLinkDelegate();
+  AppWindowLinkDelegate();
+  virtual ~AppWindowLinkDelegate();
 
  private:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowLinkDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AppWindowLinkDelegate);
 };
 
-// TODO(jamescook): Rename to ChromeAppWindowDelegate. http://crbug.com/344084
-class ChromeShellWindowDelegate : public apps::AppWindow::Delegate {
+class ChromeAppWindowDelegate : public apps::AppWindow::Delegate {
  public:
-  ChromeShellWindowDelegate();
-  virtual ~ChromeShellWindowDelegate();
+  ChromeAppWindowDelegate();
+  virtual ~ChromeAppWindowDelegate();
 
   static void DisableExternalOpenForTesting();
 
@@ -75,9 +74,9 @@ class ChromeShellWindowDelegate : public apps::AppWindow::Delegate {
       apps::AppWindow* window,
       const apps::AppWindow::CreateParams& params);
 
-  scoped_ptr<ShellWindowLinkDelegate> shell_window_link_delegate_;
+  scoped_ptr<AppWindowLinkDelegate> app_window_link_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeShellWindowDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppWindowDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_APPS_CHROME_APP_WINDOW_DELEGATE_H_

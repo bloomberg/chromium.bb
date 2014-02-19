@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
+#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -98,13 +98,13 @@ class OpenURLFromTabBasedOnBrowserDefault
 
 }  // namespace
 
-ShellWindowLinkDelegate::ShellWindowLinkDelegate() {}
+AppWindowLinkDelegate::AppWindowLinkDelegate() {}
 
-ShellWindowLinkDelegate::~ShellWindowLinkDelegate() {}
+AppWindowLinkDelegate::~AppWindowLinkDelegate() {}
 
 // TODO(rockot): Add a test that exercises this code. See
 // http://crbug.com/254260.
-content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
+content::WebContents* AppWindowLinkDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (source) {
@@ -121,15 +121,15 @@ content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
   return NULL;
 }
 
-ChromeShellWindowDelegate::ChromeShellWindowDelegate() {}
+ChromeAppWindowDelegate::ChromeAppWindowDelegate() {}
 
-ChromeShellWindowDelegate::~ChromeShellWindowDelegate() {}
+ChromeAppWindowDelegate::~ChromeAppWindowDelegate() {}
 
-void ChromeShellWindowDelegate::DisableExternalOpenForTesting() {
+void ChromeAppWindowDelegate::DisableExternalOpenForTesting() {
   disable_external_open_for_testing_ = true;
 }
 
-void ChromeShellWindowDelegate::InitWebContents(
+void ChromeAppWindowDelegate::InitWebContents(
     content::WebContents* web_contents) {
   FaviconTabHelper::CreateForWebContents(web_contents);
 
@@ -143,30 +143,29 @@ void ChromeShellWindowDelegate::InitWebContents(
 #endif  // defined(ENABLE_PRINTING)
 }
 
-apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindow(
+apps::NativeAppWindow* ChromeAppWindowDelegate::CreateNativeAppWindow(
     apps::AppWindow* window,
     const apps::AppWindow::CreateParams& params) {
   return CreateNativeAppWindowImpl(window, params);
 }
 
-content::WebContents* ChromeShellWindowDelegate::OpenURLFromTab(
+content::WebContents* ChromeAppWindowDelegate::OpenURLFromTab(
     content::BrowserContext* context,
     content::WebContents* source,
     const content::OpenURLParams& params) {
   return OpenURLFromTabInternal(context, source, params);
 }
 
-void ChromeShellWindowDelegate::AddNewContents(
-    content::BrowserContext* context,
-    content::WebContents* new_contents,
-    WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
-    bool user_gesture,
-    bool* was_blocked) {
+void ChromeAppWindowDelegate::AddNewContents(content::BrowserContext* context,
+                                             content::WebContents* new_contents,
+                                             WindowOpenDisposition disposition,
+                                             const gfx::Rect& initial_pos,
+                                             bool user_gesture,
+                                             bool* was_blocked) {
   if (!disable_external_open_for_testing_) {
-    if (!shell_window_link_delegate_.get())
-      shell_window_link_delegate_.reset(new ShellWindowLinkDelegate());
-    new_contents->SetDelegate(shell_window_link_delegate_.get());
+    if (!app_window_link_delegate_.get())
+      app_window_link_delegate_.reset(new AppWindowLinkDelegate());
+    new_contents->SetDelegate(app_window_link_delegate_.get());
     return;
   }
   chrome::ScopedTabbedBrowserDisplayer displayer(
@@ -179,28 +178,28 @@ void ChromeShellWindowDelegate::AddNewContents(
                          initial_pos, user_gesture, was_blocked);
 }
 
-content::ColorChooser* ChromeShellWindowDelegate::ShowColorChooser(
+content::ColorChooser* ChromeAppWindowDelegate::ShowColorChooser(
     content::WebContents* web_contents,
     SkColor initial_color) {
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void ChromeShellWindowDelegate::RunFileChooser(
+void ChromeAppWindowDelegate::RunFileChooser(
     content::WebContents* tab,
     const content::FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(tab, params);
 }
 
-void ChromeShellWindowDelegate::RequestMediaAccessPermission(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension) {
+void ChromeAppWindowDelegate::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    const extensions::Extension* extension) {
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, callback, extension);
 }
 
-int ChromeShellWindowDelegate::PreferredIconSize() {
+int ChromeAppWindowDelegate::PreferredIconSize() {
 #if defined(USE_ASH)
   return ash::kShelfPreferredSize;
 #else
@@ -208,7 +207,7 @@ int ChromeShellWindowDelegate::PreferredIconSize() {
 #endif
 }
 
-void ChromeShellWindowDelegate::SetWebContentsBlocked(
+void ChromeAppWindowDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents,
     bool blocked) {
   // RenderViewHost may be NULL during shutdown.
@@ -219,7 +218,7 @@ void ChromeShellWindowDelegate::SetWebContentsBlocked(
   }
 }
 
-bool ChromeShellWindowDelegate::IsWebContentsVisible(
+bool ChromeAppWindowDelegate::IsWebContentsVisible(
     content::WebContents* web_contents) {
   return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
 }

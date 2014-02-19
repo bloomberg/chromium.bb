@@ -15,7 +15,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
+#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_registrar.h"
@@ -266,7 +266,7 @@ bool AppWindowCreateFunction::RunImpl() {
       render_view_host_->GetProcess()->GetID();
 
   AppWindow* app_window = new AppWindow(
-      GetProfile(), new ChromeShellWindowDelegate(), GetExtension());
+      GetProfile(), new ChromeAppWindowDelegate(), GetExtension());
   app_window->Init(
       url, new apps::AppWindowContentsImpl(app_window), create_params);
 

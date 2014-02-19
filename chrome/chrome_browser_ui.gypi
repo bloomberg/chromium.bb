@@ -253,8 +253,8 @@
         'browser/ui/apps/app_metro_infobar_delegate_win.h',
         'browser/ui/apps/apps_metro_handler_win.cc',
         'browser/ui/apps/apps_metro_handler_win.h',
-        'browser/ui/apps/chrome_shell_window_delegate.cc',
-        'browser/ui/apps/chrome_shell_window_delegate.h',
+        'browser/ui/apps/chrome_app_window_delegate.cc',
+        'browser/ui/apps/chrome_app_window_delegate.h',
         'browser/ui/apps/directory_access_confirmation_dialog.cc',
         'browser/ui/apps/directory_access_confirmation_dialog.h',
         'browser/ui/ash/ash_keyboard_controller_proxy.cc',
@@ -538,7 +538,7 @@
         'browser/ui/cocoa/apps/app_info_dialog_cocoa.mm',
         'browser/ui/cocoa/apps/app_shim_menu_controller_mac.h',
         'browser/ui/cocoa/apps/app_shim_menu_controller_mac.mm',
-        'browser/ui/cocoa/apps/chrome_shell_window_delegate_cocoa.mm',
+        'browser/ui/cocoa/apps/chrome_app_window_delegate_cocoa.mm',
         'browser/ui/cocoa/apps/native_app_window_cocoa.h',
         'browser/ui/cocoa/apps/native_app_window_cocoa.mm',
         'browser/ui/cocoa/autofill/autofill_account_chooser.h',
@@ -1166,7 +1166,7 @@
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
         'browser/ui/gtk/apps/app_info_dialog_gtk.cc',
-        'browser/ui/gtk/apps/chrome_shell_window_delegate_gtk.cc',
+        'browser/ui/gtk/apps/chrome_app_window_delegate_gtk.cc',
         'browser/ui/gtk/apps/native_app_window_gtk.cc',
         'browser/ui/gtk/apps/native_app_window_gtk.h',
         'browser/ui/gtk/autofill/autofill_popup_view_gtk.cc',
@@ -1713,8 +1713,8 @@
         'browser/ui/views/app_list/win/app_list_win.h',
         'browser/ui/views/apps/app_info_dialog_views.cc',
         'browser/ui/views/apps/app_info_dialog_views.h',
-        'browser/ui/views/apps/chrome_shell_window_delegate_views.cc',
-        'browser/ui/views/apps/chrome_shell_window_delegate_views_win.cc',
+        'browser/ui/views/apps/chrome_app_window_delegate_views.cc',
+        'browser/ui/views/apps/chrome_app_window_delegate_views_win.cc',
         'browser/ui/views/apps/native_app_window_views.cc',
         'browser/ui/views/apps/native_app_window_views.h',
         'browser/ui/views/apps/native_app_window_views_win.cc',
@@ -2943,7 +2943,7 @@
           'conditions': [
             ['OS=="win"', {
               'sources/': [
-                ['exclude', '^browser/ui/views/apps/chrome_shell_window_delegate_views.cc'],
+                ['exclude', '^browser/ui/views/apps/chrome_app_window_delegate_views.cc'],
                 ['exclude', '^browser/ui/views/theme_image_mapper.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
@@ -3116,7 +3116,7 @@
             'browser/ui/window_sizer/window_sizer.h',
 
             # Also not used on android
-            'browser/ui/apps/chrome_shell_window_delegate.cc',
+            'browser/ui/apps/chrome_app_window_delegate.cc',
             'browser/ui/autofill/account_chooser_model.cc',
             'browser/ui/autofill/autofill_dialog_sign_in_delegate.cc',
             'browser/ui/autofill/country_combobox_model.cc',
