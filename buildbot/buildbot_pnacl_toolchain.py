@@ -59,17 +59,20 @@ try:
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
+except subprocess.CalledProcessError:
+  # Ignore any failures and keep going (but make the bot stage red).
+  print '@@@STEP_FAILURE@@@'
+sys.stdout.flush()
+
+if host_os != 'win':
+  # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
+  # codebase or locally in the way we build LLVM) ASAP
   with buildbot_lib.Step('LLVM Regression (toolchain_build)', status):
     llvm_test = [sys.executable,
                  os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
                  '--llvm-regression',
                  '--verbose']
     buildbot_lib.Command(context, llvm_test)
-
-except subprocess.CalledProcessError:
-  # Ignore any failures and keep going (but make the bot stage red).
-  print '@@@STEP_FAILURE@@@'
-sys.stdout.flush()
 
 with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
   # Update cygwin if necessary.
