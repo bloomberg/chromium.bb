@@ -72,12 +72,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestEventTarget>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestEventTarget > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestEventTarget::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

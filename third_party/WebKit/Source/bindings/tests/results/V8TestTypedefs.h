@@ -70,12 +70,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestTypedefs>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestTypedefs > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestTypedefs::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

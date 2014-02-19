@@ -74,12 +74,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestInterfaceWillBeGarbageCollected > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestInterfaceWillBeGarbageCollected* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

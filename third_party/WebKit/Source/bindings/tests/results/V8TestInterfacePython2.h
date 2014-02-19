@@ -70,12 +70,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfacePython2>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestInterfacePython2 > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfacePython2::wrapperTypeInfo; }
-};
-
 v8::Handle<v8::Object> wrap(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

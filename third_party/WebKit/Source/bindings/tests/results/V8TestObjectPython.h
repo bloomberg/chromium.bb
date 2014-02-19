@@ -88,12 +88,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestObjectPython>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestObjectPython > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestObjectPython::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestObjectPython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

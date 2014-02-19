@@ -71,12 +71,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfaceDocument>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestInterfaceDocument > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfaceDocument::wrapperTypeInfo; }
-};
-
 v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestInterfaceDocument* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -69,12 +69,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSVG>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestSVG > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestSVG::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestSVG* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

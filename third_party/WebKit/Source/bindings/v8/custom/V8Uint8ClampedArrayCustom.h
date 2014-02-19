@@ -59,10 +59,6 @@ public:
 
 typedef V8TypedArray<Uint8ClampedArray> V8Uint8ClampedArray;
 
-template<>
-class WrapperTypeTraits<Uint8ClampedArray> : public TypedArrayWrapperTraits<Uint8ClampedArray> { };
-
-
 inline v8::Handle<v8::Object> wrap(Uint8ClampedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return V8TypedArray<Uint8ClampedArray>::wrap(impl, creationContext, isolate);

@@ -69,12 +69,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSpecialOperationsAnonymous>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestSpecialOperationsAnonymous > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestSpecialOperationsAnonymous::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestSpecialOperationsAnonymous* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

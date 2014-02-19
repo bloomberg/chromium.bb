@@ -924,15 +924,6 @@ END
 END
     }
 
-    $header{nameSpaceWebCore}->add(<<END);
-
-template<>
-class WrapperTypeTraits<${nativeType} > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &${v8ClassName}::wrapperTypeInfo; }
-};
-END
-
     if ($customToV8) {
         $header{nameSpaceWebCore}->add(<<END);
 

@@ -69,12 +69,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSpecialOperationsNotEnumerable>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<TestSpecialOperationsNotEnumerable > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo; }
-};
-
 inline v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

@@ -74,13 +74,6 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<ArrayBuffer>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-template<>
-class WrapperTypeTraits<ArrayBuffer > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8ArrayBuffer::wrapperTypeInfo; }
-};
-
-
 inline v8::Handle<v8::Object> wrap(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

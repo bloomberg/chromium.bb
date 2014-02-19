@@ -73,12 +73,6 @@ public:
 private:
 };
 
-template<>
-class WrapperTypeTraits<TestInterfacePythonImplementation > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfacePython::wrapperTypeInfo; }
-};
-
 class TestInterfacePythonImplementation;
 v8::Handle<v8::Value> toV8(TestInterfacePythonImplementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 

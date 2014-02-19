@@ -59,10 +59,6 @@ public:
 
 typedef V8TypedArray<DataView> V8DataView;
 
-template<>
-class WrapperTypeTraits<DataView> : public TypedArrayWrapperTraits<DataView> { };
-
-
 inline v8::Handle<v8::Object> wrap(DataView* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return V8TypedArray<DataView>::wrap(impl, creationContext, isolate);

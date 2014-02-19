@@ -59,10 +59,6 @@ public:
 
 typedef V8TypedArray<Float64Array> V8Float64Array;
 
-template<>
-class WrapperTypeTraits<Float64Array> : public TypedArrayWrapperTraits<Float64Array> { };
-
-
 inline v8::Handle<v8::Object> wrap(Float64Array* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return V8TypedArray<Float64Array>::wrap(impl, creationContext, isolate);
