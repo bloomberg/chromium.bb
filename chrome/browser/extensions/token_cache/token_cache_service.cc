@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_source.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -14,9 +14,7 @@ using base::TimeDelta;
 namespace extensions {
 
 TokenCacheService::TokenCacheService(Profile* profile) : profile_(profile) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile_));
+  SigninManagerFactory::GetForProfile(profile)->AddObserver(this);
 }
 
 TokenCacheService::~TokenCacheService() {
@@ -67,11 +65,12 @@ std::string TokenCacheService::RetrieveToken(const std::string& token_name) {
   return std::string();
 }
 
-// Inherited from NotificationObserver.
-void TokenCacheService::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details)  {
-  DCHECK(chrome::NOTIFICATION_GOOGLE_SIGNED_OUT == type);
+void TokenCacheService::Shutdown() {
+  SigninManagerFactory::GetForProfile(const_cast<Profile*>(profile_))
+      ->RemoveObserver(this);
+}
+
+void TokenCacheService::GoogleSignedOut(const std::string& username) {
   token_cache_.clear();
 }
 

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
@@ -24,6 +25,7 @@ TokenCacheServiceFactory::TokenCacheServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "TokenCacheService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 TokenCacheServiceFactory::~TokenCacheServiceFactory() {

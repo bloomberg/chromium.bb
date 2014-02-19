@@ -5,10 +5,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -18,8 +16,8 @@ namespace extensions {
 
 class TokenCacheTest : public testing::Test {
  public:
-  TokenCacheTest() : cache_(NULL) {}
-  virtual ~TokenCacheTest() {}
+  TokenCacheTest() : cache_(&profile_) {}
+  virtual ~TokenCacheTest() { cache_.Shutdown(); }
 
   size_t CacheSize() {
     return cache_.token_cache_.size();
@@ -46,6 +44,7 @@ class TokenCacheTest : public testing::Test {
   }
 
  protected:
+  TestingProfile profile_;
   TokenCacheService cache_;
 };
 
@@ -86,14 +85,11 @@ TEST_F(TokenCacheTest, ReplaceTokenTest) {
 TEST_F(TokenCacheTest, SignoutTest) {
   TimeDelta zero;
   cache_.StoreToken("foo", "bar", zero);
-  content::Source<Profile> stub_source(NULL);
-  content::NotificationDetails stub_details;
 
   EXPECT_EQ(1U, CacheSize());
   EXPECT_TRUE(HasMatch("foo"));
 
-  cache_.Observe(chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 stub_source, stub_details);
+  cache_.GoogleSignedOut("foo");
 
   EXPECT_EQ(0U, CacheSize());
   EXPECT_FALSE(HasMatch("foo"));
