@@ -52,8 +52,8 @@ public:
     static PassRefPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
     virtual ~SpeechRecognitionEvent();
 
-    static PassRefPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const Vector<RefPtr<SpeechRecognitionResult> >& results);
-    static PassRefPtr<SpeechRecognitionEvent> createNoMatch(PassRefPtr<SpeechRecognitionResult>);
+    static PassRefPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results);
+    static PassRefPtr<SpeechRecognitionEvent> createNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult>);
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results.get(); }

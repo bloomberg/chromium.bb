@@ -52,7 +52,8 @@ WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Handle<v8::Value>
 
 void WebDOMMediaStreamTrack::reset()
 {
-    m_private = 0;
+    // FIXME: replace reset() with nullptr assignment (cf. https://codereview.chromium.org/170603003/ )
+    m_private.reset();
 }
 
 void WebDOMMediaStreamTrack::assign(const WebDOMMediaStreamTrack& b)

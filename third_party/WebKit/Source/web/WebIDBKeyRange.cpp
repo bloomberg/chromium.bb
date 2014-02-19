@@ -41,8 +41,9 @@ void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
 
 void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen)
 {
+    // FIXME: replace reset() with nullptr assignment (cf. https://codereview.chromium.org/170603003/ )
     if (!lower.isValid() && !upper.isValid())
-        m_private = 0;
+        m_private.reset();
     else
         m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
 }

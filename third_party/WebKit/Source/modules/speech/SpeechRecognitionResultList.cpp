@@ -31,7 +31,7 @@ namespace WebCore {
 
 DEFINE_GC_INFO(SpeechRecognitionResultList);
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const Vector<RefPtr<SpeechRecognitionResult> >& results)
+PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
 {
     return adoptRefWillBeNoop(new SpeechRecognitionResultList(results));
 }
@@ -44,17 +44,10 @@ SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
     return m_results[index].get();
 }
 
-SpeechRecognitionResultList::SpeechRecognitionResultList(const Vector<RefPtr<SpeechRecognitionResult> >& results)
-#if !ENABLE(OILPAN)
+SpeechRecognitionResultList::SpeechRecognitionResultList(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
     : m_results(results)
-#endif
 {
     ScriptWrappable::init(this);
-#if ENABLE(OILPAN)
-    m_results.grow(results.size());
-    for (size_t i = 0; i < results.size(); i++)
-        m_results[i] = results[i].get();
-#endif
 }
 
 void SpeechRecognitionResultList::trace(Visitor* visitor)

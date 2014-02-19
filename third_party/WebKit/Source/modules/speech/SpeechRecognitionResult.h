@@ -37,11 +37,11 @@ namespace WebCore {
 // FIXME: oilpan: the platform outer layer (WebSpeechRecognitionResult) depends on
 // holding a WebPrivatePtr (a RefPtr) to this result object. When/if such pointers
 // can be to GCed objects, we can drop the extra reference counting layer.
-class SpeechRecognitionResult : public RefCountedWillBeRefCountedGarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
+class SpeechRecognitionResult : public RefCountedWillBeGarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
     DECLARE_GC_INFO;
 public:
     ~SpeechRecognitionResult();
-    static PassRefPtr<SpeechRecognitionResult> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >&, bool final);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionResult> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >&, bool final);
 
     unsigned long length() { return m_alternatives.size(); }
     SpeechRecognitionAlternative* item(unsigned long index);

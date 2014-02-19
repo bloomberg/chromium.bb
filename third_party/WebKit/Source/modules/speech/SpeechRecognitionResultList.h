@@ -37,7 +37,7 @@ namespace WebCore {
 class SpeechRecognitionResultList : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
     DECLARE_GC_INFO;
 public:
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> create(const Vector<RefPtr<SpeechRecognitionResult> >&);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >&);
 
     unsigned long length() { return m_results.size(); }
     SpeechRecognitionResult* item(unsigned long index);
@@ -45,7 +45,7 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit SpeechRecognitionResultList(const Vector<RefPtr<SpeechRecognitionResult> >&);
+    explicit SpeechRecognitionResultList(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >&);
 
     WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > m_results;
 };

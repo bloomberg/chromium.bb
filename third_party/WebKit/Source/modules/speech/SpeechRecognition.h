@@ -75,8 +75,8 @@ public:
     void didEndSpeech();
     void didEndSound();
     void didEndAudio();
-    void didReceiveResults(const Vector<RefPtr<SpeechRecognitionResult> >& newFinalResults, const Vector<RefPtr<SpeechRecognitionResult> >& currentInterimResults);
-    void didReceiveNoMatch(PassRefPtr<SpeechRecognitionResult>);
+    void didReceiveResults(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& newFinalResults, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& currentInterimResults);
+    void didReceiveNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult>);
     void didReceiveError(PassRefPtr<SpeechRecognitionError>);
     void didStart();
     void didEnd();
@@ -117,7 +117,7 @@ private:
     bool m_stoppedByActiveDOMObject;
     bool m_started;
     bool m_stopping;
-    Vector<RefPtr<SpeechRecognitionResult> > m_finalResults;
+    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > m_finalResults;
 };
 
 } // namespace WebCore

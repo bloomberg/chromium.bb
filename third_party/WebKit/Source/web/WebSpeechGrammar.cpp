@@ -41,12 +41,12 @@ void WebSpeechGrammar::assign(const WebSpeechGrammar& other)
     m_private = other.m_private;
 }
 
-WebSpeechGrammar::WebSpeechGrammar(const PassRefPtr<WebCore::SpeechGrammar>& value)
+WebSpeechGrammar::WebSpeechGrammar(const PassRefPtrWillBeRawPtr<WebCore::SpeechGrammar>& value)
     : m_private(value)
 {
 }
 
-WebSpeechGrammar& WebSpeechGrammar::operator=(const WTF::PassRefPtr<WebCore::SpeechGrammar>& value)
+WebSpeechGrammar& WebSpeechGrammar::operator=(const PassRefPtrWillBeRawPtr<WebCore::SpeechGrammar>& value)
 {
     m_private = value;
     return *this;

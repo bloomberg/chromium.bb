@@ -62,9 +62,9 @@ public:
     BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebSpeechRecognitionHandle(const WTF::PassRefPtr<WebCore::SpeechRecognition>&);
-    WebSpeechRecognitionHandle& operator=(const WTF::PassRefPtr<WebCore::SpeechRecognition>&);
-    operator WTF::PassRefPtr<WebCore::SpeechRecognition>() const;
+    explicit WebSpeechRecognitionHandle(const PassRefPtrWillBeRawPtr<WebCore::SpeechRecognition>&);
+    WebSpeechRecognitionHandle& operator=(const PassRefPtrWillBeRawPtr<WebCore::SpeechRecognition>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::SpeechRecognition>() const;
 #endif
 
 private:

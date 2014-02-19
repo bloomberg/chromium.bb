@@ -52,18 +52,18 @@ bool WebSpeechRecognitionHandle::lessThan(const WebSpeechRecognitionHandle& othe
     return m_private.get() < other.m_private.get();
 }
 
-WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(const PassRefPtr<SpeechRecognition>& speechRecognition)
+WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(const PassRefPtrWillBeRawPtr<SpeechRecognition>& speechRecognition)
     : m_private(speechRecognition)
 {
 }
 
-WebSpeechRecognitionHandle& WebSpeechRecognitionHandle::operator=(const PassRefPtr<SpeechRecognition>& speechRecognition)
+WebSpeechRecognitionHandle& WebSpeechRecognitionHandle::operator=(const PassRefPtrWillBeRawPtr<SpeechRecognition>& speechRecognition)
 {
     m_private = speechRecognition;
     return *this;
 }
 
-WebSpeechRecognitionHandle::operator PassRefPtr<SpeechRecognition>() const
+WebSpeechRecognitionHandle::operator PassRefPtrWillBeRawPtr<SpeechRecognition>() const
 {
     return m_private.get();
 }
