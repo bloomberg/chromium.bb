@@ -33,8 +33,14 @@ ImageRasterWorkerPool::ImageRasterWorkerPool(
 
 ImageRasterWorkerPool::~ImageRasterWorkerPool() {}
 
-void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
+void ImageRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::ScheduleTasks");
+
+  DCHECK_EQ(queue->required_for_activation_count,
+            static_cast<size_t>(
+                std::count_if(queue->items.begin(),
+                              queue->items.end(),
+                              RasterTaskQueue::Item::IsRequiredForActivation)));
 
   if (!raster_tasks_pending_)
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
@@ -49,15 +55,18 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
           CreateRasterRequiredForActivationFinishedTask(
-              queue->required_for_activation_count()));
+              queue->required_for_activation_count));
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
       CreateRasterFinishedTask());
 
-  for (RasterTaskQueueIterator it(queue); it; ++it) {
-    internal::RasterWorkerPoolTask* task = *it;
+  for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
+       it != queue->items.end();
+       ++it) {
+    const RasterTaskQueue::Item& item = *it;
+    internal::RasterWorkerPoolTask* task = item.task;
     DCHECK(!task->HasCompleted());
 
-    if (it.required_for_activation()) {
+    if (item.required_for_activation) {
       graph_.edges.push_back(internal::TaskGraph::Edge(
           task, new_raster_required_for_activation_finished_task.get()));
     }
@@ -71,11 +80,11 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   InsertNodeForTask(&graph_,
                     new_raster_required_for_activation_finished_task.get(),
                     kRasterRequiredForActivationFinishedTaskPriority,
-                    queue->required_for_activation_count());
+                    queue->required_for_activation_count);
   InsertNodeForTask(&graph_,
                     new_raster_finished_task.get(),
                     kRasterFinishedTaskPriority,
-                    queue->count());
+                    queue->items.size());
 
   raster_tasks_.Swap(queue);
 

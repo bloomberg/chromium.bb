@@ -33,7 +33,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   // Overridden from RasterWorkerPool:
   virtual void Shutdown() OVERRIDE;
-  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
+  virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
   virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
@@ -82,7 +82,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   bool shutdown_;
 
-  RasterTask::Queue raster_tasks_;
+  RasterTaskQueue raster_tasks_;
   RasterTaskSet raster_tasks_required_for_activation_;
   RasterTaskStateMap raster_task_states_;
   RasterTaskDeque raster_tasks_with_pending_upload_;

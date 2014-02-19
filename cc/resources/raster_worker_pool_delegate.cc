@@ -40,8 +40,7 @@ void RasterWorkerPoolDelegate::Shutdown() {
     (*it)->Shutdown();
 }
 
-void RasterWorkerPoolDelegate::ScheduleTasks(
-    RasterWorkerPool::RasterTask::Queue* raster_queue) {
+void RasterWorkerPoolDelegate::ScheduleTasks(RasterTaskQueue* raster_queue) {
   for (size_t i = 0; i < raster_worker_pools_.size(); ++i)
     raster_worker_pools_[i]->ScheduleTasks(&raster_queue[i]);
 

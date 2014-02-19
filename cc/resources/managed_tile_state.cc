@@ -84,7 +84,7 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   bool has_active_task = false;
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
     has_resource |= (tile_versions[mode].resource_.get() != 0);
-    has_active_task |= !tile_versions[mode].raster_task_.is_null();
+    has_active_task |= (tile_versions[mode].raster_task_.get() != 0);
   }
 
   bool is_using_gpu_memory = has_resource || has_active_task;

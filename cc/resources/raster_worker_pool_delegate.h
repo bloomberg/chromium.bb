@@ -22,7 +22,7 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
 
   void SetClient(RasterWorkerPoolClient* client);
   void Shutdown();
-  void ScheduleTasks(RasterWorkerPool::RasterTask::Queue* raster_queue);
+  void ScheduleTasks(RasterTaskQueue* raster_queue);
   void CheckForCompletedTasks();
 
   // Overriden from RasterWorkerPoolClient:

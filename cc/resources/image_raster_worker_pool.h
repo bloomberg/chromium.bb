@@ -18,7 +18,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
       unsigned texture_target);
 
   // Overridden from RasterWorkerPool:
-  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
+  virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
   virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
@@ -46,7 +46,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   const unsigned texture_target_;
 
-  RasterTask::Queue raster_tasks_;
+  RasterTaskQueue raster_tasks_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;

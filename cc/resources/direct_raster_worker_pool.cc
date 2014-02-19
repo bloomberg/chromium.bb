@@ -34,8 +34,14 @@ DirectRasterWorkerPool::~DirectRasterWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
 }
 
-void DirectRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
+void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   TRACE_EVENT0("cc", "DirectRasterWorkerPool::ScheduleTasks");
+
+  DCHECK_EQ(queue->required_for_activation_count,
+            static_cast<size_t>(
+                std::count_if(queue->items.begin(),
+                              queue->items.end(),
+                              RasterTaskQueue::Item::IsRequiredForActivation)));
 
   raster_tasks_pending_ = true;
   raster_tasks_required_for_activation_pending_ = true;
@@ -43,7 +49,7 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
           CreateRasterRequiredForActivationFinishedTask(
-              queue->required_for_activation_count()));
+              queue->required_for_activation_count));
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
       CreateRasterFinishedTask());
 
@@ -52,13 +58,16 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   // TODO(reveman): Remove this once only tasks for which
   // ::ScheduleOnOriginThread has been called need to be canceled.
   if (run_tasks_on_origin_thread_pending_) {
-    for (RasterTaskQueueIterator it(&raster_tasks_); it; ++it) {
-      internal::RasterWorkerPoolTask* task = *it;
+    for (RasterTaskQueue::Item::Vector::const_iterator it =
+             raster_tasks_.items.begin();
+         it != raster_tasks_.items.end();
+         ++it) {
+      internal::RasterWorkerPoolTask* task = it->task;
 
-      if (std::find_if(queue->tasks_.begin(),
-                       queue->tasks_.end(),
-                       RasterTask::Queue::QueuedTask::TaskComparator(task)) ==
-          queue->tasks_.end())
+      if (std::find_if(queue->items.begin(),
+                       queue->items.end(),
+                       RasterTaskQueue::Item::TaskComparator(task)) ==
+          queue->items.end())
         completed_tasks_.push_back(task);
     }
   }
@@ -132,14 +141,17 @@ void DirectRasterWorkerPool::RunTasksOnOriginThread() {
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;
 
-  if (!raster_tasks_.tasks_.empty()) {
+  if (!raster_tasks_.items.empty()) {
     GrContext* gr_context = context_provider_->GrContext();
     // TODO(alokp): Implement TestContextProvider::GrContext().
     if (gr_context)
       gr_context->resetContext();
 
-    for (RasterTaskQueueIterator it(&raster_tasks_); it; ++it) {
-      internal::RasterWorkerPoolTask* task = *it;
+    for (RasterTaskQueue::Item::Vector::const_iterator it =
+             raster_tasks_.items.begin();
+         it != raster_tasks_.items.end();
+         ++it) {
+      internal::RasterWorkerPoolTask* task = it->task;
       DCHECK(!task->HasCompleted());
 
       // First need to run all dependencies.

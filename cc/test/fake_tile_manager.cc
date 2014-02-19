@@ -18,9 +18,12 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
   FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
 
   // Overridden from RasterWorkerPool:
-  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
-    for (RasterTaskQueueIterator it(queue); it; ++it) {
-      internal::RasterWorkerPoolTask* task = *it;
+  virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE {
+    for (RasterTaskQueue::Item::Vector::const_iterator it =
+             queue->items.begin();
+         it != queue->items.end();
+         ++it) {
+      internal::RasterWorkerPoolTask* task = it->task;
 
       task->DidSchedule();
 

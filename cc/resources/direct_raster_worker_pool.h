@@ -18,7 +18,7 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
       ContextProvider* context_provider);
 
   // Overridden from RasterWorkerPool:
-  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
+  virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
   virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
@@ -48,7 +48,7 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
 
   bool run_tasks_on_origin_thread_pending_;
 
-  RasterTask::Queue raster_tasks_;
+  RasterTaskQueue raster_tasks_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;

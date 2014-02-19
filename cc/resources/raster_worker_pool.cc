@@ -69,19 +69,20 @@ class DisableLCDTextFilter : public SkDrawFilter {
 
 class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  public:
-  RasterWorkerPoolTaskImpl(const Resource* resource,
-                           PicturePileImpl* picture_pile,
-                           const gfx::Rect& content_rect,
-                           float contents_scale,
-                           RasterMode raster_mode,
-                           TileResolution tile_resolution,
-                           int layer_id,
-                           const void* tile_id,
-                           int source_frame_number,
-                           RenderingStatsInstrumentation* rendering_stats,
-                           const RasterWorkerPool::RasterTask::Reply& reply,
-                           internal::WorkerPoolTask::Vector* dependencies,
-                           ContextProvider* context_provider)
+  RasterWorkerPoolTaskImpl(
+      const Resource* resource,
+      PicturePileImpl* picture_pile,
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      RasterMode raster_mode,
+      TileResolution tile_resolution,
+      int layer_id,
+      const void* tile_id,
+      int source_frame_number,
+      RenderingStatsInstrumentation* rendering_stats,
+      const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
+      internal::WorkerPoolTask::Vector* dependencies,
+      ContextProvider* context_provider)
       : internal::RasterWorkerPoolTask(resource, dependencies),
         picture_pile_(picture_pile),
         content_rect_(content_rect),
@@ -236,7 +237,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   const void* tile_id_;
   int source_frame_number_;
   RenderingStatsInstrumentation* rendering_stats_;
-  const RasterWorkerPool::RasterTask::Reply reply_;
+  const base::Callback<void(const PicturePileImpl::Analysis&, bool)> reply_;
   ContextProvider* context_provider_;
   SkCanvas* canvas_;
 
@@ -245,10 +246,11 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
 class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  ImageDecodeWorkerPoolTaskImpl(SkPixelRef* pixel_ref,
-                                int layer_id,
-                                RenderingStatsInstrumentation* rendering_stats,
-                                const RasterWorkerPool::Task::Reply& reply)
+  ImageDecodeWorkerPoolTaskImpl(
+      SkPixelRef* pixel_ref,
+      int layer_id,
+      RenderingStatsInstrumentation* rendering_stats,
+      const base::Callback<void(bool was_canceled)>& reply)
       : pixel_ref_(skia::SharePtr(pixel_ref)),
         layer_id_(layer_id),
         rendering_stats_(rendering_stats),
@@ -290,7 +292,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   skia::RefPtr<SkPixelRef> pixel_ref_;
   int layer_id_;
   RenderingStatsInstrumentation* rendering_stats_;
-  const RasterWorkerPool::Task::Reply reply_;
+  const base::Callback<void(bool was_canceled)>& reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeWorkerPoolTaskImpl);
 };
@@ -447,63 +449,26 @@ RasterWorkerPoolTask::~RasterWorkerPoolTask() {}
 
 }  // namespace internal
 
-RasterWorkerPool::Task::Set::Set() {}
-
-RasterWorkerPool::Task::Set::~Set() {}
-
-void RasterWorkerPool::Task::Set::Insert(const Task& task) {
-  DCHECK(!task.is_null());
-  tasks_.push_back(task.internal_);
-}
-
-RasterWorkerPool::Task::Task() {}
-
-RasterWorkerPool::Task::Task(internal::WorkerPoolTask* internal)
-    : internal_(internal) {}
-
-RasterWorkerPool::Task::~Task() {}
-
-void RasterWorkerPool::Task::Reset() { internal_ = NULL; }
-
-RasterWorkerPool::RasterTask::Queue::QueuedTask::QueuedTask(
-    internal::RasterWorkerPoolTask* task,
-    bool required_for_activation)
+RasterTaskQueue::Item::Item(internal::RasterWorkerPoolTask* task,
+                            bool required_for_activation)
     : task(task), required_for_activation(required_for_activation) {}
 
-RasterWorkerPool::RasterTask::Queue::QueuedTask::~QueuedTask() {}
+RasterTaskQueue::Item::~Item() {}
 
-RasterWorkerPool::RasterTask::Queue::Queue()
-    : required_for_activation_count_(0u) {}
+RasterTaskQueue::RasterTaskQueue() : required_for_activation_count(0u) {}
 
-RasterWorkerPool::RasterTask::Queue::~Queue() {}
+RasterTaskQueue::~RasterTaskQueue() {}
 
-void RasterWorkerPool::RasterTask::Queue::Reset() {
-  tasks_.clear();
-  required_for_activation_count_ = 0u;
+void RasterTaskQueue::Swap(RasterTaskQueue* other) {
+  items.swap(other->items);
+  std::swap(required_for_activation_count,
+            other->required_for_activation_count);
 }
 
-void RasterWorkerPool::RasterTask::Queue::Append(const RasterTask& task,
-                                                 bool required_for_activation) {
-  DCHECK(!task.is_null());
-  tasks_.push_back(QueuedTask(task.internal_, required_for_activation));
-  required_for_activation_count_ += required_for_activation;
+void RasterTaskQueue::Reset() {
+  required_for_activation_count = 0u;
+  items.clear();
 }
-
-void RasterWorkerPool::RasterTask::Queue::Swap(Queue* other) {
-  tasks_.swap(other->tasks_);
-  std::swap(required_for_activation_count_,
-            other->required_for_activation_count_);
-}
-
-RasterWorkerPool::RasterTask::RasterTask() {}
-
-RasterWorkerPool::RasterTask::RasterTask(
-    internal::RasterWorkerPoolTask* internal)
-    : internal_(internal) {}
-
-void RasterWorkerPool::RasterTask::Reset() { internal_ = NULL; }
-
-RasterWorkerPool::RasterTask::~RasterTask() {}
 
 // This allows an external rasterize on-demand system to run raster tasks
 // with highest priority using the same task graph runner instance.
@@ -549,7 +514,8 @@ internal::TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
 }
 
 // static
-RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
+scoped_refptr<internal::RasterWorkerPoolTask>
+RasterWorkerPool::CreateRasterTask(
     const Resource* resource,
     PicturePileImpl* picture_pile,
     const gfx::Rect& content_rect,
@@ -560,31 +526,31 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const void* tile_id,
     int source_frame_number,
     RenderingStatsInstrumentation* rendering_stats,
-    const RasterTask::Reply& reply,
-    Task::Set* dependencies,
+    const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
+    internal::WorkerPoolTask::Vector* dependencies,
     ContextProvider* context_provider) {
-  return RasterTask(new RasterWorkerPoolTaskImpl(resource,
-                                                 picture_pile,
-                                                 content_rect,
-                                                 contents_scale,
-                                                 raster_mode,
-                                                 tile_resolution,
-                                                 layer_id,
-                                                 tile_id,
-                                                 source_frame_number,
-                                                 rendering_stats,
-                                                 reply,
-                                                 &dependencies->tasks_,
-                                                 context_provider));
+  return make_scoped_refptr(new RasterWorkerPoolTaskImpl(resource,
+                                                         picture_pile,
+                                                         content_rect,
+                                                         contents_scale,
+                                                         raster_mode,
+                                                         tile_resolution,
+                                                         layer_id,
+                                                         tile_id,
+                                                         source_frame_number,
+                                                         rendering_stats,
+                                                         reply,
+                                                         dependencies,
+                                                         context_provider));
 }
 
 // static
-RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
+scoped_refptr<internal::WorkerPoolTask> RasterWorkerPool::CreateImageDecodeTask(
     SkPixelRef* pixel_ref,
     int layer_id,
     RenderingStatsInstrumentation* rendering_stats,
-    const Task::Reply& reply) {
-  return Task(new ImageDecodeWorkerPoolTaskImpl(
+    const base::Callback<void(bool was_canceled)>& reply) {
+  return make_scoped_refptr(new ImageDecodeWorkerPoolTaskImpl(
       pixel_ref, layer_id, rendering_stats, reply));
 }
 
