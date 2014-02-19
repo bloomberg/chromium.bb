@@ -708,6 +708,8 @@
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
             'css/parser/BisonCSSParser.h',
+            'css/parser/CSSPropertyParser.cpp',
+            'css/parser/CSSPropertyParser.h',
             'css/CSSParserMode.cpp',
             'css/CSSParserMode.h',
             'css/CSSParserValues.cpp',
