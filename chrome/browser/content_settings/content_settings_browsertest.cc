@@ -22,6 +22,8 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -519,16 +521,17 @@ class PepperContentSettingsTest : public ContentSettingsTest {
              base::StringPrintf("?mimetype=%s", mime_type));
     ui_test_utils::NavigateToURL(browser(), url);
 
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle()) << mime_type;
     EXPECT_EQ(!expect_loaded,
               TabSpecificContentSettings::FromWebContents(web_contents)->
-                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS)) << mime_type;
   }
 
   void RunJavaScriptBlockedTest(const char* html_file,
                                 bool expect_is_javascript_content_blocked) {
     // Because JavaScript is disabled, <title> will be the only title set.
-    // Checking for it ensures that the page loaded.
+    // Checking for it ensures that the page loaded, though that is not always
+    // sufficient - see below.
     const char* const kExpectedTitle = "Initial Title";
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -537,15 +540,46 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
     content::TitleWatcher title_watcher(web_contents, expected_title);
 
+    // Because JavaScript is disabled, we cannot rely on JavaScript to set a
+    // title, telling us the test is complete.
+    // As a result, it is possible to reach the IsContentBlocked() checks below
+    // before the blocked content can be reported to the browser process.
+    // See http://crbug.com/306702.
+    // Therefore, when expecting blocked content, we must wait until it has been
+    // reported by checking IsContentBlocked() when notified that
+    // NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED. (It is not sufficient to wait
+    // for just the notification because the same notification is reported for
+    // other reasons and the notification contains no indication of what
+    // caused it.)
+    content::WindowedNotificationObserver javascript_content_blocked_observer(
+              chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+              base::Bind(&TabSpecificContentSettings::IsContentBlocked,
+                                   base::Unretained(tab_settings),
+                                   CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
     GURL url = ui_test_utils::GetTestUrl(
         base::FilePath(), base::FilePath().AppendASCII(html_file));
     ui_test_utils::NavigateToURL(browser(), url);
 
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    // Always wait for the page to load.
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle()) << html_file;
+
+    if (expect_is_javascript_content_blocked) {
+      javascript_content_blocked_observer.Wait();
+    } else {
+      // Since there is no notification that content is not blocked and no
+      // content is blocked when |expect_is_javascript_content_blocked| is
+      // false, javascript_content_blocked_observer would never succeed.
+      // There is no way to ensure blocked content would not have been reported
+      // after the check below. For coverage of this scenario, we must rely on
+      // the TitleWatcher adding sufficient delay most of the time.
+    }
 
     EXPECT_EQ(expect_is_javascript_content_blocked,
-              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT))
+        << html_file;
+    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS))
+        << html_file;
   }
 };
 
@@ -553,7 +587,7 @@ const char* const PepperContentSettingsTest::kExternalClearKeyMimeType =
     "application/x-ppapi-clearkey-cdm";
 
 // Tests Pepper plugins that use JavaScript instead of Plug-ins settings.
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, DISABLED_PluginSpecialCases) {
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))

@@ -31,19 +31,19 @@ function inject() {
   var plugin = document.getElementById('plugin');
   try {
     // All Pepper plugins support postMessage().
+    // If postMessage is undefined, the plugin is not loaded.
+    if (plugin.postMessage == undefined) {
+      document.title = 'Not Loaded';
+      return;
+    }
+    
     plugin.postMessage('hello');
     // If we do not get an exception, the Pepper plugin is loaded.
     document.title = 'Loaded';
   } catch (e) {
-    console.log(e.toString());
-    if (e.toString() ==
-        "TypeError: Object #<HTMLObjectElement> has no method 'postMessage'") {
-      document.title = 'Not Loaded';
-    } else {
-      var errorMessage = 'Unexpected Exception: ' + e.toString(); 
-      document.title = errorMessage;
-      console.log(errorMessage);
-    }
+    var errorMessage = 'Unexpected Exception: ' + e.toString(); 
+    document.title = errorMessage;
+    console.log(errorMessage);
   }
 }
 </script>
