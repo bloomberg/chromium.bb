@@ -62,7 +62,6 @@
       'toolsets': ['host'],
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../build/linux/system.gyp:x11',
         '../common/common.gyp:android_tools_common',
       ],
       'include_dirs': [
@@ -78,8 +77,8 @@
         'host_forwarder_main.cc',
         'pipe_notifier.cc',
         'socket.cc',
-        # TODO(pliard): Remove this and x11 dependency above. This is needed
-        # to avoid undefined references at link time.
+        # TODO(pliard): Remove this. This is needed to avoid undefined
+        # references at link time.
         '../../../base/message_loop/message_pump_glib.cc',
         '../../../base/message_loop/message_pump_gtk.cc',
       ],

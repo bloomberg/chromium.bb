@@ -107,6 +107,255 @@
         },
       ],  # targets
     }],
+    [ 'use_x11==1', {
+      # Hide X11 and related dependencies when use_x11=0
+      'targets': [
+        {
+          'target_name': 'x11',
+          'type': 'none',
+          'toolsets': ['host', 'target'],
+          'conditions': [
+            ['_toolset=="target"', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags x11)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other x11 xi)',
+                ],
+                'libraries': [
+                  '<!@(<(pkg-config) --libs-only-l x11 xi)',
+                ],
+              },
+            }, {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(pkg-config --cflags x11)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(pkg-config --libs-only-L --libs-only-other x11 xi)',
+                ],
+                'libraries': [
+                  '<!@(pkg-config --libs-only-l x11 xi)',
+                ],
+              },
+            }],
+          ],
+        },
+        {
+          'target_name': 'xcursor',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xcursor)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xcursor)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xcursor)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xcomposite',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xcomposite)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xcomposite)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xcomposite)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xdamage',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xdamage)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xdamage)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xdamage)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xext',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xext)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xext)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xext)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xfixes',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xfixes)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xfixes)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xfixes)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xi',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xi)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xi)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xi)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xrandr',
+          'type': 'none',
+          'toolsets': ['host', 'target'],
+          'conditions': [
+            ['_toolset=="target"', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags xrandr)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other xrandr)',
+                ],
+                'libraries': [
+                  '<!@(<(pkg-config) --libs-only-l xrandr)',
+                ],
+              },
+            }, {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(pkg-config --cflags xrandr)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(pkg-config --libs-only-L --libs-only-other xrandr)',
+                ],
+                'libraries': [
+                  '<!@(pkg-config --libs-only-l xrandr)',
+                ],
+              },
+            }],
+          ],
+        },
+        {
+          'target_name': 'xrender',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xrender)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xrender)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xrender)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xscrnsaver',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xscrnsaver)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xscrnsaver)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xscrnsaver)',
+            ],
+          },
+        },
+        {
+          'target_name': 'xtst',
+          'type': 'none',
+          'toolsets': ['host', 'target'],
+          'conditions': [
+            ['_toolset=="target"', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags xtst)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
+                ],
+                'libraries': [
+                  '<!@(<(pkg-config) --libs-only-l xtst)',
+                ],
+              },
+            }, {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(pkg-config --cflags xtst)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(pkg-config --libs-only-L --libs-only-other xtst)',
+                ],
+                'libraries': [
+                  '<!@(pkg-config --libs-only-l xtst)',
+                ],
+              },
+            }]
+          ]
+        }
+      ],  # targets
+    }],
   ],  # conditions
   'targets': [
     {
@@ -755,249 +1004,5 @@
         }],
       ],
     },
-    {
-      'target_name': 'x11',
-      'type': 'none',
-      'toolsets': ['host', 'target'],
-      'conditions': [
-        ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags x11)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other x11 xi)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l x11 xi)',
-            ],
-          },
-        }, {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(pkg-config --cflags x11)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(pkg-config --libs-only-L --libs-only-other x11 xi)',
-            ],
-            'libraries': [
-              '<!@(pkg-config --libs-only-l x11 xi)',
-            ],
-          },
-        }],
-      ],
-    },
-    {
-      'target_name': 'xcursor',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xcursor)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xcursor)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xcursor)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xcomposite',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xcomposite)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xcomposite)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xcomposite)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xdamage',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xdamage)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xdamage)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xdamage)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xext',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xext)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xext)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xext)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xfixes',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xfixes)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xfixes)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xfixes)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xi',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xi)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xi)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xi)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xrandr',
-      'type': 'none',
-      'toolsets': ['host', 'target'],
-      'conditions': [
-        ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags xrandr)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other xrandr)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l xrandr)',
-            ],
-          },
-        }, {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(pkg-config --cflags xrandr)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(pkg-config --libs-only-L --libs-only-other xrandr)',
-            ],
-            'libraries': [
-              '<!@(pkg-config --libs-only-l xrandr)',
-            ],
-          },
-        }],
-      ],
-    },
-    {
-      'target_name': 'xrender',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xrender)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xrender)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xrender)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xscrnsaver',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'cflags': [
-          '<!@(<(pkg-config) --cflags xscrnsaver)',
-        ],
-      },
-      'link_settings': {
-        'ldflags': [
-          '<!@(<(pkg-config) --libs-only-L --libs-only-other xscrnsaver)',
-        ],
-        'libraries': [
-          '<!@(<(pkg-config) --libs-only-l xscrnsaver)',
-        ],
-      },
-    },
-    {
-      'target_name': 'xtst',
-      'type': 'none',
-      'toolsets': ['host', 'target'],
-      'conditions': [
-        ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags xtst)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l xtst)',
-            ],
-          },
-        }, {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(pkg-config --cflags xtst)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(pkg-config --libs-only-L --libs-only-other xtst)',
-            ],
-            'libraries': [
-              '<!@(pkg-config --libs-only-l xtst)',
-            ],
-          },
-        }]
-      ]
-    }
   ],
 }

@@ -9,7 +9,7 @@
   'targets': [
   ],
   'conditions': [
-    ['OS == "linux" and target_arch != "arm"', {
+    ['OS == "linux" and target_arch != "arm" and use_x11==1', {
       'targets': [
         {
           'target_name': 'compositor_model_bench',

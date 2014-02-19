@@ -1038,12 +1038,21 @@
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
           ],
         }],
-        ['OS=="linux" and use_aura==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:fontconfig',
-            '../build/linux/system.gyp:x11',
-            '../dbus/dbus.gyp:dbus',
+        ['OS=="linux"', {
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:dbus',
+                '../build/linux/system.gyp:fontconfig',
+                '../dbus/dbus.gyp:dbus',
+              ],
+            }],
+            # x11 build
+            ['use_x11==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:x11',
+              ],
+            }],
           ],
         }],
         ['safe_browsing==1', {

@@ -3326,7 +3326,6 @@
               'dependencies': [
                 '../build/linux/system.gyp:dbus',
                 '../build/linux/system.gyp:fontconfig',
-                '../build/linux/system.gyp:x11',
                 '../dbus/dbus.gyp:dbus',
               ],
             }],
@@ -3335,6 +3334,12 @@
               'sources/': [
                 ['exclude', '^browser/ui/toolbar/bookmark_sub_menu_model.cc'],
                 ['exclude', '^browser/ui/views/notifications/balloon_collection_views.cc'],
+              ],
+            }],
+            # x11 build
+            ['use_x11==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:x11',
               ],
             }],
           ],

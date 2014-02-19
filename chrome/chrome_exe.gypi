@@ -201,11 +201,16 @@
                 '<@(chromium_child_dependencies)',
                 '../content/content.gyp:content_app_both',
                 # Needed for chrome_main.cc initialization of libraries.
-                '../build/linux/system.gyp:x11',
                 '../build/linux/system.gyp:pangocairo',
-                '../build/linux/system.gyp:xext',
                 # Needed to use the master_preferences functions
                 'installer_util',
+              ],
+            }],
+            # x11 build. Needed for chrome_main.cc initialization of libraries.
+            ['use_x11==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:x11',
+                '../build/linux/system.gyp:xext',
               ],
             }],
           ],
