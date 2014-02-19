@@ -204,6 +204,12 @@ LRESULT LegacyRenderWidgetHostHWND::OnTouch(UINT message,
   return ::SendMessage(GetParent(), message, w_param, l_param);
 }
 
+LRESULT LegacyRenderWidgetHostHWND::OnScroll(UINT message,
+                                             WPARAM w_param,
+                                             LPARAM l_param) {
+  return ::SendMessage(GetParent(), message, w_param, l_param);
+}
+
 LRESULT LegacyRenderWidgetHostHWND::OnNCPaint(UINT message,
                                               WPARAM w_param,
                                               LPARAM l_param) {

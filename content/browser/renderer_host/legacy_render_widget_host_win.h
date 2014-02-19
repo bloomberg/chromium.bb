@@ -71,6 +71,8 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor)
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouch)
+    MESSAGE_HANDLER_EX(WM_VSCROLL, OnScroll)
+    MESSAGE_HANDLER_EX(WM_HSCROLL, OnScroll)
   END_MSG_MAP()
 
   HWND hwnd() { return m_hWnd; }
@@ -113,6 +115,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                        BOOL& handled);
   LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnTouch(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnScroll(UINT message, WPARAM w_param, LPARAM l_param);
 
   LRESULT OnNCPaint(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnPaint(UINT message, WPARAM w_param, LPARAM l_param);
