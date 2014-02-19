@@ -100,24 +100,6 @@ void NaClReverseServiceDtor(struct NaClRefCount *vself) {
   (*NACL_VTBL(NaClRefCount, self)->Dtor)((struct NaClRefCount *) self);
 }
 
-static void NaClReverseServiceTestRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  char *msg = in_args[0]->arrays.str;
-  UNREFERENCED_PARAMETER(out_args);
-
-  /*
-   * Use rpc->channel rather than rpc->channel->server_instance_data
-   * to show that Test RPCs arrive in different channels.
-   */
-  NaClLog(1, "Test: [%"NACL_PRIxPTR"] %s\n",
-          (uintptr_t) rpc->channel, msg);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 static void NaClReverseServiceAddChannelRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -548,7 +530,6 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
 }
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
-  { NACL_REVERSE_CONTROL_TEST, NaClReverseServiceTestRpc, },
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, NaClReverseServiceAddChannelRpc, },
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
   { NACL_REVERSE_CONTROL_REPORT_STATUS, NaClReverseServiceModuleExitRpc, },
