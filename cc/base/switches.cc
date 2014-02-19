@@ -82,7 +82,6 @@ const char kStrictLayerPropertyChangeChecking[] =
 // Virtual viewport for fixed-position elements, scrollbars during pinch.
 const char kEnablePinchVirtualViewport[] = "enable-pinch-virtual-viewport";
 
-const char kEnablePartialSwap[] = "enable-partial-swap";
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 
