@@ -85,7 +85,9 @@ int RunRefs(const std::vector<std::string>& args) {
 
   Setup* setup = new Setup;
   setup->set_check_for_bad_items(false);
-  if (!setup->DoSetup() || !setup->Run())
+  // TODO(brettw) bug 343726: Use a temporary directory instead of this
+  // default one to avoid messing up any build that's in there.
+  if (!setup->DoSetup("//out/Default/") || !setup->Run())
     return 1;
 
   std::vector<const BuilderRecord*> records = setup->builder()->GetAllRecords();

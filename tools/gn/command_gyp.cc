@@ -424,6 +424,24 @@ int RunGyp(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;
   Setups setups;
 
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+
+  // Compute output directory.
+  std::string build_dir;
+  if (args.size() == 1) {
+    build_dir = args[0];
+  } else {
+    // Backwards-compat code for the old invocation that uses
+    // "gn gyp --output=foo"
+    // TODO(brettw) This should be removed when gyp_chromium has been updated.
+
+    // Switch to set the build output directory.
+    const char kSwitchBuildOutput[] = "output";
+    build_dir = cmdline->GetSwitchValueASCII(kSwitchBuildOutput);
+    if (build_dir.empty())
+      build_dir = "//out/Default/";
+  }
+
   // Deliberately leaked to avoid expensive process teardown. We also turn off
   // unused override checking since we want to merge all declared arguments and
   // check those, rather than check each build individually. Otherwise, you
@@ -431,7 +449,7 @@ int RunGyp(const std::vector<std::string>& args) {
   // because some args are build-type specific.
   setups.debug = new Setup;
   setups.debug->set_check_for_unused_overrides(false);
-  if (!setups.debug->DoSetup())
+  if (!setups.debug->DoSetup(build_dir))
     return 1;
   const char kIsDebug[] = "is_debug";
 
@@ -515,7 +533,7 @@ int RunGyp(const std::vector<std::string>& args) {
 
   base::TimeDelta elapsed_time = timer.Elapsed();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kSwitchQuiet)) {
+  if (!cmdline->HasSwitch(kSwitchQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
 
     std::string stats = "Wrote " +

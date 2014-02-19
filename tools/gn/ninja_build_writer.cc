@@ -31,6 +31,8 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   PathService::Get(base::FILE_EXE, &executable);
 
   CommandLine cmdline(executable);
+  cmdline.AppendArg("gen");
+  cmdline.AppendArg(build_settings->build_dir().value());
   cmdline.AppendSwitchPath("--root", build_settings->root_path());
   cmdline.AppendSwitch("-q");  // Don't write output.
 

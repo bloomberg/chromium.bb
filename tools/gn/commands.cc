@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "tools/gn/commands.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label.h"
 #include "tools/gn/setup.h"
@@ -48,24 +49,22 @@ const CommandInfoMap& GetCommands() {
 const Target* GetTargetForDesc(const std::vector<std::string>& args) {
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup = new Setup;
-  if (!setup->DoSetup())
+  // TODO(brettw) bug 343726: Use a temporary directory instead of this
+  // default one to avoid messing up any build that's in there.
+  if (!setup->DoSetup("//out/Default/"))
     return NULL;
-
-  // TODO(brettw): set the output dir to be a sandbox one to avoid polluting
-  // the real output dir with files written by the build scripts.
 
   // Do the actual load. This will also write out the target ninja files.
   if (!setup->Run())
     return NULL;
 
   // Need to resolve the label after we know the default toolchain.
-  // TODO(brettw) find the current directory and resolve the input label
-  // relative to that.
   Label default_toolchain = setup->loader()->default_toolchain_label();
   Value arg_value(NULL, args[0]);
   Err err;
-  Label label =
-      Label::Resolve(SourceDir("//"), default_toolchain, arg_value, &err);
+  Label label = Label::Resolve(SourceDirForCurrentDirectory(
+                                   setup->build_settings().root_path()),
+                               default_toolchain, arg_value, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return NULL;

@@ -50,8 +50,17 @@ const char kGen[] = "gen";
 const char kGen_HelpShort[] =
     "gen: Generate ninja files.";
 const char kGen_Help[] =
-    "gn gen\n"
-    "  Generates ninja files from the current tree.\n"
+    "gn gen: Generate ninja files.\n"
+    "\n"
+    "  gn gen <output_directory>\n"
+    "\n"
+    "  Generates ninja files from the current tree and puts them in the given\n"
+    "  output directory.\n"
+    "\n"
+    "  The output directory can be a source-repo-absolute path name such as:\n"
+    "      //out/foo\n"
+    "  Or it can be a directory relative to the current directory such as:\n"
+    "      out/foo\n"
     "\n"
     "  See \"gn help\" for the common command-line switches.\n";
 
@@ -59,9 +68,16 @@ const char kGen_Help[] =
 int RunGen(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;
 
+  if (args.size() != 1) {
+    Err(Location(), "Need exactly one build directory to generate.",
+        "I expected something more like \"gn gen out/foo\"\n"
+        "You can also see \"gn help gen\".").PrintToStdout();
+    return 1;
+  }
+
   // Deliberately leaked to avoid expensive process teardown.
-  Setup* setup = new Setup;
-  if (!setup->DoSetup())
+  Setup* setup = new Setup();
+  if (!setup->DoSetup(args[0]))
     return 1;
 
   // Cause the load to also generate the ninja files for each target. We wrap

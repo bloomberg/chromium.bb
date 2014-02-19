@@ -78,7 +78,11 @@ class Setup : public CommonSetup {
 
   // Configures the build for the current command line. On success returns
   // true. On failure, prints the error and returns false.
-  bool DoSetup();
+  //
+  // The parameter is the string the user specified for the build directory. We
+  // will try to interpret this as a SourceDir if possible, and will fail if is
+  // is malformed.
+  bool DoSetup(const std::string& build_dir);
 
   // Runs the load, returning true on success. On failure, prints the error
   // and returns false. This includes both RunPreMessageLoop() and
@@ -95,6 +99,11 @@ class Setup : public CommonSetup {
 
   // Fills the root directory into the settings. Returns true on success.
   bool FillSourceDir(const CommandLine& cmdline);
+
+  // Fills the build directory given the value the user has specified.
+  // Must happen after FillSourceDir so we can resolve source-relative
+  // paths.
+  bool FillBuildDir(const std::string& build_dir);
 
   // Fills the python path portion of the command line. On failure, sets
   // it to just "python".

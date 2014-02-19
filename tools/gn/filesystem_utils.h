@@ -145,6 +145,17 @@ std::string RebaseSourceAbsolutePath(const std::string& input,
 // a "." so this remains valid.
 std::string DirectoryWithNoLastSlash(const SourceDir& dir);
 
+// Returns the "best" SourceDir representing the given path. If it's inside the
+// given source_root, a source-relative directory will be returned (e.g.
+// "//foo/bar.cc". If it's outside of the source root, a system-absolute
+// directory will be returned.
+SourceDir SourceDirForPath(const base::FilePath& source_root,
+                           const base::FilePath& path);
+
+// Like SourceDirForPath but returns the SourceDir representing the current
+// directory.
+SourceDir SourceDirForCurrentDirectory(const base::FilePath& source_root);
+
 // -----------------------------------------------------------------------------
 
 // These functions return the various flavors of output and gen directories.

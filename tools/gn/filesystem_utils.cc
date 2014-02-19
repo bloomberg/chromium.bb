@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -108,6 +109,59 @@ bool DoesBeginWindowsDriveLetter(const base::StringPiece& path) {
   return true;
 }
 #endif
+
+// A wrapper around FilePath.GetComponents that works the way we need. This is
+// not super efficient since it does some O(n) transformations on the path. If
+// this is called a lot, we might want to optimize.
+std::vector<base::FilePath::StringType> GetPathComponents(
+    const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> result;
+  path.GetComponents(&result);
+
+  if (result.empty())
+    return result;
+
+  // GetComponents will preserve the "/" at the beginning, which confuses us.
+  // We don't expect to have relative paths in this function.
+  // Don't use IsSeparator since we always want to allow backslashes.
+  if (result[0] == FILE_PATH_LITERAL("/") ||
+      result[0] == FILE_PATH_LITERAL("\\"))
+    result.erase(result.begin());
+
+#if defined(OS_WIN)
+  // On Windows, GetComponents will give us [ "C:", "/", "foo" ], and we
+  // don't want the slash in there. This doesn't support input like "C:foo"
+  // which means foo relative to the current directory of the C drive but
+  // that's basically legacy DOS behavior we don't need to support.
+  if (result.size() >= 2 && result[1] == L"/" || result[1] == L"\\")
+    result.erase(result.begin() + 1);
+#endif
+
+  return result;
+}
+
+// Provides the equivalent of == for filesystem strings, trying to do
+// approximately the right thing with case.
+bool FilesystemStringsEqual(const base::FilePath::StringType& a,
+                            const base::FilePath::StringType& b) {
+#if defined(OS_WIN)
+  // Assume case-insensitive filesystems on Windows. We use the CompareString
+  // function to do a case-insensitive comparison based on the current locale
+  // (we don't want GN to depend on ICU which is large and requires data
+  // files). This isn't perfect, but getting this perfectly right is very
+  // difficult and requires I/O, and this comparison should cover 99.9999% of
+  // all cases.
+  //
+  // Note: The documentation for CompareString says it runs fastest on
+  // null-terminated strings with -1 passed for the length, so we do that here.
+  // There should not be embedded nulls in filesystem strings.
+  return ::CompareString(LOCALE_USER_DEFAULT, LINGUISTIC_IGNORECASE,
+                         a.c_str(), -1, b.c_str(), -1) == CSTR_EQUAL;
+#else
+  // Assume case-sensitive filesystems on non-Windows.
+  return a == b;
+#endif
+}
 
 }  // namespace
 
@@ -562,6 +616,55 @@ std::string DirectoryWithNoLastSlash(const SourceDir& dir) {
     ret.resize(ret.size() - 1);
   }
   return ret;
+}
+
+SourceDir SourceDirForPath(const base::FilePath& source_root,
+                           const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> source_comp =
+      GetPathComponents(source_root);
+  std::vector<base::FilePath::StringType> path_comp =
+      GetPathComponents(path);
+
+  // See if path is inside the source root by looking for each of source root's
+  // components at the beginning of path.
+  bool is_inside_source;
+  if (path_comp.size() < source_comp.size()) {
+    // Too small to fit.
+    is_inside_source = false;
+  } else {
+    is_inside_source = true;
+    for (size_t i = 0; i < source_comp.size(); i++) {
+      if (!FilesystemStringsEqual(source_comp[i], path_comp[i])) {
+        is_inside_source = false;
+        break;
+      }
+    }
+  }
+
+  std::string result_str;
+  size_t initial_path_comp_to_use;
+  if (is_inside_source) {
+    // Construct a source-relative path beginning in // and skip all of the
+    // shared directories.
+    result_str = "//";
+    initial_path_comp_to_use = source_comp.size();
+  } else {
+    // Not inside source code, construct a system-absolute path.
+    result_str = "/";
+    initial_path_comp_to_use = 0;
+  }
+
+  for (size_t i = initial_path_comp_to_use; i < path_comp.size(); i++) {
+    result_str.append(FilePathToUTF8(path_comp[i]));
+    result_str.push_back('/');
+  }
+  return SourceDir(result_str);
+}
+
+SourceDir SourceDirForCurrentDirectory(const base::FilePath& source_root) {
+  base::FilePath cd;
+  file_util::GetCurrentDirectory(&cd);
+  return SourceDirForPath(source_root, cd);
 }
 
 SourceDir GetToolchainOutputDir(const Settings* settings) {

@@ -189,6 +189,13 @@ class BASE_EXPORT FilePath {
   // Returns a vector of all of the components of the provided path. It is
   // equivalent to calling DirName().value() on the path's root component,
   // and BaseName().value() on each child component.
+  //
+  // To make sure this is lossless so we can differentiate absolute and
+  // relative paths, the root slash will be included even though no other
+  // slashes will be. The precise behavior is:
+  //
+  // Posix:  "/foo/bar"  ->  [ "/", "foo", "bar" ]
+  // Windows:  "C:\foo\bar"  ->  [ "C:", "\\", "foo", "bar" ]
   void GetComponents(std::vector<FilePath::StringType>* components) const;
 
   // Returns true if this FilePath is a strict parent of the |child|. Absolute
