@@ -6062,6 +6062,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Installer.InstallDateProvisioningSource"
+    enum="UpdateEngineInstallDateProvisioningSource">
+  <summary>
+    The source used to provision the install-date-days value sent to Omaha with
+    every request. This is reported when OOBE completes (M34 or later) or when
+    upgrading to a version with install-date-days support.
+  </summary>
+</histogram>
+
 <histogram name="Installer.NormalErrorCodes" enum="UpdateEngineErrorCode">
   <summary>
     Errors from update_engine process when running in normal mode.
@@ -32526,6 +32535,11 @@ other types of suffix sets.
   <int value="40" label="kErrorCodeOmahaUpdateDeferredForBackoff"/>
   <int value="41" label="kErrorCodePostinstallPowerwashError"/>
   <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
+</enum>
+
+<enum name="UpdateEngineInstallDateProvisioningSource" type="int">
+  <int value="0" label="Omaha Response"/>
+  <int value="1" label="OOBE Marker"/>
 </enum>
 
 <enum name="UpdateEnginePayloadFormat" type="int">
