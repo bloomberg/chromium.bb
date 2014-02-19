@@ -151,9 +151,8 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
 // Overriden from ui::LinuxInputMethodContextDelegate
 
 void InputMethodAuraLinux::OnCommit(const base::string16& text) {
-  TextInputClient* text_input_client = GetTextInputClient();
-  if (text_input_client)
-    text_input_client->InsertText(text);
+  if (!IsTextInputTypeNone())
+    GetTextInputClient()->InsertText(text);
 }
 
 void InputMethodAuraLinux::OnPreeditChanged(
