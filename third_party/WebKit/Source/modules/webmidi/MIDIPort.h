@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -41,8 +42,9 @@ namespace WebCore {
 
 class MIDIAccess;
 
-class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(MIDIPort);
+class MIDIPort : public RefCountedWillBeRefCountedGarbageCollected<MIDIPort>, public ScriptWrappable, public EventTargetWithInlineData {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MIDIPort>);
 public:
     enum MIDIPortTypeCode {
         MIDIPortTypeInput,
@@ -59,6 +61,8 @@ public:
 
     MIDIAccess* midiAccess() const { return m_access; }
 
+    void trace(Visitor*);
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
@@ -74,13 +78,8 @@ private:
     String m_name;
     MIDIPortTypeCode m_type;
     String m_version;
-    // Hold a raw pointer to avoid a circular reference.
-    // Lifecycle is guaranteed by SetWrapperReferenceTo() IDL annotation.
-    // This will be improved by the oilpan.
-    MIDIAccess* m_access;
+    RawPtrWillBeMember<MIDIAccess> m_access;
 };
-
-typedef Vector<RefPtr<MIDIPort> > MIDIPortVector;
 
 } // namespace WebCore
 

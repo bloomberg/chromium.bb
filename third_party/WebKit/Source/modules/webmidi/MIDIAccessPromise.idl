@@ -32,7 +32,8 @@
 // See also, http://crbug.com/243345
 [
     NoInterfaceObject,
-    ActiveDOMObject
+    ActiveDOMObject,
+    WillBeGarbageCollected
 ] interface MIDIAccessPromise {
     // Supports only then() method tentatively. But it never returns Promise.
     void then(MIDISuccessCallback successCallback, MIDIErrorCallback errorCallback);

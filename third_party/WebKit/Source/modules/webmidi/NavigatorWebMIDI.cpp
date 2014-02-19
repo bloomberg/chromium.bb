@@ -63,12 +63,12 @@ NavigatorWebMIDI* NavigatorWebMIDI::from(Navigator* navigator)
     return supplement;
 }
 
-PassRefPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Navigator* navigator, const Dictionary& options)
+PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Navigator* navigator, const Dictionary& options)
 {
     return NavigatorWebMIDI::from(navigator)->requestMIDIAccess(options);
 }
 
-PassRefPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
+PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
 {
     if (!frame())
         return 0;

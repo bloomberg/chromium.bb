@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "heap/Handle.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -48,9 +49,10 @@ class ExecutionContext;
 
 struct MIDIOptions;
 
-class MIDIAccessPromise FINAL : public RefCounted<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
+class MIDIAccessPromise FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
+    static PassRefPtrWillBeRawPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
     virtual ~MIDIAccessPromise();
 
     // ActiveDOMObject
@@ -63,6 +65,8 @@ public:
     void reject(PassRefPtr<DOMError>);
 
     void then(PassOwnPtr<MIDISuccessCallback>, PassOwnPtr<MIDIErrorCallback>);
+
+    void trace(Visitor*);
 
 private:
     enum State {
@@ -81,7 +85,7 @@ private:
     OwnPtr<MIDIErrorCallback> m_errorCallback;
     OwnPtr<MIDIOptions> m_options;
     RefPtr<DOMError> m_error;
-    RefPtr<MIDIAccess> m_access;
+    RefPtrWillBeMember<MIDIAccess> m_access;
 };
 
 } // namespace WebCore

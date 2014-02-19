@@ -40,7 +40,7 @@ class MIDIAccess;
 
 class MIDIInput FINAL : public MIDIPort {
 public:
-    static PassRefPtr<MIDIInput> create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
+    static PassRefPtrWillBeRawPtr<MIDIInput> create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIInput() { }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
@@ -55,7 +55,7 @@ private:
     MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
 };
 
-typedef Vector<RefPtr<MIDIInput> > MIDIInputVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<MIDIInput> > MIDIInputVector;
 
 } // namespace WebCore
 

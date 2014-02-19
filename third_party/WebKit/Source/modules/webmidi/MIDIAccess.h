@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"
@@ -47,11 +48,12 @@ namespace WebCore {
 class ExecutionContext;
 class MIDIAccessPromise;
 
-class MIDIAccess FINAL : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
-    REFCOUNTED_EVENT_TARGET(MIDIAccess);
+class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>);
 public:
     virtual ~MIDIAccess();
-    static PassRefPtr<MIDIAccess> create(ExecutionContext*, MIDIAccessPromise*);
+    static PassRefPtrWillBeRawPtr<MIDIAccess> create(ExecutionContext*, MIDIAccessPromise*);
 
     MIDIInputVector inputs() const { return m_inputs; }
     MIDIOutputVector outputs() const { return m_outputs; }
@@ -78,6 +80,8 @@ public:
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
+    void trace(Visitor*);
+
 private:
     MIDIAccess(ExecutionContext*, MIDIAccessPromise*);
 
@@ -86,7 +90,7 @@ private:
 
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;
-    MIDIAccessPromise* m_promise;
+    RawPtrWillBeMember<MIDIAccessPromise> m_promise;
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_hasAccess;

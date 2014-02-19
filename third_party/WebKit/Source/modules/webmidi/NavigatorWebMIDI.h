@@ -45,8 +45,8 @@ public:
     virtual ~NavigatorWebMIDI();
     static NavigatorWebMIDI* from(Navigator*);
 
-    static PassRefPtr<MIDIAccessPromise> requestMIDIAccess(Navigator*, const Dictionary&);
-    PassRefPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
+    static PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(Navigator*, const Dictionary&);
+    PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
 
 private:
     NavigatorWebMIDI(Frame*);

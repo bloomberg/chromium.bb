@@ -42,9 +42,11 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIAccess> MIDIAccess::create(ExecutionContext* context, MIDIAccessPromise* promise)
+DEFINE_GC_INFO(MIDIAccess);
+
+PassRefPtrWillBeRawPtr<MIDIAccess> MIDIAccess::create(ExecutionContext* context, MIDIAccessPromise* promise)
 {
-    RefPtr<MIDIAccess> midiAccess(adoptRef(new MIDIAccess(context, promise)));
+    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIAccess(context, promise)));
     midiAccess->suspendIfNeeded();
     midiAccess->startRequest();
     return midiAccess.release();
@@ -177,6 +179,13 @@ void MIDIAccess::permissionDenied()
 
     m_hasAccess = false;
     m_promise->reject(DOMError::create("SecurityError"));
+}
+
+void MIDIAccess::trace(Visitor* visitor)
+{
+    visitor->trace(m_inputs);
+    visitor->trace(m_outputs);
+    visitor->trace(m_promise);
 }
 
 } // namespace WebCore

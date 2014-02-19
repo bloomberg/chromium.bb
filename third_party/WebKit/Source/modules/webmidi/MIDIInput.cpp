@@ -31,15 +31,16 @@
 #include "config.h"
 #include "modules/webmidi/MIDIInput.h"
 
+#include "heap/Handle.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIMessageEvent.h"
 
 namespace WebCore {
 
-PassRefPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtrWillBeRawPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    RefPtr<MIDIInput> input = adoptRef(new MIDIInput(access, id, manufacturer, name, version));
+    RefPtrWillBeRawPtr<MIDIInput> input = adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIInput(access, id, manufacturer, name, version));
     return input.release();
 }
 
