@@ -65,8 +65,8 @@
     }
   ],
   'dependencies': [
-    'mojo_bindings',
-    'mojo_system',
+    '<(DEPTH)/mojo/mojo.gyp:mojo_bindings',
+    '<(DEPTH)/mojo/mojo.gyp:mojo_system',
   ],
   'include_dirs': [
     '<(DEPTH)',
