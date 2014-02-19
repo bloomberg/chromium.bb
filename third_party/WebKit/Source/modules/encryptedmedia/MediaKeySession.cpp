@@ -40,19 +40,20 @@ namespace WebCore {
 
 DEFINE_GC_INFO(MediaKeySession);
 
-PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
+PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
 {
     RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
     session->suspendIfNeeded();
     return session.release();
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
+MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
     : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_session(cdm->createSession(this))
     , m_keys(keys)
+    , m_isClosed(false)
     , m_updateTimer(this, &MediaKeySession::updateTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession::MediaKeySession");
@@ -64,10 +65,6 @@ MediaKeySession::~MediaKeySession()
 {
     m_session.clear();
     m_asyncEventQueue->cancelAllEvents();
-
-    // FIXME: Release ref that MediaKeys has by removing it from m_sessions.
-    // if (m_keys) m_keys->sessionClosed(this);
-    m_keys = 0;
 }
 
 void MediaKeySession::setError(MediaKeyError* error)
@@ -77,6 +74,7 @@ void MediaKeySession::setError(MediaKeyError* error)
 
 void MediaKeySession::release(ExceptionState& exceptionState)
 {
+    ASSERT(!m_isClosed);
     m_session->release();
 }
 
@@ -87,12 +85,14 @@ String MediaKeySession::sessionId() const
 
 void MediaKeySession::initializeNewSession(const String& mimeType, const Uint8Array& initData)
 {
+    ASSERT(!m_isClosed);
     m_session->initializeNewSession(mimeType, initData);
 }
 
 void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaKeySession::update");
+    ASSERT(!m_isClosed);
 
     // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
     // The update(response) method must run the following steps:
@@ -161,6 +161,10 @@ void MediaKeySession::close()
     RefPtr<Event> event = Event::create(EventTypeNames::close);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
+
+    // Once closed, the session can no longer be the target of events from
+    // the CDM so this object can be garbage collected.
+    m_isClosed = true;
 }
 
 // Queue a task to fire a simple event named keyadded at the MediaKeySession object.
@@ -202,13 +206,20 @@ ExecutionContext* MediaKeySession::executionContext() const
 
 bool MediaKeySession::hasPendingActivity() const
 {
+    // Remain around if there are pending events or MediaKeys is still around
+    // and we're not closed.
     return ActiveDOMObject::hasPendingActivity()
         || !m_pendingUpdates.isEmpty()
-        || m_asyncEventQueue->hasPendingEvents();
+        || m_asyncEventQueue->hasPendingEvents()
+        || (m_keys && !m_isClosed);
 }
 
 void MediaKeySession::stop()
 {
+    // Stop the CDM from firing any more events for this session.
+    m_session.clear();
+    m_isClosed = true;
+
     if (m_updateTimer.isActive())
         m_updateTimer.stop();
     m_pendingUpdates.clear();

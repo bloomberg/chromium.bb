@@ -27,6 +27,8 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
@@ -39,7 +41,7 @@ namespace WebCore {
 
 DEFINE_GC_INFO(MediaKeys);
 
-PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, const String& keySystem, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
     // The MediaKeys(keySystem) constructor must run the following steps:
@@ -67,14 +69,16 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(const String& keySystem, Exc
     // 5. Create a new MediaKeys object.
     // 5.1 Let the keySystem attribute be keySystem.
     // 6. Return the new object to the caller.
-    return adoptRefWillBeNoop(new MediaKeys(keySystem, cdm.release()));
+    return adoptRefWillBeNoop(new MediaKeys(context, keySystem, cdm.release()));
 }
 
-MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule> cdm)
-    : m_mediaElement(0)
+MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwnPtr<ContentDecryptionModule> cdm)
+    : ContextLifecycleObserver(context)
+    , m_mediaElement(0)
     , m_keySystem(keySystem)
     , m_cdm(cdm)
     , m_initializeNewSessionTimer(this, &MediaKeys::initializeNewSessionTimerFired)
+    , m_weakFactory(this)
 {
     WTF_LOG(Media, "MediaKeys::MediaKeys");
     ScriptWrappable::init(this);
@@ -82,7 +86,6 @@ MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule
 
 MediaKeys::~MediaKeys()
 {
-    // FIXME: Make sure MediaKeySessions are torn down correctly.
 }
 
 PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
@@ -111,13 +114,12 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
     }
 
     // 2. Create a new MediaKeySession object.
-    RefPtrWillBeRawPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), this);
+    RefPtrWillBeRawPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), m_weakFactory.createWeakPtr());
     // 2.1 Let the keySystem attribute be keySystem.
     ASSERT(!session->keySystem().isEmpty());
     // FIXME: 2.2 Let the state of the session be CREATED.
 
-    // 3. Add the new object to an internal list of session objects.
-    m_sessions.append(session);
+    // 3. Add the new object to an internal list of session objects (not needed).
 
     // 4. Schedule a task to initialize the session, providing type, initData, and the new object.
     m_pendingInitializeNewSessionData.append(InitializeNewSessionData(session, contentType, initData));
@@ -161,6 +163,14 @@ void MediaKeys::trace(Visitor* visitor)
 void MediaKeys::InitializeNewSessionData::trace(Visitor* visitor)
 {
     visitor->trace(session);
+}
+
+void MediaKeys::contextDestroyed()
+{
+    ContextLifecycleObserver::contextDestroyed();
+
+    // We don't need the CDM anymore.
+    m_cdm.clear();
 }
 
 }

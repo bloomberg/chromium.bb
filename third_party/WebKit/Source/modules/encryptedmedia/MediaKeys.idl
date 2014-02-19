@@ -26,6 +26,7 @@
 [
     RuntimeEnabled=EncryptedMedia,
     Constructor(DOMString keySystem),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     WillBeGarbageCollected
 ] interface MediaKeys {

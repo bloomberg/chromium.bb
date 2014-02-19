@@ -27,6 +27,8 @@
 #define MediaKeys_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
 #include "heap/Handle.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
@@ -51,12 +53,10 @@ class ExceptionState;
 
 // References are held by JS and HTMLMediaElement.
 // The ContentDecryptionModule has the same lifetime as this object.
-// Maintains a reference to all MediaKeySessions created to ensure they live as
-// long as this object unless explicitly close()'d.
-class MediaKeys : public RefCountedWillBeGarbageCollectedFinalized<MediaKeys>, public ScriptWrappable {
+class MediaKeys : public RefCountedWillBeGarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
     DECLARE_GC_INFO;
 public:
-    static PassRefPtrWillBeRawPtr<MediaKeys> create(const String& keySystem, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<MediaKeys> create(ExecutionContext*, const String& keySystem, ExceptionState&);
     ~MediaKeys();
 
     PassRefPtrWillBeRawPtr<MediaKeySession> createSession(ExecutionContext*, const String& contentType, Uint8Array* initData, ExceptionState&);
@@ -69,11 +69,12 @@ public:
 
     void trace(Visitor*);
 
-protected:
-    MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule>);
-    void initializeNewSessionTimerFired(Timer<MediaKeys>*);
+    // ContextLifecycleObserver
+    virtual void contextDestroyed() OVERRIDE;
 
-    Vector<RefPtr<MediaKeySession> > m_sessions;
+protected:
+    MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<ContentDecryptionModule>);
+    void initializeNewSessionTimerFired(Timer<MediaKeys>*);
 
     HTMLMediaElement* m_mediaElement;
     const String m_keySystem;
@@ -94,6 +95,8 @@ protected:
     };
     Deque<InitializeNewSessionData> m_pendingInitializeNewSessionData;
     Timer<MediaKeys> m_initializeNewSessionTimer;
+
+    WeakPtrFactory<MediaKeys> m_weakFactory;
 };
 
 }

@@ -36,6 +36,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Uint8Array.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -47,7 +48,16 @@ class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
 
-// References are held by JS and MediaKeys.
+// References are held by JS only. However, even if all JS references are
+// dropped, it won't be garbage collected until close event received or
+// MediaKeys goes away (as determined by the validity of a WeakPtr). This allows
+// the CDM to continue to fire events for this session, as long as the session
+// is open.
+//
+// WeakPtr<MediaKeys> is used instead of having MediaKeys and MediaKeySession
+// keep references to each other, and then having to inform the other object
+// when it gets destroyed.
+//
 // Because this object controls the lifetime of the ContentDecryptionModuleSession,
 // it may outlive any references to it as long as the MediaKeys object is alive.
 // The ContentDecryptionModuleSession has the same lifetime as this object.
@@ -57,7 +67,7 @@ class MediaKeySession FINAL
     DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>);
 public:
-    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
+    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, WeakPtr<MediaKeys>);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -83,7 +93,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    MediaKeySession(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
+    MediaKeySession(ExecutionContext*, ContentDecryptionModule*, WeakPtr<MediaKeys>);
     void updateTimerFired(Timer<MediaKeySession>*);
 
     // ContentDecryptionModuleSessionClient
@@ -96,8 +106,12 @@ private:
     RefPtr<MediaKeyError> m_error;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<ContentDecryptionModuleSession> m_session;
-    // Used to remove the reference from the parent MediaKeys when close()'d.
-    MediaKeys* m_keys;
+
+    // Used to determine if MediaKeys is still active.
+    WeakPtr<MediaKeys> m_keys;
+
+    // Is the CDM finished with this session?
+    bool m_isClosed;
 
     Deque<RefPtr<Uint8Array> > m_pendingUpdates;
     Timer<MediaKeySession> m_updateTimer;
