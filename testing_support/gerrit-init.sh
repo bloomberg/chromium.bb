@@ -77,27 +77,23 @@ import re
 import sys
 
 requested_version = sys.argv[1] if len(sys.argv) > 1 else None
-gerrit_re = re.compile('gerrit(?:-full|-snapshot)?-([0-9.]+)(-rc[0-9]+)?'
-                       '(?:-([0-9]*)-g[0-9a-f]+)?[.]war')
+gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+)(-rc[0-9]+)?[.]war')
 j = json.load(sys.stdin)
 items = [(x, gerrit_re.match(x['name'])) for x in j['items']]
-items = [(x, m.groups()) for x, m in items if m]
-
+items = [(x, m.group(1), m.group(2)) for x, m in items if m]
 def _cmp(a, b):
-  a_version, a_rc, a_commits = a[1]
-  b_version, b_rc, b_commits = b[1]
-  a_parts = a_version.split('.')
-  b_parts = b_version.split('.')
-  while len(a_parts) < len(b_parts):
-    a_parts.append('0')
-  while len(b_parts) < len(a_parts):
-    b_parts.append('0')
-  a_parts.append(a_rc[3:] if a_rc else '1000')
-  b_parts.append(b_rc[3:] if b_rc else '1000')
-  a_parts.append(a_commits if a_commits else '0')
-  b_parts.append(b_commits if b_commits else '0')
-
-  return -cmp(map(int, a_parts), map(int, b_parts))
+  an = a[1].split('.')
+  bn = b[1].split('.')
+  while len(an) < len(bn):
+    an.append('0')
+  while len(bn) < len(an):
+    bn.append('0')
+  an.append(a[2][3:] if a[2] else '1000')
+  bn.append(b[2][3:] if b[2] else '1000')
+  for i in range(len(an)):
+    if an[i] != bn[i]:
+      return -1 if int(an[i]) > int(bn[i]) else 1
+  return 0
 
 if requested_version:
   for info, version in items:
