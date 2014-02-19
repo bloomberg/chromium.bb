@@ -44,17 +44,33 @@ void setV8ObjectPropertyAsNumber(v8::Handle<v8::Object> object, String name, dou
 
 class AnimationAnimationTest : public ::testing::Test {
 protected:
-    virtual void SetUp()
+    AnimationAnimationTest()
+        : document(Document::create())
+        , element(document->createElement("foo", ASSERT_NO_EXCEPTION))
     {
-        document = Document::create();
         document->animationClock().resetTimeForTesting();
-        element = document->createElement("foo", ASSERT_NO_EXCEPTION);
         document->timeline()->setZeroTime(0);
-        ASSERT_EQ(0, document->timeline()->currentTime());
+        EXPECT_EQ(0, document->timeline()->currentTime());
     }
 
     RefPtr<Document> document;
     RefPtr<Element> element;
+};
+
+class AnimationAnimationV8Test : public AnimationAnimationTest {
+protected:
+    AnimationAnimationV8Test()
+        : isolate(v8::Isolate::GetCurrent())
+        , scope(isolate)
+        , context(v8::Context::New(isolate))
+        , contextScope(context)
+    {
+    }
+
+    v8::Isolate* isolate;
+    v8::HandleScope scope;
+    v8::Local<v8::Context> context;
+    v8::Context::Scope contextScope;
 
     PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
     {
@@ -76,7 +92,7 @@ protected:
         Animation::populateTiming(timing, timingInputDictionary);
     }
 
-    void applyTimingInputNumber(Timing& timing, v8::Isolate* isolate, String timingProperty, double timingPropertyValue)
+    void applyTimingInputNumber(Timing& timing, String timingProperty, double timingPropertyValue)
     {
         v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
@@ -84,7 +100,7 @@ protected:
         populateTiming(timing, timingInputDictionary);
     }
 
-    void applyTimingInputString(Timing& timing, v8::Isolate* isolate, String timingProperty, String timingPropertyValue)
+    void applyTimingInputString(Timing& timing, String timingProperty, String timingPropertyValue)
     {
         v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
@@ -93,13 +109,8 @@ protected:
     }
 };
 
-TEST_F(AnimationAnimationTest, CanCreateAnAnimation)
+TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary> jsKeyframes;
     v8::Handle<v8::Object> keyframe1 = v8::Object::New(isolate);
     v8::Handle<v8::Object> keyframe2 = v8::Object::New(isolate);
@@ -148,13 +159,8 @@ TEST_F(AnimationAnimationTest, CanCreateAnAnimation)
     EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), *keyframes[1]->easing());
 }
 
-TEST_F(AnimationAnimationTest, CanSetDuration)
+TEST_F(AnimationAnimationV8Test, CanSetDuration)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
     double duration = 2;
 
@@ -163,41 +169,22 @@ TEST_F(AnimationAnimationTest, CanSetDuration)
     EXPECT_EQ(duration, animation->specifiedTiming().iterationDuration);
 }
 
-TEST_F(AnimationAnimationTest, CanOmitSpecifiedDuration)
+TEST_F(AnimationAnimationV8Test, CanOmitSpecifiedDuration)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
-
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes);
-
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
-TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
+TEST_F(AnimationAnimationV8Test, ClipNegativeDurationToZero)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
-
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2);
-
     EXPECT_EQ(0, animation->specifiedTiming().iterationDuration);
 }
 
-TEST_F(AnimationAnimationTest, SpecifiedGetters)
+TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
 
     v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
@@ -224,13 +211,8 @@ TEST_F(AnimationAnimationTest, SpecifiedGetters)
     EXPECT_EQ("step-start", specified->easing());
 }
 
-TEST_F(AnimationAnimationTest, SpecifiedDurationGetter)
+TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
 
     v8::Handle<v8::Object> timingInputWithDuration = v8::Object::New(isolate);
@@ -268,13 +250,8 @@ TEST_F(AnimationAnimationTest, SpecifiedDurationGetter)
     EXPECT_EQ("auto", stringDuration);
 }
 
-TEST_F(AnimationAnimationTest, SpecifiedSetters)
+TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
     v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
@@ -315,13 +292,8 @@ TEST_F(AnimationAnimationTest, SpecifiedSetters)
     EXPECT_EQ("step-start", specified->easing());
 }
 
-TEST_F(AnimationAnimationTest, SetSpecifiedDuration)
+TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Vector<Dictionary, 0> jsKeyframes;
     v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
@@ -351,375 +323,325 @@ TEST_F(AnimationAnimationTest, SetSpecifiedDuration)
     EXPECT_EQ("", stringDuration);
 }
 
-TEST_F(AnimationAnimationTest, TimingInputStartDelay)
+TEST_F(AnimationAnimationV8Test, TimingInputStartDelay)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     EXPECT_EQ(0, timing.startDelay);
 
-    applyTimingInputNumber(timing, isolate, "delay", 1.1);
+    applyTimingInputNumber(timing, "delay", 1.1);
     EXPECT_EQ(1.1, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputNumber(timing, isolate, "delay", -1);
+    applyTimingInputNumber(timing, "delay", -1);
     EXPECT_EQ(-1, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "1");
+    applyTimingInputString(timing, "delay", "1");
     EXPECT_EQ(1, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "1s");
+    applyTimingInputString(timing, "delay", "1s");
     EXPECT_EQ(0, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "Infinity");
+    applyTimingInputString(timing, "delay", "Infinity");
     EXPECT_EQ(0, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "-Infinity");
+    applyTimingInputString(timing, "delay", "-Infinity");
     EXPECT_EQ(0, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "NaN");
+    applyTimingInputString(timing, "delay", "NaN");
     EXPECT_EQ(0, timing.startDelay);
     timing.startDelay = 0;
 
-    applyTimingInputString(timing, isolate, "delay", "rubbish");
+    applyTimingInputString(timing, "delay", "rubbish");
     EXPECT_EQ(0, timing.startDelay);
     timing.startDelay = 0;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputEndDelay)
+TEST_F(AnimationAnimationV8Test, TimingInputEndDelay)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
-    applyTimingInputNumber(timing, isolate, "endDelay", 10);
+    applyTimingInputNumber(timing, "endDelay", 10);
     EXPECT_EQ(10, timing.endDelay);
-    applyTimingInputNumber(timing, isolate, "endDelay", -2.5);
+    applyTimingInputNumber(timing, "endDelay", -2.5);
     EXPECT_EQ(-2.5, timing.endDelay);
 }
 
-TEST_F(AnimationAnimationTest, TimingInputFillMode)
+TEST_F(AnimationAnimationV8Test, TimingInputFillMode)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     Timing::FillMode defaultFillMode = Timing::FillModeAuto;
     EXPECT_EQ(defaultFillMode, timing.fillMode);
 
-    applyTimingInputString(timing, isolate, "fill", "auto");
+    applyTimingInputString(timing, "fill", "auto");
     EXPECT_EQ(Timing::FillModeAuto, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "forwards");
+    applyTimingInputString(timing, "fill", "forwards");
     EXPECT_EQ(Timing::FillModeForwards, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "none");
+    applyTimingInputString(timing, "fill", "none");
     EXPECT_EQ(Timing::FillModeNone, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "backwards");
+    applyTimingInputString(timing, "fill", "backwards");
     EXPECT_EQ(Timing::FillModeBackwards, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "both");
+    applyTimingInputString(timing, "fill", "both");
     EXPECT_EQ(Timing::FillModeBoth, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "everything!");
+    applyTimingInputString(timing, "fill", "everything!");
     EXPECT_EQ(defaultFillMode, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputString(timing, isolate, "fill", "backwardsandforwards");
+    applyTimingInputString(timing, "fill", "backwardsandforwards");
     EXPECT_EQ(defaultFillMode, timing.fillMode);
     timing.fillMode = defaultFillMode;
 
-    applyTimingInputNumber(timing, isolate, "fill", 2);
+    applyTimingInputNumber(timing, "fill", 2);
     EXPECT_EQ(defaultFillMode, timing.fillMode);
     timing.fillMode = defaultFillMode;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputIterationStart)
+TEST_F(AnimationAnimationV8Test, TimingInputIterationStart)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     EXPECT_EQ(0, timing.iterationStart);
 
-    applyTimingInputNumber(timing, isolate, "iterationStart", 1.1);
+    applyTimingInputNumber(timing, "iterationStart", 1.1);
     EXPECT_EQ(1.1, timing.iterationStart);
     timing.iterationStart = 0;
 
-    applyTimingInputNumber(timing, isolate, "iterationStart", -1);
+    applyTimingInputNumber(timing, "iterationStart", -1);
     EXPECT_EQ(0, timing.iterationStart);
     timing.iterationStart = 0;
 
-    applyTimingInputString(timing, isolate, "iterationStart", "Infinity");
+    applyTimingInputString(timing, "iterationStart", "Infinity");
     EXPECT_EQ(0, timing.iterationStart);
     timing.iterationStart = 0;
 
-    applyTimingInputString(timing, isolate, "iterationStart", "-Infinity");
+    applyTimingInputString(timing, "iterationStart", "-Infinity");
     EXPECT_EQ(0, timing.iterationStart);
     timing.iterationStart = 0;
 
-    applyTimingInputString(timing, isolate, "iterationStart", "NaN");
+    applyTimingInputString(timing, "iterationStart", "NaN");
     EXPECT_EQ(0, timing.iterationStart);
     timing.iterationStart = 0;
 
-    applyTimingInputString(timing, isolate, "iterationStart", "rubbish");
+    applyTimingInputString(timing, "iterationStart", "rubbish");
     EXPECT_EQ(0, timing.iterationStart);
     timing.iterationStart = 0;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputIterationCount)
+TEST_F(AnimationAnimationV8Test, TimingInputIterationCount)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     EXPECT_EQ(1, timing.iterationCount);
 
-    applyTimingInputNumber(timing, isolate, "iterations", 2.1);
+    applyTimingInputNumber(timing, "iterations", 2.1);
     EXPECT_EQ(2.1, timing.iterationCount);
     timing.iterationCount = 1;
 
-    applyTimingInputNumber(timing, isolate, "iterations", -1);
+    applyTimingInputNumber(timing, "iterations", -1);
     EXPECT_EQ(0, timing.iterationCount);
     timing.iterationCount = 1;
 
-    applyTimingInputString(timing, isolate, "iterations", "Infinity");
+    applyTimingInputString(timing, "iterations", "Infinity");
     EXPECT_TRUE(std::isinf(timing.iterationCount) && (timing.iterationCount > 0));
     timing.iterationCount = 1;
 
-    applyTimingInputString(timing, isolate, "iterations", "-Infinity");
+    applyTimingInputString(timing, "iterations", "-Infinity");
     EXPECT_EQ(0, timing.iterationCount);
     timing.iterationCount = 1;
 
-    applyTimingInputString(timing, isolate, "iterations", "NaN");
+    applyTimingInputString(timing, "iterations", "NaN");
     EXPECT_EQ(1, timing.iterationCount);
     timing.iterationCount = 1;
 
-    applyTimingInputString(timing, isolate, "iterations", "rubbish");
+    applyTimingInputString(timing, "iterations", "rubbish");
     EXPECT_EQ(1, timing.iterationCount);
     timing.iterationCount = 1;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputIterationDuration)
+TEST_F(AnimationAnimationV8Test, TimingInputIterationDuration)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
 
-    applyTimingInputNumber(timing, isolate, "duration", 1.1);
+    applyTimingInputNumber(timing, "duration", 1.1);
     EXPECT_EQ(1.1, timing.iterationDuration);
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputNumber(timing, isolate, "duration", -1);
+    applyTimingInputNumber(timing, "duration", -1);
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "1");
+    applyTimingInputString(timing, "duration", "1");
     EXPECT_EQ(1, timing.iterationDuration);
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "Infinity");
+    applyTimingInputString(timing, "duration", "Infinity");
     EXPECT_TRUE(std::isinf(timing.iterationDuration) && (timing.iterationDuration > 0));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "-Infinity");
+    applyTimingInputString(timing, "duration", "-Infinity");
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "NaN");
+    applyTimingInputString(timing, "duration", "NaN");
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "auto");
+    applyTimingInputString(timing, "duration", "auto");
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 
-    applyTimingInputString(timing, isolate, "duration", "rubbish");
+    applyTimingInputString(timing, "duration", "rubbish");
     EXPECT_TRUE(std::isnan(timing.iterationDuration));
     timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
 }
 
-TEST_F(AnimationAnimationTest, TimingInputPlaybackRate)
+TEST_F(AnimationAnimationV8Test, TimingInputPlaybackRate)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     EXPECT_EQ(1, timing.playbackRate);
 
-    applyTimingInputNumber(timing, isolate, "playbackRate", 2.1);
+    applyTimingInputNumber(timing, "playbackRate", 2.1);
     EXPECT_EQ(2.1, timing.playbackRate);
     timing.playbackRate = 1;
 
-    applyTimingInputNumber(timing, isolate, "playbackRate", -1);
+    applyTimingInputNumber(timing, "playbackRate", -1);
     EXPECT_EQ(-1, timing.playbackRate);
     timing.playbackRate = 1;
 
-    applyTimingInputString(timing, isolate, "playbackRate", "Infinity");
+    applyTimingInputString(timing, "playbackRate", "Infinity");
     EXPECT_EQ(1, timing.playbackRate);
     timing.playbackRate = 1;
 
-    applyTimingInputString(timing, isolate, "playbackRate", "-Infinity");
+    applyTimingInputString(timing, "playbackRate", "-Infinity");
     EXPECT_EQ(1, timing.playbackRate);
     timing.playbackRate = 1;
 
-    applyTimingInputString(timing, isolate, "playbackRate", "NaN");
+    applyTimingInputString(timing, "playbackRate", "NaN");
     EXPECT_EQ(1, timing.playbackRate);
     timing.playbackRate = 1;
 
-    applyTimingInputString(timing, isolate, "playbackRate", "rubbish");
+    applyTimingInputString(timing, "playbackRate", "rubbish");
     EXPECT_EQ(1, timing.playbackRate);
     timing.playbackRate = 1;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputDirection)
+TEST_F(AnimationAnimationV8Test, TimingInputDirection)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     Timing::PlaybackDirection defaultPlaybackDirection = Timing::PlaybackDirectionNormal;
     EXPECT_EQ(defaultPlaybackDirection, timing.direction);
 
-    applyTimingInputString(timing, isolate, "direction", "normal");
+    applyTimingInputString(timing, "direction", "normal");
     EXPECT_EQ(Timing::PlaybackDirectionNormal, timing.direction);
     timing.direction = defaultPlaybackDirection;
 
-    applyTimingInputString(timing, isolate, "direction", "reverse");
+    applyTimingInputString(timing, "direction", "reverse");
     EXPECT_EQ(Timing::PlaybackDirectionReverse, timing.direction);
     timing.direction = defaultPlaybackDirection;
 
-    applyTimingInputString(timing, isolate, "direction", "alternate");
+    applyTimingInputString(timing, "direction", "alternate");
     EXPECT_EQ(Timing::PlaybackDirectionAlternate, timing.direction);
     timing.direction = defaultPlaybackDirection;
 
-    applyTimingInputString(timing, isolate, "direction", "alternate-reverse");
+    applyTimingInputString(timing, "direction", "alternate-reverse");
     EXPECT_EQ(Timing::PlaybackDirectionAlternateReverse, timing.direction);
     timing.direction = defaultPlaybackDirection;
 
-    applyTimingInputString(timing, isolate, "direction", "rubbish");
+    applyTimingInputString(timing, "direction", "rubbish");
     EXPECT_EQ(defaultPlaybackDirection, timing.direction);
     timing.direction = defaultPlaybackDirection;
 
-    applyTimingInputNumber(timing, isolate, "direction", 2);
+    applyTimingInputNumber(timing, "direction", 2);
     EXPECT_EQ(defaultPlaybackDirection, timing.direction);
     timing.direction = defaultPlaybackDirection;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputTimingFunction)
+TEST_F(AnimationAnimationV8Test, TimingInputTimingFunction)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing timing;
     const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::create();
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
 
-    applyTimingInputString(timing, isolate, "easing", "ease");
+    applyTimingInputString(timing, "easing", "ease");
     EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "ease-in");
+    applyTimingInputString(timing, "easing", "ease-in");
     EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "ease-out");
+    applyTimingInputString(timing, "easing", "ease-out");
     EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "ease-in-out");
+    applyTimingInputString(timing, "easing", "ease-in-out");
     EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "linear");
+    applyTimingInputString(timing, "easing", "linear");
     EXPECT_EQ(*(LinearTimingFunction::create()), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "initial");
+    applyTimingInputString(timing, "easing", "initial");
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "step-start");
+    applyTimingInputString(timing, "easing", "step-start");
     EXPECT_EQ(*(StepsTimingFunction::preset(StepsTimingFunction::Start)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "step-end");
+    applyTimingInputString(timing, "easing", "step-end");
     EXPECT_EQ(*(StepsTimingFunction::preset(StepsTimingFunction::End)), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
+    applyTimingInputString(timing, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
     EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "steps(3, start)");
+    applyTimingInputString(timing, "easing", "steps(3, start)");
     EXPECT_EQ(*(StepsTimingFunction::create(3, true).get()), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "steps(5, end)");
+    applyTimingInputString(timing, "easing", "steps(5, end)");
     EXPECT_EQ(*(StepsTimingFunction::create(5, false).get()), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "steps(5.6, end)");
+    applyTimingInputString(timing, "easing", "steps(5.6, end)");
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
     // FIXME: Step-middle not yet implemented. Change this test when it is working.
-    applyTimingInputString(timing, isolate, "easing", "steps(5, middle)");
+    applyTimingInputString(timing, "easing", "steps(5, middle)");
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "cubic-bezier(2, 2, 0.3, 0.3)");
+    applyTimingInputString(timing, "easing", "cubic-bezier(2, 2, 0.3, 0.3)");
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputString(timing, isolate, "easing", "rubbish");
+    applyTimingInputString(timing, "easing", "rubbish");
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 
-    applyTimingInputNumber(timing, isolate, "easing", 2);
+    applyTimingInputNumber(timing, "easing", 2);
     EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
     timing.timingFunction = defaultTimingFunction;
 }
 
-TEST_F(AnimationAnimationTest, TimingInputEmpty)
+TEST_F(AnimationAnimationV8Test, TimingInputEmpty)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    v8::Context::Scope contextScope(context);
-
     Timing updatedTiming;
     Timing controlTiming;
 

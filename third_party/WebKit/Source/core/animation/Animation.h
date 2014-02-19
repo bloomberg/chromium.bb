@@ -112,7 +112,7 @@ private:
     Vector<int> m_compositorAnimationIds;
 
     friend class CSSAnimations;
-    friend class AnimationAnimationTest;
+    friend class AnimationAnimationV8Test;
 };
 
 DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());
