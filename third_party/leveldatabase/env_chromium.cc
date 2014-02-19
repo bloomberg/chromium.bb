@@ -32,7 +32,7 @@ static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
 
 class ChromiumFileLock : public FileLock {
  public:
-  ::base::PlatformFile file_;
+  ::base::File file_;
   std::string name_;
 };
 
@@ -46,19 +46,19 @@ class Retrier {
         time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
         success_(true),
         method_(method),
-        last_error_(base::PLATFORM_FILE_OK),
+        last_error_(base::File::FILE_OK),
         provider_(provider) {}
   ~Retrier() {
     if (success_) {
       provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
-      if (last_error_ != base::PLATFORM_FILE_OK) {
+      if (last_error_ != base::File::FILE_OK) {
         DCHECK(last_error_ < 0);
         provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
       }
     }
   }
-  bool ShouldKeepTrying(base::PlatformFileError last_error) {
-    DCHECK_NE(last_error, base::PLATFORM_FILE_OK);
+  bool ShouldKeepTrying(base::File::Error last_error) {
+    DCHECK_NE(last_error, base::File::FILE_OK);
     last_error_ = last_error;
     if (last_ < limit_) {
       base::PlatformThread::Sleep(time_to_sleep_);
@@ -76,7 +76,7 @@ class Retrier {
   base::TimeDelta time_to_sleep_;
   bool success_;
   MethodID method_;
-  base::PlatformFileError last_error_;
+  base::File::Error last_error_;
   RetrierProvider* provider_;
 };
 
@@ -181,7 +181,7 @@ Status MakeIOError(Slice filename,
 Status MakeIOError(Slice filename,
                    const char* message,
                    MethodID method,
-                   base::PlatformFileError error) {
+                   base::File::Error error) {
   DCHECK(error < 0);
   char buf[512];
   snprintf(buf,
@@ -302,8 +302,8 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
   leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
       status.ToString().c_str(), &method, &error);
   return (result == leveldb_env::METHOD_AND_PFE &&
-          static_cast<base::PlatformFileError>(error) ==
-              base::PLATFORM_FILE_ERROR_NO_SPACE) ||
+          static_cast<base::File::Error>(error) ==
+              base::File::FILE_ERROR_NO_SPACE) ||
          (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
 }
 
@@ -367,43 +367,43 @@ bool ChromiumEnv::FileExists(const std::string& fname) {
   return ::base::PathExists(CreateFilePath(fname));
 }
 
-const char* ChromiumEnv::PlatformFileErrorString(const ::base::PlatformFileError& error) {
+const char* ChromiumEnv::FileErrorString(::base::File::Error error) {
   switch (error) {
-    case ::base::PLATFORM_FILE_ERROR_FAILED:
+    case ::base::File::FILE_ERROR_FAILED:
       return "No further details.";
-    case ::base::PLATFORM_FILE_ERROR_IN_USE:
+    case ::base::File::FILE_ERROR_IN_USE:
       return "File currently in use.";
-    case ::base::PLATFORM_FILE_ERROR_EXISTS:
+    case ::base::File::FILE_ERROR_EXISTS:
       return "File already exists.";
-    case ::base::PLATFORM_FILE_ERROR_NOT_FOUND:
+    case ::base::File::FILE_ERROR_NOT_FOUND:
       return "File not found.";
-    case ::base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
+    case ::base::File::FILE_ERROR_ACCESS_DENIED:
       return "Access denied.";
-    case ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED:
+    case ::base::File::FILE_ERROR_TOO_MANY_OPENED:
       return "Too many files open.";
-    case ::base::PLATFORM_FILE_ERROR_NO_MEMORY:
+    case ::base::File::FILE_ERROR_NO_MEMORY:
       return "Out of memory.";
-    case ::base::PLATFORM_FILE_ERROR_NO_SPACE:
+    case ::base::File::FILE_ERROR_NO_SPACE:
       return "No space left on drive.";
-    case ::base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
+    case ::base::File::FILE_ERROR_NOT_A_DIRECTORY:
       return "Not a directory.";
-    case ::base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
+    case ::base::File::FILE_ERROR_INVALID_OPERATION:
       return "Invalid operation.";
-    case ::base::PLATFORM_FILE_ERROR_SECURITY:
+    case ::base::File::FILE_ERROR_SECURITY:
       return "Security error.";
-    case ::base::PLATFORM_FILE_ERROR_ABORT:
+    case ::base::File::FILE_ERROR_ABORT:
       return "File operation aborted.";
-    case ::base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+    case ::base::File::FILE_ERROR_NOT_A_FILE:
       return "The supplied path was not a file.";
-    case ::base::PLATFORM_FILE_ERROR_NOT_EMPTY:
+    case ::base::File::FILE_ERROR_NOT_EMPTY:
       return "The file was not empty.";
-    case ::base::PLATFORM_FILE_ERROR_INVALID_URL:
+    case ::base::File::FILE_ERROR_INVALID_URL:
       return "Invalid URL.";
-    case ::base::PLATFORM_FILE_ERROR_IO:
+    case ::base::File::FILE_ERROR_IO:
       return "OS or hardware error.";
-    case ::base::PLATFORM_FILE_OK:
+    case ::base::File::FILE_OK:
       return "OK.";
-    case ::base::PLATFORM_FILE_ERROR_MAX:
+    case ::base::File::FILE_ERROR_MAX:
       NOTREACHED();
   }
   NOTIMPLEMENTED();
@@ -466,9 +466,9 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
 Status ChromiumEnv::GetChildren(const std::string& dir_string,
                                 std::vector<std::string>* result) {
   std::vector<base::FilePath> entries;
-  base::PlatformFileError error =
+  base::File::Error error =
       GetDirectoryEntries(CreateFilePath(dir_string), &entries);
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     RecordOSError(kGetChildren, error);
     return MakeIOError(
         dir_string, "Could not open/read directory", kGetChildren, error);
@@ -502,15 +502,11 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
 
 Status ChromiumEnv::CreateDir(const std::string& name) {
   Status result;
-  // TODO(rvargas): convert this code to base::File::Error.
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   Retrier retrier(kCreateDir, this);
   do {
-    if (base::CreateDirectoryAndGetError(
-            CreateFilePath(name),
-            reinterpret_cast<base::File::Error*>(&error))) {
+    if (base::CreateDirectoryAndGetError(CreateFilePath(name), &error))
       return result;
-    }
   } while (retrier.ShouldKeepTrying(error));
   result = MakeIOError(name, "Could not create directory.", kCreateDir, error);
   RecordOSError(kCreateDir, error);
@@ -548,85 +544,79 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   base::FilePath destination = CreateFilePath(dst);
 
   Retrier retrier(kRenameFile, this);
-  // TODO(rvargas): convert this code to base::File::Error.
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   do {
-    if (base::ReplaceFile(src_file_path, destination, 
-                          reinterpret_cast<base::File::Error*>(&error))) {
+    if (base::ReplaceFile(src_file_path, destination, &error))
       return result;
-    }
   } while (retrier.ShouldKeepTrying(error));
 
-  DCHECK(error != base::PLATFORM_FILE_OK);
+  DCHECK(error != base::File::FILE_OK);
   RecordOSError(kRenameFile, error);
   char buf[100];
   snprintf(buf,
            sizeof(buf),
            "Could not rename file: %s",
-           PlatformFileErrorString(error));
+           FileErrorString(error));
   return MakeIOError(src, buf, kRenameFile, error);
 }
 
 Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   *lock = NULL;
   Status result;
-  int flags = ::base::PLATFORM_FILE_OPEN_ALWAYS |
-              ::base::PLATFORM_FILE_READ |
-              ::base::PLATFORM_FILE_WRITE;
-  bool created;
-  ::base::PlatformFileError error_code;
-  ::base::PlatformFile file;
+  int flags = ::base::File::FLAG_OPEN_ALWAYS |
+              ::base::File::FLAG_READ |
+              ::base::File::FLAG_WRITE;
+  ::base::File::Error error_code;
+  ::base::File file;
   Retrier retrier(kLockFile, this);
   do {
-    file = ::base::CreatePlatformFile(
-        CreateFilePath(fname), flags, &created, &error_code);
-  } while (error_code != ::base::PLATFORM_FILE_OK &&
-           retrier.ShouldKeepTrying(error_code));
+    file.Initialize(CreateFilePath(fname), flags);
+    if (!file.IsValid())
+      error_code = file.error_details();
+  } while (!file.IsValid() && retrier.ShouldKeepTrying(error_code));
 
-  if (error_code == ::base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    ::base::FilePath parent = CreateFilePath(fname).DirName();
-    ::base::FilePath last_parent;
-    int num_missing_ancestors = 0;
-    do {
-      if (base::DirectoryExists(parent))
-        break;
-      ++num_missing_ancestors;
-      last_parent = parent;
-      parent = parent.DirName();
-    } while (parent != last_parent);
-    RecordLockFileAncestors(num_missing_ancestors);
-  }
+  if (!file.IsValid()) {
+    if (error_code == ::base::File::FILE_ERROR_NOT_FOUND) {
+      ::base::FilePath parent = CreateFilePath(fname).DirName();
+      ::base::FilePath last_parent;
+      int num_missing_ancestors = 0;
+      do {
+        if (base::DirectoryExists(parent))
+          break;
+        ++num_missing_ancestors;
+        last_parent = parent;
+        parent = parent.DirName();
+      } while (parent != last_parent);
+      RecordLockFileAncestors(num_missing_ancestors);
+    }
 
-  if (error_code != ::base::PLATFORM_FILE_OK) {
-    result = MakeIOError(
-        fname, PlatformFileErrorString(error_code), kLockFile, error_code);
+    result = MakeIOError(fname, FileErrorString(error_code), kLockFile,
+                         error_code);
     RecordOSError(kLockFile, error_code);
     return result;
   }
 
   if (!locks_.Insert(fname)) {
     result = MakeIOError(fname, "Lock file already locked.", kLockFile);
-    ::base::ClosePlatformFile(file);
     return result;
   }
 
   Retrier lock_retrier = Retrier(kLockFile, this);
   do {
-    error_code = ::base::LockPlatformFile(file);
-  } while (error_code != ::base::PLATFORM_FILE_OK &&
+    error_code = file.Lock();
+  } while (error_code != ::base::File::FILE_OK &&
            retrier.ShouldKeepTrying(error_code));
 
-  if (error_code != ::base::PLATFORM_FILE_OK) {
-    ::base::ClosePlatformFile(file);
+  if (error_code != ::base::File::FILE_OK) {
     locks_.Remove(fname);
-    result = MakeIOError(
-        fname, PlatformFileErrorString(error_code), kLockFile, error_code);
+    result = MakeIOError(fname, FileErrorString(error_code), kLockFile,
+                         error_code);
     RecordOSError(kLockFile, error_code);
     return result;
   }
 
   ChromiumFileLock* my_lock = new ChromiumFileLock;
-  my_lock->file_ = file;
+  my_lock->file_ = file.Pass();
   my_lock->name_ = fname;
   *lock = my_lock;
   return result;
@@ -636,17 +626,11 @@ Status ChromiumEnv::UnlockFile(FileLock* lock) {
   ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
   Status result;
 
-  ::base::PlatformFileError error_code =
-      ::base::UnlockPlatformFile(my_lock->file_);
-  if (error_code != ::base::PLATFORM_FILE_OK) {
+  ::base::File::Error error_code = my_lock->file_.Unlock();
+  if (error_code != ::base::File::FILE_OK) {
     result =
         MakeIOError(my_lock->name_, "Could not unlock lock file.", kUnlockFile);
     RecordOSError(kUnlockFile, error_code);
-    ::base::ClosePlatformFile(my_lock->file_);
-  } else if (!::base::ClosePlatformFile(my_lock->file_)) {
-    result =
-        MakeIOError(my_lock->name_, "Could not close lock file.", kUnlockFile);
-    RecordErrorAt(kUnlockFile);
   }
   bool removed = locks_.Remove(my_lock->name_);
   DCHECK(removed);
@@ -688,10 +672,10 @@ void ChromiumEnv::RecordLockFileAncestors(int num_missing_ancestors) const {
 }
 
 void ChromiumEnv::RecordOSError(MethodID method,
-                                base::PlatformFileError error) const {
+                                base::File::Error error) const {
   DCHECK(error < 0);
   RecordErrorAt(method);
-  GetOSErrorHistogram(method, -base::PLATFORM_FILE_ERROR_MAX)->Add(-error);
+  GetOSErrorHistogram(method, -base::File::FILE_ERROR_MAX)->Add(-error);
 }
 
 void ChromiumEnv::RecordOSError(MethodID method, int error) const {

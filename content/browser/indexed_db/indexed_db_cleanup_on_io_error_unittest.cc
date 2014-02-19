@@ -4,6 +4,7 @@
 
 #include <cerrno>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
@@ -130,8 +131,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory);
 
-  MockErrorLevelDBFactory<base::PlatformFileError> mock_leveldb_factory2(
-      base::PLATFORM_FILE_ERROR_NO_MEMORY, false);
+  MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory2(
+      base::File::FILE_ERROR_NO_MEMORY, false);
   scoped_refptr<IndexedDBBackingStore> backing_store2 =
       IndexedDBBackingStore::Open(origin,
                                   path,
@@ -149,8 +150,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &disk_full,
                                   &mock_leveldb_factory3);
 
-  MockErrorLevelDBFactory<base::PlatformFileError> mock_leveldb_factory4(
-      base::PLATFORM_FILE_ERROR_FAILED, false);
+  MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory4(
+      base::File::FILE_ERROR_FAILED, false);
   scoped_refptr<IndexedDBBackingStore> backing_store4 =
       IndexedDBBackingStore::Open(origin,
                                   path,

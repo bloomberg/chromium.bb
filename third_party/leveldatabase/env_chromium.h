@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 
+#include "base/files/file.h"
 #include "base/metrics/histogram.h"
-#include "base/platform_file.h"
 #include "leveldb/env.h"
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
@@ -51,7 +51,7 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
 leveldb::Status MakeIOError(leveldb::Slice filename,
                             const char* message,
                             MethodID method,
-                            base::PlatformFileError error);
+                            base::File::Error error);
 leveldb::Status MakeIOError(leveldb::Slice filename,
                             const char* message,
                             MethodID method);
@@ -79,7 +79,7 @@ class UMALogger {
   virtual void RecordErrorAt(MethodID method) const = 0;
   virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
   virtual void RecordOSError(MethodID method,
-                             base::PlatformFileError error) const = 0;
+                             base::File::Error error) const = 0;
   virtual void RecordBackupResult(bool success) const = 0;
 };
 
@@ -105,8 +105,7 @@ class ChromiumEnv : public leveldb::Env,
  public:
   static bool MakeBackup(const std::string& fname);
   static base::FilePath CreateFilePath(const std::string& file_path);
-  static const char* PlatformFileErrorString(
-      const ::base::PlatformFileError& error);
+  static const char* FileErrorString(::base::File::Error error);
   static bool HasTableExtension(const base::FilePath& path);
   virtual ~ChromiumEnv();
 
@@ -134,13 +133,13 @@ class ChromiumEnv : public leveldb::Env,
   virtual void DidCreateNewFile(const std::string& fname);
   virtual bool DoesDirNeedSync(const std::string& fname);
   virtual void DidSyncDir(const std::string& fname);
-  virtual base::PlatformFileError GetDirectoryEntries(
+  virtual base::File::Error GetDirectoryEntries(
       const base::FilePath& dir_param,
       std::vector<base::FilePath>* result) const = 0;
   virtual void RecordErrorAt(MethodID method) const;
   virtual void RecordOSError(MethodID method, int saved_errno) const;
   virtual void RecordOSError(MethodID method,
-                             base::PlatformFileError error) const;
+                             base::File::Error error) const;
   base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
 

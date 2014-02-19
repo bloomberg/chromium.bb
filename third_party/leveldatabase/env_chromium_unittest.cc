@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -31,17 +32,16 @@ TEST(ErrorEncoding, OnlyAMethod) {
   EXPECT_EQ(-75, error);
 }
 
-TEST(ErrorEncoding, PlatformFileError) {
+TEST(ErrorEncoding, FileError) {
   const MethodID in_method = kWritableFileClose;
-  const base::PlatformFileError pfe =
-      base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  const Status s = MakeIOError("Somefile.txt", "message", in_method, pfe);
+  const base::File::Error fe = base::File::FILE_ERROR_INVALID_OPERATION;
+  const Status s = MakeIOError("Somefile.txt", "message", in_method, fe);
   MethodID method;
   int error;
   EXPECT_EQ(METHOD_AND_PFE,
             ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
-  EXPECT_EQ(pfe, error);
+  EXPECT_EQ(fe, error);
 }
 
 TEST(ErrorEncoding, Errno) {

@@ -55,7 +55,7 @@ class ChromiumEnvStdio : public ChromiumEnv {
                                     leveldb::Logger** result);
 
  protected:
-  virtual base::PlatformFileError GetDirectoryEntries(
+  virtual base::File::Error GetDirectoryEntries(
       const base::FilePath& dir_param,
       std::vector<base::FilePath>* result) const;
 

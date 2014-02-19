@@ -3,6 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "base/debug/trace_event.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
@@ -90,20 +91,20 @@ class ChromiumSequentialFileWin : public SequentialFile {
 class ChromiumRandomAccessFileWin : public RandomAccessFile {
  private:
   std::string filename_;
-  ::base::PlatformFile file_;
+  mutable ::base::File file_;
   const UMALogger* uma_logger_;
 
  public:
   ChromiumRandomAccessFileWin(const std::string& fname,
-                           ::base::PlatformFile file,
-                           const UMALogger* uma_logger)
-      : filename_(fname), file_(file), uma_logger_(uma_logger) {}
-  virtual ~ChromiumRandomAccessFileWin() { ::base::ClosePlatformFile(file_); }
+                              ::base::File file,
+                              const UMALogger* uma_logger)
+      : filename_(fname), file_(file.Pass()), uma_logger_(uma_logger) {}
+  virtual ~ChromiumRandomAccessFileWin() {}
 
   virtual Status Read(uint64_t offset, size_t n, Slice* result, char* scratch)
       const {
     Status s;
-    int r = ::base::ReadPlatformFile(file_, offset, scratch, n);
+    int r = file_.Read(offset, scratch, n);
     *result = Slice(scratch, (r < 0) ? 0 : r);
     if (r < 0) {
       // An error: return a non-ok status
@@ -185,7 +186,7 @@ Status ChromiumWritableFileWin::Append(const Slice& data) {
   if (!WriteFile(file_, data.data(), data.size(), &written, NULL)) {
     DWORD err = GetLastError();
     uma_logger_->RecordOSError(kWritableFileAppend,
-                               base::LastErrorToPlatformFileError(err));
+                               base::File::OSErrorToFileError(err));
     return MakeIOErrorWin(
         filename_, GetWindowsErrorMessage(err), kWritableFileAppend, err);
   }
@@ -262,27 +263,25 @@ void ChromiumEnvWin::RecordOpenFilesLimit(const std::string& type) {
 }
 
 Status ChromiumEnvWin::NewRandomAccessFile(const std::string& fname,
-                                             RandomAccessFile** result) {
-  int flags = ::base::PLATFORM_FILE_READ | ::base::PLATFORM_FILE_OPEN;
-  bool created;
-  ::base::PlatformFileError error_code;
-  ::base::PlatformFile file = ::base::CreatePlatformFile(
-      ChromiumEnv::CreateFilePath(fname), flags, &created, &error_code);
-  if (error_code == ::base::PLATFORM_FILE_OK) {
-    *result = new ChromiumRandomAccessFileWin(fname, file, this);
+                                           RandomAccessFile** result) {
+  int flags = ::base::File::FLAG_READ | ::base::File::FLAG_OPEN;
+  ::base::File file(ChromiumEnv::CreateFilePath(fname), flags);
+  if (file.IsValid()) {
+    *result = new ChromiumRandomAccessFileWin(fname, file.Pass(), this);
     RecordOpenFilesLimit("Success");
     return Status::OK();
   }
-  if (error_code == ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED)
+  ::base::File::Error error_code = file.error_details();
+  if (error_code == ::base::File::FILE_ERROR_TOO_MANY_OPENED)
     RecordOpenFilesLimit("TooManyOpened");
   else
     RecordOpenFilesLimit("OtherError");
   *result = NULL;
   RecordOSError(kNewRandomAccessFile, error_code);
   return MakeIOErrorWin(fname,
-                          PlatformFileErrorString(error_code),
-                          kNewRandomAccessFile,
-                          error_code);
+                        FileErrorString(error_code),
+                        kNewRandomAccessFile,
+                        error_code);
 }
 
 Status ChromiumEnvWin::NewWritableFile(const std::string& fname,
@@ -306,7 +305,7 @@ Status ChromiumEnvWin::NewWritableFile(const std::string& fname,
   }
 }
 
-base::PlatformFileError ChromiumEnvWin::GetDirectoryEntries(
+base::File::Error ChromiumEnvWin::GetDirectoryEntries(
     const base::FilePath& dir_param,
     std::vector<base::FilePath>* result) const {
   result->clear();
@@ -316,8 +315,8 @@ base::PlatformFileError ChromiumEnvWin::GetDirectoryEntries(
   if (find_handle == INVALID_HANDLE_VALUE) {
     DWORD last_error = GetLastError();
     if (last_error == ERROR_FILE_NOT_FOUND)
-      return base::PLATFORM_FILE_OK;
-    return base::LastErrorToPlatformFileError(last_error);
+      return base::File::FILE_OK;
+    return base::File::OSErrorToFileError(last_error);
   }
   do {
     base::FilePath filepath(find_data.cFileName);
@@ -328,9 +327,9 @@ base::PlatformFileError ChromiumEnvWin::GetDirectoryEntries(
     result->push_back(filepath.BaseName());
   } while (FindNextFile(find_handle, &find_data));
   DWORD last_error = GetLastError();
-  base::PlatformFileError return_value = base::PLATFORM_FILE_OK;
+  base::File::Error return_value = base::File::FILE_OK;
   if (last_error != ERROR_NO_MORE_FILES)
-    return_value = base::LastErrorToPlatformFileError(last_error);
+    return_value = base::File::OSErrorToFileError(last_error);
   FindClose(find_handle);
   return return_value;
 }

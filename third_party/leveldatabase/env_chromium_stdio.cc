@@ -106,20 +106,20 @@ class ChromiumSequentialFile : public SequentialFile {
 class ChromiumRandomAccessFile : public RandomAccessFile {
  private:
   std::string filename_;
-  ::base::PlatformFile file_;
+  mutable ::base::File file_;
   const UMALogger* uma_logger_;
 
  public:
   ChromiumRandomAccessFile(const std::string& fname,
-                           ::base::PlatformFile file,
+                           ::base::File file,
                            const UMALogger* uma_logger)
-      : filename_(fname), file_(file), uma_logger_(uma_logger) {}
-  virtual ~ChromiumRandomAccessFile() { ::base::ClosePlatformFile(file_); }
+      : filename_(fname), file_(file.Pass()), uma_logger_(uma_logger) {}
+  virtual ~ChromiumRandomAccessFile() {}
 
   virtual Status Read(uint64_t offset, size_t n, Slice* result, char* scratch)
       const {
     Status s;
-    int r = ::base::ReadPlatformFile(file_, offset, scratch, n);
+    int r = file_.Read(offset, scratch, n);
     *result = Slice(scratch, (r < 0) ? 0 : r);
     if (r < 0) {
       // An error: return a non-ok status
@@ -273,24 +273,22 @@ void ChromiumEnvStdio::RecordOpenFilesLimit(const std::string& type) {
 
 Status ChromiumEnvStdio::NewRandomAccessFile(const std::string& fname,
                                              RandomAccessFile** result) {
-  int flags = ::base::PLATFORM_FILE_READ | ::base::PLATFORM_FILE_OPEN;
-  bool created;
-  ::base::PlatformFileError error_code;
-  ::base::PlatformFile file = ::base::CreatePlatformFile(
-      ChromiumEnv::CreateFilePath(fname), flags, &created, &error_code);
-  if (error_code == ::base::PLATFORM_FILE_OK) {
-    *result = new ChromiumRandomAccessFile(fname, file, this);
+  int flags = ::base::File::FLAG_READ | ::base::File::FLAG_OPEN;
+  ::base::File file(ChromiumEnv::CreateFilePath(fname), flags);
+  if (file.IsValid()) {
+    *result = new ChromiumRandomAccessFile(fname, file.Pass(), this);
     RecordOpenFilesLimit("Success");
     return Status::OK();
   }
-  if (error_code == ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED)
+  ::base::File::Error error_code = file.error_details();
+  if (error_code == ::base::File::FILE_ERROR_TOO_MANY_OPENED)
     RecordOpenFilesLimit("TooManyOpened");
   else
     RecordOpenFilesLimit("OtherError");
   *result = NULL;
   RecordOSError(kNewRandomAccessFile, error_code);
   return MakeIOError(fname,
-                     PlatformFileErrorString(error_code),
+                     FileErrorString(error_code),
                      kNewRandomAccessFile,
                      error_code);
 }
@@ -311,7 +309,7 @@ Status ChromiumEnvStdio::NewWritableFile(const std::string& fname,
 }
 
 #if defined(OS_WIN)
-base::PlatformFileError ChromiumEnvStdio::GetDirectoryEntries(
+base::File::Error ChromiumEnvStdio::GetDirectoryEntries(
     const base::FilePath& dir_param,
     std::vector<base::FilePath>* result) const {
   result->clear();
@@ -321,8 +319,8 @@ base::PlatformFileError ChromiumEnvStdio::GetDirectoryEntries(
   if (find_handle == INVALID_HANDLE_VALUE) {
     DWORD last_error = GetLastError();
     if (last_error == ERROR_FILE_NOT_FOUND)
-      return base::PLATFORM_FILE_OK;
-    return base::LastErrorToPlatformFileError(last_error);
+      return base::File::FILE_OK;
+    return base::File::OSErrorToFileError(last_error);
   }
   do {
     base::FilePath filepath(find_data.cFileName);
@@ -333,21 +331,21 @@ base::PlatformFileError ChromiumEnvStdio::GetDirectoryEntries(
     result->push_back(filepath.BaseName());
   } while (FindNextFile(find_handle, &find_data));
   DWORD last_error = GetLastError();
-  base::PlatformFileError return_value = base::PLATFORM_FILE_OK;
+  base::File::Error return_value = base::File::FILE_OK;
   if (last_error != ERROR_NO_MORE_FILES)
-    return_value = base::LastErrorToPlatformFileError(last_error);
+    return_value = base::File::OSErrorToFileError(last_error);
   FindClose(find_handle);
   return return_value;
 }
 #else
-base::PlatformFileError ChromiumEnvStdio::GetDirectoryEntries(
+base::File::Error ChromiumEnvStdio::GetDirectoryEntries(
     const base::FilePath& dir_filepath,
     std::vector<base::FilePath>* result) const {
   const std::string dir_string = FilePathToString(dir_filepath);
   result->clear();
   DIR* dir = opendir(dir_string.c_str());
   if (!dir)
-    return base::ErrnoToPlatformFileError(errno);
+    return base::File::OSErrorToFileError(errno);
   struct dirent dent_buf;
   struct dirent* dent;
   int readdir_result;
@@ -359,8 +357,8 @@ base::PlatformFileError ChromiumEnvStdio::GetDirectoryEntries(
   int saved_errno = errno;
   closedir(dir);
   if (readdir_result != 0)
-    return base::ErrnoToPlatformFileError(saved_errno);
-  return base::PLATFORM_FILE_OK;
+    return base::File::OSErrorToFileError(saved_errno);
+  return base::File::FILE_OK;
 }
 #endif
 

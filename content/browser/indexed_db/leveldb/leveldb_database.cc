@@ -7,6 +7,7 @@
 #include <cerrno>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -197,8 +198,8 @@ static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
     base::LinearHistogram::FactoryGet(
         error_histogram_name,
         1,
-        -base::PLATFORM_FILE_ERROR_MAX,
-        -base::PLATFORM_FILE_ERROR_MAX + 1,
+        -base::File::FILE_ERROR_MAX,
+        -base::File::FILE_ERROR_MAX + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag)->Add(-error);
   } else if (result == leveldb_env::METHOD_AND_ERRNO) {
     error_histogram_name.append(std::string(".Errno.") +
