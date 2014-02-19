@@ -146,6 +146,8 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     elif response.status in (401,):
       err_prefix = ('Authorization error; missing/bad %s/.netrc credentials?\n'
                     ' See %s' % (home, url))
+    elif response.status in (422,):
+      err_prefix = ('Bad request body?  Response body: "%s"' % response.read())
 
     LOGGER.warn('%s\n%s', err_prefix, msg)
     raise GOBError(response.status, response.reason)
