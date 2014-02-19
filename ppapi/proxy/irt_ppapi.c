@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/public/irt_core.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
 #include "ppapi/nacl_irt/irt_ppapi.h"
@@ -32,7 +33,30 @@ const void* PPP_GetInterface(const char* interface_name) {
   return g_pp_functions.PPP_GetInterface(interface_name);
 }
 
+/*
+ * TODO(mseaborn): This can be made static when the NaCl side no
+ * longer refers to it.
+ */
 const struct nacl_irt_ppapihook nacl_irt_ppapihook = {
   irt_ppapi_start,
   PpapiPluginRegisterThreadCreator,
 };
+
+static const struct nacl_irt_interface irt_interfaces[] = {
+  { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook),
+    NULL },
+};
+
+static size_t chrome_irt_query(const char* interface_ident,
+                               void* table, size_t tablesize) {
+  size_t result = nacl_irt_query_core(interface_ident, table, tablesize);
+  if (result != 0)
+    return result;
+  return nacl_irt_query_list(interface_ident, table, tablesize,
+                             irt_interfaces, sizeof(irt_interfaces));
+}
+
+void nacl_irt_start(uint32_t* info) {
+  nacl_irt_init(info);
+  nacl_irt_enter_user_code(info, chrome_irt_query);
+}
