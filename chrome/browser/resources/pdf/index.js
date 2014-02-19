@@ -387,39 +387,39 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
     });
   ;
 
-    Polymer('viewer-toolbar', {
-      fadingIn: false,
-      timerId: undefined,
-      ready: function() {
-        this.fadingInChanged();
-      },
-      fadeIn: function() {
-        this.fadingIn = true;
-      },
-      fadeOut: function() {
-        this.fadingIn = false;
-      },
-      fadingInChanged: function() {
-        if (this.fadingIn) {
-          this.style.opacity = 1;
-          if (this.timerId !== undefined) {
-            clearTimeout(this.timerId);
-            this.timerId = undefined;
-          }
-        } else {
-          if (this.timerId === undefined) {
-            this.timerId = setTimeout(
-              function() {
-                this.style.opacity = 0;
-                this.timerId = undefined;
-              }.bind(this), 3000);
-          }
+  Polymer('viewer-toolbar', {
+    fadingIn: false,
+    timerId: undefined,
+    ready: function() {
+      this.fadingInChanged();
+    },
+    fadeIn: function() {
+      this.fadingIn = true;
+    },
+    fadeOut: function() {
+      this.fadingIn = false;
+    },
+    fadingInChanged: function() {
+      if (this.fadingIn) {
+        this.style.opacity = 1;
+        if (this.timerId !== undefined) {
+          clearTimeout(this.timerId);
+          this.timerId = undefined;
+        }
+      } else {
+        if (this.timerId === undefined) {
+          this.timerId = setTimeout(
+            function() {
+              this.style.opacity = 0;
+              this.timerId = undefined;
+            }.bind(this), 3000);
         }
       }
-    });
-  ;
+    }
+  });
+;
 
-    (function() {
+  (function() {
     var dpi = '';
 
     Polymer('viewer-button', {
@@ -435,7 +435,7 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
         if (this.src) {
           this.$.icon.style.backgroundImage =
               'url(' + this.getAttribute('assetpath') + 'img/' + dpi +
-                  'DPI/' + this.src + ')';
+              'DPI/' + this.src + ')';
         } else {
           this.$.icon.style.backgroundImage = '';
         }
@@ -447,5 +447,4 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
           this.classList.remove('latchable');
       },
     });
-    })();
-  
+  })();

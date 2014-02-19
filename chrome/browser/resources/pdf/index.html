@@ -172,20 +172,20 @@ license that can be found in the LICENSE file.
 </polymer-element>
 
 <polymer-element name="viewer-toolbar" attributes="fadingIn" on-mouseover="{{fadeIn}}" on-mousemove="{{fadeIn}}" on-mouseout="{{fadeOut}}" assetpath="html_office/elements/viewer-toolbar/">
-  <template>
-    <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
+<template>
+  <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
 :host {
-  -webkit-transition: opacity 0.4s ease-in-out;
+  -webkit-transition: opacity 400ms ease-in-out;
   bottom: 0;
   display: block;
   font-size: 0;
   opacity: 1;
+  padding: 30px 30px 15px 30vw;
   position: fixed;
   right: 0;
-  padding: 30px 30px 15px 30vw;
 }
 
 #toolbar {
@@ -194,16 +194,16 @@ license that can be found in the LICENSE file.
   overflow: hidden;
 }
 </style>
-    <div id="toolbar">
-      <content></content>
-    </div>
-  </template>
-  
+  <div id="toolbar">
+    <content></content>
+  </div>
+</template>
+
 </polymer-element>
 
 <polymer-element name="viewer-button" attributes="src latchable" assetpath="html_office/elements/viewer-button/">
-  <template>
-    <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
+<template>
+  <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -240,9 +240,9 @@ license that can be found in the LICENSE file.
   background-image: none;
 }
 </style>
-    <div id="icon"></div>
-  </template>
-  
+  <div id="icon"></div>
+</template>
+
 </polymer-element>
 <style>
     body {
@@ -252,22 +252,35 @@ license that can be found in the LICENSE file.
     viewer-toolbar {
       z-index: 2;
     }
-    object {
+    #plugin {
+      height: 100%;
+      position: fixed;
+      width: 100%;
       z-index: 1;
+    }
+    #sizer {
+      position: absolute;
+      z-index: 0;
     }
   </style>
 </head>
 <body>
 
-<viewer-toolbar>
+<div id="sizer"></div>
+
+<viewer-toolbar id="toolbar">
   <polymer-selector>
-    <viewer-button src="button_fit_page.png" latchable="true"></viewer-button>
-    <viewer-button src="button_fit_width.png" latchable="true"></viewer-button>
-    <viewer-button src="button_zoom_in.png"></viewer-button>
-    <viewer-button src="button_zoom_out.png"></viewer-button>
+    <viewer-button id="fit-to-page-button" src="button_fit_page.png" latchable="">
+    </viewer-button>
+    <viewer-button id="fit-to-width-button" src="button_fit_width.png" latchable="">
+    </viewer-button>
+    <viewer-button id="zoom-in-button" src="button_zoom_in.png">
+    </viewer-button>
+    <viewer-button id="zoom-out-button" src="button_zoom_out.png">
+    </viewer-button>
   </polymer-selector>
-  <viewer-button src="button_save.png"></viewer-button>
-  <viewer-button src="button_print.png"></viewer-button>
+  <viewer-button id="save-button" src="button_save.png"></viewer-button>
+  <viewer-button id="print-button" src="button_print.png"></viewer-button>
 </viewer-toolbar>
 
 

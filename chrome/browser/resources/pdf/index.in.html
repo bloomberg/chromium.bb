@@ -19,22 +19,36 @@
     viewer-toolbar {
       z-index: 2;
     }
-    object {
+    #plugin {
+      height: 100%;
+      position: fixed;
+      width: 100%;
       z-index: 1;
+    }
+    #sizer {
+      position: absolute;
+      z-index: 0;
     }
   </style>
 </head>
 <body>
 
-<viewer-toolbar>
+<div id="sizer"></div>
+
+<viewer-toolbar id="toolbar">
   <polymer-selector>
-    <viewer-button src="button_fit_page.png" latchable=true></viewer-button>
-    <viewer-button src="button_fit_width.png" latchable=true></viewer-button>
-    <viewer-button src="button_zoom_in.png"></viewer-button>
-    <viewer-button src="button_zoom_out.png"></viewer-button>
+    <viewer-button id="fit-to-page-button" src="button_fit_page.png" latchable>
+    </viewer-button>
+    <viewer-button id="fit-to-width-button" src="button_fit_width.png"
+        latchable>
+    </viewer-button>
+    <viewer-button id="zoom-in-button" src="button_zoom_in.png">
+    </viewer-button>
+    <viewer-button id="zoom-out-button" src="button_zoom_out.png">
+    </viewer-button>
   </polymer-selector>
-  <viewer-button src="button_save.png"></viewer-button>
-  <viewer-button src="button_print.png"></viewer-button>
+  <viewer-button id="save-button" src="button_save.png"></viewer-button>
+  <viewer-button id="print-button" src="button_print.png"></viewer-button>
 </viewer-toolbar>
 
 </body>

@@ -214,7 +214,8 @@
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_INDEX_JS" file="pdf/index.js" type="BINDATA" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
-        <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
+        <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
         <include name="IDR_PDF_POLYMER_JS" file="pdf/polymer_loader.js" type="BINDATA" flattenhtml="true" />
         <include name="IDR_PDF_BUTTON_LOW_1" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_fit_page.png" type="BINDATA" />
         <include name="IDR_PDF_BUTTON_LOW_2" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_fit_width.png" type="BINDATA" />
