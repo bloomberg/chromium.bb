@@ -70,7 +70,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
  private:
   // Emulates a session stored for |session_id_for_emulated_loadsession_|. This
   // is necessary since aes_decryptor.cc does not support storing sessions.
-  void UpdateLoadableSession();
+  void LoadLoadableSession();
 
   // ContentDecryptionModule callbacks.
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
@@ -133,9 +133,9 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;
 
-  // Indicates whether a timer has been set to prevent multiple timers from
-  // running.
-  bool timer_set_;
+  // Indicates whether a heartbeat timer has been set to prevent multiple timers
+  // from running.
+  bool heartbeat_timer_set_;
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int channel_count_;

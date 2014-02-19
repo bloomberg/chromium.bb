@@ -137,12 +137,6 @@ void PpapiDecryptor::UpdateSession(uint32 session_id,
     ReportFailureToCallPlugin(session_id);
     return;
   }
-
-  if (!new_audio_key_cb_.is_null())
-    new_audio_key_cb_.Run();
-
-  if (!new_video_key_cb_.is_null())
-    new_video_key_cb_.Run();
 }
 
 void PpapiDecryptor::ReleaseSession(uint32 session_id) {
@@ -352,6 +346,19 @@ void PpapiDecryptor::OnSessionMessage(uint32 session_id,
 
 void PpapiDecryptor::OnSessionReady(uint32 session_id) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  // Based on the spec, we need to resume playback when update() completes
+  // successfully, or when a session is successfully loaded. In both cases,
+  // the CDM fires OnSessionReady() event. So we choose to call the NewKeyCBs
+  // here.
+  // TODO(xhwang): Rename OnSessionReady to indicate that the playback may
+  // resume successfully (e.g. a new key is available or available again).
+  if (!new_audio_key_cb_.is_null())
+    new_audio_key_cb_.Run();
+
+  if (!new_video_key_cb_.is_null())
+    new_video_key_cb_.Run();
+
   session_ready_cb_.Run(session_id);
 }
 

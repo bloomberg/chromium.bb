@@ -5,6 +5,7 @@
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm.h"
 
 #include <algorithm>
+#include <cstring>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -196,7 +197,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
       last_session_id_(MediaKeys::kInvalidSessionId),
       session_id_for_emulated_loadsession_(MediaKeys::kInvalidSessionId),
       timer_delay_ms_(kInitialTimerDelayMs),
-      timer_set_(false) {
+      heartbeat_timer_set_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = 0;
   bits_per_channel_ = 0;
@@ -250,9 +251,9 @@ void ClearKeyCdm::UpdateSession(uint32 session_id,
   DVLOG(1) << __FUNCTION__;
   decryptor_.UpdateSession(session_id, response, response_size);
 
-  if (!timer_set_) {
+  if (!heartbeat_timer_set_) {
     ScheduleNextHeartBeat();
-    timer_set_ = true;
+    heartbeat_timer_set_ = true;
   }
 }
 
@@ -262,6 +263,12 @@ void ClearKeyCdm::ReleaseSession(uint32 session_id) {
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
+  if (context == &session_id_for_emulated_loadsession_) {
+    LoadLoadableSession();
+    return;
+  }
+
+  DCHECK(heartbeat_timer_set_);
   std::string heartbeat_message;
   if (!next_heartbeat_message_.empty() &&
       context == &next_heartbeat_message_[0]) {
@@ -521,7 +528,7 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
   NOTIMPLEMENTED();
 };
 
-void ClearKeyCdm::UpdateLoadableSession() {
+void ClearKeyCdm::LoadLoadableSession() {
   std::string jwk_set = GenerateJWKSet(kLoadableSessionKey,
                                        sizeof(kLoadableSessionKey),
                                        kLoadableSessionKeyId,
@@ -538,18 +545,30 @@ void ClearKeyCdm::OnSessionCreated(uint32 session_id,
   std::string new_web_session_id = web_session_id;
 
   if (session_id == session_id_for_emulated_loadsession_) {
-    new_web_session_id = kLoadableWebSessionId;
-    UpdateLoadableSession();
-    session_id_for_emulated_loadsession_ = MediaKeys::kInvalidSessionId;
+    // Delay LoadLoadableSession() to test the case where Decrypt*() calls are
+    // made before the session is fully loaded.
+    const int64 kDelayToLoadSessionMs = 500;
+    // Use the address of |session_id_for_emulated_loadsession_| as the timer
+    // context so that we can call LoadLoadableSession() when the timer expires.
+    host_->SetTimer(kDelayToLoadSessionMs,
+                    &session_id_for_emulated_loadsession_);
+    // Defer OnSessionCreated() until the session is loaded.
+    return;
   }
 
   host_->OnSessionCreated(
-      session_id, new_web_session_id.data(), new_web_session_id.size());
+      session_id, web_session_id.data(), web_session_id.size());
 }
 
 void ClearKeyCdm::OnSessionMessage(uint32 session_id,
                                    const std::vector<uint8>& message,
                                    const std::string& destination_url) {
+  DVLOG(1) << "OnSessionMessage: " << message.size();
+
+  // Ignore the message when we are waiting to update the loadable session.
+  if (session_id == session_id_for_emulated_loadsession_)
+    return;
+
   host_->OnSessionMessage(session_id,
                           reinterpret_cast<const char*>(message.data()),
                           message.size(),
@@ -558,6 +577,12 @@ void ClearKeyCdm::OnSessionMessage(uint32 session_id,
 }
 
 void ClearKeyCdm::OnSessionReady(uint32 session_id) {
+  if (session_id == session_id_for_emulated_loadsession_) {
+    session_id_for_emulated_loadsession_ = MediaKeys::kInvalidSessionId;
+    host_->OnSessionCreated(
+        session_id, kLoadableWebSessionId, strlen(kLoadableWebSessionId));
+  }
+
   host_->OnSessionReady(session_id);
 }
 
