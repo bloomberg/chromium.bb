@@ -20,7 +20,10 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace blacklist{
 
 const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
-  L"libsvn_tsvn32.dll",
+  L"datamngr.dll",                      // Unknown (suspected adware).
+  L"hk.dll",                            // Unknown (keystroke logger).
+  L"libsvn_tsvn32.dll",                 // TortoiseSVN.
+  L"lmrn.dll",                          // Unknown.
   // Keep this null pointer here to mark the end of the list.
   NULL,
 };
