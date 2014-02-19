@@ -60,6 +60,9 @@
         'cast_logging_proto_lib',
         '<(DEPTH)/base/base.gyp:base',
       ],
+      'export_dependent_settings': [
+        'cast_logging_proto_lib',
+      ],
       'sources': [
         'logging/encoding_event_subscriber.cc',
         'logging/encoding_event_subscriber.h',
@@ -150,6 +153,7 @@
           ],
           'dependencies': [
             'cast_config',
+            'sender_logging',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/net/net.gyp:net_test_support',
             '<(DEPTH)/media/cast/cast_sender.gyp:*',

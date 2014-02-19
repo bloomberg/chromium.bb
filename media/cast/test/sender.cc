@@ -6,6 +6,7 @@
 // or read from a file.
 
 #include "base/at_exit.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
@@ -14,13 +15,16 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/encoding_event_subscriber.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/transport/udp_transport.h"
+#include "net/base/big_endian.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -40,6 +44,8 @@ namespace cast {
 #define DEFAULT_VIDEO_CODEC_BITRATE "2000"
 #define DEFAULT_VIDEO_CODEC_MAX_BITRATE "4000"
 #define DEFAULT_VIDEO_CODEC_MIN_BITRATE "1000"
+
+#define DEFAULT_LOGGING_DURATION "30"
 
 namespace {
 static const int kAudioChannels = 2;
@@ -70,6 +76,20 @@ std::string GetIpAddress(const std::string display_text) {
     ip_address = input.GetStringInput();
   }
   return ip_address;
+}
+
+int GetLoggingDuration() {
+  test::InputBuilder input(
+      "Choose logging duration (seconds), 0 for no logging.",
+      DEFAULT_LOGGING_DURATION, 0, INT_MAX);
+  return input.GetIntInput();
+}
+
+std::string GetLogFileDestination() {
+  test::InputBuilder input(
+      "Enter log file destination.",
+      "./raw_events.log", INT_MIN, INT_MAX);
+  return input.GetStringInput();
 }
 
 bool ReadFromFile() {
@@ -307,6 +327,122 @@ net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
   return net::IPEndPoint(ip_number, port);
 }
 
+// TODO(imcheng): Extract this function to another file.
+bool WriteTo(const media::cast::FrameEventMap& frame_events,
+             const media::cast::PacketEventMap& packet_events,
+             const int stream_id,
+             std::string* output) {
+  // Allow 20MB for encoded uncompressed logs.
+  const int kMaxEncodedSize = 20 * 1000 * 1000;
+  output->resize(kMaxEncodedSize);
+
+  net::BigEndianWriter writer(&(*output)[0], output->size());
+
+  // Write stream id first.
+  bool success = writer.WriteU32(stream_id);
+  if (!success)
+    return false;
+
+  // Frame events - write size first, then write entries
+  int frame_events_size = frame_events.size();
+  success = writer.WriteU32(frame_events_size);
+  if (!success)
+    return false;
+
+  for (media::cast::FrameEventMap::const_iterator it = frame_events.begin();
+       it != frame_events.end(); ++it) {
+    int proto_size = it->second->ByteSize();
+
+    // Write size of the proto, then write the proto
+    success = writer.WriteU16(proto_size);
+    if (!success)
+      return false;
+
+    success = it->second->SerializeToArray(writer.ptr(), writer.remaining());
+    if (!success)
+      return false;
+    success = writer.Skip(proto_size);
+    if (!success)
+      return false;
+  }
+
+  // Write packet events
+  int packet_event_size = packet_events.size();
+  success = writer.WriteU32(packet_event_size);
+  if (!success)
+    return false;
+  for (media::cast::PacketEventMap::const_iterator it = packet_events.begin();
+       it != packet_events.end(); ++it) {
+    int proto_size = it->second->ByteSize();
+    // Write size of the proto, then write the proto
+    success = writer.WriteU16(proto_size);
+    if (!success)
+      return false;
+    success = it->second->SerializeToArray(writer.ptr(), writer.remaining());
+    if (!success)
+      return false;
+    success = writer.Skip(proto_size);
+    if (!success)
+      return false;
+  }
+
+  output->resize(output->size() - writer.remaining());
+  return true;
+}
+
+void WriteLogsToFileAndStopSubscribing(
+    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
+    scoped_ptr<media::cast::EncodingEventSubscriber> video_subscriber,
+    scoped_ptr<media::cast::EncodingEventSubscriber> audio_subscriber,
+    file_util::ScopedFILE log_file) {
+  cast_environment->Logging()->RemoveRawEventSubscriber(video_subscriber.get());
+  cast_environment->Logging()->RemoveRawEventSubscriber(audio_subscriber.get());
+  media::cast::FrameEventMap frame_events;
+  media::cast::PacketEventMap packet_events;
+  video_subscriber->GetFrameEventsAndReset(&frame_events);
+  video_subscriber->GetPacketEventsAndReset(&packet_events);
+
+  printf("Video frame map size: %lu\n", frame_events.size());
+  printf("Video packet map size: %lu\n", packet_events.size());
+
+  std::string serialized_video_log;
+  bool success = WriteTo(frame_events, packet_events, 0, &serialized_video_log);
+  if (!success) {
+    VLOG(1) << "Failed to serialize video events.";
+    return;
+  }
+
+  printf("Serialized video log size: %lu\n", serialized_video_log.size());
+
+  audio_subscriber->GetFrameEventsAndReset(&frame_events);
+  audio_subscriber->GetPacketEventsAndReset(&packet_events);
+
+  printf("Audio frame map size: %lu\n", frame_events.size());
+  printf("Audio packet map size: %lu\n", packet_events.size());
+
+  std::string serialized_audio_log;
+  success = WriteTo(frame_events, packet_events, 1, &serialized_audio_log);
+  if (!success) {
+    VLOG(1) << "Failed to serialize audio events.";
+    return;
+  }
+
+  printf("Serialized audio log size: %lu\n", serialized_audio_log.size());
+
+  size_t ret = fwrite(&serialized_video_log[0], 1, serialized_video_log.size(),
+                      log_file.get());
+  if (ret != serialized_video_log.size()) {
+    VLOG(1) << "Failed to write logs to file.";
+    return;
+  }
+  ret = fwrite(&serialized_audio_log[0], 1, serialized_audio_log.size(),
+                      log_file.get());
+  if (ret != serialized_audio_log.size()) {
+    VLOG(1) << "Failed to write logs to file.";
+    return;
+  }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -349,8 +485,11 @@ int main(int argc, char** argv) {
           base::Bind(&UpdateCastTransportStatus),
           io_message_loop.message_loop_proxy()));
 
-  // Enable main and send side threads only. Disable logging.
+  // Enable main and send side threads only. Enable raw event logging.
   // Running transport on the main thread.
+  media::cast::CastLoggingConfig logging_config;
+  logging_config.enable_raw_data_collection = true;
+
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::CastEnvironment(
           clock.Pass(),
@@ -360,7 +499,7 @@ int main(int argc, char** argv) {
           video_thread.message_loop_proxy(),
           NULL,
           io_message_loop.message_loop_proxy(),
-          media::cast::GetDefaultCastSenderLoggingConfig()));
+          logging_config));
 
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(
@@ -380,11 +519,42 @@ int main(int argc, char** argv) {
                                    video_config,
                                    frame_input));
 
+  // Set up event subscribers.
+  // TODO(imcheng): Set up separate subscribers for audio / video / other.
+  int logging_duration = media::cast::GetLoggingDuration();
+  scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
+  scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber;
+  if (logging_duration > 0) {
+    std::string log_file_name(media::cast::GetLogFileDestination());
+    video_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
+        media::cast::VIDEO_EVENT, 10000));
+    audio_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
+        media::cast::AUDIO_EVENT, 10000));
+    cast_environment->Logging()->AddRawEventSubscriber(
+        video_event_subscriber.get());
+    cast_environment->Logging()->AddRawEventSubscriber(
+        audio_event_subscriber.get());
+    file_util::ScopedFILE log_file(fopen(log_file_name.c_str(), "w"));
+    if (!log_file) {
+      printf("Failed to open log file for writing.\n");
+      exit(-1);
+    }
+
+    io_message_loop.message_loop_proxy()->PostDelayedTask(FROM_HERE,
+        base::Bind(&WriteLogsToFileAndStopSubscribing,
+                   cast_environment,
+                   base::Passed(&video_event_subscriber),
+                   base::Passed(&audio_event_subscriber),
+                   base::Passed(&log_file)),
+        base::TimeDelta::FromSeconds(logging_duration));
+  }
+
   test_thread.message_loop_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&media::cast::SendProcess::SendFrame,
                  base::Unretained(send_process.get())));
 
   io_message_loop.Run();
+
   return 0;
 }
