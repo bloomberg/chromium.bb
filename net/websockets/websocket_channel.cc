@@ -261,7 +261,8 @@ WebSocketChannel::WebSocketChannel(
       state_(FRESHLY_CONSTRUCTED),
       notification_sender_(new HandshakeNotificationSender(this)),
       sending_text_message_(false),
-      receiving_text_message_(false) {}
+      receiving_text_message_(false),
+      expecting_to_handle_continuation_(false) {}
 
 WebSocketChannel::~WebSocketChannel() {
   // The stream may hold a pointer to read_frames_, and so it needs to be
@@ -677,40 +678,9 @@ ChannelState WebSocketChannel::HandleFrameByState(
   }
   switch (opcode) {
     case WebSocketFrameHeader::kOpCodeText:    // fall-thru
-    case WebSocketFrameHeader::kOpCodeBinary:  // fall-thru
+    case WebSocketFrameHeader::kOpCodeBinary:
     case WebSocketFrameHeader::kOpCodeContinuation:
-      if (state_ == CONNECTED) {
-        if (opcode == WebSocketFrameHeader::kOpCodeText ||
-            (opcode == WebSocketFrameHeader::kOpCodeContinuation &&
-             receiving_text_message_)) {
-          // This call is not redundant when size == 0 because it tells us what
-          // the current state is.
-          StreamingUtf8Validator::State state =
-              incoming_utf8_validator_.AddBytes(
-                  size ? data_buffer->data() : NULL, size);
-          if (state == StreamingUtf8Validator::INVALID ||
-              (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
-            return FailChannel("Could not decode a text frame as UTF-8.",
-                               kWebSocketErrorProtocolError,
-                               "Invalid UTF-8 in text frame");
-          }
-          receiving_text_message_ = !final;
-          DCHECK(!final || state == StreamingUtf8Validator::VALID_ENDPOINT);
-        }
-        // TODO(ricea): Can this copy be eliminated?
-        const char* const data_begin = size ? data_buffer->data() : NULL;
-        const char* const data_end = data_begin + size;
-        const std::vector<char> data(data_begin, data_end);
-        // TODO(ricea): Handle the case when ReadFrames returns far
-        // more data at once than should be sent in a single IPC. This needs to
-        // be handled carefully, as an overloaded IO thread is one possible
-        // cause of receiving very large chunks.
-
-        // Sends the received frame to the renderer process.
-        return event_interface_->OnDataFrame(final, opcode, data);
-      }
-      VLOG(3) << "Ignored data packet received in state " << state_;
-      return CHANNEL_ALIVE;
+      return HandleDataFrame(opcode, final, data_buffer, size);
 
     case WebSocketFrameHeader::kOpCodePing:
       VLOG(1) << "Got Ping of size " << size;
@@ -769,6 +739,59 @@ ChannelState WebSocketChannel::HandleFrameByState(
           kWebSocketErrorProtocolError,
           "Unknown opcode");
   }
+}
+
+ChannelState WebSocketChannel::HandleDataFrame(
+    const WebSocketFrameHeader::OpCode opcode,
+    bool final,
+    const scoped_refptr<IOBuffer>& data_buffer,
+    size_t size) {
+  if (state_ != CONNECTED) {
+    DVLOG(3) << "Ignored data packet received in state " << state_;
+    return CHANNEL_ALIVE;
+  }
+  DCHECK(opcode == WebSocketFrameHeader::kOpCodeContinuation ||
+         opcode == WebSocketFrameHeader::kOpCodeText ||
+         opcode == WebSocketFrameHeader::kOpCodeBinary);
+  const bool got_continuation =
+      (opcode == WebSocketFrameHeader::kOpCodeContinuation);
+  if (got_continuation != expecting_to_handle_continuation_) {
+    const std::string console_log = got_continuation
+        ? "Received unexpected continuation frame."
+        : "Received start of new message but previous message is unfinished.";
+    const std::string reason = got_continuation
+        ? "Unexpected continuation"
+        : "Previous data frame unfinished";
+    return FailChannel(console_log, kWebSocketErrorProtocolError, reason);
+  }
+  expecting_to_handle_continuation_ = !final;
+  if (opcode == WebSocketFrameHeader::kOpCodeText ||
+      (opcode == WebSocketFrameHeader::kOpCodeContinuation &&
+       receiving_text_message_)) {
+    // This call is not redundant when size == 0 because it tells us what
+    // the current state is.
+    StreamingUtf8Validator::State state = incoming_utf8_validator_.AddBytes(
+        size ? data_buffer->data() : NULL, size);
+    if (state == StreamingUtf8Validator::INVALID ||
+        (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
+      return FailChannel("Could not decode a text frame as UTF-8.",
+                         kWebSocketErrorProtocolError,
+                         "Invalid UTF-8 in text frame");
+    }
+    receiving_text_message_ = !final;
+    DCHECK(!final || state == StreamingUtf8Validator::VALID_ENDPOINT);
+  }
+  // TODO(ricea): Can this copy be eliminated?
+  const char* const data_begin = size ? data_buffer->data() : NULL;
+  const char* const data_end = data_begin + size;
+  const std::vector<char> data(data_begin, data_end);
+  // TODO(ricea): Handle the case when ReadFrames returns far
+  // more data at once than should be sent in a single IPC. This needs to
+  // be handled carefully, as an overloaded IO thread is one possible
+  // cause of receiving very large chunks.
+
+  // Sends the received frame to the renderer process.
+  return event_interface_->OnDataFrame(final, opcode, data);
 }
 
 ChannelState WebSocketChannel::SendIOBuffer(

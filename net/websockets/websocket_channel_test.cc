@@ -2848,6 +2848,50 @@ TEST_F(WebSocketChannelReceiveUtf8Test, ValidateMultipleReceived) {
   CreateChannelAndConnectSuccessfully();
 }
 
+// A new data message cannot start in the middle of another data message.
+TEST_F(WebSocketChannelEventInterfaceTest, BogusContinuation) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeBinary,
+       NOT_MASKED, "frame1"},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText,
+       NOT_MASKED, "frame2"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(kDefaultInitialQuota));
+  EXPECT_CALL(
+      *event_interface_,
+      OnDataFrame(
+          false, WebSocketFrameHeader::kOpCodeBinary, AsVector("frame1")));
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel(
+          "Received start of new message but previous message is unfinished."));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
+// A new message cannot start with a Continuation frame.
+TEST_F(WebSocketChannelEventInterfaceTest, MessageStartingWithContinuation) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED, "continuation"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(kDefaultInitialQuota));
+  EXPECT_CALL(*event_interface_,
+              OnFailChannel("Received unexpected continuation frame."));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
 // If we receive another frame after Close, it is not valid. It is not
 // completely clear what behaviour is required from the standard in this case,
 // but the current implementation fails the connection. Since a Close has

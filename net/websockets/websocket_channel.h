@@ -206,6 +206,14 @@ class NET_EXPORT WebSocketChannel {
       const scoped_refptr<IOBuffer>& data_buffer,
       size_t size) WARN_UNUSED_RESULT;
 
+  // Forward a received data frame to the renderer, if connected. If
+  // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
+  // will fail the channel. Also checks the UTF-8 validity of text frames.
+  ChannelState HandleDataFrame(const WebSocketFrameHeader::OpCode opcode,
+                               bool final,
+                               const scoped_refptr<IOBuffer>& data_buffer,
+                               size_t size);
+
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
   // when the current write finishes. |fin| and |op_code| are defined as for
@@ -324,6 +332,9 @@ class NET_EXPORT WebSocketChannel {
   // UTF-8 validator for incoming Text messages.
   base::StreamingUtf8Validator incoming_utf8_validator_;
   bool receiving_text_message_;
+
+  // True if we are in the middle of receiving a message.
+  bool expecting_to_handle_continuation_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
