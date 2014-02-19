@@ -1332,11 +1332,12 @@
                 'conditions': [
                   ['target_arch=="ia32"', {
                     'yasm_flags': [
-                      '-DX86_32',
+                      '-DARCH_X86_32',
                       '-DELF',
                     ],
-                  }, {
+                  }, { # target_arch=="x64"
                     'yasm_flags': [
+                      '-DARCH_X86_64',
                       '-DELF',
                       '-DPIC',
                     ],
