@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -89,7 +90,9 @@ void SetLaunchType(ExtensionService* service,
                    LaunchType launch_type) {
   DCHECK(launch_type >= LAUNCH_TYPE_FIRST && launch_type < NUM_LAUNCH_TYPES);
 
-  service->extension_prefs()->UpdateExtensionPref(extension_id, kPrefLaunchType,
+  ExtensionPrefs::Get(service->profile())->UpdateExtensionPref(
+      extension_id,
+      kPrefLaunchType,
       new base::FundamentalValue(static_cast<int>(launch_type)));
 
   // Sync the launch type.

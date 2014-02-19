@@ -41,6 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
@@ -170,11 +171,11 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
 
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
-  service->extension_prefs()->OnExtensionInstalled(
-      extension,
-      Extension::ENABLED,
-      false,
-      syncer::StringOrdinal::CreateInitialOrdinal());
+  extensions::ExtensionPrefs::Get(profile())
+      ->OnExtensionInstalled(extension,
+                             Extension::ENABLED,
+                             false,
+                             syncer::StringOrdinal::CreateInitialOrdinal());
 
   // Toggling incognito or file access will reload the extension, so wait for
   // the reload and grab the new extension instance. The default state is

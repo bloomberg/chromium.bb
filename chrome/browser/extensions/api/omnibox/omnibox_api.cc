@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -23,6 +22,8 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -59,8 +60,7 @@ static const int kOmniboxIconPaddingRight = 0;
 scoped_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
     Profile* profile,
     const std::string& extension_id) {
-  ExtensionPrefs* prefs =
-      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
 
   scoped_ptr<omnibox::SuggestResult> suggestion;
   const base::DictionaryValue* dict = NULL;
@@ -79,8 +79,7 @@ bool SetOmniboxDefaultSuggestion(
     Profile* profile,
     const std::string& extension_id,
     const omnibox::DefaultSuggestResult& suggestion) {
-  ExtensionPrefs* prefs =
-      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   if (!prefs)
     return false;
 
@@ -112,9 +111,8 @@ void ExtensionOmniboxEventRouter::OnInputStarted(
 bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
     const std::string& input, int suggest_id) {
-  if (!extensions::ExtensionSystem::Get(profile)->event_router()->
-          ExtensionHasEventListener(extension_id,
-                                    omnibox::OnInputChanged::kEventName))
+  if (!ExtensionSystem::Get(profile)->event_router()->ExtensionHasEventListener(
+           extension_id, omnibox::OnInputChanged::kEventName))
     return false;
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -139,8 +137,8 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   const Extension* extension =
-      ExtensionSystem::Get(profile)->extension_service()->extensions()->
-          GetByID(extension_id);
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          extension_id);
   CHECK(extension);
   extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter()->GrantIfRequested(extension);
@@ -281,6 +279,7 @@ void OmniboxAPI::OnTemplateURLsLoaded() {
 template <>
 void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 

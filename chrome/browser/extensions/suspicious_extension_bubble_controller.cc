@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
@@ -29,16 +30,15 @@ base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
 // SuspiciousExtensionBubbleDelegate
 
 SuspiciousExtensionBubbleDelegate::SuspiciousExtensionBubbleDelegate(
-    ExtensionService* service)
-    : service_(service) {
-}
+    Profile* profile)
+    : profile_(profile) {}
 
 SuspiciousExtensionBubbleDelegate::~SuspiciousExtensionBubbleDelegate() {
 }
 
 bool SuspiciousExtensionBubbleDelegate::ShouldIncludeExtension(
       const std::string& extension_id) {
-  extensions::ExtensionPrefs* prefs = service_->extension_prefs();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   if (!prefs->IsExtensionDisabled(extension_id))
     return false;
 
@@ -52,7 +52,7 @@ bool SuspiciousExtensionBubbleDelegate::ShouldIncludeExtension(
 void SuspiciousExtensionBubbleDelegate::AcknowledgeExtension(
     const std::string& extension_id,
     ExtensionMessageBubbleController::BubbleAction user_action) {
-  extensions::ExtensionPrefs* prefs = service_->extension_prefs();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   prefs->SetWipeoutAcknowledged(extension_id, true);
 }
 
@@ -144,11 +144,9 @@ void SuspiciousExtensionBubbleController::ClearProfileListForTesting() {
 SuspiciousExtensionBubbleController::SuspiciousExtensionBubbleController(
     Profile* profile)
     : ExtensionMessageBubbleController(
-          new SuspiciousExtensionBubbleDelegate(
-              extensions::ExtensionSystem::Get(profile)->extension_service()),
+          new SuspiciousExtensionBubbleDelegate(profile),
           profile),
-      profile_(profile) {
-}
+      profile_(profile) {}
 
 SuspiciousExtensionBubbleController::~SuspiciousExtensionBubbleController() {
 }

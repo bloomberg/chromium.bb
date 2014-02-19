@@ -1262,20 +1262,12 @@ content::BrowserContext* ExtensionService::GetBrowserContext() const {
   return profile_;
 }
 
-extensions::ExtensionPrefs* ExtensionService::extension_prefs() {
-  return extension_prefs_;
-}
-
-const extensions::ExtensionPrefs* ExtensionService::extension_prefs() const {
-  return extension_prefs_;
-}
-
 extensions::SettingsFrontend* ExtensionService::settings_frontend() {
   return settings_frontend_.get();
 }
 
 extensions::ContentSettingsStore* ExtensionService::GetContentSettingsStore() {
-  return extension_prefs()->content_settings_store();
+  return extension_prefs_->content_settings_store();
 }
 
 bool ExtensionService::is_ready() {
@@ -1882,7 +1874,7 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
   scoped_refptr<PermissionSet> active_permissions =
-      extension_prefs()->GetActivePermissions(extension->id());
+      extension_prefs_->GetActivePermissions(extension->id());
 
   if (active_permissions.get()) {
     // We restrict the active permissions to be within the bounds defined in the
@@ -2182,7 +2174,7 @@ void ExtensionService::OnExtensionInstalled(
     // load it (see AddExtension). Usually it should be the job of callers to
     // incercept blacklisted extension earlier (e.g. CrxInstaller, before even
     // showing the install dialogue).
-    extension_prefs()->AcknowledgeBlacklistedExtension(id);
+    extension_prefs_->AcknowledgeBlacklistedExtension(id);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
                               extension->location(),
                               Manifest::NUM_LOCATIONS);

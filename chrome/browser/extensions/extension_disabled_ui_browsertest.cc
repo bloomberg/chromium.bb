@@ -27,6 +27,7 @@
 
 using extensions::Extension;
 using extensions::ExtensionRegistry;
+using extensions::ExtensionPrefs;
 
 class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
  protected:
@@ -154,7 +155,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   const Extension* extension = InstallIncreasingPermissionExtensionV1();
   DisableExtension(extension->id());
   // Clear disable reason to simulate legacy disables.
-  service_->extension_prefs()->ClearDisableReasons(extension->id());
+  ExtensionPrefs::Get(browser()->profile())
+      ->ClearDisableReasons(extension->id());
   // Upgrade to version 2. Infer from version 1 having the same permissions
   // granted by the user that it was disabled by the user.
   extension = UpdateIncreasingPermissionExtension(extension, path_v2_, 0);
@@ -168,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
                        UnknownReasonHigherPermissions) {
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   // Clear disable reason to simulate legacy disables.
-  service_->extension_prefs()->ClearDisableReasons(extension->id());
+  ExtensionPrefs::Get(service_->profile())
+      ->ClearDisableReasons(extension->id());
   // We now have version 2 but only accepted permissions for version 1.
   GlobalError* error = GetExtensionDisabledGlobalError();
   ASSERT_TRUE(error);
@@ -227,6 +230,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, registry_->disabled_extensions().size());
   EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
-            service_->extension_prefs()->GetDisableReasons(extension_id));
+            ExtensionPrefs::Get(service_->profile())
+                ->GetDisableReasons(extension_id));
   EXPECT_TRUE(GetExtensionDisabledGlobalError());
 }

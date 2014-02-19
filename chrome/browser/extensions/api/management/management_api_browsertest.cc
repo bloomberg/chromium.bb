@@ -206,8 +206,8 @@ class ExtensionManagementApiEscalationTest :
     EXPECT_FALSE(UpdateExtension(kId, path_v2, -1));
     EXPECT_TRUE(service->GetExtensionById(kId, false) == NULL);
     EXPECT_TRUE(service->GetExtensionById(kId, true) != NULL);
-    EXPECT_TRUE(
-        service->extension_prefs()->DidExtensionEscalatePermissions(kId));
+    EXPECT_TRUE(ExtensionPrefs::Get(browser()->profile())
+                    ->DidExtensionEscalatePermissions(kId));
   }
 
   void SetEnabled(bool enabled, bool user_gesture,

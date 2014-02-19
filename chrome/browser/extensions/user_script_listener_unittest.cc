@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
@@ -280,13 +281,15 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   LoadTestExtension();
   base::MessageLoop::current()->RunUntilIdle();
 
-  // Fire up a second profile and have it load and extension with a content
+  // Fire up a second profile and have it load an extension with a content
   // script.
   TestingProfile profile2;
   std::string error;
   scoped_refptr<Extension> extension = LoadExtension(
       "content_script_yahoo.json", &error);
   ASSERT_TRUE(extension.get());
+
+  extensions::ExtensionRegistry::Get(&profile2)->AddEnabled(extension);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,

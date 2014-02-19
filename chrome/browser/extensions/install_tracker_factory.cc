@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
@@ -30,6 +30,7 @@ InstallTrackerFactory::InstallTrackerFactory()
         "InstallTracker",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
 }
 
 InstallTrackerFactory::~InstallTrackerFactory() {
@@ -37,10 +38,8 @@ InstallTrackerFactory::~InstallTrackerFactory() {
 
 BrowserContextKeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return new InstallTracker(profile, service->extension_prefs());
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new InstallTracker(profile, ExtensionPrefs::Get(context));
 }
 
 content::BrowserContext* InstallTrackerFactory::GetBrowserContextToUse(

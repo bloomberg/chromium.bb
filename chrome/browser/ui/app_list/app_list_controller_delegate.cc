@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -182,9 +183,7 @@ void AppListControllerDelegate::ShowOptionsPage(
 extensions::LaunchType AppListControllerDelegate::GetExtensionLaunchType(
     Profile* profile,
     const std::string& app_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return extensions::GetLaunchType(service->extension_prefs(),
+  return extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile),
                                    GetExtension(profile, app_id));
 }
 

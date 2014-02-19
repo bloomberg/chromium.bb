@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -65,7 +66,8 @@ void DeleteOrigin(Profile* profile,
 void OnNeedsToGarbageCollectIsolatedStorage(WeakPtr<ExtensionService> es) {
   if (!es)
     return;
-  es->extension_prefs()->SetNeedsStorageGarbageCollection(true);
+  extensions::ExtensionPrefs::Get(es->profile())
+      ->SetNeedsStorageGarbageCollection(true);
 }
 
 } // namespace

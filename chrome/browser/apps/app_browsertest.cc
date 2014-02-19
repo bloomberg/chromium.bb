@@ -1009,9 +1009,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_FALSE(should_not_install.seen());
 
   // Simulate a "downgrade" from version 2 in the test manifest.json to 1.
-  ExtensionPrefs* extension_prefs =
-      extensions::ExtensionSystem::Get(browser()->profile())->
-      extension_service()->extension_prefs();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser()->profile());
 
   // Clear the registered events to ensure they are updated.
   extensions::ExtensionSystem::Get(browser()->profile())->event_router()->

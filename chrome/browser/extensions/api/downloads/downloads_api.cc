@@ -900,9 +900,8 @@ void OnDeterminingFilenameWillDispatchCallback(
     const extensions::Extension* extension,
     base::ListValue* event_args) {
   *any_determiners = true;
-  base::Time installed = extensions::ExtensionSystem::Get(
-      context)->extension_service()->extension_prefs()->
-    GetInstallTime(extension->id());
+  base::Time installed =
+      extensions::ExtensionPrefs::Get(context)->GetInstallTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
 }
 

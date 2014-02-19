@@ -484,8 +484,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   // Now enable the extension in incognito mode, and test that the browser
   // action shows up. Note that we don't update the existing window at the
   // moment, so we just create a new one.
-  extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
-      extension_prefs()->SetIsIncognitoEnabled(extension->id(), true);
+  extensions::ExtensionPrefs::Get(browser()->profile())
+      ->SetIsIncognitoEnabled(extension->id(), true);
 
   chrome::CloseWindow(incognito_browser);
   incognito_browser =
@@ -525,8 +525,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
 
   // Now enable 2 of the extensions in incognito mode, and test that the browser
   // actions show up.
-  service->extension_prefs()->SetIsIncognitoEnabled(extension_a->id(), true);
-  service->extension_prefs()->SetIsIncognitoEnabled(extension_c->id(), true);
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+  prefs->SetIsIncognitoEnabled(extension_a->id(), true);
+  prefs->SetIsIncognitoEnabled(extension_c->id(), true);
 
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser =

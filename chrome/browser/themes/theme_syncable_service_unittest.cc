@@ -187,8 +187,8 @@ class ThemeSyncableServiceTest : public testing::Test {
     scoped_refptr<extensions::PermissionSet> permissions =
         new extensions::PermissionSet(empty_set, empty_manifest_permissions,
                                       empty_extent, empty_extent);
-    service->extension_prefs()->AddGrantedPermissions(
-        theme_extension_->id(), permissions.get());
+    extensions::ExtensionPrefs::Get(profile_.get())
+        ->AddGrantedPermissions(theme_extension_->id(), permissions.get());
     service->AddExtension(theme_extension_.get());
     ASSERT_EQ(1u, service->extensions()->size());
   }

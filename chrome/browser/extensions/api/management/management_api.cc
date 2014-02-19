@@ -125,7 +125,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   if (info->enabled) {
     info->disabled_reason = management::ExtensionInfo::DISABLED_REASON_NONE;
   } else {
-    ExtensionPrefs* prefs = service->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(service->profile());
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
       info->disabled_reason =
           management::ExtensionInfo::DISABLED_REASON_PERMISSIONS_INCREASE;
@@ -439,7 +439,7 @@ bool ManagementLaunchAppFunction::RunImpl() {
   // If the user has not set a preference, the default launch value will be
   // returned.
   LaunchContainer launch_container =
-      GetLaunchContainer(service()->extension_prefs(), extension);
+      GetLaunchContainer(ExtensionPrefs::Get(GetProfile()), extension);
   OpenApplication(AppLaunchParams(
       GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
@@ -484,7 +484,7 @@ bool ManagementSetEnabledFunction::RunImpl() {
   bool currently_enabled = service()->IsExtensionEnabled(extension_id_);
 
   if (!currently_enabled && params->enabled) {
-    ExtensionPrefs* prefs = service()->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
     if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture()) {
         error_ = keys::kGestureNeededForEscalationError;

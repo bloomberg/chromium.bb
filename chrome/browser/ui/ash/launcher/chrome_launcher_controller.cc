@@ -70,6 +70,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
@@ -701,9 +702,8 @@ extensions::LaunchType ChromeLauncherController::GetLaunchType(
   if (!extension)
     return extensions::LAUNCH_TYPE_DEFAULT;
 
-  return extensions::GetLaunchType(
-      profile_->GetExtensionService()->extension_prefs(),
-      extension);
+  return extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
+                                   extension);
 }
 
 ash::ShelfID ChromeLauncherController::GetShelfIDForAppID(

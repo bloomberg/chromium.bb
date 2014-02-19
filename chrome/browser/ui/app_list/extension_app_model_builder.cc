@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -90,13 +91,10 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrar() {
           switches::kEnableStreamlinedHostedApps))
     return;
 
-  const ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service)
-    return;
-
+  extensions::ExtensionsBrowserClient* client =
+      extensions::ExtensionsBrowserClient::Get();
   extension_pref_change_registrar_.Init(
-      extension_service->extension_prefs()->pref_service());
+      client->GetPrefServiceForContext(profile_));
   extension_pref_change_registrar_.Add(
     extensions::pref_names::kExtensions,
     base::Bind(&ExtensionAppModelBuilder::OnExtensionPreferenceChanged,

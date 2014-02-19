@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
@@ -176,8 +177,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
 
 - (void)onHide:(id)sender {
   extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionSystem::Get(
-          browser_->profile())->extension_service()->extension_prefs(),
+      extensions::ExtensionPrefs::Get(browser_->profile()),
       extension_->id(),
       false);
 }

@@ -197,9 +197,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
 
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-
     scoped_refptr<MockPromptProxy> mock_prompt =
         CreateMockPromptProxyForBrowser(browser());
 
@@ -207,8 +204,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
     scoped_refptr<PermissionSet> permissions =
-        service->extension_prefs()->GetGrantedPermissions(
-            mock_prompt->extension_id());
+        ExtensionPrefs::Get(browser()->profile())
+            ->GetGrantedPermissions(mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());
   }
 };

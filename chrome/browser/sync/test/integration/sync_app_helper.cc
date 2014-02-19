@@ -13,10 +13,13 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/id_util.h"
+
+using extensions::ExtensionPrefs;
 
 namespace {
 
@@ -48,16 +51,13 @@ bool AppState::Equals(const AppState& other) const {
 }
 
 // Load all the app specific values for |id| into |app_state|.
-void LoadApp(ExtensionService* extension_service,
+void LoadApp(content::BrowserContext* context,
              const std::string& id,
              AppState* app_state) {
-  app_state->app_launch_ordinal = extension_service->extension_prefs()->
-      app_sorting()->GetAppLaunchOrdinal(id);
-  app_state->page_ordinal = extension_service->extension_prefs()->
-      app_sorting()->GetPageOrdinal(id);
-  app_state->launch_type =
-      extensions::GetLaunchTypePrefValue(extension_service->extension_prefs(),
-                                         id);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+  app_state->app_launch_ordinal = prefs->app_sorting()->GetAppLaunchOrdinal(id);
+  app_state->page_ordinal = prefs->app_sorting()->GetPageOrdinal(id);
+  app_state->launch_type = extensions::GetLaunchTypePrefValue(prefs, id);
 }
 
 // Returns a map from |profile|'s installed extensions to their state.
@@ -72,7 +72,7 @@ AppStateMap GetAppStates(Profile* profile) {
        it != extensions->end(); ++it) {
     if (extensions::sync_helper::IsSyncableApp(it->get())) {
       const std::string& id = (*it)->id();
-      LoadApp(extension_service, id, &(app_state_map[id]));
+      LoadApp(profile, id, &(app_state_map[id]));
     }
   }
 
@@ -84,7 +84,7 @@ AppStateMap GetAppStates(Profile* profile) {
 
   for (std::list<std::string>::const_iterator id = pending_crx_ids.begin();
        id != pending_crx_ids.end(); ++id) {
-    LoadApp(extension_service, *id, &(app_state_map[*id]));
+    LoadApp(profile, *id, &(app_state_map[*id]));
   }
 
   return app_state_map;
@@ -155,37 +155,35 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
 syncer::StringOrdinal SyncAppHelper::GetPageOrdinalForApp(
     Profile* profile,
     const std::string& name) {
-  return profile->GetExtensionService()->extension_prefs()->
-      app_sorting()->GetPageOrdinal(extensions::id_util::GenerateId(name));
+  return ExtensionPrefs::Get(profile)->app_sorting()->GetPageOrdinal(
+      extensions::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetPageOrdinalForApp(
     Profile* profile,
     const std::string& name,
     const syncer::StringOrdinal& page_ordinal) {
-  profile->GetExtensionService()->extension_prefs()->app_sorting()->
-      SetPageOrdinal(extensions::id_util::GenerateId(name), page_ordinal);
+  ExtensionPrefs::Get(profile)->app_sorting()->SetPageOrdinal(
+      extensions::id_util::GenerateId(name), page_ordinal);
 }
 
 syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name) {
-  return profile->GetExtensionService()->extension_prefs()->
-      app_sorting()->GetAppLaunchOrdinal(extensions::id_util::GenerateId(name));
+  return ExtensionPrefs::Get(profile)->app_sorting()->GetAppLaunchOrdinal(
+      extensions::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name,
     const syncer::StringOrdinal& app_launch_ordinal) {
-  profile->GetExtensionService()->extension_prefs()->app_sorting()->
-      SetAppLaunchOrdinal(extensions::id_util::GenerateId(name),
-                          app_launch_ordinal);
+  ExtensionPrefs::Get(profile)->app_sorting()->SetAppLaunchOrdinal(
+      extensions::id_util::GenerateId(name), app_launch_ordinal);
 }
 
 void SyncAppHelper::FixNTPOrdinalCollisions(Profile* profile) {
-  profile->GetExtensionService()->extension_prefs()->app_sorting()->
-      FixNTPOrdinalCollisions();
+  ExtensionPrefs::Get(profile)->app_sorting()->FixNTPOrdinalCollisions();
 }
 
 SyncAppHelper::SyncAppHelper() : setup_completed_(false) {}

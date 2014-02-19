@@ -159,7 +159,7 @@ void AppLauncherHandler::CreateAppInfo(
   value->SetBoolean("icon_small_exists", icon_small_exists);
   value->SetInteger("launch_container",
                     extensions::AppLaunchInfo::GetLaunchContainer(extension));
-  ExtensionPrefs* prefs = service->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(service->profile());
   value->SetInteger("launch_type", extensions::GetLaunchType(prefs, extension));
   value->SetBoolean("is_component",
                     extension->location() == extensions::Manifest::COMPONENT);
@@ -271,7 +271,8 @@ void AppLauncherHandler::Observe(int type,
       if (app_info.get()) {
         visible_apps_.insert(extension->id());
 
-        ExtensionPrefs* prefs = extension_service_->extension_prefs();
+        ExtensionPrefs* prefs =
+            ExtensionPrefs::Get(extension_service_->profile());
         scoped_ptr<base::FundamentalValue> highlight(
             base::Value::CreateBooleanValue(
                 prefs->IsFromBookmark(extension->id()) &&
@@ -464,7 +465,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         &AppLauncherHandler::OnExtensionPreferenceChanged,
         base::Unretained(this));
     extension_pref_change_registrar_.Init(
-        extension_service_->extension_prefs()->pref_service());
+        ExtensionPrefs::Get(profile)->pref_service());
     extension_pref_change_registrar_.Add(
         extensions::pref_names::kExtensions, callback);
     extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
@@ -475,9 +476,10 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
         content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-        content::Source<AppSorting>(
-            extension_service_->extension_prefs()->app_sorting()));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+                   content::Source<AppSorting>(
+                       ExtensionPrefs::Get(profile)->app_sorting()));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
         content::Source<CrxInstaller>(NULL));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
@@ -643,7 +645,8 @@ void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
 
   // Don't update the page; it already knows the apps have been reordered.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-  extension_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
+  ExtensionPrefs::Get(extension_service_->profile())
+      ->SetAppDraggedByUser(dragged_app_id);
   extension_service_->OnExtensionMoved(dragged_app_id,
                                        predecessor_to_moved_ext,
                                        successor_to_moved_ext);
@@ -651,7 +654,7 @@ void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
 
 void AppLauncherHandler::HandleSetPageIndex(const base::ListValue* args) {
   AppSorting* app_sorting =
-      extension_service_->extension_prefs()->app_sorting();
+      ExtensionPrefs::Get(extension_service_->profile())->app_sorting();
 
   std::string extension_id;
   double page_index;
@@ -690,7 +693,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   double page_index;
   CHECK(args->GetDouble(2, &page_index));
   AppSorting* app_sorting =
-      extension_service_->extension_prefs()->app_sorting();
+      ExtensionPrefs::Get(extension_service_->profile())->app_sorting();
   const syncer::StringOrdinal& page_ordinal =
       app_sorting->PageIntegerAsStringOrdinal(static_cast<size_t>(page_index));
 

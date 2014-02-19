@@ -87,6 +87,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "grit/locale_settings.h"
@@ -204,12 +205,12 @@ bool GetAppLaunchContainer(
   // Look at preferences to find the right launch container. If no
   // preference is set, launch as a window.
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
-      extensions_service->extension_prefs(), extension);
+      extensions::ExtensionPrefs::Get(profile), extension);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps) &&
+           switches::kEnableStreamlinedHostedApps) &&
       !extensions::HasPreferredLaunchContainer(
-          extensions_service->extension_prefs(), extension)) {
+           extensions::ExtensionPrefs::Get(profile), extension)) {
     launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
   }
 

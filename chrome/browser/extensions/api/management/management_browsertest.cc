@@ -441,7 +441,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   UninstallExtension(kExtensionId);
 
-  extensions::ExtensionPrefs* extension_prefs = service->extension_prefs();
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
   EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
       << "Uninstalling should set kill bit on externaly installed extension.";
 

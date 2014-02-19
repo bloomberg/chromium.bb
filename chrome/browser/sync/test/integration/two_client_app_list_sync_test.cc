@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/app_list/app_list_switches.h"
 
@@ -434,10 +435,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 
   // Flag Default app in Profile 1.
-  extensions::ExtensionSystem::Get(GetProfile(1))->
-      extension_service()->extension_prefs()->
-      UpdateExtensionPref(default_app_id, "was_installed_by_default",
-                          new base::FundamentalValue(true));
+  extensions::ExtensionPrefs::Get(GetProfile(1))
+      ->UpdateExtensionPref(default_app_id,
+                            "was_installed_by_default",
+                            new base::FundamentalValue(true));
 
   // Remove the default app in Profile 0 and verifier, ensure it was removed
   // in Profile 1.

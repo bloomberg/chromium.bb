@@ -5,13 +5,13 @@
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
@@ -170,8 +170,7 @@ void SyncAppListHelper::PrintItem(Profile* profile,
                                   AppListItem* item,
                                   const std::string& label) {
   extensions::AppSorting* s =
-      extensions::ExtensionSystem::Get(profile)->extension_service()->
-      extension_prefs()->app_sorting();
+      extensions::ExtensionPrefs::Get(profile)->app_sorting();
   std::string id = item->id();
   if (item->GetItemType() == AppListFolderItem::kItemType) {
     VLOG(1) << label << item->ToDebugString();

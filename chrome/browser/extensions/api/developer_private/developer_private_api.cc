@@ -51,6 +51,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -782,7 +783,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   }
 
   if (enable) {
-    ExtensionPrefs* prefs = service->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
       CHECK(registry);

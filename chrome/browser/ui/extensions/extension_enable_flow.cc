@@ -85,8 +85,8 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
     return;
   }
 
-  extensions::ExtensionPrefs* extension_prefs = service->extension_prefs();
-  if (!extension_prefs->DidExtensionEscalatePermissions(extension_id_)) {
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  if (!prefs->DidExtensionEscalatePermissions(extension_id_)) {
     // Enable the extension immediately if its privileges weren't escalated.
     // This is a no-op if the extension was previously terminated.
     service->EnableExtension(extension_id_);

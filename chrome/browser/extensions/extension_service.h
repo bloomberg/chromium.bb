@@ -418,11 +418,6 @@ class ExtensionService
   // Returns profile_ as a BrowserContext.
   content::BrowserContext* GetBrowserContext() const;
 
-  // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
-  // ExtensionPrefs* mutable_extension_prefs().
-  extensions::ExtensionPrefs* extension_prefs();
-  const extensions::ExtensionPrefs* extension_prefs() const;
-
   extensions::SettingsFrontend* settings_frontend();
 
   void set_extension_sync_service(

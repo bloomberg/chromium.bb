@@ -165,7 +165,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
   // be equal to the active permissions.
-  ExtensionPrefs* prefs = service_->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_.get());
   scoped_refptr<PermissionSet> granted_permissions =
       active_permissions;
 

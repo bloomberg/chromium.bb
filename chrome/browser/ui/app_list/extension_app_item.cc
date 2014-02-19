@@ -104,9 +104,7 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 };
 
 extensions::AppSorting* GetAppSorting(Profile* profile) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return service->extension_prefs()->app_sorting();
+  return extensions::ExtensionPrefs::Get(profile)->app_sorting();
 }
 
 const color_utils::HSL shift = {-1, 0, 0.6};
@@ -155,12 +153,11 @@ bool ExtensionAppItem::NeedsOverlay() const {
   if (!streamlined_hosted_apps)
     return false;
 #endif
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-
-  extensions::LaunchType launch_type = GetExtension()
-      ? extensions::GetLaunchType(service->extension_prefs(), GetExtension())
-      : extensions::LAUNCH_TYPE_WINDOW;
+  extensions::LaunchType launch_type =
+      GetExtension()
+          ? extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
+                                      GetExtension())
+          : extensions::LAUNCH_TYPE_WINDOW;
 
   return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId &&
       (!streamlined_hosted_apps ||
@@ -217,7 +214,8 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  extensions::AppSorting* sorting = service->extension_prefs()->app_sorting();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
+  extensions::AppSorting* sorting = GetAppSorting(profile_);
 
   syncer::StringOrdinal page;
   std::string prev_id, next_id;
@@ -234,7 +232,7 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
     if (page.Equals(sorting->GetPageOrdinal(next->extension_id())))
       next_id = next->extension_id();
   }
-  service->extension_prefs()->SetAppDraggedByUser(extension_id_);
+  prefs->SetAppDraggedByUser(extension_id_);
   sorting->SetPageOrdinal(extension_id_, page);
   service->OnExtensionMoved(extension_id_, prev_id, next_id);
   UpdatePositionFromExtensionOrdering();

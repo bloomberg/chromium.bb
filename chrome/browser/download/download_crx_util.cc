@@ -9,7 +9,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/user_script.h"
 
@@ -128,12 +128,7 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile)->extension_service();
-  if (!service)
-    return false;
-
-  extensions::ExtensionPrefs* prefs = service->extension_prefs();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile);
   CHECK(prefs);
 
   extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();

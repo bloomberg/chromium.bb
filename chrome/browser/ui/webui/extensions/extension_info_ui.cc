@@ -57,8 +57,9 @@ GURL ExtensionInfoUI::GetURL(const std::string& extension_id) {
 
 void ExtensionInfoUI::AddExtensionDataToSource(
     const std::string& extension_id) {
-  ExtensionService* extension_service = ExtensionSystem::Get(
-      Profile::FromWebUI(web_ui()))->extension_service();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile)->extension_service();
   const Extension* extension =
       extension_service->extensions()->GetByID(extension_id);
   if (!extension)
@@ -76,8 +77,8 @@ void ExtensionInfoUI::AddExtensionDataToSource(
                                       false, NULL);
   source_->AddString("icon", base::UTF8ToUTF16(icon.spec()));
   // Set the last update time (the install time).
-  base::Time install_time = extension_service->extension_prefs()->
-      GetInstallTime(extension_id);
+  base::Time install_time =
+      ExtensionPrefs::Get(profile)->GetInstallTime(extension_id);
   source_->AddString("installTime", base::TimeFormatShortDate(install_time));
 }
 

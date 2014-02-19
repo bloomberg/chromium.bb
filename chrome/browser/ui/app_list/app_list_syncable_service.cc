@@ -94,7 +94,8 @@ syncer::SyncData GetSyncDataFromSyncItem(
 }
 
 bool AppIsDefault(ExtensionService* service, const std::string& id) {
-  return service && service->extension_prefs()->WasInstalledByDefault(id);
+  return service && extensions::ExtensionPrefs::Get(service->profile())
+                        ->WasInstalledByDefault(id);
 }
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {

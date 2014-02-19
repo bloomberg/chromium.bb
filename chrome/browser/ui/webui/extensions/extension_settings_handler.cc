@@ -198,7 +198,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   GetExtensionBasicInfo(extension, enabled, extension_data);
 
-  ExtensionPrefs* prefs = extension_service_->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
   int disable_reasons = prefs->GetDisableReasons(extension->id());
 
   bool suspicious_install =
@@ -259,8 +259,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("locationText", location_text);
 
   base::string16 blacklist_text;
-  switch (extension_service_->extension_prefs()->GetExtensionBlacklistState(
-              extension->id())) {
+  switch (prefs->GetExtensionBlacklistState(extension->id())) {
     case BLACKLISTED_SECURITY_VULNERABILITY:
       blacklist_text = l10n_util::GetStringUTF16(
           IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY);
@@ -287,8 +286,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (!ExtensionActionAPI::GetBrowserActionVisibility(
-          extension_service_->extension_prefs(), extension->id())) {
+  if (!ExtensionActionAPI::GetBrowserActionVisibility(prefs, extension->id())) {
     extension_data->SetBoolean("enable_show_button", true);
   }
 
@@ -752,7 +750,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   results.SetBoolean("developerMode", developer_mode);
 
   bool load_unpacked_disabled =
-      extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();
+      ExtensionPrefs::Get(profile)->ExtensionsBlacklistedByDefault();
   results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
 
   web_ui()->CallJavascriptFunction(
@@ -853,7 +851,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(
   }
 
   if (enable_str == "true") {
-    ExtensionPrefs* prefs = extension_service_->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       ShowExtensionDisabledDialog(
           extension_service_, web_ui()->GetWebContents(), extension);
@@ -998,7 +996,9 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(
   if (!extension)
     return;
   ExtensionActionAPI::SetBrowserActionVisibility(
-      extension_service_->extension_prefs(), extension->id(), true);
+      ExtensionPrefs::Get(extension_service_->profile()),
+      extension->id(),
+      true);
 }
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(
@@ -1083,8 +1083,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(
-          profile->GetExtensionService()->extension_prefs()));
+      content::Source<ExtensionPrefs>(ExtensionPrefs::Get(profile)));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());

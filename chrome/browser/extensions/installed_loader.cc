@@ -119,7 +119,7 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
 InstalledLoader::InstalledLoader(ExtensionService* extension_service)
     : extension_service_(extension_service),
       extension_registry_(ExtensionRegistry::Get(extension_service->profile())),
-      extension_prefs_(extension_service->extension_prefs()) {}
+      extension_prefs_(ExtensionPrefs::Get(extension_service->profile())) {}
 
 InstalledLoader::~InstalledLoader() {
 }
@@ -412,8 +412,7 @@ void InstalledLoader::LoadAllExtensions() {
       extension_registry_->disabled_extensions();
   for (ex = disabled_extensions.begin(); ex != disabled_extensions.end();
        ++ex) {
-    if (extension_service_->extension_prefs()->
-        DidExtensionEscalatePermissions((*ex)->id())) {
+    if (extension_prefs_->DidExtensionEscalatePermissions((*ex)->id())) {
       ++disabled_for_permissions_count;
     }
     if (Manifest::IsExternalLocation((*ex)->location())) {

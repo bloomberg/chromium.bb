@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/id_util.h"
 
 using content::WebContents;
@@ -227,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
   const extensions::Extension* webstore_extension =
       service->GetInstalledExtension(extension_misc::kWebStoreAppId);
   EXPECT_TRUE(webstore_extension);
-  AppSorting* sorting = service->extension_prefs()->app_sorting();
+  AppSorting* sorting =
+      extensions::ExtensionPrefs::Get(browser()->profile())->app_sorting();
 
   // Register for notifications in the same way as AppLauncherHandler.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "extensions/browser/extension_prefs.h"
@@ -79,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
       new PermissionSet(apis, manifest_permissions,
                         explicit_hosts, URLPatternSet());
 
-  ExtensionPrefs* prefs =
-      browser()->profile()->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
                                granted_permissions.get());
 
@@ -126,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
   PermissionsRequestFunction::SetAutoConfirmForTests(false);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
-  ExtensionPrefs* prefs =
-      browser()->profile()->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
 
   EXPECT_TRUE(
       RunExtensionTestNoFileAccess("permissions/file_access_no")) << message_;

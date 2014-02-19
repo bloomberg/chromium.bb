@@ -4,20 +4,20 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  const size_t size_before = service->extensions()->size();
+  extension::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
   base::FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   const Extension* extension = LoadExtension(extension_path);
   ASSERT_TRUE(extension);
 
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
 
   EXPECT_STREQ(base::WideToUTF8(
                    L"Hreggvi\u00F0ur: l10n browser action").c_str(),

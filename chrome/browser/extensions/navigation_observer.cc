@@ -69,9 +69,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
     return;
   prompted_extensions_.insert(extension->id());
 
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   if (extension_prefs->DidExtensionEscalatePermissions(extension->id())) {
     // Keep track of the extension id and nav controller we're prompting for.
     // These must be reset in InstallUIProceed and InstallUIAbort.

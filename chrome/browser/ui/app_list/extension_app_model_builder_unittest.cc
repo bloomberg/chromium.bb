@@ -250,7 +250,8 @@ TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
-  extensions::AppSorting* sorting = service_->extension_prefs()->app_sorting();
+  extensions::AppSorting* sorting =
+      extensions::ExtensionPrefs::Get(profile_.get())->app_sorting();
 
   syncer::StringOrdinal package_app_page =
       sorting->GetPageOrdinal(kPackagedApp1Id);
@@ -272,7 +273,8 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
-  extensions::AppSorting* sorting = service_->extension_prefs()->app_sorting();
+  extensions::AppSorting* sorting =
+      extensions::ExtensionPrefs::Get(profile_.get())->app_sorting();
   sorting->SetPageOrdinal(kHostedAppId,
                           sorting->GetPageOrdinal(kPackagedApp1Id));
 
@@ -294,11 +296,13 @@ TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
 
 TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   // Creates a no-ordinal case.
-  extensions::AppSorting* sorting = service_->extension_prefs()->app_sorting();
+  extensions::AppSorting* sorting =
+      extensions::ExtensionPrefs::Get(profile_.get())->app_sorting();
   sorting->ClearOrdinals(kPackagedApp1Id);
 
   // Creates a corrupted ordinal case.
-  extensions::ExtensionScopedPrefs* scoped_prefs = service_->extension_prefs();
+  extensions::ExtensionScopedPrefs* scoped_prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
   scoped_prefs->UpdateExtensionPref(
       kHostedAppId,
       "page_ordinal",
@@ -313,7 +317,8 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   syncer::StringOrdinal conflict_ordinal =
       syncer::StringOrdinal::CreateInitialOrdinal();
 
-  extensions::AppSorting* sorting = service_->extension_prefs()->app_sorting();
+  extensions::AppSorting* sorting =
+      extensions::ExtensionPrefs::Get(profile_.get())->app_sorting();
   sorting->SetPageOrdinal(kHostedAppId, conflict_ordinal);
   sorting->SetAppLaunchOrdinal(kHostedAppId, conflict_ordinal);
 

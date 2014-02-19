@@ -255,7 +255,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
 
   // Validate that we don't have a suppress value for the extensions.
-  ExtensionPrefs* prefs = service_->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id1_));
   EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2_));
 

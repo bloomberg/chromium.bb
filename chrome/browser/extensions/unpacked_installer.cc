@@ -195,7 +195,7 @@ int UnpackedInstaller::GetFlags() {
   std::string id = id_util::GenerateIdForPath(extension_path_);
   bool allow_file_access =
       Manifest::ShouldAlwaysAllowFileAccess(Manifest::UNPACKED);
-  ExtensionPrefs* prefs = service_weak_->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(service_weak_->profile());
   if (prefs->HasAllowFileAccessSetting(id))
     allow_file_access = prefs->AllowFileAccess(id);
 
@@ -213,7 +213,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
     return true;
   // If there is a "*" in the extension blacklist, then no extensions should be
   // allowed at all (except explicitly whitelisted extensions).
-  ExtensionPrefs* prefs = service_weak_->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(service_weak_->profile());
   return !prefs->ExtensionsBlacklistedByDefault();
 }
 

@@ -152,7 +152,7 @@ void EphemeralAppService::GarbageCollectApps() {
   DCHECK(system);
   ExtensionService* service = system->extension_service();
   DCHECK(service);
-  ExtensionPrefs* prefs = service->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   scoped_ptr<ExtensionSet> extensions =
       service->GenerateInstalledExtensionsSet();
 

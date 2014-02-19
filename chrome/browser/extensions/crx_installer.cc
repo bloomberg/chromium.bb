@@ -595,8 +595,8 @@ void CrxInstaller::ConfirmInstall() {
     return;
   }
 
-  current_version_ =
-      service->extension_prefs()->GetVersionString(extension()->id());
+  current_version_ = ExtensionPrefs::Get(service->profile())
+                         ->GetVersionString(extension()->id());
 
   if (client_ &&
       (!allow_silent_install_ || !approved_) &&
@@ -863,7 +863,7 @@ void CrxInstaller::ConfirmReEnable() {
   if (!update_from_settings_page_)
     return;
 
-  ExtensionPrefs* prefs = service->extension_prefs();
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(service->profile());
   if (!prefs->DidExtensionEscalatePermissions(extension()->id()))
     return;
 

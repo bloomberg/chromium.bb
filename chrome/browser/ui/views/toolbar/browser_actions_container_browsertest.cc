@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 
 using extensions::Extension;
 
@@ -181,9 +181,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
 
   // Force hide this browser action.
   extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionSystem::Get(browser()->profile())->
-          extension_service()->extension_prefs(),
-      idA,
-      false);
+      extensions::ExtensionPrefs::Get(browser()->profile()), idA, false);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
 }

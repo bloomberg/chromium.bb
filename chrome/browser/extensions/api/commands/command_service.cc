@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
@@ -26,6 +25,8 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -208,12 +209,9 @@ bool CommandService::GetNamedCommands(const std::string& extension_id,
                                       QueryType type,
                                       CommandScope scope,
                                       extensions::CommandMap* command_map) {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service)
-    return false;  // Can occur during testing.
-  const ExtensionSet* extensions = extension_service->extensions();
-  const Extension* extension = extensions->GetByID(extension_id);
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  const Extension* extension = extensions.GetByID(extension_id);
   CHECK(extension);
 
   command_map->clear();
@@ -393,9 +391,7 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
   if (!commands)
     return;
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   if (InitialBindingsHaveBeenAssigned(extension_prefs, extension->id()))
     return;
   SetInitialBindingsHaveBeenAssigned(extension_prefs, extension->id());
@@ -502,12 +498,9 @@ bool CommandService::GetExtensionActionCommand(
     extensions::Command* command,
     bool* active,
     ExtensionActionType action_type) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  if (!service)
-    return false;  // Can happen in tests.
-  const ExtensionSet* extensions = service->extensions();
-  const Extension* extension = extensions->GetByID(extension_id);
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  const Extension* extension = extensions.GetByID(extension_id);
   CHECK(extension);
 
   if (active)

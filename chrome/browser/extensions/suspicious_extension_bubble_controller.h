@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_SUSPICIOUS_EXTENSION_BUBBLE_CONTROLLER_H_
 
 #include <string>
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "extensions/common/extension.h"
 
 class Browser;
 class ExtensionService;
+class Profile;
 
 using extensions::ExtensionMessageBubbleController;
 
@@ -20,7 +21,7 @@ namespace {
 class SuspiciousExtensionBubbleDelegate
     : public ExtensionMessageBubbleController::Delegate {
  public:
-  explicit SuspiciousExtensionBubbleDelegate(ExtensionService* service);
+  explicit SuspiciousExtensionBubbleDelegate(Profile* profile);
   virtual ~SuspiciousExtensionBubbleDelegate();
 
   // ExtensionMessageBubbleController::Delegate methods.
@@ -43,8 +44,8 @@ class SuspiciousExtensionBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;
 
  private:
-  // Our extension service. Weak, not owned by us.
-  ExtensionService* service_;
+  // Our profile. Weak, not owned by us.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
 };

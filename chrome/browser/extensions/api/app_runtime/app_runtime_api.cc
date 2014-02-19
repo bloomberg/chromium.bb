@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_runtime.h"
 #include "content/public/browser/web_contents.h"
@@ -50,8 +49,8 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   event->can_load_ephemeral_apps = true;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
-  system->extension_service()->extension_prefs()->SetLastLaunchTime(
-      extension_id, base::Time::Now());
+  ExtensionPrefs::Get(profile)
+      ->SetLastLaunchTime(extension_id, base::Time::Now());
 }
 
 }  // anonymous namespace
