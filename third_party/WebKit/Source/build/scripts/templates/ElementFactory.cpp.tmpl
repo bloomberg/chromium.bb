@@ -58,18 +58,22 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
 }
 {%- endfor %}
 
-static void addTag(const QualifiedName& tag, ConstructorFunction func)
-{
-    g_constructors->set(tag.localName(), func);
-}
+struct Create{{namespace}}FunctionMapData {
+  const QualifiedName& tag;
+  ConstructorFunction func;
+};
 
-static void createFunctionMap()
+static void create{{namespace}}FunctionMap()
 {
     ASSERT(!g_constructors);
     g_constructors = new FunctionMap;
+    static const Create{{namespace}}FunctionMapData data[] = {
 {%- for tag in tags|sort if not tag.noConstructor %}
-    addTag({{tag|symbol}}Tag, {{tag|symbol}}Constructor);
+        { {{tag|symbol}}Tag, {{tag|symbol}}Constructor },
 {%- endfor %}
+    };
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
+        g_constructors->set(data[i].tag.localName(), data[i].func);
 }
 
 PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
@@ -81,7 +85,7 @@ PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}
     bool createdByParser)
 {
     if (!g_constructors)
-        createFunctionMap();
+        create{{namespace}}FunctionMap();
     if (ConstructorFunction function = g_constructors->get(localName))
         return function(document, {%- if namespace == 'HTML' %}formElement,{% endif %} createdByParser);
 
