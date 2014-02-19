@@ -724,7 +724,7 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   window1->Focus();
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 11);
-  RunAllPendingInMessageLoop();
+  EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
 
   aura::client::WindowMoveClient* move_client =
       aura::client::GetWindowMoveClient(window2->GetRootWindow());
@@ -733,7 +733,6 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
                 aura::client::WINDOW_MOVE_SOURCE_MOUSE));
 
   generator.ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
 }
 
