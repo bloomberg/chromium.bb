@@ -1781,6 +1781,9 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
+    // FIXME: We call this from within style recalc, but we read compositingState below!
+    DisableCompositingQueryAsserts disabler;
+
     // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
     // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
     // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding
@@ -1789,7 +1792,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         // FIXME: when transforms are taken into account for overflow, we will need to do a layout.
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing())) {
+        if (!isText() && (!hasLayer() || toRenderLayerModelObject(this)->layer()->compositingState() != PaintsIntoOwnBacking)) {
             // We need to set at least SimplifiedLayout, but if PositionedMovementOnly is already set
             // then we actually need SimplifiedLayoutAndPositionedMovement.
             if (!hasLayer())
@@ -1805,15 +1808,14 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     // If opacity or filters changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
     if (contextSensitiveProperties & ContextSensitivePropertyOpacity && diff <= StyleDifferenceRepaintLayer) {
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
+        if (!isText() && (!hasLayer() || toRenderLayerModelObject(this)->layer()->compositingState() != PaintsIntoOwnBacking))
             diff = StyleDifferenceRepaintLayer;
         else if (diff < StyleDifferenceRecompositeLayer)
             diff = StyleDifferenceRecompositeLayer;
     }
-
     if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer() && diff <= StyleDifferenceRepaintLayer) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
-        if (!layer->hasDirectReasonsForCompositing() || layer->paintsWithFilters())
+        if (layer->compositingState() != PaintsIntoOwnBacking || layer->paintsWithFilters())
             diff = StyleDifferenceRepaintLayer;
         else if (diff < StyleDifferenceRecompositeLayer)
             diff = StyleDifferenceRecompositeLayer;
