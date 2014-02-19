@@ -32,6 +32,7 @@ crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 crbug.com/336925 inspector/elements/styles/styles-add-blank-property.html [ Pass Failure ]
 
 crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 
 # -----------------------------------------------------------------
 # Plugin tests
