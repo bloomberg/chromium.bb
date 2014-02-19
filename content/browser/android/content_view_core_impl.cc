@@ -1182,10 +1182,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingStart, time_ms, x, y);
 
-  // Velocity should not be scaled by DIP since that interacts poorly with the
-  // deceleration constants.  The DIP scaling is done on the renderer.
-  event.data.flingStart.velocityX = vx;
-  event.data.flingStart.velocityY = vy;
+  event.data.flingStart.velocityX = vx / GetDpiScale();
+  event.data.flingStart.velocityY = vy / GetDpiScale();
 
   SendGestureEvent(event);
 }

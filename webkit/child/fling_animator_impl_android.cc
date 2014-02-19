@@ -53,10 +53,14 @@ void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
+  // The OverScroller deceleration constants work in pixel space.  DIP scaling
+  // will be performed in |apply()| on the generated fling updates.
+  float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
+      .device_scale_factor();
   JNI_OverScroller::Java_OverScroller_flingV_I_I_I_I_I_I_I_I(
       env, java_scroller_.obj(), 0, 0,
-      static_cast<int>(velocity.x()),
-      static_cast<int>(velocity.y()),
+      static_cast<int>(velocity.x() * dpi_scale),
+      static_cast<int>(velocity.y() * dpi_scale),
       INT_MIN, INT_MAX, INT_MIN, INT_MAX);
 }
 
@@ -108,7 +112,7 @@ bool FlingAnimatorImpl::apply(double time,
   float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
       .device_scale_factor();
   blink::WebFloatSize scroll_amount(diff.x() / dpi_scale,
-                                     diff.y() / dpi_scale);
+                                    diff.y() / dpi_scale);
 
   float delta_time = time - last_time_;
   last_time_ = time;
@@ -128,7 +132,7 @@ bool FlingAnimatorImpl::apply(double time,
   }
   last_velocity_ = current_velocity;
   blink::WebFloatSize fling_velocity(current_velocity.x() / dpi_scale,
-                                      current_velocity.y() / dpi_scale);
+                                     current_velocity.y() / dpi_scale);
   target->notifyCurrentFlingVelocity(fling_velocity);
 
   // scrollBy() could delete this curve if the animation is over, so don't touch
