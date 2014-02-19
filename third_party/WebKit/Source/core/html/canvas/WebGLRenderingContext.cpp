@@ -655,11 +655,10 @@ void WebGLRenderingContext::initializeNewContext()
 
     createFallbackBlackTextures1x1();
 
-    IntSize canvasSize = clampedCanvasSize();
-    m_drawingBuffer->reset(canvasSize);
+    m_drawingBuffer->reset(clampedCanvasSize());
 
-    m_context->viewport(0, 0, canvasSize.width(), canvasSize.height());
-    m_context->scissor(0, 0, canvasSize.width(), canvasSize.height());
+    m_context->viewport(0, 0, drawingBufferWidth(), drawingBufferHeight());
+    m_context->scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
 
     m_contextLostCallbackAdapter = adoptPtr(new WebGLRenderingContextLostCallback(this));
     m_errorMessageCallbackAdapter = adoptPtr(new WebGLRenderingContextErrorMessageCallback(this));
