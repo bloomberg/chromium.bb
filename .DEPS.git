@@ -13,8 +13,6 @@ vars = {
 deps = {
     'breakpad':
         Var('git_url') + '/external/google-breakpad.git@12528d19bdf7b00a0f1ad5cd466a12d587189055',
-    'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@aa91a3d07ab79caf245e7308591473fafac226e3',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
