@@ -60,7 +60,8 @@ Preferences::Preferences()
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
     : prefs_(NULL),
       input_method_manager_(input_method_manager),
-      user_(NULL) {
+      user_(NULL),
+      user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
