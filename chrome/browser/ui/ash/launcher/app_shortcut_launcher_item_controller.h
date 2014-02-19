@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "url/gurl.h"
 
+class Browser;
 class URLPattern;
 
 namespace aura {
@@ -69,7 +70,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   bool WebContentMatchesApp(const extensions::Extension* extension,
                             const URLPattern& refocus_pattern,
                             content::WebContents* web_contents,
-                            bool is_app);
+                            Browser* browser);
 
   // Activate the browser with the given |content| and show the associated tab.
   void ActivateContent(content::WebContents* content);
