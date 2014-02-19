@@ -117,6 +117,7 @@ class RunCommandTestCase(cros_test_lib.MockTestCase):
   def setUp(self):
     self.rc = self.StartPatcher(RunCommandMock())
     self.rc.SetDefaultCmdResult()
+    self.assertCommandCalled = self.rc.assertCommandCalled
     self.assertCommandContains = self.rc.assertCommandContains
 
 

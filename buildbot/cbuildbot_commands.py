@@ -612,8 +612,9 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return tar_files
 
 
-def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
-                   priority, timeout_mins, debug):
+def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
+                   wait_for_results=None, priority=None, timeout_mins=None,
+                   debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -636,13 +637,27 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
          'RunSuite',
          '--build', build,
          '--suite_name', suite,
-         '--board', board,
-         '--pool', pool,
-         '--num', str(num),
-         '--file_bugs', str(file_bugs),
-         '--no_wait', str(not wait_for_results),
-         '--priority', priority,
-         '--timeout_mins', str(timeout_mins)]
+         '--board', board]
+
+  # Add optional arguments to command, if present.
+  if pool is not None:
+    cmd += ['--pool', pool]
+
+  if num is not None:
+    cmd += ['--num', str(num)]
+
+  if file_bugs is not None:
+    cmd += ['--file_bugs', str(file_bugs)]
+
+  if wait_for_results is not None:
+    cmd += ['--no_wait', str(not wait_for_results)]
+
+  if priority is not None:
+    cmd += ['--priority', priority]
+
+  if timeout_mins is not None:
+    cmd += ['--timeout_mins', str(timeout_mins)]
+
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
                         cros_build_lib.CmdToStr(cmd))

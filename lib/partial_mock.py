@@ -114,7 +114,8 @@ def _RecursiveCompare(lhs, rhs):
   """Compare parameter specs recursively.
 
   Args:
-    lhs, rhs: Function parameter specs to compare.
+    lhs: Left Hand Side parameter spec to compare.
+    rhs: Right Hand Side parameter spec to compare.
     equality: In the case of comparing Comparator objects, True means we call
       the Equals() function.  We call Match() if set to False (default).
   """
@@ -248,7 +249,8 @@ class MockedCallResults(object):
     """Set the default result for an unmatched partial mock call.
 
     Args:
-      result, side_effect: See AddResultsForParams.
+      result: See AddResultsForParams.
+      side_effect: See AddResultsForParams.
     """
     self.default_result, self.default_side_effect = result, side_effect
 
@@ -476,8 +478,11 @@ class PartialCmdMock(PartialMock):
     """Specify the default command result if no command is matched.
 
     Args:
-      returncode, output, error: See AddCmdResult.
+      returncode: See AddCmdResult.
+      output: See AddCmdResult.
+      error: See AddCmdResult.
       side_effect: See MockedCallResults.AddResultForParams
+      mock_attr: Which attributes's mock is being referenced.
     """
     result = self.CmdResult(returncode, output, error)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
@@ -495,6 +500,7 @@ class PartialCmdMock(PartialMock):
       kwargs: Keyword arguments that the function needs to be invoked with.
       strict: Defaults to False.  See MockedCallResults.AddResultForParams.
       side_effect: See MockedCallResults.AddResultForParams
+      mock_attr: Which attributes's mock is being referenced.
     """
     result = self.CmdResult(returncode, output, error)
     self._results[mock_attr].AddResultForParams(
@@ -509,6 +515,7 @@ class PartialCmdMock(PartialMock):
       cmd_arg_index: The index of the command list in the positional call_args.
         Defaults to the last positional argument.
       kwargs: Set of expected keyword arguments.
+      mock_attr: Which attributes's mock is being referenced.
     """
     for call_args, call_kwargs in self.patched[mock_attr].call_args_list:
       if (ListContains(args, call_args[cmd_arg_index]) and
@@ -529,6 +536,7 @@ class PartialCmdMock(PartialMock):
       expected: If False, instead verify that none of the RunCommand calls
           contained the specified arguments.
       **kwargs: Set of expected keyword arguments.
+      mock_attr: Which attributes's mock is being referenced.
     """
     if bool(expected) != self.CommandContains(args, **kwargs):
       if expected:
@@ -538,6 +546,28 @@ class PartialCmdMock(PartialMock):
       patched = self.patched[mock_attr]
       cmds = '\n'.join(repr(x) for x in patched.call_args_list)
       raise AssertionError(msg % (mock.call(args, **kwargs), cmds))
+
+  @CheckAttr
+  def assertCommandCalled(self, args=(), mock_attr=None, **kwargs):
+    """Assert that RunCommand was called with the specified args.
+
+    This verifies that at least one of the RunCommand calls exactly
+    matches the specified command line and misc-arguments.
+
+    Args:
+      args: Set of expected command-line arguments.
+      mock_attr: Which attributes's mock is being referenced.
+      **kwargs: Set of expected keyword arguments.
+    """
+    call = mock.call(args, **kwargs)
+    patched = self.patched[mock_attr]
+
+    for icall in patched.call_args_list:
+      if call == icall:
+        return
+
+    cmds = '\n'.join(repr(x) for x in patched.call_args_list)
+    raise AssertionError('Expected to find %r in any of:\n%s' % (call, cmds))
 
   @property
   @CheckAttr

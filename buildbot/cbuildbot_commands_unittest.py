@@ -156,6 +156,49 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.inst.Ninja(self.BOARD)
     self.assertCommandContains([self.BOARD], cwd=self.CWD)
 
+class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Test commands related to HWLab tests."""
+
+  def setUp(self):
+    self._build = 'test-build'
+    self._board = 'test-board'
+    self._suite = 'test-suite'
+    self._pool = 'test-pool'
+    self._num = 42
+    self._file_bugs = True
+    self._wait_for_results = False
+    self._priority = 'test-priority'
+    self._timeout_mins = 23
+
+  def testRunHWTestSuiteMinimal(self):
+    """Test RunHWTestSuite without optional arguments."""
+    commands.RunHWTestSuite(self._build, self._suite, self._board, debug=False)
+    self.assertCommandCalled([
+        commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
+        'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
+        '--board', 'test-board'
+    ], error_code_ok=True)
+
+  def testRunHWTestSuiteMaximal(self):
+    """Test RunHWTestSuite with all arguments."""
+    commands.RunHWTestSuite(self._build, self._suite, self._board,
+                            self._pool, self._num, self._file_bugs,
+                            self._wait_for_results, self._priority,
+                            self._timeout_mins, debug=False)
+    self.assertCommandCalled([
+        commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
+        'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
+        '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
+        '--file_bugs', 'True', '--no_wait', 'True',
+        '--priority', 'test-priority', '--timeout_mins', '23'
+    ], error_code_ok=True)
+
+  def testRunHWTestSuiteFailure(self):
+    """Test RunHWTestSuite when an error is returned."""
+    self.rc.SetDefaultCmdResult(returncode=1)
+    self.assertRaises(commands.TestFailure, commands.RunHWTestSuite,
+                      self._build, self._suite, self._board, debug=False)
+
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test general cbuildbot command methods."""
