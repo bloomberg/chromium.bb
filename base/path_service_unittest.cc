@@ -100,8 +100,9 @@ typedef PlatformTest PathServiceTest;
 TEST_F(PathServiceTest, Get) {
   for (int key = base::PATH_START + 1; key < base::PATH_END; ++key) {
 #if defined(OS_ANDROID)
-    if (key == base::FILE_MODULE || key == base::DIR_USER_DESKTOP)
-      continue;  // Android doesn't implement FILE_MODULE and DIR_USER_DESKTOP;
+    if (key == base::FILE_MODULE || key == base::DIR_USER_DESKTOP ||
+        key == base::DIR_HOME)
+      continue;  // Android doesn't implement these.
 #elif defined(OS_IOS)
     if (key == base::DIR_USER_DESKTOP)
       continue;  // iOS doesn't implement DIR_USER_DESKTOP;

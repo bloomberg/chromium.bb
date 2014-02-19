@@ -481,7 +481,7 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
   if (SysInfo::IsRunningOnChromeOS())
@@ -495,9 +495,12 @@ FilePath GetHomeDir() {
 #if defined(OS_ANDROID)
   DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
 #elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
-  // g_get_home_dir calls getpwent, which can fall through to LDAP calls.
-  ThreadRestrictions::AssertIOAllowed();
-
+  // g_get_home_dir calls getpwent, which can fall through to LDAP calls so
+  // this may do I/O. However, it should be rare that $HOME is not defined and
+  // this is typically called from the path service which has no threading
+  // restrictions. The path service will cache the result which limits the
+  // badness of blocking on I/O. As a result, we don't have a thread
+  // restriction here.
   home_dir = g_get_home_dir();
   if (home_dir && home_dir[0])
     return FilePath(home_dir);

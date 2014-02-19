@@ -221,16 +221,12 @@ BASE_EXPORT bool GetTempDir(FilePath* path);
 // Only useful on POSIX; redirects to GetTempDir() on Windows.
 BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
 
-#if defined(OS_POSIX)
-// Get the home directory.  This is more complicated than just getenv("HOME")
+// Get the home directory. This is more complicated than just getenv("HOME")
 // as it knows to fall back on getpwent() etc.
 //
-// This function is not currently implemented on Windows or Mac because we
-// don't use it. Generally you would use one of PathService's APP_DATA
-// directories on those platforms. If we need it, this could be implemented
-// there to return the appropriate directory.
+// You should not generally call this directly. Instead use DIR_HOME with the
+// path service which will use this function but cache the value.
 BASE_EXPORT FilePath GetHomeDir();
-#endif  // OS_POSIX
 
 // Creates a temporary file. The full path is placed in |path|, and the
 // function returns true if was successful in creating the file. The file will

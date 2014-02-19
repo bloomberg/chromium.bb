@@ -47,9 +47,6 @@ bool PathProviderAndroid(int key, FilePath* result) {
       return base::android::GetCacheDirectory(result);
     case base::DIR_ANDROID_APP_DATA:
       return base::android::GetDataDirectory(result);
-    case base::DIR_HOME:
-      *result = GetHomeDir();
-      return true;
     case base::DIR_ANDROID_EXTERNAL_STORAGE:
       return base::android::GetExternalStorageDirectory(result);
     default:

@@ -109,9 +109,6 @@ bool PathProviderPosix(int key, FilePath* result) {
       *result = cache_dir;
       return true;
     }
-    case base::DIR_HOME:
-      *result = GetHomeDir();
-      return true;
   }
   return false;
 }

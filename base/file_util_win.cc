@@ -258,6 +258,23 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
   return GetTempDir(path);
 }
 
+FilePath GetHomeDir() {
+  char16 result[MAX_PATH];
+  if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT,
+                                result)) &&
+      result[0]) {
+    return FilePath(result);
+  }
+
+  // Fall back to the temporary directory on failure.
+  FilePath temp;
+  if (GetTempDir(&temp))
+    return temp;
+
+  // Last resort.
+  return FilePath(L"C:\\");
+}
+
 bool CreateTemporaryFile(FilePath* path) {
   ThreadRestrictions::AssertIOAllowed();
 

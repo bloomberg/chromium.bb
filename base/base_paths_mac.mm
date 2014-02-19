@@ -106,9 +106,6 @@ bool PathProviderMac(int key, base::FilePath* result) {
 #endif
     case base::DIR_CACHE:
       return base::mac::GetUserDirectory(NSCachesDirectory, result);
-    case base::DIR_HOME:
-      *result = base::mac::NSStringToFilePath(NSHomeDirectory());
-      return true;
     default:
       return false;
   }

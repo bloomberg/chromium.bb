@@ -1691,6 +1691,17 @@ TEST_F(FileUtilTest, GetShmemTempDirTest) {
   EXPECT_TRUE(DirectoryExists(dir));
 }
 
+TEST_F(FileUtilTest, GetHomeDirTest) {
+#if !defined(OS_ANDROID)  // Not implemented on Android.
+  // We don't actually know what the home directory is supposed to be without
+  // calling some OS functions which would just duplicate the implementation.
+  // So here we just test that it returns something "reasonable".
+  FilePath home = GetHomeDir();
+  ASSERT_FALSE(home.empty());
+  ASSERT_TRUE(home.IsAbsolute());
+#endif
+}
+
 TEST_F(FileUtilTest, CreateDirectoryTest) {
   FilePath test_root =
       temp_dir_.path().Append(FILE_PATH_LITERAL("create_directory_test"));

@@ -32,6 +32,23 @@ bool GetTempDir(base::FilePath* path) {
   return true;
 }
 
+FilePath GetHomeDir() {
+  NSString* tmp = NSHomeDirectory();
+  if (tmp != nil) {
+    FilePath mac_home_dir = base::mac::NSStringToFilePath(tmp);
+    if (!mac_home_dir.empty())
+      return mac_home_dir;
+  }
+
+  // Fall back on temp dir if no home directory is defined.
+  FilePath rv;
+  if (GetTempDir(&rv))
+    return rv;
+
+  // Last resort.
+  return FilePath("/tmp");
+}
+
 bool GetShmemTempDir(bool executable, base::FilePath* path) {
   return GetTempDir(path);
 }

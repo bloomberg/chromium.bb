@@ -13,35 +13,34 @@ namespace base {
 bool PathProvider(int key, FilePath* result) {
   // NOTE: DIR_CURRENT is a special case in PathService::Get
 
-  FilePath cur;
   switch (key) {
     case DIR_EXE:
-      PathService::Get(FILE_EXE, &cur);
-      cur = cur.DirName();
-      break;
+      PathService::Get(FILE_EXE, result);
+      *result = result->DirName();
+      return true;
     case DIR_MODULE:
-      PathService::Get(FILE_MODULE, &cur);
-      cur = cur.DirName();
-      break;
+      PathService::Get(FILE_MODULE, result);
+      *result = result->DirName();
+      return true;
     case DIR_TEMP:
-      if (!base::GetTempDir(&cur))
+      if (!GetTempDir(result))
         return false;
-      break;
+      return true;
+    case base::DIR_HOME:
+      *result = GetHomeDir();
+      return true;
     case DIR_TEST_DATA:
-      if (!PathService::Get(DIR_SOURCE_ROOT, &cur))
+      if (!PathService::Get(DIR_SOURCE_ROOT, result))
         return false;
-      cur = cur.Append(FILE_PATH_LITERAL("base"));
-      cur = cur.Append(FILE_PATH_LITERAL("test"));
-      cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!base::PathExists(cur))  // We don't want to create this.
+      *result = result->Append(FILE_PATH_LITERAL("base"));
+      *result = result->Append(FILE_PATH_LITERAL("test"));
+      *result = result->Append(FILE_PATH_LITERAL("data"));
+      if (!PathExists(*result))  // We don't want to create this.
         return false;
-      break;
+      return true;
     default:
       return false;
   }
-
-  *result = cur;
-  return true;
 }
 
 }  // namespace base

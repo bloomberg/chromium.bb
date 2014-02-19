@@ -57,13 +57,7 @@ void AddSavedEntry(const base::FilePath& path_to_save,
       extension->id(), "magic id", path_to_save, is_directory);
 }
 
-#if defined(OS_WIN) || defined(OS_POSIX)
-#if defined(OS_WIN)
-  const int kGraylistedPath = base::DIR_PROFILE;
-#elif defined(OS_POSIX)
-  const int kGraylistedPath = base::DIR_HOME;
-#endif
-#endif
+const int kGraylistedPath = base::DIR_HOME;
 
 }  // namespace
 
@@ -157,12 +151,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
 
 #if defined(OS_WIN) || defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
-#if defined(OS_WIN)
-  int override = base::DIR_PROFILE;
-#elif defined(OS_POSIX)
-  int override = base::DIR_HOME;
-#endif
-  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(override,
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
       test_root_folder_, false));
 
   base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
