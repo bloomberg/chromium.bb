@@ -403,7 +403,7 @@ do { \
     EXPECT_EQ((expected).y(), (actual).y()); \
 } while (false)
 
-TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRect)
+TEST_F(WebViewTest, PinchVirtualViewportVisibleContentRect)
 {
     using WebCore::IntRect;
     using WebCore::ScrollableArea;
@@ -432,7 +432,7 @@ TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRect)
     EXPECT_RECT_EQ(IntRect(50, 50, 35, 35), view->visibleContentRect(ScrollableArea::ExcludeScrollbars));
 }
 
-TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRectWithScrollbars)
+TEST_F(WebViewTest, PinchVirtualViewportVisibleContentRectWithScrollbars)
 {
     using WebCore::IntRect;
     using WebCore::ScrollableArea;
@@ -477,7 +477,7 @@ TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRectWithScrollbar
     EXPECT_RECT_EQ(IntRect(115, 115, 35, 35), view->visibleContentRect(ScrollableArea::ExcludeScrollbars));
 }
 
-TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRectAtScale)
+TEST_F(WebViewTest, PinchVirtualViewportVisibleContentRectAtScale)
 {
     using WebCore::IntRect;
     using WebCore::ScrollableArea;
@@ -505,7 +505,7 @@ TEST_F(WebViewTest, DISABLED_PinchVirtualViewportVisibleContentRectAtScale)
     EXPECT_RECT_EQ(IntRect(115, 115, 35, 35), view->visibleContentRectAtScale(1.0f, ScrollableArea::ExcludeScrollbars));
 }
 
-TEST_F(WebViewTest, DISABLED_PinchVirtualViewportMaxScrollOffset)
+TEST_F(WebViewTest, PinchVirtualViewportMaxScrollOffset)
 {
     using WebCore::IntPoint;
     using WebCore::ScrollableArea;
