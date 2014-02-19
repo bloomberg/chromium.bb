@@ -1161,7 +1161,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
   PrefService* local_state = g_browser_process->local_state();
   const base::ListValue* prefs_regular_users =
       local_state->GetList(kRegularUsers);
-  const base::ListValue* prefs_public_accounts =
+  const base::ListValue* prefs_public_sessions =
       local_state->GetList(kPublicAccounts);
   const base::DictionaryValue* prefs_display_names =
       local_state->GetDictionary(kUserDisplayName);
@@ -1170,10 +1170,21 @@ void UserManagerImpl::EnsureUsersLoaded() {
   const base::DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(kUserDisplayEmail);
 
+  // Load public sessions first.
+  std::vector<std::string> public_sessions;
+  std::set<std::string> public_sessions_set;
+  ParseUserList(*prefs_public_sessions, std::set<std::string>(),
+                &public_sessions, &public_sessions_set);
+  for (std::vector<std::string>::const_iterator it = public_sessions.begin();
+       it != public_sessions.end(); ++it) {
+    users_.push_back(User::CreatePublicAccountUser(*it));
+    UpdatePublicAccountDisplayName(*it);
+  }
+
   // Load regular users and locally managed users.
   std::vector<std::string> regular_users;
   std::set<std::string> regular_users_set;
-  ParseUserList(*prefs_regular_users, std::set<std::string>(),
+  ParseUserList(*prefs_regular_users, public_sessions_set,
                 &regular_users, &regular_users_set);
   for (std::vector<std::string>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
@@ -1205,16 +1216,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
     }
   }
 
-  // Load public accounts.
-  std::vector<std::string> public_accounts;
-  std::set<std::string> public_accounts_set;
-  ParseUserList(*prefs_public_accounts, regular_users_set,
-                &public_accounts, &public_accounts_set);
-  for (std::vector<std::string>::const_iterator it = public_accounts.begin();
-       it != public_accounts.end(); ++it) {
-    users_.push_back(User::CreatePublicAccountUser(*it));
-    UpdatePublicAccountDisplayName(*it);
-  }
   user_loading_stage_ = STAGE_LOADED;
 
   for (UserList::iterator ui = users_.begin(), ue = users_.end();
