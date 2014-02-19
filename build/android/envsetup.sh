@@ -66,9 +66,6 @@ the one you want."
 fi
 
 if [[ "${ANDROID_SDK_BUILD}" -eq 1 ]]; then
-  if [[ -z "${TARGET_ARCH}" ]]; then
-    return 1
-  fi
   sdk_build_init
 # Sets up environment for building Chromium for Android with source. Expects
 # android environment setup and lunch.

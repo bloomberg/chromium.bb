@@ -39,24 +39,6 @@ common_vars_defines() {
   if [[ -d $GOMA_DIR ]]; then
     DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
   fi
-
-  # The following defines will affect ARM code generation of both C/C++ compiler
-  # and V8 mksnapshot.
-  case "${TARGET_ARCH}" in
-    "arm")
-      DEFINES+=" target_arch=arm"
-      ;;
-    "x86")
-      DEFINES+=" target_arch=ia32"
-      ;;
-    "mips")
-      DEFINES+=" target_arch=mipsel"
-      ;;
-    *)
-      echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2
-      print_usage
-      return 1
-  esac
 }
 
 
@@ -64,8 +46,7 @@ common_vars_defines() {
 # Prints out help message on usage.
 ################################################################################
 print_usage() {
-  echo "usage: ${0##*/} [--target-arch=value] [--help]" >& 2
-  echo "--target-arch=value     target CPU architecture (arm=default, x86)" >& 2
+  echo "usage: ${0##*/} [--help]" >& 2
   echo "--help                  this help" >& 2
 }
 
@@ -76,11 +57,9 @@ process_options() {
   while [[ -n $1 ]]; do
     case "$1" in
       --target-arch=*)
-        target_arch="$(echo "$1" | sed 's/^[^=]*=//')"
-        ;;
-      --help)
-        print_usage
-        return 1
+        echo "WARNING: --target-arch is ignored and will be an error soon."
+        echo "Pass -Dtarget_arch=foo to gyp instead."
+        echo "(x86 is spelled ia32 in gyp, mips becomes mipsel, arm stays arm)"
         ;;
       *)
         # Ignore other command line options
@@ -89,9 +68,6 @@ process_options() {
     esac
     shift
   done
-
-  # Sets TARGET_ARCH. Defaults to arm if not specified.
-  TARGET_ARCH=${target_arch:-arm}
 }
 
 ################################################################################

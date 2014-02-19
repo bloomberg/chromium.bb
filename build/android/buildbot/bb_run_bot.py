@@ -51,8 +51,6 @@ def GetEnvironment(host_obj, testing, extra_env_vars=None):
   if extra_env_vars:
     init_env.update(extra_env_vars)
   envsetup_cmd = '. build/android/envsetup.sh'
-  if host_obj.target_arch:
-    envsetup_cmd += ' --target-arch=%s' % host_obj.target_arch
   if testing:
     # Skip envsetup to avoid presubmit dependence on android deps.
     print 'Testing mode - skipping "%s"' % envsetup_cmd
@@ -71,6 +69,10 @@ def GetEnvironment(host_obj, testing, extra_env_vars=None):
   env = json.loads(json_env)
   env['GYP_DEFINES'] = env.get('GYP_DEFINES', '') + \
       ' fastbuild=1 use_goma=1 gomadir=%s' % bb_utils.GOMA_DIR
+  if host_obj.target_arch:
+    gyp_target_arch = { 'mips': 'mipsel', 'x86': 'ia32' }.get(
+        host_obj.target_arch, host_obj.target_arch)
+    env['GYP_DEFINES'] += ' target_arch=%s' % gyp_target_arch
   extra_gyp = host_obj.extra_gyp_defines
   if extra_gyp:
     env['GYP_DEFINES'] += ' %s' % extra_gyp

@@ -177,6 +177,11 @@ def GetArgsStringForGN(supplemental_files):
       supplemental_files += [include_gypi]
 
   vars_dict = GetGypVarsForGN(supplemental_files)
+  # It's not possible to let set a default value for cpu_arch in GN, so do it
+  # here for now (http://crbug.com/344767).
+  if vars_dict.get('OS') == 'android' and not 'target_arch' in vars_dict:
+    vars_dict['target_arch'] = 'arm'
+
   gn_args = ''
 
   # Note: These are the additional flags passed to various builds by builders

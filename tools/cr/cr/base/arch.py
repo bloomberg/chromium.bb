@@ -29,14 +29,14 @@ class Arch(cr.Plugin, cr.Plugin.Type):
 class IA32Arch(Arch):
 
   ACTIVE = cr.Config.From(
-      CR_ENVSETUP_ARCH='x86',
+      CR_ENVSETUP_ARCH='ia32',
   )
 
 
 class Mips32Arch(Arch):
 
   ACTIVE = cr.Config.From(
-      CR_ENVSETUP_ARCH='mips',
+      CR_ENVSETUP_ARCH='mipsel',
   )
 
   @property

@@ -131,9 +131,6 @@
         'branding%': '<(branding)',
         'host_arch%': '<(host_arch)',
 
-        # Default architecture we're building for is the architecture we're
-        # building on, and possibly sub-architecture (for iOS builds).
-        'target_arch%': '<(host_arch)',
         'target_subarch%': '',
 
         # This is set when building the Android WebView inside the Android
@@ -223,6 +220,13 @@
           # of skia has been fixed for simulator. http://crbug.com/342377
           ['OS=="ios"', {
             'target_subarch%': 'arm32',
+          }],
+          ['OS=="android"', {
+            'target_arch%': 'arm',
+          }, {
+            # Default architecture we're building for is the architecture we're
+            # building on, and possibly sub-architecture (for iOS builds).
+            'target_arch%': '<(host_arch)',
           }],
         ],
       },
@@ -1384,16 +1388,16 @@
         # Location of Android NDK.
         'variables': {
           'variables': {
-             # Unfortuantely we have to use absolute paths to the SDK/NDK beause
-             # they're passed to ant which uses a different relative path from
-             # gyp.
-             'android_ndk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
-             'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
-             'android_host_arch%': '<!(uname -m)',
-             # Android API-level of the SDK used for compilation.
-             'android_sdk_version%': '19',
-             'android_sdk_build_tools_version%': '19.0.0',
-             'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
+            # Unfortunately we have to use absolute paths to the SDK/NDK because
+            # they're passed to ant which uses a different relative path from
+            # gyp.
+            'android_ndk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
+            'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
+            'android_host_arch%': '<!(uname -m)',
+            # Android API-level of the SDK used for compilation.
+            'android_sdk_version%': '19',
+            'android_sdk_build_tools_version%': '19.0.0',
+            'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',

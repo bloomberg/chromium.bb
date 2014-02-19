@@ -59,8 +59,10 @@ class AndroidPlatform(cr.Platform):
       if not self._env_ready:
         # See what the env would be without env setup
         before = context.exported
-        # Run env setup and capture/parse it's output
-        envsetup = 'source {CR_ENVSETUP} --target-arch={CR_ENVSETUP_ARCH}'
+        before['GYP_DEFINES'] = before.get(
+            'GYP_DEFINES', '') + ' target_arch={CR_ENVSETUP_ARCH}'
+        # Run env setup and capture/parse its output
+        envsetup = 'source {CR_ENVSETUP}'
         output = cr.Host.CaptureShell(context, envsetup + ' > /dev/null && env')
         env_setup = cr.Config('envsetup', literal=True, export=True)
         for line in output.split('\n'):
