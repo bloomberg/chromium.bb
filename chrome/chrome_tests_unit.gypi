@@ -1699,7 +1699,7 @@
         'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
-        'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
+        'browser/ui/views/bookmarks/bookmark_context_menu_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
