@@ -327,6 +327,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         else
             m_resource->setResponse(resourceResponse);
         if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
+            m_host->didReceiveResponse(m_resource, resourceResponse);
             cancel();
             return;
         }
