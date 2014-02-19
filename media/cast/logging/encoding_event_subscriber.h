@@ -46,13 +46,18 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
       OVERRIDE;
 
-  // Assigns frame events received so far to |frame_events| and clears them
-  // from this object.
-  void GetFrameEventsAndReset(FrameEventMap* frame_events);
-
-  // Assigns packet events received so far to |packet_events| and clears them
-  // from this object.
-  void GetPacketEventsAndReset(PacketEventMap* packet_events);
+  // Assigns frame events and packet events received so far to |frame_events|
+  // and clears them |packet_events| respectively, assigns the first seen RTP
+  // timestamp (which is used as a reference for all event entries) to
+  // |first_rtp_timestamp|, and reset this object's internal states.
+  // All RTP timestamp values returned in the maps are relative to
+  // |first_rtp_timestamp|, i.e. suppose |first_rtp_timestamp| is X,
+  // then the first event will be recorded with a relative
+  // RTP timestamp value of 0. If the next event has original RTP timestamp
+  // X+20, it will be recorded with a relative RTP timestamp of 20.
+  void GetEventsAndReset(FrameEventMap* frame_events,
+                         PacketEventMap* packet_events,
+                         RtpTimestamp* first_rtp_timestamp);
 
  private:
   bool ShouldProcessEvent(CastLoggingEvent event);
@@ -63,6 +68,13 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   // Removes oldest entry from |packet_event_map_| (ordered by RTP timestamp).
   void TruncatePacketEventMapIfNeeded();
 
+  // Returns the difference between |rtp_timestamp| and |first_rtp_timestamp_|.
+  // Sets |first_rtp_timestamp_| if it is not already set.
+  RtpTimestamp GetRelativeRtpTimestamp(RtpTimestamp rtp_timestamp);
+
+  // Clears the maps and first RTP timestamp seen.
+  void Reset();
+
   const EventMediaType event_media_type_;
   const size_t max_frames_;
 
@@ -71,6 +83,12 @@ class EncodingEventSubscriber : public RawEventSubscriber {
 
   // All functions must be called on the main thread.
   base::ThreadChecker thread_checker_;
+
+  // Set to true on first event encountered after a |Reset()|.
+  bool seen_first_rtp_timestamp_;
+
+  // Set to RTP timestamp of first event encountered after a |Reset()|.
+  RtpTimestamp first_rtp_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(EncodingEventSubscriber);
 };
