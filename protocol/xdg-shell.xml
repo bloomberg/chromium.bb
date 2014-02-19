@@ -40,8 +40,10 @@
 
     <enum name="version">
       <description summary="latest protocol version">
-	Use this enum to check the protocol version, and it will be updated
-	automatically.
+	The 'current' member of this enum gives the version of the
+	protocol.  Implementations can compare this to the version
+	they implement using static_assert to ensure the protocol and
+	implementation versions match.
       </description>
       <entry name="current" value="3" summary="Always the latest version"/>
     </enum>
@@ -49,10 +51,11 @@
 
     <request name="use_unstable_version">
       <description summary="enable use of this unstable version">
-	Use this request in order to enable use of this interface.
-
-	Understand and agree that one is using an unstable interface,
-	that will likely change in the future, breaking the API.
+	Negotiate the unstable version of the interface.  This
+	mechanism is in place to ensure client and server agree on the
+	unstable versions of the protocol that they speak or exit
+	cleanly if they don't agree.  This request will go away once
+	the xdg-shell protocol is stable.
       </description>
       <arg name="version" type="int"/>
     </request>
