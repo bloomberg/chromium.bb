@@ -179,24 +179,19 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (!data)
     data = CreatePerCompositorData(compositor);
 
-  bool force_software_renderer = false;
-#if defined(OS_WIN)
+  bool create_software_renderer = software_fallback;
+#if defined(OS_CHROMEOS)
+  // Software fallback does not happen on Chrome OS.
+  create_software_renderer = false;
+#elif defined(OS_WIN)
   if (::GetProp(compositor->widget(), kForceSoftwareCompositor)) {
-    force_software_renderer = reinterpret_cast<bool>(
-        ::RemoveProp(compositor->widget(), kForceSoftwareCompositor));
+    if (::RemoveProp(compositor->widget(), kForceSoftwareCompositor))
+      create_software_renderer = true;
   }
 #endif
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
-
-  // Software fallback does not happen on Chrome OS.
-#if defined(OS_CHROMEOS)
-  software_fallback = false;
-#endif
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
-      !force_software_renderer && !software_fallback) {
+  if (!create_software_renderer) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
         "Compositor");
