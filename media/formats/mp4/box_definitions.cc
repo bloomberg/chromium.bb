@@ -801,7 +801,6 @@ bool IndependentAndDisposableSamples::Parse(BoxReader* reader) {
   for (int i = 0; i < sample_count; ++i) {
     uint8 sample_info;
     RCHECK(reader->Read1(&sample_info));
-    RCHECK((sample_info >> 6) == 0);  // reserved.
 
     sample_depends_on_[i] =
         static_cast<SampleDependsOn>((sample_info >> 4) & 0x3);
