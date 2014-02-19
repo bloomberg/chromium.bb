@@ -98,26 +98,17 @@ process_options() {
 # Initializes environment variables for NDK/SDK build.
 ################################################################################
 sdk_build_init() {
-
   # Allow the caller to override a few environment variables. If any of them is
   # unset, we default to a sane value that's known to work. This allows for
   # experimentation with a custom SDK.
-  local sdk_defines=""
   if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
     export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
   fi
   if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
     export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
-  else
-    sdk_defines+=" android_sdk_root=${ANDROID_SDK_ROOT}"
-  fi
-  if [[ -z "${ANDROID_SDK_BUILD_TOOLS_VERSION}" ]]; then
-    export ANDROID_SDK_BUILD_TOOLS_VERSION=19.0.0
   fi
 
   common_vars_defines
-
-  DEFINES+="${sdk_defines}"
 
   export GYP_DEFINES="${DEFINES}"
 
@@ -129,10 +120,6 @@ sdk_build_init() {
     echo "Try . build/android/envsetup.sh instead." >& 2
     return 1
   fi
-
-  # Directory containing build-tools: aapt, aidl, dx
-  export ANDROID_SDK_TOOLS="${ANDROID_SDK_ROOT}/build-tools/\
-${ANDROID_SDK_BUILD_TOOLS_VERSION}"
 }
 
 ################################################################################

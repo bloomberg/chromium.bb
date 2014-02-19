@@ -1392,19 +1392,19 @@
              'android_host_arch%': '<!(uname -m)',
              # Android API-level of the SDK used for compilation.
              'android_sdk_version%': '19',
-             # Android SDK build tools (e.g. dx, aapt, aidl)
-             'android_sdk_tools%': '<!(/bin/echo -n ${ANDROID_SDK_TOOLS})',
+             'android_sdk_build_tools_version%': '19.0.0',
              'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
-          'android_sdk_tools%': '<(android_sdk_tools)',
           'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
           'host_os%': '<(host_os)',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
+          # Android SDK build tools (e.g. dx, aapt, aidl)
+          'android_sdk_tools%': '<(android_sdk_root)/build-tools/<(android_sdk_build_tools_version)',
 
           # Android API level 14 is ICS (Android 4.0) which is the minimum
           # platform requirement for Chrome on Android, we use it for native
