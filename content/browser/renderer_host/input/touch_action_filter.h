@@ -44,6 +44,10 @@ private:
   // Whether GesturePinch events should be discarded due to touch-action.
   bool drop_pinch_gesture_events_;
 
+  // Whether a tap ending event in this sequence should be discarded because a
+  // previous GestureTapUnconfirmed event was turned into a GestureTap.
+  bool drop_current_tap_ending_event_;
+
   // What touch actions are currently permitted.
   content::TouchAction allowed_touch_action_;
 

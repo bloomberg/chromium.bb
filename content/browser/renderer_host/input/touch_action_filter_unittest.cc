@@ -434,4 +434,99 @@ TEST(TouchActionFilterTest, Pinch) {
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 }
 
+TEST(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
+  TouchActionFilter filter;
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapCancel, WebGestureEvent::Touchscreen);
+  WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureDoubleTap, WebGestureEvent::Touchscreen);
+
+  // Double tap is allowed with touch action auto.
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap));
+  EXPECT_EQ(unconfirmed_tap.type, WebInputEvent::GestureTapUnconfirmed);
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_cancel));
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&double_tap));
+}
+
+TEST(TouchActionFilterTest, DoubleTap) {
+  TouchActionFilter filter;
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapCancel, WebGestureEvent::Touchscreen);
+  WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureDoubleTap, WebGestureEvent::Touchscreen);
+
+  // Double tap is disabled with any touch action other than auto.
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap));
+  EXPECT_EQ(unconfirmed_tap.type, WebInputEvent::GestureTap);
+  EXPECT_TRUE(filter.FilterGestureEvent(&tap_cancel));
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&double_tap));
+  EXPECT_EQ(double_tap.type, WebInputEvent::GestureTapCancel);
+}
+
+TEST(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
+  TouchActionFilter filter;
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap2 = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+
+  // Single tap is allowed with touch action auto.
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap1));
+  EXPECT_EQ(unconfirmed_tap1.type, WebInputEvent::GestureTapUnconfirmed);
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap));
+
+  // Repeat to ensure no state is accidentally preserved.
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap2));
+  EXPECT_EQ(unconfirmed_tap2.type, WebInputEvent::GestureTapUnconfirmed);
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap));
+}
+
+TEST(TouchActionFilterTest, SingleTap) {
+  TouchActionFilter filter;
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapDown, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap1 = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent unconfirmed_tap2 = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTapUnconfirmed, WebGestureEvent::Touchscreen);
+  WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+
+  // With touch action other than auto, tap unconfirmed is turned into tap.
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap1));
+  EXPECT_EQ(unconfirmed_tap1.type, WebInputEvent::GestureTap);
+  EXPECT_TRUE(filter.FilterGestureEvent(&tap));
+
+  // Repeat to ensure no state is accidentally preserved.
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
+  EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap2));
+  EXPECT_EQ(unconfirmed_tap2.type, WebInputEvent::GestureTap);
+  EXPECT_TRUE(filter.FilterGestureEvent(&tap));
+}
+
 }  // namespace content
