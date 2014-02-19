@@ -60,7 +60,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      * the autofill.
      */
     public interface AutofillLogger {
-        public void logSuggestionSelected(String fieldName);
+        public void logSuggestionSelected(AutofillSuggestion autofillSuggestion);
     }
 
     private static AutofillLogger sAutofillLogger = null;
@@ -237,7 +237,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         int listIndex = mSuggestions.indexOf(selectedSuggestion);
         assert listIndex > -1;
         if (sAutofillLogger != null) {
-            sAutofillLogger.logSuggestionSelected(selectedSuggestion.mLabel);
+            sAutofillLogger.logSuggestionSelected(selectedSuggestion);
         }
         mAutofillCallback.suggestionSelected(listIndex);
     }

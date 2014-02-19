@@ -23,4 +23,16 @@ public class AutofillSuggestion {
         mSublabel = label;
         mUniqueId = uniqueId;
     }
+
+    public String getLabel() {
+        return mLabel;
+    }
+
+    public String getSublabel() {
+        return mSublabel;
+    }
+
+    public int getUniqueId() {
+        return mUniqueId;
+    }
 }
