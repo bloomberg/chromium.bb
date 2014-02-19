@@ -6,28 +6,28 @@
     </output>
     <output filename="app_locale_settings_am.pak" type="data_package" lang="am" />
     <output filename="app_locale_settings_ar.pak" type="data_package" lang="ar" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_ast.pak" type="data_package" lang="ast" />
     </if>
     <output filename="app_locale_settings_bg.pak" type="data_package" lang="bg" />
     <output filename="app_locale_settings_bn.pak" type="data_package" lang="bn" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_bs.pak" type="data_package" lang="bs" />
     </if>
     <output filename="app_locale_settings_ca.pak" type="data_package" lang="ca" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
     </if>
     <output filename="app_locale_settings_cs.pak" type="data_package" lang="cs" />
     <output filename="app_locale_settings_da.pak" type="data_package" lang="da" />
     <output filename="app_locale_settings_de.pak" type="data_package" lang="de" />
     <output filename="app_locale_settings_el.pak" type="data_package" lang="el" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_en-AU.pak" type="data_package" lang="en-AU" />
     </if>
     <output filename="app_locale_settings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="app_locale_settings_en-US.pak" type="data_package" lang="en" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="app_locale_settings_es.pak" type="data_package" lang="es" />
@@ -39,7 +39,7 @@
       <output filename="app_locale_settings_es-419.pak" type="data_package" lang="es-419" />
     </if>
     <output filename="app_locale_settings_et.pak" type="data_package" lang="et" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="app_locale_settings_fa.pak" type="data_package" lang="fa" />
@@ -47,7 +47,7 @@
     <output filename="app_locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="app_locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="app_locale_settings_fr.pak" type="data_package" lang="fr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_gl.pak" type="data_package" lang="gl" />
     </if>
     <output filename="app_locale_settings_gu.pak" type="data_package" lang="gu" />
@@ -55,19 +55,19 @@
     <output filename="app_locale_settings_hi.pak" type="data_package" lang="hi" />
     <output filename="app_locale_settings_hr.pak" type="data_package" lang="hr" />
     <output filename="app_locale_settings_hu.pak" type="data_package" lang="hu" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_hy.pak" type="data_package" lang="hy" />
       <output filename="app_locale_settings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="app_locale_settings_id.pak" type="data_package" lang="id" />
     <output filename="app_locale_settings_it.pak" type="data_package" lang="it" />
     <output filename="app_locale_settings_ja.pak" type="data_package" lang="ja" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_ka.pak" type="data_package" lang="ka" />
     </if>
     <output filename="app_locale_settings_kn.pak" type="data_package" lang="kn" />
     <output filename="app_locale_settings_ko.pak" type="data_package" lang="ko" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_ku.pak" type="data_package" lang="ku" />
       <output filename="app_locale_settings_kw.pak" type="data_package" lang="kw" />
     </if>
@@ -100,7 +100,7 @@
     <output filename="app_locale_settings_te.pak" type="data_package" lang="te" />
     <output filename="app_locale_settings_th.pak" type="data_package" lang="th" />
     <output filename="app_locale_settings_tr.pak" type="data_package" lang="tr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
+    <if expr="use_third_party_translations">
       <output filename="app_locale_settings_ug.pak" type="data_package" lang="ug" />
     </if>
     <output filename="app_locale_settings_uk.pak" type="data_package" lang="uk" />
@@ -229,7 +229,7 @@
           75%
         </message>
       </if>
-      <if expr="(pp_ifdef('desktop_linux') or is_android) and not pp_ifdef('chromeos')">
+      <if expr="(desktop_linux or is_android) and not chromeos">
         <!-- The font used in Web UI (e.g. History). Note that these are only
              backups. We try to use the system font if possible. -->
         <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
@@ -242,7 +242,7 @@
         </message>
       </if>
       <!-- For Chrome OS -->
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <!-- The font name like: 'Font Name, 10' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
           Noto Sans UI,ui-sans, 12px

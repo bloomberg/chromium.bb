@@ -368,7 +368,7 @@ without changes to the corresponding grd file. -->
                  file="js/util.js" type="chrome_html" flattenhtml="true" />
       <structure name="IDR_WEBUI_JS_WEBUI_RESOURCE_TEST"
                  file="js/webui_resource_test.js" type="chrome_html" />
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="chromeos">
         <structure name="IDR_WEBUI_CSS_UI_ACCOUNT_TWEAKS"
                    file="css/chromeos/ui_account_tweaks.css"
                    type="chrome_html" />

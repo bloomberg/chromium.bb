@@ -6,7 +6,7 @@
  * chrome:// pages. */
 
 @import url("widgets.css");
-<if expr="pp_ifdef('chromeos')">
+<if expr="chromeos">
   @import url("chromeos/ui_account_tweaks.css");
 </if>
 
