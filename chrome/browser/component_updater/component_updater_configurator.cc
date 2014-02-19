@@ -159,7 +159,7 @@ int ChromeConfigurator::InitialDelay() {
 }
 
 int ChromeConfigurator::NextCheckDelay() {
-  return fast_update_ ? 3 : (2 * kDelayOneHour);
+  return fast_update_ ? 3 : (6 * kDelayOneHour);
 }
 
 int ChromeConfigurator::StepDelayMedium() {
