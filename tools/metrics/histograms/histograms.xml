@@ -7738,6 +7738,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MobileStartup.MobileMultiWindowSession" units="percent">
+  <summary>
+    Android: percent of the screen available for Chrome during a multi-window
+    session. Emitted every time chrome is paused. Only emitted on Android
+    MultiWindow devices.
+
+    A multiwindow session is any period of time that Chrome was not used in full
+    screen mode but together with some other application that is visible at the
+    same time. This is only supported in a few Android models.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
   <summary>
     Tracks mouse sensitivity setting changes by the user. This replaces the old
