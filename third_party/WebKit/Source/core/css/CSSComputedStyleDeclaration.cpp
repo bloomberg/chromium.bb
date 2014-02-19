@@ -205,6 +205,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWhiteSpace,
     CSSPropertyWidows,
     CSSPropertyWidth,
+    CSSPropertyWillChange,
     CSSPropertyWordBreak,
     CSSPropertyWordSpacing,
     CSSPropertyWordWrap,
@@ -1081,6 +1082,20 @@ static PassRefPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::Animati
         ASSERT_NOT_REACHED();
         return 0;
     }
+}
+
+static PassRefPtr<CSSValue> valueForWillChange(const Vector<CSSPropertyID>& willChangeProperties, bool willChangeContents, bool willChangeScrollPosition)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    if (willChangeContents)
+        list->append(cssValuePool().createIdentifierValue(CSSValueContents));
+    if (willChangeScrollPosition)
+        list->append(cssValuePool().createIdentifierValue(CSSValueScrollPosition));
+    for (size_t i = 0; i < willChangeProperties.size(); ++i)
+        list->append(cssValuePool().createIdentifierValue(willChangeProperties[i]));
+    if (!list->length())
+        list->append(cssValuePool().createIdentifierValue(CSSValueAuto));
+    return list.release();
 }
 
 static PassRefPtr<CSSValue> createLineBoxContainValue(unsigned lineBoxContain)
@@ -2253,6 +2268,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return zoomAdjustedPixelValue(sizingBox(renderer).width(), *style);
             }
             return zoomAdjustedPixelValueForLength(style->width(), *style);
+        case CSSPropertyWillChange:
+            return valueForWillChange(style->willChangeProperties(), style->willChangeContents(), style->willChangeScrollPosition());
         case CSSPropertyWordBreak:
             return cssValuePool().createValue(style->wordBreak());
         case CSSPropertyWordSpacing:

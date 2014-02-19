@@ -105,6 +105,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_marquee(o.m_marquee)
     , m_multiCol(o.m_multiCol)
     , m_transform(o.m_transform)
+    , m_willChange(o.m_willChange)
     , m_filter(o.m_filter)
     , m_grid(o.m_grid)
     , m_gridItem(o.m_gridItem)
@@ -186,6 +187,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_marquee == o.m_marquee
         && m_multiCol == o.m_multiCol
         && m_transform == o.m_transform
+        && m_willChange == o.m_willChange
         && m_filter == o.m_filter
         && m_grid == o.m_grid
         && m_gridItem == o.m_gridItem

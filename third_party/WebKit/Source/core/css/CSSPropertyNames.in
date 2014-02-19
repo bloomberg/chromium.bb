@@ -226,6 +226,7 @@ visibility
 white-space
 widows
 width
+will-change
 word-break
 -epub-word-break alias_for=word-break
 word-spacing

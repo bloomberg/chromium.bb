@@ -57,6 +57,7 @@ class StyleMultiColData;
 class StyleReflection;
 class StyleResolver;
 class StyleTransformData;
+class StyleWillChangeData;
 
 // Page size type.
 // StyleRareNonInheritedData::m_pageSize is meaningful only when
@@ -106,6 +107,7 @@ public:
     DataRef<StyleMarqueeData> m_marquee; // Marquee properties
     DataRef<StyleMultiColData> m_multiCol; //  CSS3 multicol properties
     DataRef<StyleTransformData> m_transform; // Transform properties (rotate, scale, skew, etc.)
+    DataRef<StyleWillChangeData> m_willChange; // CSS Will Change
 
     DataRef<StyleFilterData> m_filter; // Filter operations (url, sepia, blur, etc.)
 

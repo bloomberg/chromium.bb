@@ -115,6 +115,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMaskSourceType, RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyColumnFill, RuntimeEnabledFeatures::regionBasedColumnsEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyScrollBehavior, RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyWillChange, RuntimeEnabledFeatures::cssWillChangeEnabled());
 
     // InternalCallback is an implementation detail, rather than an experimental feature, and should never be exposed to the web.
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyInternalCallback, false);

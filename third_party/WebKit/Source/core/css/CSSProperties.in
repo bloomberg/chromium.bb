@@ -137,6 +137,7 @@ visibility
 white-space
 widows type_name=short, custom_all
 width type_name=Length, initial=initialSize, converter=convertLengthSizing
+will-change custom_all
 word-break
 word-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.

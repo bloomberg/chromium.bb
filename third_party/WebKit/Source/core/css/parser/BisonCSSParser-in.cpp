@@ -2464,6 +2464,10 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitColumnWidth:         // auto | <length>
         parsedValue = parseColumnWidth();
         break;
+    case CSSPropertyWillChange:
+        if (!RuntimeEnabledFeatures::cssWillChangeEnabled())
+            return false;
+        return parseWillChange(important);
     // End of CSS3 properties
 
     // Apple specific properties.  These will never be standardized and are purely to
@@ -8363,6 +8367,62 @@ PassRefPtr<CSSValue> BisonCSSParser::parseImageSet(CSSParserValueList* valueList
     }
 
     return imageSet.release();
+}
+
+bool BisonCSSParser::parseWillChange(bool important)
+{
+    ASSERT(RuntimeEnabledFeatures::cssWillChangeEnabled());
+
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    if (m_valueList->current()->id == CSSValueAuto) {
+        if (m_valueList->next())
+            return false;
+    }
+
+    CSSParserValue* currentValue;
+    bool expectComma = false;
+
+    // Every comma-separated list of CSS_IDENTs is a valid will-change value,
+    // unless the list includes an explicitly disallowed CSS_IDENT.
+    while ((currentValue = m_valueList->current())) {
+        if (expectComma) {
+            if (!isComma(currentValue))
+                return false;
+            expectComma = false;
+            m_valueList->next();
+            continue;
+        }
+
+        if (currentValue->unit != CSSPrimitiveValue::CSS_IDENT)
+            return false;
+
+        if (CSSPropertyID property = cssPropertyID(currentValue->string)) {
+            if (property == CSSPropertyWillChange)
+                return false;
+            values->append(cssValuePool().createIdentifierValue(property));
+        } else {
+            switch (currentValue->id) {
+            case CSSValueNone:
+            case CSSValueAll:
+            case CSSValueAuto:
+            case CSSValueDefault:
+            case CSSValueInitial:
+            case CSSValueInherit:
+                return false;
+            case CSSValueContents:
+            case CSSValueScrollPosition:
+                values->append(cssValuePool().createIdentifierValue(currentValue->id));
+                break;
+            default:
+                break;
+            }
+        }
+        expectComma = true;
+        m_valueList->next();
+    }
+
+    addProperty(CSSPropertyWillChange, values.release(), important);
+    return true;
 }
 
 class TransformOperationInfo {

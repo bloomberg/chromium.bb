@@ -282,6 +282,8 @@ public:
 
     bool parseGeneratedImage(CSSParserValueList*, RefPtr<CSSValue>&);
 
+    bool parseWillChange(bool important);
+
     CSSParserSelector* createFloatingSelector();
     CSSParserSelector* createFloatingSelectorWithTagName(const QualifiedName&);
     PassOwnPtr<CSSParserSelector> sinkFloatingSelector(CSSParserSelector*);

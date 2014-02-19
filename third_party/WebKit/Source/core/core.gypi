@@ -1633,6 +1633,7 @@
             'rendering/style/StyleSurroundData.cpp',
             'rendering/style/StyleTransformData.cpp',
             'rendering/style/StyleVisualData.cpp',
+            'rendering/style/StyleWillChangeData.cpp',
             'rendering/svg/SVGInlineFlowBox.cpp',
             'rendering/svg/SVGInlineFlowBox.h',
             'rendering/svg/SVGInlineTextBox.cpp',

@@ -31,6 +31,7 @@ CSSStickyPosition status=experimental
 CSSTouchAction status=experimental
 CSSTouchActionDelay status=test
 CSSViewport status=experimental
+CSSWillChange status=experimental
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
