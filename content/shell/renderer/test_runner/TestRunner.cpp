@@ -1332,7 +1332,7 @@ void TestRunner::injectStyleSheet(const CppArgumentList& arguments, CppVariant* 
 void TestRunner::startSpeechInput(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
-    if (arguments.size() != 1)
+    if (arguments.size() != 1 || !arguments[0].isObject())
         return;
 
     WebElement element;
@@ -1387,7 +1387,7 @@ void TestRunner::findString(const CppArgumentList& arguments, CppVariant* result
 void TestRunner::setValueForUser(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
-    if (arguments.size() != 2)
+    if (arguments.size() != 2 || !arguments[0].isObject() || !arguments[0].isString())
         return;
 
     WebElement element;
