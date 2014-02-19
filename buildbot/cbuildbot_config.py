@@ -359,7 +359,7 @@ _settings = dict(
 
 # quick_unit -- If unittests is true, only run the unit tests for packages which
 #               have changed since the previous build.
-  quick_unit=True,
+  quick_unit=False,
 
 # unittest_blacklist -- A list of the packages to blacklist from unittests.
   unittest_blacklist=[],
@@ -770,8 +770,6 @@ amd64 = _config()
 
 binary = _config(
   # Full builds that build fully from binaries.
-  quick_unit=False,
-
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
   images=['test', 'factory_test', 'factory_install'],
@@ -786,8 +784,6 @@ full = _config(
   usepkg_build_packages=False,
   chrome_sdk=True,
   chroot_replace=True,
-
-  quick_unit=False,
 
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
@@ -1308,6 +1304,7 @@ internal_pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   compilecheck=True,
   pre_cq=True,
+  quick_unit=True,
   description='Verifies compilation and unit tests',
 )
 
@@ -1522,7 +1519,6 @@ internal_paladin.add_config('squawks-paladin',
   important=False,
 )
 
-# x86 full unit tests
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
@@ -1539,25 +1535,21 @@ internal_paladin.add_config('sonic-paladin',
   important=False,
 )
 
-# amd64 full unit tests
 internal_paladin.add_config('monroe-paladin',
   boards=['monroe'],
   hw_tests=[],
   important=False,
-  quick_unit=False,
   paladin_builder_name='monroe paladin',
 )
 
 internal_paladin.add_config('panther-paladin',
   boards=['panther'],
   hw_tests=[],
-  quick_unit=False,
   paladin_builder_name='panther paladin',
 )
 
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
-  quick_unit=False,
   paladin_builder_name='stout paladin',
 )
 
@@ -1628,7 +1620,6 @@ internal_brillo_paladin.add_config('duck-paladin',
   boards=['duck'],
   paladin_builder_name='duck paladin',
   trybot_list=True,
-  quick_unit=False,
 )
 
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)

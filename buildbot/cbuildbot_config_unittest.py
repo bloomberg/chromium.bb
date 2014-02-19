@@ -349,25 +349,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     for config in cbuildbot_config.config.values():
       self.assertFalse(config['use_lkgm'] and config['use_chrome_lkgm'])
 
-  def testQuickPaladin(self):
-    """Test that no paladin builder has quick_unit=False and {vm,hw}_tests."""
-    for build_name, cfg in cbuildbot_config.config.iteritems():
-      if cfg['build_type'] == constants.PALADIN_TYPE and not cfg['quick_unit']:
-        msg = '%s has both quick_unit=False and %s'
-        self.assertFalse(cfg['vm_tests'], msg % (build_name, 'vm_tests'))
-        self.assertFalse(cfg['hw_tests'], msg % (build_name, 'hw_tests'))
-
-  def testChromeBinhostOnly(self):
-    """Test that no paladin builder has quick_unit=False and {vm,hw}_tests."""
-    for build_name, cfg in cbuildbot_config.config.iteritems():
-      if (cfg['build_type'] == constants.PALADIN_TYPE and
-          cfg['chrome_binhost_only']):
-        msg = '%s has both chrome_binhost_only=True and %s'
-        self.assertFalse(cfg['vm_tests'], msg % (build_name, 'vm_tests'))
-        self.assertFalse(cfg['hw_tests'], msg % (build_name, 'hw_tests'))
-        self.assertTrue(cfg['quick_unit'],
-                        msg % (build_name, 'quick_unit=False'))
-
   def testNoDuplicateSlavePrebuilts(self):
     """Test that no two same-board paladin slaves upload prebuilts."""
     for cfg in cbuildbot_config.config.values():
