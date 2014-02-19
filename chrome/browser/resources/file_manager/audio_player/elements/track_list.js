@@ -101,17 +101,18 @@
      * @param {Event} event Click event.
      */
     tracksChanged: function(oldValue, newValue) {
-      if (oldValue !== newValue) {
-        // Re-register the observer of 'this.tracks'.
-        this.tracksObserver_.close();
-        this.tracksObserver_ = new ArrayObserver(
-            this.tracks,
-            this.tracksValueChanged_.bind(this));
+      // Note: Sometimes both oldValue and newValue are null though the actual
+      // values are not null. Maybe it's a bug of Polymer.
 
-        // Reset play order and current index.
-        if (this.tracks.length !== 0)
-          this.generatePlayOrder(false /* no need to keep the current track */);
-      }
+      // Re-register the observer of 'this.tracks'.
+      this.tracksObserver_.close();
+      this.tracksObserver_ = new ArrayObserver(
+          this.tracks,
+          this.tracksValueChanged_.bind(this));
+
+      // Reset play order and current index.
+      if (this.tracks.length !== 0)
+        this.generatePlayOrder(false /* no need to keep the current track */);
 
       if (this.tracks.length === 0) {
         this.playOrder = [];

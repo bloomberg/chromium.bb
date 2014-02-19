@@ -121,6 +121,10 @@ AudioPlayer.prototype.load = function(playlist) {
         this.trackListItems_.push(new AudioPlayer.TrackInfo(entry, onClick));
       }
 
+      // Makes it sure that the handler of the track list is called, before the
+      // handler of the track index.
+      Platform.performMicrotaskCheckpoint();
+
       this.select_(position, !!time);
 
       // Load the selected track metadata first, then load the rest.
