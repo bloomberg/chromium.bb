@@ -220,6 +220,7 @@ public:
 
     static double currentFrameTimeStamp() { return s_currentFrameTimeStamp; }
 
+    void updateLayoutAndStyleForPainting();
     void updateLayoutAndStyleIfNeededRecursive();
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
