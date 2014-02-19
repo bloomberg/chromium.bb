@@ -255,7 +255,7 @@ gfx::Rect TouchEditableImplAura::GetBounds() {
 }
 
 gfx::NativeView TouchEditableImplAura::GetNativeView() const {
-  return rwhva_ ? rwhva_->GetNativeView()->GetRootWindow() : NULL;
+  return rwhva_ ? rwhva_->GetNativeView()->GetToplevelWindow() : NULL;
 }
 
 void TouchEditableImplAura::ConvertPointToScreen(gfx::Point* point) {
