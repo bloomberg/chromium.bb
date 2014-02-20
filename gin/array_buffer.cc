@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gin/array_buffer.h"
-
 #include <stdlib.h>
+
+#include "base/logging.h"
+#include "gin/array_buffer.h"
+#include "gin/per_isolate_data.h"
 
 namespace gin {
 
+namespace {
+
+gin::WrapperInfo g_array_buffer_wrapper_info = {gin::kEmbedderNativeGin};
+
+}  // namespace
+
 COMPILE_ASSERT(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
                array_buffers_must_have_two_internal_fields);
-
-static const int kBufferViewPrivateIndex = 0;
 
 // ArrayBufferAllocator -------------------------------------------------------
 
@@ -72,6 +78,7 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
 
   v8::Persistent<v8::ArrayBuffer> array_buffer_;
   scoped_refptr<Private> self_reference_;
+  v8::Isolate* isolate_;
   void* buffer_;
   size_t length_;
 };
@@ -79,28 +86,34 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
 scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
     v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array) {
   if (array->IsExternal()) {
+    CHECK_EQ(WrapperInfo::From(v8::Handle<v8::Object>::Cast(array)),
+             &g_array_buffer_wrapper_info)
+        << "Cannot mix blink and gin ArrayBuffers";
     return make_scoped_refptr(static_cast<Private*>(
-        array->GetAlignedPointerFromInternalField(kBufferViewPrivateIndex)));
+        array->GetAlignedPointerFromInternalField(kEncodedValueIndex)));
   }
   return make_scoped_refptr(new Private(isolate, array));
 }
 
 ArrayBuffer::Private::Private(v8::Isolate* isolate,
                               v8::Handle<v8::ArrayBuffer> array)
-    : array_buffer_(isolate, array) {
+    : array_buffer_(isolate, array), isolate_(isolate) {
   // Take ownership of the array buffer.
+  CHECK(!array->IsExternal());
   v8::ArrayBuffer::Contents contents = array->Externalize();
   buffer_ = contents.Data();
   length_ = contents.ByteLength();
 
-  array->SetAlignedPointerInInternalField(kBufferViewPrivateIndex, this);
+  array->SetAlignedPointerInInternalField(kWrapperInfoIndex,
+                                          &g_array_buffer_wrapper_info);
+  array->SetAlignedPointerInInternalField(kEncodedValueIndex, this);
 
   self_reference_ = this;  // Cleared in WeakCallback.
   array_buffer_.SetWeak(this, WeakCallback);
 }
 
 ArrayBuffer::Private::~Private() {
-  ArrayBufferAllocator::SharedInstance()->Free(buffer_, length_);
+  PerIsolateData::From(isolate_)->allocator()->Free(buffer_, length_);
 }
 
 void ArrayBuffer::Private::WeakCallback(

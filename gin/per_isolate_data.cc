@@ -5,6 +5,7 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/gin_embedders.h"
 
+using v8::ArrayBuffer;
 using v8::Eternal;
 using v8::Isolate;
 using v8::Local;
@@ -14,8 +15,9 @@ using v8::ObjectTemplate;
 
 namespace gin {
 
-PerIsolateData::PerIsolateData(Isolate* isolate)
-    : isolate_(isolate)  {
+PerIsolateData::PerIsolateData(Isolate* isolate,
+                               ArrayBuffer::Allocator* allocator)
+    : isolate_(isolate), allocator_(allocator) {
   isolate_->SetData(kEmbedderNativeGin, this);
 }
 

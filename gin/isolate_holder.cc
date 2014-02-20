@@ -53,14 +53,21 @@ IsolateHolder::IsolateHolder()
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                 base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
-  Init();
+  Init(ArrayBufferAllocator::SharedInstance());
 }
 
 IsolateHolder::IsolateHolder(v8::Isolate* isolate)
     : isolate_owner_(false),
       isolate_(isolate) {
   EnsureV8Initialized(false);
-  Init();
+  Init(NULL);
+}
+
+IsolateHolder::IsolateHolder(v8::Isolate* isolate,
+                             v8::ArrayBuffer::Allocator* allocator)
+    : isolate_owner_(false), isolate_(isolate) {
+  EnsureV8Initialized(false);
+  Init(allocator);
 }
 
 IsolateHolder::~IsolateHolder() {
@@ -69,10 +76,10 @@ IsolateHolder::~IsolateHolder() {
     isolate_->Dispose();
 }
 
-void IsolateHolder::Init() {
+void IsolateHolder::Init(v8::ArrayBuffer::Allocator* allocator) {
   v8::Isolate::Scope isolate_scope(isolate_);
   v8::HandleScope handle_scope(isolate_);
-  isolate_data_.reset(new PerIsolateData(isolate_));
+  isolate_data_.reset(new PerIsolateData(isolate_, allocator));
 }
 
 }  // namespace gin

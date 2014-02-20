@@ -18,7 +18,7 @@ namespace gin {
 // class stores all the Gin-related data that varies per isolate.
 class GIN_EXPORT PerIsolateData {
  public:
-  explicit PerIsolateData(v8::Isolate* isolate);
+  PerIsolateData(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
   ~PerIsolateData();
 
   static PerIsolateData* From(v8::Isolate* isolate);
@@ -39,6 +39,7 @@ class GIN_EXPORT PerIsolateData {
   v8::Local<v8::FunctionTemplate> GetFunctionTemplate(WrapperInfo* info);
 
   v8::Isolate* isolate() { return isolate_; }
+  v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
 
  private:
   typedef std::map<
@@ -49,6 +50,7 @@ class GIN_EXPORT PerIsolateData {
   // PerIsolateData doesn't actually own |isolate_|. Instead, the isolate is
   // owned by the IsolateHolder, which also owns the PerIsolateData.
   v8::Isolate* isolate_;
+  v8::ArrayBuffer::Allocator* allocator_;
   ObjectTemplateMap object_templates_;
   FunctionTemplateMap function_templates_;
 
