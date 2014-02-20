@@ -17830,6 +17830,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.EnforcementGroupDeterminedFromTrial"
+    enum="BooleanSuccess">
+  <summary>
+    Whether the SettingsEnforcement group was successfully determined from the
+    field trial or if it had to revert to the hardcoded default.
+  </summary>
+</histogram>
+
 <histogram name="Settings.FilterOnLoadTime" units="milliseconds">
   <summary>
     The amount of time it took to run PrefHashFilter::FilterOnLoad on startup.

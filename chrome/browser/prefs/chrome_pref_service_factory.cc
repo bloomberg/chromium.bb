@@ -190,6 +190,9 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
       GROUP_ENFORCE_ALWAYS },
   };
 
+  // TODO(gab): Switch the default to GROUP_ENFORCE_ALWAYS.
+  SettingsEnforcementGroup enforcement_group = GROUP_NO_ENFORCEMENT;
+  bool group_determined_from_trial = false;
   base::FieldTrial* trial =
       base::FieldTrialList::Find(
           chrome_prefs::internals::kSettingsEnforcementTrialName);
@@ -200,18 +203,16 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
     // non-array pointer types; this is fine since kEnforcementLevelMap is
     // clearly an array.
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEnforcementLevelMap); ++i) {
-      if (kEnforcementLevelMap[i].group_name == group_name)
-        return kEnforcementLevelMap[i].group;
+      if (kEnforcementLevelMap[i].group_name == group_name) {
+        enforcement_group = kEnforcementLevelMap[i].group;
+        group_determined_from_trial = true;
+        break;
+      }
     }
   }
-#if defined(OS_WIN)
-  // Default to GROUP_ENFORCE_ALWAYS in the absence of a valid value for the
-  // SettingsEnforcement field trial.
-  // TODO(gab): Switch other platforms over to this mode.
-  return GROUP_ENFORCE_ALWAYS;
-#else
-  return GROUP_NO_ENFORCEMENT;
-#endif
+  UMA_HISTOGRAM_BOOLEAN("Settings.EnforcementGroupDeterminedFromTrial",
+                        group_determined_from_trial);
+  return enforcement_group;
 }
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
