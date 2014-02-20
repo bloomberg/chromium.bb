@@ -196,3 +196,17 @@ race:content::RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportI
 
 # http://crbug.com/342662
 race:SetWindowList
+
+# http://crbug.com/345240
+race:WTF::s_shutdown
+
+# http://crbug.com/345245
+race:jingle_glue::JingleThreadWrapper::~JingleThreadWrapper
+race:webrtc::voe::Channel::UpdatePacketDelay
+race:webrtc::voe::Channel::GetDelayEstimate
+race:webrtc::VCMCodecDataBase::DeregisterReceiveCodec
+race:webrtc::GainControlImpl::set_stream_analog_level
+
+# http://crbug.com/345251
+race:cc::s_next_layer_id
+
