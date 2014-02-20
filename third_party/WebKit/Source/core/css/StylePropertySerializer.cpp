@@ -380,7 +380,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyWebkitAnimation:
         return getLayeredShorthandValue(webkitAnimationShorthand());
     case CSSPropertyMarker: {
-        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);
+        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);
         if (value)
             return value->cssText();
         return String();
@@ -394,8 +394,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
 
 String StylePropertySerializer::borderSpacingValue(const StylePropertyShorthand& shorthand) const
 {
-    RefPtr<CSSValue> horizontalValue = m_propertySet.getPropertyCSSValue(shorthand.properties()[0]);
-    RefPtr<CSSValue> verticalValue = m_propertySet.getPropertyCSSValue(shorthand.properties()[1]);
+    RefPtrWillBeRawPtr<CSSValue> horizontalValue = m_propertySet.getPropertyCSSValue(shorthand.properties()[0]);
+    RefPtrWillBeRawPtr<CSSValue> verticalValue = m_propertySet.getPropertyCSSValue(shorthand.properties()[1]);
 
     // While standard border-spacing property does not allow specifying border-spacing-vertical without
     // specifying border-spacing-horizontal <http://www.w3.org/TR/CSS21/tables.html#separated-borders>,
@@ -534,7 +534,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
 
     const unsigned size = shorthand.length();
     // Begin by collecting the properties into an array.
-    Vector< RefPtr<CSSValue> > values(size);
+    WillBeHeapVector<RefPtrWillBeMember<CSSValue> > values(size);
     size_t numLayers = 0;
 
     for (unsigned i = 0; i < size; ++i) {
@@ -560,7 +560,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         bool useSingleWordShorthand = false;
         bool foundPositionYCSSProperty = false;
         for (unsigned j = 0; j < size; j++) {
-            RefPtr<CSSValue> value;
+            RefPtrWillBeRawPtr<CSSValue> value;
             if (values[j]) {
                 if (values[j]->isBaseValueList())
                     value = toCSSValueList(values[j].get())->item(i);
@@ -585,8 +585,8 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                 // BUG 49055: make sure the value was not reset in the layer check just above.
                 if ((j < size - 1 && shorthand.properties()[j + 1] == CSSPropertyBackgroundRepeatY && value)
                     || (j < size - 1 && shorthand.properties()[j + 1] == CSSPropertyWebkitMaskRepeatY && value)) {
-                    RefPtr<CSSValue> yValue;
-                    RefPtr<CSSValue> nextValue = values[j + 1];
+                    RefPtrWillBeRawPtr<CSSValue> yValue;
+                    RefPtrWillBeRawPtr<CSSValue> nextValue = values[j + 1];
                     if (nextValue->isValueList())
                         yValue = toCSSValueList(nextValue.get())->itemWithoutBoundsCheck(i);
                     else
@@ -682,7 +682,7 @@ String StylePropertySerializer::getShorthandValue(const StylePropertyShorthand& 
     StringBuilder result;
     for (unsigned i = 0; i < shorthand.length(); ++i) {
         if (!m_propertySet.isPropertyImplicit(shorthand.properties()[i])) {
-            RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+            RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
             if (!value)
                 return String();
             String valueText = value->cssText();
@@ -711,7 +711,7 @@ String StylePropertySerializer::getCommonValue(const StylePropertyShorthand& sho
     String res;
     bool lastPropertyWasImportant = false;
     for (unsigned i = 0; i < shorthand.length(); ++i) {
-        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
         // FIXME: CSSInitialValue::cssText should generate the right value.
         if (!value)
             return String();

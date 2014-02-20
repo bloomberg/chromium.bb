@@ -31,6 +31,8 @@
 #ifndef WTF_RawPtr_h
 #define WTF_RawPtr_h
 
+#include <algorithm>
+
 // Ptr is a simple wrapper for a raw pointer that provides the
 // interface (get, clear) of other pointer types such as RefPtr,
 // Persistent and Member. This is used for the Blink garbage
@@ -89,9 +91,20 @@ public:
     T& operator*() const { return *m_ptr; }
     T* operator->() const { return m_ptr; }
 
+    void swap(RawPtr& o)
+    {
+        std::swap(m_ptr, o.m_ptr);
+    }
+
+
 private:
     T* m_ptr;
 };
+
+template<typename T, typename U> inline RawPtr<T> static_pointer_cast(const RawPtr<U>& p)
+{
+    return RawPtr<T>(static_cast<T*>(p.get()));
+}
 
 } // namespace WTF
 

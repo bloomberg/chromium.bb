@@ -50,7 +50,7 @@ private:
     virtual CSSRule* parentRule() const OVERRIDE { return 0; }
     virtual unsigned length() const OVERRIDE FINAL;
     virtual String item(unsigned index) const OVERRIDE FINAL;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE FINAL;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE FINAL;
     virtual String getPropertyValue(const String& propertyName) OVERRIDE FINAL;
     virtual String getPropertyPriority(const String& propertyName) OVERRIDE FINAL;
     virtual String getPropertyShorthand(const String& propertyName) OVERRIDE FINAL;
@@ -59,7 +59,7 @@ private:
     virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE FINAL;
     virtual String cssText() const OVERRIDE FINAL;
     virtual void setCSSText(const String&, ExceptionState&) OVERRIDE FINAL;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE FINAL;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE FINAL;
     virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE FINAL;
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE FINAL;
 
@@ -74,7 +74,7 @@ protected:
     virtual void didMutate(MutationType) { }
     virtual MutableStylePropertySet* propertySet() const = 0;
 
-    OwnPtr<HashMap<CSSValue*, RefPtr<CSSValue> > > m_cssomCSSValueClones;
+    OwnPtrWillBePersistent<WillBeHeapHashMap<CSSValue*, RefPtrWillBeMember<CSSValue> > > m_cssomCSSValueClones;
 };
 
 class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration {

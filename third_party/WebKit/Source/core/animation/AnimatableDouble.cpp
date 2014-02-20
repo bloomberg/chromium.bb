@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-PassRefPtr<CSSValue> AnimatableDouble::toCSSValue() const
+PassRefPtrWillBeRawPtr<CSSValue> AnimatableDouble::toCSSValue() const
 {
     return cssValuePool().createValue(m_number, CSSPrimitiveValue::CSS_NUMBER);
 }

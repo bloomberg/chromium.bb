@@ -583,7 +583,7 @@ private:
         if (parserValue->unit == CSSParserValue::Operator)
             return false;
 
-        RefPtr<CSSValue> value = parserValue->createCSSValue();
+        RefPtrWillBeRawPtr<CSSValue> value = parserValue->createCSSValue();
         if (!value || !value->isPrimitiveValue())
             return false;
 

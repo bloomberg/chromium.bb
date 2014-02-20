@@ -62,7 +62,7 @@ public:
     PassOwnPtr<MediaQueryExp> copy() const { return adoptPtr(new MediaQueryExp(*this)); }
 
 private:
-    MediaQueryExp(const AtomicString& mediaFeature, PassRefPtr<CSSValue>);
+    MediaQueryExp(const AtomicString& mediaFeature, PassRefPtrWillBeRawPtr<CSSValue>);
 
     AtomicString m_mediaFeature;
     RefPtr<CSSValue> m_value;

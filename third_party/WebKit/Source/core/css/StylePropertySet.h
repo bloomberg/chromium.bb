@@ -87,7 +87,7 @@ public:
     PropertyReference propertyAt(unsigned index) const { return PropertyReference(*this, index); }
     int findPropertyIndex(CSSPropertyID) const;
 
-    PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
 
     bool propertyIsImportant(CSSPropertyID) const;
@@ -187,7 +187,7 @@ public:
 
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
-    void setProperty(CSSPropertyID, PassRefPtr<CSSValue>, bool important = false);
+    void setProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important = false);
 
     // These do not. FIXME: This is too messy, we can do better.
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);

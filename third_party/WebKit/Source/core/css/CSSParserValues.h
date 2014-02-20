@@ -161,7 +161,7 @@ struct CSSParserValue {
     inline void setFromFunction(CSSParserFunction*);
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
 
-    PassRefPtr<CSSValue> createCSSValue();
+    PassRefPtrWillBeRawPtr<CSSValue> createCSSValue();
 };
 
 class CSSParserValueList {

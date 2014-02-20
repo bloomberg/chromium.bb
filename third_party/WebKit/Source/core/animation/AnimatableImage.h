@@ -44,7 +44,7 @@ public:
     {
         return adoptRef(new AnimatableImage(image));
     }
-    PassRefPtr<CSSValue> toCSSValue() const { return m_image->cssValue(); }
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const { return m_image->cssValue(); }
     StyleImage* toStyleImage() const { return m_image.get(); }
 
 protected:

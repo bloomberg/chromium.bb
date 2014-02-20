@@ -21,6 +21,7 @@
 [
     Custom=Wrap,
     DependentLifetime,
+    WillBeGarbageCollected,
 ] interface CSSValue {
 
     // UnitTypes

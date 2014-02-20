@@ -49,7 +49,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     CSSValueID id = value->id;
 
     bool valid_primitive = false;
-    RefPtr<CSSValue> parsedValue;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue;
 
     switch (propId) {
     /* The comment to the right defines all valid value of these
@@ -331,7 +331,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     return true;
 }
 
-PassRefPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
 {
     RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     CSSParserValue* value = m_valueList->current();
@@ -353,7 +353,7 @@ PassRefPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
     return ret.release();
 }
 
-PassRefPtr<CSSValue> CSSPropertyParser::parseSVGPaint()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGPaint()
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(m_valueList->current(), c))
@@ -361,7 +361,7 @@ PassRefPtr<CSSValue> CSSPropertyParser::parseSVGPaint()
     return SVGPaint::createColor(Color(c));
 }
 
-PassRefPtr<CSSValue> CSSPropertyParser::parseSVGColor()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGColor()
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(m_valueList->current(), c))
@@ -370,7 +370,7 @@ PassRefPtr<CSSValue> CSSPropertyParser::parseSVGColor()
 }
 
 // normal | [ fill || stroke || markers ]
-PassRefPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
 {
     if (m_valueList->size() > 3)
         return 0;

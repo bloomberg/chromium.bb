@@ -50,6 +50,7 @@ void CSSReflectValue::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_direction);
     visitor->trace(m_offset);
+    visitor->trace(m_mask);
     CSSValue::traceAfterDispatch(visitor);
 }
 

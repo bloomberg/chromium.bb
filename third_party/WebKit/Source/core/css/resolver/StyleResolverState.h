@@ -42,6 +42,7 @@ class FontDescription;
 class StyleRule;
 
 class StyleResolverState {
+DISALLOW_ALLOCATION();
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
     StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0);

@@ -31,6 +31,7 @@
 #define BasicShapeFunctions_h
 
 #include "core/rendering/style/BasicShapes.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -42,7 +43,7 @@ class FloatPoint;
 class StyleResolverState;
 class RenderStyle;
 
-PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle&, const BasicShape*);
+PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle&, const BasicShape*);
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
 FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate&, const BasicShapeCenterCoordinate&, FloatSize);
 

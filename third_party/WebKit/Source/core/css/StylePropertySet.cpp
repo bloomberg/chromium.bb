@@ -124,14 +124,14 @@ MutableStylePropertySet::MutableStylePropertySet(const StylePropertySet& other)
 
 String StylePropertySet::getPropertyValue(CSSPropertyID propertyID) const
 {
-    RefPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
     if (value)
         return value->cssText();
 
     return StylePropertySerializer(*this).getPropertyValue(propertyID);
 }
 
-PassRefPtr<CSSValue> StylePropertySet::getPropertyCSSValue(CSSPropertyID propertyID) const
+PassRefPtrWillBeRawPtr<CSSValue> StylePropertySet::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     int foundPropertyIndex = findPropertyIndex(propertyID);
     if (foundPropertyIndex == -1)
@@ -236,7 +236,7 @@ bool MutableStylePropertySet::setProperty(CSSPropertyID propertyID, const String
     return BisonCSSParser::parseValue(this, propertyID, value, important, cssParserMode(), contextStyleSheet);
 }
 
-void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtr<CSSValue> prpValue, bool important)
+void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtrWillBeRawPtr<CSSValue> prpValue, bool important)
 {
     StylePropertyShorthand shorthand = shorthandForProperty(propertyID);
     if (!shorthand.length()) {
@@ -246,7 +246,7 @@ void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtr<C
 
     removePropertiesInSet(shorthand.properties(), shorthand.length());
 
-    RefPtr<CSSValue> value = prpValue;
+    RefPtrWillBeRawPtr<CSSValue> value = prpValue;
     for (unsigned i = 0; i < shorthand.length(); ++i)
         m_propertyVector.append(CSSProperty(shorthand.properties()[i], value, important));
 }
@@ -492,7 +492,7 @@ PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const 
     Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
+        RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
         if (value)
             list.append(CSSProperty(properties[i], value.release(), false));
     }

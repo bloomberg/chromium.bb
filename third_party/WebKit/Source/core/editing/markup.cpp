@@ -457,7 +457,7 @@ static bool propertyMissingOrEqualToNone(StylePropertySet* style, CSSPropertyID 
 {
     if (!style)
         return false;
-    RefPtr<CSSValue> value = style->getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> value = style->getPropertyCSSValue(propertyID);
     if (!value)
         return true;
     if (!value->isPrimitiveValue())

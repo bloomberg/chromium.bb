@@ -53,8 +53,8 @@ TEST(AnimationAnimatableDoubleTest, Equal)
 
 TEST(AnimationAnimatableDoubleTest, ToCSSValue)
 {
-    RefPtr<CSSValue> cssValue5 = CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_NUMBER);
-    RefPtr<CSSValue> cssValue10 = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSValue> cssValue5 = CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_NUMBER);
+    RefPtrWillBeRawPtr<CSSValue> cssValue10 = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER);
     EXPECT_TRUE(AnimatableDouble::create(5)->toCSSValue()->equals(*cssValue5.get()));
     EXPECT_FALSE(AnimatableDouble::create(5)->toCSSValue()->equals(*cssValue10.get()));
 }

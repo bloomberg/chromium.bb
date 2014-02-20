@@ -22,8 +22,8 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtr<CSSValue> image, PassRefPtr<CSSValue> imageSlice, PassRefPtr<CSSValue> borderSlice,
-                                                PassRefPtr<CSSValue> outset, PassRefPtr<CSSValue> repeat)
+PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtrWillBeRawPtr<CSSValue> image, PassRefPtrWillBeRawPtr<CSSValue> imageSlice,
+    PassRefPtrWillBeRawPtr<CSSValue> borderSlice, PassRefPtrWillBeRawPtr<CSSValue> outset, PassRefPtrWillBeRawPtr<CSSValue> repeat)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (image)

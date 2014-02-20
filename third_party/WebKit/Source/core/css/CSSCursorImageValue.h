@@ -32,7 +32,7 @@ class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCursorImageValue> create(PassRefPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
+    static PassRefPtrWillBeRawPtr<CSSCursorImageValue> create(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
     {
         return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCursorImageValue(imageValue, hasHotSpot, hotSpot));
     }
@@ -61,13 +61,13 @@ public:
     void traceAfterDispatch(Visitor*);
 
 private:
-    CSSCursorImageValue(PassRefPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot);
+    CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot);
 
     bool isSVGCursor() const;
     String cachedImageURL();
     void clearImageResource();
 
-    RefPtr<CSSValue> m_imageValue;
+    RefPtrWillBeMember<CSSValue> m_imageValue;
 
     bool m_hasHotSpot;
     IntPoint m_hotSpot;

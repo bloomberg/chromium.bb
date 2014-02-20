@@ -47,7 +47,7 @@ public:
     }
     virtual ~StyleFetchedImageSet();
 
-    virtual PassRefPtr<CSSValue> cssValue() const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const OVERRIDE;
 
     // FIXME: This is used by StyleImage for equals comparison, but this implementation
     // only looks at the image from the set that we have loaded. I'm not sure if that is

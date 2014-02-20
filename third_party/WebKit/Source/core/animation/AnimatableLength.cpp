@@ -74,7 +74,7 @@ bool AnimatableLength::canCreateFrom(const CSSValue* value)
     return value->isCalcValue();
 }
 
-PassRefPtr<CSSValue> AnimatableLength::toCSSValue(NumberRange range) const
+PassRefPtrWillBeRawPtr<CSSValue> AnimatableLength::toCSSValue(NumberRange range) const
 {
     return toCSSPrimitiveValue(range);
 }

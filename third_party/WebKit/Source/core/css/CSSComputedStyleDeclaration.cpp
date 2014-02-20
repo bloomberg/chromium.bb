@@ -499,7 +499,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(cons
     return cssValuePool().createValue(quad.release());
 }
 
-static PassRefPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& image)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& image)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRepeat;
     RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRepeat;
@@ -512,13 +512,13 @@ static PassRefPtr<CSSValue> valueForNinePieceImageRepeat(const NinePieceImage& i
     return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release(), Pair::DropIdenticalValues));
 }
 
-static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const RenderStyle& style)
 {
     if (!image.hasImage())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     // Image first.
-    RefPtr<CSSValue> imageValue;
+    RefPtrWillBeRawPtr<CSSValue> imageValue;
     if (image.image())
         imageValue = image.image()->cssValue();
 
@@ -526,13 +526,13 @@ static PassRefPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, 
     RefPtrWillBeRawPtr<CSSBorderImageSliceValue> imageSlices = valueForNinePieceImageSlice(image);
 
     // Create the border area slices.
-    RefPtr<CSSValue> borderSlices = valueForNinePieceImageQuad(image.borderSlices(), style);
+    RefPtrWillBeRawPtr<CSSValue> borderSlices = valueForNinePieceImageQuad(image.borderSlices(), style);
 
     // Create the border outset.
-    RefPtr<CSSValue> outset = valueForNinePieceImageQuad(image.outset(), style);
+    RefPtrWillBeRawPtr<CSSValue> outset = valueForNinePieceImageQuad(image.outset(), style);
 
     // Create the repeat rules.
-    RefPtr<CSSValue> repeat = valueForNinePieceImageRepeat(image);
+    RefPtrWillBeRawPtr<CSSValue> repeat = valueForNinePieceImageRepeat(image);
 
     return createBorderImageValue(imageValue.release(), imageSlices.release(), borderSlices.release(), outset.release(), repeat.release());
 }
@@ -554,7 +554,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength
     return cssValuePool().createValue(length, style);
 }
 
-static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForReflection(const StyleReflection* reflection, const RenderStyle& style)
 {
     if (!reflection)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -600,7 +600,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSProper
     return positionList.release();
 }
 
-static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSPropertyID propertyID, const RenderObject* renderer)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSPropertyID propertyID, const RenderObject* renderer)
 {
     Length l;
     switch (propertyID) {
@@ -656,7 +656,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBorderRadiusCorner(LengthSi
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForBorderRadiusCorner(LengthSize radius, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForBorderRadiusCorner(LengthSize radius, const RenderStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = valuesForBorderRadiusCorner(radius, style);
     if (list->item(0)->equals(*list->item(1)))
@@ -755,7 +755,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const T
     return transformValue.release();
 }
 
-static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(RenderObject* renderer, const RenderStyle& style)
 {
     if (!renderer || !renderer->hasTransform() || !style.hasTransform())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -774,7 +774,7 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
     return list.release();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObject* renderer, const RenderStyle& style) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObject* renderer, const RenderStyle& style) const
 {
     if (style.filter().operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -845,7 +845,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
     return list.release();
 }
 
-static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style)
 {
     if (!trackBreadth.isLength())
         return cssValuePool().createValue(trackBreadth.flex(), CSSPrimitiveValue::CSS_FR);
@@ -856,7 +856,7 @@ static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& 
     return zoomAdjustedPixelValueForLength(trackBreadthLength, style);
 }
 
-static PassRefPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle& style)
 {
     switch (trackSize.type()) {
     case LengthTrackSizing:
@@ -883,7 +883,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     list.append(lineNames.release());
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style)
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
@@ -916,7 +916,7 @@ static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direc
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForGridPosition(const GridPosition& position)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition& position)
 {
     if (position.isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -935,9 +935,9 @@ static PassRefPtr<CSSValue> valueForGridPosition(const GridPosition& position)
         list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING));
     return list;
 }
-static PassRefPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData* animation)
+static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData* animation)
 {
-    RefPtr<CSSValue> propertyValue;
+    RefPtrWillBeRawPtr<CSSValue> propertyValue;
     if (animation->animationMode() == CSSAnimationData::AnimateNone)
         propertyValue = cssValuePool().createIdentifierValue(CSSValueNone);
     else if (animation->animationMode() == CSSAnimationData::AnimateAll)
@@ -946,7 +946,7 @@ static PassRefPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData
         propertyValue = cssValuePool().createValue(getPropertyNameString(animation->property()), CSSPrimitiveValue::CSS_STRING);
     return propertyValue.release();
 }
-static PassRefPtr<CSSValue> valueForTransitionProperty(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSAnimationDataList* animList)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -957,7 +957,7 @@ static PassRefPtr<CSSValue> valueForTransitionProperty(const CSSAnimationDataLis
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForAnimationDelay(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDelay(const CSSAnimationDataList* animList)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -970,7 +970,7 @@ static PassRefPtr<CSSValue> valueForAnimationDelay(const CSSAnimationDataList* a
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForAnimationDuration(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDuration(const CSSAnimationDataList* animList)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -983,7 +983,7 @@ static PassRefPtr<CSSValue> valueForAnimationDuration(const CSSAnimationDataList
     return list.release();
 }
 
-static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timingFunction)
+static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timingFunction)
 {
     switch (timingFunction->type()) {
     case TimingFunction::CubicBezierFunction:
@@ -1038,7 +1038,7 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
     }
 }
 
-static PassRefPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDataList* animList)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -1050,7 +1050,7 @@ static PassRefPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDa
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForAnimationFillMode(unsigned fillMode)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationFillMode(unsigned fillMode)
 {
     switch (fillMode) {
     case AnimationFillModeNone:
@@ -1067,7 +1067,7 @@ static PassRefPtr<CSSValue> valueForAnimationFillMode(unsigned fillMode)
     }
 }
 
-static PassRefPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::AnimationDirection direction)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::AnimationDirection direction)
 {
     switch (direction) {
     case CSSAnimationData::AnimationDirectionNormal:
@@ -1084,7 +1084,7 @@ static PassRefPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::Animati
     }
 }
 
-static PassRefPtr<CSSValue> valueForWillChange(const Vector<CSSPropertyID>& willChangeProperties, bool willChangeContents, bool willChangeScrollPosition)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForWillChange(const Vector<CSSPropertyID>& willChangeProperties, bool willChangeContents, bool willChangeScrollPosition)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (willChangeContents)
@@ -1098,7 +1098,7 @@ static PassRefPtr<CSSValue> valueForWillChange(const Vector<CSSPropertyID>& will
     return list.release();
 }
 
-static PassRefPtr<CSSValue> createLineBoxContainValue(unsigned lineBoxContain)
+static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineBoxContain)
 {
     if (!lineBoxContain)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1160,7 +1160,7 @@ static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
     return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
 {
     if (!m_node)
         return 0;
@@ -1190,7 +1190,7 @@ bool CSSComputedStyleDeclaration::useFixedFontDefaultSize() const
     return style->fontDescription().useFixedDefaultSize();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const ShadowData& shadow, const RenderStyle& style, bool useSpread) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const ShadowData& shadow, const RenderStyle& style, bool useSpread) const
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> x = zoomAdjustedPixelValue(shadow.x(), style);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> y = zoomAdjustedPixelValue(shadow.y(), style);
@@ -1201,7 +1201,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowData(const Shado
     return CSSShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), shadowStyle.release(), color.release());
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowList(const ShadowList* shadowList, const RenderStyle& style, bool useSpread) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowList(const ShadowList* shadowList, const RenderStyle& style, bool useSpread) const
 {
     if (!shadowList)
         return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -1213,7 +1213,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowList(const Shado
     return list.release();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     return getPropertyCSSValue(propertyID, UpdateLayout);
 }
@@ -1242,7 +1242,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFamily(const AtomicStri
     return cssValuePool().createValue(family.string(), CSSPrimitiveValue::CSS_STRING);
 }
 
-static PassRefPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecoration)
+static PassRefPtrWillBeRawPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecoration)
 {
     // Blink value is ignored.
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -1258,7 +1258,7 @@ static PassRefPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecorati
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForTextDecorationStyle(TextDecorationStyle textDecorationStyle)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForTextDecorationStyle(TextDecorationStyle textDecorationStyle)
 {
     switch (textDecorationStyle) {
     case TextDecorationStyleSolid:
@@ -1277,7 +1277,7 @@ static PassRefPtr<CSSValue> valueForTextDecorationStyle(TextDecorationStyle text
     return cssValuePool().createExplicitInitialValue();
 }
 
-static PassRefPtr<CSSValue> valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat yRepeat)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat yRepeat)
 {
     // For backwards compatibility, if both values are equal, just return one of them. And
     // if the two values are equivalent to repeat-x or repeat-y, just return the shorthand.
@@ -1294,7 +1294,7 @@ static PassRefPtr<CSSValue> valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat 
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForFillSourceType(EMaskSourceType type)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType type)
 {
     switch (type) {
     case MaskAlpha:
@@ -1308,7 +1308,7 @@ static PassRefPtr<CSSValue> valueForFillSourceType(EMaskSourceType type)
     return 0;
 }
 
-static PassRefPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const RenderStyle& style)
 {
     if (fillSize.type == Contain)
         return cssValuePool().createIdentifierValue(CSSValueContain);
@@ -1325,7 +1325,7 @@ static PassRefPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const Ren
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForContentData(const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const RenderStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (const ContentData* contentData = style.contentData(); contentData; contentData = contentData->next()) {
@@ -1343,7 +1343,7 @@ static PassRefPtr<CSSValue> valueForContentData(const RenderStyle& style)
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForCounterDirectives(const RenderStyle& style, CSSPropertyID propertyID)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderStyle& style, CSSPropertyID propertyID)
 {
     const CounterDirectiveMap* map = style.counterDirectives();
     if (!map)
@@ -1430,7 +1430,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle&
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
-static PassRefPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction touchAction)
+static PassRefPtrWillBeRawPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction touchAction)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (touchAction == TouchActionAuto)
@@ -1521,7 +1521,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlig
     return result.release();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
@@ -1834,7 +1834,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                     if (StyleImage* image = cursors->at(i).image())
                         list->append(image->cssValue());
             }
-            RefPtr<CSSValue> value = cssValuePool().createValue(style->cursor());
+            RefPtrWillBeRawPtr<CSSValue> value = cssValuePool().createValue(style->cursor());
             if (list) {
                 list->append(value.release());
                 return list.release();
@@ -2193,7 +2193,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             }
         case CSSPropertyTextIndent: {
-            RefPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style->textIndent(), *style);
+            RefPtrWillBeRawPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style->textIndent(), *style);
             if (RuntimeEnabledFeatures::css3TextEnabled() && style->textIndentLine() == TextIndentEachLine) {
                 RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
                 list->append(textIndent.release());
@@ -2664,7 +2664,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBackground:
             return valuesForBackgroundShorthand();
         case CSSPropertyBorder: {
-            RefPtr<CSSValue> value = getPropertyCSSValue(CSSPropertyBorderTop, DoNotUpdateLayout);
+            RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(CSSPropertyBorderTop, DoNotUpdateLayout);
             const CSSPropertyID properties[3] = { CSSPropertyBorderRight, CSSPropertyBorderBottom,
                                         CSSPropertyBorderLeft };
             for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
@@ -2854,7 +2854,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
 String CSSComputedStyleDeclaration::getPropertyValue(CSSPropertyID propertyID) const
 {
-    RefPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
     if (value)
         return value->cssText();
     return "";
@@ -2894,7 +2894,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
                 return true;
         }
     }
-    RefPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
     return value && propertyValue && value->equals(*propertyValue);
 }
 
@@ -2907,7 +2907,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForShort
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
+        RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
         list->append(value);
     }
     return list.release();
@@ -2917,10 +2917,10 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForSides
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
-    RefPtr<CSSValue> topValue = getPropertyCSSValue(shorthand.properties()[0], DoNotUpdateLayout);
-    RefPtr<CSSValue> rightValue = getPropertyCSSValue(shorthand.properties()[1], DoNotUpdateLayout);
-    RefPtr<CSSValue> bottomValue = getPropertyCSSValue(shorthand.properties()[2], DoNotUpdateLayout);
-    RefPtr<CSSValue> leftValue = getPropertyCSSValue(shorthand.properties()[3], DoNotUpdateLayout);
+    RefPtrWillBeRawPtr<CSSValue> topValue = getPropertyCSSValue(shorthand.properties()[0], DoNotUpdateLayout);
+    RefPtrWillBeRawPtr<CSSValue> rightValue = getPropertyCSSValue(shorthand.properties()[1], DoNotUpdateLayout);
+    RefPtrWillBeRawPtr<CSSValue> bottomValue = getPropertyCSSValue(shorthand.properties()[2], DoNotUpdateLayout);
+    RefPtrWillBeRawPtr<CSSValue> leftValue = getPropertyCSSValue(shorthand.properties()[3], DoNotUpdateLayout);
 
     // All 4 properties must be specified.
     if (!topValue || !rightValue || !bottomValue || !leftValue)
@@ -2945,7 +2945,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForGridS
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
+        RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
         list->append(value.release());
     }
     return list.release();
@@ -2956,7 +2956,7 @@ PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesI
     Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
+        RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
         if (value)
             list.append(CSSProperty(properties[i], value.release(), false));
     }
@@ -2968,12 +2968,12 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const
     return 0;
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(const String& propertyName)
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
         return 0;
-    RefPtr<CSSValue> value = getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
     return value ? value->cloneForCSSOM() : 0;
 }
 
@@ -3012,7 +3012,7 @@ String CSSComputedStyleDeclaration::removeProperty(const String& name, Exception
     return String();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return getPropertyCSSValue(propertyID);
 }

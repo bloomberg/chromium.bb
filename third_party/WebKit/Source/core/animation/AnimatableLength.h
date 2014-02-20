@@ -72,7 +72,7 @@ public:
     {
         return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
     }
-    PassRefPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
     Length toLength(const CSSToLengthConversionData&, NumberRange = AllValues) const;
 
 protected:

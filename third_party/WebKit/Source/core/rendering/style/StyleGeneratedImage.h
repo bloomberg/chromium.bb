@@ -40,7 +40,7 @@ public:
 
     virtual WrappedImagePtr data() const OVERRIDE { return m_imageGeneratorValue.get(); }
 
-    virtual PassRefPtr<CSSValue> cssValue() const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const OVERRIDE;
 
     virtual LayoutSize imageSize(const RenderObject*, float multiplier) const OVERRIDE;
     virtual bool imageHasRelativeWidth() const OVERRIDE { return !m_fixedSize; }

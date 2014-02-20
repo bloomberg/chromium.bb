@@ -98,7 +98,7 @@ String CSSImageValue::customCSSText() const
     return "url(" + quoteCSSURLIfNeeded(m_url) + ")";
 }
 
-PassRefPtr<CSSValue> CSSImageValue::cloneForCSSOM() const
+PassRefPtrWillBeRawPtr<CSSValue> CSSImageValue::cloneForCSSOM() const
 {
     // NOTE: We expose CSSImageValues as URI primitive values in CSSOM to maintain old behavior.
     RefPtrWillBeRawPtr<CSSPrimitiveValue> uriValue = CSSPrimitiveValue::create(m_url, CSSPrimitiveValue::CSS_URI);

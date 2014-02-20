@@ -50,7 +50,7 @@ public:
         return adoptRef(new AnimatableDouble(number, constraint));
     }
 
-    PassRefPtr<CSSValue> toCSSValue() const;
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const;
     double toDouble() const { return m_number; }
 
 protected:

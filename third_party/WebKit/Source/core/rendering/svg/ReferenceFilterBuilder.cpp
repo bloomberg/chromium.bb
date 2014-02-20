@@ -82,7 +82,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
         eColorInterpolation = svgStyle->colorInterpolationFilters();
     } else {
         // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(AtomicString(SVGNames::color_interpolation_filtersAttr.toString()));
+        RefPtrWillBeRawPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(AtomicString(SVGNames::color_interpolation_filtersAttr.toString()));
         if (cssValue.get() && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
             eColorInterpolation = (EColorInterpolation)primitiveValue;

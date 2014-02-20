@@ -165,7 +165,7 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, Exce
     mutationScope.enqueueMutationRecord();
 }
 
-PassRefPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValue(const String& propertyName)
+PassRefPtrWillBeRawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
@@ -249,7 +249,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& prop
     return result;
 }
 
-PassRefPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
+PassRefPtrWillBeRawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return propertySet()->getPropertyCSSValue(propertyID);
 }
@@ -280,9 +280,9 @@ CSSValue* AbstractPropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue
     // The map is here to maintain the object identity of the CSSValues over multiple invocations.
     // FIXME: It is likely that the identity is not important for web compatibility and this code should be removed.
     if (!m_cssomCSSValueClones)
-        m_cssomCSSValueClones = adoptPtr(new HashMap<CSSValue*, RefPtr<CSSValue> >);
+        m_cssomCSSValueClones = adoptPtrWillBeNoop(new WillBeHeapHashMap<CSSValue*, RefPtrWillBeMember<CSSValue> >);
 
-    RefPtr<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtr<CSSValue>()).storedValue->value;
+    RefPtrWillBeMember<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtrWillBeMember<CSSValue>()).storedValue->value;
     if (!clonedValue)
         clonedValue = internalValue->cloneForCSSOM();
     return clonedValue.get();

@@ -78,7 +78,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> basicShapeRadiusToCSSValue(CSSV
     return 0;
 }
 
-PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicShape* basicShape)
+PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicShape* basicShape)
 {
     CSSValuePool& pool = cssValuePool();
 

@@ -281,7 +281,7 @@ String SVGElement::title() const
     return String();
 }
 
-PassRefPtr<CSSValue> SVGElement::getPresentationAttribute(const AtomicString& name)
+PassRefPtrWillBeRawPtr<CSSValue> SVGElement::getPresentationAttribute(const AtomicString& name)
 {
     if (!hasAttributesWithoutUpdate())
         return 0;
@@ -294,7 +294,7 @@ PassRefPtr<CSSValue> SVGElement::getPresentationAttribute(const AtomicString& na
     RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(SVGAttributeMode);
     CSSPropertyID propertyID = SVGElement::cssPropertyIdForSVGAttributeName(attr->name());
     style->setProperty(propertyID, attr->value());
-    RefPtr<CSSValue> cssValue = style->getPropertyCSSValue(propertyID);
+    RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValue(propertyID);
     return cssValue ? cssValue->cloneForCSSOM() : 0;
 }
 

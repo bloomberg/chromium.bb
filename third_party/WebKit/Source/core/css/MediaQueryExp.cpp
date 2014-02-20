@@ -195,7 +195,7 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature;
 }
 
-MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, PassRefPtr<CSSValue> value)
+MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, PassRefPtrWillBeRawPtr<CSSValue> value)
     : m_mediaFeature(mediaFeature)
     , m_value(value)
 {
@@ -203,7 +203,7 @@ MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, PassRefPtr<CSSVal
 
 PassOwnPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature, CSSParserValueList* valueList)
 {
-    RefPtr<CSSValue> cssValue;
+    RefPtrWillBeRawPtr<CSSValue> cssValue;
     bool isValid = false;
 
     // Create value for media query expression that must have 1 or more values.

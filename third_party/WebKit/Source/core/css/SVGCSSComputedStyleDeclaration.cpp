@@ -46,7 +46,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveV
     }
 }
 
-static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthList> passDashes)
+static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthList> passDashes)
 {
     RefPtr<SVGLengthList> dashes = passDashes;
 
@@ -62,7 +62,7 @@ static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthLi
     return list.release();
 }
 
-static PassRefPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder paintorder)
+static PassRefPtrWillBeRawPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder paintorder)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     do {
@@ -91,7 +91,7 @@ PassRefPtrWillBeRawPtr<SVGPaint> CSSComputedStyleDeclaration::adjustSVGPaintForC
     return paint.release();
 }
 
-PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
 {
     Node* node = m_node.get();
     if (!node)

@@ -37,7 +37,7 @@ StyleGeneratedImage::StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGenerato
     m_isGeneratedImage = true;
 }
 
-PassRefPtr<CSSValue> StyleGeneratedImage::cssValue() const
+PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
 {
     return m_imageGeneratorValue.get();
 }

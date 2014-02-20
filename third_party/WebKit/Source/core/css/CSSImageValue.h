@@ -54,7 +54,7 @@ public:
 
     String customCSSText() const;
 
-    PassRefPtr<CSSValue> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<CSSValue> cloneForCSSOM() const;
 
     bool hasFailedOrCanceledSubresources() const;
 

@@ -57,7 +57,7 @@ public:
     virtual String title() const OVERRIDE;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     virtual bool supportsMarkers() const { return false; }
-    PassRefPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
     static bool isAnimatableCSSProperty(const QualifiedName&);
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()

@@ -175,7 +175,7 @@ void Animation::setPlaybackDirection(Timing& timing, String direction)
 
 void Animation::setTimingFunction(Timing& timing, String timingFunctionString)
 {
-    RefPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
+    RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
     if (timingFunctionValue) {
         RefPtr<TimingFunction> timingFunction = CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false);
         if (timingFunction) {
@@ -256,7 +256,7 @@ static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* elemen
 
         String timingFunctionString;
         if (keyframeDictionaryVector[i].get("easing", timingFunctionString)) {
-            RefPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
+            RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
             if (timingFunctionValue) {
                 keyframe->setEasing(CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false));
             }

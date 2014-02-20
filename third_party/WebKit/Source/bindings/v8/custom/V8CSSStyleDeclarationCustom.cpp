@@ -218,7 +218,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
 
     countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
     CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
-    RefPtr<CSSValue> cssValue = imp->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
+    RefPtrWillBeRawPtr<CSSValue> cssValue = imp->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (cssValue) {
         v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
         return;

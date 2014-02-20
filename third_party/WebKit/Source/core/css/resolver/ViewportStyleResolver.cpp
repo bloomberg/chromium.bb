@@ -129,7 +129,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const
     if (id == CSSPropertyUserZoom)
         defaultValue = 1;
 
-    RefPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
+    RefPtrWillBeRawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
     if (!value || !value->isPrimitiveValue())
         return defaultValue;
 
@@ -179,7 +179,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
         || id == CSSPropertyMaxWidth
         || id == CSSPropertyMinWidth);
 
-    RefPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
+    RefPtrWillBeRawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
     if (!value || !value->isPrimitiveValue())
         return Length(); // auto
 

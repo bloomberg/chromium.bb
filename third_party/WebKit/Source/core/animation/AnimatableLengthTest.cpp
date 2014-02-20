@@ -75,7 +75,7 @@ protected:
         ));
     }
 
-    PassRefPtr<CSSValue> toCSSValue(CSSValue* cssValue)
+    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue(CSSValue* cssValue)
     {
         return AnimatableLength::create(cssValue)->toCSSValue();
     }

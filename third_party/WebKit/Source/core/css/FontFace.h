@@ -86,12 +86,12 @@ public:
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
 private:
-    FontFace(PassRefPtr<CSSValue> source);
+    FontFace(PassRefPtrWillBeRawPtr<CSSValue> source);
 
     void initCSSFontFace(Document*);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState&);
     bool setPropertyFromStyle(const StylePropertySet*, CSSPropertyID);
-    bool setPropertyValue(PassRefPtr<CSSValue>, CSSPropertyID);
+    bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
     void resolveReadyPromises();
 

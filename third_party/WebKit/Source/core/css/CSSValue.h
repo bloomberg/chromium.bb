@@ -116,7 +116,7 @@ public:
         return isPrimitiveValue() || isSVGColor() || isValueList();
     }
 
-    PassRefPtr<CSSValue> cloneForCSSOM() const;
+    PassRefPtrWillBeRawPtr<CSSValue> cloneForCSSOM() const;
 
     bool hasFailedOrCanceledSubresources() const;
 

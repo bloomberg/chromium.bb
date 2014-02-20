@@ -344,7 +344,7 @@ void PageSerializer::retrieveResourcesForProperties(const StylePropertySet* styl
     // image properties there might be.
     unsigned propertyCount = styleDeclaration->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
-        RefPtr<CSSValue> cssValue = styleDeclaration->propertyAt(i).value();
+        RefPtrWillBeRawPtr<CSSValue> cssValue = styleDeclaration->propertyAt(i).value();
         retrieveResourcesForCSSValue(cssValue.get(), document);
     }
 }

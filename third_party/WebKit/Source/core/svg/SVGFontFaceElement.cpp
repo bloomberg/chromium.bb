@@ -300,7 +300,7 @@ void SVGFontFaceElement::rebuildFontFace()
 
     if (describesParentFont) {
         // Traverse parsed CSS values and associate CSSFontFaceSrcValue elements with ourselves.
-        RefPtr<CSSValue> src = m_fontFaceRule->properties()->getPropertyCSSValue(CSSPropertySrc);
+        RefPtrWillBeRawPtr<CSSValue> src = m_fontFaceRule->properties()->getPropertyCSSValue(CSSPropertySrc);
         CSSValueList* srcList = toCSSValueList(src.get());
 
         unsigned srcLength = srcList ? srcList->length() : 0;

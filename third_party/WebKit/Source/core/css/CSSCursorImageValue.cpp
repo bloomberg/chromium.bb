@@ -48,7 +48,7 @@ static inline SVGCursorElement* resourceReferencedByCursorElement(const String& 
     return 0;
 }
 
-CSSCursorImageValue::CSSCursorImageValue(PassRefPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
+CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
     : CSSValue(CursorImageClass)
     , m_imageValue(imageValue)
     , m_hasHotSpot(hasHotSpot)
@@ -198,6 +198,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 
 void CSSCursorImageValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_imageValue);
     CSSValue::traceAfterDispatch(visitor);
 }
 

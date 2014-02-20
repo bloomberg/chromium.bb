@@ -95,7 +95,7 @@ public:
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
     static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
-    static PassRefPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
+    static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassRefPtr<MediaQuerySet> parseMediaQueryList(const String&);

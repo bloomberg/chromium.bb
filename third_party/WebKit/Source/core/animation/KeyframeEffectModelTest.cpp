@@ -128,7 +128,7 @@ TEST(AnimationKeyframeEffectModel, CompositeAdd)
 TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
 {
     KeyframeEffectModel::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    RefPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("ease-in");
+    RefPtrWillBeRawPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("ease-in");
     keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
     keyframes[0]->setEasing(CSSToStyleMap::animationTimingFunction(timingFunction.get(), false));
     keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
@@ -139,7 +139,7 @@ TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
 TEST(AnimationKeyframeEffectModel, CompositeCubicBezier)
 {
     KeyframeEffectModel::KeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    RefPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("cubic-bezier(0.42, 0, 0.58, 1)");
+    RefPtrWillBeRawPtr<CSSValue> timingFunction = BisonCSSParser::parseAnimationTimingFunctionValue("cubic-bezier(0.42, 0, 0.58, 1)");
     keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
     keyframes[0]->setEasing(CSSToStyleMap::animationTimingFunction(timingFunction.get(), false));
     keyframes[1]->setComposite(AnimationEffect::CompositeReplace);

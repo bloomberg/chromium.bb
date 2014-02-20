@@ -70,7 +70,10 @@ COMPILE_ASSERT(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), CSS_value_should_
 
 class TextCloneCSSValue : public CSSValue {
 public:
-    static PassRefPtr<TextCloneCSSValue> create(ClassType classType, const String& text) { return adoptRef(new TextCloneCSSValue(classType, text)); }
+    static PassRefPtrWillBeRawPtr<TextCloneCSSValue> create(ClassType classType, const String& text)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new TextCloneCSSValue(classType, text));
+    }
 
     String cssText() const { return m_cssText; }
 
@@ -624,7 +627,7 @@ void CSSValue::trace(Visitor* visitor)
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
+PassRefPtrWillBeRawPtr<CSSValue> CSSValue::cloneForCSSOM() const
 {
     switch (classType()) {
     case PrimitiveClass:

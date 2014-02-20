@@ -58,16 +58,16 @@ public:
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 
-    PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
 
-    PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
-    PassRefPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool useFixedFontDefaultSize() const;
-    PassRefPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
     PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
@@ -86,7 +86,7 @@ private:
     virtual unsigned length() const OVERRIDE;
     virtual String item(unsigned index) const OVERRIDE;
     PassRefPtr<RenderStyle> computeRenderStyle(CSSPropertyID) const;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE;
     virtual String getPropertyValue(const String& propertyName) OVERRIDE;
     virtual String getPropertyPriority(const String& propertyName) OVERRIDE;
     virtual String getPropertyShorthand(const String& propertyName) OVERRIDE;
@@ -95,18 +95,18 @@ private:
     virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE;
     virtual String cssText() const OVERRIDE;
     virtual void setCSSText(const String&, ExceptionState&) OVERRIDE;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
     virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 
-    PassRefPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread) const;
-    PassRefPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread) const;
+    PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread) const;
+    PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread) const;
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&) const;
     PassRefPtrWillBeRawPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtrWillBeRawPtr<SVGPaint>, RenderStyle&) const;
 
-    PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;
+    PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;
 
     PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand&) const;
     PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand&) const;
