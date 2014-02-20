@@ -343,8 +343,6 @@ def generate_dependencies(idl_filename):
     # If not a partial interface, the basename is the interface name
     interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
 
-    # Non-partial interfaces default to having bindings generated,
-    # but are removed later if they are implemented by another interface
     interfaces_info[interface_name] = {
         'full_path': full_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
@@ -363,17 +361,6 @@ def generate_dependencies(idl_filename):
         interfaces_info[interface_name]['implemented_as'] = implemented_as
 
     return True
-
-
-def remove_interfaces_implemented_somewhere():
-    # Interfaces that are implemented by another interface do not have
-    # their own bindings generated, as this would be redundant with the
-    # actual implementation.
-    implemented_somewhere = set().union(*[
-        interface_info['implements_interfaces']
-        for interface_info in interfaces_info.values()])
-    for interface in implemented_somewhere:
-        del interfaces_info[interface]
 
 
 def generate_constructor_attribute_list(interface_name, extended_attributes):
@@ -527,7 +514,6 @@ def parse_idl_files(idl_files, global_constructors_filenames):
         interface_info['dependencies_include_paths'] = (
                 partial_interfaces_include_paths +
                 implemented_interfaces_include_paths)
-    remove_interfaces_implemented_somewhere()
 
     return global_constructors
 
