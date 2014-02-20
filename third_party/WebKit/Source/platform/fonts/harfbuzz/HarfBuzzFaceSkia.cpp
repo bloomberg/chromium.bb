@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012 Google Inc. All rights reserved.
+ * Copyright (c) 2014 BlackBerry Limited. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -117,6 +118,50 @@ static hb_bool_t harfBuzzGetGlyphHorizontalOrigin(hb_font_t* hbFont, void* fontD
     return true;
 }
 
+static hb_position_t harfBuzzGetGlyphHorizontalKerning(hb_font_t*, void* fontData, hb_codepoint_t leftGlyph, hb_codepoint_t rightGlyph, void*)
+{
+    HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+    if (hbFontData->m_paint.isVerticalText()) {
+        // We don't support cross-stream kerning
+        return 0;
+    }
+
+    SkTypeface* typeface = hbFontData->m_paint.getTypeface();
+
+    const uint16_t glyphs[2] = { leftGlyph, rightGlyph };
+    int32_t kerningAdjustments[1] = { 0 };
+
+    if (typeface->getKerningPairAdjustments(glyphs, 2, kerningAdjustments)) {
+        SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
+        SkScalar size = hbFontData->m_paint.getTextSize();
+        return SkiaScalarToHarfBuzzPosition(SkScalarMulDiv(SkIntToScalar(kerningAdjustments[0]), size, upm));
+    }
+
+    return 0;
+}
+
+static hb_position_t harfBuzzGetGlyphVerticalKerning(hb_font_t*, void* fontData, hb_codepoint_t topGlyph, hb_codepoint_t bottomGlyph, void*)
+{
+    HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+    if (!hbFontData->m_paint.isVerticalText()) {
+        // We don't support cross-stream kerning
+        return 0;
+    }
+
+    SkTypeface* typeface = hbFontData->m_paint.getTypeface();
+
+    const uint16_t glyphs[2] = { topGlyph, bottomGlyph };
+    int32_t kerningAdjustments[1] = { 0 };
+
+    if (typeface->getKerningPairAdjustments(glyphs, 2, kerningAdjustments)) {
+        SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
+        SkScalar size = hbFontData->m_paint.getTextSize();
+        return SkiaScalarToHarfBuzzPosition(SkScalarMulDiv(SkIntToScalar(kerningAdjustments[0]), size, upm));
+    }
+
+    return 0;
+}
+
 static hb_bool_t harfBuzzGetGlyphExtents(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, hb_glyph_extents_t* extents, void* userData)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
@@ -135,7 +180,9 @@ static hb_font_funcs_t* harfBuzzSkiaGetFontFuncs()
         harfBuzzSkiaFontFuncs = hb_font_funcs_create();
         hb_font_funcs_set_glyph_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyph, 0, 0);
         hb_font_funcs_set_glyph_h_advance_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalAdvance, 0, 0);
+        hb_font_funcs_set_glyph_h_kerning_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalKerning, 0, 0);
         hb_font_funcs_set_glyph_h_origin_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalOrigin, 0, 0);
+        hb_font_funcs_set_glyph_v_kerning_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphVerticalKerning, 0, 0);
         hb_font_funcs_set_glyph_extents_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphExtents, 0, 0);
         hb_font_funcs_make_immutable(harfBuzzSkiaFontFuncs);
     }
