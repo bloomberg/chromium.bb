@@ -30,6 +30,7 @@
 
 [
     ImplementedAs=TestPartialInterfacePythonImplementation,  // Conflicts with default partial interface class name
+    // NoHeader, // FIXME: remove this attribute once switch to Python, as removing; only needed by Python (and not supported by Perl), so no test currently
     // PerContextEnabled=PartialContextName, // Conflicts with [RuntimeEnabled]; test disabled because Perl behavior is wrong for static attributes and methods and only one actual use
 ] partial interface TestInterfacePython {
     const unsigned short PARTIAL2_UNSIGNED_SHORT = 0;

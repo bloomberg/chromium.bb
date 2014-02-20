@@ -63,6 +63,8 @@ ImplementedAs=*
 InitializedByEventConstructor
 MeasureAs=*
 NamedConstructor=*
+# FIXME: remove [NoHeader] once switch to Python
+NoHeader
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins

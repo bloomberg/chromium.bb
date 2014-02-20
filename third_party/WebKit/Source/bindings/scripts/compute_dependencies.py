@@ -332,7 +332,9 @@ def generate_dependencies(idl_filename):
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = include_path(idl_filename, implemented_as)
+    # FIXME: remove [NoHeader] once switch to Python
+    this_include_path = (include_path(idl_filename, implemented_as)
+                         if 'NoHeader' not in extended_attributes else None)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)

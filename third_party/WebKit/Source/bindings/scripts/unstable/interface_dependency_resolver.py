@@ -165,13 +165,14 @@ def merge_dependency_interface(target_interface, dependency_interface, dependenc
     # for Blink class name and function name (or constant name), respectively.
     # Thus we do not want to copy this from the interface to the member, but
     # instead extract it and handle it separately.
-    implemented_by = dependency_interface.extended_attributes.get('ImplementedAs', dependency_interface_basename)
+    merged_extended_attributes['ImplementedBy'] = (
+        dependency_interface.extended_attributes.get(
+            'ImplementedAs', dependency_interface_basename))
 
     def merge_lists(source_list, target_list):
         for member in source_list:
             member.extended_attributes.update(merged_extended_attributes)
-            member.extended_attributes['ImplementedBy'] = implemented_by
-            target_list.append(member)
+        target_list.extend(source_list)
 
     merge_lists(dependency_interface.attributes, target_interface.attributes)
     merge_lists(dependency_interface.constants, target_interface.constants)

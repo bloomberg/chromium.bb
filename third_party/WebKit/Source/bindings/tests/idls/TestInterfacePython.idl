@@ -50,4 +50,3 @@
 
 TestInterfacePython implements TestImplements;
 TestInterfacePython implements TestImplements2;
-TestInterfacePython implements TestImplements3;
