@@ -56,9 +56,6 @@
           'defines': [
             'USE_SYMBOLIZE',
           ],
-          'cflags': [
-            '-Wno-write-strings',
-          ],
         }, {  # desktop_linux == 0 and chromeos == 0
             'sources/': [
               ['exclude', '/xdg_user_dirs/'],
