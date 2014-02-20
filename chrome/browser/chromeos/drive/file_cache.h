@@ -147,7 +147,6 @@ class FileCache {
 
  private:
   friend class FileCacheTest;
-  friend class FileCacheTestOnUIThread;
 
   ~FileCache();
 
