@@ -12,6 +12,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
 
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -77,7 +78,7 @@ public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
                 url.get().contains(welcomeUrl));
         assertNotNull("Title was null", title.get());
         assertFalse("Title should not contain: " + welcomeUrl + ". Was: " + title.get(),
-                title.get().toLowerCase().contains(welcomeUrl));
+                title.get().toLowerCase(Locale.US).contains(welcomeUrl));
     }
 
     /**

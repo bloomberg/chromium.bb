@@ -60,8 +60,7 @@ public class ViewportTest extends ContentViewTestBase {
 
         // window.devicePixelRatio should match the default display. Only check to 1 decimal place
         // to allow for rounding.
-        assertEquals(String.format("%.1g", metrics.density),
-                String.format("%.1g", evaluateFloatValue("window.devicePixelRatio")));
+        assertEquals(metrics.density, evaluateFloatValue("window.devicePixelRatio"), 0.1);
 
         // Check that the viewport width is vaguely sensible.
         int viewportWidth = evaluateIntegerValue("document.documentElement.clientWidth");

@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.net.spdyproxy;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class DataReductionProxySettings {
 
     public static class ContentLengths {
@@ -178,13 +181,13 @@ public class DataReductionProxySettings {
      */
     public String getContentLengthPercentSavings() {
         ContentLengths length = getContentLengths();
-        String percent = "0%";
+
+        double savings = 0;
         if (length.getOriginal() > 0L  && length.getOriginal() > length.getReceived()) {
-            percent = String.format(
-                    "%.0f%%", 100.0 *
-                    (length.getOriginal() - length.getReceived()) / length.getOriginal());
+            savings = (length.getOriginal() - length.getReceived()) / (double) length.getOriginal();
         }
-        return percent;
+        NumberFormat percentageFormatter = NumberFormat.getPercentInstance(Locale.getDefault());
+        return percentageFormatter.format(savings);
     }
 
     private native long nativeInit();

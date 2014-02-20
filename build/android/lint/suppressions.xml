@@ -28,14 +28,6 @@ Still reading?
     <ignore path="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/ticl/android2/channel/AndroidChannelPreferences.java"/>
   </issue>
   <issue id="DefaultLocale">
-    <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ViewportTest.class"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java"/>
-    <ignore path="chrome/android/testshell/javatests/src/org/chromium/chrome/testshell/ChromiumTestShellUrlTest.java"/>
-    <ignore path="chrome/test/android/javatests/src/org/chromium/chrome/test/util/browser/sync/SyncTestUtil.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/app/Linker.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/LoadUrlParams.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
-    <ignore path="content/public/android/javatests/src/org/chromium/content/browser/ViewportTest.java"/>
     <ignore path="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/external/client/contrib/AndroidListenerState.java"/>
   </issue>
   <issue id="DrawAllocation">

@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -138,7 +139,7 @@ public class LoadUrlParams {
         // baseUrl and historyUrl.
         // TODO(joth): we should just append baseURL and historyURL here, and move the
         // WebView specific transform up to a wrapper factory function in android_webview/.
-        if (baseUrl == null || !baseUrl.toLowerCase().startsWith("data:")) {
+        if (baseUrl == null || !baseUrl.toLowerCase(Locale.US).startsWith("data:")) {
             params.setBaseUrlForDataUrl(baseUrl != null ? baseUrl : "about:blank");
             params.setVirtualUrlForDataUrl(historyUrl != null ? historyUrl : "about:blank");
         }
@@ -239,7 +240,7 @@ public class LoadUrlParams {
             if (headerBuilder.length() > 0) headerBuilder.append(delimiter);
 
             // Header name should be lower case.
-            headerBuilder.append(header.getKey().toLowerCase());
+            headerBuilder.append(header.getKey().toLowerCase(Locale.US));
             headerBuilder.append(":");
             headerBuilder.append(header.getValue());
         }

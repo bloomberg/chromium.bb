@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.test.util.browser.sync;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.accounts.Account;
 import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
 
 import junit.framework.Assert;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -76,7 +77,8 @@ public final class SyncTestUtil {
      * keys.
      */
     private static Pair<String, String> newPair(String first, String second) {
-        return Pair.create(first.toLowerCase().trim(), second.toLowerCase().trim());
+        return Pair.create(first.toLowerCase(Locale.US).trim(),
+                second.toLowerCase(Locale.US).trim());
     }
 
     /**
