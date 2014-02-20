@@ -4471,14 +4471,16 @@ LayoutRect RenderBox::layoutOverflowRectForPropagation(RenderStyle* parentStyle)
 
 LayoutRect RenderBox::noOverflowRect() const
 {
-    // Because of the special coodinate system used for overflow rectangles and many other
+    // Because of the special coordinate system used for overflow rectangles and many other
     // rectangles (not quite logical, not quite physical), we need to flip the block progression
     // coordinate in vertical-rl and horizontal-bt writing modes. In other words, the rectangle
     // returned is physical, except for the block direction progression coordinate (y in horizontal
     // writing modes, x in vertical writing modes), which is always "logical top". Apart from the
     // flipping, this method does the same as clientBoxRect().
 
-    LayoutUnit left = borderLeft() + (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0);
+    const int scrollBarWidth = verticalScrollbarWidth();
+    const int scrollBarHeight = horizontalScrollbarHeight();
+    LayoutUnit left = borderLeft() + (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? scrollBarWidth : 0);
     LayoutUnit top = borderTop();
     LayoutUnit right = borderRight();
     LayoutUnit bottom = borderBottom();
@@ -4494,9 +4496,9 @@ LayoutRect RenderBox::noOverflowRect() const
     // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
     // our own.
     if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        rect.contract(0, horizontalScrollbarHeight());
+        rect.contract(0, scrollBarHeight);
     else
-        rect.contract(verticalScrollbarWidth(), horizontalScrollbarHeight());
+        rect.contract(scrollBarWidth, scrollBarHeight);
     return rect;
 }
 
