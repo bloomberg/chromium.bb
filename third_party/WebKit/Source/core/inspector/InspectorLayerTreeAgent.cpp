@@ -47,6 +47,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsContextRecorder.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
 
 namespace WebCore {
@@ -74,12 +75,13 @@ inline String idForLayer(const GraphicsLayer* graphicsLayer)
 
 static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
 {
+    blink::WebLayer* webLayer = graphicsLayer->platformLayer();
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
         .setLayerId(idForLayer(graphicsLayer))
-        .setOffsetX(graphicsLayer->position().x())
-        .setOffsetY(graphicsLayer->position().y())
-        .setWidth(graphicsLayer->size().width())
-        .setHeight(graphicsLayer->size().height())
+        .setOffsetX(webLayer->position().x)
+        .setOffsetY(webLayer->position().y)
+        .setWidth(webLayer->bounds().width)
+        .setHeight(webLayer->bounds().height)
         .setPaintCount(graphicsLayer->paintCount());
 
     if (nodeId)
