@@ -38,6 +38,8 @@ def CanonicalArch(arch):
   # TODO(jvoung): be more specific about the arm architecture version?
   if arch in ('arm', 'armv7'):
     return 'arm'
+  if arch in ('mipsel'):
+    return 'mips32'
   if re.match('^i.86$', arch) or arch in ('x86_32', 'x86-32', 'ia32', 'x86'):
     return 'x86-32'
   return None
@@ -47,7 +49,7 @@ def GetBuildArch():
   return CanonicalArch(arch)
 
 BUILD_ARCH = GetBuildArch()
-ARCHES = ['x86-32', 'x86-64', 'arm']
+ARCHES = ['x86-32', 'x86-64', 'arm', 'mips32']
 
 def IsValidArch(arch):
   return arch in ARCHES
@@ -56,7 +58,8 @@ def IsValidArch(arch):
 def StandardArch(arch):
   return {'x86-32': 'i686',
           'x86-64': 'x86_64',
-          'arm'   : 'armv7'}[arch]
+          'arm'   : 'armv7',
+          'mips32': 'mips'}[arch]
 
 
 ######################################################################

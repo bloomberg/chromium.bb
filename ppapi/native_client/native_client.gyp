@@ -36,7 +36,7 @@
             },
           ],
           'conditions': [
-            ['target_arch!="arm"', {
+            ['target_arch=="ia32" or target_arch=="x64"', {
               'copies': [
                 {
                   'destination': '>(tc_include_dir_glibc)/include/nacl',
@@ -84,6 +84,16 @@
                   ],
                 },
               ]
+            }],
+            ['target_arch=="mipsel"', {
+              'copies': [
+                {
+                  'destination': '>(tc_lib_dir_newlib_mips)',
+                  'files': [
+                    'src/untrusted/irt_stub/libppapi.a',
+                  ],
+                },
+              ]
             }]
           ],
         },
@@ -98,6 +108,7 @@
             'out_newlib64': '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_64_raw.nexe',
             'out_newlib32': '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_x86_32_raw.nexe',
             'out_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_arm_raw.nexe',
+            'out_newlib_mips': '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_mips32_raw.nexe',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -146,7 +157,7 @@
                   'enable_x86_32': 0
                 }
               ],
-              ['target_arch!="arm"', {
+              ['target_arch=="ia32" or target_arch=="x64"', {
                 'extra_deps_newlib64': [
                   '>(tc_lib_dir_irt64)/libppapi_proxy_untrusted.a',
                   '>(tc_lib_dir_irt64)/libppapi_ipc_untrusted.a',
@@ -208,6 +219,28 @@
                   '>(tc_lib_dir_irt_arm)/libplatform.a',
                   '>(tc_lib_dir_irt_arm)/libimc_syscalls.a',
                   '>(tc_lib_dir_irt_arm)/libgio.a',
+                ],
+              }],
+              ['target_arch=="mipsel"', {
+                'extra_deps_mips': [
+                  '>(tc_lib_dir_irt_mips)/libppapi_proxy_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libppapi_ipc_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libppapi_shared_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libgles2_implementation_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libcommand_buffer_client_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libcommand_buffer_common_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libgpu_ipc_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libtracing_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libgles2_cmd_helper_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libgles2_utils_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libipc_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libbase_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libirt_browser.a',
+                  '>(tc_lib_dir_irt_mips)/libshared_memory_support_untrusted.a',
+                  '>(tc_lib_dir_irt_mips)/libsrpc.a',
+                  '>(tc_lib_dir_irt_mips)/libplatform.a',
+                  '>(tc_lib_dir_irt_mips)/libimc_syscalls.a',
+                  '>(tc_lib_dir_irt_mips)/libgio.a',
                 ],
               }],
             ],
@@ -275,6 +308,44 @@
                   'action': [
                     '<(PRODUCT_DIR)/tls_edit',
                     '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_arm_raw.nexe.debug',
+                    '<@(_outputs)',
+                  ],
+                },
+              ],
+            }],
+            ['target_arch=="mipsel"', {
+              'actions': [
+                {
+                  'action_name': 'tls_edit_nacl_irt_mips',
+                  'message': 'Patching TLS for nacl_irt (mips)',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_mips32_raw.nexe',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/nacl_irt_mips32.nexe',
+                  ],
+                  'action': ['<@(_inputs)', '<@(_outputs)'],
+                },
+
+                # The non-stripped nacl_irt debug file must also go through
+                # tls_edit, however gyp does not know anything about the
+                # debug file since it is built as a side effect. We
+                # must depend on the nacl_irt_raw.nexe and use the
+                # nacl_irt_raw.nexe.debug file as the input to tls_edit.
+                {
+                  'action_name': 'tls_edit_nacl_irt_debug_mips',
+                  'message': 'Patching TLS for nacl_irt.debug (mips)',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_mips32_raw.nexe',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/nacl_irt_mips32.nexe.debug',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/tls_edit',
+                    '<(SHARED_INTERMEDIATE_DIR)/nacl_irt_mips32_raw.nexe.debug',
                     '<@(_outputs)',
                   ],
                 },

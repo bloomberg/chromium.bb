@@ -90,6 +90,11 @@
                 '../ppapi/native_client/src/untrusted/pnacl_support_extension/pnacl_support_extension.gyp:pnacl_support_extension',
               ],
             }],
+            ['target_arch=="mipsel"', {
+              'dependencies!': [
+                '../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
+              ],
+            }],
           ],
           'direct_dependent_settings': {
             'defines': [

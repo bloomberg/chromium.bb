@@ -18,6 +18,13 @@
           '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
           '../../../../../native_client/tools.gyp:prep_toolchain',
         ],
+        'conditions': [
+          ['target_arch=="mipsel"', {
+            'dependencies!': [
+              '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
+            ],
+          }],
+        ],
         'sources': [
           'pnacl_component_crx_gen.py',
         ],
@@ -87,6 +94,21 @@
                             # Use the freshly generated shim.
                             '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/libpnacl_irt_shim.a',
                           ],
+                        },
+                      }],
+                      ['target_arch=="mipsel"', {
+                        'outputs': [
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_crtbegin_o',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_ld_nexe',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libcrt_platform_a',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libgcc_a',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libgcc_eh_a',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libpnacl_irt_shim_dummy_a',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_llc_nexe',
+                        ],
+                        'variables': {
+                          'lib_overrides': [],
                         },
                       }],
                       ['target_arch=="ia32"', {

@@ -213,6 +213,7 @@ void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
     kNaClWin32,
     kNaClWin64,
     kNaClWinArm,
+    kNaClLinuxMips,
     kNaClOSArchMax
   };
 
@@ -229,6 +230,8 @@ void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
     os_arch = static_cast<NaClOSArch>(os_arch + 1);
   if (sandbox_isa == "arm")
     os_arch = static_cast<NaClOSArch>(os_arch + 2);
+  if (sandbox_isa == "mips32")
+    os_arch = kNaClLinuxMips;
 
   HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
 }

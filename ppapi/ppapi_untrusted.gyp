@@ -98,7 +98,7 @@
           '-O0',
         ],
         'conditions': [
-          ['target_arch!="arm"', {
+          ['target_arch=="ia32" or target_arch=="x64"', {
             'extra_deps_newlib64': [
               '>(tc_lib_dir_newlib64)/libppapi_cpp.a',
               '>(tc_lib_dir_newlib64)/libppapi.a',
@@ -137,7 +137,7 @@
         'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
       },
       'conditions': [
-        ['target_arch!="arm" and disable_glibc==0', {
+        ['target_arch!="arm" and target_arch!="mipsel" and disable_glibc==0', {
           'variables': {
             'build_glibc': 1,
             # NOTE: Use /lib, not /lib64 here; it is a symbolic link which
@@ -177,8 +177,9 @@
         # NOTE: native_client/build/untrusted.gypi dictates that
         # PNaCl only generate x86-32 and x86-64 on x86 platforms,
         # or ARM on ARM platforms, not all versions always.
+        # TODO(petarj): Enable tests for MIPS.
         # The same goes for the PNaCl shims. So, we have two variations here.
-        ['disable_pnacl==0 and target_arch!="arm"', {
+        ['disable_pnacl==0 and (target_arch=="ia32" or target_arch=="x64")', {
           'variables': {
             'build_pnacl_newlib': 1,
             'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
