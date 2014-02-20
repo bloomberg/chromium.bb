@@ -5,6 +5,19 @@
 cr.define('accessibility', function() {
   'use strict';
 
+  // Keep in sync with view_message_enums.h
+  var AccessibilityModeFlag = {
+    Platform: 1 << 0,
+    PlatformFullTree: 1 << 1
+  }
+
+  var AccessibilityMode = {
+    Off: 0,
+    Complete:
+        AccessibilityModeFlag.Platform | AccessibilityModeFlag.PlatformFullTree,
+    EditableTextOnly: AccessibilityModeFlag.Platform
+  }
+
   function requestData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'targets-data.json', false);
@@ -60,7 +73,9 @@ cr.define('accessibility', function() {
   }
 
   function addGlobalAccessibilityModeToggle(global_a11y_mode) {
-    $('toggle_global').textContent = (global_a11y_mode == 0 ? 'off' : 'on');
+    var full_a11y_on = ((global_a11y_mode & AccessibilityMode.Complete)
+        == AccessibilityMode.Complete);
+    $('toggle_global').textContent = (full_a11y_on == 0 ? 'off' : 'on');
     $('toggle_global').addEventListener('click',
                                         toggleGlobalAccessibility);
   }

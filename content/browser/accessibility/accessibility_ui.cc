@@ -183,7 +183,7 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   if (!rwhi)
     return;
   AccessibilityMode mode = rwhi->accessibility_mode();
-  if (mode == AccessibilityModeOff)
+  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete)
     rwhi->AddAccessibilityMode(AccessibilityModeComplete);
   else
     rwhi->ResetAccessibilityMode();
@@ -193,7 +193,7 @@ void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
   BrowserAccessibilityStateImpl* state =
       BrowserAccessibilityStateImpl::GetInstance();
   AccessibilityMode mode = state->accessibility_mode();
-  if (mode == AccessibilityModeOff)
+  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete)
     state->EnableAccessibility();
   else
     state->DisableAccessibility();

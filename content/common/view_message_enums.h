@@ -26,6 +26,8 @@ struct ViewHostMsg_UpdateRect_Flags {
   }
 };
 
+// Note: keep enums in content/browser/resources/accessibility/accessibility.js
+// in sync with these two enums.
 enum AccessibilityModeFlag {
   // Accessibility updates are processed to create platform trees and events are
   // passed to platform APIs in the browser.
