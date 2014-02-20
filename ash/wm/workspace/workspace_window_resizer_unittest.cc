@@ -211,21 +211,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
 };
 
-class WorkspaceWindowResizerTestSticky : public WorkspaceWindowResizerTest {
- public:
-  WorkspaceWindowResizerTestSticky() {}
-  virtual ~WorkspaceWindowResizerTestSticky() {}
-
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableStickyEdges);
-    WorkspaceWindowResizerTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTestSticky);
-};
-
 // Assertions around attached window resize dragging from the right with 2
 // windows.
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
@@ -1139,65 +1124,6 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
   EXPECT_EQ(work_area.bottom() - 200, window_->bounds().height());
 }
 
-// Verifies sticking to edges works.
-TEST_F(WorkspaceWindowResizerTestSticky, StickToEdge) {
-  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
-      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
-  // Click 50px to the right so that the mouse pointer does not leave the
-  // workspace ensuring sticky behavior.
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(),
-      window_->bounds().origin() + gfx::Vector2d(50, 0),
-      HTCAPTION));
-  ASSERT_TRUE(resizer.get());
-  // Move to an x-coordinate of 15, which should not stick.
-  resizer->Drag(CalculateDragPoint(*resizer, 15 - 96, 0), 0);
-  // Move to -15, should still stick to 0.
-  resizer->Drag(CalculateDragPoint(*resizer, -15 - 96, 0), 0);
-  EXPECT_EQ("0,112 320x160", window_->bounds().ToString());
-  // At -100 should move past edge.
-  resizer->Drag(CalculateDragPoint(*resizer, -100 - 96, 0), 0);
-  EXPECT_EQ("-100,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, -101 - 96, 0), 0);
-  EXPECT_EQ("-101,112 320x160", window_->bounds().ToString());
-
-  // Right side should similarly stick.
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 - 15, 0), 0);
-  EXPECT_EQ("465,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 15, 0), 0);
-  EXPECT_EQ("480,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 100, 0), 0);
-  EXPECT_EQ("580,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 101, 0), 0);
-  EXPECT_EQ("581,112 320x160", window_->bounds().ToString());
-
-  // And the bottom should stick too.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 3 + 15), 0);
-  EXPECT_EQ("96,437 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 100), 0);
-  EXPECT_EQ("96,538 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 101), 0);
-  EXPECT_EQ("96,539 320x160", window_->bounds().ToString());
-
-  // No need to test dragging < 0 as we force that to 0.
-}
-
-// Verifies not sticking to edges when a mouse pointer is outside of work area.
-TEST_F(WorkspaceWindowResizerTestSticky, NoStickToEdgeWhenOutside) {
-  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
-      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTCAPTION));
-  ASSERT_TRUE(resizer.get());
-  // Move to an x-coordinate of 15, which should not stick.
-  resizer->Drag(CalculateDragPoint(*resizer, 15 - 96, 0), 0);
-  // Move to -15, should still stick to 0.
-  resizer->Drag(CalculateDragPoint(*resizer, -15 - 96, 0), 0);
-  EXPECT_EQ("-15,112 320x160", window_->bounds().ToString());
-}
-
 // Verifies window sticks to both window and work area.
 TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
   window_->SetBounds(gfx::Rect(10, 10, 20, 50));
@@ -1244,64 +1170,6 @@ TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
   resizer->Drag(CalculateDragPoint(*resizer, 119, attach_y + 18), 0);
   expected.set_y(attach_y + initial_y + 18);
   EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
-}
-
-// Verifies a resize sticks when dragging TOPLEFT.
-TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPLEFT) {
-  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTTOPLEFT));
-  ASSERT_TRUE(resizer.get());
-  resizer->Drag(CalculateDragPoint(*resizer, -15 - 100, -15 -200), 0);
-  EXPECT_EQ("0,0 120x230", window_->bounds().ToString());
-}
-
-// Verifies a resize sticks when dragging TOPRIGHT.
-TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPRIGHT) {
-  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                          window_.get()));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTTOPRIGHT));
-  ASSERT_TRUE(resizer.get());
-  resizer->Drag(CalculateDragPoint(*resizer, work_area.right() - 100 + 20,
-                                   -200 - 15), 0);
-  EXPECT_EQ(100, window_->bounds().x());
-  EXPECT_EQ(work_area.y(), window_->bounds().y());
-  EXPECT_EQ(work_area.right() - 100, window_->bounds().width());
-  EXPECT_EQ(230, window_->bounds().height());
-}
-
-// Verifies a resize snap when dragging BOTTOMRIGHT.
-TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_BOTTOMRIGHT) {
-  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                          window_.get()));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTBOTTOMRIGHT));
-  ASSERT_TRUE(resizer.get());
-  resizer->Drag(CalculateDragPoint(*resizer, work_area.right() - 100 - 20 + 15,
-                                   work_area.bottom() - 200 - 30 + 15), 0);
-  EXPECT_EQ(100, window_->bounds().x());
-  EXPECT_EQ(200, window_->bounds().y());
-  EXPECT_EQ(work_area.right() - 100, window_->bounds().width());
-  EXPECT_EQ(work_area.bottom() - 200, window_->bounds().height());
-}
-
-// Verifies a resize snap when dragging BOTTOMLEFT.
-TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_BOTTOMLEFT) {
-  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                          window_.get()));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTBOTTOMLEFT));
-  ASSERT_TRUE(resizer.get());
-  resizer->Drag(CalculateDragPoint(*resizer, -15 - 100,
-                                   work_area.bottom() - 200 - 30 + 15), 0);
-  EXPECT_EQ(0, window_->bounds().x());
-  EXPECT_EQ(200, window_->bounds().y());
-  EXPECT_EQ(120, window_->bounds().width());
-  EXPECT_EQ(work_area.bottom() - 200, window_->bounds().height());
 }
 
 TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {

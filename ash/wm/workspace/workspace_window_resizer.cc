@@ -111,12 +111,6 @@ namespace {
 
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableStickyEdges)) {
-    // TODO(varkha): Consider keeping snapping behavior for touch drag.
-    return distance_from_edge < 0 &&
-           distance_from_edge > -sticky_size;
-  }
   return distance_from_edge < sticky_size &&
          distance_from_edge > -sticky_size * 2;
 }
@@ -262,9 +256,6 @@ const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
 
 // static
-const int WorkspaceWindowResizer::kStickyDistancePixels = 64;
-
-// static
 WorkspaceWindowResizer* WorkspaceWindowResizer::instance_ = NULL;
 
 // Represents the width or height of a window with constraints on its minimum
@@ -359,9 +350,6 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   int sticky_size;
   if (event_flags & ui::EF_CONTROL_DOWN) {
     sticky_size = 0;
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableStickyEdges)) {
-    sticky_size = kStickyDistancePixels;
   } else if ((details().bounds_change & kBoundsChange_Resizes) &&
       details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
     sticky_size = SnapSizer::kScreenEdgeInsetForTouchDrag;
