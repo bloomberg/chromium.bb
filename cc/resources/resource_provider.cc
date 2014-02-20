@@ -1353,7 +1353,9 @@ void ResourceProvider::ReceiveFromChild(
     ResourceIdMap::iterator resource_in_map_it =
         child_info.child_to_parent_map.find(it->id);
     if (resource_in_map_it != child_info.child_to_parent_map.end()) {
-      resources_[resource_in_map_it->second].imported_count++;
+      Resource& resource = resources_[resource_in_map_it->second];
+      resource.marked_for_deletion = false;
+      resource.imported_count++;
       continue;
     }
 
@@ -1414,6 +1416,7 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
     DCHECK(it != child_info.child_to_parent_map.end());
 
     ResourceId local_id = it->second;
+    DCHECK(!resources_[local_id].marked_for_deletion);
     child_info.in_use_resources.insert(local_id);
   }
 

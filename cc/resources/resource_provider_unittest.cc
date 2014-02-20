@@ -1514,6 +1514,116 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   EXPECT_EQ(0u, child_resource_provider_->num_resources());
 }
 
+TEST_P(ResourceProviderTest, UnuseTransferredResources) {
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+  size_t pixel_size = TextureSizeBytes(size, format);
+  ASSERT_EQ(4U, pixel_size);
+
+  ResourceProvider::ResourceId id = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+  uint8_t data[4] = {1, 2, 3, 4};
+  gfx::Rect rect(size);
+  child_resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  const ResourceProvider::ResourceIdMap& map =
+      resource_provider_->GetChildToParentMap(child_id);
+  {
+    // Transfer some resource to the parent.
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(id);
+    TransferableResourceArray list;
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
+    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
+    resource_provider_->ReceiveFromChild(child_id, list);
+    resource_provider_->DeclareUsedResourcesFromChild(child_id,
+                                                      resource_ids_to_transfer);
+  }
+  TransferableResourceArray sent_to_top_level;
+  {
+    // Parent transfers to top-level.
+    ASSERT_TRUE(map.find(id) != map.end());
+    ResourceProvider::ResourceId parent_id = map.find(id)->second;
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(parent_id);
+    resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                            &sent_to_top_level);
+    EXPECT_TRUE(resource_provider_->InUseByConsumer(parent_id));
+  }
+  {
+    // Stop using resource.
+    ResourceProvider::ResourceIdArray empty;
+    resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
+    // Resource is not yet returned to the child, since it's in use by the
+    // top-level.
+    EXPECT_TRUE(returned_to_child.empty());
+  }
+  {
+    // Send the resource to the parent again.
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(id);
+    TransferableResourceArray list;
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
+    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
+    resource_provider_->ReceiveFromChild(child_id, list);
+    resource_provider_->DeclareUsedResourcesFromChild(child_id,
+                                                      resource_ids_to_transfer);
+  }
+  {
+    // Receive returns back from top-level.
+    ReturnedResourceArray returned;
+    TransferableResource::ReturnResources(sent_to_top_level, &returned);
+    resource_provider_->ReceiveReturnsFromParent(returned);
+    // Resource is still not yet returned to the child, since it's declared used
+    // in the parent.
+    EXPECT_TRUE(returned_to_child.empty());
+    ASSERT_TRUE(map.find(id) != map.end());
+    ResourceProvider::ResourceId parent_id = map.find(id)->second;
+    EXPECT_FALSE(resource_provider_->InUseByConsumer(parent_id));
+  }
+  {
+    sent_to_top_level.clear();
+    // Parent transfers again to top-level.
+    ASSERT_TRUE(map.find(id) != map.end());
+    ResourceProvider::ResourceId parent_id = map.find(id)->second;
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(parent_id);
+    resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                            &sent_to_top_level);
+    EXPECT_TRUE(resource_provider_->InUseByConsumer(parent_id));
+  }
+  {
+    // Receive returns back from top-level.
+    ReturnedResourceArray returned;
+    TransferableResource::ReturnResources(sent_to_top_level, &returned);
+    resource_provider_->ReceiveReturnsFromParent(returned);
+    // Resource is still not yet returned to the child, since it's still
+    // declared used in the parent.
+    EXPECT_TRUE(returned_to_child.empty());
+    ASSERT_TRUE(map.find(id) != map.end());
+    ResourceProvider::ResourceId parent_id = map.find(id)->second;
+    EXPECT_FALSE(resource_provider_->InUseByConsumer(parent_id));
+  }
+  {
+    // Stop using resource.
+    ResourceProvider::ResourceIdArray empty;
+    resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
+    // Resource should have been returned to the child, since it's no longer in
+    // use by the top-level.
+    ASSERT_EQ(1u, returned_to_child.size());
+    EXPECT_EQ(id, returned_to_child[0].id);
+    EXPECT_EQ(2, returned_to_child[0].count);
+    child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+    returned_to_child.clear();
+    EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id));
+  }
+}
+
 class ResourceProviderTestTextureFilters : public ResourceProviderTest {
  public:
   static void RunTest(GLenum child_filter, GLenum parent_filter) {
