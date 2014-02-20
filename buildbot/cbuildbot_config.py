@@ -2034,6 +2034,7 @@ _firmware = _config(
 
 _firmware_release = _release.derive(_firmware,
   description='Firmware Canary',
+  manifest=constants.DEFAULT_MANIFEST,
 )
 
 _depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
