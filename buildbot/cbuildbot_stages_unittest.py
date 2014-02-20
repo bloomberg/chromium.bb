@@ -2413,6 +2413,7 @@ class ReportStageTest(AbstractStageTest):
     self.RunStage()
 
   def testAlertEmail(self):
+    """Send out alerts when streak counter reaches the threshold."""
     self._Prepare(extra_config={'health_threshold': 3,
                                 'health_alert_recipients': ['fake_recipient']})
     self._SetupUpdateStreakCounter(counter_value=-3)
@@ -2421,6 +2422,18 @@ class ReportStageTest(AbstractStageTest):
     # pylint: disable=E1101
     self.assertGreater(alerts.SendEmail.call_count, 0,
                        'CQ health alerts emails were not sent.')
+
+  def testAlertEmailOnFailingStreak(self):
+    """Continue sending out alerts when streak counter exceeds the threshold."""
+    self._Prepare(extra_config={'health_threshold': 3,
+                                'health_alert_recipients': ['fake_recipient']})
+    self._SetupUpdateStreakCounter(counter_value=-5)
+    self._SetupCommitQueueSyncPool()
+    self.RunStage()
+    # pylint: disable=E1101
+    self.assertGreater(alerts.SendEmail.call_count, 0,
+                       'CQ health alerts emails were not sent.')
+
 
 class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
   """Tests option/config settings on board-specific stages."""

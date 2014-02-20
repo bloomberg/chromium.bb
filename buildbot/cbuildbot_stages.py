@@ -4024,35 +4024,36 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
   def _UpdateRunStreak(self, builder_run, final_status):
     """Update the streak counter for this builder, if applicable, and notify.
 
-    If this run was a Commit Queue run, then update the pass/fail streak
-    counter for it.  If the new streak should trigger a notification email
-    then send it now.
+    Update the pass/fail streak counter for the builder.  If the new
+    streak should trigger a notification email then send it now.
 
     Args:
       builder_run: BuilderRun for this run.
       final_status: Final status string for this run.
     """
-    # If, and only if, this was a Commit Queue build, update the streak counter.
-    if (self._sync_instance and
-        isinstance(self._sync_instance, CommitQueueSyncStage)):
+
+    # Exclude tryjobs from streak counting.
+    if not builder_run.options.remote_trybot and not builder_run.options.local:
       streak_value = self._UpdateStreakCounter(
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.debug)
       cros_build_lib.Info('New pass/fail streak value for %s is: %s',
                           builder_run.config.name, streak_value)
-
       # See if updated streak should trigger a notification email.
       if (builder_run.config.health_alert_recipients and
-          streak_value == -builder_run.config.health_threshold):
-        logging.info('Builder failed %i consecutive times, sending health '
-                     'alert email to %s.',
-                     builder_run.config.health_threshold,
-                     builder_run.config.health_alert_recipients)
-        alerts.SendEmail('%s health alert' % builder_run.config.name,
-                         builder_run.config.health_alert_recipients,
-                         message=self._HealthAlertMessage(),
-                         smtp_server=constants.GOLO_SMTP_SERVER,
-                         extra_fields={'X-cbuildbot-alert': 'cq-health'})
+          streak_value <= -builder_run.config.health_threshold):
+        cros_build_lib.Info(
+          'Builder failed %i consecutive times, sending health alert email '
+          'to %s.',
+          -streak_value,
+          builder_run.config.health_alert_recipients)
+
+        if not self._run.debug:
+          alerts.SendEmail('%s health alert' % builder_run.config.name,
+                           builder_run.config.health_alert_recipients,
+                           message=self._HealthAlertMessage(-streak_value),
+                           smtp_server=constants.GOLO_SMTP_SERVER,
+                           extra_fields={'X-cbuildbot-alert': 'cq-health'})
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -4085,11 +4086,10 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
 
     return streak_value
 
-  def _HealthAlertMessage(self):
+  def _HealthAlertMessage(self, fail_count):
     """Returns the body of a health alert email message."""
     return 'The builder named %s has failed %i consecutive times. See %s' % (
-        self._run.config['name'], self._run.config['health_threshold'],
-        self.ConstructDashboardURL())
+        self._run.config['name'], fail_count, self.ConstructDashboardURL())
 
   def _UploadMetadataForRun(self, builder_run, final_status):
     """Upload metadata.json for this entire run.

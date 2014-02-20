@@ -233,13 +233,13 @@ _settings = dict(
 #              consistently green, mark the builder as important=True.
   important=False,
 
-# health_threshold -- An integer. If this builder fails this many times
-#                     consecutively, send an alert email to the recipients
-#                     health_alert_recipients. Applies only to builders that
-#                     run CommitQueueSyncCompletion.
-#                     This feature is similar to the ERROR_WATERMARK feature of
-#                     upload_symbols, and it may make sense to merge the
-#                     features at some point.
+# health_threshold -- An integer. If this builder fails this many
+#                     times consecutively, send an alert email to the
+#                     recipients health_alert_recipients. This does
+#                     not apply to tryjobs. This feature is similar to
+#                     the ERROR_WATERMARK feature of upload_symbols,
+#                     and it may make sense to merge the features at
+#                     some point.
   health_threshold=0,
 
 # health_alert_recipients -- List of email addresses to send health alerts to
@@ -1323,6 +1323,9 @@ internal_paladin.add_config('pre-cq-launcher',
   description='Launcher for Pre-CQ builders',
   trybot_list=False,
   manifest_version=False,
+  # Every Pre-CQ launch failure should send out an alert.
+  health_threshold=1,
+  health_alert_recipients=['chromeos-build-alerts@google.com'],
 )
 
 internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
