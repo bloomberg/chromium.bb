@@ -41,14 +41,14 @@
 //    this to true. Otherwise, it's safer and more efficient to omit it.
 
 {
-  //"cr-chrome-docs-home": {
-  //  "chromium": {
-  //    "dir": "chrome/docs"
-  //  },
-  //  "defaultExtensions": [".html", ".md"],
-  //  "serveFrom": "home",
-  //  "supportsTemplates": true
-  //},
+  "cr-chrome-docs-home": {
+    "chromium": {
+      "dir": "chrome/docs"
+    },
+    "defaultExtensions": [".html", ".md"],
+    "serveFrom": "home",
+    "supportsTemplates": true
+  },
   "cr-extensions-examples": {
     "chromium": {
       "dir": "chrome/common/extensions/docs/examples"
@@ -69,37 +69,37 @@
       "dir": "chrome/common/extensions/docs/static"
     },
     "serveFrom": "static"
+  },
+  "cr-native-client": {
+    "chromium": {
+      "dir": "native_client_sdk/doc_generated"
+    },
+    "defaultExtensions": [".html", ".md"],
+    "serveFrom": "native-client",
+    "supportsTemplates": true
+  },
+  "devtools-docs": {
+    "defaultExtensions": [".html", ".md"],
+    "gcs": {
+      "bucket": "gs://chromedocs-devtools"
+    },
+    "serveFrom": "devtools",
+    "supportsTemplates": true
+  },
+  "multidevice-docs": {
+    "defaultExtensions": [".html", ".md"],
+    "gcs": {
+      "bucket": "gs://chromedocs-multidevice"
+    },
+    "serveFrom": "multidevice",
+    "supportsTemplates": true
+  },
+  "webstore-docs": {
+    "defaultExtensions": [".html", ".md"],
+    "gcs": {
+      "bucket": "gs://chromedocs-webstore"
+    },
+    "serveFrom": "webstore",
+    "supportsTemplates": true
   }
-  //"cr-native-client": {
-  //  "chromium": {
-  //    "dir": "native_client_sdk/doc_generated"
-  //  },
-  //  "defaultExtensions": [".html", ".md"],
-  //  "serveFrom": "native-client",
-  //  "supportsTemplates": true
-  //},
-  //"devtools-docs": {
-  //  "defaultExtensions": [".html", ".md"],
-  //  "gcs": {
-  //    "bucket": "gs://chromedocs-devtools"
-  //  },
-  //  "serveFrom": "devtools",
-  //  "supportsTemplates": true
-  //},
-  //"multidevice-docs": {
-  //  "defaultExtensions": [".html", ".md"],
-  //  "gcs": {
-  //    "bucket": "gs://chromedocs-multidevice"
-  //  },
-  //  "serveFrom": "multidevice",
-  //  "supportsTemplates": true
-  //},
-  //"webstore-docs": {
-  //  "defaultExtensions": [".html", ".md"],
-  //  "gcs": {
-  //    "bucket": "gs://chromedocs-webstore"
-  //  },
-  //  "serveFrom": "webstore",
-  //  "supportsTemplates": true
-  //}
 }

@@ -1,7 +1,5 @@
 {
-  "": "//developers.google.com/chrome",
+  "": "index.html",
   "apps": "/apps/about_apps",
-  "apps": "/apps/about_apps",
-  "extensions": "/extensions/index",
-  "index": "//developers.google.com/chrome"
+  "extensions": "/extensions/index"
 }
