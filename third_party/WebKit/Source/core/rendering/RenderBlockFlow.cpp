@@ -291,8 +291,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     bool hasSpecifiedPageLogicalHeight = false;
     checkForPaginationLogicalHeightChange(pageLogicalHeight, pageLogicalHeightChanged, hasSpecifiedPageLogicalHeight);
 
-    RenderView* renderView = view();
-    LayoutStateMaintainer statePusher(renderView, this, locationOffset(), hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
+    LayoutStateMaintainer statePusher(this, locationOffset(), hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
 
     // Regions changing widths can force us to relayout our children.
     RenderFlowThread* flowThread = flowThreadContainingBlock();
@@ -413,6 +412,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (frameView()->partialLayout().isStopping())
         return true;
 
+    RenderView* renderView = view();
     if (renderView->layoutState()->m_pageLogicalHeight)
         setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(this, logicalTop()));
 

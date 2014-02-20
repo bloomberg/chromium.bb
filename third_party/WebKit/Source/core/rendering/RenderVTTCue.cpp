@@ -50,7 +50,7 @@ void RenderVTTCue::layout()
     if (!m_cue->regionId().isEmpty())
         return;
 
-    LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 
     if (m_cue->snapToLines())
         repositionCueSnapToLinesSet();

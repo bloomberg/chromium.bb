@@ -426,7 +426,7 @@ void RenderTable::layout()
     recalcBordersInRowDirection();
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(view(), this, locationOffset(), style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, locationOffset(), style()->isFlippedBlocksWritingMode());
 
     setLogicalHeight(0);
 

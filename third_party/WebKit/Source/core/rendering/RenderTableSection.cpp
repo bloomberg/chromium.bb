@@ -619,7 +619,7 @@ int RenderTableSection::calcRowLogicalHeight()
 
     RenderTableCell* cell;
 
-    LayoutStateMaintainer statePusher(view());
+    LayoutStateMaintainer statePusher(this);
 
     m_rowPos.resize(m_grid.size() + 1);
 
@@ -716,7 +716,7 @@ void RenderTableSection::layout()
     // can be called in a loop (e.g during parsing). Doing it now ensures we have a stable-enough structure.
     m_grid.shrinkToFit();
 
-    LayoutStateMaintainer statePusher(view(), this, locationOffset(), style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, locationOffset(), style()->isFlippedBlocksWritingMode());
 
     const Vector<int>& columnPos = table()->columnPositions();
 
@@ -871,7 +871,7 @@ void RenderTableSection::layoutRows()
     int vspacing = table()->vBorderSpacing();
     unsigned nEffCols = table()->numEffCols();
 
-    LayoutStateMaintainer statePusher(view(), this, locationOffset(), style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, locationOffset(), style()->isFlippedBlocksWritingMode());
 
     for (unsigned r = 0; r < totalRows; r++) {
         // Set the row's x/y position and width/height.

@@ -283,8 +283,8 @@ class LayoutStateMaintainer {
     WTF_MAKE_NONCOPYABLE(LayoutStateMaintainer);
 public:
     // ctor to push now
-    LayoutStateMaintainer(RenderView* view, RenderBox* root, LayoutSize offset, bool disableState = false, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
-        : m_view(view)
+    LayoutStateMaintainer(RenderBox* root, LayoutSize offset, bool disableState = false, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
+        : m_view(root->view())
         , m_disabled(disableState)
         , m_didStart(false)
         , m_didEnd(false)
@@ -294,8 +294,8 @@ public:
     }
 
     // ctor to maybe push later
-    LayoutStateMaintainer(RenderView* view)
-        : m_view(view)
+    LayoutStateMaintainer(RenderBox* root)
+        : m_view(root->view())
         , m_disabled(false)
         , m_didStart(false)
         , m_didEnd(false)
