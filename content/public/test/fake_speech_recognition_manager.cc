@@ -50,7 +50,7 @@ int FakeSpeechRecognitionManager::CreateSession(
   VLOG(1) << "FAKE CreateSession invoked.";
   EXPECT_EQ(0, session_id_);
   EXPECT_EQ(NULL, listener_);
-  listener_ = config.event_listener;
+  listener_ = config.event_listener.get();
   if (config.grammars.size() > 0)
     grammar_ = config.grammars[0].url;
   session_ctx_ = config.initial_context;
@@ -98,13 +98,11 @@ void FakeSpeechRecognitionManager::StopAudioCaptureForSession(int session_id) {
   // Nothing to do here since we aren't really recording.
 }
 
-void FakeSpeechRecognitionManager::AbortAllSessionsForListener(
-    SpeechRecognitionEventListener* listener) {
+void FakeSpeechRecognitionManager::AbortAllSessionsForRenderProcess(
+    int render_process_id) {
   VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
-  // listener_ is set to NULL if a fake result was received (see below), so
-  // check that listener_ matches the incoming parameter only when there is
-  // no fake result sent.
-  EXPECT_TRUE(should_send_fake_response_ || listener_ == listener);
+  EXPECT_TRUE(should_send_fake_response_ ||
+              session_ctx_.render_process_id == render_process_id);
   did_cancel_all_ = true;
 }
 

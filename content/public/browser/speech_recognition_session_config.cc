@@ -15,8 +15,7 @@ SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
       filter_profanities(false),
       continuous(false),
       interim_results(false),
-      max_hypotheses(kDefaultMaxHypotheses),
-      event_listener(NULL) {
+      max_hypotheses(kDefaultMaxHypotheses) {
 }
 
 SpeechRecognitionSessionConfig::~SpeechRecognitionSessionConfig() {

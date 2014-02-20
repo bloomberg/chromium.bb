@@ -26,14 +26,21 @@ SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
     : BrowserMessageFilter(SpeechRecognitionMsgStart),
       is_guest_(is_guest),
       render_process_id_(render_process_id),
-      context_getter_(context_getter) {
+      context_getter_(context_getter),
+      weak_factory_(this) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
   // add an Init() method.
 }
 
 SpeechRecognitionDispatcherHost::~SpeechRecognitionDispatcherHost() {
-  SpeechRecognitionManager::GetInstance()->AbortAllSessionsForListener(this);
+  SpeechRecognitionManager::GetInstance()->AbortAllSessionsForRenderProcess(
+      render_process_id_);
+}
+
+base::WeakPtr<SpeechRecognitionDispatcherHost>
+SpeechRecognitionDispatcherHost::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool SpeechRecognitionDispatcherHost::OnMessageReceived(
@@ -57,6 +64,10 @@ void SpeechRecognitionDispatcherHost::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   if (message.type() == SpeechRecognitionHostMsg_StartRequest::ID)
     *thread = BrowserThread::UI;
+}
+
+void SpeechRecognitionDispatcherHost::OnChannelClosing() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void SpeechRecognitionDispatcherHost::OnStartRequest(
@@ -129,7 +140,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
   config.filter_profanities = filter_profanities;
   config.continuous = params.continuous;
   config.interim_results = params.interim_results;
-  config.event_listener = this;
+  config.event_listener = AsWeakPtr();
 
   int session_id = SpeechRecognitionManager::GetInstance()->CreateSession(
       config);

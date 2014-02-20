@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
@@ -31,6 +32,8 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
       bool guest,
       int render_process_id,
       net::URLRequestContextGetter* url_request_context_getter);
+
+  base::WeakPtr<InputTagSpeechDispatcherHost> AsWeakPtr();
 
   // SpeechRecognitionEventListener methods.
   virtual void OnRecognitionStart(int session_id) OVERRIDE;
@@ -57,6 +60,8 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
       const IPC::Message& message,
       BrowserThread::ID* thread) OVERRIDE;
 
+  virtual void OnChannelClosing() OVERRIDE;
+
  private:
   virtual ~InputTagSpeechDispatcherHost();
 
@@ -74,6 +79,11 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   bool is_guest_;
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // Used for posting asynchronous tasks (on the IO thread) without worrying
+  // about this class being destroyed in the meanwhile (due to browser shutdown)
+  // since tasks pending on a destroyed WeakPtr are automatically discarded.
+  base::WeakPtrFactory<InputTagSpeechDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcherHost);
 };

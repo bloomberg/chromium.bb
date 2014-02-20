@@ -28,14 +28,22 @@ InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
     : BrowserMessageFilter(SpeechRecognitionMsgStart),
       is_guest_(is_guest),
       render_process_id_(render_process_id),
-      url_request_context_getter_(url_request_context_getter) {
+      url_request_context_getter_(url_request_context_getter),
+      weak_factory_(this) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
   // add an Init() method.
 }
 
 InputTagSpeechDispatcherHost::~InputTagSpeechDispatcherHost() {
-  SpeechRecognitionManager::GetInstance()->AbortAllSessionsForListener(this);
+  SpeechRecognitionManager::GetInstance()->AbortAllSessionsForRenderProcess(
+      render_process_id_);
+}
+
+base::WeakPtr<InputTagSpeechDispatcherHost>
+InputTagSpeechDispatcherHost::AsWeakPtr() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return weak_factory_.GetWeakPtr();
 }
 
 bool InputTagSpeechDispatcherHost::OnMessageReceived(
@@ -61,8 +69,12 @@ void InputTagSpeechDispatcherHost::OverrideThreadForMessage(
     *thread = BrowserThread::UI;
 }
 
+void InputTagSpeechDispatcherHost::OnChannelClosing() {
+  weak_factory_.InvalidateWeakPtrs();
+}
+
 void InputTagSpeechDispatcherHost::OnStartRecognition(
-    const InputTagSpeechHostMsg_StartRecognition_Params& params) {  
+    const InputTagSpeechHostMsg_StartRecognition_Params& params) {
   InputTagSpeechHostMsg_StartRecognition_Params input_params(params);
   int render_process_id = render_process_id_;
   // The chrome layer is mostly oblivious to BrowserPlugin guests and so it
@@ -124,7 +136,7 @@ void InputTagSpeechDispatcherHost::StartRecognitionOnIO(
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();
   config.filter_profanities = filter_profanities;
-  config.event_listener = this;
+  config.event_listener = AsWeakPtr();
 
   int session_id = SpeechRecognitionManager::GetInstance()->CreateSession(
       config);

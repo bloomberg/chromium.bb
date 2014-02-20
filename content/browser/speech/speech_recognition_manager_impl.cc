@@ -450,8 +450,8 @@ SpeechRecognitionManagerImpl::GetSessionContext(int session_id) const {
   return GetSession(session_id)->context;
 }
 
-void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
-    SpeechRecognitionEventListener* listener) {
+void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderProcess(
+    int render_process_id) {
   // This method gracefully destroys sessions for the listener. However, since
   // the listener itself is likely to be destroyed after this call, we avoid
   // dispatching further events to it, marking the |listener_is_active| flag.
@@ -459,7 +459,7 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
     Session* session = it->second;
-    if (session->config.event_listener == listener) {
+    if (session->context.render_process_id == render_process_id) {
       AbortSession(session->id);
       session->listener_is_active = false;
     }
@@ -656,7 +656,9 @@ SpeechRecognitionManagerImpl::GetSession(int session_id) const {
 SpeechRecognitionEventListener* SpeechRecognitionManagerImpl::GetListener(
     int session_id) const {
   Session* session = GetSession(session_id);
-  return session->listener_is_active ? session->config.event_listener : NULL;
+  if (session->listener_is_active && session->config.event_listener)
+    return session->config.event_listener.get();
+  return NULL;
 }
 
 SpeechRecognitionEventListener*
