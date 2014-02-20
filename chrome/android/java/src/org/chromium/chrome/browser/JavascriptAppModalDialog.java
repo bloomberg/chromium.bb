@@ -69,7 +69,12 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     @CalledByNative
     void showJavascriptAppModalDialog(WindowAndroid window, long nativeDialogPointer) {
         assert window != null;
-        Context context = window.getContext();
+        Context context = window.getActivity().get();
+        // If the activity has gone away, then just clean up the native pointer.
+        if (context == null) {
+            nativeDidCancelAppModalDialog(nativeDialogPointer, false);
+            return;
+        }
 
         // Cache the native dialog pointer so that we can use it to return the response.
         mNativeDialogPointer = nativeDialogPointer;

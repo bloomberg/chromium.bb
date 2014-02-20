@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 /**
@@ -156,7 +158,8 @@ public class WindowAndroid {
     }
 
     /**
-     * TODO(nileshagrawal): Stop returning Activity Context crbug.com/233440.
+     * TODO(tedchoc): Delete this method.  Use getActivity() below.
+     *
      * @return Activity context, it could be null. Note, in most cases, you probably
      * just need Application Context returned by getApplicationContext().
      * @see #getApplicationContext()
@@ -164,6 +167,15 @@ public class WindowAndroid {
     @Deprecated
     public Context getContext() {
         return null;
+    }
+
+    /**
+     * @return A reference to owning Activity.  The returned WeakReference will never be null, but
+     *         the contained Activity can be null (either if it has been garbage collected or if
+     *         this is in the context of a WebView that was not created using an Activity).
+     */
+    public WeakReference<Activity> getActivity() {
+        return new WeakReference<Activity>(null);
     }
 
     /**

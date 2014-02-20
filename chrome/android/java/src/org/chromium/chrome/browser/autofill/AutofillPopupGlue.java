@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.app.Activity;
+import android.os.Handler;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.autofill.AutofillPopup;
@@ -24,7 +27,20 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     public AutofillPopupGlue(long nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
             ViewAndroidDelegate containerViewDelegate) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
-        mAutofillPopup = new AutofillPopup(windowAndroid.getContext(), containerViewDelegate, this);
+        Activity activity = windowAndroid.getActivity().get();
+        if (activity == null) {
+            mAutofillPopup = null;
+            // Clean up the native counterpart.  This is posted to allow the native counterpart
+            // to fully finish the construction of this glue object before we attempt to delete it.
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    requestHide();
+                }
+            });
+        } else {
+            mAutofillPopup = new AutofillPopup(activity, containerViewDelegate, this);
+        }
     }
 
     @CalledByNative
@@ -49,7 +65,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      */
     @CalledByNative
     private void hide() {
-        mAutofillPopup.hide();
+        if (mAutofillPopup != null) mAutofillPopup.hide();
     }
 
     /**
@@ -58,7 +74,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      */
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions) {
-        mAutofillPopup.show(suggestions);
+        if (mAutofillPopup != null) mAutofillPopup.show(suggestions);
     }
 
     /**
@@ -70,7 +86,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      */
     @CalledByNative
     private void setAnchorRect(float x, float y, float width, float height) {
-        mAutofillPopup.setAnchorRect(x, y, width, height);
+        if (mAutofillPopup != null) mAutofillPopup.setAnchorRect(x, y, width, height);
     }
 
     // Helper methods for AutofillSuggestion

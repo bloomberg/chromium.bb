@@ -49,7 +49,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override
             public void run() {
-                mAutofillPopup = new AutofillPopup(mWindowAndroid.getContext(),
+                mAutofillPopup = new AutofillPopup(mWindowAndroid.getActivity().get(),
                         viewDelegate,
                         mMockAutofillCallback);
                 mAutofillPopup.setAnchorRect(50, 500, 500, 50);
