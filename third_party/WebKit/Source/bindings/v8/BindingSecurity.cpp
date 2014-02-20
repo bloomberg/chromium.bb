@@ -41,15 +41,15 @@
 
 namespace WebCore {
 
-static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindow* activeWindow)
+static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindow* callingWindow)
 {
     if (!targetDocument)
         return false;
 
-    if (!activeWindow)
+    if (!callingWindow)
         return false;
 
-    if (activeWindow->document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
+    if (callingWindow->document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
         return true;
 
     return false;
@@ -57,24 +57,24 @@ static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindo
 
 static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, ExceptionState& exceptionState)
 {
-    DOMWindow* activeWindow = activeDOMWindow(isolate);
-    if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
+    DOMWindow* callingWindow = callingDOMWindow(isolate);
+    if (isDocumentAccessibleFromDOMWindow(targetDocument, callingWindow))
         return true;
 
     if (targetDocument->domWindow())
-        exceptionState.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
+        exceptionState.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(callingWindow));
     return false;
 }
 
 static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
 {
-    DOMWindow* activeWindow = activeDOMWindow(isolate);
-    if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
+    DOMWindow* callingWindow = callingDOMWindow(isolate);
+    if (isDocumentAccessibleFromDOMWindow(targetDocument, callingWindow))
         return true;
 
     if (reportingOption == ReportSecurityError && targetDocument->domWindow()) {
         if (Frame* frame = targetDocument->frame())
-            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
+            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(callingWindow));
     }
 
     return false;

@@ -484,7 +484,7 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
 {
     v8SetReturnValue(info, v8::Local<v8::Value>());
     v8::Isolate* isolate = info.GetIsolate();
-    ExecutionContext* executionContext = activeExecutionContext(isolate);
+    ExecutionContext* executionContext = callingExecutionContext(isolate);
     UseCounter::count(executionContext, UseCounter::PromiseConstructor);
     if (!info.Length() || !info[0]->IsFunction()) {
         throwTypeError("Promise constructor takes a function argument", isolate);
@@ -519,7 +519,7 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
 void V8Promise::castMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    ExecutionContext* executionContext = activeExecutionContext(isolate);
+    ExecutionContext* executionContext = callingExecutionContext(isolate);
     UseCounter::count(executionContext, UseCounter::PromiseCast);
     v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (info.Length() > 0)
@@ -546,7 +546,7 @@ void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
 void V8Promise::resolveMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    ExecutionContext* executionContext = activeExecutionContext(isolate);
+    ExecutionContext* executionContext = callingExecutionContext(isolate);
     UseCounter::count(executionContext, UseCounter::PromiseResolve);
     v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (info.Length() > 0)
@@ -560,7 +560,7 @@ void V8Promise::resolveMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
 void V8Promise::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    ExecutionContext* executionContext = activeExecutionContext(isolate);
+    ExecutionContext* executionContext = callingExecutionContext(isolate);
     UseCounter::count(executionContext, UseCounter::PromiseReject);
     v8::Local<v8::Value> result = v8::Undefined(isolate);
     if (info.Length() > 0)

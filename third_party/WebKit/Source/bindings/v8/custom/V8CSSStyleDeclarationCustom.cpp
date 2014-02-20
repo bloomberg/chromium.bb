@@ -90,9 +90,9 @@ struct CSSPropertyInfo {
 static inline void countCssPropertyInfoUsage(v8::Isolate* isolate, const CSSPropertyInfo& propInfo)
 {
     if (propInfo.nameWithDash)
-        UseCounter::count(activeExecutionContext(isolate), UseCounter::CSSStyleDeclarationPropertyName);
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::CSSStyleDeclarationPropertyName);
     if (propInfo.propID == CSSPropertyFloat && !propInfo.nameWithCssPrefix)
-        UseCounter::count(activeExecutionContext(isolate), UseCounter::CSSStyleDeclarationFloatPropertyName);
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::CSSStyleDeclarationFloatPropertyName);
 }
 
 // When getting properties on CSSStyleDeclarations, the name used from

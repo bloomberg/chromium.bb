@@ -1369,7 +1369,7 @@ sub GenerateFeatureObservation
 
     if ($measureAs) {
         AddToImplIncludes("core/frame/UseCounter.h");
-        return "    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::${measureAs});\n";
+        return "    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::${measureAs});\n";
     }
 
     return "";
@@ -1380,7 +1380,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("core/frame/UseCounter.h");
-        return "    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::${deprecateAs});\n";
+        return "    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::${deprecateAs});\n";
     }
     return "";
 }
@@ -2589,10 +2589,10 @@ sub GenerateCallWith
         AddToImplIncludes("core/inspector/ScriptArguments.h");
     }
     if (ExtendedAttributeContains($callWith, "ActiveWindow")) {
-        push(@callWithArgs, "activeDOMWindow(info.GetIsolate())");
+        push(@callWithArgs, "callingDOMWindow(info.GetIsolate())");
     }
     if (ExtendedAttributeContains($callWith, "FirstWindow")) {
-        push(@callWithArgs, "firstDOMWindow(info.GetIsolate())");
+        push(@callWithArgs, "enteredDOMWindow(info.GetIsolate())");
     }
     return ([@callWithArgs], $code);
 }

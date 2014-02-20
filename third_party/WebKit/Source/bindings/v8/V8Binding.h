@@ -618,9 +618,9 @@ namespace WebCore {
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
     ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
 
-    DOMWindow* activeDOMWindow(v8::Isolate*);
-    ExecutionContext* activeExecutionContext(v8::Isolate*);
-    DOMWindow* firstDOMWindow(v8::Isolate*);
+    DOMWindow* callingDOMWindow(v8::Isolate*);
+    ExecutionContext* callingExecutionContext(v8::Isolate*);
+    DOMWindow* enteredDOMWindow(v8::Isolate*);
     Document* currentDocument(v8::Isolate*);
     ExecutionContext* currentExecutionContext(v8::Isolate*);
 

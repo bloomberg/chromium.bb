@@ -283,10 +283,10 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     {% if method.measure_as %}
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
     {% endif %}
     {% if method.deprecate_as %}
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
     {% endif %}
     {% if world_suffix in method.activity_logging_world_list %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());

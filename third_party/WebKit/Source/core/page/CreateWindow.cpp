@@ -114,14 +114,14 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
 }
 
 Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow* activeWindow, Frame* firstFrame, Frame* openerFrame, DOMWindow::PrepareDialogFunction function, void* functionContext)
+    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame, DOMWindow::PrepareDialogFunction function, void* functionContext)
 {
-    Frame* activeFrame = activeWindow->frame();
+    Frame* activeFrame = callingWindow->frame();
 
     KURL completedURL = urlString.isEmpty() ? KURL(ParsedURLString, emptyString()) : firstFrame->document()->completeURL(urlString);
     if (!completedURL.isEmpty() && !completedURL.isValid()) {
         // Don't expose client code to invalid URLs.
-        activeWindow->printErrorMessage("Unable to open a window with invalid URL '" + completedURL.string() + "'.\n");
+        callingWindow->printErrorMessage("Unable to open a window with invalid URL '" + completedURL.string() + "'.\n");
         return 0;
     }
 
@@ -130,7 +130,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
 
     ResourceRequest request(completedURL, referrer);
     FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(firstFrame->document()->outgoingOrigin()));
-    FrameLoadRequest frameRequest(activeWindow->document(), request, frameName);
+    FrameLoadRequest frameRequest(callingWindow->document(), request, frameName);
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
@@ -142,17 +142,17 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     newFrame->loader().setOpener(openerFrame);
     newFrame->page()->setOpenedByDOM();
 
-    if (newFrame->domWindow()->isInsecureScriptAccess(activeWindow, completedURL))
+    if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
 
     if (function)
         function(newFrame->domWindow(), functionContext);
 
     if (created) {
-        FrameLoadRequest request(activeWindow->document(), ResourceRequest(completedURL, referrer));
+        FrameLoadRequest request(callingWindow->document(), ResourceRequest(completedURL, referrer));
         newFrame->loader().load(request);
     } else if (!urlString.isEmpty()) {
-        newFrame->navigationScheduler().scheduleLocationChange(activeWindow->document(), completedURL.string(), referrer, false);
+        newFrame->navigationScheduler().scheduleLocationChange(callingWindow->document(), completedURL.string(), referrer, false);
     }
     return newFrame;
 }

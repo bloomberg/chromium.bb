@@ -515,7 +515,7 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
     return 0;
 }
 
-DOMWindow* activeDOMWindow(v8::Isolate* isolate)
+DOMWindow* callingDOMWindow(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
@@ -527,7 +527,7 @@ DOMWindow* activeDOMWindow(v8::Isolate* isolate)
     return toDOMWindow(context);
 }
 
-ExecutionContext* activeExecutionContext(v8::Isolate* isolate)
+ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
@@ -539,7 +539,7 @@ ExecutionContext* activeExecutionContext(v8::Isolate* isolate)
     return toExecutionContext(context);
 }
 
-DOMWindow* firstDOMWindow(v8::Isolate* isolate)
+DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
 {
     return toDOMWindow(isolate->GetEnteredContext());
 }

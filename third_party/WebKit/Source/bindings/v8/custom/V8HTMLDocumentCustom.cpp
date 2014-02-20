@@ -80,7 +80,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
         }
     }
 
-    htmlDocument->open(activeDOMWindow(info.GetIsolate())->document());
+    htmlDocument->open(callingDOMWindow(info.GetIsolate())->document());
     v8SetReturnValue(info, info.Holder());
 }
 

@@ -90,8 +90,8 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     if (enteredContext.IsEmpty())
         return;
 
-    DOMWindow* firstWindow = toDOMWindow(enteredContext);
-    if (!firstWindow->isCurrentlyDisplayedInFrame())
+    DOMWindow* enteredWindow = toDOMWindow(enteredContext);
+    if (!enteredWindow->isCurrentlyDisplayedInFrame())
         return;
 
     String errorMessage = toCoreString(message->Get());
@@ -104,7 +104,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
-    String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toCoreString(resourceName.As<v8::String>());
+    String resource = shouldUseDocumentURL ? enteredWindow->document()->url() : toCoreString(resourceName.As<v8::String>());
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
@@ -122,10 +122,10 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // This method might be called while we're creating a new context. In this case, we
     // avoid storing the exception object, as we can't create a wrapper during context creation.
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
-    Frame* frame = firstWindow->document()->frame();
+    Frame* frame = enteredWindow->document()->frame();
     if (world && frame && frame->script().existingWindowShell(world))
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, v8::Isolate::GetCurrent());
-    firstWindow->document()->reportException(event.release(), callStack, corsStatus);
+    enteredWindow->document()->reportException(event.release(), callStack, corsStatus);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
@@ -137,7 +137,7 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     DOMWindow* targetWindow = target->domWindow();
 
     ExceptionState exceptionState(v8::Handle<v8::Object>(), isolate);
-    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(activeDOMWindow(isolate)), targetWindow->crossDomainAccessErrorMessage(activeDOMWindow(isolate)));
+    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingDOMWindow(isolate)), targetWindow->crossDomainAccessErrorMessage(callingDOMWindow(isolate)));
     exceptionState.throwIfNeeded();
 }
 

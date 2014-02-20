@@ -307,22 +307,22 @@ void HTMLDocument::clear()
     // But I do see it in the documentation for Mozilla.
 }
 
-void HTMLDocument::write(DOMWindow* activeWindow, const Vector<String>& text)
+void HTMLDocument::write(DOMWindow* callingWindow, const Vector<String>& text)
 {
-    ASSERT(activeWindow);
+    ASSERT(callingWindow);
     StringBuilder builder;
     for (size_t i = 0; i < text.size(); ++i)
         builder.append(text[i]);
-    write(builder.toString(), activeWindow->document());
+    write(builder.toString(), callingWindow->document());
 }
 
-void HTMLDocument::writeln(DOMWindow* activeWindow, const Vector<String>& text)
+void HTMLDocument::writeln(DOMWindow* callingWindow, const Vector<String>& text)
 {
-    ASSERT(activeWindow);
+    ASSERT(callingWindow);
     StringBuilder builder;
     for (size_t i = 0; i < text.size(); ++i)
         builder.append(text[i]);
-    writeln(builder.toString(), activeWindow->document());
+    writeln(builder.toString(), callingWindow->document());
 }
 
 }

@@ -134,7 +134,7 @@ enum PageshowEventPersistence {
         Navigator* clientInformation() const { return navigator(); }
 
         Location* location() const;
-        void setLocation(const String& location, DOMWindow* activeWindow, DOMWindow* firstWindow,
+        void setLocation(const String& location, DOMWindow* callingWindow, DOMWindow* enteredWindow,
             SetLocationLocking = LockHistoryBasedOnGestureState);
 
         DOMSelection* getSelection();
@@ -148,11 +148,11 @@ enum PageshowEventPersistence {
         void stop();
 
         PassRefPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
-            DOMWindow* activeWindow, DOMWindow* firstWindow);
+            DOMWindow* callingWindow, DOMWindow* enteredWindow);
 
         typedef void (*PrepareDialogFunction)(DOMWindow*, void* context);
         void showModalDialog(const String& urlString, const String& dialogFeaturesString,
-            DOMWindow* activeWindow, DOMWindow* firstWindow, PrepareDialogFunction, void* functionContext);
+            DOMWindow* callingWindow, DOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
         void alert(const String& message);
         bool confirm(const String& message);
@@ -221,8 +221,8 @@ enum PageshowEventPersistence {
         PageConsole* pageConsole() const;
 
         void printErrorMessage(const String&);
-        String crossDomainAccessErrorMessage(DOMWindow* activeWindow);
-        String sanitizedCrossDomainAccessErrorMessage(DOMWindow* activeWindow);
+        String crossDomainAccessErrorMessage(DOMWindow* callingWindow);
+        String sanitizedCrossDomainAccessErrorMessage(DOMWindow* callingWindow);
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, DOMWindow* source, ExceptionState&);
         void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
@@ -307,7 +307,7 @@ enum PageshowEventPersistence {
         void willDetachDocumentFromFrame();
         DOMWindow* anonymousIndexedGetter(uint32_t);
 
-        bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
+        bool isInsecureScriptAccess(DOMWindow* callingWindow, const String& urlString);
 
         PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
 

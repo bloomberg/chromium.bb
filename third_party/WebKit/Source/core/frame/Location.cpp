@@ -133,14 +133,14 @@ String Location::hash() const
     return DOMURLUtilsReadOnly::hash(url());
 }
 
-void Location::setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
+void Location::setHref(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
-    setLocation(url, activeWindow, firstWindow);
+    setLocation(url, callingWindow, enteredWindow);
 }
 
-void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionState& exceptionState)
+void Location::setProtocol(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& protocol, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
@@ -149,55 +149,55 @@ void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, cons
         exceptionState.throwDOMException(SyntaxError, "'" + protocol + "' is an invalid protocol.");
         return;
     }
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHost(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& host)
+void Location::setHost(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& host)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     url.setHostAndPort(host);
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHostname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& hostname)
+void Location::setHostname(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& hostname)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     url.setHost(hostname);
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setPort(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& portString)
+void Location::setPort(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& portString)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     url.setPort(portString);
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setPathname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& pathname)
+void Location::setPathname(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& pathname)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     url.setPath(pathname);
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setSearch(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& search)
+void Location::setSearch(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& search)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     url.setQuery(search);
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& hash)
+void Location::setHash(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& hash)
 {
     if (!m_frame)
         return;
@@ -212,25 +212,25 @@ void Location::setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const St
     // cases where fragment identifiers are ignored or invalid.
     if (equalIgnoringNullity(oldFragmentIdentifier, url.fragmentIdentifier()))
         return;
-    setLocation(url.string(), activeWindow, firstWindow);
+    setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::assign(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
+void Location::assign(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
-    setLocation(url, activeWindow, firstWindow);
+    setLocation(url, callingWindow, enteredWindow);
 }
 
-void Location::replace(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
+void Location::replace(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
     // Note: We call DOMWindow::setLocation directly here because replace() always operates on the current frame.
-    m_frame->domWindow()->setLocation(url, activeWindow, firstWindow, LockHistoryAndBackForwardList);
+    m_frame->domWindow()->setLocation(url, callingWindow, enteredWindow, LockHistoryAndBackForwardList);
 }
 
-void Location::reload(DOMWindow* activeWindow)
+void Location::reload(DOMWindow* callingWindow)
 {
     if (!m_frame)
         return;
@@ -239,13 +239,13 @@ void Location::reload(DOMWindow* activeWindow)
     m_frame->navigationScheduler().scheduleRefresh();
 }
 
-void Location::setLocation(const String& url, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setLocation(const String& url, DOMWindow* callingWindow, DOMWindow* enteredWindow)
 {
     ASSERT(m_frame);
-    Frame* frame = m_frame->loader().findFrameForNavigation(nullAtom, activeWindow->document());
+    Frame* frame = m_frame->loader().findFrameForNavigation(nullAtom, callingWindow->document());
     if (!frame)
         return;
-    frame->domWindow()->setLocation(url, activeWindow, firstWindow);
+    frame->domWindow()->setLocation(url, callingWindow, enteredWindow);
 }
 
 } // namespace WebCore

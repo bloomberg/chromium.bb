@@ -1881,7 +1881,7 @@ static void deprecatedLongAttributeAttributeGetter(const v8::PropertyCallbackInf
 static void deprecatedLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
     TestObjectPythonV8Internal::deprecatedLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1897,7 +1897,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
 static void deprecatedLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
     TestObjectPythonV8Internal::deprecatedLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2052,7 +2052,7 @@ static void measureAsLongAttributeAttributeGetter(const v8::PropertyCallbackInfo
 static void measureAsLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2068,7 +2068,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, 
 static void measureAsLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2588,7 +2588,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> jsValue, co
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setHrefCallWith(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
+    imp->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void locationWithCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -3582,7 +3582,7 @@ static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSett
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
+    imp->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -6643,7 +6643,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 static void callWithActiveWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    imp->callWithActiveWindow(activeDOMWindow(info.GetIsolate()));
+    imp->callWithActiveWindow(callingDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6656,7 +6656,7 @@ static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8
 static void callWithActiveWindowScriptWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    imp->callWithActiveWindowScriptWindow(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()));
+    imp->callWithActiveWindowScriptWindow(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowScriptWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6773,7 +6773,7 @@ static void deprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::voidMethod);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::voidMethod);
     TestObjectPythonV8Internal::deprecatedVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -6813,7 +6813,7 @@ static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }

@@ -144,7 +144,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> jsValue, const v8::
 {
     TestNode* imp = V8TestNode::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setHrefCallWith(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
+    imp->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

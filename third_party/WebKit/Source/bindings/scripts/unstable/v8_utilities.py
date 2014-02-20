@@ -149,8 +149,8 @@ CALL_WITH_ARGUMENTS = {
     'ScriptState': '&state',
     'ExecutionContext': 'scriptContext',
     'ScriptArguments': 'scriptArguments.release()',
-    'ActiveWindow': 'activeDOMWindow(info.GetIsolate())',
-    'FirstWindow': 'firstDOMWindow(info.GetIsolate())',
+    'ActiveWindow': 'callingDOMWindow(info.GetIsolate())',
+    'FirstWindow': 'enteredDOMWindow(info.GetIsolate())',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [

@@ -536,7 +536,7 @@ static void testObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>
 static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -551,7 +551,7 @@ static void testObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::P
 static void testObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1605,7 +1605,7 @@ static void withActiveWindowAndFirstWindowAttributeAttributeSetter(v8::Local<v8:
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    imp->setWithActiveWindowAndFirstWindowAttribute(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), WTF::getPtr(cppValue));
+    imp->setWithActiveWindowAndFirstWindowAttribute(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), WTF::getPtr(cppValue));
 }
 
 static void withActiveWindowAndFirstWindowAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -3027,7 +3027,7 @@ static void deprecatedStaticReadOnlyAttrAttributeGetter(const v8::PropertyCallba
 static void deprecatedStaticReadOnlyAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticReadonlyAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::StaticReadonlyAttribute);
     TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3040,7 +3040,7 @@ static void deprecatedStaticAttrAttributeGetter(const v8::PropertyCallbackInfo<v
 static void deprecatedStaticAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
     TestObjV8Internal::deprecatedStaticAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3055,7 +3055,7 @@ static void deprecatedStaticAttrAttributeSetter(v8::Local<v8::Value> jsValue, co
 static void deprecatedStaticAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
     TestObjV8Internal::deprecatedStaticAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3069,7 +3069,7 @@ static void deprecatedReadonlyAttrAttributeGetter(const v8::PropertyCallbackInfo
 static void deprecatedReadonlyAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::ReadonlyAttribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::ReadonlyAttribute);
     TestObjV8Internal::deprecatedReadonlyAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3083,7 +3083,7 @@ static void deprecatedAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Val
 static void deprecatedAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Attribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::Attribute);
     TestObjV8Internal::deprecatedAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3099,7 +3099,7 @@ static void deprecatedAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8
 static void deprecatedAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Attribute);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::Attribute);
     TestObjV8Internal::deprecatedAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3263,7 +3263,7 @@ static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::objMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3479,7 +3479,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void customMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::CustomTestFeature);
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::CustomTestFeature);
     V8TestObject::customMethodMethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3741,7 +3741,7 @@ static void withExecutionContextAndScriptStateWithSpacesMethodCallback(const v8:
 static void withActiveWindowAndFirstWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    imp->withActiveWindowAndFirstWindow(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()));
+    imp->withActiveWindowAndFirstWindow(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
 }
 
 static void withActiveWindowAndFirstWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5191,7 +5191,7 @@ static void deprecatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
 static void deprecatedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Method);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::Method);
     TestObjV8Internal::deprecatedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -5204,7 +5204,7 @@ static void deprecatedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticMethod);
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::StaticMethod);
     TestObjV8Internal::deprecatedStaticMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
