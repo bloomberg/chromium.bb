@@ -99,6 +99,13 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322795)
 
     # Mac/Intel failures
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+        ['mac', 'intel'], bug=314997)
+    # The following three tests only fail.
+    # Radar 13499677
+    self.Fail(
+        'conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
+        ['mac', 'intel'], bug=225642)
     # Radar 13499466
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['mac', 'intel'], bug=225642)
@@ -106,6 +113,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/textures/texture-size.html',
         ['mac', 'intel'], bug=225642)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
+        ['mac', 'intel'], bug=322795)
+    self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mac', 'intel'], bug=322795)
 
     # Mac/Intel failures on 10.7
@@ -121,10 +130,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/glsl/functions/glsl-function-reflect.html',
         ['lion', 'intel'])
-    # Radar 13499677
-    self.Fail(
+    self.Skip(
         'conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
-        ['lion', 'intel'], bug=225642)
+        ['lion', 'intel'])
     self.Skip('conformance/limits/gl-max-texture-dimensions.html',
         ['lion', 'intel'])
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
