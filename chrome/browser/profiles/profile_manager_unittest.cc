@@ -352,13 +352,17 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
  protected:
   virtual Profile* CreateProfileHelper(
       const base::FilePath& file_path) OVERRIDE {
-    TestingProfile* testing_profile = new TestingProfile(file_path, NULL);
-
     TestingProfile::Builder builder;
-    builder.SetIncognito();
     builder.SetGuestSession();
-    builder.SetPath(ProfileManager::GetGuestProfilePath());
-    testing_profile->SetOffTheRecordProfile(builder.Build().PassAs<Profile>());
+    builder.SetPath(file_path);
+    TestingProfile* testing_profile = builder.Build().release();
+
+    TestingProfile::Builder incognito_builder;
+    incognito_builder.SetIncognito();
+    incognito_builder.SetGuestSession();
+    incognito_builder.SetPath(ProfileManager::GetGuestProfilePath());
+    testing_profile->SetOffTheRecordProfile(
+        incognito_builder.Build().PassAs<Profile>());
 
     return testing_profile;
   }
@@ -393,6 +397,11 @@ TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
   EXPECT_TRUE(active_profile->IsOffTheRecord());
 
   EXPECT_TRUE(active_profile->IsSameProfile(primary_profile));
+
+  Profile* last_used_profile = ProfileManager::GetLastUsedProfile();
+  EXPECT_TRUE(last_used_profile->IsOffTheRecord());
+
+  EXPECT_TRUE(last_used_profile->IsSameProfile(active_profile));
 }
 #endif
 
