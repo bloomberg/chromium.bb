@@ -236,8 +236,13 @@ LRESULT LegacyRenderWidgetHostHWND::OnNCHitTest(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param) {
   if (GetWindowEventTarget(GetParent())) {
-    return GetWindowEventTarget(GetParent())->HandleNcHitTestMessage(
-        message, w_param, l_param);
+    LRESULT hit_test = GetWindowEventTarget(
+        GetParent())->HandleNcHitTestMessage(message, w_param, l_param);
+    // If the parent returns HTNOWHERE which can happen for popup windows, etc
+    // allow the default handling to go through.
+    if (hit_test == HTNOWHERE)
+      SetMsgHandled(FALSE);
+    return hit_test;
   }
   return HTNOWHERE;
 }
