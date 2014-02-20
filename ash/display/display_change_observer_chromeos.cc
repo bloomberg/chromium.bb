@@ -32,7 +32,7 @@ namespace {
 
 // The DPI threshold to detect high density screen.
 // Higher DPI than this will use device_scale_factor=2.
-const unsigned int kHighDensityDPIThreshold = 160;
+const unsigned int kHighDensityDPIThreshold = 170;
 
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
