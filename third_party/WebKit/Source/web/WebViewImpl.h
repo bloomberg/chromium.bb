@@ -460,7 +460,7 @@ public:
     bool allowsAcceleratedCompositing();
     void setRootGraphicsLayer(WebCore::GraphicsLayer*);
     void scheduleCompositingLayerSync();
-    void scrollRootLayerRect(const WebCore::IntSize& scrollDelta, const WebCore::IntRect& clipRect);
+    void scrollRootLayer();
     WebCore::GraphicsLayerFactory* graphicsLayerFactory() const;
     WebCore::RenderLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);

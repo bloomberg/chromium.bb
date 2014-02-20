@@ -494,8 +494,9 @@ void ChromeClientImpl::scroll(
             int dy = scrollDelta.height();
             m_webView->client()->didScrollRect(dx, dy, intersection(scrollRect, clipRect));
         }
-    } else
-        m_webView->scrollRootLayerRect(scrollDelta, clipRect);
+    } else {
+        m_webView->scrollRootLayer();
+    }
 }
 
 IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const

@@ -3693,7 +3693,7 @@ void WebViewImpl::scheduleCompositingLayerSync()
     m_layerTreeView->setNeedsAnimate();
 }
 
-void WebViewImpl::scrollRootLayerRect(const IntSize&, const IntRect&)
+void WebViewImpl::scrollRootLayer()
 {
     updateLayerTreeViewport();
 }
