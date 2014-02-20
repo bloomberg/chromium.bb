@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "media/video/capture/video_capture_device.h"
@@ -64,7 +64,7 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   // The following members belong to |capture_thread_|.
   scoped_ptr<VideoCaptureDevice::Client> client_;
   const base::FilePath file_path_;
-  base::PlatformFile file_;
+  base::File file_;
   scoped_ptr<uint8[]> video_frame_;
   VideoCaptureFormat capture_format_;
   int frame_size_;
