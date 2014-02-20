@@ -15,8 +15,9 @@
             overflow: auto;
         }
     </style>
+    <script src="resources/text-based-repaint.js"></script>
 </head>
-<body>
+<body onload="runRepaintTest()">
     <iframe src="javascript:void(0);"></iframe>
     <script>
         var frame = window.frames[0];
@@ -28,7 +29,7 @@
         frame.scrollBy(100, 100);
     </script>
     <script>
-        function testScrollRepaint()
+        function repaintTest()
         {
             if (window.testRunner) {
                 testRunner.waitUntilDone();
@@ -38,13 +39,6 @@
                 };
             }
             frame.scrollBy(-90, -90);
-        }
-
-        if (window.testRunner) {
-            testRunner.display();
-            testScrollRepaint();
-        } else {
-            setTimeout(testScrollRepaint, 100);
         }
     </script>
 </body>

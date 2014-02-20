@@ -30,12 +30,8 @@
             background-color: green;
         }
     </style>
+    <script src="resources/text-based-repaint.js"></script>
     <script>
-        if (window.testRunner) {
-            testRunner.dumpAsTextWithPixelResults();
-            testRunner.waitUntilDone();
-        }
-
         function repaintTest()
         {
             window.location.hash = "#ucp";
@@ -43,19 +39,14 @@
                 testRunner.notifyDone();
         }
 
-        function runRepaintTest()
+        function runTest()
         {
             document.getElementById("outer").scrollTop = 1000;
-
-            if (window.testRunner)
-                testRunner.display();
-
-            setTimeout(repaintTest, 0);
+            runRepaintTest();
         }
-        window.addEventListener("load", runRepaintTest, false);
     </script>
 </head>
-<body>
+<body onload="runTest()">
     <!-- Bug 71550 - REGRESSION (r93614): Content remains despite parent element being scrolled off page using javascript. -->
     <!-- For the test to pass you should not see any RED, only green -->
     <div id="outer">

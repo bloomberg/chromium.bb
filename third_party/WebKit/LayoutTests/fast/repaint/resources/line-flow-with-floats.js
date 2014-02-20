@@ -6,20 +6,11 @@ function loaded()
     loadCount++;
     if (loadCount == 2) {
         document.body.offsetTop;
-        beginTest();
+        runRepaintTest();
     }
 }
 
-function beginTest()
+function repaintTest()
 {
-    if (window.testRunner) {
-        document.body.offsetTop;
-        testRunner.display();
-        test(document.getElementById("iframe").contentDocument);
-    } else setTimeout(
-        function() {
-            test(document.getElementById("iframe").contentDocument);
-        },
-        10
-    );
+    test(document.getElementById("iframe").contentDocument);
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-<body>
+<script src="resources/text-based-repaint.js"></script>
+<body onload="runRepaintTest()">
   You should see the text 'after' in the inner box, no mangled pixels.
   <div id="parent1" style="position:absolute; width:300px; height:300px; overflow:hidden; border: solid 1px yellow">
     <div id="parent2" style="position:absolute; width:300px; height:300px; overflow:hidden; border: solid 1px red">
@@ -20,17 +21,8 @@
   parent2.scrollTop = 7;
   parent2.scrollLeft = 7;
 
-  if (window.testRunner)
-    testRunner.waitUntilDone();
-
-  window.setTimeout(function() {
-    if (window.testRunner)
-      testRunner.display();
-
+  function repaintTest() {
     document.getElementById('target').innerText = 'after'
-
-    if (window.testRunner)
-      testRunner.notifyDone();
-  }, 50);
+  }
 </script>
 </html>

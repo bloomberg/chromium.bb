@@ -1,5 +1,6 @@
 <html>
 <head>
+<script src="resources/text-based-repaint.js"></script>
 <script>
     function test()
     {
@@ -8,14 +9,10 @@
         target.style.visibility = "visible";
         document.body.offsetTop;
         
-        if (window.testRunner) {
-            testRunner.display();
-            finish();
-        } else
-            setTimeout(finish, 0);
+        runRepaintTest();
     }
 
-    function finish()
+    function repaintTest()
     {
         var target = document.getElementById("target");
         target.style.left = "0";

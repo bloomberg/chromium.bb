@@ -21,23 +21,24 @@ a:hover {
 	overflow: hidden;
 }
 </style>
-<script src="resources/repaint.js"></script>
 <script>
-    function repaintTest()
+    function runTest()
     {
-        if (!window.testRunner)
-            return;
+        if (window.testRunner)
+            window.testRunner.dumpAsTextWithPixelResults();
 
         var table = document.getElementById("table");
         var tableBox = table.getBoundingClientRect();
         var tableCenterX = (tableBox.left + tableBox.right) / 2;
         var tableCenterY = (tableBox.top + tableBox.bottom) / 2;
 
-        eventSender.mouseMoveTo(tableCenterX, tableCenterY);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
+        if (window.eventSender) {
+            eventSender.mouseMoveTo(tableCenterX, tableCenterY);
+            eventSender.mouseDown();
+            eventSender.mouseUp();
+        }
     }
-    window.addEventListener("load", runRepaintTest);
+    window.addEventListener("load", runTest);
 </script>
 </head>
 <body>

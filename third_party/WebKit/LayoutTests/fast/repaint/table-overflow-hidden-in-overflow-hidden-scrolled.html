@@ -43,16 +43,12 @@
                 testRunner.notifyDone();
         }
 
-        function runRepaintTest()
+        function runTest()
         {
             document.getElementById("outer").scrollTop = 1000;
-
-            if (window.testRunner)
-                testRunner.display();
-
             setTimeout(repaintTest, 0);
         }
-        window.addEventListener("load", runRepaintTest, false);
+        window.addEventListener("load", runTest, false);
     </script>
 </head>
 <body>

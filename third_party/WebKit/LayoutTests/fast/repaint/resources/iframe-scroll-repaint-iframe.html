@@ -1,16 +1,11 @@
 <!DOCTYPE html>
 <html style="background-color:#eeeeee; overflow:hidden">
-<div style="height:500px">
+<script src="text-based-repaint.js"></script>
 <script>
-if (window.testRunner)
-  testRunner.waitUntilDone()
-
-window.setTimeout(function() {
-  if (window.testRunner)
-    testRunner.display();
-
+function repaintTest() {
   document.documentElement.scrollTop = 20;
-  if (window.testRunner)
-    testRunner.notifyDone();
-}, 50);
+}
 </script>
+<body onload="runRepaintTest()">
+<div style="height:500px">
+

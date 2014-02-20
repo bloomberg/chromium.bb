@@ -1,11 +1,11 @@
 <head>
-    <script src="resources/repaint.js"></script>
     <script>
-        function repaintTest()
+        function runTest()
         {
-            if (window.testRunner)
+            if (window.testRunner) {
+                testRunner.dumpAsTextWithPixelResults();
                 testRunner.waitUntilDone();
-            var target = document.getElementById("target");
+            }
             scrollBy(0, 100);
         }
 
@@ -18,6 +18,6 @@
         }
     </script>
 </head>
-<body onload="runRepaintTest()" onscroll="handleScroll()" style="height: 200%;">
+<body onload="runTest()" onscroll="handleScroll()" style="height: 200%;">
     <div id="target" style="position: absolute; top: 300px; left: 300px; background-color: red; width: 100px; height: 100px;"></div>
 </body>
