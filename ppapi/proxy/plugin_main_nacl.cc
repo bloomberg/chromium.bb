@@ -117,16 +117,17 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
   // browser.
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(NACL_CHROME_DESC_BASE, false));
-  // We don't have/need a PID since handle sharing happens outside of the
-  // NaCl sandbox.
-  channel_.reset(new IPC::SyncChannel(
-      channel_handle, IPC::Channel::MODE_SERVER, this,
-      GetIPCMessageLoop(), true, GetShutdownEvent()));
 
+  // Delay initializing the SyncChannel until after we add filters. This
+  // ensures that the filters won't miss any messages received by
+  // the channel.
+  channel_.reset(new IPC::SyncChannel(
+      this, GetIPCMessageLoop(), GetShutdownEvent()));
   channel_->AddFilter(new ppapi::proxy::PluginMessageFilter(
       NULL, PluginGlobals::Get()->resource_reply_thread_registrar()));
   channel_->AddFilter(
       new tracing::ChildTraceMessageFilter(message_loop_.get()));
+  channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);
 }
 
 base::MessageLoopProxy* PpapiDispatcher::GetIPCMessageLoop() {
