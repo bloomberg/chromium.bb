@@ -164,8 +164,10 @@ config("compiler") {
         # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
         # Only apply this to the target linker, since the host
         # linker might not be gold, but isn't used much anyway.
-        "-Wl,--threads",
-        "-Wl,--thread-count=4",
+        # TODO(raymes): Disable threading because gold is frequently
+        # crashing on the bots: crbug.com/161942.
+        #"-Wl,--threads",
+        #"-Wl,--thread-count=4",
       ]
     }
 
@@ -397,14 +399,38 @@ config("chromium_code") {
   }
 }
 config("no_chromium_code") {
+  cflags = []
+  cflags_cc = []
+  defines = []
+
   if (is_win) {
-    cflags = [
+    cflags += [
       "/W3",  # Warning level 3.
       "/wd4800",  # Disable warning when forcing value to bool.
     ]
-    defines = [
+    defines += [
       "_CRT_NONSTDC_NO_WARNINGS",
       "_CRT_NONSTDC_NO_DEPRECATE",
+    ]
+  }
+
+  if (is_linux) {
+    # Don't warn about ignoring the return value from e.g. close(). This is
+    # off by default in some gccs but on by default in others. BSD systems do
+    # not support this option, since they are usually using gcc 4.2.1, which
+    # does not have this flag yet.
+    cflags += [ "-Wno-unused-result" ]
+  }
+
+  if (is_linux || is_android) {
+    cflags += [
+      # Don't warn about printf format problems. This is off by default in gcc
+      # but on in Ubuntu's gcc(!).
+      "-Wno-format",
+    ]
+    cflags_cc += [
+      # Don't warn about hash_map in third-party code.
+      "-Wno-deprecated",
     ]
   }
 
@@ -413,13 +439,13 @@ config("no_chromium_code") {
     #  1) Android always enables and also treats as errors
     #  2) Chromium ignores in third party code
     # So we re-enable those warnings when building Android.
-    cflags = [
+    cflags += [
       "-Wno-address",
       "-Wno-format-security",
       "-Wno-return-type",
       "-Wno-sequence-point",
     ]
-    cflags_cc = [ "-Wno-non-virtual-dtor" ]
+    cflags_cc += [ "-Wno-non-virtual-dtor" ]
   }
 }
 
@@ -488,7 +514,6 @@ config("default_warnings") {
       # Disables.
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
-      "-Wno-write-strings",
     ]
 
     if (is_mac) {

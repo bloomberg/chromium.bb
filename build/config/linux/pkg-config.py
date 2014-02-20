@@ -119,7 +119,8 @@ else:
   prefix = ''
 
 try:
-  flag_string = subprocess.check_output(["pkg-config", "--cflags", "--libs"] +
+  flag_string = subprocess.check_output(
+      [ "pkg-config", "--cflags", "--libs-only-l", "--libs-only-L" ] +
       args, env=os.environ)
   # For now just split on spaces to get the args out. This will break if
   # pkgconfig returns quoted things with spaces in them, but that doesn't seem
