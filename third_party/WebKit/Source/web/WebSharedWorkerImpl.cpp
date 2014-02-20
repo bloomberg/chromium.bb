@@ -238,12 +238,20 @@ void WebSharedWorkerImpl::reportConsoleMessage(MessageSource source, MessageLeve
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
 {
-    callOnMainThread(bind(&WebSharedWorkerClient::dispatchDevToolsMessage, m_clientWeakPtr, message.isolatedCopy()));
+    // Note that we need to keep the closure creation on a separate line so
+    // that the temporary created by isolatedCopy() will always be destroyed
+    // before the copy in the closure is used on the main thread.
+    const Closure& boundFunction = bind(&WebSharedWorkerClient::dispatchDevToolsMessage, m_clientWeakPtr, message.isolatedCopy());
+    callOnMainThread(boundFunction);
 }
 
 void WebSharedWorkerImpl::updateInspectorStateCookie(const String& cookie)
 {
-    callOnMainThread(bind(&WebSharedWorkerClient::saveDevToolsAgentState, m_clientWeakPtr, cookie.isolatedCopy()));
+    // Note that we need to keep the closure creation on a separate line so
+    // that the temporary created by isolatedCopy() will always be destroyed
+    // before the copy in the closure is used on the main thread.
+    const Closure& boundFunction = bind(&WebSharedWorkerClient::saveDevToolsAgentState, m_clientWeakPtr, cookie.isolatedCopy());
+    callOnMainThread(boundFunction);
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
