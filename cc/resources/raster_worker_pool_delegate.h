@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
@@ -35,11 +36,18 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
                            RasterWorkerPool** raster_worker_pools,
                            size_t num_raster_worker_pools);
 
+  void ScheduleRunDidFinishRunningTasks();
+  void OnRunDidFinishRunningTasks();
+  void RunDidFinishRunningTasks();
+
   RasterWorkerPoolClient* client_;
   typedef std::vector<RasterWorkerPool*> RasterWorkerPoolVector;
   RasterWorkerPoolVector raster_worker_pools_;
+  std::vector<bool> did_finish_running_tasks_pending_;
   size_t did_finish_running_tasks_pending_count_;
   size_t did_finish_running_tasks_required_for_activation_pending_count_;
+  bool run_did_finish_running_tasks_pending_;
+  base::WeakPtrFactory<RasterWorkerPoolDelegate> weak_ptr_factory_;
 };
 
 }  // namespace cc
