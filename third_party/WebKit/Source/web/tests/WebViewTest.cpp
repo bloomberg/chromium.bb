@@ -155,6 +155,27 @@ private:
     int m_longpressY;
 };
 
+class FakeCompositingWebViewClient : public WebViewClient {
+public:
+    virtual ~FakeCompositingWebViewClient()
+    {
+    }
+
+    virtual void initializeLayerTreeView() OVERRIDE
+    {
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+        ASSERT(m_layerTreeView);
+    }
+
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE
+    {
+        return m_layerTreeView.get();
+    }
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
+};
+
 class HelperPluginCreatingWebViewClient : public WebViewClient {
 public:
     // WebViewClient methods
@@ -1125,6 +1146,41 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput)
     EXPECT_TRUE(toWebViewImpl(webView)->caretOrSelectionRange(&location, &length));
     EXPECT_EQ(location, 0UL);
     EXPECT_EQ(length, testWord.length());
+}
+
+static void configueCompositingWebView(WebSettings* settings)
+{
+    settings->setForceCompositingMode(true);
+    settings->setAcceleratedCompositingEnabled(true);
+    settings->setAcceleratedCompositingForFixedPositionEnabled(true);
+    settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
+    settings->setAcceleratedCompositingForScrollableFramesEnabled(true);
+    settings->setCompositedScrollingForFramesEnabled(true);
+    settings->setFixedPositionCreatesStackingContext(true);
+}
+
+TEST_F(WebViewTest, ShowPressOnTransformedLink)
+{
+    OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
+
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+
+    WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+    webViewImpl->mainFrame()->loadHTMLString(
+        "<a href='http://www.test.com' style='position: absolute; left: 20px; top: 20px; width: 200px; -webkit-transform:translateZ(0);'>A link to highlight</a>", baseURL);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureShowPress;
+    event.x = 20;
+    event.y = 20;
+
+    // Just make sure we don't hit any asserts.
+    webViewImpl->handleInputEvent(event);
 }
 
 class MockAutofillClient : public WebAutofillClient {

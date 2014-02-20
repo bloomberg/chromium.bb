@@ -1143,9 +1143,15 @@ void WebViewImpl::enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent
 
 void WebViewImpl::enableTapHighlights(Vector<Node*>& highlightNodes)
 {
+    if (highlightNodes.isEmpty())
+        return;
+
     // Always clear any existing highlight when this is invoked, even if we
     // don't get a new target to highlight.
     m_linkHighlights.clear();
+
+    // LinkHighlight reads out layout and compositing state, so we need to make sure that's all up to date.
+    layout();
 
     for (size_t i = 0; i < highlightNodes.size(); ++i) {
         Node* node = highlightNodes[i];
