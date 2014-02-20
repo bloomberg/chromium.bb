@@ -405,21 +405,30 @@ static void CopyPcmDataToBus(int input_fd,
 
   int16_t pipe_data[PIPE_BUF / sizeof(int16_t)];
   size_t decoded_frames = 0;
+  size_t current_sample_in_frame = 0;
   ssize_t nread;
 
   while ((nread = HANDLE_EINTR(read(input_fd, pipe_data, sizeof(pipe_data)))) >
          0) {
     size_t samples_in_pipe = nread / sizeof(int16_t);
-    for (size_t m = 0; m < samples_in_pipe; m += number_of_channels) {
+
+    // The pipe may not contain a whole number of frames.  This is
+    // especially true if the number of channels is greater than
+    // 2. Thus, keep track of which sample in a frame is being
+    // processed, so we handle the boundary at the end of the pipe
+    // correctly.
+    for (size_t m = 0; m < samples_in_pipe; ++m) {
       if (decoded_frames >= number_of_frames)
         break;
 
-      for (size_t k = 0; k < number_of_channels; ++k) {
-        int16_t sample = pipe_data[m + k];
-        destination_bus->channelData(k)[decoded_frames] =
-            ConvertSampleToFloat(sample);
+      destination_bus->channelData(current_sample_in_frame)[decoded_frames] =
+          ConvertSampleToFloat(pipe_data[m]);
+      ++current_sample_in_frame;
+
+      if (current_sample_in_frame >= number_of_channels) {
+        current_sample_in_frame = 0;
+        ++decoded_frames;
       }
-      ++decoded_frames;
     }
   }
 
