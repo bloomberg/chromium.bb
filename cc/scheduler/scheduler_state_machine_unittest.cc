@@ -139,6 +139,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
+    state.SetNeedsCommit();
 
     EXPECT_FALSE(state.BeginImplFrameNeeded());
 
@@ -154,9 +155,17 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     StateMachine state(default_scheduler_settings);
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
     state.SetCanStart();
+    state.UpdateState(state.NextAction());
+    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
-    EXPECT_FALSE(state.BeginImplFrameNeeded());
+    state.SetNeedsCommit();
+
+    EXPECT_TRUE(state.BeginImplFrameNeeded());
+
+    state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   }
 
   // Begin the frame, make sure needs_commit and commit_state update correctly.
