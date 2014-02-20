@@ -673,6 +673,10 @@ const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
+// These mappings only apply to the host resolver, and can insert additional
+// resolutions in front of resolutions that match a pattern.
+const char kIpResolverRules[]               = "ip-resolver-rules";
+
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

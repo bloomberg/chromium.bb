@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
+#include "net/base/ip_mapping_rules.h"
 #include "net/base/net_util.h"
 #include "net/base/network_time_notifier.h"
 #include "net/base/sdch_manager.h"
@@ -60,6 +61,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/dns/mapped_ip_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -197,17 +199,28 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
     global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
   }
 
-  // If hostname remappings were specified on the command-line, layer these
-  // rules on top of the real host resolver. This allows forwarding all requests
-  // through a designated test server.
-  if (!command_line.HasSwitch(switches::kHostResolverRules))
-    return global_host_resolver.PassAs<net::HostResolver>();
+  // If hostname or IP remappings were specified on the command-line, layer
+  // these rules on top of the real host resolver. Hostname remapping allows
+  // forwarding of all requests to hosts (matching a pattern) through a
+  // designated test server.   IP remapping allows for all IP resolutions that
+  // match a given pattern, such as those destined for a specific CDN, to be
+  // instead directed to a specific/alternate IP address.
+  if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    scoped_ptr<net::MappedHostResolver> remapped_resolver(
+        new net::MappedHostResolver(global_host_resolver.Pass()));
+    remapped_resolver->SetRulesFromString(
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+    global_host_resolver = remapped_resolver.Pass();
+  }
 
-  scoped_ptr<net::MappedHostResolver> remapped_resolver(
-      new net::MappedHostResolver(global_host_resolver.Pass()));
-  remapped_resolver->SetRulesFromString(
-      command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  return remapped_resolver.PassAs<net::HostResolver>();
+  if (command_line.HasSwitch(switches::kIpResolverRules)) {
+    scoped_ptr<net::MappedIPResolver> remapped_resolver(
+        new net::MappedIPResolver(global_host_resolver.Pass()));
+    remapped_resolver->SetRulesFromString(
+        command_line.GetSwitchValueASCII(switches::kIpResolverRules));
+    global_host_resolver = remapped_resolver.Pass();
+  }
+  return global_host_resolver.Pass();
 }
 
 // TODO(willchan): Remove proxy script fetcher context since it's not necessary
