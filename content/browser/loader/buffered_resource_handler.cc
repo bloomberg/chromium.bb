@@ -365,7 +365,7 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
     // own error page instead of triggering a download.
     // TODO(abarth): We should abstract the response_code test, but this kind
     //               of check is scattered throughout our codebase.
-    request()->CancelWithError(net::ERR_FILE_NOT_FOUND);
+    request()->CancelWithError(net::ERR_INVALID_RESPONSE);
     return false;
   }
 

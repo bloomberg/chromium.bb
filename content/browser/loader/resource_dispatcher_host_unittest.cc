@@ -2010,8 +2010,8 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
 
   // The RequestComplete message should have had the error code of
-  // ERR_FILE_NOT_FOUND.
-  CheckRequestCompleteErrorCode(msgs[0][0], net::ERR_FILE_NOT_FOUND);
+  // ERR_INVALID_RESPONSE.
+  CheckRequestCompleteErrorCode(msgs[0][0], net::ERR_INVALID_RESPONSE);
 }
 
 // Test for http://crbug.com/76202 .  We don't want to destroy a
