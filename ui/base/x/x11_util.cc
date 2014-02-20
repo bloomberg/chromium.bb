@@ -632,6 +632,15 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
     return false;
 
   *rect = gfx::Rect(x, y, width, height);
+
+  std::vector<int> insets;
+  if (GetIntArrayProperty(window, "_NET_FRAME_EXTENTS", &insets) &&
+      insets.size() == 4) {
+    rect->Inset(-insets[0], -insets[2], -insets[1], -insets[3]);
+  }
+  // Not all window managers support _NET_FRAME_EXTENTS so return true even if
+  // requesting the property fails.
+
   return true;
 }
 
