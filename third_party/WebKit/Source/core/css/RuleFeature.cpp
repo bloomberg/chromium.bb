@@ -38,8 +38,10 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/rendering/RenderObject.h"
 #include "wtf/BitVector.h"
 
 namespace WebCore {
@@ -400,18 +402,20 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
         }
     }
 
+    bool someChildrenNeedStyleRecalc = false;
     // foundInvalidationSet will be true if we are in a subtree of a node with a DescendantInvalidationSet on it.
     // We need to check all nodes in the subtree of such a node.
     if (foundInvalidationSet || element->childNeedsStyleInvalidation()) {
-        bool someChildrenNeedStyleRecalc = invalidateStyleForClassChangeOnChildren(element, invalidationClasses, foundInvalidationSet);
-        // We only need to possibly recalc style if this node is in the subtree of a node with a DescendantInvalidationSet on it.
-        // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
-        if (foundInvalidationSet)
-            thisElementNeedsStyleRecalc = thisElementNeedsStyleRecalc || someChildrenNeedStyleRecalc;
+        someChildrenNeedStyleRecalc = invalidateStyleForClassChangeOnChildren(element, invalidationClasses, foundInvalidationSet);
     }
 
-    if (thisElementNeedsStyleRecalc)
+    if (thisElementNeedsStyleRecalc) {
         element->setNeedsStyleRecalc(LocalStyleChange);
+    } else if (foundInvalidationSet && someChildrenNeedStyleRecalc) {
+        // Clone the RenderStyle in order to preserve correct style sharing.
+        if (RenderStyle* renderStyle = element->renderStyle())
+            element->renderer()->setStyle(RenderStyle::clone(renderStyle));
+    }
 
     invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
     element->clearChildNeedsStyleInvalidation();

@@ -8,11 +8,13 @@
 </style>
 
 <div id="outer">
-    <div id="inner" class="inner">
-        <div id="innerChild">
+    <div id="mid">
+        <div id="inner" class="inner">
+            <div id="innerChild">
+            </div>
         </div>
-    </div>
-    <div id="inner2">
+        <div id="inner2">
+        </div>
     </div>
 </div>
 <div id="outer2">
@@ -37,9 +39,9 @@ var count;
 if (internals.runtimeFlags.targetedStyleRecalcEnabled)
     count = 2;
 else
-    count = 4;
+    count = 5;
 
-// Style recalc should happen on "inner" and "outer", but not "inner2".
+// Style recalc should happen on "inner" and "outer", but not "inner2" or "mid".
 outer.offsetTop;
 outer.className = 'outer';
 shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
