@@ -119,21 +119,39 @@ public:
         return result.toString();
     }
 
+    template <typename NumType>
+    static String formatNumber(NumType number)
+    {
+        return formatFiniteNumber(number);
+    }
+
 private:
     static String ordinalNumber(int number);
 
+
     template <typename NumType>
-    static String formatNumber(NumType number)
+    static String formatFiniteNumber(NumType number)
+    {
+        if (number > 1e20 || number < -1e20)
+            return String::format("%e", 1.0*number);
+        return String::number(number);
+    }
+
+    template <typename NumType>
+    static String formatPotentiallyNonFiniteNumber(NumType number)
     {
         if (std::isnan(number))
             return "NaN";
         if (std::isinf(number))
             return number > 0 ? "Infinity" : "-Infinity";
         if (number > 1e20 || number < -1e20)
-            return String::format("%e", 1.0*number);
+            return String::format("%e", number);
         return String::number(number);
     }
 };
+
+template <> String ExceptionMessages::formatNumber<float>(float number);
+template <> String ExceptionMessages::formatNumber<double>(double number);
 
 } // namespace WebCore
 

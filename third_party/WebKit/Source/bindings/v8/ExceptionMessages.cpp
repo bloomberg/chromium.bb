@@ -129,4 +129,16 @@ String ExceptionMessages::readOnly(const char* detail)
     return detail ? String::format("This object is read-only, because %s.", detail) : readOnly;
 }
 
+template <>
+String ExceptionMessages::formatNumber<float>(float number)
+{
+    return formatPotentiallyNonFiniteNumber(number);
+}
+
+template <>
+String ExceptionMessages::formatNumber<double>(double number)
+{
+    return formatPotentiallyNonFiniteNumber(number);
+}
+
 } // namespace WebCore
