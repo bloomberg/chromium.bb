@@ -2584,6 +2584,7 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
        ['ProjectGuid', guid],
        ['Keyword', 'Win32Proj'],
        ['RootNamespace', namespace],
+       ['IgnoreWarnCompileDuplicatedFilename', 'true'],
       ]
   ]
 
