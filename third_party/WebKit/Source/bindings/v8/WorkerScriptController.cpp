@@ -67,7 +67,7 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     isolate->Enter();
     V8Initializer::initializeWorker(isolate);
     v8::V8::Initialize();
-    m_isolateHolder = adoptPtr(new gin::IsolateHolder(isolate));
+    m_isolateHolder = adoptPtr(new gin::IsolateHolder(isolate, v8ArrayBufferAllocator()));
     V8PerIsolateData::ensureInitialized(isolate);
     m_world = DOMWrapperWorld::create(WorkerWorldId, -1);
     m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));

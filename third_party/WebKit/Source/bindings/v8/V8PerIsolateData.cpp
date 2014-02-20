@@ -53,7 +53,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_performingMicrotaskCheckpoint(false)
 {
     if (m_isMainThread)
-        mainIsolateHolder = new gin::IsolateHolder(m_isolate);
+        mainIsolateHolder = new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator());
 }
 
 V8PerIsolateData::~V8PerIsolateData()

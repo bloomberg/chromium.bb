@@ -76,12 +76,11 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
 ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());
-    void* arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
-    if (arraybufferPtr)
-        return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
-
     v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
-    ASSERT(!v8buffer->IsExternal());
+    if (v8buffer->IsExternal()) {
+        RELEASE_ASSERT(toWrapperTypeInfo(object)->ginEmbedder == gin::kEmbedderBlink);
+        return reinterpret_cast<ArrayBuffer*>(WebCore::toNative(object));
+    }
 
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
     ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(),
@@ -89,9 +88,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
 
-    arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
-    ASSERT(arraybufferPtr);
-    return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
+    return reinterpret_cast<ArrayBuffer*>(WebCore::toNative(object));
 }
 
 ArrayBuffer* V8ArrayBuffer::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
