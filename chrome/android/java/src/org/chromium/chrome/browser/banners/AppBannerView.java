@@ -118,8 +118,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         // which means that it already defines padding.  We need to take it into account when adding
         // even more padding to the inside of it.
         mBackgroundDrawablePadding = new Rect();
-        mBackgroundDrawablePadding.left = getPaddingStart();
-        mBackgroundDrawablePadding.right = getPaddingEnd();
+        mBackgroundDrawablePadding.left = ApiCompatibilityUtils.getPaddingStart(this);
+        mBackgroundDrawablePadding.right = ApiCompatibilityUtils.getPaddingEnd(this);
         mBackgroundDrawablePadding.top = getPaddingTop();
         mBackgroundDrawablePadding.bottom = getPaddingBottom();
     }
