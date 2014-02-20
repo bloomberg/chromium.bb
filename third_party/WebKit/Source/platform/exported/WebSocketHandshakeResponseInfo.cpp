@@ -62,4 +62,9 @@ void WebSocketHandshakeResponseInfo::addHeaderField(const WebString& name, const
     m_private->addHeaderField(name, value);
 }
 
+void WebSocketHandshakeResponseInfo::setHeadersText(const WebString& text)
+{
+    m_private->setHeadersText(text);
+}
+
 } // namespace blink

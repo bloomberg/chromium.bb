@@ -252,7 +252,7 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
     // Keep the following consistent with clientHandshakeMessage().
     // FIXME: do we need to store m_secWebSocketKey1, m_secWebSocketKey2 and
     // m_key3 in WebSocketHandshakeRequest?
-    RefPtr<WebSocketHandshakeRequest> request = WebSocketHandshakeRequest::create("GET", m_url);
+    RefPtr<WebSocketHandshakeRequest> request = WebSocketHandshakeRequest::create(m_url);
     request->addHeaderField("Upgrade", "websocket");
     request->addHeaderField("Connection", "Upgrade");
     request->addHeaderField("Host", AtomicString(hostName(m_url, m_secure)));

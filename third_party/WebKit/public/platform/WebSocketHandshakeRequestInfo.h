@@ -51,6 +51,7 @@ public:
 
     BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
     BLINK_PLATFORM_EXPORT void addHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void setHeadersText(const WebString&);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT const WebCore::WebSocketHandshakeRequest& toCoreRequest() const { return *m_private.get(); }

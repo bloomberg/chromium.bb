@@ -36,12 +36,12 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
+#include "core/frame/Frame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
@@ -261,7 +261,7 @@ void MainThreadWebSocketChannel::didOpenSocketStream(SocketStreamHandle* handle)
     if (!m_document)
         return;
     if (m_identifier)
-        InspectorInstrumentation::willSendWebSocketHandshakeRequest(m_document, m_identifier, *m_handshake->clientHandshakeRequest());
+        InspectorInstrumentation::willSendWebSocketHandshakeRequest(m_document, m_identifier, m_handshake->clientHandshakeRequest().get());
     CString handshakeMessage = m_handshake->clientHandshakeMessage();
     if (!handle->send(handshakeMessage.data(), handshakeMessage.length()))
         failAsError("Failed to send WebSocket handshake.");
@@ -440,7 +440,7 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
             return false;
         if (m_handshake->mode() == WebSocketHandshake::Connected) {
             if (m_identifier)
-                InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(m_document, m_identifier, m_handshake->serverHandshakeResponse());
+                InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(m_document, m_identifier, 0, &m_handshake->serverHandshakeResponse());
 
             if (m_deflateFramer.enabled() && m_document) {
                 const String message = "WebSocket extension \"x-webkit-deflate-frame\" is deprecated";
@@ -608,8 +608,9 @@ bool MainThreadWebSocketChannel::processFrame()
                     failAsError("Could not decode a text frame as UTF-8.");
                 else
                     m_client->didReceiveMessage(message);
-            } else if (m_continuousFrameOpCode == WebSocketFrame::OpCodeBinary)
+            } else if (m_continuousFrameOpCode == WebSocketFrame::OpCodeBinary) {
                 m_client->didReceiveBinaryData(continuousFrameData.release());
+            }
         }
         break;
 
@@ -650,9 +651,9 @@ bool MainThreadWebSocketChannel::processFrame()
         break;
 
     case WebSocketFrame::OpCodeClose:
-        if (!frame.payloadLength)
+        if (!frame.payloadLength) {
             m_closeEventCode = CloseEventCodeNoStatusRcvd;
-        else if (frame.payloadLength == 1) {
+        } else if (frame.payloadLength == 1) {
             m_closeEventCode = CloseEventCodeAbnormalClosure;
             failAsError("Received a broken close frame containing an invalid size body.");
             return false;

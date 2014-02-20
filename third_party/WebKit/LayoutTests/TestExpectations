@@ -969,5 +969,6 @@ crbug.com/339373 http/tests/websocket/workers/send-arraybufferview.html [ Skip ]
 crbug.com/339373 http/tests/websocket/workers/send-blob.html [ Skip ]
 crbug.com/339373 http/tests/websocket/workers/worker-simple.html [ Skip ]
 crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
+crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

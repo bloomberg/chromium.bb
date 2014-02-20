@@ -40,6 +40,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "platform/Logging.h"
+#include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSocketHandshakeRequestInfo.h"
@@ -367,15 +368,19 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
 void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeRequestInfo& request)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
-    if (m_identifier)
-        InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, request.toCoreRequest());
+    if (m_identifier) {
+        InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, &request.toCoreRequest());
+        m_handshakeRequest = WebSocketHandshakeRequest::create(request.toCoreRequest());
+    }
 }
 
 void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeResponseInfo& response)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
-    if (m_identifier)
-        InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, response.toCoreResponse());
+    if (m_identifier) {
+        InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, m_handshakeRequest.get(), &response.toCoreResponse());
+    }
+    m_handshakeRequest.clear();
 }
 
 void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)

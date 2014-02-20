@@ -51,6 +51,7 @@ public:
     BLINK_PLATFORM_EXPORT void setStatusCode(int);
     BLINK_PLATFORM_EXPORT void setStatusText(const WebString&);
     BLINK_PLATFORM_EXPORT void addHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void setHeadersText(const WebString&);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT const WebCore::WebSocketHandshakeResponse& toCoreResponse() const { return *m_private.get(); }

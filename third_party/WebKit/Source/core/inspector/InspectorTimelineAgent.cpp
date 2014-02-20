@@ -36,6 +36,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PageConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorCounters.h"
@@ -50,7 +51,6 @@
 #include "core/inspector/TraceEventDispatcher.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/frame/PageConsole.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -455,7 +455,7 @@ void InspectorTimelineAgent::didCallFunction()
 bool InspectorTimelineAgent::willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath)
 {
     if (!eventHasListeners(event.type(), window, node, eventPath))
-       return false;
+        return false;
 
     pushCurrentRecord(TimelineRecordFactory::createEventDispatchData(event), TimelineRecordType::EventDispatch, false, document->frame());
     return true;
@@ -880,12 +880,12 @@ void InspectorTimelineAgent::didCreateWebSocket(Document* document, unsigned lon
     appendRecord(TimelineRecordFactory::createWebSocketCreateData(identifier, url, protocol), TimelineRecordType::WebSocketCreate, true, document->frame());
 }
 
-void InspectorTimelineAgent::willSendWebSocketHandshakeRequest(Document* document, unsigned long identifier, const WebSocketHandshakeRequest&)
+void InspectorTimelineAgent::willSendWebSocketHandshakeRequest(Document* document, unsigned long identifier, const WebSocketHandshakeRequest*)
 {
     appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketSendHandshakeRequest, true, document->frame());
 }
 
-void InspectorTimelineAgent::didReceiveWebSocketHandshakeResponse(Document* document, unsigned long identifier, const WebSocketHandshakeResponse&)
+void InspectorTimelineAgent::didReceiveWebSocketHandshakeResponse(Document* document, unsigned long identifier, const WebSocketHandshakeRequest*, const WebSocketHandshakeResponse*)
 {
     appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketReceiveHandshakeResponse, false, document->frame());
 }
@@ -1110,7 +1110,7 @@ void InspectorTimelineAgent::populateImageDetails(JSONObject* data, const Render
 void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
 {
     // An empty stack could merely mean that the timeline agent was turned on in the middle of
-    // an event.  Don't treat as an error.
+    // an event. Don't treat as an error.
     if (!m_recordStack.isEmpty()) {
         if (m_platformInstrumentationClientInstalledAtStackDepth == m_recordStack.size()) {
             m_platformInstrumentationClientInstalledAtStackDepth = 0;

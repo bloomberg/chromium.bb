@@ -41,8 +41,6 @@ namespace blink {
 
 WebSocketHandshakeRequestInfo::WebSocketHandshakeRequestInfo() : m_private(WebSocketHandshakeRequest::create())
 {
-    // WebSocket always uses GET method.
-    m_private->setRequestMethod("GET");
 }
 
 WebSocketHandshakeRequestInfo::~WebSocketHandshakeRequestInfo()
@@ -57,7 +55,12 @@ void WebSocketHandshakeRequestInfo::setURL(const WebURL& url)
 
 void WebSocketHandshakeRequestInfo::addHeaderField(const WebString& name, const WebString& value)
 {
-    m_private->addHeaderField(name, value);
+    m_private->addAndMergeHeader(name, value);
+}
+
+void WebSocketHandshakeRequestInfo::setHeadersText(const WebString& text)
+{
+    m_private->setHeadersText(text);
 }
 
 } // namespace blink

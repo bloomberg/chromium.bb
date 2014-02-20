@@ -49,11 +49,14 @@ public:
     const HTTPHeaderMap& headerFields() const;
     void addHeaderField(const AtomicString& name, const AtomicString& value);
     void clearHeaderFields();
+    const String& headersText() const { return m_headersText; }
+    void setHeadersText(const String& text) { m_headersText = text; }
 
 private:
     int m_statusCode;
     String m_statusText;
     HTTPHeaderMap m_headerFields;
+    String m_headersText;
 };
 
 } // namespace WebCore

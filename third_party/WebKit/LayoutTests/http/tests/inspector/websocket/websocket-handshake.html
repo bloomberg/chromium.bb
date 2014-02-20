@@ -46,9 +46,16 @@ function test() {
         if (event.data.statusCode === 101) {
             console.log('requestMethod: ' + event.data.requestMethod);
             outputHeaders('requestHeaders', event.data.requestHeaders());
+            var headersText = event.data.requestHeadersText();
+            var firstLine = headersText ? headersText.split('\r\n')[0] : headersText;
+            console.log('requestHeadersText (first line): ' + firstLine);
+
             console.log('statusCode: ' + event.data.statusCode);
             console.log('statusText: ' + event.data.statusText);
             outputHeaders('responseHeaders', event.data.responseHeaders);
+            headersText = event.data.responseHeadersText;
+            firstLine = headersText ? headersText.split('\r\n')[0] : headersText;
+            console.log('responseHeadersText (first line): ' + firstLine);
             InspectorTest.completeTest();
         }
     }

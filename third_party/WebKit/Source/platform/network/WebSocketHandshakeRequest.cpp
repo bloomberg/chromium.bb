@@ -33,13 +33,16 @@
 
 namespace WebCore {
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(const String& requestMethod, const KURL& url)
-    : HTTPRequest(requestMethod, url, HTTP_1_1)
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url) : m_url(url)
 {
 }
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest()
-    : HTTPRequest()
+{
+}
+
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(const WebSocketHandshakeRequest& request)
+    : m_url(request.m_url), m_headerFields(request.m_headerFields), m_headersText(request.m_headersText)
 {
 }
 

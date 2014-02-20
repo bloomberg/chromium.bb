@@ -223,8 +223,8 @@ public:
     void didProcessTask();
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL&, const String& protocol);
-    void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
-    void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
+    void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest*);
+    void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeRequest*, const WebSocketHandshakeResponse*);
     void didCloseWebSocket(Document*, unsigned long identifier);
 
     void processGPUEvent(const GPUEvent&);

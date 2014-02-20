@@ -60,6 +60,7 @@ class WebSocketHandshakeResponseInfo;
 namespace WebCore {
 
 class Document;
+class WebSocketHandshakeRequest;
 
 // This class may replace MainThreadWebSocketChannel.
 class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
@@ -174,6 +175,7 @@ private:
 
     String m_sourceURLAtConstruction;
     unsigned m_lineNumberAtConstruction;
+    RefPtr<WebSocketHandshakeRequest> m_handshakeRequest;
 
     static const int64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };

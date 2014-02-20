@@ -19,6 +19,7 @@ log:     Sec-WebSocket-Key: ***
 log:     Sec-WebSocket-Version: 13
 log:     Upgrade: websocket
 log:     User-Agent: ***
+log: requestHeadersText (first line): GET ws://localhost:8880/duplicated-headers HTTP/1.1
 log: statusCode: 101
 log: statusText: Switching Protocols
 log: responseHeaders
@@ -29,4 +30,5 @@ log:     foo: FUGA
 log:     foo: bar, baz
 log:     foo: hoge
 log:     xxx: yyy
+log: responseHeadersText (first line): HTTP/1.1 101 Switching Protocols
 
