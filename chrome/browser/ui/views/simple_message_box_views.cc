@@ -23,7 +23,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/simple_message_box_win.h"
+#include "ui/base/win/message_box_win.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 namespace chrome {
@@ -185,18 +186,38 @@ uint32_t SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
+#if defined(OS_WIN)
+UINT GetMessageBoxFlagsFromType(MessageBoxType type) {
+  UINT flags = MB_SETFOREGROUND;
+  switch (type) {
+    case MESSAGE_BOX_TYPE_INFORMATION:
+      return flags | MB_OK | MB_ICONINFORMATION;
+    case MESSAGE_BOX_TYPE_WARNING:
+      return flags | MB_OK | MB_ICONWARNING;
+    case MESSAGE_BOX_TYPE_QUESTION:
+      return flags | MB_YESNO | MB_ICONQUESTION;
+    case MESSAGE_BOX_TYPE_OK_CANCEL:
+      return flags | MB_OKCANCEL | MB_ICONWARNING;
+  }
+  NOTREACHED();
+  return flags | MB_OK | MB_ICONWARNING;
+}
+#endif
+
 MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     const base::string16& title,
                                     const base::string16& message,
                                     MessageBoxType type,
                                     const base::string16& yes_text,
                                     const base::string16& no_text) {
-
 #if defined(OS_WIN)
-  // If we're very early, we can't show a GPU-based dialog, so fallback to
-  // plain Windows MessageBox.
-  if (!ui::ContextFactory::GetInstance())
-    return NativeShowMessageBox(NULL, title, message, type);
+  // GPU-based dialogs can't be used early on; fallback to a Windows MessageBox.
+  if (!ui::ContextFactory::GetInstance()) {
+    int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
+                                title, GetMessageBoxFlagsFromType(type));
+    return (result == IDYES || result == IDOK) ?
+        MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
+  }
 #endif
 
   scoped_refptr<SimpleMessageBoxViews> dialog(

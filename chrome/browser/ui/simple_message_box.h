@@ -19,8 +19,7 @@ enum MessageBoxType {
   MESSAGE_BOX_TYPE_INFORMATION,  // Shows an OK button.
   MESSAGE_BOX_TYPE_WARNING,      // Shows an OK button.
   MESSAGE_BOX_TYPE_QUESTION,     // Shows YES and NO buttons.
-  MESSAGE_BOX_TYPE_OK_CANCEL,    // Shows OK and CANCEL buttons (Windows or aura
-                                 // only).
+  MESSAGE_BOX_TYPE_OK_CANCEL,    // Shows OK and CANCEL buttons (Aura only).
 };
 
 // Shows a dialog box with the given |title| and |message|. If |parent| is

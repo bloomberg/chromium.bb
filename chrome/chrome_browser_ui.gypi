@@ -2092,8 +2092,6 @@
         'browser/ui/views/signed_certificate_timestamp_info_view.cc',
         'browser/ui/views/signed_certificate_timestamp_info_view.h',
         'browser/ui/views/simple_message_box_views.cc',
-        'browser/ui/views/simple_message_box_win.cc',
-        'browser/ui/views/simple_message_box_win.h',
         'browser/ui/views/speech_recognition_bubble_views.cc',
         'browser/ui/views/ssl_client_certificate_selector.cc',
         'browser/ui/views/ssl_client_certificate_selector.h',

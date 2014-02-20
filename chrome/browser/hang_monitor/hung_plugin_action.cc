@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/version.h"
-#include "chrome/browser/ui/views/simple_message_box_win.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
@@ -113,10 +113,7 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
                           HungWindowResponseCallback,
                           reinterpret_cast<ULONG_PTR>(this));
       current_hung_plugin_window_ = hung_window;
-      // We use chrome::NativeShowMessageBox instead of chrome::ShowMessageBox
-      // because the latter depends on UI-thread classes on Win Aura. See
-      // http://crbug.com/330424.
-      if (chrome::NativeShowMessageBox(
+      if (chrome::ShowMessageBox(
               NULL, title, message, chrome::MESSAGE_BOX_TYPE_QUESTION) ==
           chrome::MESSAGE_BOX_RESULT_YES) {
         *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
