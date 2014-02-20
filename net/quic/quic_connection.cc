@@ -1193,11 +1193,10 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
     encrypted_deleter.reset(encrypted);
   }
 
-  if (encrypted->length() > options()->max_packet_length) {
-    LOG(DFATAL) << "Writing an encrypted packet larger than max_packet_length:"
-                << options()->max_packet_length << " encrypted length: "
-                << encrypted->length();
-  }
+  LOG_IF(DFATAL, encrypted->length() > options()->max_packet_length)
+      << "Writing an encrypted packet larger than max_packet_length:"
+      << options()->max_packet_length << " encrypted length: "
+      << encrypted->length();
   DVLOG(1) << ENDPOINT << "Sending packet number " << sequence_number
            << " : " << (packet.packet->is_fec_packet() ? "FEC " :
                (packet.retransmittable == HAS_RETRANSMITTABLE_DATA

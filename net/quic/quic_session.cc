@@ -290,7 +290,8 @@ void QuicSession::OnWindowUpdateFrames(
       // This is a window update that applies to the connection, rather than an
       // individual stream.
       // TODO(rjshade): Adjust connection level flow control window.
-      DVLOG(1) << "Received connection level flow control window update with "
+      DVLOG(1) << ENDPOINT
+               << "Received connection level flow control window update with "
                   "byte offset: " << frames[i].byte_offset;
       continue;
     }
@@ -307,7 +308,7 @@ void QuicSession::OnBlockedFrames(const vector<QuicBlockedFrame>& frames) {
     // TODO(rjshade): Compare our flow control receive windows for specified
     //                streams: if we have a large window then maybe something
     //                had gone wrong with the flow control accounting.
-    DVLOG(1) << "Received BLOCKED frame with stream id: "
+    DVLOG(1) << ENDPOINT << "Received BLOCKED frame with stream id: "
              << frames[i].stream_id;
   }
 }
