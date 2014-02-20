@@ -704,6 +704,11 @@ void WebSettingsImpl::setCookieEnabled(bool enabled)
     m_settings->setCookieEnabled(enabled);
 }
 
+void WebSettingsImpl::setNavigateOnDragDrop(bool enabled)
+{
+    m_settings->setNavigateOnDragDrop(enabled);
+}
+
 void WebSettingsImpl::setGestureTapHighlightEnabled(bool enableHighlight)
 {
     m_gestureTapHighlightEnabled = enableHighlight;

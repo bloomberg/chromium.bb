@@ -80,6 +80,7 @@ public:
     virtual void setCompositedScrollingForFramesEnabled(bool) OVERRIDE;
     virtual void setCompositorTouchHitTesting(bool) OVERRIDE;
     virtual void setCookieEnabled(bool) OVERRIDE;
+    virtual void setNavigateOnDragDrop(bool) OVERRIDE;
     virtual void setCursiveFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
     virtual void setDNSPrefetchingEnabled(bool) OVERRIDE;
     virtual void setDOMPasteAllowed(bool) OVERRIDE;
