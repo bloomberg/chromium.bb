@@ -1585,13 +1585,8 @@ void Document::updateStyleInvalidationIfNeeded()
     if (!childNeedsStyleInvalidation())
         return;
     TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
-    if (!styleResolver()) {
-        clearChildNeedsStyleInvalidation();
-        return;
-    }
+    ASSERT(styleResolver());
 
-    // FIXME: the style resolver can be deleted at present. Either resolve
-    // crbug.com/335964 or move the invalidation data elsewhere.
     styleResolver()->ensureRuleFeatureSet().computeStyleInvalidation(*this);
 }
 
