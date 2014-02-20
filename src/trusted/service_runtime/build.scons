@@ -160,9 +160,14 @@ if env.Bit('windows'):
     'win/sel_segments.c',
   ]
 elif env.Bit('mac'):
+  # Rely on the c preprocessor to discover where the mach interface definitions
+  # are located.
+  env.Command(
+     [GENERATED + '/exc.defs'], [],
+     "echo '#include <mach/exc.defs>' | ${CC} ${CFLAGS} -E - > ${TARGET}")
   env.Command(
      [GENERATED + '/nacl_exc.h', GENERATED + '/nacl_exc_server.c'],
-     ['osx/run_mig.py', '/usr/include/mach/exc.defs'],
+     ['osx/run_mig.py', GENERATED + '/exc.defs'],
      '${PYTHON} ${SOURCES} ${TARGETS}')
   ldr_inputs += [
     GENERATED + '/nacl_exc_server.c',
