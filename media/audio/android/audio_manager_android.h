@@ -65,7 +65,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const AudioParameters& input_params) OVERRIDE;
 
  private:
-  bool HadNoAudioStreams();
+  bool HasNoAudioInputStreams();
   void Init();
   void Close();
   void SetCommunicationAudioModeOn(bool on);
@@ -89,6 +89,10 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // AudioManager::MakeAudioOutputStream on the audio thread. For now, this
   // lock is used to guard access to |streams_|.
   base::Lock streams_lock_;
+
+  // Enabled when first input stream is created and set to false when last
+  // input stream is destroyed. Also affects the stream type of output streams.
+  bool communication_mode_is_on_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerAndroid);
 };

@@ -28,7 +28,8 @@ class OpenSLESOutputStream : public AudioOutputStream {
   static const int kMaxNumOfBuffersInQueue = 2;
 
   OpenSLESOutputStream(AudioManagerAndroid* manager,
-                       const AudioParameters& params);
+                       const AudioParameters& params,
+                       SLint32 stream_type);
 
   virtual ~OpenSLESOutputStream();
 
@@ -76,6 +77,10 @@ class OpenSLESOutputStream : public AudioOutputStream {
   base::Lock lock_;
 
   AudioManagerAndroid* audio_manager_;
+
+  // Audio playback stream type.
+  // See SLES/OpenSLES_Android.h for details.
+  SLint32 stream_type_;
 
   AudioSourceCallback* callback_;
 

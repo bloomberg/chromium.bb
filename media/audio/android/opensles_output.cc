@@ -20,8 +20,10 @@
 namespace media {
 
 OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
-                                           const AudioParameters& params)
+                                           const AudioParameters& params,
+                                           SLint32 stream_type)
     : audio_manager_(manager),
+      stream_type_(stream_type),
       callback_(NULL),
       player_(NULL),
       simple_buffer_queue_(NULL),
@@ -30,7 +32,8 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       started_(false),
       muted_(false),
       volume_(1.0) {
-  DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream()";
+  DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream("
+           << "stream_type=" << stream_type << ")";
   format_.formatType = SL_DATAFORMAT_PCM;
   format_.numChannels = static_cast<SLuint32>(params.channels());
   // Provides sampling rate in milliHertz to OpenSLES.
@@ -248,11 +251,11 @@ bool OpenSLESOutputStream::CreatePlayer() {
           player_object_.Get(), SL_IID_ANDROIDCONFIGURATION, &player_config),
       false);
 
-  SLint32 stream_type = SL_ANDROID_STREAM_VOICE;
+  // Set configuration using the stream type provided at construction.
   LOG_ON_FAILURE_AND_RETURN(
       (*player_config)->SetConfiguration(player_config,
                                          SL_ANDROID_KEY_STREAM_TYPE,
-                                         &stream_type,
+                                         &stream_type_,
                                          sizeof(SLint32)),
       false);
 
