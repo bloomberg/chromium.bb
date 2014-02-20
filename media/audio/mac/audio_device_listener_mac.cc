@@ -11,7 +11,6 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
-#include "media/audio/mac/audio_low_latency_output_mac.h"
 
 namespace media {
 
