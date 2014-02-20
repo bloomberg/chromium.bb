@@ -1277,7 +1277,7 @@ void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& 
 void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap, float x, float y, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageBitmap"));
         return;
     }
     drawImage(bitmap, x, y, bitmap->width(), bitmap->height(), exceptionState);
@@ -1287,7 +1287,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageBitmap"));
         return;
     }
     if (!bitmap->bitmapRect().width() || !bitmap->bitmapRect().height())
@@ -1301,7 +1301,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageBitmap"));
         return;
     }
 
@@ -1348,7 +1348,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLImageElement"));
         return;
     }
     LayoutSize destRectSize = sizeFor(image, ImageSizeAfterDevicePixelRatio);
@@ -1359,7 +1359,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLImageElement"));
         return;
     }
     LayoutSize sourceRectSize = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
@@ -1381,7 +1381,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const blink::WebBlendMode& blendMode, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLImageElement"));
         return;
     }
 
@@ -1441,7 +1441,7 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     const FloatRect& dstRect, ExceptionState& exceptionState)
 {
     if (!sourceCanvas) {
-        exceptionState.throwDOMException(TypeMismatchError, "The canvas element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLCanvasElement"));
         return;
     }
 
@@ -1508,7 +1508,7 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLVideoElement"));
         return;
     }
     IntSize size = sizeFor(video);
@@ -1519,7 +1519,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLVideoElement"));
         return;
     }
     IntSize size = sizeFor(video);
@@ -1536,7 +1536,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLVideoElement"));
         return;
     }
 
@@ -1710,7 +1710,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
     const String& repetitionType, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLImageElement"));
         return 0;
     }
     bool repeatX, repeatY;
@@ -1738,7 +1738,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElem
     const String& repetitionType, ExceptionState& exceptionState)
 {
     if (!canvas)
-        exceptionState.throwDOMException(TypeMismatchError, "The canvas element provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLCanvasElement"));
     else if (!canvas->width() || !canvas->height())
         exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", canvas->width() ? "height" : "width"));
 
@@ -1821,7 +1821,7 @@ static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionState& exceptionState) const
 {
     if (!imageData) {
-        exceptionState.throwDOMException(NotSupportedError, "The ImageData provided is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
         return 0;
     }
 
@@ -1908,7 +1908,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
 {
     if (!data) {
-        exceptionState.throwDOMException(TypeMismatchError, "The ImageData provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
         return;
     }
     putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
@@ -1918,7 +1918,7 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy,
     float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
 {
     if (!data)
-        exceptionState.throwDOMException(TypeMismatchError, "The ImageData provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
     else if (!std::isfinite(dx))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dx, "dx"));
     else if (!std::isfinite(dy))

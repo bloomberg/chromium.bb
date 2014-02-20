@@ -886,7 +886,7 @@ PassRefPtr<Text> Document::createEditingTextNode(const String& text)
 PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     if (!importedNode) {
-        exceptionState.throwDOMException(NotSupportedError, "The node provided is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -964,7 +964,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
 PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& exceptionState)
 {
     if (!source) {
-        exceptionState.throwDOMException(NotSupportedError, "The node provided is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -1476,7 +1476,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState
 {
     // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1485,7 +1485,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
@@ -1496,7 +1496,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     // FIXME: Ditto.
@@ -1506,7 +1506,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1515,7 +1515,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& ex
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
@@ -1524,7 +1524,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
@@ -2331,7 +2331,7 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& excep
     RefPtr<HTMLElement> newBody = prpNewBody;
 
     if (!newBody) {
-        exceptionState.throwDOMException(HierarchyRequestError, "The node provided is invalid.");
+        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLElement"));
         return;
     }
     if (!documentElement()) {

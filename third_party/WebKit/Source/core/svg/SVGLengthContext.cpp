@@ -24,6 +24,7 @@
 #include "core/svg/SVGLengthContext.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/ExceptionCode.h"
@@ -109,7 +110,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
 
     switch (fromUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwDOMException(NotSupportedError, "The fromUnit provided is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(3, "SVGLengthType"));
         return 0;
     case LengthTypeNumber:
         return value;
@@ -141,7 +142,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 {
     switch (toUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwDOMException(NotSupportedError, "The toUnit provided is invalid.");
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(3, "SVGLengthType"));
         return 0;
     case LengthTypeNumber:
         return value;

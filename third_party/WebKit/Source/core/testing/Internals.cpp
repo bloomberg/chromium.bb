@@ -39,6 +39,7 @@
 #include "MockPagePopupDriver.h"
 #include "RuntimeEnabledFeatures.h"
 #include "TypeConversions.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
@@ -360,7 +361,7 @@ String Internals::styleResolverStatsTotalsReport(ExceptionState& exceptionState)
 bool Internals::isSharingStyle(Element* element1, Element* element2, ExceptionState& exceptionState) const
 {
     if (!element1 || !element2) {
-        exceptionState.throwDOMException(InvalidAccessError, String::format("The %s element provided is invalid.", element1 ? "second" : "first"));
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(element1 ? 2 : 1, "Element"));
         return false;
     }
     return element1->renderStyle() == element2->renderStyle();
@@ -379,7 +380,7 @@ bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& ex
 Node* Internals::treeScopeRootNode(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -389,7 +390,7 @@ Node* Internals::treeScopeRootNode(Node* node, ExceptionState& exceptionState)
 Node* Internals::parentTreeScope(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     const TreeScope* parentTreeScope = node->treeScope().parentTreeScope();
@@ -456,7 +457,7 @@ bool Internals::hasSelectorForPseudoClassInShadow(Element* host, const String& p
 unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node* node2, ExceptionState& exceptionState) const
 {
     if (!node1 || !node2) {
-        exceptionState.throwDOMException(InvalidAccessError, String::format("The %s node provided is invalid.", node1 ? "second" : "first"));
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(node1 ? 2 : 1, "Node"));
         return 0;
     }
     const TreeScope* treeScope1 = node1->isDocumentNode() ? static_cast<const TreeScope*>(toDocument(node1)) :
@@ -480,7 +481,7 @@ unsigned Internals::numberOfActiveAnimations() const
 void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState)
 {
     if (pauseTime < 0) {
-        exceptionState.throwDOMException(InvalidAccessError, "The pauseTime provided is negative.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("pauseTime", pauseTime, 0.0));
         return;
     }
 
@@ -494,7 +495,7 @@ bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& except
     if (root && root->isShadowRoot())
         return toShadowRoot(root)->containsShadowElements();
 
-    exceptionState.throwDOMException(InvalidAccessError, "The root node provided is invalid.");
+    exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
     return 0;
 }
 
@@ -503,14 +504,14 @@ bool Internals::hasContentElement(const Node* root, ExceptionState& exceptionSta
     if (root && root->isShadowRoot())
         return toShadowRoot(root)->containsContentElements();
 
-    exceptionState.throwDOMException(InvalidAccessError, "The root node provided is invalid.");
+    exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
     return 0;
 }
 
 size_t Internals::countElementShadow(const Node* root, ExceptionState& exceptionState) const
 {
     if (!root || !root->isShadowRoot()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The root node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     return toShadowRoot(root)->childShadowRootCount();
@@ -519,7 +520,7 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
 Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     ComposedTreeWalker walker(node);
@@ -530,7 +531,7 @@ Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& exceptionState)
 Node* Internals::firstChildByWalker(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     ComposedTreeWalker walker(node);
@@ -541,7 +542,7 @@ Node* Internals::firstChildByWalker(Node* node, ExceptionState& exceptionState)
 Node* Internals::lastChildByWalker(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     ComposedTreeWalker walker(node);
@@ -552,7 +553,7 @@ Node* Internals::lastChildByWalker(Node* node, ExceptionState& exceptionState)
 Node* Internals::nextNodeByWalker(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     ComposedTreeWalker walker(node);
@@ -563,7 +564,7 @@ Node* Internals::nextNodeByWalker(Node* node, ExceptionState& exceptionState)
 Node* Internals::previousNodeByWalker(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
     ComposedTreeWalker walker(node);
@@ -574,7 +575,7 @@ Node* Internals::previousNodeByWalker(Node* node, ExceptionState& exceptionState
 String Internals::elementRenderTreeAsText(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
 
@@ -592,14 +593,14 @@ size_t Internals::numberOfScopedHTMLStyleChildren(const Node* scope, ExceptionSt
     if (scope && (scope->isElementNode() || scope->isShadowRoot()))
         return scope->numberOfScopedHTMLStyleChildren();
 
-    exceptionState.throwDOMException(InvalidAccessError, "The scope provided is invalid.");
+    exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
     return 0;
 }
 
 PassRefPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node, ExceptionState& exceptionState) const
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -617,7 +618,7 @@ ShadowRoot* Internals::shadowRoot(Element* host, ExceptionState& exceptionState)
 ShadowRoot* Internals::youngestShadowRoot(Element* host, ExceptionState& exceptionState)
 {
     if (!host) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -629,7 +630,7 @@ ShadowRoot* Internals::youngestShadowRoot(Element* host, ExceptionState& excepti
 ShadowRoot* Internals::oldestShadowRoot(Element* host, ExceptionState& exceptionState)
 {
     if (!host) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -669,7 +670,7 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
 const AtomicString& Internals::shadowPseudoId(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return nullAtom;
     }
 
@@ -679,7 +680,7 @@ const AtomicString& Internals::shadowPseudoId(Element* element, ExceptionState& 
 void Internals::setShadowPseudoId(Element* element, const AtomicString& id, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 
@@ -783,7 +784,7 @@ PassRefPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& exceptionS
 PassRefPtr<ClientRect> Internals::boundingBox(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return ClientRect::create();
     }
 
@@ -809,7 +810,7 @@ PassRefPtr<ClientRectList> Internals::inspectorHighlightRects(Document* document
 unsigned Internals::markerCountForNode(Node* node, const String& markerType, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -825,7 +826,7 @@ unsigned Internals::markerCountForNode(Node* node, const String& markerType, Exc
 unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -845,7 +846,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& excepti
 DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return 0;
     }
 
@@ -886,7 +887,7 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive)
 void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(InvalidAccessError, "The node provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return;
     }
 
@@ -962,7 +963,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
 bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionState& exceptionState)
 {
     if (!textField) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return false;
     }
 
@@ -979,7 +980,7 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionState& except
 bool Internals::elementShouldAutoComplete(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return false;
     }
 
@@ -993,7 +994,7 @@ bool Internals::elementShouldAutoComplete(Element* element, ExceptionState& exce
 String Internals::suggestedValue(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
 
@@ -1014,7 +1015,7 @@ String Internals::suggestedValue(Element* element, ExceptionState& exceptionStat
 void Internals::setSuggestedValue(Element* element, const String& value, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 
@@ -1033,7 +1034,7 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
 void Internals::setEditingValue(Element* element, const String& value, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 
@@ -1057,7 +1058,7 @@ void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& ex
 void Internals::scrollElementToRect(Element* element, long x, long y, long w, long h, ExceptionState& exceptionState)
 {
     if (!element || !element->document().view()) {
-        exceptionState.throwDOMException(InvalidNodeTypeError, element ? "No view can be obtained from the provided element's document." : "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidNodeTypeError, element ? "No view can be obtained from the provided element's document." : ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
     FrameView* frameView = element->document().view();
@@ -1067,7 +1068,7 @@ void Internals::scrollElementToRect(Element* element, long x, long y, long w, lo
 PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState& exceptionState)
 {
     if (!scope) {
-        exceptionState.throwDOMException(InvalidAccessError, "The scope element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -1080,7 +1081,7 @@ PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rang
 unsigned Internals::locationFromRange(Element* scope, const Range* range, ExceptionState& exceptionState)
 {
     if (!scope || !range) {
-        exceptionState.throwDOMException(InvalidAccessError, scope ? "The Range provided is invalid." : "The scope element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(scope ? 2 : 1, scope ? "Range" : "Element"));
         return 0;
     }
 
@@ -1093,7 +1094,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range, Except
 unsigned Internals::lengthFromRange(Element* scope, const Range* range, ExceptionState& exceptionState)
 {
     if (!scope || !range) {
-        exceptionState.throwDOMException(InvalidAccessError, scope ? "The Range provided is invalid." : "The scope element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(scope ? 2 : 1, scope ? "Range" : "Element"));
         return 0;
     }
 
@@ -1106,7 +1107,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range, Exceptio
 String Internals::rangeAsText(const Range* range, ExceptionState& exceptionState)
 {
     if (!range) {
-        exceptionState.throwDOMException(InvalidAccessError, "The Range provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Range"));
         return String();
     }
 
@@ -1637,7 +1638,7 @@ String Internals::elementLayerTreeAsText(Element* element, ExceptionState& excep
 static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& exceptionState, RenderLayerStackingNode::PaintOrderListType type)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -1703,7 +1704,7 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
 bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -1727,7 +1728,7 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
 bool Internals::needsCompositedScrolling(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -1761,7 +1762,7 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionS
 String Internals::elementLayerTreeAsText(Element* element, unsigned flags, ExceptionState& exceptionState) const
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
 
@@ -1787,7 +1788,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
 static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -1809,7 +1810,7 @@ static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& e
 void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsCompositedScrolling, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 
@@ -1832,7 +1833,7 @@ String Internals::repaintRectsAsText(Document* document, ExceptionState& excepti
 PassRefPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionState& exceptionState) const
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return 0;
     }
 
@@ -2242,7 +2243,7 @@ PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionState& exceptionState
 String Internals::markerTextForListItem(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
     return WebCore::markerTextForListItem(element);
@@ -2251,7 +2252,7 @@ String Internals::markerTextForListItem(Element* element, ExceptionState& except
 String Internals::getImageSourceURL(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
     return element->imageSourceURL();
@@ -2328,7 +2329,7 @@ void Internals::setZoomFactor(float factor)
 void Internals::setShouldRevealPassword(Element* element, bool reveal, ExceptionState& exceptionState)
 {
     if (!element || !element->hasTagName(inputTag)) {
-        exceptionState.throwDOMException(InvalidAccessError, "The element provided is invalid.");
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 

@@ -33,6 +33,7 @@
 #include "modules/mediastream/RTCPeerConnection.h"
 
 #include "bindings/v8/ArrayValue.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -216,7 +217,7 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
         return;
 
     if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("success callback", "RTCSessionDescriptionCallback"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescriptionCallback"));
         return;
     }
 
@@ -234,7 +235,7 @@ void RTCPeerConnection::createAnswer(PassOwnPtr<RTCSessionDescriptionCallback> s
         return;
 
     if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("success callback", "RTCSessionDescriptionCallback"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescriptionCallback"));
         return;
     }
 
@@ -253,7 +254,7 @@ void RTCPeerConnection::setLocalDescription(PassRefPtr<RTCSessionDescription> pr
 
     RefPtr<RTCSessionDescription> sessionDescription = prpSessionDescription;
     if (!sessionDescription) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("session description", "RTCSessionDescription"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescription"));
         return;
     }
 
@@ -278,7 +279,7 @@ void RTCPeerConnection::setRemoteDescription(PassRefPtr<RTCSessionDescription> p
 
     RefPtr<RTCSessionDescription> sessionDescription = prpSessionDescription;
     if (!sessionDescription) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("session description", "RTCSessionDescription"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescription"));
         return;
     }
 
@@ -320,7 +321,7 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, Exception
         return;
 
     if (!iceCandidate) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("ICE candidate", "RTCIceCandidate"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCIceCandidate"));
         return;
     }
 
@@ -335,15 +336,15 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, PassOwnPt
         return;
 
     if (!iceCandidate) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("ICE candidate", "RTCIceCandidate"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCIceCandidate"));
         return;
     }
     if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("success callback", "Function"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(2, "Function"));
         return;
     }
     if (!errorCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("error callback", "RTCErrorCallback"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(3, "RTCErrorCallback"));
         return;
     }
 
@@ -420,7 +421,7 @@ void RTCPeerConnection::addStream(PassRefPtr<MediaStream> prpStream, const Dicti
 
     RefPtr<MediaStream> stream = prpStream;
     if (!stream) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("stream", "MediaStream"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "MediaStream"));
         return;
     }
 
@@ -444,7 +445,7 @@ void RTCPeerConnection::removeStream(PassRefPtr<MediaStream> prpStream, Exceptio
         return;
 
     if (!prpStream) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType("stream", "MediaStream"));
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "MediaStream"));
         return;
     }
 
@@ -534,7 +535,7 @@ PassRefPtr<RTCDTMFSender> RTCPeerConnection::createDTMFSender(PassRefPtr<MediaSt
         return 0;
 
     if (!prpTrack) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType("track", "MediaStreamTrack"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "MediaStreamTrack"));
         return 0;
     }
 

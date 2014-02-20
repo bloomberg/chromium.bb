@@ -66,14 +66,9 @@ String ExceptionMessages::incorrectPropertyType(const String& property, const St
     return "The '" + property + "' property " + detail;
 }
 
-String ExceptionMessages::incorrectArgumentType(int argumentIndex, const String& detail)
+String ExceptionMessages::argumentNullOrIncorrectType(int argumentIndex, const String& expectedType)
 {
-    return "The " + ordinalNumber(argumentIndex) + " argument " + detail;
-}
-
-String ExceptionMessages::argumentNullOrIncorrectType(const String& name, const String& expectedType)
-{
-    return "The " + name + " value provided is either null, or an invalid " + expectedType + ".";
+    return "The " + ordinalNumber(argumentIndex) + " argument provided is either null, or an invalid " + expectedType + " object.";
 }
 
 String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex)

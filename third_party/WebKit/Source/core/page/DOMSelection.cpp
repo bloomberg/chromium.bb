@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/page/DOMSelection.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -328,7 +329,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
         return;
 
     if (!node) {
-        exceptionState.throwDOMException(TypeMismatchError, "The node provided is invalid.");
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
         return;
     }
 

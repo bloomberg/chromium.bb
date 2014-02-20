@@ -68,7 +68,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     const int resolverArgumentIndex = 2;
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
     if (!resolver && !isUndefinedOrNull(info[resolverArgumentIndex])) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(resolverArgumentIndex + 1, "is not a resolver function."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(resolverArgumentIndex + 1, "XPathNSResolver"));
         exceptionState.throwIfNeeded();
         return;
     }

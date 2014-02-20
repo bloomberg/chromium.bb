@@ -322,7 +322,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
     const int programArgumentIndex = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[programArgumentIndex]) && !V8WebGLProgram::hasInstance(info[programArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(programArgumentIndex + 1, "is not a WebGLProgram object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(programArgumentIndex + 1, "WebGLProgram"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -409,7 +409,7 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
     const int programArgumentIndex = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[programArgumentIndex]) && !V8WebGLProgram::hasInstance(info[programArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(programArgumentIndex + 1, "is not a WebGLProgram object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(programArgumentIndex + 1, "WebGLProgram"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -439,7 +439,7 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
     const int shaderArgumentIndex = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[shaderArgumentIndex]) && !V8WebGLShader::hasInstance(info[shaderArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(shaderArgumentIndex + 1, "is not a WebGLShader object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(shaderArgumentIndex + 1, "WebGLShader"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -484,7 +484,7 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
     const int programArgumentIndex = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[programArgumentIndex]) && !V8WebGLProgram::hasInstance(info[programArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(programArgumentIndex + 1, "is not a WebGLProgram object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(programArgumentIndex + 1, "WebGLProgram"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -492,7 +492,7 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
 
     const int uniformArgumentIndex = 1;
     if (info.Length() > 1 && !isUndefinedOrNull(info[uniformArgumentIndex]) && !V8WebGLUniformLocation::hasInstance(info[uniformArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(uniformArgumentIndex + 1, "is not a WebGLUniformLocation object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(uniformArgumentIndex + 1, "WebGLUniformLocation"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -564,7 +564,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     } else {
         const int uniformLocationArgumentIndex = 0;
         if (info.Length() > 0 && !isUndefinedOrNull(info[uniformLocationArgumentIndex]) && !V8WebGLUniformLocation::hasInstance(info[uniformLocationArgumentIndex], info.GetIsolate())) {
-            exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(uniformLocationArgumentIndex + 1, "is not a WebGLUniformLocation object."));
+            exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(uniformLocationArgumentIndex + 1, "WebGLUniformLocation"));
             exceptionState.throwIfNeeded();
             return;
         }
@@ -592,7 +592,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     }
 
     if (info[indexArrayArgument].IsEmpty() || !info[indexArrayArgument]->IsArray()) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(indexArrayArgument + 1, "is not an Array."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(indexArrayArgument + 1, "Array"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -642,7 +642,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
     const int uniformLocationArgumentIndex = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
     if (info.Length() > 0 && !isUndefinedOrNull(info[uniformLocationArgumentIndex]) && !V8WebGLUniformLocation::hasInstance(info[uniformLocationArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(uniformLocationArgumentIndex + 1, "is not a WebGLUniformLocation object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(uniformLocationArgumentIndex + 1, "WebGLUniformLocation"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -663,7 +663,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
     }
 
     if (info[indexArrayArgumentIndex].IsEmpty() || !info[indexArrayArgumentIndex]->IsArray()) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(indexArrayArgumentIndex + 1, "is not an Array."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(indexArrayArgumentIndex + 1, "Array"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -757,7 +757,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
 
     const int uniformLocationArgumentIndex = 0;
     if (info.Length() > 0 && !isUndefinedOrNull(info[uniformLocationArgumentIndex]) && !V8WebGLUniformLocation::hasInstance(info[uniformLocationArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(uniformLocationArgumentIndex + 1, "is not a WebGLUniformLocation object."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(uniformLocationArgumentIndex + 1, "WebGLUniformLocation"));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -778,7 +778,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
     }
 
     if (info[arrayArgumentIndex].IsEmpty() || !info[arrayArgumentIndex]->IsArray()) {
-        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(arrayArgumentIndex + 1, "is not an Array."));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(arrayArgumentIndex + 1, "Array"));
         exceptionState.throwIfNeeded();
         return;
     }

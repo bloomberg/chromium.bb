@@ -52,10 +52,9 @@ public:
     static String failedToSet(const String& property, const String& type, const String& detail);
     static String failedToDelete(const String& property, const String& type, const String& detail);
 
-    static String incorrectArgumentType(int argumentIndex, const String& detail);
     static String incorrectPropertyType(const String& property, const String& detail);
 
-    static String argumentNullOrIncorrectType(const String& name, const String& expectedType);
+    static String argumentNullOrIncorrectType(int argumentIndex, const String& expectedType);
 
     // If  > 0, the argument index that failed type check (1-indexed.)
     // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
