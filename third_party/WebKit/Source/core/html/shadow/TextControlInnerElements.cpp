@@ -88,9 +88,6 @@ PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
     style->inheritFrom(shadowHost()->renderStyle());
 
     style->setFlexGrow(1);
-    // min-width: 0; is needed for correct shrinking.
-    // FIXME: Remove this line when https://bugs.webkit.org/show_bug.cgi?id=111790 is fixed.
-    style->setMinWidth(Length(0, Fixed));
     style->setDisplay(BLOCK);
     style->setDirection(LTR);
 
