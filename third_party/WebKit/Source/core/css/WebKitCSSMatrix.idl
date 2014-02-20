@@ -27,7 +27,8 @@
 [
     Constructor([Default=NullString] optional DOMString cssValue),
     ImplementedAs=CSSMatrix,
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    WillBeGarbageCollected
 ] interface WebKitCSSMatrix {
 
     // These attributes are simple aliases for certain elements of the 4x4 matrix

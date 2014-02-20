@@ -40,6 +40,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(CSSMatrix);
+
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)
 {
@@ -89,7 +91,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 }
 
 // Perform a concatenation of the matrices (this * secondMatrix)
-PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
 {
     if (!secondMatrix)
         return 0;
@@ -97,7 +99,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
     return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
 {
     if (!m_matrix.isInvertible()) {
         exceptionState.throwDOMException(NotSupportedError, "The matrix is not invertable.");
@@ -107,7 +109,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
     return CSSMatrix::create(m_matrix.inverse());
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
 {
     if (std::isnan(x))
         x = 0;
@@ -118,7 +120,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
     return CSSMatrix::create(TransformationMatrix(m_matrix).translate3d(x, y, z));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
 {
     if (std::isnan(scaleX))
         scaleX = 1;
@@ -129,7 +131,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scal
     return CSSMatrix::create(TransformationMatrix(m_matrix).scale3d(scaleX, scaleY, scaleZ));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
 {
     if (std::isnan(rotX))
         rotX = 0;
@@ -147,7 +149,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) c
     return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(rotX, rotY, rotZ));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
 {
     if (std::isnan(x))
         x = 0;
@@ -162,14 +164,14 @@ PassRefPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, d
     return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(x, y, z, angle));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
     return CSSMatrix::create(TransformationMatrix(m_matrix).skewX(angle));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
+PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
