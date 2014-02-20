@@ -33,11 +33,21 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/DOMWindow.h"
+#include "core/timing/Performance.h"
 #include "modules/webmidi/MIDIAccess.h"
 
 namespace WebCore {
 
 namespace {
+
+double now(ExecutionContext* context)
+{
+    DOMWindow* window = context ? context->executingWindow() : 0;
+    Performance* performance = window ? window->performance() : 0;
+    return performance ? performance->now() : 0.0;
+}
 
 class MessageValidator {
 public:
@@ -183,6 +193,9 @@ MIDIOutput::~MIDIOutput()
 
 void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& exceptionState)
 {
+    if (timestamp == 0.0)
+        timestamp = now(executionContext());
+
     if (!array)
         return;
 
@@ -192,6 +205,9 @@ void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& excep
 
 void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionState& exceptionState)
 {
+    if (timestamp == 0.0)
+        timestamp = now(executionContext());
+
     RefPtr<Uint8Array> array = Uint8Array::create(unsignedData.size());
 
     for (size_t i = 0; i < unsignedData.size(); ++i) {
@@ -208,12 +224,12 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
 
 void MIDIOutput::send(Uint8Array* data, ExceptionState& exceptionState)
 {
-    send(data, 0, exceptionState);
+    send(data, 0.0, exceptionState);
 }
 
 void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionState& exceptionState)
 {
-    send(unsignedData, 0, exceptionState);
+    send(unsignedData, 0.0, exceptionState);
 }
 
 } // namespace WebCore
