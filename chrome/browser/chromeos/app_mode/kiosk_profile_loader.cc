@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -149,7 +150,15 @@ void KioskProfileLoader::OnLoginSuccess(const UserContext& user_context)  {
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 
-  LoginUtils::Get()->PrepareProfile(user_context,
+  // If we are launching a demo session, we need to start MountGuest with the
+  // guest username; this is because there are several places in the cros code
+  // which rely on the username sent to cryptohome to be $guest. Back in Chrome
+  // we switch this back to the demo user name to correctly identify this
+  // user as a demo user.
+  UserContext context = user_context;
+  if (context.username == UserManager::kGuestUserName)
+    context.username = DemoAppLauncher::kDemoUserName;
+  LoginUtils::Get()->PrepareProfile(context,
                                     std::string(),  // display email
                                     false,  // has_cookies
                                     false,  // has_active_session

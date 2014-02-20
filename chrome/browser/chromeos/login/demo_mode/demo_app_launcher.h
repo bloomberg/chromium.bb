@@ -21,6 +21,7 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   void StartDemoAppLaunch();
 
   static bool IsDemoAppSession(const std::string& user_id);
+  static const char kDemoUserName[];
 
  private:
   // KioskProfileLoader::Delegate overrides:

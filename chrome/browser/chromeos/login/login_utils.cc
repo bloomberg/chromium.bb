@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
@@ -185,9 +186,18 @@ class LoginUtilsImpl
                         Profile* profile,
                         Profile::CreateStatus status);
 
+  // Callback for asynchronous off the record profile creation.
+  void OnOTRProfileCreated(const std::string& email,
+                        Profile* profile,
+                        Profile::CreateStatus status);
+
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.
   void UserProfileInitialized(Profile* user_profile);
+
+  // Callback for Profile::CREATE_STATUS_INITIALIZED profile state for an OTR
+  // login.
+  void OTRProfileInitialized(Profile* user_profile);
 
   // Callback to resume profile creation after transferring auth data from
   // the authentication profile.
@@ -414,13 +424,22 @@ void LoginUtilsImpl::PrepareProfile(
   delegate_ = delegate;
   InitSessionRestoreStrategy();
 
-  // Can't use display_email because it is empty when existing user logs in
-  // using sing-in pod on login screen (i.e. user didn't type email).
-  g_browser_process->profile_manager()->CreateProfileAsync(
-      user_manager->GetUserProfileDir(user_context.username),
-      base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr(),
-                 user_context.username),
-      base::string16(), base::string16(), std::string());
+  base::FilePath profile_dir;
+  if (DemoAppLauncher::IsDemoAppSession(user_context.username)) {
+    g_browser_process->profile_manager()->CreateProfileAsync(
+        ProfileManager::GetGuestProfilePath(),
+        base::Bind(&LoginUtilsImpl::OnOTRProfileCreated, AsWeakPtr(),
+                   user_context.username),
+        base::string16(), base::string16(), std::string());
+  } else {
+    // Can't use display_email because it is empty when existing user logs in
+    // using sing-in pod on login screen (i.e. user didn't type email).
+    g_browser_process->profile_manager()->CreateProfileAsync(
+        user_manager->GetUserProfileDir(user_context.username),
+        base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr(),
+                   user_context.username),
+        base::string16(), base::string16(), std::string());
+  }
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
@@ -519,6 +538,28 @@ void LoginUtilsImpl::OnProfileCreated(
   }
 }
 
+void LoginUtilsImpl::OnOTRProfileCreated(
+    const std::string& user_id,
+    Profile* user_profile,
+    Profile::CreateStatus status) {
+  CHECK(user_profile);
+
+  switch (status) {
+    case Profile::CREATE_STATUS_CREATED:
+      InitProfilePreferences(user_profile, user_id);
+      break;
+    case Profile::CREATE_STATUS_INITIALIZED:
+      OTRProfileInitialized(user_profile);
+      break;
+    case Profile::CREATE_STATUS_LOCAL_FAIL:
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::CREATE_STATUS_CANCELED:
+    case Profile::MAX_CREATE_STATUS:
+      NOTREACHED();
+      break;
+  }
+}
+
 void LoginUtilsImpl::UserProfileInitialized(Profile* user_profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
@@ -540,6 +581,19 @@ void LoginUtilsImpl::UserProfileInitialized(Profile* user_profile) {
   }
 
   FinalizePrepareProfile(user_profile);
+}
+
+void LoginUtilsImpl::OTRProfileInitialized(Profile* user_profile) {
+  user_profile->OnLogin();
+  // Send the notification before creating the browser so additional objects
+  // that need the profile (e.g. the launcher) can be created first.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources(),
+      content::Details<Profile>(user_profile));
+
+  if (delegate_)
+    delegate_->OnProfilePrepared(user_profile);
 }
 
 void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {

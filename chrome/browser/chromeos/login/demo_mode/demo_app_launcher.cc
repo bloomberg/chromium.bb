@@ -15,13 +15,9 @@
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 
-namespace {
-
-const char kDemoAppUserId[] = "demouser@demo.app.local";
-
-}
-
 namespace chromeos {
+
+const char DemoAppLauncher::kDemoUserName[] = "demouser@demo.app.local";
 
 DemoAppLauncher::DemoAppLauncher() : profile_(NULL) {}
 
@@ -31,13 +27,13 @@ void DemoAppLauncher::StartDemoAppLaunch() {
   DVLOG(1) << "Launching demo app...";
   // user_id = DemoAppUserId, force_emphemeral = true, delegate = this.
   kiosk_profile_loader_.reset(
-      new KioskProfileLoader(kDemoAppUserId, true, this));
+      new KioskProfileLoader(kDemoUserName, true, this));
   kiosk_profile_loader_->Start();
 }
 
 // static
 bool DemoAppLauncher::IsDemoAppSession(const std::string& user_id) {
-  return user_id == kDemoAppUserId ? true : false;
+  return user_id == kDemoUserName ? true : false;
 }
 
 void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
