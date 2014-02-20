@@ -275,6 +275,9 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
 }
 
 void NetworkScreenHandler::StartIdleDetection() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
+    return;
+
   if (!detector_.get()) {
     detector_.reset(
         new IdleDetector(base::Closure(),

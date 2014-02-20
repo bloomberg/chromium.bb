@@ -33,6 +33,9 @@ const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
+// Disables the ChromeOS demo.
+const char kDisableDemoMode[]               = "disable-demo-mode";
+
 // Disables reporting recently logged in users for enterprise-managed devices.
 const char kDisableEnterpriseUserReporting[] =
     "disable-enterprise-user-reporting";
