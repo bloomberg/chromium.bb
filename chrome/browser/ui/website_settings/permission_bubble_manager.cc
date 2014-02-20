@@ -168,17 +168,15 @@ void PermissionBubbleManager::Closing() {
 
 void PermissionBubbleManager::ShowBubble() {
   if (view_ && !bubble_showing_ && requests_.size()) {
-    view_->SetDelegate(this);
     view_->Show(requests_, accept_states_, customization_mode_);
     bubble_showing_ = true;
   }
 }
 
 void PermissionBubbleManager::FinalizeBubble() {
-  if (view_) {
-    view_->SetDelegate(NULL);
+  if (view_)
     view_->Hide();
-  }
+  bubble_showing_ = false;
 
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
@@ -188,7 +186,6 @@ void PermissionBubbleManager::FinalizeBubble() {
   }
   requests_.clear();
   accept_states_.clear();
-  bubble_showing_ = false;
   if (queued_requests_.size()) {
     requests_ = queued_requests_;
     accept_states_.resize(requests_.size(), true);
