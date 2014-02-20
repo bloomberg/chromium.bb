@@ -76,7 +76,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 #elif defined(USE_OZONE)
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
-  base::NativeEvent native_event = event->native_event();
+  const base::NativeEvent& native_event = event->native_event();
   ui::EventType type = ui::EventTypeFromNative(native_event);
   blink::WebKeyboardEvent webkit_event;
 
@@ -278,6 +278,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
+  if (!event->HasNativeEvent())
+    return blink::WebKeyboardEvent();
+
   // Windows can figure out whether or not to construct a RawKeyDown or a Char
   // WebInputEvent based on the type of message carried in
   // event->native_event(). X11 is not so fortunate, there is no separate

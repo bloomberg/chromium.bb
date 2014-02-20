@@ -91,7 +91,7 @@ int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
-  base::NativeEvent native_event = event->native_event();
+  const base::NativeEvent& native_event = event->native_event();
   blink::WebKeyboardEvent webkit_event;
   XKeyEvent* native_key_event = &native_event->xkey;
 

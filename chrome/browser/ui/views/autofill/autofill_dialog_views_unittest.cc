@@ -184,4 +184,15 @@ TEST_F(AutofillDialogViewsTest, LoadingFocus) {
   EXPECT_FALSE(sign_in_web_view->IsFocusable());
 }
 
+TEST_F(AutofillDialogViewsTest, ImeEventDoesntCrash) {
+  // IMEs create synthetic events with no backing native event.
+  views::FocusManager* focus_manager = dialog()->GetWidget()->GetFocusManager();
+  views::View* focused_view = focus_manager->GetFocusedView();
+  ASSERT_STREQ(DecoratedTextfield::kViewClassName,
+               focused_view->GetClassName());
+  EXPECT_FALSE(dialog()->HandleKeyEvent(
+      static_cast<views::Textfield*>(focused_view),
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false)));
+}
+
 }  // namespace autofill
