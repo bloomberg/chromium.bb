@@ -101,6 +101,8 @@ Polymer('audio-player', {
       }
     }
 
+    // When the new status is "stopped".
+    this.cancelAutoAdvance_();
     this.audioController.playing = false;
     this.audioElement.pause();
     this.currenttrackurl = '';
