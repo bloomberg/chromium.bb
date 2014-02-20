@@ -79,7 +79,7 @@ class GitCheckout(Checkout):
 
   def run_git(self, *cmd, **kwargs):
     if sys.platform == 'win32' and not spawn.find_executable('git'):
-      git_path = os.path.join(SCRIPT_PATH, 'git-1.8.0_bin', 'bin', 'git.exe')
+      git_path = os.path.join(SCRIPT_PATH, 'git.bat')
     else:
       git_path = 'git'
     return self.run((git_path,) + cmd, **kwargs)
