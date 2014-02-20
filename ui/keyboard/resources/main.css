@@ -13,6 +13,7 @@ body {
   -webkit-user-select: none;
   background-image: -webkit-linear-gradient(#282828, #000000);
   background-size: cover;
+  cursor: default;
   margin: 0;
   overflow: hidden;
   padding: 0;
