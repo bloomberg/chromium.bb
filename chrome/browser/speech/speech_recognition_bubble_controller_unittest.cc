@@ -11,9 +11,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+
 
 using content::BrowserThread;
 using content::WebContents;
@@ -30,10 +33,9 @@ class MockSpeechRecognitionBubble : public SpeechRecognitionBubbleBase {
     BUBBLE_TEST_CLICK_TRY_AGAIN,
   };
 
-  MockSpeechRecognitionBubble(WebContents* web_contents,
-                        Delegate* delegate,
-                        const gfx::Rect&)
-      : SpeechRecognitionBubbleBase(web_contents) {
+  MockSpeechRecognitionBubble(int render_process_id, int render_view_id,
+      Delegate* delegate, const gfx::Rect&)
+      : SpeechRecognitionBubbleBase(render_process_id, render_view_id) {
     VLOG(1) << "MockSpeechRecognitionBubble created";
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&InvokeDelegate, delegate));
@@ -141,15 +143,7 @@ class SpeechRecognitionBubbleControllerTest
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(&ActivateBubble));
 
-    // The |web_contents| parameter would be NULL since the dummy session id
-    // passed to CreateBubble would not have matched any active tab. So get a
-    // real WebContents pointer from the test fixture and pass that, because
-    // the bubble controller registers for tab close notifications which need
-    // a valid WebContents.
-    web_contents =
-        test_fixture_->browser()->tab_strip_model()->GetActiveWebContents();
-    return new MockSpeechRecognitionBubble(web_contents, delegate,
-                                           element_rect);
+    return new MockSpeechRecognitionBubble(0, 0, delegate, element_rect);
   }
 
  protected:

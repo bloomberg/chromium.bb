@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -122,8 +123,11 @@ SpeechRecognitionBubble::FactoryMethod SpeechRecognitionBubble::factory_ = NULL;
 const int SpeechRecognitionBubble::kBubbleTargetOffsetX = 10;
 
 SpeechRecognitionBubble* SpeechRecognitionBubble::Create(
-    WebContents* web_contents, Delegate* delegate,
+    int render_process_id, int render_view_id, Delegate* delegate,
     const gfx::Rect& element_rect) {
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+
   if (factory_)
     return (*factory_)(web_contents, delegate, element_rect);
 
@@ -131,18 +135,21 @@ SpeechRecognitionBubble* SpeechRecognitionBubble::Create(
   if (!web_contents)
     return NULL;
 
-  return CreateNativeBubble(web_contents, delegate, element_rect);
+  return CreateNativeBubble(render_process_id, render_view_id,
+      delegate, element_rect);
 }
 
 SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
-    WebContents* web_contents)
+    int render_process_id, int render_view_id)
     : weak_factory_(this),
       animation_step_(0),
       display_mode_(DISPLAY_MODE_RECORDING),
-      web_contents_(web_contents),
+      render_process_id_(render_process_id),
+      render_view_id_(render_view_id),
       scale_(1.0f) {
+  WebContents* web_contents = GetWebContents();
   gfx::NativeView view =
-      web_contents_ ? web_contents_->GetView()->GetNativeView() : NULL;
+      web_contents ? web_contents->GetView()->GetNativeView() : NULL;
   gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
   gfx::Display display = screen->GetDisplayNearestWindow(view);
   scale_ = display.device_scale_factor();
@@ -263,7 +270,7 @@ void SpeechRecognitionBubbleBase::SetInputVolume(float volume,
 }
 
 WebContents* SpeechRecognitionBubbleBase::GetWebContents() {
-  return web_contents_;
+  return tab_util::GetWebContentsByID(render_process_id_, render_view_id_);
 }
 
 void SpeechRecognitionBubbleBase::SetImage(const gfx::ImageSkia& image) {

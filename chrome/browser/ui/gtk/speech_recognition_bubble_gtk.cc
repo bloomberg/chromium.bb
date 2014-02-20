@@ -45,7 +45,7 @@ const GdkColor& kLabelTextColor = ui::kGdkBlack;
 class SpeechRecognitionBubbleGtk : public SpeechRecognitionBubbleBase,
                                    public BubbleDelegateGtk {
  public:
-  SpeechRecognitionBubbleGtk(WebContents* web_contents,
+  SpeechRecognitionBubbleGtk(int render_process_id, int render_view_id,
                              Delegate* delegate,
                              const gfx::Rect& element_rect);
   virtual ~SpeechRecognitionBubbleGtk();
@@ -80,9 +80,9 @@ class SpeechRecognitionBubbleGtk : public SpeechRecognitionBubbleBase,
 };
 
 SpeechRecognitionBubbleGtk::SpeechRecognitionBubbleGtk(
-    WebContents* web_contents, Delegate* delegate,
+    int render_process_id, int render_view_id, Delegate* delegate,
     const gfx::Rect& element_rect)
-    : SpeechRecognitionBubbleBase(web_contents),
+    : SpeechRecognitionBubbleBase(render_process_id, render_process_id),
       delegate_(delegate),
       bubble_(NULL),
       element_rect_(element_rect),
@@ -117,7 +117,7 @@ void SpeechRecognitionBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
 }
 
 void SpeechRecognitionBubbleGtk::Show() {
-  if (bubble_)
+  if (bubble_ || !GetWebContents())
     return;  // Nothing further to do since the bubble is already visible.
 
   // We use a vbox to arrange the controls (label, image, button bar) vertically
@@ -212,7 +212,7 @@ void SpeechRecognitionBubbleGtk::Hide() {
 }
 
 void SpeechRecognitionBubbleGtk::UpdateLayout() {
-  if (!bubble_)
+  if (!bubble_ || !GetWebContents())
     return;
 
   if (display_mode() == DISPLAY_MODE_MESSAGE) {
@@ -293,8 +293,9 @@ void SpeechRecognitionBubbleGtk::BubbleClosing(BubbleGtk* bubble,
 }  // namespace
 
 SpeechRecognitionBubble* SpeechRecognitionBubble::CreateNativeBubble(
-    WebContents* web_contents,
-    Delegate* delegate,
+    int render_process_id, int render_view_id,
+    SpeechRecognitionBubble::Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechRecognitionBubbleGtk(web_contents, delegate, element_rect);
+  return new SpeechRecognitionBubbleGtk(render_process_id, render_view_id,
+      delegate, element_rect);
 }

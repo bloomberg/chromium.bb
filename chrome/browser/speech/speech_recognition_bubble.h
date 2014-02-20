@@ -57,17 +57,21 @@ class SpeechRecognitionBubble {
 
   // Factory method to create new instances.
   // Creates the bubble, call |Show| to display it on screen.
-  // |web_contents| is the WebContents hosting the page.
+  // |render_process_id| and |render_view_id| is used to extract the
+  // correct WebContents.
   // |element_rect| is the display bounds of the html element requesting speech
   // recognition (in page coordinates).
-  static SpeechRecognitionBubble* Create(content::WebContents* web_contents,
-                                         Delegate* delegate,
-                                         const gfx::Rect& element_rect);
+  static SpeechRecognitionBubble* Create(
+      int render_process_id,
+      int render_view_id,
+      Delegate* delegate,
+      const gfx::Rect& element_rect);
 
   // This is implemented by platform specific code to create the underlying
   // bubble window. Not to be called directly by users of this class.
   static SpeechRecognitionBubble* CreateNativeBubble(
-      content::WebContents* web_contents,
+      int render_process_id,
+      int render_view_id,
       Delegate* delegate,
       const gfx::Rect& element_rect);
 
@@ -135,7 +139,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
     DISPLAY_MODE_MESSAGE
   };
 
-  explicit SpeechRecognitionBubbleBase(content::WebContents* web_contents);
+  SpeechRecognitionBubbleBase(int render_process_id, int render_view_id);
   virtual ~SpeechRecognitionBubbleBase();
 
   // SpeechRecognitionBubble methods
@@ -179,8 +183,11 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   scoped_ptr<SkBitmap> mic_image_;
   // A temporary buffer image used in creating the above mic image.
   scoped_ptr<SkBitmap> buffer_image_;
-  // WebContents in which this this bubble gets displayed.
-  content::WebContents* web_contents_;
+
+  // Content in which this bubble gets displayed.
+  int render_process_id_;
+  int render_view_id_;
+
   // The current image displayed in the bubble's icon widget.
   gfx::ImageSkia icon_image_;
   // The scale factor used for the web-contents.

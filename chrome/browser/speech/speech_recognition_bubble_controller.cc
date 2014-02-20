@@ -168,8 +168,7 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
   switch (request.type) {
     case REQUEST_CREATE:
       bubble_.reset(SpeechRecognitionBubble::Create(
-          tab_util::GetWebContentsByID(request.render_process_id,
-                                       request.render_view_id),
+          request.render_process_id, request.render_view_id,
           this, request.element_rect));
 
       if (!bubble_.get()) {

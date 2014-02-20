@@ -25,7 +25,8 @@ namespace {
 // for more information on how this gets used.
 class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
  public:
-  SpeechRecognitionBubbleImpl(WebContents* web_contents,
+  SpeechRecognitionBubbleImpl(int render_process_id,
+                              int render_view_id,
                               Delegate* delegate,
                               const gfx::Rect& element_rect);
   virtual ~SpeechRecognitionBubbleImpl();
@@ -41,10 +42,11 @@ class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
 };
 
 SpeechRecognitionBubbleImpl::SpeechRecognitionBubbleImpl(
-    WebContents* web_contents,
+    int render_process_id,
+    int render_view_id,
     Delegate* delegate,
     const gfx::Rect& element_rect)
-    : SpeechRecognitionBubbleBase(web_contents),
+    : SpeechRecognitionBubbleBase(render_process_id, render_view_id),
       delegate_(delegate),
       element_rect_(element_rect) {
 }
@@ -55,11 +57,14 @@ SpeechRecognitionBubbleImpl::~SpeechRecognitionBubbleImpl() {
 }
 
 void SpeechRecognitionBubbleImpl::UpdateImage() {
-  if (window_.get())
+  if (window_.get() && GetWebContents())
     [window_.get() setImage:gfx::NSImageFromImageSkia(icon_image())];
 }
 
 void SpeechRecognitionBubbleImpl::Show() {
+  if (!GetWebContents())
+    return;
+
   if (window_.get()) {
     [window_.get() show];
     return;
@@ -115,7 +120,7 @@ void SpeechRecognitionBubbleImpl::Hide() {
 }
 
 void SpeechRecognitionBubbleImpl::UpdateLayout() {
-  if (!window_.get())
+  if (!window_.get() || !GetWebContents())
     return;
 
   [window_.get() updateLayout:display_mode()
@@ -126,8 +131,12 @@ void SpeechRecognitionBubbleImpl::UpdateLayout() {
 }  // namespace
 
 SpeechRecognitionBubble* SpeechRecognitionBubble::CreateNativeBubble(
-    WebContents* web_contents,
+    int render_process_id,
+    int render_view_id,
     Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechRecognitionBubbleImpl(web_contents, delegate, element_rect);
+  return new SpeechRecognitionBubbleImpl(render_process_id,
+                                         render_view_id,
+                                         delegate,
+                                         element_rect);
 }
