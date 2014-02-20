@@ -4441,20 +4441,6 @@ GLenum WebGLRenderingContext::boundFramebufferColorFormat()
     return GL_RGB;
 }
 
-int WebGLRenderingContext::boundFramebufferWidth()
-{
-    if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->colorBufferWidth();
-    return m_drawingBuffer->size().width();
-}
-
-int WebGLRenderingContext::boundFramebufferHeight()
-{
-    if (m_framebufferBinding && m_framebufferBinding->object())
-        return m_framebufferBinding->colorBufferHeight();
-    return m_drawingBuffer->size().height();
-}
-
 WebGLTexture* WebGLRenderingContext::validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap)
 {
     WebGLTexture* tex = 0;

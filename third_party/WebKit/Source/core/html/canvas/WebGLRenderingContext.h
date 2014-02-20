@@ -522,7 +522,6 @@ public:
     GLuint m_onePlusMaxEnabledAttribIndex;
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
-    bool m_preserveDrawingBuffer;
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
 
     // Enabled extension objects.
@@ -612,7 +611,7 @@ public:
         {
         }
 
-        ~TypedExtensionTracker()
+        virtual ~TypedExtensionTracker()
         {
             if (m_extensionField) {
                 m_extensionField->lose(true);
@@ -697,12 +696,6 @@ public:
 
     // Helper function to get the bound framebuffer's color buffer format.
     GLenum boundFramebufferColorFormat();
-
-    // Helper function to get the bound framebuffer's width.
-    int boundFramebufferWidth();
-
-    // Helper function to get the bound framebuffer's height.
-    int boundFramebufferHeight();
 
     // Helper function to verify limits on the length of uniform and attribute locations.
     bool validateLocationLength(const char* functionName, const String&);
