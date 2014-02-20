@@ -896,7 +896,7 @@ static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDire
     return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
 }
 
-void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
+void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow, TextDirection textDirection)
 {
     ASSERT(m_hasTab || preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts);
 
@@ -932,7 +932,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
     // Non-zero only when kerning is enabled, in which case we measure words with their trailing
     // space, then subtract its width.
-    float wordTrailingSpaceWidth = f.fontDescription().typesettingFeatures() & Kerning ? f.width(RenderBlockFlow::constructTextRun(this, f, &space, 1, styleToUse, LTR)) + wordSpacing : 0;
+    float wordTrailingSpaceWidth = f.fontDescription().typesettingFeatures() & Kerning ? f.width(RenderBlockFlow::constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing : 0;
 
     // If automatic hyphenation is allowed, we keep track of the width of the widest word (or word
     // fragment) encountered so far, and only try hyphenating words that are wider.
@@ -942,6 +942,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();
 
     TextRun textRun(text());
+    textRun.setDirection(textDirection);
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     bidiResolver.setStatus(BidiStatus(textRun.direction(), textRun.directionalOverride()));
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
@@ -1495,7 +1496,7 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
             if (fallbackFonts) {
                 ASSERT(glyphOverflow);
                 if (preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts) {
-                    const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphOverflow);
+                    const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphOverflow, textDirection);
                     if (fallbackFonts->isEmpty() && !glyphOverflow->left && !glyphOverflow->right && !glyphOverflow->top && !glyphOverflow->bottom)
                         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
                 }

@@ -164,7 +164,7 @@ protected:
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 
 private:
-    void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&);
+    void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&, TextDirection = LTR);
 
     bool computeCanUseSimpleFontCodePath() const;
 
