@@ -301,8 +301,11 @@ struct CompareMinimumHeight {
 // Half of |delta| is used as a transition point at which windows could ideally
 // swap positions.
 struct CompareWindowPos {
-  CompareWindowPos(aura::Window* dragged_window, float delta)
+  CompareWindowPos(aura::Window* dragged_window,
+                   aura::Window* docked_container,
+                   float delta)
       : dragged_window_(dragged_window),
+        docked_container_(docked_container),
         delta_(delta / 2) {}
 
   bool operator()(WindowWithHeight window_with_height1,
@@ -312,9 +315,9 @@ struct CompareWindowPos {
     aura::Window* win1(window_with_height1.window());
     aura::Window* win2(window_with_height2.window());
     gfx::Rect win1_bounds = ScreenUtil::ConvertRectToScreen(
-        win1->parent(), win1->GetTargetBounds());
+        docked_container_, win1->GetTargetBounds());
     gfx::Rect win2_bounds = ScreenUtil::ConvertRectToScreen(
-        win2->parent(), win2->GetTargetBounds());
+        docked_container_, win2->GetTargetBounds());
     win1_bounds.set_height(window_with_height1.height_);
     win2_bounds.set_height(window_with_height2.height_);
     // If one of the windows is the |dragged_window_| attempt to make an
@@ -354,6 +357,7 @@ struct CompareWindowPos {
 
  private:
   aura::Window* dragged_window_;
+  aura::Window* docked_container_;
   float delta_;
 };
 
@@ -1155,12 +1159,13 @@ void DockedWindowLayoutManager::FanOutChildren(
   // windows.
   std::sort(visible_windows->begin(), visible_windows->end(),
             CompareWindowPos(is_dragged_from_dock_ ? dragged_window_ : NULL,
+                             dock_container_,
                              delta));
   for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
        iter != visible_windows->end(); ++iter) {
     aura::Window* window = iter->window();
     gfx::Rect bounds = ScreenUtil::ConvertRectToScreen(
-        window->parent(), window->GetTargetBounds());
+        dock_container_, window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the ideal
     // docked area width. Windows that were resized by a user are kept at their
     // existing size.
