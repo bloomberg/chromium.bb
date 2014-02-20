@@ -95,8 +95,7 @@ function doCanvasCalls()
 function test()
 {
     var traceLogId;
-    var traceLogCallsNumber;
-    var resourceIds = {};
+    var resourceIds;
     InspectorTest.enableCanvasAgent(step1);
     function step1()
     {
@@ -124,29 +123,10 @@ function test()
     }
     function didReceiveTraceLog(error, traceLog)
     {
-        function examineCallArguments(callArgs)
-        {
-            if (!callArgs)
-                return;
-            for (var i = 0, n = callArgs.length; i < n; ++i) {
-                var callArg = callArgs[i];
-                if (!callArg)
-                    continue;
-                if (callArg.resourceId)
-                    resourceIds[callArg.description] = callArg.resourceId;
-            }
-        }
-
         InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
-        traceLogCallsNumber = traceLog.calls.length;
+        var traceLogCallsNumber = traceLog.calls.length;
         InspectorTest.assertTrue(traceLogCallsNumber > 0, "Expected not empty trace log calls array");
-        for (var i = 0; i < traceLogCallsNumber; ++i) {
-            var call = traceLog.calls[i];
-            examineCallArguments(call.arguments);
-            examineCallArguments([call.result]);
-            examineCallArguments([call.value]);
-        }
-        examineCallArguments(traceLog.contexts);
+        resourceIds = InspectorTest.collectResourceIdsFromTraceLog(traceLog);
         CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayTraceLog);
     }
     function didReplayTraceLog(error, resourceState)

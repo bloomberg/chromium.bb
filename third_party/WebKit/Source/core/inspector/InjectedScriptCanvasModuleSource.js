@@ -40,7 +40,7 @@ var TypeUtils = {
     /**
      * http://www.khronos.org/registry/typedarray/specs/latest/#7
      * @const
-     * @type {!Array.<function(new:ArrayBufferView, ArrayBufferView)>}
+     * @type {!Array.<function(new:ArrayBufferView, (ArrayBuffer|ArrayBufferView), number=, number=)>}
      */
     _typedArrayClasses: (function(typeNames) {
         var result = [];
@@ -59,7 +59,7 @@ var TypeUtils = {
 
     /**
      * @param {*} array
-     * @return {function(new:ArrayBufferView, ArrayBufferView)|null}
+     * @return {function(new:ArrayBufferView, (ArrayBuffer|ArrayBufferView), number=, number=)|null}
      */
     typedArrayClass: function(array)
     {
@@ -1864,6 +1864,73 @@ WebGLBufferResource.prototype = {
     },
 
     /**
+     * @return {?ArrayBufferView}
+     */
+    cachedBufferData: function()
+    {
+        /**
+         * Creates a view to a given buffer, does NOT copy the buffer.
+         * @param {!ArrayBuffer|!ArrayBufferView} buffer
+         * @return {!Uint8Array}
+         */
+        function createUint8ArrayBufferView(buffer)
+        {
+            return buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+        }
+
+        if (!this._cachedBufferData) {
+            for (var i = this._calls.length - 1; i >= 0; --i) {
+                var call = this._calls[i];
+                if (call.functionName() === "bufferData") {
+                    var sizeOrData = /** @type {number|ArrayBuffer|ArrayBufferView} */ (call.args()[1]);
+                    if (typeof sizeOrData === "number")
+                        this._cachedBufferData = new ArrayBuffer(sizeOrData);
+                    else
+                        this._cachedBufferData = sizeOrData;
+                    this._lastBufferSubDataIndex = i + 1;
+                    break;
+                }
+            }
+            if (!this._cachedBufferData)
+                return null;
+        }
+
+        // Apply any "bufferSubData" calls that have not been applied yet.
+        var bufferDataView;
+        while (this._lastBufferSubDataIndex < this._calls.length) {
+            var call = this._calls[this._lastBufferSubDataIndex++];
+            if (call.functionName() !== "bufferSubData")
+                continue;
+            var offset = /** @type {number} */ (call.args()[1]);
+            var data = /** @type {!ArrayBuffer|!ArrayBufferView} */ (call.args()[2]);
+            var view = createUint8ArrayBufferView(data);
+            if (!bufferDataView)
+                bufferDataView = createUint8ArrayBufferView(this._cachedBufferData);
+            bufferDataView.set(view, offset);
+
+            var isFullReplacement = (offset === 0 && bufferDataView.length === view.length);
+            if (this._cachedBufferData instanceof ArrayBuffer) {
+                // The buffer data has no type yet. Try to guess from the "bufferSubData" call.
+                var typedArrayClass = TypeUtils.typedArrayClass(data);
+                if (typedArrayClass)
+                    this._cachedBufferData = new typedArrayClass(this._cachedBufferData); // Does not copy the buffer.
+            } else if (isFullReplacement) {
+                var typedArrayClass = TypeUtils.typedArrayClass(data);
+                if (typedArrayClass) {
+                    var typedArrayData = /** @type {!ArrayBufferView} */ (data);
+                    this._cachedBufferData = new typedArrayClass(this._cachedBufferData.buffer, this._cachedBufferData.byteOffset, typedArrayData.length); // Does not copy the buffer.
+                }
+            }
+        }
+
+        if (this._cachedBufferData instanceof ArrayBuffer) {
+            // If we failed to guess the data type yet, use Uint8Array.
+            return new Uint8Array(this._cachedBufferData);
+        }
+        return this._cachedBufferData;
+    },
+
+    /**
      * @override
      * @return {!Array.<TypeUtils.InternalResourceStateDescriptor>}
      */
@@ -1905,16 +1972,34 @@ WebGLBufferResource.prototype = {
 
         if (oldBuffer !== buffer)
             gl.bindBuffer(target, oldBuffer);
+
+        try {
+            var data = this.cachedBufferData();
+            if (data)
+                result.push({ name: "bufferData", value: data });
+        } catch (e) {
+            console.error("Exception while restoring bufferData", e);
+        }
+
         return result;
     },
 
     /**
-     * @override
      * @param {!Call} call
      */
-    pushCall: function(call)
+    pushCall_bufferData: function(call)
     {
         // FIXME: remove any older calls that no longer contribute to the resource state.
+        delete this._cachedBufferData;
+        delete this._lastBufferSubDataIndex;
+        WebGLBoundResource.prototype.pushCall.call(this, call);
+    },
+
+    /**
+     * @param {!Call} call
+     */
+    pushCall_bufferSubData: function(call)
+    {
         // FIXME: Optimize memory for bufferSubData.
         WebGLBoundResource.prototype.pushCall.call(this, call);
     },
@@ -2818,6 +2903,16 @@ WebGLRenderingContextResource.prototype = {
         case "getExtension":
             this.registerWebGLExtension(args[0], /** @type {Object} */ (call.result()));
             break;
+        case "bufferData":
+            var resource = /** @type {WebGLBufferResource} */ (this.currentBinding(args[0]));
+            if (resource)
+                resource.pushCall_bufferData(call);
+            break;
+        case "bufferSubData":
+            var resource = /** @type {WebGLBufferResource} */ (this.currentBinding(args[0]));
+            if (resource)
+                resource.pushCall_bufferSubData(call);
+            break;
         }
     },
 
@@ -2844,8 +2939,8 @@ WebGLRenderingContextResource.prototype = {
             stateModifyingWrapFunction("detachShader");
             stateModifyingWrapFunction("linkProgram");
             stateModifyingWrapFunction("shaderSource");
-            stateModifyingWrapFunction("bufferData");
-            stateModifyingWrapFunction("bufferSubData");
+            stateModifyingWrapFunction("bufferData", WebGLBufferResource.prototype.pushCall_bufferData);
+            stateModifyingWrapFunction("bufferSubData", WebGLBufferResource.prototype.pushCall_bufferSubData);
             stateModifyingWrapFunction("compressedTexImage2D");
             stateModifyingWrapFunction("compressedTexSubImage2D");
             stateModifyingWrapFunction("copyTexImage2D", WebGLTextureResource.prototype.pushCall_copyTexImage2D);

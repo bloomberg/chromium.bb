@@ -1,0 +1,152 @@
+<html>
+<head>
+    <script src="../../../http/tests/inspector/inspector-test.js"></script>
+    <script src="../canvas-profiler-test.js"></script>
+<script>
+if (window.internals)
+    window.internals.settings.setWebGLErrorsToConsoleEnabled(false);
+
+var gl;
+
+function createCanvasContext()
+{
+    gl = createWebGLContext(document.getElementById("canvas"));
+    console.assert(gl, "Failed to create a WebGL context");
+}
+
+function doCanvasCalls()
+{
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, 5, gl.STATIC_DRAW); // 5 zeros
+
+    var bufferView = new Uint16Array([0x0000, 0x1122, 0x3344, 0x5566, 0x7788, 0x99aa, 0xbbcc, 0xddee, 0xffff]);
+    gl.bufferData(gl.ARRAY_BUFFER, bufferView, gl.DYNAMIC_DRAW);
+
+    var bufferView2 = new Int8Array([1, 1, 2, 2, 3, 3]);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 2, bufferView2);
+
+    gl.bufferSubData(gl.ARRAY_BUFFER, 8, new ArrayBuffer(4)); // zero out [0x7788, 0x99aa]
+
+    var subBufferView = new Uint8Array(bufferView.buffer, 14, 4); // refers to [0xddee, 0xffff]
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, subBufferView);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, 0, 1]), gl.DYNAMIC_DRAW);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Uint32Array([1, 2, 3]));                             // full replacement
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Int16Array([-1, -2, -3, -4, -5, -6]));               // full replacement
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Int8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])); // full replacement
+    gl.bufferSubData(gl.ARRAY_BUFFER, 1, new Uint32Array([0xffffffff, 0xffffffff])); // -1 x8
+
+    var err = gl.getError();
+    console.assert(err === gl.NO_ERROR, "Should be no GL errors, but was: " + err);
+}
+
+function test()
+{
+    var traceLog;
+    var traceLogId;
+    var resourceIds;
+
+    InspectorTest.enableCanvasAgent(step1);
+    function step1()
+    {
+        InspectorTest.evaluateInConsole("createCanvasContext()", step2);
+    }
+    function step2()
+    {
+        CanvasAgent.startCapturing(didStartCapturing);
+    }
+    function didStartCapturing(error, id)
+    {
+        InspectorTest.assertTrue(!error && !!id, "Unexpected error: " + error);
+        InspectorTest.addResult("\nStarted capturing.");
+        traceLogId = id;
+        InspectorTest.evaluateInConsole("doCanvasCalls()", didCanvasCalls);
+    }
+    function didCanvasCalls()
+    {
+        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
+    }
+    function didStopCapturing()
+    {
+        InspectorTest.addResult("Stopped capturing.");
+        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+    }
+    function didReceiveTraceLog(error, traceLogValue)
+    {
+        traceLog = traceLogValue;
+        InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
+        InspectorTest.assertTrue(traceLog.calls.length > 0, "Expected not empty trace log calls array");
+        resourceIds = InspectorTest.collectResourceIdsFromTraceLog(traceLog);
+        replayUntilNextBufferDataCall(0);
+    }
+    function replayUntilNextBufferDataCall(offset)
+    {
+        var bufferDataCalls = ["bindBuffer", "bufferData", "bufferSubData"];
+        var calls = traceLog.calls;
+        for (var i = offset, n = calls.length; i < n; ++i) {
+            var call = calls[i];
+            if (bufferDataCalls.indexOf(call.functionName) !== -1) {
+                CanvasAgent.replayTraceLog(traceLogId, i, didReplayTraceLog.bind(null, i));
+                return;
+            }
+        }
+        InspectorTest.completeTest();
+    }
+    function didReplayTraceLog(stepNo)
+    {
+        InspectorTest.addResult("\nReplayed call #" + stepNo);
+        CanvasAgent.getResourceState(traceLogId, resourceIds["WebGLBuffer@1"], didGetResourceState);
+
+        function didGetResourceState(error, resourceState)
+        {
+            InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
+            var descriptor = InspectorTest.findResourceStateDescriptor(resourceState, "bufferData");
+            if (!descriptor)
+                InspectorTest.addResult("No bufferData available");
+            else {
+                var remoteObject = descriptor.value && descriptor.value.remoteObject;
+                if (!remoteObject)
+                    InspectorTest.addResult("FAIL: Internal error in the protocol: no \"remoteObject\" property in a CallArgument");
+                else {
+                    var obj = WebInspector.RemoteObject.fromPayload(remoteObject);
+                    obj.getOwnProperties(didGetOwnProperties.bind(null, descriptor.value.description));
+                    return;
+                }
+            }
+            replayUntilNextBufferDataCall(stepNo + 1);
+        }
+
+        function didGetOwnProperties(description, properties)
+        {
+            function formatNumber(value)
+            {
+                if (/^Uint16Array/.test(description)) {
+                    var str = "0000" + Number(value || 0).toString(16);
+                    str = str.replace(/^0+(.{4,})$/, "$1");
+                    return "0x" + str;
+                }
+                return value;
+            }
+
+            var result = [];
+            for (var i = 0; i < properties.length; ++i) {
+                var index = properties[i].name;
+                var value = properties[i].value;
+                if (!isNaN(index))
+                    result[+index] = formatNumber(value && value.value);
+            }
+            InspectorTest.addResult("bufferData: " + description + ": [" + result.join(", ") + "]");
+            replayUntilNextBufferDataCall(stepNo + 1);
+        }
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests WebGLBuffer data state during the replay.
+</p>
+<canvas id="canvas"></canvas>
+</body>
+</html>

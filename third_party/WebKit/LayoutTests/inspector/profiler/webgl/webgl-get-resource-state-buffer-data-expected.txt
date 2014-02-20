@@ -1,0 +1,39 @@
+Tests WebGLBuffer data state during the replay.
+
+ 
+Started capturing.
+Stopped capturing.
+
+Replayed call #1
+No bufferData available
+
+Replayed call #2
+bufferData: Uint8Array[5]: [0, 0, 0, 0, 0]
+
+Replayed call #3
+bufferData: Uint16Array[9]: [0x0000, 0x1122, 0x3344, 0x5566, 0x7788, 0x99aa, 0xbbcc, 0xddee, 0xffff]
+
+Replayed call #4
+bufferData: Uint16Array[9]: [0x0000, 0x0101, 0x0202, 0x0303, 0x7788, 0x99aa, 0xbbcc, 0xddee, 0xffff]
+
+Replayed call #5
+bufferData: Uint16Array[9]: [0x0000, 0x0101, 0x0202, 0x0303, 0x0000, 0x0000, 0xbbcc, 0xddee, 0xffff]
+
+Replayed call #6
+bufferData: Uint16Array[9]: [0xddee, 0xffff, 0x0202, 0x0303, 0x0000, 0x0000, 0xbbcc, 0xddee, 0xffff]
+
+Replayed call #7
+bufferData: Float32Array[3]: [-1, 0, 1]
+
+Replayed call #8
+bufferData: Uint32Array[3]: [1, 2, 3]
+
+Replayed call #9
+bufferData: Int16Array[6]: [-1, -2, -3, -4, -5, -6]
+
+Replayed call #10
+bufferData: Int8Array[12]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+Replayed call #11
+bufferData: Int8Array[12]: [1, -1, -1, -1, -1, -1, -1, -1, -1, 10, 11, 12]
+

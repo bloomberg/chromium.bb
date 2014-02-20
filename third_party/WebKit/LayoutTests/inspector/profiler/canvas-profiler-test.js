@@ -92,18 +92,9 @@ InspectorTest.dumpTraceLog = function(traceLog, indent, filter)
 
 InspectorTest.sortResourceStateDescriptors = function(descriptors)
 {
-    var wordNumRegex = /^(\D+)(\d+)$/;
-    function comparator(a, b)
+    function comparator(d1, d2)
     {
-        a = a.name.replace(wordNumRegex, "$2");
-        b = b.name.replace(wordNumRegex, "$2");
-        if (!isNaN(a) && !isNaN(b))
-            return Number(a) - Number(b);
-        if (a < b)
-            return -1;
-        if (a > b)
-            return 1;
-        return 0;
+        return String.naturalOrderComparator(d1.name, d2.name);
     }
     descriptors.sort(comparator);
 };
@@ -136,6 +127,42 @@ InspectorTest.dumpResourceState = function(resourceState, indent)
     InspectorTest.sortResourceStateDescriptors(descriptors);
     for (var i = 0, n = descriptors.length; i < n; ++i)
         InspectorTest.dumpResourceStateDescriptor(descriptors[i], indent + "  ");
+};
+
+InspectorTest.findResourceStateDescriptor = function(resourceState, name)
+{
+    var descriptors = resourceState.descriptors || [];
+    for (var i = 0, n = descriptors.length; i < n; ++i) {
+        if (descriptors[i].name === name)
+            return descriptors[i];
+    }
+    return null;
+};
+
+InspectorTest.collectResourceIdsFromTraceLog = function(traceLog)
+{
+    var resourceIds = {};
+
+    function examineCallArguments(callArgs)
+    {
+        if (!callArgs)
+            return;
+        for (var i = 0, n = callArgs.length; i < n; ++i) {
+            var callArg = callArgs[i];
+            if (!callArg)
+                continue;
+            if (callArg.resourceId)
+                resourceIds[callArg.description] = callArg.resourceId;
+        }
+    }
+
+    for (var i = 0; i < traceLog.calls.length; ++i) {
+        var call = traceLog.calls[i];
+        examineCallArguments(call.arguments);
+        examineCallArguments([call.result, call.value]);
+    }
+    examineCallArguments(traceLog.contexts);
+    return resourceIds;
 };
 
 };

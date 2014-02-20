@@ -272,6 +272,7 @@ Stopped capturing.
 {ResourceState}  length(imageURL):0
   BUFFER_SIZE: 24
   BUFFER_USAGE: STATIC_DRAW
+  bufferData: Float32Array[6]
   context: WebGLRenderingContext@1
   isBuffer: true
   target: ARRAY_BUFFER
