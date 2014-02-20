@@ -266,47 +266,6 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostX11::MouseMoveFilter filters out the move events that
-// jump back and forth between two points. This happens when sub pixel mouse
-// move is enabled and mouse move events could be jumping between two neighbor
-// pixels, e.g. move(0,0), move(1,0), move(0,0), move(1,0) and on and on.
-// The filtering is done by keeping track of the last two event locations and
-// provides a Filter method to find out whether a mouse event is in a different
-// location and should be processed.
-
-class WindowTreeHostX11::MouseMoveFilter {
- public:
-  MouseMoveFilter() : insert_index_(0) {
-    for (size_t i = 0; i < kMaxEvents; ++i) {
-      const int int_max = std::numeric_limits<int>::max();
-      recent_locations_[i] = gfx::Point(int_max, int_max);
-    }
-  }
-  ~MouseMoveFilter() {}
-
-  // Returns true if |event| is known and should be ignored.
-  bool Filter(const base::NativeEvent& event) {
-    const gfx::Point& location = ui::EventLocationFromNative(event);
-    for (size_t i = 0; i < kMaxEvents; ++i) {
-      if (location == recent_locations_[i])
-        return true;
-    }
-
-    recent_locations_[insert_index_] = location;
-    insert_index_ = (insert_index_ + 1) % kMaxEvents;
-    return false;
-  }
-
- private:
-  static const size_t kMaxEvents = 2;
-
-  gfx::Point recent_locations_[kMaxEvents];
-  size_t insert_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseMoveFilter);
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostX11
 
 WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
@@ -318,7 +277,6 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       bounds_(bounds),
       is_internal_display_(false),
       touch_calibrate_(new internal::TouchEventCalibrate),
-      mouse_move_filter_(new MouseMoveFilter),
       atom_cache_(xdisplay_, kAtomsToCache),
       bezel_tracking_ids_(0) {
   XSetWindowAttributes swa;
@@ -909,9 +867,6 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
         num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
         if (num_coalesced > 0)
           xev = &last_event;
-
-        if (mouse_move_filter_ && mouse_move_filter_->Filter(xev))
-          break;
       } else if (type == ui::ET_MOUSE_PRESSED ||
                  type == ui::ET_MOUSE_RELEASED) {
         XIDeviceEvent* xievent =

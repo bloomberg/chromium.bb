@@ -75,8 +75,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
  private:
-  class MouseMoveFilter;
-
   // Dispatches XI2 events. Note that some events targetted for the X root
   // window are dispatched to the aura root window (e.g. touch events after
   // calibration).
@@ -127,8 +125,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   scoped_ptr<XID[]> pointer_barriers_;
 
   scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
-
-  scoped_ptr<MouseMoveFilter> mouse_move_filter_;
 
   ui::X11AtomCache atom_cache_;
 
