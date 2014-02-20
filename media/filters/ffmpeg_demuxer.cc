@@ -323,6 +323,10 @@ bool FFmpegDemuxerStream::HasAvailableCapacity() {
   return buffer_queue_.IsEmpty() || buffer_queue_.Duration() < kCapacity;
 }
 
+size_t FFmpegDemuxerStream::MemoryUsage() const {
+  return buffer_queue_.data_size();
+}
+
 TextKind FFmpegDemuxerStream::GetTextKind() const {
   DCHECK_EQ(type_, DemuxerStream::TEXT);
 
@@ -800,7 +804,10 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     return;
   }
 
-  if (result < 0) {
+  // Consider the stream as ended if:
+  // - either underlying ffmpeg returned an error
+  // - or FFMpegDemuxer reached the maximum allowed memory usage.
+  if (result < 0 || IsMaxMemoryUsageReached()) {
     // Update the duration based on the highest elapsed time across all streams
     // if it was previously unknown.
     if (!duration_known_) {
@@ -903,6 +910,26 @@ bool FFmpegDemuxer::StreamsHaveAvailableCapacity() {
     if (*iter && (*iter)->HasAvailableCapacity()) {
       return true;
     }
+  }
+  return false;
+}
+
+bool FFmpegDemuxer::IsMaxMemoryUsageReached() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Max allowed memory usage, all streams combined.
+  const size_t kDemuxerMemoryLimit = 150 * 1024 * 1024;
+
+  size_t memory_left = kDemuxerMemoryLimit;
+  for (StreamVector::const_iterator iter = streams_.begin();
+       iter != streams_.end(); ++iter) {
+    if (!(*iter))
+      continue;
+
+    size_t stream_memory_usage = (*iter)->MemoryUsage();
+    if (stream_memory_usage > memory_left)
+      return true;
+    memory_left -= stream_memory_usage;
   }
   return false;
 }

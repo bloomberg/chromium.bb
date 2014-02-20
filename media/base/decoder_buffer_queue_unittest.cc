@@ -25,6 +25,13 @@ static scoped_refptr<DecoderBuffer> CreateBuffer(int timestamp) {
   return buffer;
 }
 
+static scoped_refptr<DecoderBuffer> CreateBuffer(int timestamp, int size) {
+  scoped_refptr<DecoderBuffer> buffer = new DecoderBuffer(size);
+  buffer->set_timestamp(ToTimeDelta(timestamp));
+  buffer->set_duration(ToTimeDelta(0));
+  return buffer;
+}
+
 TEST(DecoderBufferQueueTest, IsEmpty) {
   DecoderBufferQueue queue;
   EXPECT_TRUE(queue.IsEmpty());
@@ -133,6 +140,30 @@ TEST(DecoderBufferQueueTest, Duration_NoTimestamp) {
 
   queue.Pop();
   EXPECT_EQ(0, queue.Duration().InSeconds());
+}
+
+TEST(DecoderBufferQueueTest, DataSize) {
+  DecoderBufferQueue queue;
+  EXPECT_EQ(queue.data_size(), 0u);
+
+  queue.Push(CreateBuffer(0, 1200u));
+  EXPECT_EQ(queue.data_size(), 1200u);
+
+  queue.Push(CreateBuffer(1, 1000u));
+  EXPECT_EQ(queue.data_size(), 2200u);
+
+  queue.Pop();
+  EXPECT_EQ(queue.data_size(), 1000u);
+
+  queue.Push(CreateBuffer(2, 999u));
+  queue.Push(CreateBuffer(3, 999u));
+  EXPECT_EQ(queue.data_size(), 2998u);
+
+  queue.Clear();
+  EXPECT_EQ(queue.data_size(), 0u);
+
+  queue.Push(CreateBuffer(4, 1400u));
+  EXPECT_EQ(queue.data_size(), 1400u);
 }
 
 }  // namespace media

@@ -94,6 +94,9 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Returns true if this stream has capacity for additional data.
   bool HasAvailableCapacity();
 
+  // Returns the total buffer size FFMpegDemuxerStream is holding onto.
+  size_t MemoryUsage() const;
+
   TextKind GetTextKind() const;
 
   // Returns the value associated with |key| in the metadata for the avstream.
@@ -181,6 +184,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Returns true iff any stream has additional capacity. Note that streams can
   // go over capacity depending on how the file is muxed.
   bool StreamsHaveAvailableCapacity();
+
+  // Returns true if the maximum allowed memory usage has been reached.
+  bool IsMaxMemoryUsageReached() const;
 
   // Signal all FFmpegDemuxerStreams that the stream has ended.
   void StreamHasEnded();
