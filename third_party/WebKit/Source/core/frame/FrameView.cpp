@@ -2240,7 +2240,7 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
 
 }
 
-IntRect FrameView::windowClipRect(bool clipToContents) const
+IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     ASSERT(m_frame->view() == this);
 
@@ -2248,7 +2248,7 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
         return IntRect(IntPoint(), contentsSize());
 
     // Set our clip rect to be our contents.
-    IntRect clipRect = contentsToWindow(visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars));
+    IntRect clipRect = contentsToWindow(visibleContentRect(scrollbarInclusion));
     if (!m_frame->ownerElement())
         return clipRect;
 

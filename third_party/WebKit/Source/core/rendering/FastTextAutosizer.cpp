@@ -177,7 +177,7 @@ void FastTextAutosizer::prepareRenderViewInfo()
     Frame* mainFrame = m_document->page()->mainFrame();
     IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
     if (frameSize.isEmpty())
-        frameSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
+        frameSize = mainFrame->view()->unscaledVisibleContentSize(IncludeScrollbars);
     m_frameWidth = horizontalWritingMode ? frameSize.width() : frameSize.height();
 
     IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();

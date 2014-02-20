@@ -224,7 +224,7 @@ static bool monochromeMediaFeatureEval(CSSValue* value, RenderStyle* style, Fram
 
 static IntSize viewportSize(FrameView* view)
 {
-    return view->layoutSize(ScrollableArea::IncludeScrollbars);
+    return view->layoutSize(IncludeScrollbars);
 }
 
 static bool orientationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)

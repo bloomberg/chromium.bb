@@ -413,7 +413,7 @@ void InspectorOverlay::update()
     IntRect viewRect = view->visibleContentRect();
 
     // Include scrollbars to avoid masking them by the gutter.
-    IntSize frameViewFullSize = view->visibleContentRect(ScrollableArea::IncludeScrollbars).size();
+    IntSize frameViewFullSize = view->visibleContentRect(IncludeScrollbars).size();
     IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
     size.scale(m_page->pageScaleFactor());
     overlayPage()->mainFrame()->view()->resize(size);

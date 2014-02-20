@@ -1127,7 +1127,7 @@ int DOMWindow::innerHeight() const
     if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustForAbsoluteZoom(view->visibleContentRect(ScrollableArea::IncludeScrollbars).height(), m_frame->pageZoomFactor());
+    return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).height(), m_frame->pageZoomFactor());
 }
 
 int DOMWindow::innerWidth() const
@@ -1143,7 +1143,7 @@ int DOMWindow::innerWidth() const
     if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustForAbsoluteZoom(view->visibleContentRect(ScrollableArea::IncludeScrollbars).width(), m_frame->pageZoomFactor());
+    return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).width(), m_frame->pageZoomFactor());
 }
 
 int DOMWindow::screenX() const

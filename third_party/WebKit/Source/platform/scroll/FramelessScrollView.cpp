@@ -69,7 +69,7 @@ bool FramelessScrollView::scrollbarsCanBeActive() const
 
 IntRect FramelessScrollView::scrollableAreaBoundingBox() const
 {
-    return windowClipRect(false);
+    return windowClipRect(IncludeScrollbars);
 }
 
 void FramelessScrollView::invalidateRect(const IntRect& rect)
@@ -83,9 +83,9 @@ HostWindow* FramelessScrollView::hostWindow() const
     return const_cast<FramelessScrollViewClient*>(m_client);
 }
 
-IntRect FramelessScrollView::windowClipRect(bool clipToContents) const
+IntRect FramelessScrollView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    IntRect clipRect = visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars);
+    IntRect clipRect = visibleContentRect(scrollbarInclusion);
     if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar())
         clipRect.move(verticalScrollbar()->width(), 0);
     return contentsToWindow(clipRect);

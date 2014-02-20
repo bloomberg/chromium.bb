@@ -138,7 +138,7 @@ public:
 
     void adjustViewSize();
 
-    virtual IntRect windowClipRect(bool clipToContents = true) const OVERRIDE;
+    virtual IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
     IntRect windowClipRectForFrameOwner(const HTMLFrameOwnerElement*) const;
 
     virtual IntRect windowResizerRect() const OVERRIDE;

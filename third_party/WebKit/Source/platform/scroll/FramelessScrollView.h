@@ -78,7 +78,7 @@ public:
 
     // ScrollView public methods:
     virtual HostWindow* hostWindow() const OVERRIDE;
-    virtual IntRect windowClipRect(bool clipToContents = true) const OVERRIDE;
+    virtual IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
 
 protected:
     // ScrollView protected methods:

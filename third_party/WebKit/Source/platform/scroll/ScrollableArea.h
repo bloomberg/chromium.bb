@@ -47,6 +47,11 @@ enum ScrollBehavior {
     ScrollBehaviorSmooth,
 };
 
+enum IncludeScrollbarsInRect {
+    ExcludeScrollbars,
+    IncludeScrollbars,
+};
+
 class PLATFORM_EXPORT ScrollableArea {
     WTF_MAKE_NONCOPYABLE(ScrollableArea);
 public:
@@ -146,7 +151,6 @@ public:
     virtual IntPoint minimumScrollPosition() const = 0;
     virtual IntPoint maximumScrollPosition() const = 0;
 
-    enum IncludeScrollbarsInRect { ExcludeScrollbars, IncludeScrollbars };
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     virtual int visibleHeight() const = 0;
     virtual int visibleWidth() const = 0;

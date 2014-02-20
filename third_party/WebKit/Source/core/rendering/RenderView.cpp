@@ -141,7 +141,7 @@ void RenderView::positionDialog(RenderBox* box)
     }
     FrameView* frameView = document().view();
     int scrollTop = frameView->scrollOffset().height();
-    int visibleHeight = frameView->visibleContentRect(ScrollableArea::IncludeScrollbars).height();
+    int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
     LayoutUnit top = scrollTop;
     if (box->height() < visibleHeight)
         top += (visibleHeight - box->height()) / 2;
@@ -868,7 +868,7 @@ IntRect RenderView::documentRect() const
     return IntRect(overflowRect);
 }
 
-int RenderView::viewHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
+int RenderView::viewHeight(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int height = 0;
     if (!shouldUsePrintingLayout() && m_frameView)
@@ -877,7 +877,7 @@ int RenderView::viewHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarIncl
     return height;
 }
 
-int RenderView::viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
+int RenderView::viewWidth(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int width = 0;
     if (!shouldUsePrintingLayout() && m_frameView)
@@ -888,7 +888,7 @@ int RenderView::viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclu
 
 int RenderView::viewLogicalHeight() const
 {
-    return style()->isHorizontalWritingMode() ? viewHeight(ScrollableArea::ExcludeScrollbars) : viewWidth(ScrollableArea::ExcludeScrollbars);
+    return style()->isHorizontalWritingMode() ? viewHeight(ExcludeScrollbars) : viewWidth(ExcludeScrollbars);
 }
 
 float RenderView::zoomFactor() const
@@ -1004,13 +1004,13 @@ bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
 double RenderView::layoutViewportWidth() const
 {
     float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
-    return viewWidth(ScrollableArea::IncludeScrollbars) / scale;
+    return viewWidth(IncludeScrollbars) / scale;
 }
 
 double RenderView::layoutViewportHeight() const
 {
     float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
-    return viewHeight(ScrollableArea::IncludeScrollbars) / scale;
+    return viewHeight(IncludeScrollbars) / scale;
 }
 
 } // namespace WebCore
