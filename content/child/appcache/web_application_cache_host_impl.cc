@@ -11,13 +11,9 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 
 using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;
-using blink::WebDataSource;
-using blink::WebFrame;
 using blink::WebURLRequest;
 using blink::WebURL;
 using blink::WebURLResponse;
@@ -55,17 +51,6 @@ GURL ClearUrlRef(const GURL& url) {
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
   return all_hosts()->Lookup(id);
-}
-
-WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
-    const WebFrame* frame) {
-  if (!frame)
-    return NULL;
-  WebDataSource* data_source = frame->dataSource();
-  if (!data_source)
-    return NULL;
-  return static_cast<WebApplicationCacheHostImpl*>
-      (data_source->applicationCacheHost());
 }
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
@@ -158,21 +143,6 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
 
   status_ = cache_info_.is_complete ? appcache::IDLE : appcache::UNCACHED;
   client_->notifyEventListener(static_cast<EventID>(appcache::ERROR_EVENT));
-}
-
-void WebApplicationCacheHostImpl::willStartMainResourceRequest(
-    WebURLRequest& request, const WebFrame* frame) {
-  WebApplicationCacheHostImpl* spawning_host = NULL;
-  if (frame) {
-    const WebFrame* spawning_frame = frame->parent();
-    if (!spawning_frame)
-      spawning_frame = frame->opener();
-    if (!spawning_frame)
-      spawning_frame = frame;
-
-    spawning_host = FromFrame(spawning_frame);
-  }
-  willStartMainResourceRequest(request, spawning_host);
 }
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(

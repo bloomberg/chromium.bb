@@ -7,15 +7,12 @@
 
 #include <string>
 
+#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
+#include "third_party/WebKit/public/platform/WebApplicationCacheHostClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebApplicationCacheHostClient.h"
 #include "url/gurl.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-
-namespace blink {
-class WebFrame;
-}
 
 namespace content {
 
@@ -24,9 +21,6 @@ class WebApplicationCacheHostImpl
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
-
-  // Returns the host associated with the current document in frame.
-  static WebApplicationCacheHostImpl* FromFrame(const blink::WebFrame* frame);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
                               appcache::AppCacheBackend* backend);
@@ -46,8 +40,6 @@ class WebApplicationCacheHostImpl
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
   // blink::WebApplicationCacheHost:
-  virtual void willStartMainResourceRequest(blink::WebURLRequest&,
-                                            const blink::WebFrame*);
   virtual void willStartMainResourceRequest(
       blink::WebURLRequest&, const blink::WebApplicationCacheHost*);
   virtual void willStartSubResourceRequest(blink::WebURLRequest&);

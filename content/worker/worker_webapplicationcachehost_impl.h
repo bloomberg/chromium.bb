@@ -18,8 +18,6 @@ class WorkerWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   // loaded by the worker using WorkerScriptLoader.
   // These overrides are stubbed out.
   virtual void willStartMainResourceRequest(
-      blink::WebURLRequest&, const blink::WebFrame*);
-  virtual void willStartMainResourceRequest(
       blink::WebURLRequest&, const blink::WebApplicationCacheHost*);
   virtual void didReceiveResponseForMainResource(
       const blink::WebURLResponse&);
