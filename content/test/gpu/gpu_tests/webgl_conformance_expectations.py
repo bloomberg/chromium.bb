@@ -99,11 +99,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac'], bug=322795)
 
     # Mac/Intel failures
-    # The following two tests hang the WindowServer.
-    self.Skip('conformance/canvas/drawingbuffer-static-canvas-test.html',
-        ['mac', 'intel'], bug=303915)
-    self.Skip('conformance/canvas/drawingbuffer-test.html',
-        ['mac', 'intel'], bug=303915)
     # Radar 13499466
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['mac', 'intel'], bug=225642)
