@@ -23,6 +23,10 @@ void CairoSurfaceReleaseProc(void*, void* context) {
 // Back the destination bitmap by a Cairo surface.  The bitmap's
 // pixelRef takes ownership of the passed-in surface and will call
 // cairo_surface_destroy() upon destruction.
+//
+// Note: it may immediately destroy the surface, if it fails to create a bitmap
+// with pixels, thus the caller must either ref() the surface before hand, or
+// it must not refer to the surface after this call.
 bool InstallCairoSurfacePixels(SkBitmap* dst,
                                cairo_surface_t* surface,
                                bool is_opaque) {
@@ -99,13 +103,18 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
     return NULL;
   }
 
+  // must call this before trying to install the surface, since that may result
+  // in the surface being destroyed.
+  cairo_t* cairo = cairo_create(surface);
+
   SkBitmap bitmap;
   if (!InstallCairoSurfacePixels(&bitmap, surface, is_opaque)) {
+    cairo_destroy(cairo);
     return NULL;
   }
 
   // The device object will take ownership of the graphics context.
-  return new BitmapPlatformDevice(bitmap, surface);
+  return new BitmapPlatformDevice(bitmap, cairo);
 }
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
@@ -142,13 +151,12 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   return Create(width, height, is_opaque, surface);
 }
 
-// The device will own the bitmap, which corresponds to also owning the pixel
-// data. Therefore, we do not transfer ownership to the SkBitmapDevice's bitmap.
+// Ownership of the cairo object is transferred.
 BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap,
-    cairo_surface_t* surface)
+    cairo_t* cairo)
     : SkBitmapDevice(bitmap),
-      cairo_(cairo_create(surface)),
+      cairo_(cairo),
       config_dirty_(true),
       transform_(SkMatrix::I()) {  // Want to load the config next time.
   SetPlatformDevice(this, this);

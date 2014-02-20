@@ -63,8 +63,8 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // we ever have to share state between some native drawing UI and Skia, like
   // the Windows and Mac versions of this class do.
   //
-  // This object takes ownership of @data.
-  BitmapPlatformDevice(const SkBitmap& other, cairo_surface_t* surface);
+  // This object takes ownership of @cairo.
+  BitmapPlatformDevice(const SkBitmap& other, cairo_t* cairo);
   virtual ~BitmapPlatformDevice();
 
   // Constructs a device with size |width| * |height| with contents initialized
