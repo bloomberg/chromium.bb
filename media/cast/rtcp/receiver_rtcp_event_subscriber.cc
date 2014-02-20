@@ -79,36 +79,6 @@ void ReceiverRtcpEventSubscriber::OnReceiveGenericEvent(
   // Do nothing as RTP receiver is not interested in generic events for RTCP.
 }
 
-void ReceiverRtcpEventSubscriber::GetReceiverLogMessageAndReset(
-    RtcpReceiverLogMessage* receiver_log) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  receiver_log->clear();
-
-  typedef std::multimap<RtpTimestamp, RtcpEvent> RtcpEventMultiMap;
-  RtcpEventMultiMap::const_iterator it = rtcp_events_.begin();
-  while (it != rtcp_events_.end()) {
-    // On each iteration, process all entries that have the same key (RTP
-    // timestamp) within the multimap, and generate a
-    // RtcpReceiverFrameLogMessage from them.
-    RtpTimestamp rtp_timestamp = it->first;
-    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
-    do {
-      RtcpReceiverEventLogMessage event_log_message;
-      event_log_message.type = it->second.type;
-      event_log_message.event_timestamp = it->second.timestamp;
-      event_log_message.delay_delta = it->second.delay_delta;
-      event_log_message.packet_id = it->second.packet_id;
-      frame_log.event_log_messages_.push_back(event_log_message);
-      ++it;
-    } while (it != rtcp_events_.end() && it->first == rtp_timestamp);
-
-    receiver_log->push_back(frame_log);
-  }
-
-  rtcp_events_.clear();
-}
-
 void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
   // If map size has exceeded |max_size_to_retain_|, remove entry with
   // the smallest RTP timestamp.

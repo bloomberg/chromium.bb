@@ -10,6 +10,7 @@
 
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/transport/cast_transport_defines.h"
@@ -34,11 +35,12 @@ class RtcpSender {
   // Such an event should be sent via RTCP.
   static bool IsReceiverEvent(const media::cast::CastLoggingEvent& event);
 
-  void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
-                               const transport::RtcpReportBlock* report_block,
-                               const RtcpReceiverReferenceTimeReport* rrtr,
-                               const RtcpCastMessage* cast_message,
-                               ReceiverRtcpEventSubscriber* event_subscriber);
+  void SendRtcpFromRtpReceiver(
+      uint32 packet_type_flags,
+      const transport::RtcpReportBlock* report_block,
+      const RtcpReceiverReferenceTimeReport* rrtr,
+      const RtcpCastMessage* cast_message,
+      const ReceiverRtcpEventSubscriber* event_subscriber);
   enum RtcpPacketType {
     kRtcpSr = 0x0002,
     kRtcpRr = 0x0004,
@@ -80,8 +82,9 @@ class RtcpSender {
 
   void BuildCast(const RtcpCastMessage* cast_message, Packet* packet) const;
 
-  void BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
-                        Packet* packet) const;
+  void BuildReceiverLog(
+      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
+      Packet* packet) const;
 
   inline void BitrateToRembExponentBitrate(uint32 bitrate,
                                            uint8* exponent,

@@ -498,6 +498,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
                              &mock_rtt_feedback_,
                              kSourceSsrc);
   rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
+  rtcp_receiver.SetCastReceiverEventHistorySize(100);
 
   RtcpReceiverLogMessage receiver_log;
   RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
@@ -521,6 +522,11 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   p.AddRr(kSenderSsrc, 1);
   p.AddRb(kSourceSsrc);
   p.AddReceiverLog(kSenderSsrc);
+  p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
+  p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
+  p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
+
+  // Adds duplicated receiver event.
   p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
   p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
   p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);

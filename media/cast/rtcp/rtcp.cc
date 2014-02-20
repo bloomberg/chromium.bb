@@ -230,7 +230,7 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
 
 void Rtcp::SendRtcpFromRtpReceiver(
     const RtcpCastMessage* cast_message,
-    ReceiverRtcpEventSubscriber* event_subscriber) {
+    const ReceiverRtcpEventSubscriber* event_subscriber) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   uint32 packet_type_flags = 0;
 
@@ -383,6 +383,10 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency, uint32 rtp_timestamp,
                                                   last_received_ntp_fraction_) +
                             base::TimeDelta::FromMilliseconds(rtp_time_diff_ms);
   return true;
+}
+
+void Rtcp::SetCastReceiverEventHistorySize(size_t size) {
+  rtcp_receiver_->SetCastReceiverEventHistorySize(size);
 }
 
 void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,

@@ -111,6 +111,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       timers_initialized_(false),
       initialization_status_(STATUS_INITIALIZED),
       weak_factory_(this) {
+  rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
   if (!audio_config.use_external_encoder) {
     audio_encoder_ =
         new AudioEncoder(cast_environment,

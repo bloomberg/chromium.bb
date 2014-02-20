@@ -9,42 +9,38 @@
 
 #include "base/logging.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "net/base/big_endian.h"
 
+namespace media {
+namespace cast {
 namespace {
 
-using media::cast::kRtcpCastLogHeaderSize;
-using media::cast::kRtcpSenderFrameLogSize;
-using media::cast::kRtcpReceiverFrameLogSize;
-using media::cast::kRtcpReceiverEventLogSize;
-
 // Converts a log event type to an integer value.
-int ConvertEventTypeToWireFormat(const media::cast::CastLoggingEvent& event) {
+int ConvertEventTypeToWireFormat(const CastLoggingEvent& event) {
   switch (event) {
-    case media::cast::kAudioAckSent:
+    case kAudioAckSent:
       return 1;
-    case media::cast::kAudioPlayoutDelay:
+    case kAudioPlayoutDelay:
       return 2;
-    case media::cast::kAudioFrameDecoded:
+    case kAudioFrameDecoded:
       return 3;
-    case media::cast::kAudioPacketReceived:
+    case kAudioPacketReceived:
       return 4;
-    case media::cast::kVideoAckSent:
+    case kVideoAckSent:
       return 5;
-    case media::cast::kVideoFrameDecoded:
+    case kVideoFrameDecoded:
       return 6;
-    case media::cast::kVideoRenderDelay:
+    case kVideoRenderDelay:
       return 7;
-    case media::cast::kVideoPacketReceived:
+    case kVideoPacketReceived:
       return 8;
-    case media::cast::kDuplicateAudioPacketReceived:
+    case kDuplicateAudioPacketReceived:
       return 9;
-    case media::cast::kDuplicateVideoPacketReceived:
+    case kDuplicateVideoPacketReceived:
       return 10;
     default:
       return 0;  // Not an interesting event.
@@ -52,7 +48,7 @@ int ConvertEventTypeToWireFormat(const media::cast::CastLoggingEvent& event) {
 }
 
 uint16 MergeEventTypeAndTimestampForWireFormat(
-    const media::cast::CastLoggingEvent& event,
+    const CastLoggingEvent& event,
     const base::TimeDelta& time_delta) {
   int64 time_delta_ms = time_delta.InMilliseconds();
   // Max delta is 4096 milliseconds.
@@ -67,71 +63,64 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
   return (event_type << 12) + event_type_and_timestamp_delta;
 }
 
-bool ScanRtcpReceiverLogMessage(
-    const media::cast::RtcpReceiverLogMessage& receiver_log_message,
-    size_t start_size, size_t* number_of_frames,
-    size_t* total_number_of_messages_to_send, size_t* rtcp_log_size) {
-  if (receiver_log_message.empty()) return false;
-
-  size_t remaining_space = media::cast::kMaxIpPacketSize - start_size;
-
-  // We must have space for at least one message
-  DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize +
-                                 kRtcpReceiverFrameLogSize +
-                                 kRtcpReceiverEventLogSize)
-      << "Not enough buffer space";
-
+bool BuildRtcpReceiverLogMessage(
+    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
+    size_t start_size,
+    RtcpReceiverLogMessage* receiver_log_message,
+    size_t* number_of_frames,
+    size_t* total_number_of_messages_to_send,
+    size_t* rtcp_log_size) {
+  size_t remaining_space = kMaxIpPacketSize - start_size;
   if (remaining_space < kRtcpCastLogHeaderSize + kRtcpReceiverFrameLogSize +
                             kRtcpReceiverEventLogSize) {
     return false;
   }
+
   // Account for the RTCP header for an application-defined packet.
   remaining_space -= kRtcpCastLogHeaderSize;
 
-  media::cast::RtcpReceiverLogMessage::const_iterator frame_it =
-      receiver_log_message.begin();
-  for (; frame_it != receiver_log_message.end(); ++frame_it) {
-    (*number_of_frames)++;
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap::const_reverse_iterator it =
+      rtcp_events.rbegin();
 
+  while (it != rtcp_events.rend() &&
+         remaining_space >=
+             kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize) {
+    const RtpTimestamp rtp_timestamp = it->first;
+    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
     remaining_space -= kRtcpReceiverFrameLogSize;
+    ++*number_of_frames;
 
-    size_t messages_in_frame = frame_it->event_log_messages_.size();
-    size_t remaining_space_in_messages =
-        remaining_space / kRtcpReceiverEventLogSize;
-    size_t messages_to_send =
-        std::min(messages_in_frame, remaining_space_in_messages);
-    if (messages_to_send > media::cast::kRtcpMaxReceiverLogMessages) {
-      // We can't send more than 256 messages.
-      remaining_space -=
-          media::cast::kRtcpMaxReceiverLogMessages * kRtcpReceiverEventLogSize;
-      *total_number_of_messages_to_send +=
-          media::cast::kRtcpMaxReceiverLogMessages;
-      break;
-    }
-    remaining_space -= messages_to_send * kRtcpReceiverEventLogSize;
-    *total_number_of_messages_to_send += messages_to_send;
+    int events_in_frame = 0;
+    do {
+      if (++events_in_frame <= kRtcpMaxReceiverLogMessages) {
+        remaining_space -= kRtcpReceiverEventLogSize;
+        ++*total_number_of_messages_to_send;
 
-    if (remaining_space <
-        kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize) {
-      // Make sure that we have room for at least one more message.
-      break;
-    }
+        RtcpReceiverEventLogMessage event_log_message;
+        event_log_message.type = it->second.type;
+        event_log_message.event_timestamp = it->second.timestamp;
+        event_log_message.delay_delta = it->second.delay_delta;
+        event_log_message.packet_id = it->second.packet_id;
+        frame_log.event_log_messages_.push_front(event_log_message);
+      }
+      ++it;
+    } while (it != rtcp_events.rend() && it->first == rtp_timestamp &&
+             remaining_space >= kRtcpReceiverEventLogSize);
+    receiver_log_message->push_front(frame_log);
   }
+
   *rtcp_log_size =
       kRtcpCastLogHeaderSize + *number_of_frames * kRtcpReceiverFrameLogSize +
       *total_number_of_messages_to_send * kRtcpReceiverEventLogSize;
-  DCHECK_GE(media::cast::kMaxIpPacketSize, start_size + *rtcp_log_size)
-      << "Not enough buffer space";
+  DCHECK_GE(kMaxIpPacketSize, start_size + *rtcp_log_size)
+      << "Not enough buffer space.";
 
-  VLOG(1) << "number of frames " << *number_of_frames;
-  VLOG(1) << "total messages to send " << *total_number_of_messages_to_send;
-  VLOG(1) << "rtcp log size " << *rtcp_log_size;
-  return true;
+  VLOG(1) << "number of frames: " << *number_of_frames;
+  VLOG(1) << "total messages to send: " << *total_number_of_messages_to_send;
+  VLOG(1) << "rtcp log size: " << *rtcp_log_size;
+  return *number_of_frames > 0;
 }
 }  // namespace
-
-namespace media {
-namespace cast {
 
 // TODO(mikhal): This is only used by the receiver. Consider renaming.
 RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -147,7 +136,7 @@ RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
 RtcpSender::~RtcpSender() {}
 
 // static
-bool RtcpSender::IsReceiverEvent(const media::cast::CastLoggingEvent& event) {
+bool RtcpSender::IsReceiverEvent(const CastLoggingEvent& event) {
   return ConvertEventTypeToWireFormat(event) != 0;
 }
 
@@ -156,7 +145,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     const transport::RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
-    ReceiverRtcpEventSubscriber* event_subscriber) {
+    const ReceiverRtcpEventSubscriber* event_subscriber) {
   if (packet_type_flags & kRtcpSr || packet_type_flags & kRtcpDlrr ||
       packet_type_flags & kRtcpSenderLog) {
     NOTREACHED() << "Invalid argument";
@@ -188,9 +177,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
   }
   if (packet_type_flags & kRtcpReceiverLog) {
     DCHECK(event_subscriber) << "Invalid argument";
-    RtcpReceiverLogMessage receiver_log;
-    event_subscriber->GetReceiverLogMessageAndReset(&receiver_log);
-    BuildReceiverLog(&receiver_log, &packet);
+    BuildReceiverLog(event_subscriber->get_rtcp_events(), &packet);
   }
   if (packet.empty()) return;  // Sanity don't send empty packets.
 
@@ -576,17 +563,21 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
   (*packet)[cast_loss_field_pos] = static_cast<uint8>(number_of_loss_fields);
 }
 
-void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
-                                  Packet* packet) const {
-  DCHECK(receiver_log_message);
+void RtcpSender::BuildReceiverLog(
+    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
+    Packet* packet) const {
   const size_t packet_start_size = packet->size();
   size_t number_of_frames = 0;
   size_t total_number_of_messages_to_send = 0;
   size_t rtcp_log_size = 0;
+  RtcpReceiverLogMessage receiver_log_message;
 
-  if (!ScanRtcpReceiverLogMessage(
-           *receiver_log_message, packet_start_size, &number_of_frames,
-           &total_number_of_messages_to_send, &rtcp_log_size)) {
+  if (!BuildRtcpReceiverLogMessage(rtcp_events,
+                                   packet_start_size,
+                                   &receiver_log_message,
+                                   &number_of_frames,
+                                   &total_number_of_messages_to_send,
+                                   &rtcp_log_size)) {
     return;
   }
   packet->resize(packet_start_size + rtcp_log_size);
@@ -600,10 +591,10 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(kCast);
 
-  while (!receiver_log_message->empty() &&
+  while (!receiver_log_message.empty() &&
          total_number_of_messages_to_send > 0) {
     RtcpReceiverFrameLogMessage& frame_log_messages(
-        receiver_log_message->front());
+        receiver_log_message.front());
 
     // Add our frame header.
     big_endian_writer.WriteU32(frame_log_messages.rtp_timestamp_);
@@ -660,7 +651,7 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
     }
     if (frame_log_messages.event_log_messages_.empty()) {
       // We sent all messages on this frame; pop the frame header.
-      receiver_log_message->pop_front();
+      receiver_log_message.pop_front();
     }
   }
   DCHECK_EQ(total_number_of_messages_to_send, 0);

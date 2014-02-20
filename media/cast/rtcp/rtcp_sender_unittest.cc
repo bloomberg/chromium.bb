@@ -313,6 +313,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   packet_event.timestamp = testing_clock.NowTicks();
   packet_event.packet_id = kLostPacketId1;
   event_subscriber.OnReceivePacketEvent(packet_event);
+  EXPECT_EQ(2u, event_subscriber.get_rtcp_events().size());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
       RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
@@ -323,6 +324,17 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
       &event_subscriber);
 
   EXPECT_EQ(2, test_transport_.packet_count());
+
+  // We expect to see the same packet because we send redundant events.
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
+          RtcpSender::kRtcpReceiverLog,
+      &report_block,
+      &rrtr,
+      &cast_message,
+      &event_subscriber);
+
+  EXPECT_EQ(3, test_transport_.packet_count());
 }
 
 TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
@@ -415,7 +427,10 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
 
   p.AddReceiverLog(kSendingSsrc);
 
-  for (int i = 0; i < 119; ++i) {
+  // The last 119 events are sent.
+  for (int i = kRtcpMaxReceiverLogMessages - 119;
+       i < static_cast<int>(kRtcpMaxReceiverLogMessages);
+       ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp + i, 1, kTimeBaseMs + i * kTimeDelayMs);
     p.AddReceiverEventLog(0, 5, 0);
   }

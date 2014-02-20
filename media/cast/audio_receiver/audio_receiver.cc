@@ -17,18 +17,9 @@
 
 namespace {
 
-using media::cast::kMaxIpPacketSize;
-using media::cast::kRtcpCastLogHeaderSize;
-using media::cast::kRtcpReceiverEventLogSize;
-
 // Max time we wait until an audio frame is due to be played out is released.
 static const int64 kMaxAudioFrameWaitMs = 20;
 static const int64 kMinSchedulingDelayMs = 1;
-
-// This is an upper bound on number of events that can fit into a single RTCP
-// packet.
-static const int64 kMaxEventSubscriberEntries =
-    (kMaxIpPacketSize - kRtcpCastLogHeaderSize) / kRtcpReceiverEventLogSize;
 
 }  // namespace
 
@@ -94,9 +85,8 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const AudioReceiverConfig& audio_config,
                              transport::PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
-      event_subscriber_(
-          kMaxEventSubscriberEntries,
-          ReceiverRtcpEventSubscriber::kAudioEventSubscriber),
+      event_subscriber_(kReceiverRtcpEventHistorySize,
+                        ReceiverRtcpEventSubscriber::kAudioEventSubscriber),
       codec_(audio_config.codec),
       frequency_(audio_config.frequency),
       audio_buffer_(),

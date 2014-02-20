@@ -144,6 +144,7 @@ VideoSender::VideoSender(
                video_config.sender_ssrc,
                video_config.incoming_feedback_ssrc,
                video_config.rtcp_c_name));
+  rtcp_->SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
 
   // TODO(pwestin): pass cast_initialization to |video_encoder_|
   // and remove this call.

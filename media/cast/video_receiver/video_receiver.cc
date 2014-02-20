@@ -17,20 +17,10 @@
 
 namespace {
 
-using media::cast::kMaxIpPacketSize;
-using media::cast::kRtcpCastLogHeaderSize;
-using media::cast::kRtcpReceiverEventLogSize;
-
 static const int64 kMinSchedulingDelayMs = 1;
-
 static const int64 kMinTimeBetweenOffsetUpdatesMs = 2000;
 static const int kTimeOffsetFilter = 8;
 static const int64_t kMinProcessIntervalMs = 5;
-
-// This is an upper bound on number of events that can fit into a single RTCP
-// packet.
-static const int64 kMaxEventSubscriberEntries =
-    (kMaxIpPacketSize - kRtcpCastLogHeaderSize) / kRtcpReceiverEventLogSize;
 
 }  // namespace
 
@@ -102,9 +92,8 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const VideoReceiverConfig& video_config,
                              transport::PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
-      event_subscriber_(
-          kMaxEventSubscriberEntries,
-          ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
+      event_subscriber_(kReceiverRtcpEventHistorySize,
+                        ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
       codec_(video_config.codec),
       target_delay_delta_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),

@@ -99,8 +99,9 @@ class Rtcp {
   // provided the RTCP receiver report will append a Cast message containing
   // Acks and Nacks; if |event_subscriber| is provided the RTCP receiver report
   // will append the log messages from the subscriber.
-  void SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
-                               ReceiverRtcpEventSubscriber* event_subscriber);
+  void SendRtcpFromRtpReceiver(
+      const RtcpCastMessage* cast_message,
+      const ReceiverRtcpEventSubscriber* event_subscriber);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt,
@@ -110,6 +111,10 @@ class Rtcp {
   bool RtpTimestampInSenderTime(int frequency,
                                 uint32 rtp_timestamp,
                                 base::TimeTicks* rtp_timestamp_in_ticks) const;
+
+  // Set the history size to record Cast receiver events. The event history is
+  // used to remove duplicates. The history will store at most |size| events.
+  void SetCastReceiverEventHistorySize(size_t size);
 
  protected:
   int CheckForWrapAround(uint32 new_timestamp, uint32 old_timestamp) const;

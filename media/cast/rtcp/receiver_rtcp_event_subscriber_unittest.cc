@@ -94,61 +94,14 @@ TEST_F(ReceiverRtcpEventSubscriberTest, LogVideoEvents) {
   Init(ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
 
   InsertEvents();
-
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-
-  ASSERT_EQ(2u, receiver_log.size());
-  RtcpReceiverLogMessage::iterator log_it = receiver_log.begin();
-  EXPECT_EQ(100u, log_it->rtp_timestamp_);
-  ASSERT_EQ(1u, log_it->event_log_messages_.size());
-  RtcpReceiverEventLogMessages::iterator event_it =
-      log_it->event_log_messages_.begin();
-  EXPECT_EQ(kVideoRenderDelay, event_it->type);
-  EXPECT_EQ(kDelayMs, event_it->delay_delta.InMilliseconds());
-
-  ++log_it;
-  EXPECT_EQ(200u, log_it->rtp_timestamp_);
-  ASSERT_EQ(2u, log_it->event_log_messages_.size());
+  EXPECT_EQ(3u, event_subscriber_->get_rtcp_events().size());
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, LogAudioEvents) {
   Init(ReceiverRtcpEventSubscriber::kAudioEventSubscriber);
 
   InsertEvents();
-
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-
-  ASSERT_EQ(2u, receiver_log.size());
-  RtcpReceiverLogMessage::iterator log_it = receiver_log.begin();
-  EXPECT_EQ(300u, log_it->rtp_timestamp_);
-  ASSERT_EQ(1u, log_it->event_log_messages_.size());
-  RtcpReceiverEventLogMessages::iterator event_it =
-      log_it->event_log_messages_.begin();
-  EXPECT_EQ(kAudioPlayoutDelay, event_it->type);
-  EXPECT_EQ(kDelayMs, event_it->delay_delta.InMilliseconds());
-
-  ++log_it;
-  EXPECT_EQ(400u, log_it->rtp_timestamp_);
-  ASSERT_EQ(2u, log_it->event_log_messages_.size());
-}
-
-TEST_F(ReceiverRtcpEventSubscriberTest, MapReset) {
-  Init(ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
-
-  cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameDecoded, /*rtp_timestamp*/ 100u,
-      /*frame_id*/ 1u);
-
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-
-  EXPECT_EQ(1u, receiver_log.size());
-
-  // Call again without any logging in between, should return empty log.
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-  EXPECT_TRUE(receiver_log.empty());
+  EXPECT_EQ(3u, event_subscriber_->get_rtcp_events().size());
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
@@ -159,26 +112,7 @@ TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
         testing_clock_->NowTicks(), kVideoFrameDecoded,
         /*rtp_timestamp*/ i * 10, /*frame_id*/ i);
   }
-
-  RtcpReceiverLogMessage receiver_log;
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-
-  ASSERT_EQ(10u, receiver_log.size());
-  EXPECT_EQ(10u, receiver_log.begin()->rtp_timestamp_);
-  EXPECT_EQ(100u, receiver_log.rbegin()->rtp_timestamp_);
-
-  for (uint32 i = 1u; i <= 11u; ++i) {
-    cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameDecoded,
-        /*rtp_timestamp*/ i * 10, /*frame_id*/ i);
-  }
-
-  event_subscriber_->GetReceiverLogMessageAndReset(&receiver_log);
-
-  // Event with RTP timestamp 10 should have been dropped when 110 is inserted.
-  ASSERT_EQ(10u, receiver_log.size());
-  EXPECT_EQ(20u, receiver_log.begin()->rtp_timestamp_);
-  EXPECT_EQ(110u, receiver_log.rbegin()->rtp_timestamp_);
+  EXPECT_EQ(10u, event_subscriber_->get_rtcp_events().size());
 }
 
 }  // namespace cast

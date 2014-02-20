@@ -30,6 +30,8 @@ namespace cast {
 //   timestamp) up to the size limit.
 class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
  public:
+  typedef std::multimap<RtpTimestamp, RtcpEvent> RtcpEventMultiMap;
+
   // Identifies whether the subscriber will process audio or video related
   // frame events.
   enum Type {
@@ -53,10 +55,7 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
       OVERRIDE;
 
-  // Converts all collected events since last invocation into
-  // a RtcpReceiverFrameLogMessage, assigns it to |receiver_log|, and clears
-  // |rtcp_events_|.
-  void GetReceiverLogMessageAndReset(RtcpReceiverLogMessage* receiver_log);
+  const RtcpEventMultiMap& get_rtcp_events() const { return rtcp_events_; }
 
  private:
   // If |rtcp_events_.size()| exceeds |max_size_to_retain_|, remove an oldest
@@ -74,7 +73,7 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   // to differentiate between video and audio frames, but since the
   // implementation doesn't mix audio and video frame events, RTP timestamp
   // only as key is fine.
-  std::multimap<RtpTimestamp, RtcpEvent> rtcp_events_;
+  RtcpEventMultiMap rtcp_events_;
 
   // Ensures methods are only called on the main thread.
   base::ThreadChecker thread_checker_;

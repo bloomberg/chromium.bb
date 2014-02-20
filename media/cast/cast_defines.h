@@ -72,6 +72,12 @@ static const int64 kUnixEpochInNtpSeconds = GG_INT64_C(2208988800);
 // fractional NTP seconds.
 static const double kMagicFractionalUnit = 4.294967296E3;
 
+// The maximum number of Cast receiver events to keep in history for the
+// purpose of sending the events through RTCP.
+// The number chosen should be more than the number of events that can be
+// stored in a RTCP packet.
+static const size_t kReceiverRtcpEventHistorySize = 512;
+
 inline bool IsNewerFrameId(uint32 frame_id, uint32 prev_frame_id) {
   return (frame_id != prev_frame_id) &&
          static_cast<uint32>(frame_id - prev_frame_id) < 0x80000000;
