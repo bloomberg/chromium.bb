@@ -23,6 +23,7 @@
 
 #include "core/css/CSSRule.h"
 #include "core/css/StyleSheet.h"
+#include "heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/TextPosition.h"
 
@@ -48,10 +49,10 @@ enum StyleSheetUpdateType {
 
 class CSSStyleSheet FINAL : public StyleSheet {
 public:
-    static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
-    static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, Node* ownerNode);
+    static PassRefPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
+    static PassRefPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode);
     static PassRefPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
-    static PassRefPtr<CSSStyleSheet> createInline(PassRefPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
+    static PassRefPtr<CSSStyleSheet> createInline(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
     virtual ~CSSStyleSheet();
 
@@ -116,8 +117,8 @@ public:
     void startLoadingDynamicSheet();
 
 private:
-    CSSStyleSheet(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule);
-    CSSStyleSheet(PassRefPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
+    CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule);
+    CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
 
     virtual bool isCSSStyleSheet() const OVERRIDE { return true; }
     virtual String type() const OVERRIDE { return "text/css"; }
@@ -126,7 +127,7 @@ private:
 
     bool canAccessRules() const;
 
-    RefPtr<StyleSheetContents> m_contents;
+    RefPtrWillBePersistent<StyleSheetContents> m_contents;
     bool m_isInlineStylesheet;
     bool m_isDisabled;
     String m_title;

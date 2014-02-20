@@ -210,7 +210,7 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
     RefPtr<Document> document = unwrap<Document>();
     ASSERT(document);
-    RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document.get(), 0));
+    RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document.get(), 0));
     parsedSheet->parseString(sourceCode);
     document->styleEngine()->addAuthorSheet(parsedSheet);
 }

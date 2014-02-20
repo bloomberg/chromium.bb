@@ -105,7 +105,7 @@ public:
     void invalidateInjectedStyleSheetCache();
     void updateInjectedStyleSheetCache() const;
 
-    void addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet);
+    void addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet);
 
     void clearMediaQueryRuleSetStyleSheets();
     void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);

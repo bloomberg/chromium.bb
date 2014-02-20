@@ -531,7 +531,7 @@ bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmit
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
     RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
     RuleSourceDataList sourceData;
-    RefPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
     String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
     StyleSheetHandler handler(declarationText, ownerDocument(), styleSheetContents.get(), &sourceData);
     createCSSParser(ownerDocument())->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
@@ -1492,7 +1492,7 @@ bool InspectorStyleSheet::ensureSourceData()
     if (!m_parsedStyleSheet->hasText())
         return false;
 
-    RefPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create(strictCSSParserContext());
+    RefPtrWillBeRawPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create(strictCSSParserContext());
     OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
     StyleSheetHandler handler(m_parsedStyleSheet->text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
     createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), TextPosition::minimumPosition(), &handler);

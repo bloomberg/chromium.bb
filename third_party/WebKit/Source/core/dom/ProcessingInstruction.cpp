@@ -174,7 +174,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     ASSERT(m_isCSS);
     CSSParserContext parserContext(document(), 0, baseURL, charset);
 
-    RefPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
+    RefPtrWillBeRawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
 
     RefPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
     cssSheet->setDisabled(m_alternate);

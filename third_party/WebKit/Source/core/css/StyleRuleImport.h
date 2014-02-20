@@ -25,6 +25,7 @@
 #include "core/css/StyleRule.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -76,7 +77,7 @@ private:
     ImportedStyleSheetClient m_styleSheetClient;
     String m_strHref;
     RefPtr<MediaQuerySet> m_mediaQueries;
-    RefPtr<StyleSheetContents> m_styleSheet;
+    RefPtrWillBePersistent<StyleSheetContents> m_styleSheet;
     ResourcePtr<CSSStyleSheetResource> m_resource;
     bool m_loading;
 };

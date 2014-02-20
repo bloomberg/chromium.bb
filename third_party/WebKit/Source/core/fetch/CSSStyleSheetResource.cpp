@@ -148,7 +148,7 @@ bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIME
     return typeOK;
 }
 
-PassRefPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
+PassRefPtrWillBeRawPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
 {
     if (!m_parsedStyleSheetCache)
         return 0;
@@ -170,7 +170,7 @@ PassRefPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(co
     return m_parsedStyleSheetCache;
 }
 
-void CSSStyleSheetResource::saveParsedStyleSheet(PassRefPtr<StyleSheetContents> sheet)
+void CSSStyleSheetResource::saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet)
 {
     ASSERT(sheet && sheet->isCacheable());
 

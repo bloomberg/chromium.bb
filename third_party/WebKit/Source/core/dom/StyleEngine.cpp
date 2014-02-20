@@ -229,7 +229,7 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
     m_document.styleResolverChanged(RecalcStyleDeferred);
 }
 
-void StyleEngine::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
+void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, &m_document));
     m_document.addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);

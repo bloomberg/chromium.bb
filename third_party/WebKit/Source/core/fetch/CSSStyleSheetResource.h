@@ -28,6 +28,7 @@
 
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResource.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -47,8 +48,8 @@ public:
     virtual void setEncoding(const String&) OVERRIDE;
     virtual String encoding() const OVERRIDE;
 
-    PassRefPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
-    void saveParsedStyleSheet(PassRefPtr<StyleSheetContents>);
+    PassRefPtrWillBeRawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
+    void saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>);
 
 protected:
     virtual bool isSafeToUnlock() const OVERRIDE;
@@ -61,7 +62,7 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
     String m_decodedSheetText;
 
-    RefPtr<StyleSheetContents> m_parsedStyleSheetCache;
+    RefPtrWillBePersistent<StyleSheetContents> m_parsedStyleSheetCache;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

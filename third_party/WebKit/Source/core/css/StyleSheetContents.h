@@ -23,6 +23,7 @@
 
 #include "core/css/CSSParserMode.h"
 #include "core/css/RuleSet.h"
+#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -44,20 +45,20 @@ class StyleRuleBase;
 class StyleRuleFontFace;
 class StyleRuleImport;
 
-class StyleSheetContents : public RefCountedWillBeRefCountedGarbageCollected<StyleSheetContents> {
+class StyleSheetContents : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetContents> {
     DECLARE_GC_INFO
 public:
     static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const CSSParserContext& context)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(0, String(), context));
+        return adoptRefWillBeNoop(new StyleSheetContents(0, String(), context));
     }
     static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const String& originalURL, const CSSParserContext& context)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(0, originalURL, context));
+        return adoptRefWillBeNoop(new StyleSheetContents(0, originalURL, context));
     }
     static PassRefPtrWillBeRawPtr<StyleSheetContents> create(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleSheetContents(ownerRule, originalURL, context));
+        return adoptRefWillBeNoop(new StyleSheetContents(ownerRule, originalURL, context));
     }
 
     ~StyleSheetContents();
@@ -132,7 +133,10 @@ public:
     bool wrapperInsertRule(PassRefPtr<StyleRuleBase>, unsigned index);
     void wrapperDeleteRule(unsigned index);
 
-    PassRefPtr<StyleSheetContents> copy() const { return adoptRef(new StyleSheetContents(*this)); }
+    PassRefPtrWillBeRawPtr<StyleSheetContents> copy() const
+    {
+        return adoptRefWillBeNoop(new StyleSheetContents(*this));
+    }
 
     void registerClient(CSSStyleSheet*);
     void unregisterClient(CSSStyleSheet*);

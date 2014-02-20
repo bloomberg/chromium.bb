@@ -389,7 +389,7 @@ void StyleSheetContents::checkLoaded()
     // Avoid |this| being deleted by scripts that run via
     // ScriptableDocumentParser::executeScriptsWaitingForResources().
     // See https://bugs.webkit.org/show_bug.cgi?id=95106
-    RefPtr<StyleSheetContents> protect(this);
+    RefPtrWillBeRawPtr<StyleSheetContents> protect(this);
 
     StyleSheetContents* parentSheet = parentStyleSheet();
     if (parentSheet) {

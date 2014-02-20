@@ -71,17 +71,17 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 }
 #endif
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
+PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
 {
     return adoptRef(new CSSStyleSheet(sheet, ownerRule));
 }
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> sheet, Node* ownerNode)
+PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode)
 {
     return adoptRef(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
 }
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
+PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
 {
     ASSERT(sheet);
     return adoptRef(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
@@ -90,11 +90,11 @@ PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtr<StyleSheetConte
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
-    RefPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
+    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
     return adoptRef(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
 }
 
-CSSStyleSheet::CSSStyleSheet(PassRefPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
+CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
     : m_contents(contents)
     , m_isInlineStylesheet(false)
     , m_isDisabled(false)
@@ -106,7 +106,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtr<StyleSheetContents> contents, CSSImportR
     m_contents->registerClient(this);
 }
 
-CSSStyleSheet::CSSStyleSheet(PassRefPtr<StyleSheetContents> contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
+CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
     : m_contents(contents)
     , m_isInlineStylesheet(isInlineStylesheet)
     , m_isDisabled(false)
