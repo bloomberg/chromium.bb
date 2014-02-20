@@ -222,6 +222,8 @@ IntRect RenderThemeChromiumSkia::convertToPaintingRect(RenderObject* inputRender
 bool RenderThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
+    if (!cancelButtonObject->node())
+        return false;
     Node* input = cancelButtonObject->node()->shadowHost();
     RenderObject* baseRenderer = input ? input->renderer() : cancelButtonObject;
     if (!baseRenderer->isBox())
@@ -265,6 +267,8 @@ void RenderThemeChromiumSkia::adjustSearchFieldResultsDecorationStyle(RenderStyl
 bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
+    if (!magnifierObject->node())
+        return false;
     Node* input = magnifierObject->node()->shadowHost();
     RenderObject* baseRenderer = input ? input->renderer() : magnifierObject;
     if (!baseRenderer->isBox())

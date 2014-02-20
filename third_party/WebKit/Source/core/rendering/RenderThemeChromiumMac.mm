@@ -1663,6 +1663,8 @@ void RenderThemeChromiumMac::adjustSearchFieldStyle(RenderStyle* style, Element*
 
 bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
+    if (!o->node())
+        return false;
     Element* input = o->node()->shadowHost();
     if (!input)
         input = toElement(o->node());
@@ -1761,6 +1763,8 @@ void RenderThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(RenderStyle
 
 bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
+    if (!o->node())
+        return false;
     Node* input = o->node()->shadowHost();
     if (!input)
         input = o->node();
