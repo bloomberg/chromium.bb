@@ -151,8 +151,8 @@ void RuntimeCustomBindings::GetExtensionViews(
     view_type = VIEW_TYPE_EXTENSION_POPUP;
   } else if (view_type_string == kViewTypeExtensionDialog) {
     view_type = VIEW_TYPE_EXTENSION_DIALOG;
-  } else if (view_type_string == kViewTypeAppShell) {
-    view_type = VIEW_TYPE_APP_SHELL;
+  } else if (view_type_string == kViewTypeAppWindow) {
+    view_type = VIEW_TYPE_APP_WINDOW;
   } else if (view_type_string == kViewTypePanel) {
     view_type = VIEW_TYPE_PANEL;
   } else if (view_type_string != kViewTypeAll) {

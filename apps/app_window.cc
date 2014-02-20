@@ -173,7 +173,7 @@ void AppWindow::Init(const GURL& url,
   web_contents->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(this);
-  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_SHELL);
+  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_WINDOW);
 
   // Initialize the window
   CreateParams new_params = LoadDefaultsAndConstrain(params);

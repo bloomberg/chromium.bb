@@ -570,7 +570,7 @@ void RenderViewContextMenu::InitMenu() {
 
   extensions::ViewType view_type =
       extensions::GetViewType(source_web_contents_);
-  if (view_type == extensions::VIEW_TYPE_APP_SHELL) {
+  if (view_type == extensions::VIEW_TYPE_APP_WINDOW) {
     AppendPlatformAppItems();
     return;
   } else if (view_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {

@@ -14,9 +14,7 @@ namespace extensions {
 // data.
 enum ViewType {
   VIEW_TYPE_INVALID,
-  // TODO(jamescook): Rename this to VIEW_TYPE_APP_WINDOW after figuring out
-  // if the strings can be changed.  http://crbug.com/344067
-  VIEW_TYPE_APP_SHELL,
+  VIEW_TYPE_APP_WINDOW,
   VIEW_TYPE_BACKGROUND_CONTENTS,
   VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
   VIEW_TYPE_EXTENSION_DIALOG,
@@ -28,13 +26,13 @@ enum ViewType {
   VIEW_TYPE_PANEL,
   VIEW_TYPE_TAB_CONTENTS,
   VIEW_TYPE_VIRTUAL_KEYBOARD,
- VIEW_TYPE_LAST = VIEW_TYPE_VIRTUAL_KEYBOARD
+  VIEW_TYPE_LAST = VIEW_TYPE_VIRTUAL_KEYBOARD
 };
 
 // Constant strings corresponding to the Type enumeration values.  Used
 // when converting JS arguments.
 extern const char kViewTypeAll[];
-extern const char kViewTypeAppShell[];
+extern const char kViewTypeAppWindow[];
 extern const char kViewTypeBackgroundPage[];
 extern const char kViewTypeExtensionDialog[];
 extern const char kViewTypeInfobar[];

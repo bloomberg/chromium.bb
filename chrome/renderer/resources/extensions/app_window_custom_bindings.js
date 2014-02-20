@@ -83,7 +83,7 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('getAll', function() {
-    var views = runtimeNatives.GetExtensionViews(-1, 'SHELL');
+    var views = runtimeNatives.GetExtensionViews(-1, 'APP_WINDOW');
     return $Array.map(views, function(win) {
       return win.chrome.app.window.current();
     });

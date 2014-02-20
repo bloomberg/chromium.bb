@@ -440,7 +440,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   // Right now the extension popup closes and dismisses immediately on user
   // click.
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
-      view_type == extensions::VIEW_TYPE_APP_SHELL ||
+      view_type == extensions::VIEW_TYPE_APP_WINDOW ||
       view_type == extensions::VIEW_TYPE_VIRTUAL_KEYBOARD ||
       // Only allow requests through JavaScript API (|js_api| = true).
       // Requests originating from html element (|js_api| = false) would want
@@ -448,7 +448,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
       // see todo above about issues with rendering such bubbles from extension
       // popups.
       (view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-           js_api)) {
+       js_api)) {
     // If it is a tab, we can show the speech input bubble or check for
     // permission. For apps, this means manifest would be checked for
     // permission.
