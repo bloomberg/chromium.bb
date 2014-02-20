@@ -779,6 +779,11 @@ bool DesktopNativeWidgetAura::IsAlwaysOnTop() const {
   return content_window_ && desktop_window_tree_host_->IsAlwaysOnTop();
 }
 
+void DesktopNativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
+  if (content_window_)
+    desktop_window_tree_host_->SetVisibleOnAllWorkspaces(always_visible);
+}
+
 void DesktopNativeWidgetAura::Maximize() {
   if (content_window_)
     desktop_window_tree_host_->Maximize();

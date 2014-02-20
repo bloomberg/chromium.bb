@@ -460,6 +460,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // in the windowing system.
   bool IsAlwaysOnTop() const;
 
+  // Sets the widget to be visible on all work spaces.
+  void SetVisibleOnAllWorkspaces(bool always_visible);
+
   // Maximizes/minimizes/restores the window.
   void Maximize();
   void Minimize();

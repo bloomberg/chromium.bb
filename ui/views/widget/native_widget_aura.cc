@@ -535,6 +535,10 @@ bool NativeWidgetAura::IsAlwaysOnTop() const {
   return window_ && window_->GetProperty(aura::client::kAlwaysOnTopKey);
 }
 
+void NativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
+  // Not implemented on chromeos or for child widgets.
+}
+
 void NativeWidgetAura::Maximize() {
   if (window_)
     window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);

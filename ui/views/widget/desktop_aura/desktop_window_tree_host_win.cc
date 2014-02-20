@@ -345,6 +345,10 @@ bool DesktopWindowTreeHostWin::IsAlwaysOnTop() const {
   return message_handler_->IsAlwaysOnTop();
 }
 
+void DesktopWindowTreeHostWin::SetVisibleOnAllWorkspaces(bool always_visible) {
+  // Windows does not have the concept of workspaces.
+}
+
 bool DesktopWindowTreeHostWin::SetWindowTitle(const base::string16& title) {
   return message_handler_->SetTitle(title);
 }

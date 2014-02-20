@@ -190,6 +190,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual bool IsActive() const = 0;
   virtual void SetAlwaysOnTop(bool always_on_top) = 0;
   virtual bool IsAlwaysOnTop() const = 0;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) = 0;
   virtual void Maximize() = 0;
   virtual void Minimize() = 0;
   virtual bool IsMaximized() const = 0;

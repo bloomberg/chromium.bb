@@ -280,6 +280,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
   window_->Init(params);
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   window_->set_focus_on_creation(false);
+  window_->SetVisibleOnAllWorkspaces(always_on_top);
   window_->AddObserver(this);
 
   web_view_ = new views::WebView(NULL);
@@ -607,6 +608,7 @@ void PanelView::SetPanelAlwaysOnTop(bool on_top) {
   always_on_top_ = on_top;
 
   window_->SetAlwaysOnTop(on_top);
+  window_->SetVisibleOnAllWorkspaces(on_top);
   window_->non_client_view()->Layout();
   window_->client_view()->Layout();
 }

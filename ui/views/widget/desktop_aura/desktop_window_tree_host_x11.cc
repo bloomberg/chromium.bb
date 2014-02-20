@@ -89,6 +89,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_STATE_MAXIMIZED_HORZ",
   "_NET_WM_STATE_MAXIMIZED_VERT",
   "_NET_WM_STATE_SKIP_TASKBAR",
+  "_NET_WM_STATE_STICKY",
   "_NET_WM_WINDOW_OPACITY",
   "_NET_WM_WINDOW_TYPE",
   "_NET_WM_WINDOW_TYPE_DND",
@@ -525,7 +526,6 @@ bool DesktopWindowTreeHostX11::IsMinimized() const {
   return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
 }
 
-
 bool DesktopWindowTreeHostX11::HasCapture() const {
   return g_current_capture == this;
 }
@@ -539,6 +539,12 @@ void DesktopWindowTreeHostX11::SetAlwaysOnTop(bool always_on_top) {
 
 bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
   return is_always_on_top_;
+}
+
+void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
+  SetWMSpecState(always_visible,
+                 atom_cache_.GetAtom("_NET_WM_STATE_STICKY"),
+                 None);
 }
 
 bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {

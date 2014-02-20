@@ -108,6 +108,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
   virtual bool SetWindowTitle(const base::string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(

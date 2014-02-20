@@ -657,6 +657,10 @@ bool Widget::IsAlwaysOnTop() const {
   return native_widget_->IsAlwaysOnTop();
 }
 
+void Widget::SetVisibleOnAllWorkspaces(bool always_visible) {
+  native_widget_->SetVisibleOnAllWorkspaces(always_visible);
+}
+
 void Widget::Maximize() {
   native_widget_->Maximize();
 }

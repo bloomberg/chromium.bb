@@ -106,6 +106,7 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual bool IsActive() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
   virtual void Maximize() OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
