@@ -3133,7 +3133,8 @@ def _RunPaygenInProcess(channel, board, version, debug):
       paygen_build_lib.CreatePayloads(build,
                                       work_dir=tempdir,
                                       dry_run=debug,
-                                      run_parallel=True)
+                                      run_parallel=True,
+                                      run_on_builder=True)
     except (paygen_build_lib.BuildFinished,
             paygen_build_lib.BuildLocked,
             paygen_build_lib.BuildSkip) as e:
