@@ -272,7 +272,7 @@ InspectorTest.runWhenPageLoads = function(callback)
 InspectorTest.runAfterPendingDispatches = function(callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    InspectorBackend.runAfterPendingDispatches(callback);
+    InspectorBackend.connection().runAfterPendingDispatches(callback);
 }
 
 InspectorTest.createKeyEvent = function(keyIdentifier, ctrlKey, altKey, shiftKey, metaKey)

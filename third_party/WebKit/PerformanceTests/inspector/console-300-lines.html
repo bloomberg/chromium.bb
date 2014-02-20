@@ -54,7 +54,7 @@ function test()
 
         var cookie = timer.start("console-300-lines");
         for (var i = 0; i < 300; ++i)
-            InspectorBackend.dispatch(message);
+            InspectorBackend.connection().dispatch(message);
 
         function finish()
         {

@@ -28,7 +28,7 @@ function test()
     ];
     var numberOfReports = 0;
 
-    InspectorBackend.reportProtocolError = function(message)
+    InspectorBackend._connection.reportProtocolError = function(message)
     {
 
         if (numberOfReports < messages.length) {

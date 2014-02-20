@@ -22,7 +22,7 @@ function test()
     var nodeId;
 
     setTimeout(InspectorTest.completeTest.bind(InspectorTest), 3000);
-    function onBackendCall(method)
+    function onBackendCall(domain, method)
     {
         if (method === "CSS.getComputedStyleForNode")
             ++backendCallCount;
@@ -32,7 +32,7 @@ function test()
     {
         var callsLeft = 2;
         nodeId = node.id;
-        InspectorTest.addSniffer(InspectorBackendClass.prototype, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
+        InspectorTest.addSniffer(InspectorBackend.connection(), "_wrapCallbackAndSendMessageObject", onBackendCall, true);
         WebInspector.cssModel.getComputedStyleAsync(nodeId, styleCallback);
         WebInspector.cssModel.getComputedStyleAsync(nodeId, styleCallback);
         function styleCallback()
