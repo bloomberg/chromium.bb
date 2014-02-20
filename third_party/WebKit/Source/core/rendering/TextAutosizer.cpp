@@ -24,8 +24,9 @@
 #include <algorithm>
 
 #include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
+#include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
@@ -222,6 +223,8 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
         InspectorInstrumentation::didAutosizeText(layoutRoot);
         return false;
     }
+
+    UseCounter::count(*m_document, UseCounter::TextAutosizing);
 
     TextAutosizingClusterInfo clusterInfo(cluster);
     processCluster(clusterInfo, container, layoutRoot, windowInfo);

@@ -789,6 +789,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     bool autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
     if (autosized && rootForThisLayout->needsLayout()) {
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
+        UseCounter::count(*frame().document(), UseCounter::TextAutosizingLayout);
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
     }
