@@ -155,9 +155,11 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
     w_param = MAKEWPARAM(LOWORD(w_param), SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED);
   }
 
-  // The offsets in mouse wheel messages are in screen coordinates. We should
-  // not be converting them to parent coordinates.
-  if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
+  // The offsets for WM_NCXXX and WM_MOUSEWHEEL and WM_MOUSEHWHEEL messages are
+  // in screen coordinates. We should not be converting them to parent
+  // coordinates.
+  if ((message >= WM_MOUSEFIRST && message <= WM_MOUSELAST) &&
+      (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL)) {
     POINT mouse_coords;
     mouse_coords.x = GET_X_LPARAM(l_param);
     mouse_coords.y = GET_Y_LPARAM(l_param);
@@ -207,6 +209,12 @@ LRESULT LegacyRenderWidgetHostHWND::OnTouch(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnScroll(UINT message,
                                              WPARAM w_param,
                                              LPARAM l_param) {
+  return ::SendMessage(GetParent(), message, w_param, l_param);
+}
+
+LRESULT LegacyRenderWidgetHostHWND::OnNCHitTest(UINT message,
+                                                WPARAM w_param,
+                                                LPARAM l_param) {
   return ::SendMessage(GetParent(), message, w_param, l_param);
 }
 
