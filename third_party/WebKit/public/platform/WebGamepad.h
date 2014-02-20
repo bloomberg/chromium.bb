@@ -34,12 +34,31 @@ namespace blink {
 
 #pragma pack(push, 1)
 
+#if defined(ENABLE_NEW_GAMEPAD_API)
+class WebGamepadButton {
+public:
+    WebGamepadButton()
+        : pressed(false)
+        , value(0.f)
+    {
+    }
+    WebGamepadButton(bool pressed, float value)
+        : pressed(pressed)
+        , value(value)
+    {
+    }
+    bool pressed;
+    float value;
+};
+#endif
+
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
 // also WebGamepads.h.
 class WebGamepad {
 public:
     static const size_t idLengthCap = 128;
+    static const size_t mappingLengthCap = 16;
     static const size_t axesLengthCap = 16;
     static const size_t buttonsLengthCap = 32;
 
@@ -50,6 +69,9 @@ public:
         , buttonsLength(0)
     {
         id[0] = 0;
+#if defined(ENABLE_NEW_GAMEPAD_API)
+        mapping[0] = 0;
+#endif
     }
 
     // Is there a gamepad connected at this index?
@@ -71,12 +93,23 @@ public:
     // Number of valid entries in the buttons array.
     unsigned buttonsLength;
 
-    // Normalized values representing buttons, in the range [0..1].
+#if defined(ENABLE_NEW_GAMEPAD_API)
+    // Button states
+    WebGamepadButton buttons[buttonsLengthCap];
+
+    // Mapping type (for example "standard")
+    WebUChar mapping[mappingLengthCap];
+#else
     float buttons[buttonsLengthCap];
+#endif
 };
 
 #if BLINK_IMPLEMENTATION
+#if defined(ENABLE_NEW_GAMEPAD_API)
+COMPILE_ASSERT(sizeof(WebGamepad) == 529, WebGamepad_has_wrong_size);
+#else
 COMPILE_ASSERT(sizeof(WebGamepad) == 465, WebGamepad_has_wrong_size);
+#endif
 #endif
 
 #pragma pack(pop)

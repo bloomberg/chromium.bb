@@ -44,12 +44,21 @@ void Gamepad::axes(unsigned count, float* data)
         std::copy(data, data + count, m_axes.begin());
 }
 
+#if defined(ENABLE_NEW_GAMEPAD_API)
+void Gamepad::buttons(unsigned count, blink::WebGamepadButton* data)
+{
+    m_buttons.resize(count);
+    for (unsigned i = 0; i < count; ++i)
+        m_buttons[i] = data[i].value;
+}
+#else
 void Gamepad::buttons(unsigned count, float* data)
 {
     m_buttons.resize(count);
     if (count)
         std::copy(data, data + count, m_buttons.begin());
 }
+#endif
 
 Gamepad::~Gamepad()
 {
