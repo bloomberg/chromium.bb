@@ -71,6 +71,7 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
 
  protected:
   scoped_ptr<content::SoftwareOutputDeviceOzone> output_device_;
+  bool enable_pixel_output_;
 
  private:
   scoped_ptr<ui::Compositor> compositor_;
@@ -80,7 +81,8 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzoneTest);
 };
 
-SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() {
+SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest()
+    : enable_pixel_output_(false) {
   message_loop_.reset(new base::MessageLoopForUI);
 }
 
@@ -88,7 +90,7 @@ SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
 }
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
-  ui::InitializeContextFactoryForTests(false);
+  ui::InitializeContextFactoryForTests(enable_pixel_output_);
   ui::Compositor::Initialize();
 
   surface_factory_.reset(new MockSurfaceFactoryOzone());
@@ -110,6 +112,17 @@ void SoftwareOutputDeviceOzoneTest::TearDown() {
   surface_factory_.reset();
   ui::TerminateContextFactoryForTests();
   ui::Compositor::Terminate();
+}
+
+class SoftwareOutputDeviceOzonePixelTest
+    : public SoftwareOutputDeviceOzoneTest {
+ protected:
+  virtual void SetUp() OVERRIDE;
+};
+
+void SoftwareOutputDeviceOzonePixelTest::SetUp() {
+  enable_pixel_output_ = true;
+  SoftwareOutputDeviceOzoneTest::SetUp();
 }
 
 TEST_F(SoftwareOutputDeviceOzoneTest, CheckClipAfterBeginPaint) {
@@ -159,7 +172,7 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
 
 }
 
-TEST_F(SoftwareOutputDeviceOzoneTest, CheckCopyToBitmap) {
+TEST_F(SoftwareOutputDeviceOzonePixelTest, CheckCopyToBitmap) {
   const gfx::Rect area(6, 4);
   output_device_->Resize(area.size());
   SkCanvas* canvas = output_device_->BeginPaint(area);

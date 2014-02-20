@@ -89,7 +89,8 @@ SoftwareBrowserCompositorOutputSurfaceTest::
     ~SoftwareBrowserCompositorOutputSurfaceTest() {}
 
 void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
-  ui::InitializeContextFactoryForTests(false);
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
   ui::Compositor::Initialize();
 
   compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget));
