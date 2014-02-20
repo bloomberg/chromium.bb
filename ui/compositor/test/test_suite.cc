@@ -11,10 +11,6 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/gl_surface.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
-
 #if defined(OS_WIN)
 #include "ui/gfx/win/dpi.h"
 #endif
@@ -28,9 +24,6 @@ CompositorTestSuite::CompositorTestSuite(int argc, char** argv)
 CompositorTestSuite::~CompositorTestSuite() {}
 
 void CompositorTestSuite::Initialize() {
-#if defined(USE_X11)
-  XInitThreads();
-#endif
   base::TestSuite::Initialize();
   gfx::GLSurface::InitializeOneOffForTests();
 

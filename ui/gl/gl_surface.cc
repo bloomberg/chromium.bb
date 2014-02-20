@@ -16,6 +16,10 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 namespace gfx {
 
 namespace {
@@ -92,6 +96,10 @@ bool GLSurface::InitializeOneOffImplementation(GLImplementation impl,
 
 // static
 void GLSurface::InitializeOneOffForTests() {
+#if defined(USE_X11)
+  XInitThreads();
+#endif
+
   bool use_osmesa = true;
 
   // We usually use OSMesa as this works on all bots. The command line can
