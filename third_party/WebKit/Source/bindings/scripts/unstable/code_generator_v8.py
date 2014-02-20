@@ -28,6 +28,15 @@
 
 """Generate Blink V8 bindings (.h and .cpp files).
 
+If run itself, caches Jinja templates (and creates dummy file for build,
+since cache filenames are unpredictable and opaque).
+
+This module is *not* concurrency-safe without care: bytecode caching creates
+a race condition on cache *write* (crashes if one process tries to read a
+partially-written cache). However, if you pre-cache the templates (by running
+the module itself), then you can parallelize compiling individual files, since
+cache *reading* is safe.
+
 FIXME: Not currently used in build.
 This is a rewrite of the Perl IDL compiler in Python, but is not complete.
 Once it is complete, we will switch all IDL files over to Python at once.
@@ -43,14 +52,25 @@ import posixpath
 import re
 import sys
 
-# jinja2 is in chromium's third_party directory.
-module_path = os.path.dirname(__file__)
-third_party = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir))
-# Insert at front to override system libraries, and after path[0] == script dir
-sys.path.insert(1, third_party)
-import jinja2
+# Path handling for libraries and templates
+# Paths have to be normalized because Jinja uses the exact template path to
+# determine the hash used in the cache filename, and we need a pre-caching step
+# to be concurrency-safe. Use absolute path because __file__ is absolute if
+# module is imported, and relative if executed directly.
+# If paths differ between pre-caching and individual file compilation, the cache
+# is regenerated, which causes a race condition and breaks concurrent build,
+# since some compile processes will try to read the partially written cache.
+module_path = os.path.dirname(os.path.realpath(__file__))
+third_party_dir = os.path.normpath(os.path.join(
+    module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir))
+templates_dir = os.path.normpath(os.path.join(
+    module_path, os.pardir, os.pardir, 'templates'))
 
-templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
+# jinja2 is in chromium's third_party directory.
+# Insert at 1 so at front to override system libraries, and
+# after path[0] == invoking script dir
+sys.path.insert(1, third_party_dir)
+import jinja2
 
 import v8_callback_interface
 from v8_globals import includes, interfaces
@@ -59,7 +79,7 @@ import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
-def write_header_and_cpp(definitions, interface_name, interfaces_info, output_directory):
+def write_header_and_cpp(definitions, interface_name, interfaces_info, output_dir):
     try:
         interface = definitions.interfaces[interface_name]
     except KeyError:
@@ -69,6 +89,7 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
     interfaces.update(definitions.interfaces)
 
     # Set up Jinja
+    jinja_env = initialize_jinja_env(output_dir)
     if interface.is_callback:
         header_template_filename = 'callback_interface.h'
         cpp_template_filename = 'callback_interface.cpp'
@@ -77,17 +98,6 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
         header_template_filename = 'interface.h'
         cpp_template_filename = 'interface.cpp'
         generate_contents = v8_interface.generate_interface
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_dir),
-        bytecode_cache=jinja2.FileSystemBytecodeCache(output_directory),
-        keep_trailing_newline=True,  # newline-terminate generated files
-        lstrip_blocks=True,  # so can indent control flow tags
-        trim_blocks=True)
-    jinja_env.filters.update({
-        'blink_capitalize': capitalize,
-        'conditional': conditional_if_endif,
-        'runtime_enabled': runtime_enabled_if,
-        })
     header_template = jinja_env.get_template(header_template_filename)
     cpp_template = jinja_env.get_template(cpp_template_filename)
 
@@ -124,7 +134,7 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
 
     # Render Jinja templates and write files
     def write_file(basename, file_text):
-        filename = os.path.join(output_directory, basename)
+        filename = os.path.join(output_dir, basename)
         with open(filename, 'w') as output_file:
             output_file.write(file_text)
 
@@ -135,6 +145,23 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
     cpp_basename = v8_class_name(interface) + '.cpp'
     cpp_file_text = cpp_template.render(template_contents)
     write_file(cpp_basename, cpp_file_text)
+
+
+def initialize_jinja_env(output_dir):
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(templates_dir),
+        # Bytecode cache is not concurrency-safe unless pre-cached:
+        # if pre-cached this is read-only, but writing creates a race condition.
+        bytecode_cache=jinja2.FileSystemBytecodeCache(output_dir),
+        keep_trailing_newline=True,  # newline-terminate generated files
+        lstrip_blocks=True,  # so can indent control flow tags
+        trim_blocks=True)
+    jinja_env.filters.update({
+        'blink_capitalize': capitalize,
+        'conditional': conditional_if_endif,
+        'runtime_enabled': runtime_enabled_if,
+        })
+    return jinja_env
 
 
 # [Conditional]
@@ -155,3 +182,30 @@ def runtime_enabled_if(code, runtime_enabled_function_name):
     indent = re.match(' *', code).group(0)
     return ('%sif (%s())\n' % (indent, runtime_enabled_function_name) +
             '    %s' % code)
+
+
+################################################################################
+
+def main(argv):
+    # If file itself executed, cache templates
+    try:
+        output_dir = argv[1]
+        dummy_filename = argv[2]
+    except IndexError as err:
+        print 'Usage: %s OUTPUT_DIR DUMMY_FILENAME' % argv[0]
+        return 1
+
+    # Cache templates
+    jinja_env = initialize_jinja_env(output_dir)
+    for template_filename in os.listdir(templates_dir):
+        jinja_env.get_template(template_filename)
+
+    # Create a dummy file as output for the build system,
+    # since filenames of individual cache files are unpredictable and opaque
+    # (they are hashes of the template path, which varies based on environment)
+    with open(dummy_filename, 'w') as dummy_file:
+        pass  # |open| creates or touches the file
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
