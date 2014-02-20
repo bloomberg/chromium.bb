@@ -55,7 +55,6 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
 {
     bool foundDescendantRelation = false;
-    bool foundAncestorIdent = false;
     bool foundIdent = false;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
@@ -66,8 +65,6 @@ static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
         if (component->m_match == CSSSelector::Class) {
             if (!foundDescendantRelation)
                 foundIdent = true;
-            else
-                foundAncestorIdent = true;
         } else if (!isSkippableComponentForInvalidation(*component)) {
             return false;
         }
@@ -83,7 +80,7 @@ static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
             return false;
         }
     }
-    return foundDescendantRelation && foundAncestorIdent && foundIdent;
+    return foundIdent;
 }
 
 void extractClassIdOrTag(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName)
