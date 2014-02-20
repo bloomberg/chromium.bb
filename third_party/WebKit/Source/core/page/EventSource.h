@@ -80,7 +80,7 @@ public:
 
     // ActiveDOMObject
     //
-    // Note: suspend() is noop since PageGroupLoadDeferrer calls
+    // Note: suspend() is noop since ScopedPageLoadDeferrer calls
     // Page::setDefersLoading() and it defers delivery of events from the
     // loader, and therefore the methods of this class for receiving
     // asynchronous events from the loader won't be invoked.

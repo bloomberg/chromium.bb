@@ -17,26 +17,27 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef PageGroupLoadDeferrer_h
-#define PageGroupLoadDeferrer_h
+#ifndef ScopedPageLoadDeferrer_h
+#define ScopedPageLoadDeferrer_h
 
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-    class Frame;
-    class Page;
+class Frame;
+class Page;
 
-    class PageGroupLoadDeferrer {
-        WTF_MAKE_NONCOPYABLE(PageGroupLoadDeferrer);
-    public:
-        PageGroupLoadDeferrer(Page*, bool deferSelf);
-        ~PageGroupLoadDeferrer();
+class ScopedPageLoadDeferrer {
+    WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
+public:
+    ScopedPageLoadDeferrer(Page* exclusion = 0);
+    ~ScopedPageLoadDeferrer();
 
-    private:
-        Vector<RefPtr<Frame>, 16> m_deferredFrames;
-    };
-}
+private:
+    Vector<RefPtr<Frame>, 16> m_deferredFrames;
+};
 
-#endif // PageGroupLoadDeferrer_h
+} // namespace WebCore
+
+#endif // ScopedPageLoadDeferrer_h

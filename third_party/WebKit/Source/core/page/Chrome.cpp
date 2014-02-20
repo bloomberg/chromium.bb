@@ -31,8 +31,8 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroupLoadDeferrer.h"
 #include "core/page/PopupOpeningObserver.h"
+#include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "platform/ColorChooser.h"
@@ -157,9 +157,9 @@ bool Chrome::canRunModalNow() const
 
 void Chrome::runModal() const
 {
-    // Defer callbacks in all the other pages in this group, so we don't try to run JavaScript
+    // Defer callbacks in all the other pages, so we don't try to run JavaScript
     // in a way that could interact with this view.
-    PageGroupLoadDeferrer deferrer(m_page, false);
+    ScopedPageLoadDeferrer deferrer(m_page);
 
     TimerBase::fireTimersInNestedEventLoop();
     m_client->runModal();
@@ -203,7 +203,7 @@ bool Chrome::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
 {
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
+    ScopedPageLoadDeferrer deferrer;
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
     bool ok = m_client->runBeforeUnloadConfirmPanel(message, frame);
@@ -223,7 +223,7 @@ void Chrome::runJavaScriptAlert(Frame* frame, const String& message)
 
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
+    ScopedPageLoadDeferrer deferrer;
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
@@ -240,7 +240,7 @@ bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
 
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
+    ScopedPageLoadDeferrer deferrer;
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
@@ -258,7 +258,7 @@ bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const Strin
 
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
+    ScopedPageLoadDeferrer deferrer;
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
@@ -322,7 +322,10 @@ void Chrome::setToolTip(const HitTestResult& result)
 
 void Chrome::print(Frame* frame)
 {
-    // FIXME: This should have PageGroupLoadDeferrer, like runModal() or runJavaScriptAlert(), becasue it's no different from those.
+    // Defer loads in case the client method runs a new event loop that would
+    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
+    ScopedPageLoadDeferrer deferrer;
+
     m_client->print(frame);
 }
 

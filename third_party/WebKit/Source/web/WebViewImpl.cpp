@@ -111,9 +111,9 @@
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/page/PageGroupLoadDeferrer.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
@@ -202,9 +202,9 @@ const double WebView::maxTextSizeMultiplier = 3.0;
 
 // Used to defer all page activity in cases where the embedder wishes to run
 // a nested event loop. Using a stack enables nesting of message loop invocations.
-static Vector<PageGroupLoadDeferrer*>& pageGroupLoadDeferrerStack()
+static Vector<ScopedPageLoadDeferrer*>& pageLoadDeferrerStack()
 {
-    DEFINE_STATIC_LOCAL(Vector<PageGroupLoadDeferrer*>, deferrerStack, ());
+    DEFINE_STATIC_LOCAL(Vector<ScopedPageLoadDeferrer*>, deferrerStack, ());
     return deferrerStack;
 }
 
@@ -268,21 +268,15 @@ void WebView::resetVisitedLinkState()
 
 void WebView::willEnterModalLoop()
 {
-    PageGroup* pageGroup = PageGroup::sharedGroup();
-    if (pageGroup->pages().isEmpty())
-        pageGroupLoadDeferrerStack().append(static_cast<PageGroupLoadDeferrer*>(0));
-    else {
-        // Pick any page in the page group since we are deferring all pages.
-        pageGroupLoadDeferrerStack().append(new PageGroupLoadDeferrer(*pageGroup->pages().begin(), true));
-    }
+    pageLoadDeferrerStack().append(new ScopedPageLoadDeferrer());
 }
 
 void WebView::didExitModalLoop()
 {
-    ASSERT(pageGroupLoadDeferrerStack().size());
+    ASSERT(pageLoadDeferrerStack().size());
 
-    delete pageGroupLoadDeferrerStack().last();
-    pageGroupLoadDeferrerStack().removeLast();
+    delete pageLoadDeferrerStack().last();
+    pageLoadDeferrerStack().removeLast();
 }
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
