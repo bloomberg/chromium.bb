@@ -26,7 +26,6 @@
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -161,13 +160,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
 
   // Helper for Start(), to let us start asynchronously.
   // (This pattern is shared by most net::URLRequestJob implementations.)
-  void StartAsync(bool allowed);
-
-  // Called on the UI thread to check if this request is allowed.
-  static void CheckStoragePartitionMatches(
-      int render_process_id,
-      const GURL& url,
-      const base::WeakPtr<URLRequestChromeJob>& job);
+  void StartAsync();
 
   // Do the actual copy from data_ (the data we're serving) into |buf|.
   // Separate from ReadRawData so we can handle async I/O.
@@ -236,14 +229,12 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 }
 
 void URLRequestChromeJob::Start() {
-  int render_process_id, unused;
-  ResourceRequestInfo::GetRenderFrameForRequest(
-      request_, &render_process_id, &unused);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
+  // Start reading asynchronously so that all error reporting and data
+  // callbacks happen as they would for network requests.
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestChromeJob::CheckStoragePartitionMatches,
-                 render_process_id, request_->url(), AsWeakPtr()));
+      base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
+
   TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
       request_->url().possibly_invalid_spec());
 }
@@ -347,38 +338,11 @@ void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size,
   *bytes_read = buf_size;
 }
 
-void URLRequestChromeJob::CheckStoragePartitionMatches(
-    int render_process_id,
-    const GURL& url,
-    const base::WeakPtr<URLRequestChromeJob>& job) {
-  // The embedder could put some webui pages in separate storage partition.
-  // RenderProcessHostImpl::IsSuitableHost would guard against top level pages
-  // being in the same process. We do an extra check to guard against an
-  // exploited renderer pretending to add them as a subframe. We skip this check
-  // for resources.
-  bool allowed = false;
-  if (url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIResourcesHost) {
-    allowed = true;
-  } else {
-    RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
-    if (process) {
-      StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
-          process->GetBrowserContext(), url);
-      allowed = partition == process->GetStoragePartition();
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&URLRequestChromeJob::StartAsync, job, allowed));
-}
-
-void URLRequestChromeJob::StartAsync(bool allowed) {
+void URLRequestChromeJob::StartAsync() {
   if (!request_)
     return;
 
-  if (!allowed || !backend_->StartRequest(request_, this)) {
+  if (!backend_->StartRequest(request_, this)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
   }

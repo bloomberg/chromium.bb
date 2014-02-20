@@ -808,10 +808,6 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
       *in_memory = false;
       partition_name->clear();
     }
-  } else if (site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
-    // Chrome signin page has an embedded iframe of extension and web content,
-    // thus it must be isolated from other webUI pages.
-    *partition_domain = chrome::kChromeUIChromeSigninHost;
   }
 
   // Assert that if |can_be_default| is false, the code above must have found a

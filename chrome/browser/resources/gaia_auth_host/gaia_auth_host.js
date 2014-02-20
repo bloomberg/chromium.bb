@@ -35,6 +35,12 @@ cr.define('cr.login', function() {
   var OFFLINE_AUTH_URL = AUTH_URL_BASE + '/offline.html';
 
   /**
+   * Auth URL to use for inline flow.
+   * @const
+   */
+  var INLINE_AUTH_URL = AUTH_URL_BASE + '/inline_main.html';
+
+  /**
    * Origin of the gaia sign in page.
    * @const
    */
@@ -53,6 +59,7 @@ cr.define('cr.login', function() {
     'email',         // Pre-fill the email field in Gaia UI;
     'service',       // Name of Gaia service;
     'continueUrl',   // Continue url to use;
+    'partitionId',   // Partition ID for the embedded Gaia webview;
     'frameUrl',      // Initial frame URL to use. If empty defaults to gaiaUrl.
     'constrained'    // Whether the extension is loaded in a constrained window;
   ];
@@ -80,7 +87,7 @@ cr.define('cr.login', function() {
   var AuthMode = {
     DEFAULT: 0,
     OFFLINE: 1,
-    DESKTOP: 2
+    INLINE: 2
   };
 
   /**
@@ -104,6 +111,8 @@ cr.define('cr.login', function() {
     assert(this.frame_);
     window.addEventListener('message',
                             this.onMessage_.bind(this), false);
+    window.addEventListener('popstate',
+                            this.onPopState_.bind(this), false);
   }
 
   GaiaAuthHost.prototype = {
@@ -131,7 +140,7 @@ cr.define('cr.login', function() {
      *   email: 'xx@gmail.com',
      *   password: 'xxxx',  // May not present
      *   authCode: 'x/xx',  // May not present
-     *   authMode: 'x',     // Authorization mode, default/offline/desktop.
+     *   authMode: 'x',     // Authorization mode, default/inline/offline.
      * }
      * }
      * </pre>
@@ -236,9 +245,9 @@ cr.define('cr.login', function() {
         case AuthMode.OFFLINE:
           url = OFFLINE_AUTH_URL;
           break;
-        case AuthMode.DESKTOP:
-          url = AUTH_URL;
-          params.push('desktopMode=1');
+        case AuthMode.INLINE:
+          url = INLINE_AUTH_URL;
+          params.push('inlineMode=1');
           break;
         default:
           url = AUTH_URL;
@@ -317,6 +326,17 @@ cr.define('cr.login', function() {
     onMessage_: function(e) {
       var msg = e.data;
 
+      // In the inline sign in flow, the embedded gaia webview posts credential
+      // directly to the inline sign in page, because its parent JavaScript
+      // reference points to the top frame of the embedder instead of the sub
+      // frame of the gaia auth extension.
+      if (e.origin == GAIA_ORIGIN && msg.method == 'attemptLogin') {
+        this.email_ = msg.email;
+        this.password_ = msg.password;
+        this.chooseWhatToSync_ = msg.chooseWhatToSync;
+        return;
+      }
+
       if (!this.isAuthExtMessage_(e))
         return;
 
@@ -331,13 +351,13 @@ cr.define('cr.login', function() {
           this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
           return;
         }
-        this.onAuthSuccess_({email: msg.email,
-                             password: msg.password,
+        this.onAuthSuccess_({email: msg.email || this.email_,
+                             password: msg.password || this.password_,
+                             authCode: msg.authCode,
                              useOffline: msg.method == 'offlineLogin',
                              usingSAML: msg.usingSAML || false,
-                             chooseWhatToSync: msg.chooseWhatToSync,
-                             skipForNow: msg.skipForNow || false,
-                             sessionIndex: msg.sessionIndex || ''});
+                             chooseWhatToSync: this.chooseWhatToSync_,
+                             skipForNow: msg.skipForNow || false });
         return;
       }
 
@@ -374,12 +394,39 @@ cr.define('cr.login', function() {
         return;
       }
 
+      if (msg.method == 'reportState') {
+        var newUrl = setQueryParam(location, 'frameUrl', msg.src);
+        if (history.state) {
+          if (history.state.src != msg.src) {
+            history.pushState({src: msg.src}, '', newUrl);
+          }
+        } else {
+          history.replaceState({src: msg.src});
+        }
+        return;
+      }
+
       if (msg.method == 'switchToFullTab') {
         chrome.send('switchToFullTab', [msg.url]);
         return;
       }
 
       console.error('Unknown message method=' + msg.method);
+    },
+
+    /**
+     * Event handler that is invoked when the history state is changed.
+     * @param {object} e The popstate event being triggered.
+     */
+    onPopState_: function(e) {
+      var state = e.state;
+      if (state) {
+        var msg = {
+          method: 'navigate',
+          src: state.src
+        };
+        this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+      }
     }
   };
 

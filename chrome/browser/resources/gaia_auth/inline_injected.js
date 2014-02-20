@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,23 @@
  */
 
 (function() {
-  var $ = function(id) { return document.getElementById(id); };
+  var extWindow;
 
+  var $ = function(id) { return document.getElementById(id); };
   var gaiaLoginForm = $('gaia_loginform');
-  if (!gaiaLoginForm) {
-    return;
-  }
+
+  var onMessage = function(e) {
+    extWindow = e.source;
+  };
+  window.addEventListener('message', onMessage);
 
   var onLoginSubmit = function(e) {
+    if (!extWindow) {
+      console.log('ERROR: no initial message received from the gaia ext');
+      e.preventDefault();
+      return;
+    }
+
     var checkboxElement = $('advanced-box');
     var chooseWhatToSync = checkboxElement && checkboxElement.checked;
     var msg = {method: 'attemptLogin',
@@ -27,8 +36,7 @@
                attemptToken: new Date().getTime(),
                chooseWhatToSync: chooseWhatToSync};
 
-    window.parent.postMessage(
-        msg, 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik');
+    extWindow.postMessage(msg, 'chrome://chrome-signin');
     console.log('Credentials sent');
 
     return;

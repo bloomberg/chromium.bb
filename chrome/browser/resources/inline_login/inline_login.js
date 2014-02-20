@@ -49,7 +49,10 @@ cr.define('inline.login', function() {
    */
   function loadAuthExtension(data) {
     authExtHost.load(data.authMode, data, onAuthCompleted);
-    $('contents').classList.toggle('loading', true);
+    // Do not show loading spinner to give user a faster response
+    // with inline flows.
+    $('contents').classList.toggle('loading',
+        data.authMode != cr.login.GaiaAuthHost.AuthMode.INLINE);
   }
 
   /**
