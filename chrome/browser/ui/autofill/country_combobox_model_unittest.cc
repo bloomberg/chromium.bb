@@ -17,13 +17,13 @@ TEST(CountryComboboxModel, RespectsManagerDefaultCountry) {
   TestPersonalDataManager manager;
   manager.set_timezone_country_code(test_country);
 
-  CountryComboboxModel model(manager);
+  CountryComboboxModel model(manager, true);
   EXPECT_EQ(test_country, model.GetDefaultCountryCode());
 }
 
 TEST(CountryComboboxModel, AllCountriesHaveComponents) {
   TestPersonalDataManager manager;
-  CountryComboboxModel model(manager);
+  CountryComboboxModel model(manager, true);
 
   for (int i = 0; i < model.GetItemCount(); ++i) {
     if (model.IsItemSeparatorAt(i))
@@ -33,6 +33,24 @@ TEST(CountryComboboxModel, AllCountriesHaveComponents) {
     std::vector< ::i18n::addressinput::AddressUiComponent> components =
         ::i18n::addressinput::BuildComponents(country_code);
     EXPECT_FALSE(components.empty());
+  }
+}
+
+TEST(CountryComboboxModel, CountriesWithDependentLocalityNotShown) {
+  TestPersonalDataManager manager;
+  manager.set_timezone_country_code("KR");
+  CountryComboboxModel model(manager, false);
+  EXPECT_NE("KR", model.GetDefaultCountryCode());
+
+  for (int i = 0; i < model.GetItemCount(); ++i) {
+    ASSERT_FALSE(model.IsItemSeparatorAt(i));
+    std::string country_code = model.countries()[i]->country_code();
+    std::vector< ::i18n::addressinput::AddressUiComponent> components =
+        ::i18n::addressinput::BuildComponents(country_code);
+    ASSERT_FALSE(components.empty());
+    for (size_t j = 0; j < components.size(); ++j) {
+      EXPECT_NE(components[j].field, ::i18n::addressinput::DEPENDENT_LOCALITY);
+    }
   }
 }
 

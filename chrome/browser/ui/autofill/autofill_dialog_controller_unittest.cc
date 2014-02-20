@@ -2961,6 +2961,21 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
   }
 }
 
+TEST_F(AutofillDialogControllerTest, NoPartiallySupportedCountriesSuggested) {
+  SwitchToAutofill();
+
+  std::string partially_supported_country = "KR";
+  ASSERT_FALSE(i18ninput::CountryIsFullySupported(partially_supported_country));
+  ASSERT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
+
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  verified_profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
+                              ASCIIToUTF16(partially_supported_country));
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
+}
+
 class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
  private:
   i18ninput::ScopedEnableForTesting enabled_;
@@ -3008,10 +3023,10 @@ TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {
 
 TEST_F(AutofillDialogControllerI18nTest, CorrectCountryFromInputs) {
   EXPECT_CALL(*controller()->GetMockValidator(),
-              ValidateAddress(CountryCodeMatcher("CN"), _, _));
+              ValidateAddress(CountryCodeMatcher("DE"), _, _));
 
   FieldValueMap billing_inputs;
-  billing_inputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("China");
+  billing_inputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("Germany");
   controller()->InputsAreValid(SECTION_BILLING, billing_inputs);
 
   EXPECT_CALL(*controller()->GetMockValidator(),

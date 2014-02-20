@@ -1435,8 +1435,7 @@ class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        CountryChangeRebuildsSection) {
-  EXPECT_FALSE(
-      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+  EXPECT_FALSE(SectionHasField(SECTION_BILLING, ADDRESS_BILLING_SORTING_CODE));
   EXPECT_FALSE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 
   // Select "Add new shipping address...".
@@ -1447,16 +1446,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   view->SetTextContentsOfInput(NAME_FULL, ASCIIToUTF16("B. Loblaw"));
 
   // Change both sections' countries.
-  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("France"));
   view->ActivateInput(ADDRESS_BILLING_COUNTRY);
-  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
 
   // Verify the name is still there.
   EXPECT_EQ(ASCIIToUTF16("B. Loblaw"), view->GetTextContentsOfInput(NAME_FULL));
 
-  EXPECT_TRUE(
-      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+  EXPECT_TRUE(SectionHasField(SECTION_BILLING, ADDRESS_BILLING_SORTING_CODE));
   EXPECT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
@@ -1489,7 +1487,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 
   // Switch the shipping country.
-  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("China"));
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
 
   // Switch to using Autofill instead of Wallet.
@@ -1499,31 +1497,29 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   EXPECT_FALSE(controller()->IsPayingWithWallet());
 
   // Shipping country should have stayed the same.
-  EXPECT_EQ(ASCIIToUTF16("China"),
+  EXPECT_EQ(ASCIIToUTF16("Belarus"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
-  ASSERT_TRUE(
-      SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_DEPENDENT_LOCALITY));
+  ASSERT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 
   controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
-  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY,
+                               ASCIIToUTF16("Belarus"));
   view->ActivateInput(ADDRESS_BILLING_COUNTRY);
-  EXPECT_EQ(ASCIIToUTF16("China"),
+  EXPECT_EQ(ASCIIToUTF16("Belarus"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
-  ASSERT_TRUE(
-      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+  ASSERT_TRUE(SectionHasField(SECTION_BILLING, ADDRESS_BILLING_SORTING_CODE));
 
   // Switch back to Wallet. Country should go back to US.
   account_chooser->ActivatedAt(0);
   EXPECT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_FALSE(
-      SectionHasField(SECTION_CC_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+      SectionHasField(SECTION_CC_BILLING, ADDRESS_BILLING_SORTING_CODE));
 
-  // Make sure shipping is still on China.
-  EXPECT_EQ(ASCIIToUTF16("China"),
+  // Make sure shipping is still on Belarus.
+  EXPECT_EQ(ASCIIToUTF16("Belarus"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
-  ASSERT_TRUE(
-      SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_DEPENDENT_LOCALITY));
+  ASSERT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
@@ -1541,7 +1537,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 
   // Switch both billing and shipping countries.
-  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("Brazil"));
   view->ActivateInput(ADDRESS_BILLING_COUNTRY);
   view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
@@ -1559,7 +1555,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        FillingFormRebuildsInputs) {
   AutofillProfile full_profile(test::GetFullProfile());
-  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
+  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
   // Select "Add new shipping address...".
@@ -1577,16 +1573,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   ASSERT_EQ(NAME_FULL, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
-  EXPECT_EQ(ASCIIToUTF16("China"),
+  EXPECT_EQ(ASCIIToUTF16("Germany"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
-  EXPECT_EQ(ASCIIToUTF16("China"),
+  EXPECT_EQ(ASCIIToUTF16("Germany"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        FillingFormPreservesChangedCountry) {
   AutofillProfile full_profile(test::GetFullProfile());
-  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
+  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
   // Select "Add new shipping address...".
@@ -1616,24 +1612,24 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, RulesLoaded) {
   controller()->set_use_validation(true);
 
   EXPECT_CALL(*controller()->GetMockValidator(),
-              ValidateAddress(CountryCodeMatcher("CN"), _, _)).Times(2).
+              ValidateAddress(CountryCodeMatcher("DE"), _, _)).Times(2).
               WillOnce(Return(AddressValidator::RULES_NOT_READY));
 
   // Validation should occur on country change and see the rules haven't loaded.
   scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(ADDRESS_HOME_ZIP, ASCIIToUTF16("123"));
-  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("China"));
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Germany"));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
 
   // Different country loaded, validation should not occur.
   controller()->OnAddressValidationRulesLoaded("FR", true);
 
   // Relevant country loaded, validation should occur.
-  controller()->OnAddressValidationRulesLoaded("CN", true);
+  controller()->OnAddressValidationRulesLoaded("DE", true);
 
   // Relevant country loaded but revalidation already happened, no further
   // validation should occur.
-  controller()->OnAddressValidationRulesLoaded("CN", false);
+  controller()->OnAddressValidationRulesLoaded("DE", false);
 
   // Cancelling the dialog causes additional validation to see if the user
   // cancelled with invalid fields, so verify and clear here.

@@ -14,21 +14,39 @@
 
 // TODO(rouslan): Remove this check. http://crbug.com/337587
 #if defined(ENABLE_AUTOFILL_DIALOG)
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
 #endif
 
 namespace autofill {
 
-CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
+namespace {
+
+bool ShouldShowCountry(const std::string& country_code) {
+#if defined(ENABLE_AUTOFILL_DIALOG)
+  return i18ninput::CountryIsFullySupported(country_code);
+#else
+  return true;
+#endif
+}
+
+}  // namespace
+
+CountryComboboxModel::CountryComboboxModel(
+    const PersonalDataManager& manager,
+    bool show_partially_supported_countries) {
   // Insert the default country at the top as well as in the ordered list.
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
       manager.GetDefaultCountryCodeForNewAddress();
   DCHECK(!default_country_code.empty());
 
-  countries_.push_back(new AutofillCountry(default_country_code, app_locale));
-  // The separator item.
-  countries_.push_back(NULL);
+  if (show_partially_supported_countries ||
+      ShouldShowCountry(default_country_code)) {
+    countries_.push_back(new AutofillCountry(default_country_code, app_locale));
+    // The separator item.
+    countries_.push_back(NULL);
+  }
 
   // The sorted list of countries.
 #if defined(ENABLE_AUTOFILL_DIALOG)
@@ -42,7 +60,8 @@ CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   std::vector<AutofillCountry*> sorted_countries;
   for (std::vector<std::string>::const_iterator it =
            available_countries.begin(); it != available_countries.end(); ++it) {
-    sorted_countries.push_back(new AutofillCountry(*it, app_locale));
+    if (show_partially_supported_countries || ShouldShowCountry(*it))
+      sorted_countries.push_back(new AutofillCountry(*it, app_locale));
   }
 
   l10n_util::SortStringsUsingMethod(app_locale,

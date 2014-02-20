@@ -2690,8 +2690,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       wallet_items_requested_(false),
       handling_use_wallet_link_click_(false),
       passive_failed_(false),
-      billing_country_combobox_model_(*GetManager()),
-      shipping_country_combobox_model_(*GetManager()),
+      billing_country_combobox_model_(*GetManager(), false),
+      shipping_country_combobox_model_(*GetManager(), false),
       suggested_cc_(this),
       suggested_billing_(this),
       suggested_cc_billing_(this),
@@ -2937,6 +2937,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     for (size_t i = 0; i < profiles.size(); ++i) {
       const AutofillProfile& profile = *profiles[i];
       if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
+          !i18ninput::CountryIsFullySupported(
+              UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))) ||
           (!i18ninput::Enabled() && HasInvalidAddress(*profiles[i]))) {
         continue;
       }

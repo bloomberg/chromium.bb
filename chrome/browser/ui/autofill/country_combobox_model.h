@@ -21,7 +21,10 @@ class PersonalDataManager;
 // A model for countries to be used to enter addresses.
 class CountryComboboxModel : public ui::ComboboxModel {
  public:
-  explicit CountryComboboxModel(const PersonalDataManager& manager);
+  // When |show_partially_supported_countries| is false, countries with
+  // semi-supported address components (e.g. dependent locality) will be hidden.
+  CountryComboboxModel(const PersonalDataManager& manager,
+                       bool show_partially_supported_countries);
   virtual ~CountryComboboxModel();
 
   // ui::ComboboxModel implementation:
