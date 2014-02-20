@@ -577,8 +577,10 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
   switch (event.type) {
     case WebInputEvent::GestureFlingStart:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        // The view expects the fling velocity in pixels/s.
         Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj.obj(),
-            event.data.flingStart.velocityX, event.data.flingStart.velocityY);
+            event.data.flingStart.velocityX * GetDpiScale(),
+            event.data.flingStart.velocityY * GetDpiScale());
       } else {
         // If a scroll ends with a fling, a SCROLL_END event is never sent.
         // However, if that fling went unconsumed, we still need to let the
@@ -587,8 +589,10 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
       }
 
       if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+        // The view expects the fling velocity in pixels/s.
         Java_ContentViewCore_onFlingStartEventHadNoConsumer(env, j_obj.obj(),
-            event.data.flingStart.velocityX, event.data.flingStart.velocityY);
+            event.data.flingStart.velocityX * GetDpiScale(),
+            event.data.flingStart.velocityY * GetDpiScale());
       }
       break;
     case WebInputEvent::GestureFlingCancel:
@@ -636,8 +640,8 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   return Java_ContentViewCore_filterTapOrPressEvent(env,
                                                     j_obj.obj(),
                                                     gesture_type,
-                                                    gesture.x,
-                                                    gesture.y);
+                                                    gesture.x * GetDpiScale(),
+                                                    gesture.y * GetDpiScale());
 }
 
 bool ContentViewCoreImpl::HasFocus() {
