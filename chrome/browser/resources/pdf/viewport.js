@@ -154,15 +154,41 @@ Viewport.prototype = {
   },
 
   /**
+   * @private
+   * @param {integer} y the y-coordinate to get the page at.
+   * @return {integer} the index of a page overlapping the given y-coordinate.
+   */
+  getPageAtY_: function(y) {
+    var min = 0;
+    var max = this.pageDimensions_.length - 1;
+    while (max >= min) {
+      var page = Math.floor(min + ((max - min) / 2));
+      var top = this.pageDimensions_[page].y;
+      var bottom = top + this.pageDimensions_[page].height;
+      if (top <= y && bottom > y)
+        return page;
+      else if (top > y)
+        max = page - 1;
+      else
+        min = page + 1;
+    }
+    return 0;
+  },
+
+  /**
    * Returns the page with the most pixels in the current viewport.
    * @return {int} the index of the most visible page.
    */
   getMostVisiblePage: function() {
-    // TODO(raymes): Do a binary search here.
+    var firstVisiblePage = this.getPageAtY_(this.getCurrentViewportRect_().y);
     var mostVisiblePage = {'number': 0, 'area': 0};
-    for (var i = 0; i < this.pageDimensions_.length; i++) {
+    for (var i = firstVisiblePage; i < this.pageDimensions_.length; i++) {
       var area = getIntersectionArea(this.pageDimensions_[i],
                                      this.getCurrentViewportRect_());
+      // If we hit a page with 0 area overlap, we must have gone past the
+      // pages visible in the viewport so we can break.
+      if (area == 0)
+        break;
       if (area > mostVisiblePage.area) {
         mostVisiblePage.area = area;
         mostVisiblePage.number = i;
