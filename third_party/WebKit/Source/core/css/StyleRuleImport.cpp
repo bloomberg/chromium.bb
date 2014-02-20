@@ -31,9 +31,9 @@
 
 namespace WebCore {
 
-PassRefPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtr<MediaQuerySet> media)
+PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtr<MediaQuerySet> media)
 {
-    return adoptRef(new StyleRuleImport(href, media));
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleImport(href, media));
 }
 
 StyleRuleImport::StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet> media)
@@ -55,6 +55,13 @@ StyleRuleImport::~StyleRuleImport()
         m_styleSheet->clearOwnerRule();
     if (m_resource)
         m_resource->removeClient(&m_styleSheetClient);
+}
+
+void StyleRuleImport::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_parentStyleSheet);
+    visitor->trace(m_styleSheet);
+    StyleRuleBase::traceAfterDispatch(visitor);
 }
 
 void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)

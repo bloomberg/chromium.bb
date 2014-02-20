@@ -39,7 +39,7 @@ class CSSKeyframeRule;
 
 class StyleRuleKeyframes FINAL : public StyleRuleBase {
 public:
-    static PassRefPtr<StyleRuleKeyframes> create() { return adoptRef(new StyleRuleKeyframes()); }
+    static PassRefPtrWillBeRawPtr<StyleRuleKeyframes> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleKeyframes()); }
 
     ~StyleRuleKeyframes();
 
@@ -58,6 +58,8 @@ public:
     int findKeyframeIndex(const String& key) const;
 
     PassRefPtr<StyleRuleKeyframes> copy() const { return adoptRef(new StyleRuleKeyframes(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleKeyframes();

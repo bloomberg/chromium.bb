@@ -36,7 +36,9 @@
 
 namespace WebCore {
 
-struct SameSizeAsStyleRuleBase : public WTF::RefCountedBase {
+DEFINE_GC_INFO(StyleRuleBase);
+
+struct SameSizeAsStyleRuleBase : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsStyleRuleBase> {
     unsigned bitfields;
 };
 
@@ -50,6 +52,84 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
 PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
 {
     return createCSSOMWrapper(0, parentRule);
+}
+
+void StyleRuleBase::trace(Visitor* visitor)
+{
+    switch (type()) {
+    case Style:
+        toStyleRule(this)->traceAfterDispatch(visitor);
+        return;
+    case Page:
+        toStyleRulePage(this)->traceAfterDispatch(visitor);
+        return;
+    case FontFace:
+        toStyleRuleFontFace(this)->traceAfterDispatch(visitor);
+        return;
+    case Media:
+        toStyleRuleMedia(this)->traceAfterDispatch(visitor);
+        return;
+    case Supports:
+        toStyleRuleSupports(this)->traceAfterDispatch(visitor);
+        return;
+    case Import:
+        toStyleRuleImport(this)->traceAfterDispatch(visitor);
+        return;
+    case Keyframes:
+        toStyleRuleKeyframes(this)->traceAfterDispatch(visitor);
+        return;
+    case Viewport:
+        toStyleRuleViewport(this)->traceAfterDispatch(visitor);
+        return;
+    case Filter:
+        toStyleRuleFilter(this)->traceAfterDispatch(visitor);
+        return;
+    case Unknown:
+    case Charset:
+    case Keyframe:
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    ASSERT_NOT_REACHED();
+}
+
+void StyleRuleBase::finalize()
+{
+    switch (type()) {
+    case Style:
+        toStyleRule(this)->~StyleRule();
+        return;
+    case Page:
+        toStyleRulePage(this)->~StyleRulePage();
+        return;
+    case FontFace:
+        toStyleRuleFontFace(this)->~StyleRuleFontFace();
+        return;
+    case Media:
+        toStyleRuleMedia(this)->~StyleRuleMedia();
+        return;
+    case Supports:
+        toStyleRuleSupports(this)->~StyleRuleSupports();
+        return;
+    case Import:
+        toStyleRuleImport(this)->~StyleRuleImport();
+        return;
+    case Keyframes:
+        toStyleRuleKeyframes(this)->~StyleRuleKeyframes();
+        return;
+    case Viewport:
+        toStyleRuleViewport(this)->~StyleRuleViewport();
+        return;
+    case Filter:
+        toStyleRuleFilter(this)->~StyleRuleFilter();
+        return;
+    case Unknown:
+    case Charset:
+    case Keyframe:
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    ASSERT_NOT_REACHED();
 }
 
 void StyleRuleBase::destroy()

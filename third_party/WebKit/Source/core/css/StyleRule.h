@@ -24,6 +24,7 @@
 
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
+#include "heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -34,8 +35,9 @@ class CSSStyleSheet;
 class MutableStylePropertySet;
 class StylePropertySet;
 
-class StyleRuleBase : public WTF::RefCountedBase {
-    WTF_MAKE_FAST_ALLOCATED;
+class StyleRuleBase : public RefCountedWillBeRefCountedGarbageCollected<StyleRuleBase> {
+    DECLARE_GC_INFO;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Type {
         Unknown, // Not used.
@@ -67,19 +69,25 @@ public:
 
     PassRefPtr<StyleRuleBase> copy() const;
 
+#if !ENABLE(OILPAN)
     void deref()
     {
         if (derefBase())
             destroy();
     }
+#endif // !ENABLE(OILPAN)
 
     // FIXME: There shouldn't be any need for the null parent version.
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
+    void trace(Visitor*);
+    void traceAfterDispatch(Visitor*) { };
+    void finalize();
+
 protected:
     StyleRuleBase(Type type) : m_type(type) { }
-    StyleRuleBase(const StyleRuleBase& o) : WTF::RefCountedBase(), m_type(o.m_type) { }
+    StyleRuleBase(const StyleRuleBase& o) : m_type(o.m_type) { }
 
     ~StyleRuleBase() { }
 
@@ -92,9 +100,9 @@ private:
 };
 
 class StyleRule : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassRefPtr<StyleRule> create() { return adoptRef(new StyleRule()); }
+    static PassRefPtrWillBeRawPtr<StyleRule> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRule()); }
 
     ~StyleRule();
 
@@ -106,9 +114,11 @@ public:
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
     void setProperties(PassRefPtr<StylePropertySet>);
 
-    PassRefPtr<StyleRule> copy() const { return adoptRef(new StyleRule(*this)); }
+    PassRefPtr<StyleRule> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRule(*this)); }
 
     static unsigned averageSizeInBytes();
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRule();
@@ -120,7 +130,7 @@ private:
 
 class StyleRuleFontFace : public StyleRuleBase {
 public:
-    static PassRefPtr<StyleRuleFontFace> create() { return adoptRef(new StyleRuleFontFace); }
+    static PassRefPtrWillBeRawPtr<StyleRuleFontFace> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleFontFace); }
 
     ~StyleRuleFontFace();
 
@@ -129,7 +139,9 @@ public:
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
-    PassRefPtr<StyleRuleFontFace> copy() const { return adoptRef(new StyleRuleFontFace(*this)); }
+    PassRefPtr<StyleRuleFontFace> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleFontFace(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleFontFace();
@@ -140,7 +152,7 @@ private:
 
 class StyleRulePage : public StyleRuleBase {
 public:
-    static PassRefPtr<StyleRulePage> create() { return adoptRef(new StyleRulePage); }
+    static PassRefPtrWillBeRawPtr<StyleRulePage> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRulePage); }
 
     ~StyleRulePage();
 
@@ -152,7 +164,9 @@ public:
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
     void setProperties(PassRefPtr<StylePropertySet>);
 
-    PassRefPtr<StyleRulePage> copy() const { return adoptRef(new StyleRulePage(*this)); }
+    PassRefPtr<StyleRulePage> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRulePage(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRulePage();
@@ -169,6 +183,8 @@ public:
     void wrapperInsertRule(unsigned, PassRefPtr<StyleRuleBase>);
     void wrapperRemoveRule(unsigned);
 
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
+
 protected:
     StyleRuleGroup(Type, Vector<RefPtr<StyleRuleBase> >& adoptRule);
     StyleRuleGroup(const StyleRuleGroup&);
@@ -179,14 +195,16 @@ private:
 
 class StyleRuleMedia : public StyleRuleGroup {
 public:
-    static PassRefPtr<StyleRuleMedia> create(PassRefPtr<MediaQuerySet> media, Vector<RefPtr<StyleRuleBase> >& adoptRules)
+    static PassRefPtrWillBeRawPtr<StyleRuleMedia> create(PassRefPtr<MediaQuerySet> media, Vector<RefPtr<StyleRuleBase> >& adoptRules)
     {
-        return adoptRef(new StyleRuleMedia(media, adoptRules));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleMedia(media, adoptRules));
     }
 
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
 
-    PassRefPtr<StyleRuleMedia> copy() const { return adoptRef(new StyleRuleMedia(*this)); }
+    PassRefPtr<StyleRuleMedia> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleMedia(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleGroup::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleMedia(PassRefPtr<MediaQuerySet>, Vector<RefPtr<StyleRuleBase> >& adoptRules);
@@ -197,14 +215,16 @@ private:
 
 class StyleRuleSupports : public StyleRuleGroup {
 public:
-    static PassRefPtr<StyleRuleSupports> create(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules)
+    static PassRefPtrWillBeRawPtr<StyleRuleSupports> create(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules)
     {
-        return adoptRef(new StyleRuleSupports(conditionText, conditionIsSupported, adoptRules));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleSupports(conditionText, conditionIsSupported, adoptRules));
     }
 
     String conditionText() const { return m_conditionText; }
     bool conditionIsSupported() const { return m_conditionIsSupported; }
-    PassRefPtr<StyleRuleSupports> copy() const { return adoptRef(new StyleRuleSupports(*this)); }
+    PassRefPtr<StyleRuleSupports> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleSupports(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleGroup::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleSupports(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules);
@@ -216,7 +236,7 @@ private:
 
 class StyleRuleViewport : public StyleRuleBase {
 public:
-    static PassRefPtr<StyleRuleViewport> create() { return adoptRef(new StyleRuleViewport); }
+    static PassRefPtrWillBeRawPtr<StyleRuleViewport> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleViewport); }
 
     ~StyleRuleViewport();
 
@@ -225,7 +245,9 @@ public:
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
-    PassRefPtr<StyleRuleViewport> copy() const { return adoptRef(new StyleRuleViewport(*this)); }
+    PassRefPtr<StyleRuleViewport> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleViewport(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleViewport();
@@ -236,7 +258,7 @@ private:
 
 class StyleRuleFilter : public StyleRuleBase {
 public:
-    static PassRefPtr<StyleRuleFilter> create(const String& filterName) { return adoptRef(new StyleRuleFilter(filterName)); }
+    static PassRefPtrWillBeRawPtr<StyleRuleFilter> create(const String& filterName) { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleFilter(filterName)); }
 
     ~StyleRuleFilter();
 
@@ -247,7 +269,9 @@ public:
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
-    PassRefPtr<StyleRuleFilter> copy() const { return adoptRef(new StyleRuleFilter(*this)); }
+    PassRefPtr<StyleRuleFilter> copy() const { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleFilter(*this)); }
+
+    void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleFilter(const String&);

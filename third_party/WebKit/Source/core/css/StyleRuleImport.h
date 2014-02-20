@@ -34,9 +34,9 @@ class MediaQuerySet;
 class StyleSheetContents;
 
 class StyleRuleImport : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassRefPtr<StyleRuleImport> create(const String& href, PassRefPtr<MediaQuerySet>);
+    static PassRefPtrWillBeRawPtr<StyleRuleImport> create(const String& href, PassRefPtr<MediaQuerySet>);
 
     ~StyleRuleImport();
 
@@ -52,7 +52,10 @@ public:
 
     void requestStyleSheet();
 
+    void traceAfterDispatch(Visitor*);
+
 private:
+    // FIXME: inherit from StyleSheetResourceClient directly to eliminate raw back pointer, as there are no space savings in this.
     // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
     class ImportedStyleSheetClient FINAL : public StyleSheetResourceClient {
@@ -72,12 +75,12 @@ private:
 
     StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet>);
 
-    StyleSheetContents* m_parentStyleSheet;
+    RawPtrWillBeMember<StyleSheetContents> m_parentStyleSheet;
 
     ImportedStyleSheetClient m_styleSheetClient;
     String m_strHref;
     RefPtr<MediaQuerySet> m_mediaQueries;
-    RefPtrWillBePersistent<StyleSheetContents> m_styleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_styleSheet;
     ResourcePtr<CSSStyleSheetResource> m_resource;
     bool m_loading;
 };
