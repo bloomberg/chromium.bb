@@ -734,7 +734,7 @@ class SetupBoardTest(RunCommandAbstractStageTest):
   """Test building the board"""
 
   def ConstructStage(self):
-    return stages.SetupBoardStage(self.run)
+    return stages.SetupBoardStage(self.run, self._current_board)
 
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""

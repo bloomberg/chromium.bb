@@ -1194,11 +1194,11 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     suffix = ' (pre-Patch)'
     try:
       InitSDKStage(self._run, chroot_replace=True, suffix=suffix).Run()
-      SetupBoardStage(self._run, boards=self._run.config.boards,
-                      suffix=suffix).Run()
-      for board in self._run.config.boards:
-        BuildPackagesStage(self._run, board=board, archive_stage=None,
-                           suffix=suffix).Run()
+      for builder_run in self._run.GetUngroupedBuilderRuns():
+        for board in builder_run.config.boards:
+          SetupBoardStage(builder_run, board=board, suffix=suffix).Run()
+          BuildPackagesStage(builder_run, board=board, archive_stage=None,
+                             suffix=suffix).Run()
     except results_lib.StepFailure:
       return False
 
@@ -2263,16 +2263,15 @@ class InitSDKStage(bs.BuilderStage):
     else:
       cros_build_lib.PrintBuildbotStepText(post_ver)
 
+    commands.SetSharedUserPassword(
+        self._build_root,
+        password=self._run.config.shared_user_password)
 
-class SetupBoardStage(InitSDKStage):
+
+class SetupBoardStage(BoardSpecificBuilderStage, InitSDKStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
 
   option_name = 'build'
-
-  def __init__(self, builder_run, boards=None, **kwargs):
-    super(SetupBoardStage, self).__init__(builder_run, **kwargs)
-    if boards is not None:
-      self._boards = boards
 
   def PerformStage(self):
     # Calculate whether we should use binary packages.
@@ -2288,23 +2287,16 @@ class SetupBoardStage(InitSDKStage):
 
     # Iterate through boards to setup.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    for board_to_build in self._boards:
-      # Only update the board if we need to do so.
-      board_path = os.path.join(chroot_path, 'build', board_to_build)
-      if os.path.isdir(board_path) and not chroot_upgrade:
-        continue
 
+    # Only update the board if we need to do so.
+    board_path = os.path.join(chroot_path, 'build', self._current_board)
+    if not os.path.isdir(board_path) or chroot_upgrade:
       commands.SetupBoard(
-          self._build_root, board=board_to_build, usepkg=usepkg,
+          self._build_root, board=self._current_board, usepkg=usepkg,
           chrome_binhost_only=self._run.config.chrome_binhost_only,
           force=self._run.config.board_replace,
           extra_env=self._env, chroot_upgrade=chroot_upgrade,
           profile=self._run.options.profile or self._run.config.profile)
-      chroot_upgrade = False
-
-    commands.SetSharedUserPassword(
-        self._build_root,
-        password=self._run.config.shared_user_password)
 
 
 class UprevStage(bs.BuilderStage):

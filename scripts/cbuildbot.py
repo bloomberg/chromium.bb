@@ -481,11 +481,17 @@ class SimpleBuilder(Builder):
                   for x in stage_list]
     self._RunParallelStages(stage_objs + [archive_stage])
 
+  def _RunSetupBoard(self):
+    """Run the SetupBoard stage for all child configs and boards."""
+    for builder_run in self._run.GetUngroupedBuilderRuns():
+      for board in builder_run.config.boards:
+        self._RunStage(stages.SetupBoardStage, board, builder_run=builder_run)
+
   def _RunChrootBuilderTypeBuild(self):
     """Runs through stages of a CHROOT_BUILDER_TYPE build."""
     self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
     self._RunStage(stages.InitSDKStage)
-    self._RunStage(stages.SetupBoardStage, [constants.CHROOT_BUILDER_BOARD])
+    self._RunStage(stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(stages.SyncChromeStage)
     self._RunStage(stages.PatchChromeStage)
     self._RunStage(stages.SDKPackageStage)
@@ -496,7 +502,7 @@ class SimpleBuilder(Builder):
   def _RunRefreshPackagesTypeBuild(self):
     """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""
     self._RunStage(stages.InitSDKStage)
-    self._RunStage(stages.SetupBoardStage)
+    self._RunSetupBoard()
     self._RunStage(stages.RefreshPackageStatusStage)
 
   def _RunMasterPaladinBuild(self):
@@ -509,7 +515,7 @@ class SimpleBuilder(Builder):
     """Runs through the stages of a non-special-type build."""
     self._RunStage(stages.InitSDKStage)
     self._RunStage(stages.UprevStage)
-    self._RunStage(stages.SetupBoardStage)
+    self._RunSetupBoard()
     self._RunStage(stages.SyncChromeStage)
     self._RunStage(stages.PatchChromeStage)
 
