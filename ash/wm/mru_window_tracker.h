@@ -24,12 +24,6 @@ class ActivationClient;
 
 namespace ash {
 
-// List of containers which contain windows that can be switched to.
-ASH_EXPORT extern const int kSwitchableWindowContainerIds[];
-
-// The number of elements in kSwitchableWindowContainerIds.
-ASH_EXPORT extern const size_t kSwitchableWindowContainerIdsLength;
-
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
 class ASH_EXPORT MruWindowTracker

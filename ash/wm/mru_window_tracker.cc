@@ -9,6 +9,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/switchable_windows.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -133,15 +134,6 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }
 
 }  // namespace
-
-const int kSwitchableWindowContainerIds[] = {
-  internal::kShellWindowId_DefaultContainer,
-  internal::kShellWindowId_AlwaysOnTopContainer,
-  internal::kShellWindowId_PanelContainer
-};
-
-const size_t kSwitchableWindowContainerIdsLength =
-    arraysize(kSwitchableWindowContainerIds);
 
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, public:

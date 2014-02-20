@@ -22,6 +22,7 @@ class Shell;
 namespace internal {
 class AppListController;
 class DragDropController;
+class MaximizeModeWindowManager;
 class RootWindowLayoutManager;
 class ScreenPositionController;
 class SystemGestureEventFilter;
@@ -44,7 +45,7 @@ public:
   ShelfModel* shelf_model();
   internal::DragDropController* drag_drop_controller();
   internal::AppListController* app_list_controller();
-
+  internal::MaximizeModeWindowManager* maximize_mode_window_manager();
   void DisableOutputConfiguratorAnimation();
 
   // Set ShelfDelegate.

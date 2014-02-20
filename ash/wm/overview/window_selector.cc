@@ -9,7 +9,7 @@
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
+#include "ash/switchable_windows.h"
 #include "ash/wm/overview/window_overview.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_panels.h"

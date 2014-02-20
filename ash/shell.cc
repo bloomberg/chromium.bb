@@ -59,6 +59,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -425,6 +426,15 @@ void Shell::AddShellObserver(ShellObserver* observer) {
 
 void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Shell::EnableMaximizeModeWindowManager(bool enable) {
+  if (enable && !maximize_mode_window_manager_.get()) {
+    maximize_mode_window_manager_.reset(
+        new internal::MaximizeModeWindowManager());
+  } else if (!enable && maximize_mode_window_manager_.get()) {
+    maximize_mode_window_manager_.reset();
+  }
 }
 
 void Shell::UpdateShelfVisibility() {

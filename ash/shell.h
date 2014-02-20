@@ -129,6 +129,7 @@ class EventTransformationHandler;
 class FocusCycler;
 class KeyboardUMAEventFilter;
 class LocaleNotificationController;
+class MaximizeModeWindowManager;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
@@ -306,6 +307,9 @@ class ASH_EXPORT Shell
   // Adds/removes observer.
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
+
+  // Turn the always maximize mode window manager on or off.
+  void EnableMaximizeModeWindowManager(bool enable);
 
   keyboard::KeyboardController* keyboard_controller() {
     return keyboard_controller_.get();
@@ -680,6 +684,9 @@ class ASH_EXPORT Shell
 
   scoped_ptr<internal::LocaleNotificationController>
       locale_notification_controller_;
+
+  // The maximized window manager (if enabled).
+  scoped_ptr<internal::MaximizeModeWindowManager> maximize_mode_window_manager_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<internal::PowerEventObserver> power_event_observer_;
