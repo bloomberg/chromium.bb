@@ -41,8 +41,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(PerformanceResourceTiming);
-
 static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
 {
     ASSERT(seconds >= 0.0);

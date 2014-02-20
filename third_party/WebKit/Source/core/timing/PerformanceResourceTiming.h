@@ -47,7 +47,6 @@ class ResourceResponse;
 class ResourceTimingInfo;
 
 class PerformanceResourceTiming FINAL : public PerformanceEntry {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
