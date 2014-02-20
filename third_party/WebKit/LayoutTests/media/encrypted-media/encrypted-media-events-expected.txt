@@ -1,5 +1,10 @@
 Test all the key-related events.
 
+EXPECTED (messageEvent != 'null') OK
+EXPECTED (messageEvent instanceof window.MediaKeyMessageEvent == 'true') OK
+EXPECTED (keyNeededEvent != 'null') OK
+EXPECTED (keyNeededEvent instanceof window.MediaKeyNeededEvent == 'true') OK
+
 *** Verify the presence of on* attributes. These would return undefined if they are not present. ***
 EXPECTED (video.onwebkitkeyadded === 'null') OK
 EXPECTED (video.onwebkitkeyerror === 'null') OK
@@ -7,9 +12,34 @@ EXPECTED (video.onwebkitkeymessage === 'null') OK
 EXPECTED (video.onwebkitneedkey === 'null') OK
 
 *** Test events using on* attributes. ***
-EVENT(loadstart)
+needkey event occurred
+EXPECTED (event.target == '[object HTMLVideoElement]') OK
+EXPECTED (event instanceof window.MediaKeyEvent == 'true') OK
+EXPECTED (event.keySystem == '') OK
+EXPECTED (event.sessionId == '') OK
+EXPECTED (event.initData.length == '16') OK
+EXPECTED (event.initData[0] == '48') OK
+EXPECTED (event.initData[1] == '49') OK
+EXPECTED (event.initData[2] == '50') OK
+EXPECTED (event.initData[3] == '51') OK
+EXPECTED (event.initData[4] == '52') OK
+EXPECTED (event.initData[5] == '53') OK
+EXPECTED (event.initData[6] == '54') OK
+EXPECTED (event.initData[7] == '55') OK
+EXPECTED (event.initData[8] == '56') OK
+EXPECTED (event.initData[9] == '57') OK
+EXPECTED (event.initData[10] == '48') OK
+EXPECTED (event.initData[11] == '49') OK
+EXPECTED (event.initData[12] == '50') OK
+EXPECTED (event.initData[13] == '51') OK
+EXPECTED (event.initData[14] == '52') OK
+EXPECTED (event.initData[15] == '53') OK
+EXPECTED (event.message === 'null') OK
+EXPECTED (event.defaultURL == '') OK
+EXPECTED (event.errorCode === 'null') OK
+EXPECTED (event.systemCode == '0') OK
 
-RUN(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey', initData))
+RUN(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey', event.initData))
 keymessage event occurred
 EXPECTED (event.target == '[object HTMLVideoElement]') OK
 EXPECTED (event instanceof window.MediaKeyEvent == 'true') OK
@@ -23,10 +53,23 @@ EXPECTED (String(event.sessionId) == String(parseInt(event.sessionId)) == 'true'
 Implementations should avoid sessionIds of 0.
 EXPECTED (event.sessionId > '0') OK
 EXPECTED (event.initData === 'null') OK
-EXPECTED (event.message.length == '3') OK
-EXPECTED (event.message[0] == '65') OK
-EXPECTED (event.message[1] == '66') OK
-EXPECTED (event.message[2] == '67') OK
+EXPECTED (event.message.length == '16') OK
+EXPECTED (event.message[0] == '48') OK
+EXPECTED (event.message[1] == '49') OK
+EXPECTED (event.message[2] == '50') OK
+EXPECTED (event.message[3] == '51') OK
+EXPECTED (event.message[4] == '52') OK
+EXPECTED (event.message[5] == '53') OK
+EXPECTED (event.message[6] == '54') OK
+EXPECTED (event.message[7] == '55') OK
+EXPECTED (event.message[8] == '56') OK
+EXPECTED (event.message[9] == '57') OK
+EXPECTED (event.message[10] == '48') OK
+EXPECTED (event.message[11] == '49') OK
+EXPECTED (event.message[12] == '50') OK
+EXPECTED (event.message[13] == '51') OK
+EXPECTED (event.message[14] == '52') OK
+EXPECTED (event.message[15] == '53') OK
 EXPECTED (event.defaultURL == '') OK
 EXPECTED (event.errorCode === 'null') OK
 EXPECTED (event.systemCode == '0') OK
@@ -56,9 +99,35 @@ EXPECTED (event.errorCode.code == '1') OK
 EXPECTED (event.systemCode == '0') OK
 
 *** Test events using addEventListener(). ***
-EVENT(loadstart)
+EVENT(webkitneedkey)
+needkey event occurred
+EXPECTED (event.target == '[object HTMLVideoElement]') OK
+EXPECTED (event instanceof window.MediaKeyEvent == 'true') OK
+EXPECTED (event.keySystem == '') OK
+EXPECTED (event.sessionId == '') OK
+EXPECTED (event.initData.length == '16') OK
+EXPECTED (event.initData[0] == '48') OK
+EXPECTED (event.initData[1] == '49') OK
+EXPECTED (event.initData[2] == '50') OK
+EXPECTED (event.initData[3] == '51') OK
+EXPECTED (event.initData[4] == '52') OK
+EXPECTED (event.initData[5] == '53') OK
+EXPECTED (event.initData[6] == '54') OK
+EXPECTED (event.initData[7] == '55') OK
+EXPECTED (event.initData[8] == '56') OK
+EXPECTED (event.initData[9] == '57') OK
+EXPECTED (event.initData[10] == '48') OK
+EXPECTED (event.initData[11] == '49') OK
+EXPECTED (event.initData[12] == '50') OK
+EXPECTED (event.initData[13] == '51') OK
+EXPECTED (event.initData[14] == '52') OK
+EXPECTED (event.initData[15] == '53') OK
+EXPECTED (event.message === 'null') OK
+EXPECTED (event.defaultURL == '') OK
+EXPECTED (event.errorCode === 'null') OK
+EXPECTED (event.systemCode == '0') OK
 
-RUN(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey', initData))
+RUN(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey', event.initData))
 EVENT(webkitkeymessage)
 keymessage event occurred
 EXPECTED (event.target == '[object HTMLVideoElement]') OK
@@ -75,10 +144,23 @@ EXPECTED (event.sessionId > '0') OK
 The sessionsId should be different from the first run.
 EXPECTED (event.sessionId != firstRunKeyMessageSessionId == 'true') OK
 EXPECTED (event.initData === 'null') OK
-EXPECTED (event.message.length == '3') OK
-EXPECTED (event.message[0] == '65') OK
-EXPECTED (event.message[1] == '66') OK
-EXPECTED (event.message[2] == '67') OK
+EXPECTED (event.message.length == '16') OK
+EXPECTED (event.message[0] == '48') OK
+EXPECTED (event.message[1] == '49') OK
+EXPECTED (event.message[2] == '50') OK
+EXPECTED (event.message[3] == '51') OK
+EXPECTED (event.message[4] == '52') OK
+EXPECTED (event.message[5] == '53') OK
+EXPECTED (event.message[6] == '54') OK
+EXPECTED (event.message[7] == '55') OK
+EXPECTED (event.message[8] == '56') OK
+EXPECTED (event.message[9] == '57') OK
+EXPECTED (event.message[10] == '48') OK
+EXPECTED (event.message[11] == '49') OK
+EXPECTED (event.message[12] == '50') OK
+EXPECTED (event.message[13] == '51') OK
+EXPECTED (event.message[14] == '52') OK
+EXPECTED (event.message[15] == '53') OK
 EXPECTED (event.defaultURL == '') OK
 EXPECTED (event.errorCode === 'null') OK
 EXPECTED (event.systemCode == '0') OK
