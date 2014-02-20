@@ -73,7 +73,8 @@ void CountryRulesAggregator::OnDataReady(bool success,
   }
 
   scoped_ptr<Ruleset> ruleset = Build(key_, COUNTRY);
-  (*rules_ready_)(ruleset != NULL, country_code_, ruleset.Pass());
+  const bool parse_success = ruleset != NULL;
+  (*rules_ready_)(parse_success, country_code_, ruleset.Pass());
   Reset();
 }
 
