@@ -45,6 +45,9 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                                 std::string remote_ip,
                                 bool use_ssl) OVERRIDE;
 
+  // Create new SPDY framer after reusing SpdySM and negotiating new version
+  void CreateFramer(SpdyMajorVersion spdy_version);
+
  private:
   virtual void set_is_request() OVERRIDE {}
   SMInterface* NewConnectionInterface();

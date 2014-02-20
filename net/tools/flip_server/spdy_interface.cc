@@ -297,21 +297,25 @@ void SpdySM::OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) {
 }
 
 size_t SpdySM::ProcessReadInput(const char* data, size_t len) {
+  DCHECK(buffered_spdy_framer_);
   return buffered_spdy_framer_->ProcessInput(data, len);
 }
 
 size_t SpdySM::ProcessWriteInput(const char* data, size_t len) { return 0; }
 
 bool SpdySM::MessageFullyRead() const {
+  DCHECK(buffered_spdy_framer_);
   return buffered_spdy_framer_->MessageFullyRead();
 }
 
 bool SpdySM::Error() const {
+  DCHECK(buffered_spdy_framer_);
   return close_on_error_ || buffered_spdy_framer_->HasError();
 }
 
 const char* SpdySM::ErrorAsString() const {
   DCHECK(Error());
+  DCHECK(buffered_spdy_framer_);
   return SpdyFramer::ErrorCodeToString(buffered_spdy_framer_->error_code());
 }
 
@@ -324,8 +328,7 @@ void SpdySM::ResetForNewInterface(int32 server_idx) {
 void SpdySM::ResetForNewConnection() {
   // seq_num is not cleared, intentionally.
   delete buffered_spdy_framer_;
-  buffered_spdy_framer_ = new BufferedSpdyFramer(SPDY2, true);
-  buffered_spdy_framer_->set_visitor(this);
+  buffered_spdy_framer_ = NULL;
   valid_spdy_session_ = false;
   client_output_ordering_.Reset();
   next_outgoing_stream_id_ = 2;
@@ -333,6 +336,8 @@ void SpdySM::ResetForNewConnection() {
 
 // Send a settings frame
 int SpdySM::PostAcceptHook() {
+  // We should have buffered_spdy_framer_ set after reuse
+  DCHECK(buffered_spdy_framer_);
   SettingsMap settings;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 100);
@@ -470,6 +475,7 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
     }
   }
 
+  DCHECK(buffered_spdy_framer_);
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
       stream_id, 0, 0, CONTROL_FLAG_NONE, &block);
   size_t df_size = fsrcf->size();
@@ -493,6 +499,7 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
     block[":version"] = headers.response_version().as_string();
   }
 
+  DCHECK(buffered_spdy_framer_);
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
       stream_id, CONTROL_FLAG_NONE, &block);
   size_t df_size = fsrcf->size();
@@ -508,6 +515,7 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id,
                                int64 len,
                                SpdyDataFlags flags,
                                bool compress) {
+  DCHECK(buffered_spdy_framer_);
   // TODO(mbelshe):  We can't compress here - before going into the
   //                 priority queue.  Compression needs to be done
   //                 with late binding.
@@ -606,6 +614,12 @@ void SpdySM::GetOutput() {
     mci->body_bytes_consumed += num_to_write;
     mci->bytes_sent += num_to_write;
   }
+}
+
+void SpdySM::CreateFramer(SpdyMajorVersion spdy_version) {
+  DCHECK(!buffered_spdy_framer_);
+  buffered_spdy_framer_ = new BufferedSpdyFramer(spdy_version, true);
+  buffered_spdy_framer_->set_visitor(this);
 }
 
 }  // namespace net

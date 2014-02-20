@@ -395,7 +395,19 @@ TEST_P(SpdySMProxyTest, ResetForNewConnection) {
 
   interface_->ResetForNewConnection();
   ASSERT_FALSE(HasStream(stream_id));
-  ASSERT_EQ(SpdyFramer::SPDY_RESET, interface_->spdy_framer()->state());
+  ASSERT_TRUE(interface_->spdy_framer() == NULL);
+}
+
+TEST_P(SpdySMProxyTest, CreateFramer) {
+  interface_->ResetForNewConnection();
+  interface_->CreateFramer(SPDY2);
+  ASSERT_TRUE(interface_->spdy_framer() != NULL);
+  ASSERT_EQ(interface_->spdy_version(), SPDY2);
+
+  interface_->ResetForNewConnection();
+  interface_->CreateFramer(SPDY3);
+  ASSERT_TRUE(interface_->spdy_framer() != NULL);
+  ASSERT_EQ(interface_->spdy_version(), SPDY3);
 }
 
 TEST_P(SpdySMProxyTest, PostAcceptHook) {

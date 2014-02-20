@@ -25,6 +25,7 @@ namespace net {
 class FlipAcceptor;
 class MemoryCache;
 struct SSLState;
+class SpdySM;
 
 // A frame of data to be sent.
 class DataFrame {
@@ -146,7 +147,7 @@ class SMConnection : public SMConnectionInterface,
   RingBuffer read_buffer_;
 
   OutputList output_list_;
-  SMInterface* sm_spdy_interface_;
+  SpdySM* sm_spdy_interface_;
   SMInterface* sm_http_interface_;
   SMInterface* sm_streamer_interface_;
   SMInterface* sm_interface_;

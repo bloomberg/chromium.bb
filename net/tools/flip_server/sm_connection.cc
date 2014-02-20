@@ -391,7 +391,9 @@ bool SMConnection::SetupProtocolInterfaces() {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << (sm_spdy_interface_ ? "Creating" : "Reusing")
               << " SPDY interface.";
-      if (!sm_spdy_interface_)
+      if (sm_spdy_interface_)
+        sm_spdy_interface_->CreateFramer(version);
+      else
         sm_spdy_interface_ = new SpdySM(
             this, NULL, epoll_server_, memory_cache_, acceptor_, version);
       sm_interface_ = sm_spdy_interface_;
