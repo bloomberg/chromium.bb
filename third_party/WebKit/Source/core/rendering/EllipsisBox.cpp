@@ -80,7 +80,6 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         context->setDrawLooper(drawLooper);
     }
 
-    // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
     TextRun textRun = RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = boxRect;
@@ -131,7 +130,6 @@ IntRect EllipsisBox::selectionRect()
 {
     RenderStyle* style = m_renderer->style(isFirstLineStyle());
     const Font& font = style->font();
-    // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
     return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root()->selectionTopAdjustedForPrecedingBlock()), root()->selectionHeightAdjustedForPrecedingBlock()));
 }
 
@@ -156,7 +154,6 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h));
     alignSelectionRectToDevicePixels(clipRect);
     context->clip(clipRect);
-    // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
     context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
 }
 
