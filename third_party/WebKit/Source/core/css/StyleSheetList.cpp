@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(StyleSheetList);
+
 using namespace HTMLNames;
 
 StyleSheetList::StyleSheetList(TreeScope* treeScope)
@@ -87,6 +89,10 @@ CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
     if (!item)
         return 0;
     return item->sheet();
+}
+
+void StyleSheetList::trace(Visitor* visitor)
+{
 }
 
 } // namespace WebCore

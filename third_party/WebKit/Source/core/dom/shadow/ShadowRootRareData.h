@@ -73,7 +73,7 @@ public:
     void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
-    void setStyleSheets(PassRefPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
+    void setStyleSheets(PassRefPtrWillBeRawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
     bool childrenAffectedByDirectAdjacentRules() const { return m_childrenAffectedByDirectAdjacentRules; }
     void setChildrenAffectedByDirectAdjacentRules(bool value) { m_childrenAffectedByDirectAdjacentRules = value; }
@@ -95,7 +95,7 @@ private:
     unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
     Vector<RefPtr<InsertionPoint> > m_descendantInsertionPoints;
-    RefPtr<StyleSheetList> m_styleSheetList;
+    RefPtrWillBePersistent<StyleSheetList> m_styleSheetList;
 
     unsigned m_childrenAffectedByDirectAdjacentRules : 1;
     unsigned m_childrenAffectedByForwardPositionalRules : 1;
