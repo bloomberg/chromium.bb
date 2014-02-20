@@ -51,29 +51,29 @@ const char* NavigatorStorageQuota::supplementName()
     return "NavigatorStorageQuota";
 }
 
-NavigatorStorageQuota* NavigatorStorageQuota::from(Navigator* navigator)
+NavigatorStorageQuota& NavigatorStorageQuota::from(Navigator& navigator)
 {
     NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorStorageQuota(navigator->frame());
+        supplement = new NavigatorStorageQuota(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-StorageQuota* NavigatorStorageQuota::storageQuota(Navigator* navigator)
+StorageQuota* NavigatorStorageQuota::storageQuota(Navigator& navigator)
 {
-    return NavigatorStorageQuota::from(navigator)->storageQuota();
+    return NavigatorStorageQuota::from(navigator).storageQuota();
 }
 
-DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator* navigator)
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator& navigator)
 {
-    return NavigatorStorageQuota::from(navigator)->webkitTemporaryStorage();
+    return NavigatorStorageQuota::from(navigator).webkitTemporaryStorage();
 }
 
-DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage(Navigator* navigator)
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage(Navigator& navigator)
 {
-    return NavigatorStorageQuota::from(navigator)->webkitPersistentStorage();
+    return NavigatorStorageQuota::from(navigator).webkitPersistentStorage();
 }
 
 StorageQuota* NavigatorStorageQuota::storageQuota() const

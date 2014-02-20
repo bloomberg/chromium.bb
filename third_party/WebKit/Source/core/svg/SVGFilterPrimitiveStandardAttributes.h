@@ -44,11 +44,11 @@ public:
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);
 
     // SVGFilterPrimitiveStandardAttributes JS API.
-    static SVGAnimatedLength* x(SVGFilterPrimitiveStandardAttributes* object) { return object->x(); }
-    static SVGAnimatedLength* y(SVGFilterPrimitiveStandardAttributes* object) { return object->y(); }
-    static SVGAnimatedLength* width(SVGFilterPrimitiveStandardAttributes* object) { return object->width(); }
-    static SVGAnimatedLength* height(SVGFilterPrimitiveStandardAttributes* object) { return object->height(); }
-    static SVGAnimatedString* result(SVGFilterPrimitiveStandardAttributes* object) { return object->result(); }
+    static SVGAnimatedLength* x(SVGFilterPrimitiveStandardAttributes& object) { return object.x(); }
+    static SVGAnimatedLength* y(SVGFilterPrimitiveStandardAttributes& object) { return object.y(); }
+    static SVGAnimatedLength* width(SVGFilterPrimitiveStandardAttributes& object) { return object.width(); }
+    static SVGAnimatedLength* height(SVGFilterPrimitiveStandardAttributes& object) { return object.height(); }
+    static SVGAnimatedString* result(SVGFilterPrimitiveStandardAttributes& object) { return object.result(); }
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

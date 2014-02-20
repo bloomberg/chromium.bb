@@ -60,20 +60,20 @@ class ImageBitmapFactories FINAL : public Supplement<DOMWindow>, public WorkerSu
 class ImageBitmapLoader;
 
 public:
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLImageElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLVideoElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, CanvasRenderingContext2D*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLCanvasElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, Blob*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, ImageData*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, ImageBitmap*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLImageElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLVideoElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, CanvasRenderingContext2D*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLCanvasElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, Blob*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, ImageData*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
     void didFinishLoading(ImageBitmapLoader*);
 
@@ -82,7 +82,7 @@ public:
 private:
     class ImageBitmapLoader FINAL : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
-        static PassRefPtr<ImageBitmapLoader> create(ImageBitmapFactories* factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
+        static PassRefPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
         {
             return adoptRef(new ImageBitmapLoader(factory, resolver, cropRect));
         }
@@ -92,7 +92,7 @@ private:
         virtual ~ImageBitmapLoader() { }
 
     private:
-        ImageBitmapLoader(ImageBitmapFactories*, PassRefPtr<ScriptPromiseResolver>, const IntRect&);
+        ImageBitmapLoader(ImageBitmapFactories&, PassRefPtr<ScriptPromiseResolver>, const IntRect&);
 
         void rejectPromise();
 
@@ -110,10 +110,10 @@ private:
     };
 
     static const char* supplementName();
-    static ImageBitmapFactories* from(EventTarget*);
+    static ImageBitmapFactories& from(EventTarget&);
 
     template <class T>
-    static ImageBitmapFactories* fromInternal(T*);
+    static ImageBitmapFactories& fromInternal(T&);
 
     void addLoader(PassRefPtr<ImageBitmapLoader>);
 

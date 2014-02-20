@@ -55,7 +55,7 @@ public:
     FileSystemClient* client() { return m_client.get(); }
 
     static const char* supplementName();
-    static LocalFileSystem* from(ExecutionContext*);
+    static LocalFileSystem* from(ExecutionContext&);
 
 protected:
     explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);

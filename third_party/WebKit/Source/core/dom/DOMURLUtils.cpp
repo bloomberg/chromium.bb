@@ -31,54 +31,54 @@
 
 namespace WebCore {
 
-void DOMURLUtils::setHref(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setHref(DOMURLUtils& impl, const String& value)
 {
-    impl->setInput(value);
+    impl.setInput(value);
 }
 
-void DOMURLUtils::setProtocol(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setProtocol(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (url.isNull())
         return;
     url.setProtocol(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setUsername(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setUsername(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (url.isNull())
         return;
     url.setUser(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setPassword(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setPassword(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (url.isNull())
         return;
     url.setPass(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setHost(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setHost(DOMURLUtils& impl, const String& value)
 {
     if (value.isEmpty())
         return;
 
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (!url.canSetHostOrPort())
         return;
 
     url.setHostAndPort(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setHostname(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setHostname(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (!url.canSetHostOrPort())
         return;
 
@@ -94,40 +94,40 @@ void DOMURLUtils::setHostname(DOMURLUtils* impl, const String& value)
 
     url.setHost(value.substring(i));
 
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setPort(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setPort(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (!url.canSetHostOrPort())
         return;
 
     url.setPort(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setPathname(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setPathname(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (!url.canSetPathname())
         return;
     url.setPath(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setSearch(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setSearch(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (!url.isValid())
         return;
     url.setQuery(value);
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
-void DOMURLUtils::setHash(DOMURLUtils* impl, const String& value)
+void DOMURLUtils::setHash(DOMURLUtils& impl, const String& value)
 {
-    KURL url = impl->url();
+    KURL url = impl.url();
     if (url.isNull())
         return;
 
@@ -136,7 +136,7 @@ void DOMURLUtils::setHash(DOMURLUtils* impl, const String& value)
     else
         url.setFragmentIdentifier(value);
 
-    impl->setURL(url);
+    impl.setURL(url);
 }
 
 } // namespace WebCore

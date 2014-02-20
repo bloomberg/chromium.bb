@@ -51,7 +51,7 @@ public:
     }
 
     // SVGURIReference JS API.
-    static SVGAnimatedString* href(SVGURIReference* object) { return object->href(); }
+    static SVGAnimatedString* href(SVGURIReference& object) { return object.href(); }
 
     SVGAnimatedString* href() const { return m_href.get(); }
     const String& hrefString() const { return m_href->currentValue()->value(); }

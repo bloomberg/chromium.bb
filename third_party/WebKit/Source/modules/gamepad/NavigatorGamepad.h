@@ -37,9 +37,9 @@ class Navigator;
 class NavigatorGamepad FINAL : public Supplement<Navigator> {
 public:
     virtual ~NavigatorGamepad();
-    static NavigatorGamepad* from(Navigator*);
+    static NavigatorGamepad& from(Navigator&);
 
-    static GamepadList* webkitGetGamepads(Navigator*);
+    static GamepadList* webkitGetGamepads(Navigator&);
 
     GamepadList* gamepads();
 

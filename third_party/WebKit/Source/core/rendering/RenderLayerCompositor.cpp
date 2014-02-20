@@ -322,14 +322,14 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
         (*it)->updateNeedsCompositedScrolling();
 }
 
-static RenderVideo* findFullscreenVideoRenderer(Document* document)
+static RenderVideo* findFullscreenVideoRenderer(Document& document)
 {
     Element* fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
     while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
-        document = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
-        if (!document)
+        Document* contentDocument = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
+        if (!contentDocument)
             return 0;
-        fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
+        fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(*contentDocument);
     }
     if (!fullscreenElement || !fullscreenElement->hasTagName(videoTag))
         return 0;
@@ -473,7 +473,7 @@ void RenderLayerCompositor::updateCompositingLayers()
 
         // Host the document layer in the RenderView's root layer.
         if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
-            RenderVideo* video = findFullscreenVideoRenderer(&m_renderView->document());
+            RenderVideo* video = findFullscreenVideoRenderer(m_renderView->document());
             if (video && video->hasCompositedLayerMapping()) {
                 childList.clear();
                 childList.append(video->compositedLayerMapping()->mainGraphicsLayer());

@@ -19,20 +19,20 @@ class Screen;
 
 class ScreenOrientation FINAL : public Supplement<Screen>, DOMWindowProperty {
 public:
-    static ScreenOrientation* from(Screen*);
+    static ScreenOrientation& from(Screen&);
     virtual ~ScreenOrientation();
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 
-    static const AtomicString& orientation(Screen*);
-    static bool lockOrientation(Screen*, const Vector<String>& orientations);
-    static bool lockOrientation(Screen*, const AtomicString& orientation);
-    static void unlockOrientation(Screen*);
+    static const AtomicString& orientation(Screen&);
+    static bool lockOrientation(Screen&, const Vector<String>& orientations);
+    static bool lockOrientation(Screen&, const AtomicString& orientation);
+    static void unlockOrientation(Screen&);
 
 private:
-    explicit ScreenOrientation(Screen*);
+    explicit ScreenOrientation(Screen&);
     static const char* supplementName();
-    Document* document() const;
+    Document& document() const;
 };
 
 } // namespace WebCore

@@ -121,7 +121,8 @@ static void implementsStaticStringAttributeAttributeSetterCallback(v8::Local<v8:
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, TestImplements::implementsReadonlyStringAttribute(imp), info.GetIsolate());
+    ASSERT(imp);
+    v8SetReturnValueString(info, TestImplements::implementsReadonlyStringAttribute(*imp), info.GetIsolate());
 }
 
 static void implementsReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -134,7 +135,8 @@ static void implementsReadonlyStringAttributeAttributeGetterCallback(v8::Local<v
 static void implementsStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, TestImplements::implementsStringAttribute(imp), info.GetIsolate());
+    ASSERT(imp);
+    v8SetReturnValueString(info, TestImplements::implementsStringAttribute(*imp), info.GetIsolate());
 }
 
 static void implementsStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -148,7 +150,8 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValu
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    TestImplements::setImplementsStringAttribute(imp, cppValue);
+    ASSERT(imp);
+    TestImplements::setImplementsStringAttribute(*imp, cppValue);
 }
 
 static void implementsStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -161,7 +164,8 @@ static void implementsStringAttributeAttributeSetterCallback(v8::Local<v8::Strin
 static void implementsNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestImplements::implementsNodeAttribute(imp), imp);
+    ASSERT(imp);
+    v8SetReturnValueFast(info, TestImplements::implementsNodeAttribute(*imp), imp);
 }
 
 static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -175,7 +179,8 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsNodeAttribute(imp, WTF::getPtr(cppValue));
+    ASSERT(imp);
+    TestImplements::setImplementsNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
 static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -188,7 +193,9 @@ static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>
 static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(imp);
+    ASSERT(imp);
+    ASSERT(imp);
+    EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(*imp);
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -202,8 +209,10 @@ static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8:
 static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(imp), jsValue, V8TestInterface::eventListenerCacheIndex, info.GetIsolate());
-    TestImplements::setImplementsEventHandlerAttribute(imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
+    ASSERT(imp);
+    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(*imp), jsValue, V8TestInterface::eventListenerCacheIndex, info.GetIsolate());
+    ASSERT(imp);
+    TestImplements::setImplementsEventHandlerAttribute(*imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
 static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -216,7 +225,8 @@ static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8:
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestImplements::implementsRuntimeEnabledNodeAttribute(imp), imp);
+    ASSERT(imp);
+    v8SetReturnValueFast(info, TestImplements::implementsRuntimeEnabledNodeAttribute(*imp), imp);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -230,7 +240,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsRuntimeEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
+    ASSERT(imp);
+    TestImplements::setImplementsRuntimeEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -243,7 +254,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Loc
 static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestImplements::implementsPerContextEnabledNodeAttribute(imp), imp);
+    ASSERT(imp);
+    v8SetReturnValueFast(info, TestImplements::implementsPerContextEnabledNodeAttribute(*imp), imp);
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -257,7 +269,8 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestImplements::setImplementsPerContextEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
+    ASSERT(imp);
+    TestImplements::setImplementsPerContextEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -320,7 +333,8 @@ static void supplementalStaticAttrAttributeSetterCallback(v8::Local<v8::String>,
 static void supplementalStr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, TestPartialInterface::supplementalStr1(imp), info.GetIsolate());
+    ASSERT(imp);
+    v8SetReturnValueString(info, TestPartialInterface::supplementalStr1(*imp), info.GetIsolate());
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -337,7 +351,8 @@ static void supplementalStr1AttributeGetterCallback(v8::Local<v8::String>, const
 static void supplementalStr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, TestPartialInterface::supplementalStr2(imp), info.GetIsolate());
+    ASSERT(imp);
+    v8SetReturnValueString(info, TestPartialInterface::supplementalStr2(*imp), info.GetIsolate());
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -355,7 +370,8 @@ static void supplementalStr2AttributeSetter(v8::Local<v8::Value> jsValue, const 
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    TestPartialInterface::setSupplementalStr2(imp, cppValue);
+    ASSERT(imp);
+    TestPartialInterface::setSupplementalStr2(*imp, cppValue);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -372,7 +388,8 @@ static void supplementalStr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void supplementalNodeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestPartialInterface::supplementalNode(imp), imp);
+    ASSERT(imp);
+    v8SetReturnValueFast(info, TestPartialInterface::supplementalNode(*imp), imp);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -390,7 +407,8 @@ static void supplementalNodeAttributeSetter(v8::Local<v8::Value> jsValue, const 
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestPartialInterface::setSupplementalNode(imp, WTF::getPtr(cppValue));
+    ASSERT(imp);
+    TestPartialInterface::setSupplementalNode(*imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -407,7 +425,8 @@ static void supplementalNodeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void Node13AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestPartialInterface::node13(imp), imp);
+    ASSERT(imp);
+    v8SetReturnValueFast(info, TestPartialInterface::node13(*imp), imp);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -425,7 +444,8 @@ static void Node13AttributeSetter(v8::Local<v8::Value> jsValue, const v8::Proper
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
-    TestPartialInterface::setNode13(imp, WTF::getPtr(cppValue));
+    ASSERT(imp);
+    TestPartialInterface::setNode13(*imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -472,7 +492,8 @@ static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    TestImplements::implementsVoidMethod(imp);
+    ASSERT(imp);
+    TestImplements::implementsVoidMethod(*imp);
 }
 
 static void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -493,8 +514,9 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    ASSERT(imp);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, *imp, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -530,7 +552,8 @@ static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackI
 static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    TestPartialInterface::supplementalMethod1(imp);
+    ASSERT(imp);
+    TestPartialInterface::supplementalMethod1(*imp);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -555,8 +578,9 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    ASSERT(imp);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, *imp, strArg, objArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());

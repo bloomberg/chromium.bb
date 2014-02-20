@@ -44,19 +44,19 @@ const char* NavigatorGeolocation::supplementName()
     return "NavigatorGeolocation";
 }
 
-NavigatorGeolocation* NavigatorGeolocation::from(Navigator* navigator)
+NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator)
 {
     NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorGeolocation(navigator->frame());
+        supplement = new NavigatorGeolocation(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-Geolocation* NavigatorGeolocation::geolocation(Navigator* navigator)
+Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator)
 {
-    return NavigatorGeolocation::from(navigator)->geolocation();
+    return NavigatorGeolocation::from(navigator).geolocation();
 }
 
 Geolocation* NavigatorGeolocation::geolocation() const

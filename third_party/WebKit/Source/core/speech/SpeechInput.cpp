@@ -120,7 +120,7 @@ const char* SpeechInput::supplementName()
     return "SpeechInput";
 }
 
-void provideSpeechInputTo(Page* page, SpeechInputClient* client)
+void provideSpeechInputTo(Page& page, SpeechInputClient* client)
 {
     SpeechInput::provideTo(page, SpeechInput::supplementName(), SpeechInput::create(client));
 }

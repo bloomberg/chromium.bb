@@ -40,25 +40,25 @@ namespace WebCore {
 
 namespace DOMWindowTimers {
 
-int setTimeout(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
+int setTimeout(EventTarget& eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    return DOMTimer::install(eventTarget->executionContext(), action, timeout, true);
+    return DOMTimer::install(eventTarget.executionContext(), action, timeout, true);
 }
 
-int setInterval(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
+int setInterval(EventTarget& eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    return DOMTimer::install(eventTarget->executionContext(), action, timeout, false);
+    return DOMTimer::install(eventTarget.executionContext(), action, timeout, false);
 }
 
-void clearTimeout(EventTarget* eventTarget, int timeoutID)
+void clearTimeout(EventTarget& eventTarget, int timeoutID)
 {
-    if (ExecutionContext* context = eventTarget->executionContext())
+    if (ExecutionContext* context = eventTarget.executionContext())
         DOMTimer::removeByID(context, timeoutID);
 }
 
-void clearInterval(EventTarget* eventTarget, int timeoutID)
+void clearInterval(EventTarget& eventTarget, int timeoutID)
 {
-    if (ExecutionContext* context = eventTarget->executionContext())
+    if (ExecutionContext* context = eventTarget.executionContext())
         DOMTimer::removeByID(context, timeoutID);
 }
 

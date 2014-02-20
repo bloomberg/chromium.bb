@@ -32,11 +32,11 @@
 
 namespace WebCore {
 
-String DOMURLUtilsReadOnly::href(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::href(DOMURLUtilsReadOnly& impl)
 {
-    const KURL& url = impl->url();
+    const KURL& url = impl.url();
     if (url.isNull())
-        return impl->input();
+        return impl.input();
     return url.string();
 }
 

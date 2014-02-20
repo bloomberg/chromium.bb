@@ -85,8 +85,8 @@ public:
     virtual void urlDidChange(Document*) { }
 };
 
-void provideContextFeaturesTo(Page*, ContextFeaturesClient*);
-void provideContextFeaturesToDocumentFrom(Document*, Page*);
+void provideContextFeaturesTo(Page&, ContextFeaturesClient*);
+void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
 inline PassRefPtr<ContextFeatures> ContextFeatures::create(ContextFeaturesClient* client)
 {

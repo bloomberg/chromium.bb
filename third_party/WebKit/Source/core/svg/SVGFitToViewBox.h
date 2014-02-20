@@ -72,8 +72,8 @@ public:
     }
 
     // SVGFitToViewBox JS API.
-    static SVGAnimatedRect* viewBox(SVGFitToViewBox* object) { return object->viewBox(); }
-    static SVGAnimatedPreserveAspectRatio* preserveAspectRatio(SVGFitToViewBox* object) { return object->preserveAspectRatio(); }
+    static SVGAnimatedRect* viewBox(SVGFitToViewBox& object) { return object.viewBox(); }
+    static SVGAnimatedPreserveAspectRatio* preserveAspectRatio(SVGFitToViewBox& object) { return object.preserveAspectRatio(); }
 
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }

@@ -42,7 +42,7 @@ class Frame;
 
 class DOMWindowWebDatabase {
 public:
-    static PassRefPtr<Database> openDatabase(DOMWindow*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtr<Database> openDatabase(DOMWindow&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
 
 private:
     DOMWindowWebDatabase() { };

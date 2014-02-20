@@ -53,19 +53,19 @@ const char* NavigatorWebMIDI::supplementName()
     return "NavigatorWebMIDI";
 }
 
-NavigatorWebMIDI* NavigatorWebMIDI::from(Navigator* navigator)
+NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
 {
     NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorWebMIDI(navigator->frame());
+        supplement = new NavigatorWebMIDI(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Navigator* navigator, const Dictionary& options)
+PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Navigator& navigator, const Dictionary& options)
 {
-    return NavigatorWebMIDI::from(navigator)->requestMIDIAccess(options);
+    return NavigatorWebMIDI::from(navigator).requestMIDIAccess(options);
 }
 
 PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)

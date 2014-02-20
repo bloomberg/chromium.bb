@@ -2029,6 +2029,7 @@ void FrameView::performPostLayoutTasks()
     m_frame->selection().setCaretRectNeedsUpdate();
     m_frame->selection().updateAppearance();
 
+    ASSERT(m_frame->document());
     if (m_nestedLayoutCount <= 1) {
         if (m_firstLayoutCallbackPending) {
             m_firstLayoutCallbackPending = false;
@@ -2048,7 +2049,7 @@ void FrameView::performPostLayoutTasks()
         }
     }
 
-    FontFaceSet::didLayout(m_frame->document());
+    FontFaceSet::didLayout(*m_frame->document());
 
     updateWidgetPositions();
 

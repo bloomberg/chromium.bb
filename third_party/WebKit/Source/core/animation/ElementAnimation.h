@@ -41,9 +41,9 @@ class Element;
 
 class ElementAnimation {
 public:
-    static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector, Dictionary timingInput);
-    static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector, double timingInput);
-    static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector);
+    static Animation* animate(Element&, Vector<Dictionary> keyframesDictionaryVector, Dictionary timingInput);
+    static Animation* animate(Element&, Vector<Dictionary> keyframesDictionaryVector, double timingInput);
+    static Animation* animate(Element&, Vector<Dictionary> keyframesDictionaryVector);
 };
 
 } // namespace WebCore

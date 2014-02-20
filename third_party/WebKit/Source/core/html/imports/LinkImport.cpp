@@ -74,7 +74,7 @@ void LinkImport::process()
 
     if (!m_owner->document().import()) {
         ASSERT(m_owner->document().frame()); // The document should be the master.
-        HTMLImportsController::provideTo(&m_owner->document());
+        HTMLImportsController::provideTo(m_owner->document());
     }
 
     LinkRequestBuilder builder(m_owner);

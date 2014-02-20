@@ -75,9 +75,11 @@ const char* WorkerPermissionClient::supplementName()
     return "WorkerPermissionClient";
 }
 
-WorkerPermissionClient* WorkerPermissionClient::from(ExecutionContext* context)
+WorkerPermissionClient* WorkerPermissionClient::from(ExecutionContext& context)
 {
-    return static_cast<WorkerPermissionClient*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+    WorkerClients* clients = toWorkerGlobalScope(context).clients();
+    ASSERT(clients);
+    return static_cast<WorkerPermissionClient*>(Supplement<WorkerClients>::from(*clients, supplementName()));
 }
 
 WorkerPermissionClient::WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
@@ -87,7 +89,8 @@ WorkerPermissionClient::WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionCli
 
 void providePermissionClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
 {
-    WorkerPermissionClient::provideTo(clients, WorkerPermissionClient::supplementName(), WorkerPermissionClient::create(proxy));
+    ASSERT(clients);
+    WorkerPermissionClient::provideTo(*clients, WorkerPermissionClient::supplementName(), WorkerPermissionClient::create(proxy));
 }
 
 } // namespace blink

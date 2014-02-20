@@ -38,28 +38,25 @@ namespace WebCore {
 
 class ParentNode {
 public:
-    static PassRefPtr<HTMLCollection> children(ContainerNode* node)
+    static PassRefPtr<HTMLCollection> children(ContainerNode& node)
     {
-        return node->children();
+        return node.children();
     }
 
-    static Element* firstElementChild(ContainerNode* node)
+    static Element* firstElementChild(ContainerNode& node)
     {
-        ASSERT(node);
-        return ElementTraversal::firstWithin(*node);
+        return ElementTraversal::firstWithin(node);
     }
 
-    static Element* lastElementChild(ContainerNode* node)
+    static Element* lastElementChild(ContainerNode& node)
     {
-        ASSERT(node);
-        return ElementTraversal::lastWithin(*node);
+        return ElementTraversal::lastWithin(node);
     }
 
-    static unsigned childElementCount(ContainerNode* node)
+    static unsigned childElementCount(ContainerNode& node)
     {
-        ASSERT(node);
         unsigned count = 0;
-        for (Element* child = ElementTraversal::firstWithin(*node); child; child = ElementTraversal::nextSibling(*child))
+        for (Element* child = ElementTraversal::firstWithin(node); child; child = ElementTraversal::nextSibling(*child))
             ++count;
         return count;
     }

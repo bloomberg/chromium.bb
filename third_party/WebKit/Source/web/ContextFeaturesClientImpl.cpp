@@ -79,7 +79,7 @@ public:
     };
 
     static const char* supplementName();
-    static ContextFeaturesCache* from(Document*);
+    static ContextFeaturesCache& from(Document&);
 
     Entry& entryFor(ContextFeatures::FeatureType type)
     {
@@ -100,7 +100,7 @@ const char* ContextFeaturesCache::supplementName()
     return "ContextFeaturesCache";
 }
 
-ContextFeaturesCache* ContextFeaturesCache::from(Document* document)
+ContextFeaturesCache& ContextFeaturesCache::from(Document& document)
 {
     ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
@@ -108,7 +108,7 @@ ContextFeaturesCache* ContextFeaturesCache::from(Document* document)
         DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
     }
 
-    return cache;
+    return *cache;
 }
 
 void ContextFeaturesCache::validateAgainst(Document* document)
@@ -123,7 +123,8 @@ void ContextFeaturesCache::validateAgainst(Document* document)
 
 bool ContextFeaturesClientImpl::isEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
 {
-    ContextFeaturesCache::Entry& cache = ContextFeaturesCache::from(document)->entryFor(type);
+    ASSERT(document);
+    ContextFeaturesCache::Entry& cache = ContextFeaturesCache::from(*document).entryFor(type);
     if (cache.needsRefresh(defaultValue))
         cache.set(askIfIsEnabled(document, type, defaultValue), defaultValue);
     return cache.isEnabled();
@@ -131,7 +132,8 @@ bool ContextFeaturesClientImpl::isEnabled(Document* document, ContextFeatures::F
 
 void ContextFeaturesClientImpl::urlDidChange(Document* document)
 {
-    ContextFeaturesCache::from(document)->validateAgainst(document);
+    ASSERT(document);
+    ContextFeaturesCache::from(*document).validateAgainst(document);
 }
 
 bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)

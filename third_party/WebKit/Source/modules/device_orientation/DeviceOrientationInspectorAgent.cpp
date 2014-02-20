@@ -15,17 +15,17 @@
 
 namespace WebCore {
 
-void DeviceOrientationInspectorAgent::provideTo(Page* page)
+void DeviceOrientationInspectorAgent::provideTo(Page& page)
 {
     OwnPtr<DeviceOrientationInspectorAgent> deviceOrientationAgent(adoptPtr(new DeviceOrientationInspectorAgent(page)));
-    page->inspectorController().registerModuleAgent(deviceOrientationAgent.release());
+    page.inspectorController().registerModuleAgent(deviceOrientationAgent.release());
 }
 
 DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()
 {
 }
 
-DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page* page)
+DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
     : InspectorBaseAgent<DeviceOrientationInspectorAgent>("DeviceOrientation")
     , m_page(page)
 {
@@ -33,12 +33,9 @@ DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page* page)
 
 void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
 {
-    DeviceOrientationController* controller = DeviceOrientationController::from(m_page->mainFrame()->document());
-    if (!controller) {
-        *error = "Internal error: unable to override device orientation";
-        return;
-    }
-    controller->didChangeDeviceOrientation(DeviceOrientationData::create(true, alpha, true, beta, true, gamma).get());
+    ASSERT(m_page.mainFrame()->document());
+    DeviceOrientationController& controller = DeviceOrientationController::from(*m_page.mainFrame()->document());
+    controller.didChangeDeviceOrientation(DeviceOrientationData::create(true, alpha, true, beta, true, gamma).get());
 }
 
 void DeviceOrientationInspectorAgent::clearDeviceOrientationOverride(ErrorString* error)

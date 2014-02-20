@@ -37,36 +37,36 @@
 
 namespace WebCore {
 
-Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
+Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
-    RefPtr<Animation> animation = Animation::create(element, keyframeDictionaryVector, timingInput);
-    DocumentTimeline* timeline = element->document().timeline();
+    RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector, timingInput);
+    DocumentTimeline* timeline = element.document().timeline();
     ASSERT(timeline);
     timeline->play(animation.get());
 
     return animation.get();
 }
 
-Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
+Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
-    RefPtr<Animation> animation = Animation::create(element, keyframeDictionaryVector, timingInput);
-    DocumentTimeline* timeline = element->document().timeline();
+    RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector, timingInput);
+    DocumentTimeline* timeline = element.document().timeline();
     ASSERT(timeline);
     timeline->play(animation.get());
 
     return animation.get();
 }
 
-Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyframeDictionaryVector)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
-    RefPtr<Animation> animation = Animation::create(element, keyframeDictionaryVector);
-    DocumentTimeline* timeline = element->document().timeline();
+    RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector);
+    DocumentTimeline* timeline = element.document().timeline();
     ASSERT(timeline);
     timeline->play(animation.get());
 

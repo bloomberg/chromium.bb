@@ -799,7 +799,7 @@ unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
 
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
-            wheelEventHandlerCount += WheelController::from(frame->document())->wheelEventHandlerCount();
+            wheelEventHandlerCount += WheelController::from(*frame->document())->wheelEventHandlerCount();
     }
 
     return wheelEventHandlerCount;

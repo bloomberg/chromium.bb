@@ -46,10 +46,8 @@ DraggedIsolatedFileSystem::~DraggedIsolatedFileSystem()
 DOMFileSystem* DraggedIsolatedFileSystem::getDOMFileSystem(ExecutionContext* executionContext)
 {
     ASSERT(!m_filesystemId.isEmpty());
-    if (!m_filesystem) {
-        ASSERT(executionContext);
+    if (!m_filesystem)
         m_filesystem = DOMFileSystem::createIsolatedFileSystem(executionContext, m_filesystemId);
-    }
     return m_filesystem.get();
 }
 

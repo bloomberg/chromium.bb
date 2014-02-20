@@ -38,20 +38,20 @@ class DOMWindow;
 class DOMWindowIndexedDatabase FINAL : public DOMWindowProperty, public Supplement<DOMWindow> {
 public:
     virtual ~DOMWindowIndexedDatabase();
-    static DOMWindowIndexedDatabase* from(DOMWindow*);
+    static DOMWindowIndexedDatabase& from(DOMWindow&);
 
-    static IDBFactory* indexedDB(DOMWindow*);
+    static IDBFactory* indexedDB(DOMWindow&);
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
 private:
-    explicit DOMWindowIndexedDatabase(DOMWindow*);
+    explicit DOMWindowIndexedDatabase(DOMWindow&);
 
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    DOMWindow* m_window;
+    DOMWindow& m_window;
     RefPtr<IDBFactory> m_idbFactory;
 };
 

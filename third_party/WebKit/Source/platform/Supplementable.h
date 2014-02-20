@@ -98,9 +98,14 @@ public:
     virtual bool isRefCountedWrapper() const { return false; }
 #endif
 
-    static void provideTo(Supplementable<T>* host, const char* key, PassOwnPtr<Supplement<T> > supplement)
+    static void provideTo(Supplementable<T>& host, const char* key, PassOwnPtr<Supplement<T> > supplement)
     {
-        host->provideSupplement(key, supplement);
+        host.provideSupplement(key, supplement);
+    }
+
+    static Supplement<T>* from(Supplementable<T>& host, const char* key)
+    {
+        return host.requireSupplement(key);
     }
 
     static Supplement<T>* from(Supplementable<T>* host, const char* key)

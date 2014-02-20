@@ -48,24 +48,24 @@ const char* WorkerNavigatorStorageQuota::supplementName()
     return "WorkerNavigatorStorageQuota";
 }
 
-WorkerNavigatorStorageQuota* WorkerNavigatorStorageQuota::from(WorkerNavigator* navigator)
+WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& navigator)
 {
     WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorStorageQuota();
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitTemporaryStorage(WorkerNavigator* navigator)
+DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitTemporaryStorage(WorkerNavigator& navigator)
 {
-    return WorkerNavigatorStorageQuota::from(navigator)->webkitTemporaryStorage();
+    return WorkerNavigatorStorageQuota::from(navigator).webkitTemporaryStorage();
 }
 
-DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitPersistentStorage(WorkerNavigator* navigator)
+DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitPersistentStorage(WorkerNavigator& navigator)
 {
-    return WorkerNavigatorStorageQuota::from(navigator)->webkitPersistentStorage();
+    return WorkerNavigatorStorageQuota::from(navigator).webkitPersistentStorage();
 }
 
 DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitTemporaryStorage() const

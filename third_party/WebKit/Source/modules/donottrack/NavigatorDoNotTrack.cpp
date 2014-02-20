@@ -51,19 +51,19 @@ const char* NavigatorDoNotTrack::supplementName()
     return "NavigatorDoNotTrack";
 }
 
-NavigatorDoNotTrack* NavigatorDoNotTrack::from(Navigator* navigator)
+NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator)
 {
     NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorDoNotTrack(navigator->frame());
+        supplement = new NavigatorDoNotTrack(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-String NavigatorDoNotTrack::doNotTrack(Navigator* navigator)
+String NavigatorDoNotTrack::doNotTrack(Navigator& navigator)
 {
-    return NavigatorDoNotTrack::from(navigator)->doNotTrack();
+    return NavigatorDoNotTrack::from(navigator).doNotTrack();
 }
 
 String NavigatorDoNotTrack::doNotTrack()

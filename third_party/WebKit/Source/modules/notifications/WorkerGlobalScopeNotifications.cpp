@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-WorkerGlobalScopeNotifications::WorkerGlobalScopeNotifications(WorkerGlobalScope* context)
+WorkerGlobalScopeNotifications::WorkerGlobalScopeNotifications(WorkerGlobalScope& context)
     : m_context(context)
 {
 }
@@ -50,25 +50,25 @@ const char* WorkerGlobalScopeNotifications::supplementName()
     return "WorkerGlobalScopeNotifications";
 }
 
-WorkerGlobalScopeNotifications* WorkerGlobalScopeNotifications::from(WorkerGlobalScope* context)
+WorkerGlobalScopeNotifications& WorkerGlobalScopeNotifications::from(WorkerGlobalScope& context)
 {
     WorkerGlobalScopeNotifications* supplement = static_cast<WorkerGlobalScopeNotifications*>(WorkerSupplement::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeNotifications(context);
         WorkerSupplement::provideTo(context, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications(WorkerGlobalScope* context)
+NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications(WorkerGlobalScope& context)
 {
-    return WorkerGlobalScopeNotifications::from(context)->webkitNotifications();
+    return WorkerGlobalScopeNotifications::from(context).webkitNotifications();
 }
 
 NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications()
 {
     if (!m_notificationCenter)
-        m_notificationCenter = NotificationCenter::create(m_context, m_context->thread()->getNotificationClient());
+        m_notificationCenter = NotificationCenter::create(&m_context, m_context.thread()->getNotificationClient());
     return m_notificationCenter.get();
 }
 

@@ -11,7 +11,7 @@ namespace WebCore {
 
 class DocumentAnimation {
 public:
-    static DocumentTimeline* timeline(Document* document) { return document->timeline(); }
+    static DocumentTimeline* timeline(Document& document) { return document.timeline(); }
 };
 
 } // namespace WebCore

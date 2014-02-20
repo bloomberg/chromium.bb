@@ -37,8 +37,8 @@
 
 namespace WebCore {
 
-DOMWindowNotifications::DOMWindowNotifications(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+DOMWindowNotifications::DOMWindowNotifications(DOMWindow& window)
+    : DOMWindowProperty(window.frame())
     , m_window(window)
 {
 }
@@ -52,19 +52,19 @@ const char* DOMWindowNotifications::supplementName()
     return "DOMWindowNotifications";
 }
 
-DOMWindowNotifications* DOMWindowNotifications::from(DOMWindow* window)
+DOMWindowNotifications& DOMWindowNotifications::from(DOMWindow& window)
 {
     DOMWindowNotifications* supplement = static_cast<DOMWindowNotifications*>(Supplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowNotifications(window);
         Supplement<DOMWindow>::provideTo(window, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-NotificationCenter* DOMWindowNotifications::webkitNotifications(DOMWindow* window)
+NotificationCenter* DOMWindowNotifications::webkitNotifications(DOMWindow& window)
 {
-    return DOMWindowNotifications::from(window)->webkitNotifications();
+    return DOMWindowNotifications::from(window).webkitNotifications();
 }
 
 void DOMWindowNotifications::willDestroyGlobalObjectInFrame()
@@ -81,13 +81,13 @@ void DOMWindowNotifications::willDetachGlobalObjectFromFrame()
 
 NotificationCenter* DOMWindowNotifications::webkitNotifications()
 {
-    if (!m_window->isCurrentlyDisplayedInFrame())
+    if (!m_window.isCurrentlyDisplayedInFrame())
         return 0;
 
     if (m_notificationCenter)
         return m_notificationCenter.get();
 
-    Document* document = m_window->document();
+    Document* document = m_window.document();
     if (!document)
         return 0;
 

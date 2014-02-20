@@ -39,37 +39,37 @@ public:
     virtual String input() const = 0;
     virtual ~DOMURLUtilsReadOnly() { };
 
-    static String href(DOMURLUtilsReadOnly*);
+    static String href(DOMURLUtilsReadOnly&);
 
     static String origin(const KURL&);
-    static String origin(DOMURLUtilsReadOnly* impl) { return origin(impl->url()); }
+    static String origin(DOMURLUtilsReadOnly& impl) { return origin(impl.url()); }
 
     static String protocol(const KURL& url) { return url.protocol() + ":"; }
-    static String protocol(DOMURLUtilsReadOnly* impl) { return protocol(impl->url()); }
+    static String protocol(DOMURLUtilsReadOnly& impl) { return protocol(impl.url()); }
 
     static String username(const KURL& url) { return url.user(); }
-    static String username(DOMURLUtilsReadOnly* impl) { return username(impl->url()); }
+    static String username(DOMURLUtilsReadOnly& impl) { return username(impl.url()); }
 
     static String password(const KURL& url) { return url.pass(); }
-    static String password(DOMURLUtilsReadOnly* impl) { return password(impl->url()); }
+    static String password(DOMURLUtilsReadOnly& impl) { return password(impl.url()); }
 
     static String host(const KURL&);
-    static String host(DOMURLUtilsReadOnly* impl) { return host(impl->url()); }
+    static String host(DOMURLUtilsReadOnly& impl) { return host(impl.url()); }
 
     static String hostname(const KURL& url) { return url.host(); }
-    static String hostname(DOMURLUtilsReadOnly* impl) { return hostname(impl->url()); }
+    static String hostname(DOMURLUtilsReadOnly& impl) { return hostname(impl.url()); }
 
     static String port(const KURL&);
-    static String port(DOMURLUtilsReadOnly* impl) { return port(impl->url()); }
+    static String port(DOMURLUtilsReadOnly& impl) { return port(impl.url()); }
 
     static String pathname(const KURL& url) { return url.path(); }
-    static String pathname(DOMURLUtilsReadOnly* impl) { return pathname(impl->url()); }
+    static String pathname(DOMURLUtilsReadOnly& impl) { return pathname(impl.url()); }
 
     static String search(const KURL&);
-    static String search(DOMURLUtilsReadOnly* impl) { return search(impl->url()); }
+    static String search(DOMURLUtilsReadOnly& impl) { return search(impl.url()); }
 
     static String hash(const KURL&);
-    static String hash(DOMURLUtilsReadOnly* impl) { return hash(impl->url()); }
+    static String hash(DOMURLUtilsReadOnly& impl) { return hash(impl.url()); }
 };
 
 } // namespace WebCore

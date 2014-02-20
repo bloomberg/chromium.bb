@@ -33,9 +33,9 @@ class Navigator;
 class NavigatorGeolocation FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorGeolocation();
-    static NavigatorGeolocation* from(Navigator*);
+    static NavigatorGeolocation& from(Navigator&);
 
-    static Geolocation* geolocation(Navigator*);
+    static Geolocation* geolocation(Navigator&);
     Geolocation* geolocation() const;
 
 private:

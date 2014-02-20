@@ -83,7 +83,7 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
 {
     // Video-only full screen is a mode where we use the shadow DOM as an implementation
     // detail that should not be detectable by the web content.
-    if (Element* element = FullscreenElementStack::currentFullScreenElementFrom(&target->toNode()->document())) {
+    if (Element* element = FullscreenElementStack::currentFullScreenElementFrom(target->toNode()->document())) {
         // FIXME: We assume that if the full screen element is a media element that it's
         // the video-only full screen. Both here and elsewhere. But that is probably wrong.
         if (element->isMediaElement() && shadowRoot && shadowRoot->host() == element)

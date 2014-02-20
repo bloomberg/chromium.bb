@@ -38,16 +38,16 @@
 
 namespace WebCore {
 
-void HTMLImportsController::provideTo(Document* master)
+void HTMLImportsController::provideTo(Document& master)
 {
     DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
     OwnPtr<HTMLImportsController> controller = adoptPtr(new HTMLImportsController(master));
-    master->setImport(controller.get());
+    master.setImport(controller.get());
     DocumentSupplement::provideTo(master, name, controller.release());
 }
 
-HTMLImportsController::HTMLImportsController(Document* master)
-    : m_master(master)
+HTMLImportsController::HTMLImportsController(Document& master)
+    : m_master(&master)
     , m_recalcTimer(this, &HTMLImportsController::recalcTimerFired)
 {
     recalcTreeState(this); // This recomputes initial state.

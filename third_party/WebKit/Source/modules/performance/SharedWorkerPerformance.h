@@ -40,10 +40,10 @@ class SharedWorker;
 class SharedWorkerPerformance FINAL : public Supplement<SharedWorker> {
 public:
     virtual ~SharedWorkerPerformance();
-    static SharedWorkerPerformance* from(SharedWorker*);
+    static SharedWorkerPerformance& from(SharedWorker&);
 
-    static double workerStart(ExecutionContext*, SharedWorker*);
-    double getWorkerStart(ExecutionContext*, SharedWorker*) const;
+    static double workerStart(ExecutionContext*, SharedWorker&);
+    double getWorkerStart(ExecutionContext*, SharedWorker&) const;
 
 private:
     explicit SharedWorkerPerformance();

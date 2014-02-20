@@ -113,7 +113,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 // Instead, we manually make InternalSettings supplement Page.
 class InternalSettingsWrapper : public Supplement<Page> {
 public:
-    explicit InternalSettingsWrapper(Page* page)
+    explicit InternalSettingsWrapper(Page& page)
         : m_internalSettings(InternalSettings::create(page)) { }
     virtual ~InternalSettingsWrapper() { m_internalSettings->hostDestroyed(); }
 #if !ASSERT_DISABLED
@@ -130,7 +130,7 @@ const char* InternalSettings::supplementName()
     return "InternalSettings";
 }
 
-InternalSettings* InternalSettings::from(Page* page)
+InternalSettings* InternalSettings::from(Page& page)
 {
     if (!Supplement<Page>::from(page, supplementName()))
         Supplement<Page>::provideTo(page, supplementName(), adoptPtr(new InternalSettingsWrapper(page)));
@@ -141,10 +141,10 @@ InternalSettings::~InternalSettings()
 {
 }
 
-InternalSettings::InternalSettings(Page* page)
-    : InternalSettingsGenerated(page)
-    , m_page(page)
-    , m_backup(&page->settings())
+InternalSettings::InternalSettings(Page& page)
+    : InternalSettingsGenerated(&page)
+    , m_page(&page)
+    , m_backup(&page.settings())
 {
 }
 

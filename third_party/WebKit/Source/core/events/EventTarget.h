@@ -162,26 +162,26 @@ private:
     void setOn##attribute(PassRefPtr<EventListener> listener) { setAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    static EventListener* on##attribute(EventTarget* eventTarget) { return eventTarget->getAttributeEventListener(EventTypeNames::attribute); } \
-    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener) { eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener); } \
+    static EventListener* on##attribute(EventTarget& eventTarget) { return eventTarget.getAttributeEventListener(EventTypeNames::attribute); } \
+    static void setOn##attribute(EventTarget& eventTarget, PassRefPtr<EventListener> listener) { eventTarget.setAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
     EventListener* on##attribute() { return document().getWindowAttributeEventListener(EventTypeNames::attribute); } \
     void setOn##attribute(PassRefPtr<EventListener> listener) { document().setWindowAttributeEventListener(EventTypeNames::attribute, listener); } \
 
 #define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
-    static EventListener* on##attribute(EventTarget* eventTarget) { \
-        if (Node* node = eventTarget->toNode()) \
+    static EventListener* on##attribute(EventTarget& eventTarget) { \
+        if (Node* node = eventTarget.toNode()) \
             return node->document().getWindowAttributeEventListener(EventTypeNames::attribute); \
-        ASSERT(eventTarget->toDOMWindow()); \
-        return eventTarget->getAttributeEventListener(EventTypeNames::attribute); \
+        ASSERT(eventTarget.toDOMWindow()); \
+        return eventTarget.getAttributeEventListener(EventTypeNames::attribute); \
     } \
-    static void setOn##attribute(EventTarget* eventTarget, PassRefPtr<EventListener> listener) { \
-        if (Node* node = eventTarget->toNode()) \
+    static void setOn##attribute(EventTarget& eventTarget, PassRefPtr<EventListener> listener) { \
+        if (Node* node = eventTarget.toNode()) \
             node->document().setWindowAttributeEventListener(EventTypeNames::attribute, listener); \
         else { \
-            ASSERT(eventTarget->toDOMWindow()); \
-            eventTarget->setAttributeEventListener(EventTypeNames::attribute, listener); \
+            ASSERT(eventTarget.toDOMWindow()); \
+            eventTarget.setAttributeEventListener(EventTypeNames::attribute, listener); \
         } \
     }
 

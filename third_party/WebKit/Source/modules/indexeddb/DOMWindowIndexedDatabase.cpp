@@ -33,8 +33,8 @@
 
 namespace WebCore {
 
-DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(DOMWindow& window)
+    : DOMWindowProperty(window.frame())
     , m_window(window)
 {
 }
@@ -48,14 +48,14 @@ const char* DOMWindowIndexedDatabase::supplementName()
     return "DOMWindowIndexedDatabase";
 }
 
-DOMWindowIndexedDatabase* DOMWindowIndexedDatabase::from(DOMWindow* window)
+DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(DOMWindow& window)
 {
     DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(Supplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
         provideTo(window, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
 void DOMWindowIndexedDatabase::willDestroyGlobalObjectInFrame()
@@ -70,14 +70,14 @@ void DOMWindowIndexedDatabase::willDetachGlobalObjectFromFrame()
     DOMWindowProperty::willDetachGlobalObjectFromFrame();
 }
 
-IDBFactory* DOMWindowIndexedDatabase::indexedDB(DOMWindow* window)
+IDBFactory* DOMWindowIndexedDatabase::indexedDB(DOMWindow& window)
 {
-    return from(window)->indexedDB();
+    return from(window).indexedDB();
 }
 
 IDBFactory* DOMWindowIndexedDatabase::indexedDB()
 {
-    Document* document = m_window->document();
+    Document* document = m_window.document();
     if (!document)
         return 0;
 
@@ -85,7 +85,7 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
     if (!page)
         return 0;
 
-    if (!m_window->isCurrentlyDisplayedInFrame())
+    if (!m_window.isCurrentlyDisplayedInFrame())
         return 0;
 
     if (!m_idbFactory)

@@ -17,7 +17,7 @@ typedef String ErrorString;
 class DeviceOrientationInspectorAgent FINAL : public InspectorBaseAgent<DeviceOrientationInspectorAgent>, public InspectorBackendDispatcher::DeviceOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
-    static void provideTo(Page*);
+    static void provideTo(Page&);
 
     virtual ~DeviceOrientationInspectorAgent();
 
@@ -26,8 +26,8 @@ public:
     virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
 
 private:
-    explicit DeviceOrientationInspectorAgent(Page*);
-    Page* m_page;
+    explicit DeviceOrientationInspectorAgent(Page&);
+    Page& m_page;
 };
 
 } // namespace WebCore

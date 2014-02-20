@@ -115,7 +115,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
     ASSERT(m_document);
     ASSERT(m_document->frame());
     FontCache::fontCache()->addClient(this);
-    FontFaceSet::from(document)->addFontFacesToFontFaceCache(&m_fontFaceCache, this);
+    FontFaceSet::from(*document)->addFontFacesToFontFaceCache(&m_fontFaceCache, this);
 }
 
 CSSFontSelector::~CSSFontSelector()

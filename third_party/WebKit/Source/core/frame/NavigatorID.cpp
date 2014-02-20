@@ -45,24 +45,24 @@
 
 namespace WebCore {
 
-String NavigatorID::appName(const NavigatorBase*)
+String NavigatorID::appName(const NavigatorBase&)
 {
     return "Netscape";
 }
 
-String NavigatorID::appVersion(const NavigatorBase* navigator)
+String NavigatorID::appVersion(const NavigatorBase& navigator)
 {
     // Version is everything in the user agent string past the "Mozilla/" prefix.
-    const String& agent = navigator->userAgent();
+    const String& agent = navigator.userAgent();
     return agent.substring(agent.find('/') + 1);
 }
 
-String NavigatorID::userAgent(const NavigatorBase* navigator)
+String NavigatorID::userAgent(const NavigatorBase& navigator)
 {
-    return navigator->userAgent();
+    return navigator.userAgent();
 }
 
-String NavigatorID::platform(const NavigatorBase*)
+String NavigatorID::platform(const NavigatorBase&)
 {
 #if defined(WEBCORE_NAVIGATOR_PLATFORM)
     return WEBCORE_NAVIGATOR_PLATFORM;
@@ -79,12 +79,12 @@ String NavigatorID::platform(const NavigatorBase*)
 #endif
 }
 
-String NavigatorID::appCodeName(const NavigatorBase*)
+String NavigatorID::appCodeName(const NavigatorBase&)
 {
     return "Mozilla";
 }
 
-String NavigatorID::product(const NavigatorBase*)
+String NavigatorID::product(const NavigatorBase&)
 {
     return WEBCORE_NAVIGATOR_PRODUCT;
 }

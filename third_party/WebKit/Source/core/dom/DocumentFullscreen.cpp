@@ -30,47 +30,47 @@
 
 namespace WebCore {
 
-bool DocumentFullscreen::webkitIsFullScreen(Document* document)
+bool DocumentFullscreen::webkitIsFullScreen(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
         return fullscreen->webkitIsFullScreen();
     return false;
 }
 
-bool DocumentFullscreen::webkitFullScreenKeyboardInputAllowed(Document* document)
+bool DocumentFullscreen::webkitFullScreenKeyboardInputAllowed(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
         return fullscreen->webkitFullScreenKeyboardInputAllowed();
     return false;
 }
 
-Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document* document)
+Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
         return fullscreen->webkitCurrentFullScreenElement();
     return 0;
 }
 
-void DocumentFullscreen::webkitCancelFullScreen(Document* document)
+void DocumentFullscreen::webkitCancelFullScreen(Document& document)
 {
-    FullscreenElementStack::from(document)->webkitCancelFullScreen();
+    FullscreenElementStack::from(document).webkitCancelFullScreen();
 }
 
-bool DocumentFullscreen::webkitFullscreenEnabled(Document* document)
+bool DocumentFullscreen::webkitFullscreenEnabled(Document& document)
 {
     return FullscreenElementStack::webkitFullscreenEnabled(document);
 }
 
-Element* DocumentFullscreen::webkitFullscreenElement(Document* document)
+Element* DocumentFullscreen::webkitFullscreenElement(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
         return fullscreen->webkitFullscreenElement();
     return 0;
 }
 
-void DocumentFullscreen::webkitExitFullscreen(Document* document)
+void DocumentFullscreen::webkitExitFullscreen(Document& document)
 {
-    FullscreenElementStack::from(document)->webkitExitFullscreen();
+    FullscreenElementStack::from(document).webkitExitFullscreen();
 }
 
 } // namespace WebCore

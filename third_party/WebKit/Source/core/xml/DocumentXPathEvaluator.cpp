@@ -41,41 +41,41 @@ DocumentXPathEvaluator::~DocumentXPathEvaluator()
 {
 }
 
-DocumentXPathEvaluator* DocumentXPathEvaluator::from(DocumentSupplementable* document)
+DocumentXPathEvaluator& DocumentXPathEvaluator::from(DocumentSupplementable& document)
 {
     DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
         cache = new DocumentXPathEvaluator();
         DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
     }
-    return cache;
+    return *cache;
 }
 
-PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable* document,
+PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable& document,
     const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
-    DocumentXPathEvaluator* suplement = from(document);
-    if (!suplement->m_xpathEvaluator)
-        suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
+    DocumentXPathEvaluator& suplement = from(document);
+    if (!suplement.m_xpathEvaluator)
+        suplement.m_xpathEvaluator = XPathEvaluator::create();
+    return suplement.m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSupplementable* document, Node* nodeResolver)
+PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSupplementable& document, Node* nodeResolver)
 {
-    DocumentXPathEvaluator* suplement = from(document);
-    if (!suplement->m_xpathEvaluator)
-        suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->createNSResolver(nodeResolver);
+    DocumentXPathEvaluator& suplement = from(document);
+    if (!suplement.m_xpathEvaluator)
+        suplement.m_xpathEvaluator = XPathEvaluator::create();
+    return suplement.m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable* document, const String& expression,
+PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable& document, const String& expression,
     Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type,
     XPathResult* result, ExceptionState& exceptionState)
 {
-    DocumentXPathEvaluator* suplement = from(document);
-    if (!suplement->m_xpathEvaluator)
-        suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
+    DocumentXPathEvaluator& suplement = from(document);
+    if (!suplement.m_xpathEvaluator)
+        suplement.m_xpathEvaluator = XPathEvaluator::create();
+    return suplement.m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
 }
 
 } // namespace WebCore

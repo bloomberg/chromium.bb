@@ -47,7 +47,7 @@ class GeolocationController FINAL : public Supplement<Page>, public PageLifecycl
 public:
     virtual ~GeolocationController();
 
-    static PassOwnPtr<GeolocationController> create(Page*, GeolocationClient*);
+    static PassOwnPtr<GeolocationController> create(Page&, GeolocationClient*);
 
     void addObserver(Geolocation*, bool enableHighAccuracy);
     void removeObserver(Geolocation*);
@@ -71,7 +71,7 @@ public:
     static GeolocationController* from(Page* page) { return static_cast<GeolocationController*>(Supplement<Page>::from(page, supplementName())); }
 
 private:
-    GeolocationController(Page*, GeolocationClient*);
+    GeolocationController(Page&, GeolocationClient*);
 
     void startUpdatingIfNeeded();
     void stopUpdatingIfNeeded();

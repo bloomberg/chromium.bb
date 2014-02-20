@@ -46,9 +46,9 @@ StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context)
     return static_cast<StorageQuotaClient*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
-void provideStorageQuotaClientTo(Page* page, PassOwnPtr<StorageQuotaClient> client)
+void provideStorageQuotaClientTo(Page& page, PassOwnPtr<StorageQuotaClient> client)
 {
-    page->provideSupplement(StorageQuotaClient::supplementName(), client);
+    page.provideSupplement(StorageQuotaClient::supplementName(), client);
 }
 
 } // namespace WebCore

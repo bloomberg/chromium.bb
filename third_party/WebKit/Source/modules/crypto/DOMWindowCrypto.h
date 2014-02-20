@@ -43,12 +43,12 @@ class DOMWindow;
 class DOMWindowCrypto FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowCrypto();
-    static DOMWindowCrypto* from(DOMWindow*);
-    static Crypto* crypto(DOMWindow*);
+    static DOMWindowCrypto& from(DOMWindow&);
+    static Crypto* crypto(DOMWindow&);
     Crypto* crypto() const;
 
 private:
-    explicit DOMWindowCrypto(DOMWindow*);
+    explicit DOMWindowCrypto(DOMWindow&);
     static const char* supplementName();
 
     mutable RefPtrWillBePersistent<Crypto> m_crypto;

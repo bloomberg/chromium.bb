@@ -35,8 +35,8 @@
 
 namespace WebCore {
 
-GeolocationController::GeolocationController(Page* page, GeolocationClient* client)
-    : PageLifecycleObserver(page)
+GeolocationController::GeolocationController(Page& page, GeolocationClient* client)
+    : PageLifecycleObserver(&page)
     , m_client(client)
     , m_hasClientForTest(false)
     , m_isClientUpdating(false)
@@ -44,7 +44,7 @@ GeolocationController::GeolocationController(Page* page, GeolocationClient* clie
 {
     OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create(this));
     m_inspectorAgent = geolocationAgent.get();
-    page->inspectorController().registerModuleAgent(geolocationAgent.release());
+    page.inspectorController().registerModuleAgent(geolocationAgent.release());
 }
 
 void GeolocationController::startUpdatingIfNeeded()
@@ -71,7 +71,7 @@ GeolocationController::~GeolocationController()
         m_client->geolocationDestroyed();
 }
 
-PassOwnPtr<GeolocationController> GeolocationController::create(Page* page, GeolocationClient* client)
+PassOwnPtr<GeolocationController> GeolocationController::create(Page& page, GeolocationClient* client)
 {
     return adoptPtr(new GeolocationController(page, client));
 }
@@ -176,7 +176,7 @@ const char* GeolocationController::supplementName()
     return "GeolocationController";
 }
 
-void provideGeolocationTo(Page* page, GeolocationClient* client)
+void provideGeolocationTo(Page& page, GeolocationClient* client)
 {
     Supplement<Page>::provideTo(page, GeolocationController::supplementName(), GeolocationController::create(page, client));
 }

@@ -43,7 +43,7 @@ public:
     virtual ~SpeechRecognitionClient() { }
 };
 
-void provideSpeechRecognitionTo(Page*, SpeechRecognitionClient*);
+void provideSpeechRecognitionTo(Page&, SpeechRecognitionClient*);
 
 } // namespace WebCore
 

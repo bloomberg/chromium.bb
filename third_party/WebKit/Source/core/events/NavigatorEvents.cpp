@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-long NavigatorEvents::maxTouchPoints(Navigator* navigator)
+long NavigatorEvents::maxTouchPoints(Navigator& navigator)
 {
-    Frame* frame = navigator->frame();
+    Frame* frame = navigator.frame();
     if (!frame)
         return 0;
     if (Settings* settings = frame->settings())

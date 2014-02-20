@@ -50,11 +50,11 @@ public:
 
     virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) = 0;
 
-    static WorkerGlobalScopeProxyProvider* from(Page*);
+    static WorkerGlobalScopeProxyProvider* from(Page&);
     static const char* supplementName();
 };
 
-void provideWorkerGlobalScopeProxyProviderTo(Page*, PassOwnPtr<WorkerGlobalScopeProxyProvider>);
+void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtr<WorkerGlobalScopeProxyProvider>);
 
 } // namespace WebCore
 

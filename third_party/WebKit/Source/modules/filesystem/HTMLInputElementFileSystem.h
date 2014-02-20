@@ -42,7 +42,7 @@ class ExecutionContext;
 
 class HTMLInputElementFileSystem {
 public:
-    static EntryVector webkitEntries(ExecutionContext*, HTMLInputElement*);
+    static EntryVector webkitEntries(ExecutionContext*, HTMLInputElement&);
 
 private:
     HTMLInputElementFileSystem();

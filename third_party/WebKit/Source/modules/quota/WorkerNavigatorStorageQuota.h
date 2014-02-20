@@ -42,10 +42,10 @@ namespace WebCore {
 class WorkerNavigatorStorageQuota FINAL : public Supplement<WorkerNavigator> {
 public:
     virtual ~WorkerNavigatorStorageQuota();
-    static WorkerNavigatorStorageQuota* from(WorkerNavigator*);
+    static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
 
-    static DeprecatedStorageQuota* webkitTemporaryStorage(WorkerNavigator*);
-    static DeprecatedStorageQuota* webkitPersistentStorage(WorkerNavigator*);
+    static DeprecatedStorageQuota* webkitTemporaryStorage(WorkerNavigator&);
+    static DeprecatedStorageQuota* webkitPersistentStorage(WorkerNavigator&);
     DeprecatedStorageQuota* webkitTemporaryStorage() const;
     DeprecatedStorageQuota* webkitPersistentStorage() const;
 

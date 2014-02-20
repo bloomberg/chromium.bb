@@ -39,12 +39,12 @@ class NavigatorBase;
 
 class NavigatorID {
 public:
-    static String appName(const NavigatorBase*);
-    static String appVersion(const NavigatorBase*);
-    static String userAgent(const NavigatorBase*);
-    static String platform(const NavigatorBase*);
-    static String appCodeName(const NavigatorBase*);
-    static String product(const NavigatorBase*);
+    static String appName(const NavigatorBase&);
+    static String appVersion(const NavigatorBase&);
+    static String userAgent(const NavigatorBase&);
+    static String platform(const NavigatorBase&);
+    static String appCodeName(const NavigatorBase&);
+    static String product(const NavigatorBase&);
 };
 
 } // namespace WebCore

@@ -42,14 +42,14 @@
 
 namespace WebCore {
 
-PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<Database> database;
     DatabaseError error = DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;
-        database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
+        database = dbManager.openDatabase(&context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
             DatabaseManager::throwExceptionForDatabaseError(error, errorMessage, exceptionState);
@@ -60,14 +60,14 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<DatabaseSync> database;
     DatabaseError error =  DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;
-        database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
+        database = dbManager.openDatabaseSync(&context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
             DatabaseManager::throwExceptionForDatabaseError(error, errorMessage, exceptionState);

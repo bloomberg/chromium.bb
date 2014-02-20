@@ -51,9 +51,9 @@ class HTMLImportChildClient;
 class HTMLImportsController FINAL : public HTMLImportRoot, public DocumentSupplement {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static void provideTo(Document*);
+    static void provideTo(Document&);
 
-    explicit HTMLImportsController(Document*);
+    explicit HTMLImportsController(Document&);
     virtual ~HTMLImportsController();
 
     // HTMLImport

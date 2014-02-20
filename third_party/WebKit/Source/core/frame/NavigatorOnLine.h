@@ -35,9 +35,11 @@
 
 namespace WebCore {
 
+class NavigatorBase;
+
 class NavigatorOnLine {
 public:
-    static bool onLine(void*)
+    static bool onLine(NavigatorBase&)
     {
         return networkStateNotifier().onLine();
     }

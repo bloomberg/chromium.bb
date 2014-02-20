@@ -41,7 +41,7 @@ class VideoPlaybackQuality;
 
 class HTMLVideoElementMediaSource {
 public:
-    static PassRefPtrWillBeRawPtr<VideoPlaybackQuality> getVideoPlaybackQuality(HTMLVideoElement*);
+    static PassRefPtrWillBeRawPtr<VideoPlaybackQuality> getVideoPlaybackQuality(HTMLVideoElement&);
 
 private:
     HTMLVideoElementMediaSource();

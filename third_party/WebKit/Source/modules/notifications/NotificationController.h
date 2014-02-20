@@ -52,7 +52,7 @@ private:
     NotificationClient* m_client;
 };
 
-void provideNotification(Page*, NotificationClient*);
+void provideNotification(Page&, NotificationClient*);
 
 } // namespace WebCore
 

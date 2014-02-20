@@ -70,19 +70,19 @@ const char* NavigatorGamepad::supplementName()
     return "NavigatorGamepad";
 }
 
-NavigatorGamepad* NavigatorGamepad::from(Navigator* navigator)
+NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
 {
     NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGamepad();
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-GamepadList* NavigatorGamepad::webkitGetGamepads(Navigator* navigator)
+GamepadList* NavigatorGamepad::webkitGetGamepads(Navigator& navigator)
 {
-    return NavigatorGamepad::from(navigator)->gamepads();
+    return NavigatorGamepad::from(navigator).gamepads();
 }
 
 GamepadList* NavigatorGamepad::gamepads()

@@ -52,24 +52,22 @@ const char* DOMWindowPagePopup::supplementName()
     return "DOMWindowPagePopup";
 }
 
-PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow* window)
+PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow& window)
 {
-    DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(window, supplementName()));
+    DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(&window, supplementName()));
     ASSERT(supplement);
     return supplement->m_controller.get();
 }
 
-void DOMWindowPagePopup::install(DOMWindow* window, PagePopupClient* popupClient)
+void DOMWindowPagePopup::install(DOMWindow& window, PagePopupClient* popupClient)
 {
-    ASSERT(window);
     ASSERT(popupClient);
     provideTo(window, supplementName(), adoptPtr(new DOMWindowPagePopup(popupClient)));
 }
 
-void DOMWindowPagePopup::uninstall(DOMWindow* window)
+void DOMWindowPagePopup::uninstall(DOMWindow& window)
 {
-    ASSERT(window);
-    window->removeSupplement(supplementName());
+    window.removeSupplement(supplementName());
 }
 
 }

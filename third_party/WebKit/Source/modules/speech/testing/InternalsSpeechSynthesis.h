@@ -38,7 +38,7 @@ class Internals;
 
 class InternalsSpeechSynthesis {
 public:
-    static void enableMockSpeechSynthesizer(Internals*, Document*);
+    static void enableMockSpeechSynthesizer(Internals&, Document*);
 };
 
 } // namespace WebCore

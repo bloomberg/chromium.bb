@@ -53,7 +53,7 @@ protected:
     PrerendererClient() { }
 };
 
-void providePrerendererClientTo(Page*, PrerendererClient*);
+void providePrerendererClientTo(Page&, PrerendererClient*);
 
 } // namespace WebCore
 

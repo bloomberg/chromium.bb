@@ -599,7 +599,7 @@ void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
     unsigned count = 0;
     for (const Frame* frame = this; frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
-            count += WheelController::from(frame->document())->wheelEventHandlerCount();
+            count += WheelController::from(*frame->document())->wheelEventHandlerCount();
     }
 
     m_host->chrome().client().numWheelEventHandlersChanged(count);

@@ -555,9 +555,9 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
         // screen behavior.
         if (document().settings() && document().settings()->fullScreenEnabled()) {
             if (FullscreenElementStack::isActiveFullScreenElement(toParentMediaElement(this)))
-                FullscreenElementStack::from(&document())->webkitCancelFullScreen();
+                FullscreenElementStack::from(document()).webkitCancelFullScreen();
             else
-                FullscreenElementStack::from(&document())->requestFullScreenForElement(toParentMediaElement(this), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+                FullscreenElementStack::from(document()).requestFullScreenForElement(toParentMediaElement(this), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
         } else
             mediaController()->enterFullscreen();
         event->setDefaultHandled();

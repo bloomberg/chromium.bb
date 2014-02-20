@@ -225,14 +225,14 @@ void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
 
 void WebDocument::cancelFullScreen()
 {
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(unwrap<Document>()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*unwrap<Document>()))
         fullscreen->webkitCancelFullScreen();
 }
 
 WebElement WebDocument::fullScreenElement() const
 {
     Element* fullScreenElement = 0;
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(const_cast<WebDocument*>(this)->unwrap<Document>()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*const_cast<WebDocument*>(this)->unwrap<Document>()))
         fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
     return WebElement(fullScreenElement);
 }

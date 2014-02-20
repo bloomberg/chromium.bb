@@ -43,19 +43,19 @@ class DOMWindowNotifications FINAL : public Supplement<DOMWindow>, public DOMWin
 public:
     virtual ~DOMWindowNotifications();
 
-    static NotificationCenter* webkitNotifications(DOMWindow*);
-    static DOMWindowNotifications* from(DOMWindow*);
+    static NotificationCenter* webkitNotifications(DOMWindow&);
+    static DOMWindowNotifications& from(DOMWindow&);
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
 private:
-    explicit DOMWindowNotifications(DOMWindow*);
+    explicit DOMWindowNotifications(DOMWindow&);
 
     NotificationCenter* webkitNotifications();
     static const char* supplementName();
 
-    DOMWindow* m_window;
+    DOMWindow& m_window;
     RefPtrWillBePersistent<NotificationCenter> m_notificationCenter;
 };
 

@@ -39,9 +39,9 @@ SVGDocument::SVGDocument(const DocumentInit& initializer)
 {
 }
 
-SVGSVGElement* SVGDocument::rootElement(const Document* document)
+SVGSVGElement* SVGDocument::rootElement(const Document& document)
 {
-    Element* elem = document->documentElement();
+    Element* elem = document.documentElement();
     if (elem && elem->hasTagName(SVGNames::svgTag))
         return toSVGSVGElement(elem);
 
@@ -50,7 +50,7 @@ SVGSVGElement* SVGDocument::rootElement(const Document* document)
 
 SVGSVGElement* SVGDocument::rootElement() const
 {
-    return rootElement(this);
+    return rootElement(*this);
 }
 
 void SVGDocument::dispatchZoomEvent(float prevScale, float newScale)

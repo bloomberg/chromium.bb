@@ -48,7 +48,7 @@ PassOwnPtr<SpeechRecognitionController> SpeechRecognitionController::create(Spee
     return adoptPtr(new SpeechRecognitionController(client));
 }
 
-void provideSpeechRecognitionTo(Page* page, SpeechRecognitionClient* client)
+void provideSpeechRecognitionTo(Page& page, SpeechRecognitionClient* client)
 {
     SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(client));
 }

@@ -72,11 +72,11 @@ public:
         bool m_originalPasswordGenerationDecorationEnabled;
     };
 
-    static PassRefPtr<InternalSettings> create(Page* page)
+    static PassRefPtr<InternalSettings> create(Page& page)
     {
         return adoptRef(new InternalSettings(page));
     }
-    static InternalSettings* from(Page*);
+    static InternalSettings* from(Page&);
     void hostDestroyed() { m_page = 0; }
 
     virtual ~InternalSettings();
@@ -122,7 +122,7 @@ public:
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
 
 private:
-    explicit InternalSettings(Page*);
+    explicit InternalSettings(Page&);
 
     Settings* settings() const;
     Page* page() const { return m_page; }

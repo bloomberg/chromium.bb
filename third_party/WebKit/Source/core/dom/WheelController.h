@@ -41,19 +41,19 @@ public:
     virtual ~WheelController();
 
     static const char* supplementName();
-    static WheelController* from(Document*);
+    static WheelController* from(Document&);
 
     unsigned wheelEventHandlerCount() { return m_wheelEventHandlerCount; }
 
-    void didAddWheelEventHandler(Document*);
-    void didRemoveWheelEventHandler(Document*);
+    void didAddWheelEventHandler(Document&);
+    void didRemoveWheelEventHandler(Document&);
 
     // Inherited from DOMWindowLifecycleObserver
     virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
     virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
 
 private:
-    explicit WheelController(Document*);
+    explicit WheelController(Document&);
 
     unsigned m_wheelEventHandlerCount;
 };

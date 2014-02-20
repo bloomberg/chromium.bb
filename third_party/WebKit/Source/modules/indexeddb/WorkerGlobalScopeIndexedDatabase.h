@@ -38,9 +38,9 @@ class ExecutionContext;
 class WorkerGlobalScopeIndexedDatabase FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
-    static WorkerGlobalScopeIndexedDatabase* from(WorkerSupplementable*);
+    static WorkerGlobalScopeIndexedDatabase& from(WorkerSupplementable&);
 
-    static IDBFactory* indexedDB(WorkerSupplementable*);
+    static IDBFactory* indexedDB(WorkerSupplementable&);
 
 private:
     WorkerGlobalScopeIndexedDatabase();

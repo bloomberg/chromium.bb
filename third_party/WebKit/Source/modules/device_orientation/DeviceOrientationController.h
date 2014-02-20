@@ -42,7 +42,7 @@ public:
     virtual ~DeviceOrientationController();
 
     static const char* supplementName();
-    static DeviceOrientationController* from(Document*);
+    static DeviceOrientationController& from(Document&);
 
     void didChangeDeviceOrientation(WebCore::DeviceOrientationData*);
 
@@ -52,7 +52,7 @@ public:
     virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
 private:
-    explicit DeviceOrientationController(Document*);
+    explicit DeviceOrientationController(Document&);
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
 

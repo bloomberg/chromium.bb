@@ -50,6 +50,7 @@ namespace WebCore {
 void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
 {
     WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(info.Holder());
+    ASSERT(workerGlobalScope);
 
     int argumentCount = info.Length();
     if (argumentCount < 1)
@@ -87,9 +88,9 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
     int timerId;
     if (singleShot)
-        timerId = DOMWindowTimers::setTimeout(workerGlobalScope, action.release(), timeout);
+        timerId = DOMWindowTimers::setTimeout(*workerGlobalScope, action.release(), timeout);
     else
-        timerId = DOMWindowTimers::setInterval(workerGlobalScope, action.release(), timeout);
+        timerId = DOMWindowTimers::setInterval(*workerGlobalScope, action.release(), timeout);
 
     v8SetReturnValue(info, timerId);
 }

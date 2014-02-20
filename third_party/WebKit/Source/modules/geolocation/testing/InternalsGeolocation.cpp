@@ -41,45 +41,45 @@
 
 namespace WebCore {
 
-void InternalsGeolocation::setGeolocationClientMock(Internals* internals, Document* document)
+void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* document)
 {
-    ASSERT(internals && document && document->page());
+    ASSERT(document && document->page());
     GeolocationController* controller = GeolocationController::from(document->page());
     GeolocationClientMock* client = new GeolocationClientMock();
     controller->setClientForTest(client);
     client->setController(controller);
 }
 
-void InternalsGeolocation::setGeolocationPosition(Internals* internals, Document* document, double latitude, double longitude, double accuracy)
+void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document, double latitude, double longitude, double accuracy)
 {
-    ASSERT(internals && document && document->page());
+    ASSERT(document && document->page());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
     client->setPosition(GeolocationPosition::create(currentTime(), latitude, longitude, accuracy));
 }
 
-void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals* internals, Document* document, const String& message)
+void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals&, Document* document, const String& message)
 {
-    ASSERT(internals && document && document->page());
+    ASSERT(document && document->page());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
     client->setPositionUnavailableError(message);
 }
 
-void InternalsGeolocation::setGeolocationPermission(Internals* internals, Document* document, bool allowed)
+void InternalsGeolocation::setGeolocationPermission(Internals&, Document* document, bool allowed)
 {
-    ASSERT(internals && document && document->page());
+    ASSERT(document && document->page());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
     client->setPermission(allowed);
 }
 
-int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals* internals, Document* document)
+int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals&, Document* document)
 {
-    ASSERT(internals && document && document->page());
+    ASSERT(document && document->page());
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return -1;

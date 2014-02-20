@@ -604,7 +604,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
         *errorString = "No IndexedDB factory for given frame found";
         return 0;
     }
-    IDBFactory* idbFactory = DOMWindowIndexedDatabase::indexedDB(domWindow);
+    IDBFactory* idbFactory = DOMWindowIndexedDatabase::indexedDB(*domWindow);
 
     if (!idbFactory)
         *errorString = "No IndexedDB factory for given frame found";

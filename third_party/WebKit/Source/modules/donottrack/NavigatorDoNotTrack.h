@@ -43,9 +43,9 @@ class Navigator;
 class NavigatorDoNotTrack FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorDoNotTrack();
-    static NavigatorDoNotTrack* from(Navigator*);
+    static NavigatorDoNotTrack& from(Navigator&);
 
-    static String doNotTrack(Navigator*);
+    static String doNotTrack(Navigator&);
 
     String doNotTrack();
 

@@ -79,9 +79,9 @@ public:
     }
 
     // SVGZoomAndPan JS API.
-    static SVGZoomAndPanType zoomAndPan(SVGZoomAndPan* object) { return object->m_zoomAndPan; }
-    static void setZoomAndPan(SVGZoomAndPan* object, unsigned short value, ExceptionState&) { object->setZoomAndPan(value); }
-    static void setZoomAndPan(SVGViewSpec*, unsigned short, ExceptionState&);
+    static SVGZoomAndPanType zoomAndPan(SVGZoomAndPan& object) { return object.m_zoomAndPan; }
+    static void setZoomAndPan(SVGZoomAndPan& object, unsigned short value, ExceptionState&) { object.setZoomAndPan(value); }
+    static void setZoomAndPan(SVGViewSpec&, unsigned short, ExceptionState&);
 
     void setZoomAndPan(unsigned short value) { m_zoomAndPan = parseFromNumber(value); }
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }

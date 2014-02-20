@@ -50,19 +50,19 @@ const char* WorkerGlobalScopePerformance::supplementName()
     return "WorkerGlobalScopePerformance";
 }
 
-WorkerGlobalScopePerformance* WorkerGlobalScopePerformance::from(WorkerGlobalScope* context)
+WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalScope& context)
 {
     WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(WorkerSupplement::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopePerformance();
         provideTo(context, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* context)
+WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope& context)
 {
-    return from(context)->performance();
+    return from(context).performance();
 }
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance()

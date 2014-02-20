@@ -40,8 +40,8 @@ class Internals;
 
 class InternalsVibration {
 public:
-    static bool isVibrating(Internals*, Document*);
-    static Vector<unsigned> pendingVibrationPattern(Internals*, Document*);
+    static bool isVibrating(Internals&, Document*);
+    static Vector<unsigned> pendingVibrationPattern(Internals&, Document*);
 };
 
 } // namespace WebCore

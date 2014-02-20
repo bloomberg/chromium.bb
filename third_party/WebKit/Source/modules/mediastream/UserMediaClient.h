@@ -50,7 +50,7 @@ protected:
     virtual ~UserMediaClient() { }
 };
 
-void provideUserMediaTo(Page*, UserMediaClient*);
+void provideUserMediaTo(Page&, UserMediaClient*);
 
 } // namespace WebCore
 

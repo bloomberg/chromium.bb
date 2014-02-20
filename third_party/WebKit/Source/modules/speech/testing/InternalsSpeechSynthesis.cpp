@@ -39,11 +39,11 @@
 
 namespace WebCore {
 
-void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(Internals* internals, Document* document)
+void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(Internals&, Document* document)
 {
-    ASSERT(internals && document && document->domWindow());
+    ASSERT(document && document->domWindow());
 
-    SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(document->domWindow());
+    SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(*document->domWindow());
     if (!synthesis)
         return;
 

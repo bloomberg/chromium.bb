@@ -164,7 +164,7 @@ void FileSystemRootRequest::start(ExecutionContext* executionContext)
 
     OwnPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileSystemRootRequest::didGetEntry);
     OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback.release(), errorCallback.release(), executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, rootURL, fileSystemCallbacks.release());
+    LocalFileSystem::from(*executionContext)->resolveURL(executionContext, rootURL, fileSystemCallbacks.release());
 }
 
 bool FileSystemRootRequest::didGetEntry(Entry* entry)
@@ -228,7 +228,7 @@ void DirectoryContentRequest::start(ExecutionContext* executionContext)
 
     OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback.release(), errorCallback.release(), executionContext);
 
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    LocalFileSystem::from(*executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool DirectoryContentRequest::didGetEntry(Entry* entry)
@@ -344,7 +344,7 @@ void MetadataRequest::start(ExecutionContext* executionContext)
     OwnPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &MetadataRequest::didHitError);
     OwnPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &MetadataRequest::didGetEntry);
     OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback.release(), errorCallback.release(), executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    LocalFileSystem::from(*executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool MetadataRequest::didGetEntry(Entry* entry)
@@ -443,7 +443,7 @@ void FileContentRequest::start(ExecutionContext* executionContext)
     OwnPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileContentRequest::didGetEntry);
 
     OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback.release(), errorCallback.release(), executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    LocalFileSystem::from(*executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool FileContentRequest::didGetEntry(Entry* entry)
@@ -565,11 +565,11 @@ void DeleteEntryRequest::start(ExecutionContext* executionContext)
     if (path == "/") {
         OwnPtr<VoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
         OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = VoidCallbacks::create(successCallback.release(), errorCallback.release(), 0);
-        LocalFileSystem::from(executionContext)->deleteFileSystem(executionContext, type, fileSystemCallbacks.release());
+        LocalFileSystem::from(*executionContext)->deleteFileSystem(executionContext, type, fileSystemCallbacks.release());
     } else {
         OwnPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DeleteEntryRequest::didGetEntry);
         OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback.release(), errorCallback.release(), executionContext);
-        LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+        LocalFileSystem::from(*executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
     }
 }
 

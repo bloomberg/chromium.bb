@@ -119,7 +119,7 @@ static bool verifyProtocolHandlerScheme(const String& scheme, const String& meth
     return false;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::from(Page* page)
+NavigatorContentUtils* NavigatorContentUtils::from(Page& page)
 {
     return static_cast<NavigatorContentUtils*>(RefCountedSupplement<Page, NavigatorContentUtils>::from(page, NavigatorContentUtils::supplementName()));
 }
@@ -133,12 +133,12 @@ PassRefPtr<NavigatorContentUtils> NavigatorContentUtils::create(NavigatorContent
     return adoptRef(new NavigatorContentUtils(client));
 }
 
-void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)
+void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)
 {
-    if (!navigator->frame())
+    if (!navigator.frame())
         return;
 
-    Document* document = navigator->frame()->document();
+    Document* document = navigator.frame()->document();
     if (!document)
         return;
 
@@ -150,7 +150,8 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", exceptionState))
         return;
 
-    NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url), title);
+    ASSERT(navigator.frame()->page());
+    NavigatorContentUtils::from(*navigator.frame()->page())->client()->registerProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url), title);
 }
 
 static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
@@ -172,14 +173,14 @@ static String customHandlersStateString(const NavigatorContentUtilsClient::Custo
     return String();
 }
 
-String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
+String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
 {
     DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
 
-    if (!navigator->frame())
+    if (!navigator.frame())
         return declined;
 
-    Document* document = navigator->frame()->document();
+    Document* document = navigator.frame()->document();
     KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
@@ -188,15 +189,16 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
     if (!verifyProtocolHandlerScheme(scheme, "isProtocolHandlerRegistered", exceptionState))
         return declined;
 
-    return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, KURL(ParsedURLString, url)));
+    ASSERT(navigator.frame()->page());
+    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, KURL(ParsedURLString, url)));
 }
 
-void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
+void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
 {
-    if (!navigator->frame())
+    if (!navigator.frame())
         return;
 
-    Document* document = navigator->frame()->document();
+    Document* document = navigator.frame()->document();
     KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
@@ -205,7 +207,8 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
     if (!verifyProtocolHandlerScheme(scheme, "unregisterProtocolHandler", exceptionState))
         return;
 
-    NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url));
+    ASSERT(navigator.frame()->page());
+    NavigatorContentUtils::from(*navigator.frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url));
 }
 
 const char* NavigatorContentUtils::supplementName()
@@ -213,7 +216,7 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(Page* page, NavigatorContentUtilsClient* client)
+void provideNavigatorContentUtilsTo(Page& page, NavigatorContentUtilsClient* client)
 {
     RefCountedSupplement<Page, NavigatorContentUtils>::provideTo(page, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }

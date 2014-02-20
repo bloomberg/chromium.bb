@@ -42,16 +42,16 @@ class WorkerGlobalScopeNotifications FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeNotifications();
 
-    static NotificationCenter* webkitNotifications(WorkerGlobalScope*);
-    static WorkerGlobalScopeNotifications* from(WorkerGlobalScope*);
+    static NotificationCenter* webkitNotifications(WorkerGlobalScope&);
+    static WorkerGlobalScopeNotifications& from(WorkerGlobalScope&);
 
 private:
-    explicit WorkerGlobalScopeNotifications(WorkerGlobalScope*);
+    explicit WorkerGlobalScopeNotifications(WorkerGlobalScope&);
 
     NotificationCenter* webkitNotifications();
     static const char* supplementName();
 
-    WorkerGlobalScope* m_context;
+    WorkerGlobalScope& m_context;
     RefPtrWillBePersistent<NotificationCenter> m_notificationCenter;
 };
 

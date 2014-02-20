@@ -477,7 +477,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     ScriptWrappable::init(this);
 
     if (m_frame) {
-        provideContextFeaturesToDocumentFrom(this, m_frame->page());
+        ASSERT(m_frame->page());
+        provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
     }

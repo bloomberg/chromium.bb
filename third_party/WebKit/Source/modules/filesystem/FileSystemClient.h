@@ -50,7 +50,7 @@ public:
     virtual bool allowFileSystem(ExecutionContext*) = 0;
 };
 
-void provideLocalFileSystemTo(Page*, PassOwnPtr<FileSystemClient>);
+void provideLocalFileSystemTo(Page&, PassOwnPtr<FileSystemClient>);
 
 void provideLocalFileSystemToWorker(WorkerClients*, PassOwnPtr<FileSystemClient>);
 

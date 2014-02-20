@@ -1944,17 +1944,17 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 
     const EventListenerVector& mousewheelListeners = getEventListeners(EventTypeNames::mousewheel);
-    WheelController* oldController = WheelController::from(&oldDocument);
-    WheelController* newController = WheelController::from(&document());
+    WheelController* oldController = WheelController::from(oldDocument);
+    WheelController* newController = WheelController::from(document());
     for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(&oldDocument);
-        newController->didAddWheelEventHandler(&document());
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(document());
     }
 
     const EventListenerVector& wheelListeners = getEventListeners(EventTypeNames::wheel);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(&oldDocument);
-        newController->didAddWheelEventHandler(&document());
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(document());
     }
 
     if (const TouchEventTargetSet* touchHandlers = oldDocument.touchEventTargets()) {
@@ -1985,7 +1985,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
     Document& document = targetNode->document();
     document.addListenerTypeIfNeeded(eventType);
     if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel)
-        WheelController::from(&document)->didAddWheelEventHandler(&document);
+        WheelController::from(document)->didAddWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
 
@@ -2006,7 +2006,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
     if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel)
-        WheelController::from(&document)->didAddWheelEventHandler(&document);
+        WheelController::from(document)->didAddWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
 

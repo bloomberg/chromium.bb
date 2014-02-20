@@ -52,22 +52,22 @@ const char* SharedWorkerPerformance::supplementName()
     return "SharedWorkerPerformance";
 }
 
-SharedWorkerPerformance* SharedWorkerPerformance::from(SharedWorker* sharedWorker)
+SharedWorkerPerformance& SharedWorkerPerformance::from(SharedWorker& sharedWorker)
 {
     SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(Supplement<SharedWorker>::from(sharedWorker, supplementName()));
     if (!supplement) {
         supplement = new SharedWorkerPerformance();
         provideTo(sharedWorker, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-double SharedWorkerPerformance::workerStart(ExecutionContext* context, SharedWorker* sharedWorker)
+double SharedWorkerPerformance::workerStart(ExecutionContext* context, SharedWorker& sharedWorker)
 {
-    return SharedWorkerPerformance::from(sharedWorker)->getWorkerStart(context, sharedWorker);
+    return SharedWorkerPerformance::from(sharedWorker).getWorkerStart(context, sharedWorker);
 }
 
-double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context, SharedWorker* sharedWorker) const
+double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context, SharedWorker&) const
 {
     ASSERT(context);
     ASSERT(context->isDocument());

@@ -71,11 +71,11 @@ void DatabaseClient::createInspectorAgentFor(Page* page)
     page->inspectorController().registerModuleAgent(inspectorAgent.release());
 }
 
-void provideDatabaseClientTo(Page* page, PassOwnPtr<DatabaseClient> client)
+void provideDatabaseClientTo(Page& page, PassOwnPtr<DatabaseClient> client)
 {
     DatabaseClient* clientPtr = client.get();
-    page->provideSupplement(DatabaseClient::supplementName(), client);
-    clientPtr->createInspectorAgentFor(page);
+    page.provideSupplement(DatabaseClient::supplementName(), client);
+    clientPtr->createInspectorAgentFor(&page);
 }
 
 void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtr<DatabaseClient> client)

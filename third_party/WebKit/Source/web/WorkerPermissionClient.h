@@ -55,7 +55,7 @@ public:
     bool allowIndexedDB(const WebString& name);
 
     static const char* supplementName();
-    static WorkerPermissionClient* from(WebCore::ExecutionContext*);
+    static WorkerPermissionClient* from(WebCore::ExecutionContext&);
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);

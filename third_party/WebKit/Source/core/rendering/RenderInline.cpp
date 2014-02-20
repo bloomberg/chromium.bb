@@ -349,7 +349,7 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     // that renderer is wrapped in a RenderFullScreen, so |this| is not its
     // parent. Since the splitting logic expects |this| to be the parent, set
     // |beforeChild| to be the RenderFullScreen.
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&document())) {
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document())) {
         const Element* fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
         if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
             beforeChild = fullscreen->fullScreenRenderer();

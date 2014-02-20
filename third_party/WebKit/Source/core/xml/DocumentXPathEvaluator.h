@@ -40,12 +40,12 @@ class DocumentXPathEvaluator FINAL : public DocumentSupplement {
 public:
     virtual ~DocumentXPathEvaluator();
 
-    static DocumentXPathEvaluator* from(DocumentSupplementable*);
+    static DocumentXPathEvaluator& from(DocumentSupplementable&);
 
-    static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(DocumentSupplementable*,
+    static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(DocumentSupplementable&,
         const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(DocumentSupplementable*, Node* nodeResolver);
-    static PassRefPtrWillBeRawPtr<XPathResult> evaluate(DocumentSupplementable*,
+    static PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(DocumentSupplementable&, Node* nodeResolver);
+    static PassRefPtrWillBeRawPtr<XPathResult> evaluate(DocumentSupplementable&,
         const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
         unsigned short type, XPathResult*, ExceptionState&);
 

@@ -43,12 +43,12 @@ class DOMWindow;
 class DOMWindowQuota FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowQuota();
-    static DOMWindowQuota* from(DOMWindow*);
-    static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow*);
+    static DOMWindowQuota& from(DOMWindow&);
+    static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow&);
     DeprecatedStorageInfo* webkitStorageInfo() const;
 
 private:
-    explicit DOMWindowQuota(DOMWindow*);
+    explicit DOMWindowQuota(DOMWindow&);
     static const char* supplementName();
 
     mutable RefPtrWillBePersistent<DeprecatedStorageInfo> m_storageInfo;

@@ -55,7 +55,7 @@ public:
     static StorageQuotaClient* from(ExecutionContext*);
 };
 
-void provideStorageQuotaClientTo(Page*, PassOwnPtr<StorageQuotaClient>);
+void provideStorageQuotaClientTo(Page&, PassOwnPtr<StorageQuotaClient>);
 
 } // namespace WebCore
 

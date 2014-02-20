@@ -754,8 +754,9 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
         return 0;
 
     Document* document = frame()->document();
+    ASSERT(document);
 
-    RefPtrWillBeRawPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
+    RefPtrWillBeRawPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(*document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
     if (!xpathResult)
         return 0;
 

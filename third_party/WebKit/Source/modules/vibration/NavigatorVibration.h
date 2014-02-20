@@ -48,16 +48,16 @@ public:
     virtual void pageVisibilityChanged() OVERRIDE;
     virtual void didCommitLoad(Frame*) OVERRIDE;
 
-    static bool vibrate(Navigator*, unsigned time);
-    static bool vibrate(Navigator*, const VibrationPattern&);
-    static NavigatorVibration* from(Page*);
+    static bool vibrate(Navigator&, unsigned time);
+    static bool vibrate(Navigator&, const VibrationPattern&);
+    static NavigatorVibration& from(Page&);
 
     bool isVibrating() const { return m_isVibrating; }
 
     VibrationPattern pattern() const { return m_pattern; }
 
 private:
-    explicit NavigatorVibration(Page*);
+    explicit NavigatorVibration(Page&);
     static const char* supplementName();
 
     Timer<NavigatorVibration> m_timerStart;

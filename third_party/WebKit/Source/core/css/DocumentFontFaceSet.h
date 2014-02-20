@@ -35,7 +35,7 @@ class FontFaceSet;
 
 class DocumentFontFaceSet {
 public:
-    static PassRefPtr<FontFaceSet> fonts(Document*);
+    static PassRefPtr<FontFaceSet> fonts(Document&);
 };
 
 } // namespace WebCore

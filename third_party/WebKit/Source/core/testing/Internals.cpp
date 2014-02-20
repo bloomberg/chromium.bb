@@ -242,7 +242,7 @@ InternalSettings* Internals::settings() const
     Page* page = document->page();
     if (!page)
         return 0;
-    return InternalSettings::from(page);
+    return InternalSettings::from(*page);
 }
 
 InternalRuntimeFlags* Internals::runtimeFlags() const
@@ -1262,7 +1262,7 @@ unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& e
         return 0;
     }
 
-    return WheelController::from(document)->wheelEventHandlerCount();
+    return WheelController::from(*document)->wheelEventHandlerCount();
 }
 
 unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& exceptionState)
@@ -2003,28 +2003,28 @@ void Internals::webkitWillEnterFullScreenForElement(Document* document, Element*
 {
     if (!document)
         return;
-    FullscreenElementStack::from(document)->webkitWillEnterFullScreenForElement(element);
+    FullscreenElementStack::from(*document).webkitWillEnterFullScreenForElement(element);
 }
 
 void Internals::webkitDidEnterFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenElementStack::from(document)->webkitDidEnterFullScreenForElement(element);
+    FullscreenElementStack::from(*document).webkitDidEnterFullScreenForElement(element);
 }
 
 void Internals::webkitWillExitFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenElementStack::from(document)->webkitWillExitFullScreenForElement(element);
+    FullscreenElementStack::from(*document).webkitWillExitFullScreenForElement(element);
 }
 
 void Internals::webkitDidExitFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenElementStack::from(document)->webkitDidExitFullScreenForElement(element);
+    FullscreenElementStack::from(*document).webkitDidExitFullScreenForElement(element);
 }
 
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)

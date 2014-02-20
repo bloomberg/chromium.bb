@@ -40,19 +40,19 @@ HTMLVideoElementMediaSource::HTMLVideoElementMediaSource() { }
 
 HTMLVideoElementMediaSource::~HTMLVideoElementMediaSource() { }
 
-PassRefPtrWillBeRawPtr<VideoPlaybackQuality> HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLVideoElement* videoElement)
+PassRefPtrWillBeRawPtr<VideoPlaybackQuality> HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLVideoElement& videoElement)
 {
     unsigned total = 0;
     unsigned dropped = 0;
     unsigned corrupted = 0;
-    MediaPlayer* player = videoElement->player();
+    MediaPlayer* player = videoElement.player();
     if (player) {
         total = player->decodedFrameCount();
         dropped = player->droppedFrameCount();
         corrupted = player->corruptedFrameCount();
     }
 
-    return VideoPlaybackQuality::create(videoElement->document(), total, dropped, corrupted);
+    return VideoPlaybackQuality::create(videoElement.document(), total, dropped, corrupted);
 }
 
 }

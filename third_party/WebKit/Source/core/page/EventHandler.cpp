@@ -3057,7 +3057,8 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtr<FrameView> protector(m_frame->view());
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(m_frame->document())) {
+    ASSERT(m_frame->document());
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*m_frame->document())) {
         if (fullscreen->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(fullscreen, initialKeyEvent))
             return false;
     }

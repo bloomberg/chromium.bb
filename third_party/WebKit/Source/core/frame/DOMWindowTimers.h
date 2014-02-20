@@ -41,10 +41,10 @@ class EventTarget;
 class ScheduledAction;
 
 namespace DOMWindowTimers {
-int setTimeout(EventTarget*, PassOwnPtr<ScheduledAction>, int timeout);
-int setInterval(EventTarget*, PassOwnPtr<ScheduledAction>, int timeout);
-void clearTimeout(EventTarget*, int timeoutId);
-void clearInterval(EventTarget*, int timeoutId);
+int setTimeout(EventTarget&, PassOwnPtr<ScheduledAction>, int timeout);
+int setInterval(EventTarget&, PassOwnPtr<ScheduledAction>, int timeout);
+void clearTimeout(EventTarget&, int timeoutId);
+void clearInterval(EventTarget&, int timeoutId);
 }
 
 } // namespace WebCore

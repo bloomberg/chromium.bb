@@ -18,14 +18,14 @@ ScreenOrientationController::~ScreenOrientationController()
     ScreenOrientationDispatcher::instance().removeController(this);
 }
 
-ScreenOrientationController* ScreenOrientationController::from(Document* document)
+ScreenOrientationController& ScreenOrientationController::from(Document& document)
 {
     ScreenOrientationController* controller = static_cast<ScreenOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
-        controller = new ScreenOrientationController(*document);
+        controller = new ScreenOrientationController(document);
         DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
-    return controller;
+    return *controller;
 }
 
 ScreenOrientationController::ScreenOrientationController(Document& document)

@@ -57,7 +57,7 @@ const char* NotificationController::supplementName()
     return "NotificationController";
 }
 
-void provideNotification(Page* page, NotificationClient* client)
+void provideNotification(Page& page, NotificationClient* client)
 {
     NotificationController::provideTo(page, NotificationController::supplementName(), NotificationController::create(client));
 }

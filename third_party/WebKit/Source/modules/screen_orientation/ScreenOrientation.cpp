@@ -49,8 +49,8 @@ static const AtomicString& orientationToString(blink::WebScreenOrientation orien
     return nullAtom;
 }
 
-ScreenOrientation::ScreenOrientation(Screen* screen)
-    : DOMWindowProperty(screen->frame())
+ScreenOrientation::ScreenOrientation(Screen& screen)
+    : DOMWindowProperty(screen.frame())
 {
 }
 
@@ -59,48 +59,47 @@ const char* ScreenOrientation::supplementName()
     return "ScreenOrientation";
 }
 
-Document* ScreenOrientation::document() const
+Document& ScreenOrientation::document() const
 {
     ASSERT(m_associatedDOMWindow);
-    return m_associatedDOMWindow->document();
+    ASSERT(m_associatedDOMWindow->document());
+    return *m_associatedDOMWindow->document();
 }
 
-ScreenOrientation* ScreenOrientation::from(Screen* screen)
+ScreenOrientation& ScreenOrientation::from(Screen& screen)
 {
     ScreenOrientation* supplement = static_cast<ScreenOrientation*>(Supplement<Screen>::from(screen, supplementName()));
     if (!supplement) {
-        ASSERT(screen);
         supplement = new ScreenOrientation(screen);
         provideTo(screen, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
 ScreenOrientation::~ScreenOrientation()
 {
 }
 
-const AtomicString& ScreenOrientation::orientation(Screen* screen)
+const AtomicString& ScreenOrientation::orientation(Screen& screen)
 {
-    ScreenOrientation* screenOrientation = ScreenOrientation::from(screen);
-    ScreenOrientationController* controller = ScreenOrientationController::from(screenOrientation->document());
-    ASSERT(controller);
-    return orientationToString(controller->orientation());
+    ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
+    ScreenOrientationController& controller = ScreenOrientationController::from(screenOrientation.document());
+    return orientationToString(controller.orientation());
 }
 
-bool ScreenOrientation::lockOrientation(Screen* screen, const Vector<String>& orientations)
-{
-    // FIXME: Implement.
-    return false;
-}
-
-bool ScreenOrientation::lockOrientation(Screen* screen, const AtomicString& orientation)
+bool ScreenOrientation::lockOrientation(Screen& screen, const Vector<String>& orientations)
 {
     // FIXME: Implement.
     return false;
 }
 
-void ScreenOrientation::unlockOrientation(Screen* screen)
+bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& orientation)
+{
+    // FIXME: Implement.
+    return false;
+}
+
+void ScreenOrientation::unlockOrientation(Screen& screen)
 {
     // FIXME: Implement.
 }

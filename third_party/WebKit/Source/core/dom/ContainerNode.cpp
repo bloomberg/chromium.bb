@@ -425,7 +425,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
 
     document().removeFocusedElementOfSubtree(child.get());
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&document()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(child.get());
 
     // Events fired when blurring currently focused node might have moved this
@@ -509,7 +509,7 @@ void ContainerNode::removeChildren()
     // The container node can be removed from event handlers.
     RefPtr<ContainerNode> protect(this);
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&document()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(this, true);
 
     // Do any prep work needed before actually starting to detach

@@ -36,8 +36,8 @@
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+DOMWindowCrypto::DOMWindowCrypto(DOMWindow& window)
+    : DOMWindowProperty(window.frame())
 {
 }
 
@@ -50,19 +50,19 @@ const char* DOMWindowCrypto::supplementName()
     return "DOMWindowCrypto";
 }
 
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
+DOMWindowCrypto& DOMWindowCrypto::from(DOMWindow& window)
 {
     DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
         provideTo(window, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
+Crypto* DOMWindowCrypto::crypto(DOMWindow& window)
 {
-    return DOMWindowCrypto::from(window)->crypto();
+    return DOMWindowCrypto::from(window).crypto();
 }
 
 Crypto* DOMWindowCrypto::crypto() const

@@ -43,12 +43,12 @@ public:
     virtual ~NavigatorContentUtils();
 
     static const char* supplementName();
-    static NavigatorContentUtils* from(Page*);
+    static NavigatorContentUtils* from(Page&);
 
-    static void registerProtocolHandler(Navigator*, const String& scheme, const String& url, const String& title, ExceptionState&);
+    static void registerProtocolHandler(Navigator&, const String& scheme, const String& url, const String& title, ExceptionState&);
 
-    static String isProtocolHandlerRegistered(Navigator*, const String& scheme, const String& url, ExceptionState&);
-    static void unregisterProtocolHandler(Navigator*, const String& scheme, const String& url, ExceptionState&);
+    static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
+    static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
     static PassRefPtr<NavigatorContentUtils> create(NavigatorContentUtilsClient*);
 

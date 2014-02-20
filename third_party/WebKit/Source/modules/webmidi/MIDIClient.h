@@ -47,7 +47,7 @@ protected:
     virtual ~MIDIClient() { }
 };
 
-void provideMIDITo(Page*, MIDIClient*);
+void provideMIDITo(Page&, MIDIClient*);
 
 } // namespace WebCore
 

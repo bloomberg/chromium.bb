@@ -42,8 +42,8 @@ class WorkerGlobalScope;
 
 class WorkerGlobalScopeWebDatabase {
 public:
-    static PassRefPtr<Database> openDatabase(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
-    static PassRefPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtr<Database> openDatabase(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
 
 private:
     WorkerGlobalScopeWebDatabase() { };

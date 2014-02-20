@@ -33,8 +33,8 @@
 
 namespace WebCore {
 
-DeviceSensorEventController::DeviceSensorEventController(Document* document)
-    : PageLifecycleObserver(document->page())
+DeviceSensorEventController::DeviceSensorEventController(Document& document)
+    : PageLifecycleObserver(document.page())
     , m_hasEventListener(false)
     , m_document(document)
     , m_isActive(false)
@@ -59,10 +59,10 @@ void DeviceSensorEventController::fireDeviceEvent(Timer<DeviceSensorEventControl
 void DeviceSensorEventController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent)
 {
     RefPtr<Event> event = prpEvent;
-    if (m_document && m_document->domWindow()
-        && !m_document->activeDOMObjectsAreSuspended()
-        && !m_document->activeDOMObjectsAreStopped())
-        m_document->domWindow()->dispatchEvent(event);
+    if (m_document.domWindow()
+        && !m_document.activeDOMObjectsAreSuspended()
+        && !m_document.activeDOMObjectsAreStopped())
+        m_document.domWindow()->dispatchEvent(event);
 
     if (m_needsCheckingNullEvents) {
         if (isNullEvent(event.get()))

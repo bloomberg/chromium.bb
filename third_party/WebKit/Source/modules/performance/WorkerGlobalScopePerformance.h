@@ -40,9 +40,9 @@ namespace WebCore {
 class WorkerGlobalScopePerformance FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopePerformance();
-    static WorkerGlobalScopePerformance* from(WorkerGlobalScope*);
+    static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
-    static WorkerPerformance* performance(WorkerGlobalScope*);
+    static WorkerPerformance* performance(WorkerGlobalScope&);
 
 private:
     WorkerGlobalScopePerformance();

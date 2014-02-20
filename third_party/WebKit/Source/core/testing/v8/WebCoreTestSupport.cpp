@@ -59,8 +59,9 @@ void resetInternalsObject(v8::Local<v8::Context> context)
 
     ExecutionContext* scriptContext = currentExecutionContext(context->GetIsolate());
     Page* page = toDocument(scriptContext)->frame()->page();
+    ASSERT(page);
     Internals::resetToConsistentState(page);
-    InternalSettings::from(page)->resetToConsistentState();
+    InternalSettings::from(*page)->resetToConsistentState();
 }
 
 }

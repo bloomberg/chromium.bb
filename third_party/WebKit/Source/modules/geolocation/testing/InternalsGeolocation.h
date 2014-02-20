@@ -42,11 +42,11 @@ class Internals;
 
 class InternalsGeolocation {
 public:
-    static void setGeolocationClientMock(Internals*, Document*);
-    static void setGeolocationPosition(Internals*, Document*, double latitude, double longitude, double accuracy);
-    static void setGeolocationPositionUnavailableError(Internals*, Document*, const String& message);
-    static void setGeolocationPermission(Internals*, Document*, bool allowed);
-    static int numberOfPendingGeolocationPermissionRequests(Internals*, Document*);
+    static void setGeolocationClientMock(Internals&, Document*);
+    static void setGeolocationPosition(Internals&, Document*, double latitude, double longitude, double accuracy);
+    static void setGeolocationPositionUnavailableError(Internals&, Document*, const String& message);
+    static void setGeolocationPermission(Internals&, Document*, bool allowed);
+    static int numberOfPendingGeolocationPermissionRequests(Internals&, Document*);
 
 private:
     static GeolocationClientMock* geolocationClient(Document*);

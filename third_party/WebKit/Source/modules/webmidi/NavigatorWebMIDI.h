@@ -43,9 +43,9 @@ class Navigator;
 class NavigatorWebMIDI FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorWebMIDI();
-    static NavigatorWebMIDI* from(Navigator*);
+    static NavigatorWebMIDI& from(Navigator&);
 
-    static PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(Navigator*, const Dictionary&);
+    static PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(Navigator&, const Dictionary&);
     PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
 
 private:

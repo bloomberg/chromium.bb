@@ -12,22 +12,19 @@ namespace WebCore {
 
 class ChildNode {
 public:
-    static Element* previousElementSibling(Node* node)
+    static Element* previousElementSibling(Node& node)
     {
-        ASSERT(node);
-        return ElementTraversal::previousSibling(*node);
+        return ElementTraversal::previousSibling(node);
     }
 
-    static Element* nextElementSibling(Node* node)
+    static Element* nextElementSibling(Node& node)
     {
-        ASSERT(node);
-        return ElementTraversal::nextSibling(*node);
+        return ElementTraversal::nextSibling(node);
     }
 
-    static void remove(Node* node, ExceptionState& exceptionState)
+    static void remove(Node& node, ExceptionState& exceptionState)
     {
-        ASSERT(node);
-        return node->remove(exceptionState);
+        return node.remove(exceptionState);
     }
 };
 

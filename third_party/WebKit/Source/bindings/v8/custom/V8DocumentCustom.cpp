@@ -61,6 +61,7 @@ namespace WebCore {
 void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtr<Document> document = V8Document::toNative(info.Holder());
+    ASSERT(document);
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "evaluate", "Document", info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, expression, info[0]);
     RefPtr<Node> contextNode = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[1]);
@@ -75,7 +76,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     int type = toInt32(info[3]);
     RefPtrWillBeRawPtr<XPathResult> inResult = V8XPathResult::toNativeWithTypeCheck(info.GetIsolate(), info[4]);
-    V8TRYCATCH_VOID(RefPtrWillBeRawPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.release(), type, inResult.get(), exceptionState));
+    V8TRYCATCH_VOID(RefPtrWillBeRawPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(*document, expression, contextNode.get(), resolver.release(), type, inResult.get(), exceptionState));
     if (exceptionState.throwIfNeeded())
         return;
 

@@ -42,8 +42,8 @@ class ExecutionContext;
 class WorkerGlobalScopeCrypto FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeCrypto();
-    static WorkerGlobalScopeCrypto* from(WorkerSupplementable*);
-    static WorkerCrypto* crypto(WorkerSupplementable*);
+    static WorkerGlobalScopeCrypto& from(WorkerSupplementable&);
+    static WorkerCrypto* crypto(WorkerSupplementable&);
     WorkerCrypto* crypto() const;
 
 private:

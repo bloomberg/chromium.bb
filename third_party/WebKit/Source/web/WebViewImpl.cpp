@@ -299,7 +299,8 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
 {
-    providePrerendererClientTo(m_page.get(), new PrerendererClientImpl(prerendererClient));
+    ASSERT(m_page);
+    providePrerendererClientTo(*m_page, new PrerendererClientImpl(prerendererClient));
 }
 
 void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
@@ -388,28 +389,28 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.storageClient = &m_storageClientImpl;
 
     m_page = adoptPtr(new Page(pageClients));
-    provideUserMediaTo(m_page.get(), &m_userMediaClientImpl);
-    provideMIDITo(m_page.get(), m_midiClientProxy.get());
+    provideUserMediaTo(*m_page, &m_userMediaClientImpl);
+    provideMIDITo(*m_page, m_midiClientProxy.get());
 #if ENABLE(INPUT_SPEECH)
-    provideSpeechInputTo(m_page.get(), m_speechInputClient.get());
+    provideSpeechInputTo(*m_page, m_speechInputClient.get());
 #endif
-    provideSpeechRecognitionTo(m_page.get(), m_speechRecognitionClient.get());
-    provideNotification(m_page.get(), notificationPresenterImpl());
-    provideNavigatorContentUtilsTo(m_page.get(), m_navigatorContentUtilsClient.get());
+    provideSpeechRecognitionTo(*m_page, m_speechRecognitionClient.get());
+    provideNotification(*m_page, notificationPresenterImpl());
+    provideNavigatorContentUtilsTo(*m_page, m_navigatorContentUtilsClient.get());
 
-    provideContextFeaturesTo(m_page.get(), m_featureSwitchClient.get());
+    provideContextFeaturesTo(*m_page, m_featureSwitchClient.get());
     if (RuntimeEnabledFeatures::deviceOrientationEnabled())
-        DeviceOrientationInspectorAgent::provideTo(m_page.get());
-    provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());
+        DeviceOrientationInspectorAgent::provideTo(*m_page);
+    provideGeolocationTo(*m_page, m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 
-    provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
-    provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
+    provideLocalFileSystemTo(*m_page, LocalFileSystemClient::create());
+    provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());
     InspectorIndexedDBAgent::provideTo(m_page.get());
-    provideStorageQuotaClientTo(m_page.get(), StorageQuotaClientImpl::create());
+    provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_validationMessage = ValidationMessageClientImpl::create(*this);
     m_page->setValidationMessageClient(m_validationMessage.get());
-    provideWorkerGlobalScopeProxyProviderTo(m_page.get(), WorkerGlobalScopeProxyProviderImpl::create());
+    provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
 
     m_page->setGroupType(Page::SharedPageGroup);
 
@@ -1407,7 +1408,8 @@ void WebViewImpl::popupOpened(PopupContainer* popupContainer)
 {
     ASSERT(!m_selectPopup);
     m_selectPopup = popupContainer;
-    Document* document = mainFrameImpl()->frame()->document();
+    ASSERT(mainFrameImpl()->frame()->document());
+    Document& document = *mainFrameImpl()->frame()->document();
     WheelController::from(document)->didAddWheelEventHandler(document);
 }
 
@@ -1415,7 +1417,8 @@ void WebViewImpl::popupClosed(PopupContainer* popupContainer)
 {
     ASSERT(m_selectPopup);
     m_selectPopup = 0;
-    Document* document = mainFrameImpl()->frame()->document();
+    ASSERT(mainFrameImpl()->frame()->document());
+    Document& document = *mainFrameImpl()->frame()->document();
     WheelController::from(document)->didRemoveWheelEventHandler(document);
 }
 

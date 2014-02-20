@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-DeviceOrientationController::DeviceOrientationController(Document* document)
+DeviceOrientationController::DeviceOrientationController(Document& document)
     : DeviceSensorEventController(document)
-    , DOMWindowLifecycleObserver(document->domWindow())
+    , DOMWindowLifecycleObserver(document.domWindow())
 {
 }
 
@@ -58,14 +58,14 @@ const char* DeviceOrientationController::supplementName()
     return "DeviceOrientationController";
 }
 
-DeviceOrientationController* DeviceOrientationController::from(Document* document)
+DeviceOrientationController& DeviceOrientationController::from(Document& document)
 {
     DeviceOrientationController* controller = static_cast<DeviceOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceOrientationController(document);
         DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
-    return controller;
+    return *controller;
 }
 
 bool DeviceOrientationController::hasLastData()

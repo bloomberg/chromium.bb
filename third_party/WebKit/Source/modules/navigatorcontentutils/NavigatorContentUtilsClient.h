@@ -48,7 +48,7 @@ public:
     virtual void unregisterProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&) = 0;
 };
 
-void provideNavigatorContentUtilsTo(Page*, NavigatorContentUtilsClient*);
+void provideNavigatorContentUtilsTo(Page&, NavigatorContentUtilsClient*);
 
 }
 

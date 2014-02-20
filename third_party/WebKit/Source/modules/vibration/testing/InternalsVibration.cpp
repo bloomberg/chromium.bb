@@ -37,16 +37,16 @@
 
 namespace WebCore {
 
-bool InternalsVibration::isVibrating(Internals* internals, Document* document)
+bool InternalsVibration::isVibrating(Internals&, Document* document)
 {
-    ASSERT(internals && document && document->page());
-    return NavigatorVibration::from(document->page())->isVibrating();
+    ASSERT(document && document->page());
+    return NavigatorVibration::from(*document->page()).isVibrating();
 }
 
-Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals* internals, Document* document)
+Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals&, Document* document)
 {
-    ASSERT(internals && document && document->page());
-    return NavigatorVibration::from(document->page())->pattern();
+    ASSERT(document && document->page());
+    return NavigatorVibration::from(*document->page()).pattern();
 }
 
 } // namespace WebCore

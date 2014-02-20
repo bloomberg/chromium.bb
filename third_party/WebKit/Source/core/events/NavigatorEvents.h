@@ -37,7 +37,7 @@ class Navigator;
 
 class NavigatorEvents {
 public:
-    static long maxTouchPoints(Navigator*);
+    static long maxTouchPoints(Navigator&);
 };
 
 } // namespace WebCore

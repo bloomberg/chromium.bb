@@ -65,7 +65,7 @@ void FullscreenController::willEnterFullScreen()
     // Ensure that this element's document is still attached.
     Document& doc = m_provisionalFullScreenElement->document();
     if (doc.frame()) {
-        FullscreenElementStack::from(&doc)->webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
+        FullscreenElementStack::from(doc).webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
         m_fullScreenFrame = doc.frame();
     }
     m_provisionalFullScreenElement.clear();
@@ -77,16 +77,16 @@ void FullscreenController::didEnterFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (FullscreenElementStack::isFullScreen(doc)) {
+        if (FullscreenElementStack::isFullScreen(*doc)) {
             if (!m_exitFullscreenPageScaleFactor) {
                 m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
                 m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
                 m_webViewImpl->setPageScaleFactorPreservingScrollOffset(1.0f);
             }
 
-            FullscreenElementStack::from(doc)->webkitDidEnterFullScreenForElement(0);
+            FullscreenElementStack::from(*doc).webkitDidEnterFullScreenForElement(0);
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
-                Element* element = FullscreenElementStack::currentFullScreenElementFrom(doc);
+                Element* element = FullscreenElementStack::currentFullScreenElementFrom(*doc);
                 ASSERT(element);
                 if (element->isMediaElement() && m_webViewImpl->layerTreeView())
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
@@ -101,10 +101,10 @@ void FullscreenController::willExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(doc);
+        FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*doc);
         if (!fullscreen)
             return;
-        if (fullscreen->isFullScreen(doc)) {
+        if (fullscreen->isFullScreen(*doc)) {
             // When the client exits from full screen we have to call webkitCancelFullScreen to
             // notify the document. While doing that, suppress notifications back to the client.
             m_isCancelingFullScreen = true;
@@ -123,7 +123,7 @@ void FullscreenController::didExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(doc)) {
+        if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*doc)) {
             if (fullscreen->webkitIsFullScreen()) {
                 if (m_exitFullscreenPageScaleFactor) {
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor,

@@ -39,11 +39,11 @@ class DOMWindowSpeechSynthesis FINAL : public Supplement<DOMWindow>, public DOMW
 public:
     virtual ~DOMWindowSpeechSynthesis();
 
-    static SpeechSynthesis* speechSynthesis(DOMWindow*);
-    static DOMWindowSpeechSynthesis* from(DOMWindow*);
+    static SpeechSynthesis* speechSynthesis(DOMWindow&);
+    static DOMWindowSpeechSynthesis& from(DOMWindow&);
 
 private:
-    explicit DOMWindowSpeechSynthesis(DOMWindow*);
+    explicit DOMWindowSpeechSynthesis(DOMWindow&);
 
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();

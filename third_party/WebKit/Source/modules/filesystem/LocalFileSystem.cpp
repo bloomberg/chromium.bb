@@ -106,19 +106,19 @@ const char* LocalFileSystem::supplementName()
     return "LocalFileSystem";
 }
 
-LocalFileSystem* LocalFileSystem::from(ExecutionContext* context)
+LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
 {
-    if (context->isDocument()) {
-        return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+    if (context.isDocument()) {
+        return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context).page(), supplementName()));
     }
-    ASSERT(context->isWorkerGlobalScope());
-    return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+    ASSERT(context.isWorkerGlobalScope());
+    return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context).clients(), supplementName()));
 }
 
-void provideLocalFileSystemTo(Page* page, PassOwnPtr<FileSystemClient> client)
+void provideLocalFileSystemTo(Page& page, PassOwnPtr<FileSystemClient> client)
 {
-    page->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
-    page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(page));
+    page.provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
+    page.inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(&page));
 }
 
 void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSystemClient> client)

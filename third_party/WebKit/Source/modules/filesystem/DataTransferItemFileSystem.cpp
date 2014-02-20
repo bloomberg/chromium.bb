@@ -48,19 +48,19 @@
 namespace WebCore {
 
 // static
-PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem* item)
+PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem& item)
 {
-    if (!item->dataObjectItem()->isFilename())
+    if (!item.dataObjectItem()->isFilename())
         return 0;
 
     // For dragged files getAsFile must be pretty lightweight.
-    Blob* file = item->getAsFile().get();
+    Blob* file = item.getAsFile().get();
     // The clipboard may not be in a readable state.
     if (!file)
         return 0;
     ASSERT(file->isFile());
 
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(item->clipboard()->dataObject().get());
+    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(item.clipboard()->dataObject().get());
     DOMFileSystem* domFileSystem = filesystem ? filesystem->getDOMFileSystem(executionContext) : 0;
     if (!filesystem) {
         // IsolatedFileSystem may not be enabled.

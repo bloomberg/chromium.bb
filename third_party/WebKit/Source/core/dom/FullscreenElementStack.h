@@ -52,11 +52,11 @@ class FullscreenElementStack FINAL
 public:
     virtual ~FullscreenElementStack();
     static const char* supplementName();
-    static FullscreenElementStack* from(Document*);
-    static FullscreenElementStack* fromIfExists(Document*);
-    static Element* fullscreenElementFrom(Document*);
-    static Element* currentFullScreenElementFrom(Document*);
-    static bool isFullScreen(Document*);
+    static FullscreenElementStack& from(Document&);
+    static FullscreenElementStack* fromIfExists(Document&);
+    static Element* fullscreenElementFrom(Document&);
+    static Element* currentFullScreenElementFrom(Document&);
+    static bool isFullScreen(Document&);
     static bool isActiveFullScreenElement(const Element*);
 
     enum FullScreenCheckType {
@@ -86,7 +86,7 @@ public:
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
 
     // W3C API
-    static bool webkitFullscreenEnabled(Document*);
+    static bool webkitFullscreenEnabled(Document&);
     Element* webkitFullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
     void webkitExitFullscreen();
 
@@ -98,9 +98,9 @@ public:
     virtual void documentWasDisposed() OVERRIDE;
 
 private:
-    static FullscreenElementStack* fromIfExistsSlow(Document*);
+    static FullscreenElementStack* fromIfExistsSlow(Document&);
 
-    explicit FullscreenElementStack(Document*);
+    explicit FullscreenElementStack(Document&);
 
     Document* document();
     void fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*);
@@ -118,15 +118,15 @@ private:
 
 inline bool FullscreenElementStack::isActiveFullScreenElement(const Element* element)
 {
-    FullscreenElementStack* controller = fromIfExists(&element->document());
+    FullscreenElementStack* controller = fromIfExists(element->document());
     if (!controller)
         return false;
     return controller->webkitIsFullScreen() && controller->webkitCurrentFullScreenElement() == element;
 }
 
-inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document* document)
+inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& document)
 {
-    if (!document->hasFullscreenElementStack())
+    if (!document.hasFullscreenElementStack())
         return 0;
     return fromIfExistsSlow(document);
 }

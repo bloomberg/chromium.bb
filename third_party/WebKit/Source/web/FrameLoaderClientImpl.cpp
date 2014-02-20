@@ -118,13 +118,13 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
         m_webFrame->client()->didClearWindowObject(m_webFrame, world->worldId());
         Document* document = m_webFrame->frame()->document();
         if (document) {
-            WheelController::from(document);
+            WheelController::from(*document);
             if (RuntimeEnabledFeatures::deviceMotionEnabled())
-                DeviceMotionController::from(document);
+                DeviceMotionController::from(*document);
             if (RuntimeEnabledFeatures::deviceOrientationEnabled())
-                DeviceOrientationController::from(document);
+                DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::screenOrientationEnabled())
-                ScreenOrientationController::from(document);
+                ScreenOrientationController::from(*document);
         }
     }
 }
@@ -507,7 +507,8 @@ void FrameLoaderClientImpl::postProgressFinishedNotification()
 void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName)
 {
     if (m_webFrame->client()) {
-        DocumentFullscreen::webkitCancelFullScreen(m_webFrame->frame()->document());
+        ASSERT(m_webFrame->frame()->document());
+        DocumentFullscreen::webkitCancelFullScreen(*m_webFrame->frame()->document());
         WrappedResourceRequest webreq(request);
         m_webFrame->client()->loadURLExternally(
             m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);

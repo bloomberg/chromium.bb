@@ -61,7 +61,7 @@ private:
     InspectorDatabaseAgent* m_inspectorAgent;
 };
 
-void provideDatabaseClientTo(Page*, PassOwnPtr<DatabaseClient>);
+void provideDatabaseClientTo(Page&, PassOwnPtr<DatabaseClient>);
 void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtr<DatabaseClient>);
 
 } // namespace WebCore

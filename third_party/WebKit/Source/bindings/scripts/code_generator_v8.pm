@@ -1610,7 +1610,10 @@ END
         my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
         my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
         AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-        unshift(@arguments, "imp") if !$attribute->isStatic;
+        if (!$attribute->isStatic) {
+            $code .= "    ASSERT(imp);\n";
+            unshift(@arguments, "*imp");
+        }
         $functionName = "${implementedByImplName}::${functionName}";
     } elsif ($attribute->isStatic) {
         $functionName = "${implClassName}::${functionName}";
@@ -1767,7 +1770,8 @@ END
         if ($implementedBy) {
             my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
             $functionName = "${implementedByImplName}::${functionName}";
-            push(@arguments, "imp");
+            $code .= "    ASSERT(imp);\n";
+            push(@arguments, "*imp");
         } else {
             $functionName = "imp->${functionName}";
         }
@@ -2118,7 +2122,8 @@ END
             my @arguments;
             if ($implementedBy) {
                 $attrImplName = "${implementedByImplName}::${attrImplName}";
-                push(@arguments, "imp");
+                $code .= "    ASSERT(imp);\n";
+                push(@arguments, "*imp");
             } else {
                 $attrImplName = "imp->${attrImplName}";
             }
@@ -2126,8 +2131,9 @@ END
         }
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
         if ($implementedBy) {
+            $code .= "    ASSERT(imp);\n";
             $functionName = "${implementedByImplName}::${functionName}";
-            push(@arguments, "imp");
+            push(@arguments, "*imp");
         } else {
             $functionName = "imp->${functionName}";
         }
@@ -2146,7 +2152,10 @@ END
             my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
             my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
             AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-            unshift(@arguments, "imp") if !$attribute->isStatic;
+            if (!$attribute->isStatic) {
+                $code .= "    ASSERT(imp);\n";
+                unshift(@arguments, "*imp");
+            }
             $functionName = "${implementedByImplName}::${functionName}";
         } elsif ($attribute->isStatic) {
             $functionName = "${implClassName}::${functionName}";
@@ -5291,7 +5300,10 @@ sub GenerateFunctionCallString
     if ($implementedBy) {
         my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
         AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-        unshift(@arguments, "imp") if !$function->isStatic;
+        if (!$function->isStatic) {
+            $code .= "    ASSERT(imp);\n";
+            unshift(@arguments, "*imp");
+        }
         $functionName = "${implementedByImplName}::${name}";
     } elsif ($function->isStatic) {
         $functionName = "${implClassName}::${name}";

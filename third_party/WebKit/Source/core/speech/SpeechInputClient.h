@@ -67,7 +67,7 @@ protected:
     virtual ~SpeechInputClient() { }
 };
 
-void provideSpeechInputTo(Page*, SpeechInputClient*);
+void provideSpeechInputTo(Page&, SpeechInputClient*);
 
 } // namespace WebCore
 

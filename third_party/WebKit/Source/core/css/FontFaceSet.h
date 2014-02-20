@@ -96,15 +96,15 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    static PassRefPtr<FontFaceSet> from(Document*);
-    static void didLayout(Document*);
+    static PassRefPtr<FontFaceSet> from(Document&);
+    static void didLayout(Document&);
 
     void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
 
 private:
     typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
 
-    static PassRefPtr<FontFaceSet> create(Document* document)
+    static PassRefPtr<FontFaceSet> create(Document& document)
     {
         return adoptRef<FontFaceSet>(new FontFaceSet(document));
     }
@@ -120,7 +120,7 @@ private:
         bool m_recorded;
     };
 
-    FontFaceSet(Document*);
+    FontFaceSet(Document&);
 
     bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
 

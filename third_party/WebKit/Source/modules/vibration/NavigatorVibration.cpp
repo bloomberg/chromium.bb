@@ -31,8 +31,8 @@ namespace WebCore {
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
 
-NavigatorVibration::NavigatorVibration(Page* page)
-    : PageLifecycleObserver(page)
+NavigatorVibration::NavigatorVibration(Page& page)
+    : PageLifecycleObserver(&page)
     , m_timerStart(this, &NavigatorVibration::timerStartFired)
     , m_timerStop(this, &NavigatorVibration::timerStopFired)
     , m_isVibrating(false)
@@ -136,33 +136,33 @@ void NavigatorVibration::didCommitLoad(Frame* frame)
     cancelVibration();
 }
 
-bool NavigatorVibration::vibrate(Navigator* navigator, unsigned time)
+bool NavigatorVibration::vibrate(Navigator& navigator, unsigned time)
 {
     VibrationPattern pattern;
     pattern.append(time);
     return NavigatorVibration::vibrate(navigator, pattern);
 }
 
-bool NavigatorVibration::vibrate(Navigator* navigator, const VibrationPattern& pattern)
+bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& pattern)
 {
-    Page* page = navigator->frame()->page();
+    Page* page = navigator.frame()->page();
     if (!page)
         return false;
 
     if (page->visibilityState() != PageVisibilityStateVisible)
         return false;
 
-    return NavigatorVibration::from(page)->vibrate(pattern);
+    return NavigatorVibration::from(*page).vibrate(pattern);
 }
 
-NavigatorVibration* NavigatorVibration::from(Page* page)
+NavigatorVibration& NavigatorVibration::from(Page& page)
 {
     NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Page>::from(page, supplementName()));
     if (!navigatorVibration) {
         navigatorVibration = new NavigatorVibration(page);
         Supplement<Page>::provideTo(page, supplementName(), adoptPtr(navigatorVibration));
     }
-    return navigatorVibration;
+    return *navigatorVibration;
 }
 
 const char* NavigatorVibration::supplementName()

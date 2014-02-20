@@ -197,7 +197,7 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
 
     static ContextFeaturesClient* pagePopupFeaturesClient =  new PagePopupFeaturesClient();
-    provideContextFeaturesTo(m_page.get(), pagePopupFeaturesClient);
+    provideContextFeaturesTo(*m_page, pagePopupFeaturesClient);
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
     RefPtr<Frame> frame = Frame::create(FrameInit::create(0, &m_page->frameHost(), emptyFrameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
@@ -205,7 +205,8 @@ bool WebPagePopupImpl::initializePage()
     frame->view()->resize(m_popupClient->contentSize());
     frame->view()->setTransparent(false);
 
-    DOMWindowPagePopup::install(frame->domWindow(), m_popupClient);
+    ASSERT(frame->domWindow());
+    DOMWindowPagePopup::install(*frame->domWindow(), m_popupClient);
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     m_popupClient->writeDocument(data.get());
@@ -313,7 +314,8 @@ void WebPagePopupImpl::closePopup()
     if (m_page) {
         m_page->clearPageGroup();
         m_page->mainFrame()->loader().stopAllLoaders();
-        DOMWindowPagePopup::uninstall(m_page->mainFrame()->domWindow());
+        ASSERT(m_page->mainFrame()->domWindow());
+        DOMWindowPagePopup::uninstall(*m_page->mainFrame()->domWindow());
     }
     m_closing = true;
 

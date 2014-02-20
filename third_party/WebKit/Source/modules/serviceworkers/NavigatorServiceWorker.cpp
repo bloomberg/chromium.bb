@@ -10,8 +10,8 @@
 
 namespace WebCore {
 
-NavigatorServiceWorker::NavigatorServiceWorker(Navigator* navigator)
-    : DOMWindowProperty(navigator->frame())
+NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
+    : DOMWindowProperty(navigator.frame())
 {
 }
 
@@ -19,14 +19,14 @@ NavigatorServiceWorker::~NavigatorServiceWorker()
 {
 }
 
-NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
+NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
 {
     NavigatorServiceWorker* supplement = toNavigatorServiceWorker(navigator);
     if (!supplement) {
         supplement = new NavigatorServiceWorker(navigator);
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
 const char* NavigatorServiceWorker::supplementName()
@@ -34,9 +34,9 @@ const char* NavigatorServiceWorker::supplementName()
     return "NavigatorServiceWorker";
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator* navigator)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator& navigator)
 {
-    return NavigatorServiceWorker::from(navigator)->serviceWorker();
+    return NavigatorServiceWorker::from(navigator).serviceWorker();
 }
 
 ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()

@@ -118,8 +118,8 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-FontFaceSet::FontFaceSet(Document* document)
-    : ActiveDOMObject(document)
+FontFaceSet::FontFaceSet(Document& document)
+    : ActiveDOMObject(&document)
     , m_loadingCount(0)
     , m_shouldFireLoadingEvent(false)
     , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
@@ -528,7 +528,7 @@ static const char* supplementName()
     return "FontFaceSet";
 }
 
-PassRefPtr<FontFaceSet> FontFaceSet::from(Document* document)
+PassRefPtr<FontFaceSet> FontFaceSet::from(Document& document)
 {
     RefPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName()));
     if (!fonts) {
@@ -539,7 +539,7 @@ PassRefPtr<FontFaceSet> FontFaceSet::from(Document* document)
     return fonts.release();
 }
 
-void FontFaceSet::didLayout(Document* document)
+void FontFaceSet::didLayout(Document& document)
 {
     if (FontFaceSet* fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName())))
         fonts->didLayout();

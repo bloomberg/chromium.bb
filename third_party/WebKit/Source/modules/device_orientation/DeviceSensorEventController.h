@@ -41,7 +41,7 @@ public:
     void stopUpdating();
 
 protected:
-    explicit DeviceSensorEventController(Document*);
+    explicit DeviceSensorEventController(Document&);
     virtual ~DeviceSensorEventController();
 
     void dispatchDeviceEvent(const PassRefPtr<Event>);
@@ -60,7 +60,7 @@ private:
 
     void fireDeviceEvent(Timer<DeviceSensorEventController>*);
 
-    Document* m_document;
+    Document& m_document;
     bool m_isActive;
     bool m_needsCheckingNullEvents;
     Timer<DeviceSensorEventController> m_timer;

@@ -41,17 +41,17 @@ public:
     virtual void setInput(const String&) = 0;
     virtual ~DOMURLUtils() { };
 
-    static void setHref(DOMURLUtils*, const String&);
+    static void setHref(DOMURLUtils&, const String&);
 
-    static void setProtocol(DOMURLUtils*, const String&);
-    static void setUsername(DOMURLUtils*, const String&);
-    static void setPassword(DOMURLUtils*, const String&);
-    static void setHost(DOMURLUtils*, const String&);
-    static void setHostname(DOMURLUtils*, const String&);
-    static void setPort(DOMURLUtils*, const String&);
-    static void setPathname(DOMURLUtils*, const String&);
-    static void setSearch(DOMURLUtils*, const String&);
-    static void setHash(DOMURLUtils*, const String&);
+    static void setProtocol(DOMURLUtils&, const String&);
+    static void setUsername(DOMURLUtils&, const String&);
+    static void setPassword(DOMURLUtils&, const String&);
+    static void setHost(DOMURLUtils&, const String&);
+    static void setHostname(DOMURLUtils&, const String&);
+    static void setPort(DOMURLUtils&, const String&);
+    static void setPathname(DOMURLUtils&, const String&);
+    static void setSearch(DOMURLUtils&, const String&);
+    static void setHash(DOMURLUtils&, const String&);
 };
 
 } // namespace WebCore

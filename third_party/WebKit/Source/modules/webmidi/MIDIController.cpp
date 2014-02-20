@@ -66,7 +66,7 @@ void MIDIController::cancelSysExPermissionRequest(MIDIAccess* access)
     m_client->cancelSysExPermissionRequest(access);
 }
 
-void provideMIDITo(Page* page, MIDIClient* client)
+void provideMIDITo(Page& page, MIDIClient* client)
 {
     MIDIController::provideTo(page, MIDIController::supplementName(), MIDIController::create(client));
 }

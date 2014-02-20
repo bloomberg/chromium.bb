@@ -39,8 +39,8 @@
 
 namespace WebCore {
 
-DOMWindowQuota::DOMWindowQuota(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+DOMWindowQuota::DOMWindowQuota(DOMWindow& window)
+    : DOMWindowProperty(window.frame())
 {
 }
 
@@ -54,20 +54,20 @@ const char* DOMWindowQuota::supplementName()
 }
 
 // static
-DOMWindowQuota* DOMWindowQuota::from(DOMWindow* window)
+DOMWindowQuota& DOMWindowQuota::from(DOMWindow& window)
 {
     DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(Supplement<DOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowQuota(window);
         provideTo(window, supplementName(), adoptPtr(supplement));
     }
-    return supplement;
+    return *supplement;
 }
 
 // static
-DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow* window)
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow& window)
 {
-    return DOMWindowQuota::from(window)->webkitStorageInfo();
+    return DOMWindowQuota::from(window).webkitStorageInfo();
 }
 
 DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const

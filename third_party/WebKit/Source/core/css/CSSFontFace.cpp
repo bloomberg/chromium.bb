@@ -161,13 +161,13 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
 
     switch (newStatus) {
     case FontFace::Loading:
-        FontFaceSet::from(document)->beginFontLoading(m_fontFace);
+        FontFaceSet::from(*document)->beginFontLoading(m_fontFace);
         break;
     case FontFace::Loaded:
-        FontFaceSet::from(document)->fontLoaded(m_fontFace);
+        FontFaceSet::from(*document)->fontLoaded(m_fontFace);
         break;
     case FontFace::Error:
-        FontFaceSet::from(document)->loadError(m_fontFace);
+        FontFaceSet::from(*document)->loadError(m_fontFace);
         break;
     default:
         break;

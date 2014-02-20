@@ -52,7 +52,7 @@ protected:
     virtual ~GeolocationClient() { }
 };
 
-void provideGeolocationTo(Page*, GeolocationClient*);
+void provideGeolocationTo(Page&, GeolocationClient*);
 
 } // namespace WebCore
 

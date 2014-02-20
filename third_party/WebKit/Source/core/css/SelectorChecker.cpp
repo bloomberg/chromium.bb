@@ -822,7 +822,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             // context's Document is in the fullscreen state has the 'full-screen' pseudoclass applied.
             if (element.isFrameElementBase() && element.containsFullScreenElement())
                 return true;
-            if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&element.document())) {
+            if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(element.document())) {
                 if (!fullscreen->webkitIsFullScreen())
                     return false;
                 return element == fullscreen->webkitCurrentFullScreenElement();
@@ -833,7 +833,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoFullScreenDocument:
             // While a Document is in the fullscreen state, the 'full-screen-document' pseudoclass applies
             // to all elements of that Document.
-            if (!FullscreenElementStack::isFullScreen(&element.document()))
+            if (!FullscreenElementStack::isFullScreen(element.document()))
                 return false;
             return true;
         case CSSSelector::PseudoInRange:

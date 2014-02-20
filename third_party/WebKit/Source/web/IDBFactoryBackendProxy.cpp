@@ -61,7 +61,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(webFrame, name, origin);
     }
 
-    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+    WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
     return WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
 }
 

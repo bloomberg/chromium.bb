@@ -139,9 +139,9 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
     int timerId;
     if (singleShot)
-        timerId = DOMWindowTimers::setTimeout(imp, action.release(), timeout);
+        timerId = DOMWindowTimers::setTimeout(*imp, action.release(), timeout);
     else
-        timerId = DOMWindowTimers::setInterval(imp, action.release(), timeout);
+        timerId = DOMWindowTimers::setInterval(*imp, action.release(), timeout);
 
     // Try to do the idle notification before the timeout expires to get better
     // use of any idle time. Aim for the middle of the interval for simplicity.

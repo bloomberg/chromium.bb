@@ -19,7 +19,7 @@ public:
     blink::WebScreenOrientation orientation() const { return m_orientation; }
 
     // DocumentSupplement API.
-    static ScreenOrientationController* from(Document*);
+    static ScreenOrientationController& from(Document&);
     static const char* supplementName();
 
 private:
