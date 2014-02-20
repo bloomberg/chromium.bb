@@ -7785,106 +7785,99 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
-      <!-- Import Settings Dialog -->
-      <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
-        Import bookmarks and settings
-      </message>
-      <message name="IDS_IMPORT_FROM_LABEL" desc="Label before profile select combo box">
-        From:
-      </message>
-      <message name="IDS_IMPORT_FROM_IE" desc="browser combo box: Microsoft Internet Explorer">
-        Microsoft Internet Explorer
-      </message>
-      <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
-        Mozilla Firefox
-      </message>
-      <message name="IDS_IMPORT_FROM_ICEWEASEL" desc="browser combo box: Iceweasel">
-        Iceweasel
-      </message>
-      <message name="IDS_IMPORT_FROM_SAFARI" desc="browser combo box: Safari">
-        Safari
-      </message>
-      <message name="IDS_IMPORT_FROM_BOOKMARKS_HTML_FILE" desc="browser combo box: Bookmarks HTML File">
-        Bookmarks HTML File
-      </message>
-      <message name="IDS_IMPORT_ITEMS_LABEL" desc="Label before item select checkboxes">
-        Select items to import:
-      </message>
-      <message name="IDS_IMPORT_HISTORY_CHKBOX" desc="Checkbox for importing browsing history">
-        Browsing history
-      </message>
-      <message name="IDS_IMPORT_FAVORITES_CHKBOX" desc="Checkbox for importing favorites">
-        Favorites/Bookmarks
-      </message>
-      <message name="IDS_IMPORT_PASSWORDS_CHKBOX" desc="Checkbox for importing saved passwords">
-        Saved passwords
-      </message>
-      <message name="IDS_IMPORT_SEARCH_ENGINES_CHKBOX" desc="Checkbox for importing search engines">
-        Search engines
-      </message>
-      <message name="IDS_IMPORT_LOADING_PROFILES" desc="Status text to notify the user that profiles are being loaded">
-        Loading...
-      </message>
-      <message name="IDS_IMPORT_SUCCEEDED" desc="Status text to notify the user that the import succeeded">
-        Success!
-      </message>
-
-      <message name="IDS_IMPORT_COMMIT" desc="Text for OK button on dialog">
-        Import
-      </message>
-      <message name="IDS_IMPORT_CHOOSE_FILE" desc="Text for the Choose File on dialog">
-        Choose File
-      </message>
-
-      <message name="IDS_IMPORTER_GOOGLE_LOGIN_TEXT" desc="The message to be displayed on dialog">
-        In order to import Toolbar bookmarks into Chrome, you must be signed in to your Google account.  Please sign in and try to import again.
-      </message>
-      <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
-        No supported browser found
-      </message>
-      <message name="IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING" desc="Message displayed at the bottom of the Import Dialog for Safari on Mac OS">
-        Passwords saved in the Mac OS X Keychain will be used to help you sign in without typing.
-      </message>
-
-
-      <!-- Import progress popup -->
-      <message name="IDS_IMPORT_PROGRESS_TITLE" desc="Title for the importing progress dialog">
-        Importing
-      </message>
-
-      <if expr="is_macosx">
-        <message name="IDS_IMPORT_SETTINGS_MENU_MAC" desc="The text label for the Import menu item.">
-          Import Bookmarks and Settings...
+      <!-- Android uses custom UI for Bookmark importing -->
+      <if expr="not is_android">
+        <!-- Import Settings Dialog -->
+        <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
+          Import bookmarks and settings
         </message>
-        <message name="IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC" desc="Text displayed above status items in Import Dialog">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is now importing the following items from <ph name="IMPORT_BROWSER_NAME">$2<ex>Safari</ex></ph>:
+        <message name="IDS_IMPORT_FROM_LABEL" desc="Label before profile select combo box">
+          From:
         </message>
-        <message name="IDS_IMPORT_IMPORTING_PROGRESS_TEXT_MAC" desc="Status text displayed when an item in the Import Progress Dialog is being imported.">
-          Importing...
+        <message name="IDS_IMPORT_FROM_IE" desc="browser combo box: Microsoft Internet Explorer">
+          Microsoft Internet Explorer
         </message>
-        <message name="IDS_IMPORT_IMPORTING_DONE_TEXT_MAC" desc="Status text displayed when an item in the Import Progress Dialog is done importing.">
-          Done
+        <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
+          Mozilla Firefox
+        </message>
+        <message name="IDS_IMPORT_FROM_ICEWEASEL" desc="browser combo box: Iceweasel">
+          Iceweasel
+        </message>
+        <message name="IDS_IMPORT_FROM_SAFARI" desc="browser combo box: Safari">
+          Safari
+        </message>
+        <message name="IDS_IMPORT_FROM_BOOKMARKS_HTML_FILE" desc="browser combo box: Bookmarks HTML File">
+          Bookmarks HTML File
+        </message>
+        <message name="IDS_IMPORT_ITEMS_LABEL" desc="Label before item select checkboxes">
+          Select items to import:
+        </message>
+        <message name="IDS_IMPORT_HISTORY_CHKBOX" desc="Checkbox for importing browsing history">
+          Browsing history
+        </message>
+        <message name="IDS_IMPORT_FAVORITES_CHKBOX" desc="Checkbox for importing favorites">
+          Favorites/Bookmarks
+        </message>
+        <message name="IDS_IMPORT_PASSWORDS_CHKBOX" desc="Checkbox for importing saved passwords">
+          Saved passwords
+        </message>
+        <message name="IDS_IMPORT_SEARCH_ENGINES_CHKBOX" desc="Checkbox for importing search engines">
+          Search engines
+        </message>
+        <message name="IDS_IMPORT_LOADING_PROFILES" desc="Status text to notify the user that profiles are being loaded">
+          Loading...
+        </message>
+        <message name="IDS_IMPORT_SUCCEEDED" desc="Status text to notify the user that the import succeeded">
+          Success!
+        </message>
+
+        <message name="IDS_IMPORT_COMMIT" desc="Text for OK button on dialog">
+          Import
+        </message>
+        <message name="IDS_IMPORT_CHOOSE_FILE" desc="Text for the Choose File on dialog">
+          Choose File
+        </message>
+
+        <message name="IDS_IMPORTER_GOOGLE_LOGIN_TEXT" desc="The message to be displayed on dialog">
+          In order to import Toolbar bookmarks into Chrome, you must be signed in to your Google account.  Please sign in and try to import again.
+        </message>
+        <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
+          No supported browser found
+        </message>
+        <message name="IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING" desc="Message displayed at the bottom of the Import Dialog for Safari on Mac OS">
+          Passwords saved in the Mac OS X Keychain will be used to help you sign in without typing.
+        </message>
+
+        <!-- Import progress popup -->
+        <message name="IDS_IMPORT_PROGRESS_TITLE" desc="Title for the importing progress dialog">
+          Importing
+        </message>
+
+        <if expr="is_macosx">
+          <message name="IDS_IMPORT_SETTINGS_MENU_MAC" desc="The text label for the Import menu item.">
+            Import Bookmarks and Settings...
+          </message>
+        </if>
+
+        <message name="IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS" desc="Import status for bookmarks">
+          Favorites/Bookmarks
+        </message>
+        <message name="IDS_IMPORT_PROGRESS_STATUS_SEARCH" desc="Import status for search engines">
+          Search settings
+        </message>
+        <message name="IDS_IMPORT_PROGRESS_STATUS_PASSWORDS" desc="Import status for passwords">
+          Saved passwords
+        </message>
+        <message name="IDS_IMPORT_PROGRESS_STATUS_HISTORY" desc="Import status for history">
+          Browsing history
+        </message>
+        <message name="IDS_IMPORT_PROGRESS_STATUS_COOKIES" desc="Import status for cookies">
+          Cookies
+        </message>
+        <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL" desc="Button text for import cancellation">
+          Stop import
         </message>
       </if>
-
-      <message name="IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS" desc="Import status for bookmarks">
-        Favorites/Bookmarks
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_SEARCH" desc="Import status for search engines">
-        Search settings
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_PASSWORDS" desc="Import status for passwords">
-        Saved passwords
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_HISTORY" desc="Import status for history">
-        Browsing history
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_COOKIES" desc="Import status for cookies">
-        Cookies
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL" desc="Button text for import cancellation">
-        Stop import
-      </message>
 
       <!-- Confirm to quit panel -->
       <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">

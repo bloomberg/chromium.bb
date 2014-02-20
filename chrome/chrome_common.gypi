@@ -463,6 +463,9 @@
         ['OS=="android"', {
           'sources/': [
             ['exclude', '^common/chrome_version_info_posix.cc'],
+            ['exclude', '^common/importer/'],
+            ['include', '^common/importer/imported_favicon_usage.cc$'],
+            ['include', '^common/importer/imported_favicon_usage.h$'],
             ['exclude', '^common/service_'],
           ],
           'sources!': [
@@ -473,10 +476,6 @@
             'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
             'common/extensions/manifest_handlers/nacl_modules_handler.cc',
             'common/icon_with_badge_image_source.cc',
-            'common/importer/imported_bookmark_entry.cc',
-            'common/importer/importer_bridge.cc',
-            'common/importer/importer_data_types.cc',
-            'common/importer/importer_url_row.cc',
             'common/net/url_util.cc',
             'common/spellcheck_common.cc',
           ],
