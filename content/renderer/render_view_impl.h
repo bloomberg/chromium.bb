@@ -692,6 +692,7 @@ class CONTENT_EXPORT RenderViewImpl
       float* scale_factor) OVERRIDE;
   virtual gfx::Vector2d GetScrollOffset() OVERRIDE;
   virtual void DidHandleKeyEvent() OVERRIDE;
+  virtual void WillProcessUserGesture() OVERRIDE;
   virtual bool WillHandleMouseEvent(
       const blink::WebMouseEvent& event) OVERRIDE;
   virtual bool WillHandleGestureEvent(

@@ -4693,6 +4693,11 @@ void RenderViewImpl::DidHandleKeyEvent() {
   ClearEditCommands();
 }
 
+void RenderViewImpl::WillProcessUserGesture() {
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, WillProcessUserGesture());
+}
+
 bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;

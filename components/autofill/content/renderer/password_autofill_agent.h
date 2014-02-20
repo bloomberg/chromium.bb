@@ -9,12 +9,10 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace blink {
 class WebInputElement;
@@ -81,24 +79,33 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   typedef std::map<blink::WebFrame*,
                    linked_ptr<PasswordForm> > FrameToPasswordFormMap;
 
-  class AutofillWebUserGestureHandler : public blink::WebUserGestureHandler {
+  // This class holds a vector of autofilled password input elements and makes
+  // sure the autofilled password value is not accessible to JavaScript code
+  // until the user interacts with the page.
+  class PasswordValueGatekeeper {
    public:
-    AutofillWebUserGestureHandler(PasswordAutofillAgent* agent);
-    virtual ~AutofillWebUserGestureHandler();
+    PasswordValueGatekeeper();
+    ~PasswordValueGatekeeper();
 
-    void addElement(const blink::WebInputElement& element) {
-      elements_.push_back(element);
-    }
+    // Call this for every autofilled password field, so that the gatekeeper
+    // protects the value accordingly.
+    void RegisterElement(blink::WebInputElement* element);
 
-    void clearElements() {
-      elements_.clear();
-    }
+    // Call this to notify the gatekeeper that the user interacted with the
+    // page.
+    void OnUserGesture();
 
-    virtual void onGesture();
+    // Call this to reset the gatekeeper on a new page navigation.
+    void Reset();
 
    private:
-    PasswordAutofillAgent* agent_;
+    // Make the value of |element| accessible to JavaScript code.
+    void ShowValue(blink::WebInputElement* element);
+
+    bool was_user_gesture_seen_;
     std::vector<blink::WebInputElement> elements_;
+
+    DISALLOW_COPY_AND_ASSIGN(PasswordValueGatekeeper);
   };
 
   // RenderViewObserver:
@@ -113,6 +120,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                                    const blink::WebFormElement& form) OVERRIDE;
   virtual void WillSubmitForm(blink::WebFrame* frame,
                               const blink::WebFormElement& form) OVERRIDE;
+  virtual void WillProcessUserGesture() OVERRIDE;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);
@@ -183,7 +191,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).
   FrameToPasswordFormMap provisionally_saved_forms_;
 
-  scoped_ptr<AutofillWebUserGestureHandler> gesture_handler_;
+  PasswordValueGatekeeper gatekeeper_;
 
   bool user_gesture_occurred_;
 

@@ -500,6 +500,10 @@ class CONTENT_EXPORT RenderWidget
   // just handled.
   virtual void DidHandleKeyEvent() {}
 
+  // Called by OnHandleInputEvent() to notify subclasses that a user gesture
+  // event will be processed.
+  virtual void WillProcessUserGesture() {}
+
   // Called by OnHandleInputEvent() to notify subclasses that a mouse event is
   // about to be handled.
   // Returns true if no further handling is needed. In that case, the event

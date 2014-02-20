@@ -1088,6 +1088,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   counter_for_type->Add(delta);
 
+  if (WebInputEvent::isUserGestureEventType(input_event->type))
+    WillProcessUserGesture();
+
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {
     const WebMouseEvent& mouse_event =
