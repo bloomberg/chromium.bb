@@ -660,7 +660,12 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
 
     // When generating the drag image for an element, ignore the document background.
     m_view->setBaseBackgroundColor(Color::transparent);
-    document()->updateLayout();
+
+    // Updating layout can tear everything down, so ref the Frame and Node to keep them alive.
+    RefPtr<Frame> frameProtector(this);
+    RefPtr<Node> nodeProtector(node);
+    m_view->updateLayoutAndStyleForPainting();
+
     m_view->setNodeToDraw(node); // Enable special sub-tree drawing mode.
 
     // Document::updateLayout may have blown away the original RenderObject.
@@ -683,8 +688,6 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
-    // https://code.google.com/p/chromium/issues/detail?id=343755
-    DisableCompositingQueryAsserts disabler;
     m_view->paintContents(buffer->context(), paintingRect);
 
     RefPtr<Image> image = buffer->copyImage();
