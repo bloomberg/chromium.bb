@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 
-#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -30,13 +30,10 @@
 
 namespace {
 
-// Global SequenceNumber used for generating unique webview partition IDs.
-base::StaticAtomicSequenceNumber next_partition_id;
-
 } // empty namespace
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
-      : weak_factory_(this), choose_what_to_sync_(false), partition_id_("") {
+      : weak_factory_(this), choose_what_to_sync_(false) {
 }
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
@@ -50,7 +47,7 @@ void InlineLoginHandlerImpl::RegisterMessages() {
 }
 
 void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
-  params.SetInteger("authMode", InlineLoginHandler::kInlineAuthMode);
+  params.SetInteger("authMode", InlineLoginHandler::kDesktopAuthMode);
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin::Source source = signin::GetSourceForPromoURL(current_url);
@@ -92,13 +89,6 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   net::GetValueForKeyInQuery(current_url, "readOnlyEmail", &read_only_email);
   if (!read_only_email.empty())
     params.SetString("readOnlyEmail", read_only_email);
-
-  net::GetValueForKeyInQuery(current_url, "partitionId", &partition_id_);
-  if (partition_id_.empty()) {
-    partition_id_ =
-        "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
-  }
-  params.SetString("partitionId", partition_id_);
 }
 
 
@@ -111,8 +101,6 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
   GURL main_frame_url(web_contents->GetURL());
   main_frame_url = net::AppendOrReplaceQueryParameter(
       main_frame_url, "frameUrl", UTF16ToASCII(url_str));
-  main_frame_url = net::AppendOrReplaceQueryParameter(
-      main_frame_url, "partitionId", partition_id_);
   chrome::NavigateParams params(
       Profile::FromWebUI(web_ui()),
       net::AppendOrReplaceQueryParameter(main_frame_url, "constrained", "0"),
@@ -123,7 +111,7 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
-  DCHECK(email_.empty() && password_.empty());
+  DCHECK(email_.empty() && password_.empty() && session_index_.empty());
 
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
@@ -162,6 +150,10 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
     }
   }
 
+  base::string16 session_index;
+  dict->GetString("sessionIndex", &session_index);
+  session_index_ = UTF16ToASCII(session_index);
+  DCHECK(!session_index_.empty());
   dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
   signin::Source source = signin::GetSourceForPromoURL(current_url);
@@ -180,13 +172,12 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
           contents->GetBrowserContext(),
-          GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?" +
-                partition_id_));
+          GURL(chrome::kChromeUIChromeSigninURL));
 
   auth_fetcher_.reset(new GaiaAuthFetcher(this,
                                           GaiaConstants::kChromeSource,
                                           partition->GetURLRequestContext()));
-  auth_fetcher_->StartCookieForOAuthCodeExchange("0");
+  auth_fetcher_->StartCookieForOAuthCodeExchange(session_index_);
 }
 
 void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
@@ -253,6 +244,7 @@ void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
 
   email_.clear();
   password_.clear();
+  session_index_.clear();
   web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 }
 
@@ -276,6 +268,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
 
   email_.clear();
   password_.clear();
+  session_index_.clear();
 }
 
 void InlineLoginHandlerImpl::SyncStarterCallback(

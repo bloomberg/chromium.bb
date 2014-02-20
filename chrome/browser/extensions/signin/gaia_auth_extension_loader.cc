@@ -68,7 +68,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
   }
 #else
-  int manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
+  int manifest_resource_id = IDR_GAIA_AUTH_DESKTOP_MANIFEST;
 #endif
 
   component_loader->Add(manifest_resource_id,

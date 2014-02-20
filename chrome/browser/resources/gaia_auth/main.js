@@ -36,7 +36,8 @@ Authenticator.prototype = {
   intputEmail_: undefined,
 
   isSAMLFlow_: false,
-  samlSupportChannel_: null,
+  isSAMLEnabled_: false,
+  supportChannel_: null,
 
   GAIA_URL: 'https://accounts.google.com/',
   GAIA_PAGE_PATH: 'ServiceLogin?skipvpage=true&sarp=1&rm=hide',
@@ -54,15 +55,12 @@ Authenticator.prototype = {
     this.inputEmail_ = params.email;
     this.service_ = params.service || this.SERVICE_ID;
     this.continueUrl_ = params.continueUrl || this.CONTINUE_URL;
-    this.continueUrlWithoutParams_ = stripParams(this.continueUrl_);
-    this.inlineMode_ = params.inlineMode == '1';
-    this.constrained_ = params.constrained == '1';
-    this.partitionId_ = params.partitionId || '';
+    this.desktopMode_ = params.desktopMode == '1';
+    this.isConstrainedWindow_ = params.constrained == '1';
     this.initialFrameUrl_ = params.frameUrl || this.constructInitialFrameUrl_();
     this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
-    this.loaded_ = false;
 
-    document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
+    document.addEventListener('DOMContentLoaded', this.onPageLoad_.bind(this));
     document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
   },
 
@@ -89,129 +87,116 @@ Authenticator.prototype = {
       url = appendParam(url, 'hl', this.inputLang_);
     if (this.inputEmail_)
       url = appendParam(url, 'Email', this.inputEmail_);
-    if (this.constrained_)
+    if (this.isConstrainedWindow_)
       url = appendParam(url, 'source', this.CONSTRAINED_FLOW_SOURCE);
     return url;
   },
 
-  /** Callback when all loads in the gaia webview is complete. */
-  onWebviewLoadstop_: function(gaiaFrame) {
-    if (gaiaFrame.src.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-      // Detect when login is finished by the load stop event of the continue
-      // URL. Cannot reuse the login complete flow in success.html, because
-      // webview does not support extension pages yet.
-      var skipForNow = false;
-      if (this.inlineMode_ && gaiaFrame.src.indexOf('ntp=1') >= 0) {
-        skipForNow = true;
-      }
-      msg = {
-        'method': 'completeLogin',
-        'skipForNow': skipForNow
-      };
-      window.parent.postMessage(msg, this.parentPage_);
-      // Do no report state to the parent for the continue URL, since it is a
-      // blank page.
-      return;
+  onPageLoad_: function() {
+    window.addEventListener('message', this.onMessage.bind(this), false);
+
+    var gaiaFrame = $('gaia-frame');
+    gaiaFrame.src = this.initialFrameUrl_;
+
+    if (this.desktopMode_) {
+      var handler = function() {
+        this.onLoginUILoaded_();
+        gaiaFrame.removeEventListener('load', handler);
+
+        this.initDesktopChannel_();
+      }.bind(this);
+      gaiaFrame.addEventListener('load', handler);
     }
+  },
 
-    // Report the current state to the parent which will then update the
-    // browser history so that later it could respond properly to back/forward.
-    var msg = {
-      'method': 'reportState',
-      'src': gaiaFrame.src
-    };
-    window.parent.postMessage(msg, this.parentPage_);
+  initDesktopChannel_: function() {
+    this.supportChannel_ = new Channel();
+    this.supportChannel_.connect('authMain');
 
-    if (gaiaFrame.src.lastIndexOf(this.gaiaUrl_, 0) == 0) {
-      gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
-        // Send an initial message to gaia so that it has an JavaScript
-        // reference to the embedder.
-        gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
+    var channelConnected = false;
+    this.supportChannel_.registerMessage('channelConnected', function() {
+      channelConnected = true;
+
+      this.supportChannel_.send({
+        name: 'initDesktopFlow',
+        gaiaUrl: this.gaiaUrl_,
+        continueUrl: stripParams(this.continueUrl_),
+        isConstrainedWindow: this.isConstrainedWindow_
       });
-      if (this.constrained_) {
-        var preventContextMenu = 'document.addEventListener("contextmenu", ' +
-                                 'function(e) {e.preventDefault();})';
-        gaiaFrame.executeScript({code: preventContextMenu});
-      }
-    }
+      this.supportChannel_.registerMessage(
+        'switchToFullTab', this.switchToFullTab_.bind(this));
+      this.supportChannel_.registerMessage(
+        'completeLogin', this.completeLogin_.bind(this));
+    }.bind(this));
 
-    this.loaded_ || this.onLoginUILoaded();
+    window.setTimeout(function() {
+      if (!channelConnected) {
+        // Re-initialize the channel if it is not connected properly, e.g.
+        // connect may be called before background script started running.
+        this.initDesktopChannel_();
+      }
+    }.bind(this), 200);
   },
 
   /**
-   * Callback when the gaia webview attempts to open a new window.
+   * Invoked when the login UI is initialized or reset.
    */
-  onWebviewNewWindow_: function(gaiaFrame, e) {
-    window.open(e.targetUrl, '_blank');
-    e.window.discard();
-  },
-
-  onWebviewRequestCompleted_: function(details) {
-    if (details.url.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-      return;
-    }
-
-    var headers = details.responseHeaders;
-    for (var i = 0; headers && i < headers.length; ++i) {
-      if (headers[i].name.toLowerCase() == 'google-accounts-embedded') {
-        return;
-      }
-    }
+  onLoginUILoaded_: function() {
     var msg = {
-      'method': 'switchToFullTab',
-      'url': details.url
+      'method': 'loginUILoaded'
     };
     window.parent.postMessage(msg, this.parentPage_);
   },
 
-  loadFrame_: function() {
-    var gaiaFrame = $('gaia-frame');
-    gaiaFrame.partition = this.partitionId_;
-    gaiaFrame.src = this.initialFrameUrl_;
-    if (this.inlineMode_) {
-      gaiaFrame.addEventListener(
-          'loadstop', this.onWebviewLoadstop_.bind(this, gaiaFrame));
-      gaiaFrame.addEventListener(
-          'newwindow', this.onWebviewNewWindow_.bind(this, gaiaFrame));
-    }
-    if (this.constrained_) {
-      gaiaFrame.request.onCompleted.addListener(
-          this.onWebviewRequestCompleted_.bind(this),
-          {urls: ['<all_urls>'], types: ['main_frame']},
-          ['responseHeaders']);
-    }
+  /**
+   * Invoked when the background script sends a message to indicate that the
+   * current content does not fit in a constrained window.
+   * @param {Object=} opt_extraMsg Optional extra info to send.
+   */
+  switchToFullTab_: function(msg) {
+    var parentMsg = {
+      'method': 'switchToFullTab',
+      'url': msg.url
+    };
+    window.parent.postMessage(parentMsg, this.parentPage_);
   },
 
-  completeLogin: function() {
+  /**
+   * Invoked when the signin flow is complete.
+   * @param {Object=} opt_extraMsg Optional extra info to send.
+   */
+  completeLogin_: function(opt_extraMsg) {
     var msg = {
       'method': 'completeLogin',
-      'email': this.email_,
+      'email': (opt_extraMsg && opt_extraMsg.email) || this.email_,
       'password': this.password_,
-      'usingSAML': this.isSAMLFlow_
+      'usingSAML': this.isSAMLFlow_,
+      'chooseWhatToSync': this.chooseWhatToSync_ || false,
+      'skipForNow': opt_extraMsg && opt_extraMsg.skipForNow,
+      'sessionIndex': opt_extraMsg && opt_extraMsg.sessionIndex
     };
     window.parent.postMessage(msg, this.parentPage_);
-    if (this.samlSupportChannel_)
-      this.samlSupportChannel_.send({name: 'resetAuth'});
-  },
-
-  onPageLoad: function(e) {
-    window.addEventListener('message', this.onMessage.bind(this), false);
-    this.loadFrame_();
+    if (this.isSAMLEnabled_)
+      this.supportChannel_.send({name: 'resetAuth'});
   },
 
   /**
    * Invoked when 'enableSAML' event is received to initialize SAML support.
    */
   onEnableSAML_: function() {
+    this.isSAMLEnabled_ = true;
     this.isSAMLFlow_ = false;
 
-    this.samlSupportChannel_ = new Channel();
-    this.samlSupportChannel_.connect('authMain');
-    this.samlSupportChannel_.registerMessage(
+    if (!this.supportChannel_) {
+      this.supportChannel_ = new Channel();
+      this.supportChannel_.connect('authMain');
+    }
+
+    this.supportChannel_.registerMessage(
         'onAuthPageLoaded', this.onAuthPageLoaded_.bind(this));
-    this.samlSupportChannel_.registerMessage(
+    this.supportChannel_.registerMessage(
         'apiCall', this.onAPICall_.bind(this));
-    this.samlSupportChannel_.send({
+    this.supportChannel_.send({
       name: 'setGaiaUrl',
       gaiaUrl: this.gaiaUrl_
     });
@@ -259,26 +244,9 @@ Authenticator.prototype = {
     }
   },
 
-  onLoginUILoaded: function() {
-    var msg = {
-      'method': 'loginUILoaded'
-    };
-    window.parent.postMessage(msg, this.parentPage_);
-    if (this.inlineMode_) {
-      // TODO(guohui): temporary workaround until webview team fixes the focus
-      // on their side.
-      var gaiaFrame = $('gaia-frame');
-      gaiaFrame.focus();
-      gaiaFrame.onblur = function() {
-        gaiaFrame.focus();
-      };
-    }
-    this.loaded_ = true;
-  },
-
   onConfirmLogin_: function() {
     if (!this.isSAMLFlow_) {
-      this.completeLogin();
+      this.completeLogin_();
       return;
     }
 
@@ -291,7 +259,7 @@ Authenticator.prototype = {
                               this.parentPage_);
 
     if (!apiUsed) {
-      this.samlSupportChannel_.sendWithCallback(
+      this.supportChannel_.sendWithCallback(
           {name: 'getScrapedPasswords'},
           function(passwords) {
             if (passwords.length == 0) {
@@ -312,11 +280,11 @@ Authenticator.prototype = {
     // SAML login is complete when the user's e-mail address has been retrieved
     // from GAIA and the user has successfully confirmed the password.
     if (this.email_ !== null && this.password_ !== null)
-      this.completeLogin();
+      this.completeLogin_();
   },
 
   onVerifyConfirmedPassword_: function(password) {
-    this.samlSupportChannel_.sendWithCallback(
+    this.supportChannel_.sendWithCallback(
         {name: 'getScrapedPasswords'},
         function(passwords) {
           for (var i = 0; i < passwords.length; ++i) {
@@ -338,17 +306,18 @@ Authenticator.prototype = {
       this.email_ = msg.email;
       this.password_ = msg.password;
       this.attemptToken_ = msg.attemptToken;
+      this.chooseWhatToSync_ = msg.chooseWhatToSync;
       this.isSAMLFlow_ = false;
-      if (this.samlSupportChannel_)
-        this.samlSupportChannel_.send({name: 'startAuth'});
+      if (this.isSAMLEnabled_)
+        this.supportChannel_.send({name: 'startAuth'});
     } else if (msg.method == 'clearOldAttempts' && this.isGaiaMessage_(e)) {
       this.email_ = null;
       this.password_ = null;
       this.attemptToken_ = null;
       this.isSAMLFlow_ = false;
-      this.onLoginUILoaded();
-      if (this.samlSupportChannel_)
-        this.samlSupportChannel_.send({name: 'resetAuth'});
+      this.onLoginUILoaded_();
+      if (this.isSAMLEnabled_)
+        this.supportChannel_.send({name: 'resetAuth'});
     } else if (msg.method == 'setAuthenticatedUserEmail' &&
                this.isParentMessage_(e)) {
       if (this.attemptToken_ == msg.attemptToken) {

@@ -11,23 +11,14 @@
  */
 
 (function() {
-  var extWindow;
-
   var $ = function(id) { return document.getElementById(id); };
-  var gaiaLoginForm = $('gaia_loginform');
 
-  var onMessage = function(e) {
-    extWindow = e.source;
-  };
-  window.addEventListener('message', onMessage);
+  var gaiaLoginForm = $('gaia_loginform');
+  if (!gaiaLoginForm) {
+    return;
+  }
 
   var onLoginSubmit = function(e) {
-    if (!extWindow) {
-      console.log('ERROR: no initial message received from the gaia ext');
-      e.preventDefault();
-      return;
-    }
-
     var checkboxElement = $('advanced-box');
     var chooseWhatToSync = checkboxElement && checkboxElement.checked;
     var msg = {method: 'attemptLogin',
@@ -36,8 +27,8 @@
                attemptToken: new Date().getTime(),
                chooseWhatToSync: chooseWhatToSync};
 
-    extWindow.postMessage(msg, 'chrome://chrome-signin');
-    console.log('Credentials sent');
+    window.parent.postMessage(
+        msg, 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik');
 
     return;
   };

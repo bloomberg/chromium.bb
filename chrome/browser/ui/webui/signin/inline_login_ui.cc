@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -22,6 +23,7 @@ namespace {
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
         content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
+  source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome-extension:;");
   source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 
@@ -48,7 +50,8 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
   // Required for intercepting extension function calls when the page is loaded
   // in a bubble (not a full tab, thus tab helpers are not registered
   // automatically).
-  extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+      web_ui->GetWebContents());
 #endif
 }
 

@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -632,6 +633,14 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       response_headers->RemoveHeader("x-frame-options");
       response_headers->AddHeader("x-frame-options: sameorigin");
     }
+  }
+
+  // Ignores x-frame-options for the chrome signin UI.
+  if (request->first_party_for_cookies().GetOrigin().spec() ==
+      chrome::kChromeUIChromeSigninURL) {
+    net::HttpResponseHeaders* response_headers = request->response_headers();
+    if (response_headers->HasHeader("x-frame-options"))
+      response_headers->RemoveHeader("x-frame-options");
   }
 
   prerender::URLRequestResponseStarted(request);

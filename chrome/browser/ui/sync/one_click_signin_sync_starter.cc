@@ -456,10 +456,14 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
       GURL current_url = web_contents()->GetLastCommittedURL();
       bool is_chrome_signin_url =
           current_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL;
+      bool is_same_profile =
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()) ==
+          profile_;
       use_same_tab =
           (is_chrome_signin_url ||
            signin::IsContinueUrlForWebBasedSigninFlow(current_url)) &&
-          !signin::IsAutoCloseEnabledInURL(current_url);
+          !signin::IsAutoCloseEnabledInURL(current_url) &&
+          is_same_profile;
     }
     if (profile_sync_service) {
       // Need to navigate to the settings page and display the sync UI.

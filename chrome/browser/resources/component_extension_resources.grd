@@ -61,8 +61,7 @@
       <include name="IDR_GAIA_AUTH_BACKGROUND_JS" file="gaia_auth/background.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_SAML_INJECTED_JS" file="gaia_auth/saml_injected.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_CHANNEL_JS" file="gaia_auth/channel.js" type="BINDATA" />
-      <include name="IDR_GAIA_AUTH_INLINE_INJECTED_JS" file="gaia_auth/inline_injected.js" type="BINDATA" />
-      <include name="IDR_GAIA_AUTH_INLINE_MAIN" file="gaia_auth/inline_main.html" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_GAIA_AUTH_DESKTOP_INJECTED_JS" file="gaia_auth/desktop_injected.js" type="BINDATA" />
       <!-- Hangout Services extension, included in Google Chrome builds only. -->
       <if expr="_google_chrome or enable_hangout_services_extension">
         <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />

@@ -32,6 +32,21 @@ function BackgroundBridge() {
 }
 
 BackgroundBridge.prototype = {
+  // Continue URL that is set from main auth script.
+  continueUrl_: null,
+
+  // Whether the extension is loaded in a constrained window.
+  // Set from main auth script.
+  isConstrainedWindow_: null,
+
+  // Email of the newly authenticated user based on the gaia response header
+  // 'google-accounts-signin'.
+  email_: null,
+
+  // Session index of the newly authenticated user based on the gaia response
+  // header 'google-accounts-signin'.
+  sessionIndex_: null,
+
   // Gaia URL base that is set from main auth script.
   gaiaUrl_: null,
 
@@ -41,8 +56,8 @@ BackgroundBridge.prototype = {
 
   passwordStore_: {},
 
-  channelMain_: null,
-  channelInjected_: null,
+  channelMain_: {},
+  channelInjected_: {},
 
   run: function() {
     chrome.runtime.onConnect.addListener(this.onConnect_.bind(this));
@@ -79,31 +94,131 @@ BackgroundBridge.prototype = {
    * Sets up the communication channel with the main script.
    */
   setupForAuthMain_: function(port) {
-    this.channelMain_ = new Channel();
-    this.channelMain_.init(port);
-    this.channelMain_.registerMessage(
+    var currentChannel = new Channel();
+    currentChannel.init(port);
+
+    // Registers for desktop related messages.
+    currentChannel.registerMessage(
+        'initDesktopFlow', this.onInitDesktopFlow_.bind(this));
+
+    // Registers for SAML related messages.
+    currentChannel.registerMessage(
         'setGaiaUrl', this.onSetGaiaUrl_.bind(this));
-    this.channelMain_.registerMessage(
+    currentChannel.registerMessage(
         'resetAuth', this.onResetAuth_.bind(this));
-    this.channelMain_.registerMessage(
+    currentChannel.registerMessage(
         'startAuth', this.onAuthStarted_.bind(this));
-    this.channelMain_.registerMessage(
+    currentChannel.registerMessage(
         'getScrapedPasswords',
         this.onGetScrapedPasswords_.bind(this));
+
+    currentChannel.send({
+      'name': 'channelConnected'
+    });
+    this.channelMain_[this.getTabIdFromPort_(port)] = currentChannel;
   },
 
   /**
    * Sets up the communication channel with the injected script.
    */
   setupForInjected_: function(port) {
-    this.channelInjected_ = new Channel();
-    this.channelInjected_.init(port);
-    this.channelInjected_.registerMessage(
-        'apiCall', this.onAPICall_.bind(this));
-    this.channelInjected_.registerMessage(
+    var currentChannel = new Channel();
+    currentChannel.init(port);
+
+    var tabId = this.getTabIdFromPort_(port);
+    currentChannel.registerMessage(
+        'apiCall', this.onAPICall_.bind(this, tabId));
+    currentChannel.registerMessage(
         'updatePassword', this.onUpdatePassword_.bind(this));
-    this.channelInjected_.registerMessage(
-        'pageLoaded', this.onPageLoaded_.bind(this));
+    currentChannel.registerMessage(
+        'pageLoaded', this.onPageLoaded_.bind(this, tabId));
+
+    this.channelInjected_[this.getTabIdFromPort_(port)] = currentChannel;
+  },
+
+  getTabIdFromPort_: function(port) {
+    return port.sender.tab ? port.sender.tab.id : -1;
+  },
+
+  /**
+   * Handler for 'initDesktopFlow' signal sent from the main script.
+   * Only called in desktop mode.
+   */
+  onInitDesktopFlow_: function(msg) {
+    this.gaiaUrl_ = msg.gaiaUrl;
+    this.continueUrl_ = msg.continueUrl;
+    this.isConstrainedWindow_ = msg.isConstrainedWindow;
+
+    var urls = [];
+    var filter = {urls: urls, types: ['sub_frame']};
+    var optExtraInfoSpec = [];
+    if (msg.isConstrainedWindow) {
+      urls.push('<all_urls>');
+      optExtraInfoSpec.push('responseHeaders');
+    } else {
+      urls.push(this.continueUrl_ + '*');
+    }
+
+    chrome.webRequest.onCompleted.addListener(
+        this.onRequestCompletedInDesktopMode_.bind(this),
+        filter, optExtraInfoSpec);
+    chrome.webRequest.onHeadersReceived.addListener(
+        this.onHeadersReceivedInDesktopMode_.bind(this),
+        {urls: [this.gaiaUrl_ + '*'], types: ['sub_frame']},
+        ['responseHeaders']);
+  },
+
+  /**
+   * Event listener for webRequest.onCompleted in desktop mode.
+   */
+  onRequestCompletedInDesktopMode_: function(details) {
+    var msg = null;
+    if (details.url.lastIndexOf(this.continueUrl_, 0) == 0) {
+      var skipForNow = false;
+      if (details.url.indexOf('ntp=1') >= 0) {
+        skipForNow = true;
+      }
+      msg = {
+        'name': 'completeLogin',
+        'email': this.email_,
+        'sessionIndex': this.sessionIndex_,
+        'skipForNow': skipForNow
+      };
+    } else if (this.isConstrainedWindow_) {
+      var headers = details.responseHeaders;
+      for (var i = 0; headers && i < headers.length; ++i) {
+        if (headers[i].name.toLowerCase() == 'google-accounts-embedded') {
+          return;
+        }
+      }
+      msg = {
+        'name': 'switchToFullTab',
+        'url': details.url
+      };
+    }
+
+    if (msg != null)
+      this.channelMain_[details.tabId].send(msg);
+  },
+
+  /**
+   * Event listener for webRequest.onHeadersReceived in desktop mode.
+   */
+  onHeadersReceivedInDesktopMode_: function(details) {
+    var headers = details.responseHeaders;
+    for (var i = 0; headers && i < headers.length; ++i) {
+      if (headers[i].name.toLowerCase() == 'google-accounts-signin') {
+        var headerValues = headers[i].value.toLowerCase().split(',');
+        var signinDetails = {};
+        headerValues.forEach(function(e) {
+          var pair = e.split('=');
+          signinDetails[pair[0].trim()] = pair[1].trim();
+        });
+        this.email_ = signinDetails['email'].slice(1, -1); // Remove "" around.
+        this.sessionIndex_ = signinDetails['sessionindex'];
+        return;
+      }
+    }
   },
 
   /**
@@ -153,8 +268,10 @@ BackgroundBridge.prototype = {
     return Object.keys(passwords);
   },
 
-  onAPICall_: function(msg) {
-    this.channelMain_.send(msg);
+  onAPICall_: function(tabId, msg) {
+    if (tabId in this.channelMain_) {
+      this.channelMain_[tabId].send(msg);
+    }
   },
 
   onUpdatePassword_: function(msg) {
@@ -164,8 +281,10 @@ BackgroundBridge.prototype = {
     this.passwordStore_[msg.id] = msg.password;
   },
 
-  onPageLoaded_: function(msg) {
-    this.channelMain_.send({name: 'onAuthPageLoaded', url: msg.url});
+  onPageLoaded_: function(tabId, msg) {
+    if (tabId in this.channelMain_) {
+      this.channelMain_[tabId].send({name: 'onAuthPageLoaded', url: msg.url});
+    }
   }
 };
 

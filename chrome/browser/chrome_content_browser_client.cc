@@ -743,8 +743,13 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
 
   // The partition ID for webview guest processes is the string value of its
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
-  if (site.SchemeIs(content::kGuestScheme))
+  if (site.SchemeIs(content::kGuestScheme)) {
     partition_id = site.spec();
+  } else if (site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
+    // Chrome signin page has an embedded iframe of extension and web content,
+    // thus it must be isolated from other webUI pages.
+    partition_id = site.GetOrigin().spec();
+  }
 
   DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
   return partition_id;
@@ -808,6 +813,10 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
       *in_memory = false;
       partition_name->clear();
     }
+  } else if (site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
+    // Chrome signin page has an embedded iframe of extension and web content,
+    // thus it must be isolated from other webUI pages.
+    *partition_domain = chrome::kChromeUIChromeSigninHost;
   }
 
   // Assert that if |can_be_default| is false, the code above must have found a
