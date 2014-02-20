@@ -81,20 +81,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
 
-  // The 4 functions below (that take classes defined in SearchProvider as
-  // arguments) were copied and trimmed from SearchProvider.
-  // TODO(hfung): Refactor them into a new base class common to both
-  // ZeroSuggestProvider and SearchProvider.
-
-  // From the OpenSearch formatted response |root_val|, populate query
-  // suggestions into |suggest_results|, navigation suggestions into
-  // |navigation_results|, and the verbatim relevance score into
-  // |verbatim_relevance|.
-  void FillResults(const base::Value& root_val,
-                   int* verbatim_relevance,
-                   SuggestResults* suggest_results,
-                   NavigationResults* navigation_results);
-
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
   void AddSuggestResultsToMap(const SuggestResults& results,
@@ -106,7 +92,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Fetches zero-suggest suggestions by sending a request using |suggest_url|.
   void Run(const GURL& suggest_url);
 
-  // Parses results from the zero-suggest server and updates results.
+  // Parses results from the zero-suggest server and updates |results_|.
   void ParseSuggestResults(const base::Value& root_val);
 
   // Converts the parsed results to a set of AutocompleteMatches and adds them
@@ -123,6 +109,9 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // service for the most visited URLs during Run().  It calls back to this
   // function to return those |urls|.
   void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& urls);
+
+  // Returns the relevance score for the verbatim result.
+  int GetVerbatimRelevance() const;
 
   // Used to build default search engine URLs for suggested queries.
   TemplateURLService* template_url_service_;
@@ -144,12 +133,10 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Suggestion for the current URL.
   AutocompleteMatch current_url_match_;
-  // Navigation suggestions for the most recent ZeroSuggest input URL.
-  NavigationResults navigation_results_;
-  // Query suggestions for the most recent ZeroSuggest input URL.
-  MatchMap query_matches_map_;
-  // The relevance score for the URL of the current page.
-  int verbatim_relevance_;
+
+  // Contains suggest and navigation results as well as relevance parsed from
+  // the response for the most recent zero suggest input URL.
+  Results results_;
 
   history::MostVisitedURLList most_visited_urls_;
 

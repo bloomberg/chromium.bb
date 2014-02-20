@@ -139,7 +139,6 @@ void ZeroSuggestProvider::StartZeroSuggest(
           page_classification, profile_) ||
       !OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return;
-  verbatim_relevance_ = kDefaultVerbatimZeroSuggestRelevance;
   done_ = false;
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
@@ -154,7 +153,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
                          AutocompleteProvider::TYPE_ZERO_SUGGEST),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       have_pending_request_(false),
-      verbatim_relevance_(kDefaultVerbatimZeroSuggestRelevance),
       weak_ptr_factory_(this) {
 }
 
@@ -190,93 +188,14 @@ void ZeroSuggestProvider::StopSuggest() {
 }
 
 void ZeroSuggestProvider::ClearAllResults() {
-  query_matches_map_.clear();
-  navigation_results_.clear();
+  // We do not call Clear() on |results_| to retain |verbatim_relevance|
+  // value in the |results_| object. |verbatim_relevance| is used at the
+  // beginning of the next StartZeroSuggest() call to determine the current url
+  // match relevance.
+  results_.suggest_results.clear();
+  results_.navigation_results.clear();
   current_query_.clear();
   matches_.clear();
-}
-
-void ZeroSuggestProvider::FillResults(const base::Value& root_val,
-                                      int* verbatim_relevance,
-                                      SuggestResults* suggest_results,
-                                      NavigationResults* navigation_results) {
-  base::string16 query;
-  const base::ListValue* root_list = NULL;
-  const base::ListValue* results = NULL;
-  const base::ListValue* relevances = NULL;
-  // The response includes the query, which should be empty for ZeroSuggest
-  // responses.
-  if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
-      (!query.empty()) || !root_list->GetList(1, &results))
-    return;
-
-  // 3rd element: Description list.
-  const base::ListValue* descriptions = NULL;
-  root_list->GetList(2, &descriptions);
-
-  // 4th element: Disregard the query URL list for now.
-
-  // Reset suggested relevance information from the provider.
-  *verbatim_relevance = kDefaultVerbatimZeroSuggestRelevance;
-
-  // 5th element: Optional key-value pairs from the Suggest server.
-  const base::ListValue* types = NULL;
-  const base::DictionaryValue* extras = NULL;
-  if (root_list->GetDictionary(4, &extras)) {
-    extras->GetList("google:suggesttype", &types);
-
-    // Discard this list if its size does not match that of the suggestions.
-    if (extras->GetList("google:suggestrelevance", &relevances) &&
-        relevances->GetSize() != results->GetSize())
-      relevances = NULL;
-    extras->GetInteger("google:verbatimrelevance", verbatim_relevance);
-
-    // Check if the active suggest field trial (if any) has triggered.
-    bool triggered = false;
-    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
-    field_trial_triggered_ |= triggered;
-    field_trial_triggered_in_session_ |= triggered;
-  }
-
-  // Clear the previous results now that new results are available.
-  suggest_results->clear();
-  navigation_results->clear();
-
-  base::string16 result, title;
-  std::string type;
-  const base::string16 current_query_string16 =
-      base::ASCIIToUTF16(current_query_);
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  for (size_t index = 0; results->GetString(index, &result); ++index) {
-    // Google search may return empty suggestions for weird input characters,
-    // they make no sense at all and can cause problems in our code.
-    if (result.empty())
-      continue;
-
-    int relevance = kDefaultZeroSuggestRelevance;
-
-    // Apply valid suggested relevance scores; discard invalid lists.
-    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
-      relevances = NULL;
-    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
-      // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(
-          base::UTF16ToUTF8(result), std::string()));
-      if (url.is_valid()) {
-        if (descriptions != NULL)
-          descriptions->GetString(index, &title);
-        navigation_results->push_back(NavigationResult(
-            *this, url, title, false, relevance, relevances != NULL,
-            current_query_string16, languages));
-      }
-    } else {
-      suggest_results->push_back(SuggestResult(
-          result, AutocompleteMatchType::SEARCH_SUGGEST, result,
-          base::string16(), std::string(), std::string(), false, relevance,
-          relevances != NULL, false, current_query_string16));
-    }
-  }
 }
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
@@ -352,12 +271,84 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
 }
 
 void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
-  SuggestResults suggest_results;
-  FillResults(root_val, &verbatim_relevance_,
-              &suggest_results, &navigation_results_);
+  base::string16 query;
+  const base::ListValue* root_list = NULL;
+  const base::ListValue* results = NULL;
+  const base::ListValue* relevances = NULL;
+  // The response includes the query, which should be empty for ZeroSuggest
+  // responses.
+  if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
+      (!query.empty()) || !root_list->GetList(1, &results))
+    return;
 
-  query_matches_map_.clear();
-  AddSuggestResultsToMap(suggest_results, &query_matches_map_);
+  // 3rd element: Description list.
+  const base::ListValue* descriptions = NULL;
+  root_list->GetList(2, &descriptions);
+
+  // 4th element: Disregard the query URL list for now.
+
+  // Reset suggested relevance information from the provider.
+  results_.verbatim_relevance = -1;
+
+  // 5th element: Optional key-value pairs from the Suggest server.
+  const base::ListValue* types = NULL;
+  const base::DictionaryValue* extras = NULL;
+  if (root_list->GetDictionary(4, &extras)) {
+    extras->GetList("google:suggesttype", &types);
+
+    // Discard this list if its size does not match that of the suggestions.
+    if (extras->GetList("google:suggestrelevance", &relevances) &&
+        relevances->GetSize() != results->GetSize())
+      relevances = NULL;
+    extras->GetInteger("google:verbatimrelevance",
+                       &results_.verbatim_relevance);
+
+    // Check if the active suggest field trial (if any) has triggered.
+    bool triggered = false;
+    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
+    field_trial_triggered_ |= triggered;
+    field_trial_triggered_in_session_ |= triggered;
+  }
+
+  // Clear the previous results now that new results are available.
+  results_.suggest_results.clear();
+  results_.navigation_results.clear();
+
+  base::string16 result, title;
+  std::string type;
+  const base::string16 current_query_string16 =
+      base::ASCIIToUTF16(current_query_);
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  for (size_t index = 0; results->GetString(index, &result); ++index) {
+    // Google search may return empty suggestions for weird input characters,
+    // they make no sense at all and can cause problems in our code.
+    if (result.empty())
+      continue;
+
+    int relevance = kDefaultZeroSuggestRelevance;
+
+    // Apply valid suggested relevance scores; discard invalid lists.
+    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
+      relevances = NULL;
+    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
+      // Do not blindly trust the URL coming from the server to be valid.
+      GURL url(URLFixerUpper::FixupURL(
+          base::UTF16ToUTF8(result), std::string()));
+      if (url.is_valid()) {
+        if (descriptions != NULL)
+          descriptions->GetString(index, &title);
+        results_.navigation_results.push_back(NavigationResult(
+            *this, url, title, false, relevance, relevances != NULL,
+            current_query_string16, languages));
+      }
+    } else {
+      results_.suggest_results.push_back(SuggestResult(
+          result, AutocompleteMatchType::SEARCH_SUGGEST, result,
+          base::string16(), std::string(), std::string(), false, relevance,
+          relevances != NULL, false, current_query_string16));
+    }
+  }
 }
 
 void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
@@ -374,8 +365,11 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (default_provider == NULL || !default_provider->SupportsReplacement())
     return;
 
-  const int num_query_results = query_matches_map_.size();
-  const int num_nav_results = navigation_results_.size();
+  MatchMap map;
+  AddSuggestResultsToMap(results_.suggest_results, &map);
+
+  const int num_query_results = map.size();
+  const int num_nav_results = results_.navigation_results.size();
   const int num_results = num_query_results + num_nav_results;
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
   UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults",  num_nav_results);
@@ -413,12 +407,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   // current typing in the omnibox.
   matches_.push_back(current_url_match_);
 
-  for (MatchMap::const_iterator it(query_matches_map_.begin());
-       it != query_matches_map_.end(); ++it)
+  for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
     matches_.push_back(it->second);
 
-  for (NavigationResults::const_iterator it(navigation_results_.begin());
-       it != navigation_results_.end(); ++it)
+  const NavigationResults& nav_results(results_.navigation_results);
+  for (NavigationResults::const_iterator it(nav_results.begin());
+       it != nav_results.end(); ++it)
     matches_.push_back(NavigationToMatch(*it));
 }
 
@@ -436,7 +430,12 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
   // gets dropped as soon as the user types something.
-  match.relevance = verbatim_relevance_;
+  match.relevance = GetVerbatimRelevance();
 
   return match;
+}
+
+int ZeroSuggestProvider::GetVerbatimRelevance() const {
+  return results_.verbatim_relevance >= 0 ?
+      results_.verbatim_relevance : kDefaultVerbatimZeroSuggestRelevance;
 }
