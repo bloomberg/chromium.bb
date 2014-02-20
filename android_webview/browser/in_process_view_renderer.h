@@ -34,22 +34,11 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   static void CalculateTileMemoryPolicy();
 
   InProcessViewRenderer(BrowserViewRenderer::Client* client,
-                        JavaHelper* java_helper,
                         content::WebContents* web_contents);
   virtual ~InProcessViewRenderer();
 
   static InProcessViewRenderer* FromWebContents(
       content::WebContents* contents);
-
-  // TODO(joth): consider extracting this to its own utility class.
-  typedef base::Callback<bool(SkCanvas*)> RenderMethod;
-  static bool RenderViaAuxilaryBitmapIfNeeded(
-      jobject java_canvas,
-      JavaHelper* java_helper,
-      const gfx::Vector2d& scroll_correction,
-      const gfx::Rect& clip,
-      RenderMethod render_source,
-      void* owner_key);
 
   // BrowserViewRenderer overrides
   virtual bool OnDraw(jobject java_canvas,
@@ -130,7 +119,6 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   std::string ToString(AwDrawGLInfo* draw_info) const;
 
   BrowserViewRenderer::Client* client_;
-  BrowserViewRenderer::JavaHelper* java_helper_;
   content::WebContents* web_contents_;
   content::SynchronousCompositor* compositor_;
 

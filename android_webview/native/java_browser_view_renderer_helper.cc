@@ -4,18 +4,52 @@
 
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 
+#include <android/bitmap.h>
+
+#include "android_webview/public/browser/draw_sw.h"
 #include "base/debug/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/utils/SkCanvasStateUtils.h"
 
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
-JavaBrowserViewRendererHelper::JavaBrowserViewRendererHelper() {
-}
+namespace {
 
-JavaBrowserViewRendererHelper::~JavaBrowserViewRendererHelper() {
+// Provides software rendering functions from the Android glue layer.
+// Allows preventing extra copies of data when rendering.
+AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
+
+class ScopedPixelAccess {
+ public:
+  ScopedPixelAccess(JNIEnv* env, jobject java_canvas) : pixels_(NULL) {
+    if (g_sw_draw_functions)
+      pixels_ = g_sw_draw_functions->access_pixels(env, java_canvas);
+  }
+
+  ~ScopedPixelAccess() {
+    if (pixels_)
+      g_sw_draw_functions->release_pixels(pixels_);
+  }
+
+  AwPixelInfo* pixels() { return pixels_; }
+
+ private:
+  AwPixelInfo* pixels_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedPixelAccess);
+};
+
+}  // namespace
+
+// static
+void JavaBrowserViewRendererHelper::SetAwDrawSWFunctionTable(
+    AwDrawSWFunctionTable* table) {
+  g_sw_draw_functions = table;
 }
 
 // static
@@ -25,41 +59,123 @@ JavaBrowserViewRendererHelper* JavaBrowserViewRendererHelper::GetInstance() {
   return g_instance;
 }
 
-ScopedJavaLocalRef<jobject> JavaBrowserViewRendererHelper::CreateBitmap(
+// static
+BrowserViewRenderer::JavaHelper*
+BrowserViewRenderer::JavaHelper::GetInstance() {
+  return JavaBrowserViewRendererHelper::GetInstance();
+}
+
+JavaBrowserViewRendererHelper::JavaBrowserViewRendererHelper() {}
+
+JavaBrowserViewRendererHelper::~JavaBrowserViewRendererHelper() {}
+
+bool JavaBrowserViewRendererHelper::RenderViaAuxilaryBitmapIfNeeded(
+    jobject java_canvas,
+    const gfx::Vector2d& scroll_correction,
+    const gfx::Rect& clip,
+    RenderMethod render_source) {
+  TRACE_EVENT0("android_webview", "RenderViaAuxilaryBitmapIfNeeded");
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedPixelAccess auto_release_pixels(env, java_canvas);
+  AwPixelInfo* pixels = auto_release_pixels.pixels();
+  if (pixels && pixels->state) {
+    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
+        SkCanvasStateUtils::CreateFromCanvasState(pixels->state));
+
+    // Workarounds for http://crbug.com/271096: SW draw only supports
+    // translate & scale transforms, and a simple rectangular clip.
+    if (canvas && (!canvas->getTotalClip().isRect() ||
+                   (canvas->getTotalMatrix().getType() &
+                    ~(SkMatrix::kTranslate_Mask | SkMatrix::kScale_Mask)))) {
+      canvas.clear();
+    }
+    if (canvas) {
+      canvas->translate(scroll_correction.x(), scroll_correction.y());
+      return render_source.Run(canvas.get());
+    }
+  }
+  return RenderViaAuxilaryBitmap(
+      env, java_canvas, scroll_correction, clip, render_source);
+}
+
+bool JavaBrowserViewRendererHelper::RenderViaAuxilaryBitmap(
     JNIEnv* env,
-    int width,
-    int height,
-    const base::android::JavaRef<jobject>& jcanvas,
-    void* owner_key) {
-  TRACE_EVENT0("android_webview", "RendererHelper::CreateBitmap");
-  return width <= 0 || height <= 0 ? ScopedJavaLocalRef<jobject>() :
+    jobject java_canvas,
+    const gfx::Vector2d& scroll_correction,
+    const gfx::Rect& clip,
+    const RenderMethod& render_source) {
+  // Render into an auxiliary bitmap if pixel info is not available.
+  ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
+  TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
+
+  if (clip.width() <= 0 || clip.height() <= 0)
+    return false;
+
+  ScopedJavaLocalRef<jobject> jbitmap(
       Java_JavaBrowserViewRendererHelper_createBitmap(
-          env, width, height, jcanvas.obj(),
-          reinterpret_cast<intptr_t>(owner_key));
-}
+          env, clip.width(), clip.height(), jcanvas.obj()));
+  if (!jbitmap.obj())
+    return false;
 
-void JavaBrowserViewRendererHelper::DrawBitmapIntoCanvas(
-    JNIEnv* env,
-    const JavaRef<jobject>& jbitmap,
-    const JavaRef<jobject>& jcanvas,
-    int x,
-    int y) {
-  TRACE_EVENT0("android_webview", "RendererHelper::DrawBitmapIntoCanvas");
+  if (!RasterizeIntoBitmap(env,
+                           jbitmap,
+                           clip.x() - scroll_correction.x(),
+                           clip.y() - scroll_correction.y(),
+                           render_source)) {
+    return false;
+  }
+
   Java_JavaBrowserViewRendererHelper_drawBitmapIntoCanvas(
-      env, jbitmap.obj(), jcanvas.obj(), x, y);
-}
-
-ScopedJavaLocalRef<jobject>
-JavaBrowserViewRendererHelper::RecordBitmapIntoPicture(
-    JNIEnv* env,
-    const JavaRef<jobject>& jbitmap) {
-  TRACE_EVENT0("android_webview", "RendererHelper::RecordBitmapIntoPicture");
-  return Java_JavaBrowserViewRendererHelper_recordBitmapIntoPicture(
-      env, jbitmap.obj());
+      env, jbitmap.obj(), jcanvas.obj(), clip.x(), clip.y());
+  return true;
 }
 
 bool RegisterJavaBrowserViewRendererHelper(JNIEnv* env) {
   return RegisterNativesImpl(env) >= 0;
+}
+
+bool JavaBrowserViewRendererHelper::RasterizeIntoBitmap(
+    JNIEnv* env,
+    const JavaRef<jobject>& jbitmap,
+    int scroll_x,
+    int scroll_y,
+    const JavaBrowserViewRendererHelper::RenderMethod& renderer) {
+  DCHECK(jbitmap.obj());
+
+  AndroidBitmapInfo bitmap_info;
+  if (AndroidBitmap_getInfo(env, jbitmap.obj(), &bitmap_info) < 0) {
+    LOG(ERROR) << "Error getting java bitmap info.";
+    return false;
+  }
+
+  void* pixels = NULL;
+  if (AndroidBitmap_lockPixels(env, jbitmap.obj(), &pixels) < 0) {
+    LOG(ERROR) << "Error locking java bitmap pixels.";
+    return false;
+  }
+
+  bool succeeded;
+  {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     bitmap_info.width,
+                     bitmap_info.height,
+                     bitmap_info.stride);
+    bitmap.setPixels(pixels);
+
+    SkBitmapDevice device(bitmap);
+    SkCanvas canvas(&device);
+    canvas.translate(-scroll_x, -scroll_y);
+    succeeded = renderer.Run(&canvas);
+  }
+
+  if (AndroidBitmap_unlockPixels(env, jbitmap.obj()) < 0) {
+    LOG(ERROR) << "Error unlocking java bitmap pixels.";
+    return false;
+  }
+
+  return succeeded;
 }
 
 }  // namespace android_webview

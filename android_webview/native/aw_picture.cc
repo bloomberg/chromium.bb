@@ -4,8 +4,8 @@
 
 #include "android_webview/native/aw_picture.h"
 
-#include "android_webview/browser/in_process_view_renderer.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
+#include "base/bind.h"
 #include "jni/AwPicture_jni.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -39,13 +39,13 @@ bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
 
 void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas,
                      jint left, jint top, jint right, jint bottom) {
-  bool ok = InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
-      canvas,
-      JavaBrowserViewRendererHelper::GetInstance(),
-      gfx::Vector2d(),
-      gfx::Rect(left, top, right - left, bottom - top),
-      base::Bind(&RenderPictureToCanvas, base::Unretained(picture_.get())),
-      this);
+  bool ok = JavaBrowserViewRendererHelper::GetInstance()
+                ->RenderViaAuxilaryBitmapIfNeeded(
+                      canvas,
+                      gfx::Vector2d(),
+                      gfx::Rect(left, top, right - left, bottom - top),
+                      base::Bind(&RenderPictureToCanvas,
+                                 base::Unretained(picture_.get())));
   LOG_IF(ERROR, !ok) << "Couldn't draw picture";
 }
 

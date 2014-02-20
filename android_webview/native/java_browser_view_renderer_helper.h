@@ -13,29 +13,34 @@ namespace android_webview {
 
 // Native side of java-class of same name.
 // Provides utility methods for rendering involving with Java objects.
+// TODO(boliu): Rename this class to JavaRasterHelper.
 class JavaBrowserViewRendererHelper : public BrowserViewRenderer::JavaHelper {
  public:
   JavaBrowserViewRendererHelper();
   virtual ~JavaBrowserViewRendererHelper();
 
+  static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
   static JavaBrowserViewRendererHelper* GetInstance();
 
   // BrowserViewRenderer::JavaHelper implementation.
-  virtual base::android::ScopedJavaLocalRef<jobject> CreateBitmap(
-      JNIEnv* env,
-      int width,
-      int height,
-      const base::android::JavaRef<jobject>& jcanvas,
-      void* owner_key) OVERRIDE;
-  virtual void DrawBitmapIntoCanvas(
+  virtual bool RenderViaAuxilaryBitmapIfNeeded(
+      jobject java_canvas,
+      const gfx::Vector2d& scroll_correction,
+      const gfx::Rect& clip,
+      RenderMethod render_source) OVERRIDE;
+
+ private:
+  bool RenderViaAuxilaryBitmap(JNIEnv* env,
+                               jobject java_canvas,
+                               const gfx::Vector2d& scroll_correction,
+                               const gfx::Rect& clip,
+                               const RenderMethod& render_source);
+  bool RasterizeIntoBitmap(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jbitmap,
-      const base::android::JavaRef<jobject>& jcanvas,
-      int x,
-      int y) OVERRIDE;
-  virtual base::android::ScopedJavaLocalRef<jobject> RecordBitmapIntoPicture(
-     JNIEnv* env,
-     const base::android::JavaRef<jobject>& jbitmap) OVERRIDE;
+      int scroll_x,
+      int scroll_y,
+      const JavaBrowserViewRendererHelper::RenderMethod& renderer);
 };
 
 bool RegisterJavaBrowserViewRendererHelper(JNIEnv* env);

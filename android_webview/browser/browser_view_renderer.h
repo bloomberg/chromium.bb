@@ -6,11 +6,13 @@
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
 
+class SkCanvas;
 class SkPicture;
 struct AwDrawGLInfo;
 struct AwDrawSWFunctionTable;
@@ -73,26 +75,14 @@ class BrowserViewRenderer {
   // Delegate to perform rendering actions involving Java objects.
   class JavaHelper {
    public:
-    // Creates a RGBA_8888 Java Bitmap object of the requested size.
-    virtual base::android::ScopedJavaLocalRef<jobject> CreateBitmap(
-        JNIEnv* env,
-        int width,
-        int height,
-        const base::android::JavaRef<jobject>& jcanvas,
-        void* owner_key) = 0;
+    static JavaHelper* GetInstance();
 
-    // Draws the provided Java Bitmap into the provided Java Canvas.
-    virtual void DrawBitmapIntoCanvas(
-        JNIEnv* env,
-        const base::android::JavaRef<jobject>& jbitmap,
-        const base::android::JavaRef<jobject>& jcanvas,
-        int x,
-        int y) = 0;
-
-    // Creates a Java Picture object that records drawing the provided Bitmap.
-    virtual base::android::ScopedJavaLocalRef<jobject> RecordBitmapIntoPicture(
-        JNIEnv* env,
-        const base::android::JavaRef<jobject>& jbitmap) = 0;
+    typedef base::Callback<bool(SkCanvas*)> RenderMethod;
+    virtual bool RenderViaAuxilaryBitmapIfNeeded(
+        jobject java_canvas,
+        const gfx::Vector2d& scroll_correction,
+        const gfx::Rect& clip,
+        RenderMethod render_source) = 0;
 
    protected:
     virtual ~JavaHelper() {}
@@ -100,7 +90,6 @@ class BrowserViewRenderer {
 
   // Global hookup methods.
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
-  static AwDrawSWFunctionTable* GetAwDrawSWFunctionTable();
 
   // Rendering methods.
 

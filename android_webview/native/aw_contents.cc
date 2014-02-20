@@ -96,10 +96,6 @@ namespace {
 
 bool g_should_download_favicons = false;
 
-JavaBrowserViewRendererHelper* java_renderer_helper() {
-  return JavaBrowserViewRendererHelper::GetInstance();
-}
-
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {
@@ -188,9 +184,9 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     : web_contents_(web_contents.Pass()),
-      browser_view_renderer_(
-          new InProcessViewRenderer(this, java_renderer_helper(),
-                                    web_contents_.get())) {
+      browser_view_renderer_(new InProcessViewRenderer(
+          this,
+          web_contents_.get())) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
@@ -342,7 +338,7 @@ static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
 }
 
 static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
-  BrowserViewRenderer::SetAwDrawSWFunctionTable(
+  JavaBrowserViewRendererHelper::SetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 
