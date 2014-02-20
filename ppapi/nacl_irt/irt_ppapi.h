@@ -4,13 +4,8 @@
  * found in the LICENSE file.
  */
 
-/*
- * TODO(mseaborn): Change this to match the filename when NaCl's copy
- * of irt_ppapi.h is removed.  For now it is needed to avoid a
- * duplicate definition.
- */
-#ifndef NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PPAPI_H_
-#define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PPAPI_H_ 1
+#ifndef PPAPI_NACL_IRT_IRT_PPAPI_H_
+#define PPAPI_NACL_IRT_IRT_PPAPI_H_
 
 #include <stddef.h>
 
@@ -37,5 +32,19 @@ struct PP_ThreadFunctions {
                        void* thread_argument);
   int (*thread_join)(uintptr_t tid);
 };
+
+/*
+ * TODO(mseaborn): Make this unconditional after the definition of the
+ * struct has been removed from the NaCl side's irt.h.
+ */
+#if !defined(NACL_IRT_PPAPIHOOK_v0_1)
+
+#define NACL_IRT_PPAPIHOOK_v0_1 "nacl-irt-ppapihook-0.1"
+struct nacl_irt_ppapihook {
+  int (*ppapi_start)(const struct PP_StartFunctions*);
+  void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions*);
+};
+
+#endif
 
 #endif
