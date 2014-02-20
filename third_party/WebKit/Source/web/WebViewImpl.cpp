@@ -2858,7 +2858,7 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
 {
-    if (!settings()->viewportEnabled() || !page() || !m_size.width || !m_size.height)
+    if (!settings()->viewportEnabled() || !page() || (!m_size.width && !m_size.height))
         return;
 
     ViewportDescription adjustedDescription = description;
