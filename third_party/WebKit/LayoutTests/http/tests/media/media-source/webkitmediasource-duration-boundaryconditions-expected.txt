@@ -57,7 +57,7 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+PASS: Media Source set duration. Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration provided (-1) is less than the minimum bound (0).
 
 running testSetPositiveInfinity
 EVENT(webkitsourceopen)
@@ -74,21 +74,21 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+PASS: Media Source set duration. Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration provided (-Infinity) is less than the minimum bound (0).
 
 running testSetLowestValue
 EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+PASS: Media Source set duration. Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration provided (-1.797693e+308) is less than the minimum bound (0).
 
 running testSetNegativeDouble
 EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+PASS: Media Source set duration. Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration provided (-101.9) is less than the minimum bound (0).
 
 running testSetPositiveDouble
 EVENT(webkitsourceopen)

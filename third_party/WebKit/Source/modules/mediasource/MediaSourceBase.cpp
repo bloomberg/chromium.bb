@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/MediaSourceBase.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
@@ -48,6 +49,24 @@ using blink::WebMediaSource;
 using blink::WebSourceBuffer;
 
 namespace WebCore {
+
+namespace {
+
+static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
+{
+    if (!isOpen) {
+        exceptionState.throwDOMException(InvalidStateError, "The MediaSource's readyState is not 'open'.");
+        return true;
+    }
+    if (isUpdating) {
+        exceptionState.throwDOMException(InvalidStateError, "The 'updating' attribute is true on one or more of this MediaSource's SourceBuffers.");
+        return true;
+    }
+
+    return false;
+}
+
+} // namespace
 
 DEFINE_GC_INFO(MediaSourceBase);
 
@@ -155,24 +174,21 @@ void MediaSourceBase::setDuration(double duration, ExceptionState& exceptionStat
     // 2.1 http://www.w3.org/TR/media-source/#widl-MediaSource-duration
     // 1. If the value being set is negative or NaN then throw an InvalidAccessError
     // exception and abort these steps.
-    if (duration < 0.0 || std::isnan(duration)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    if (std::isnan(duration)) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::notAFiniteNumber(duration, "duration"));
+        return;
+    }
+    if (duration < 0.0) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("duration", duration, 0.0));
         return;
     }
 
     // 2. If the readyState attribute is not "open" then throw an InvalidStateError
     // exception and abort these steps.
-    if (!isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
-        return;
-    }
-
     // 3. If the updating attribute equals true on any SourceBuffer in sourceBuffers,
     // then throw an InvalidStateError exception and abort these steps.
-    if (isUpdating()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
         return;
-    }
 
     // 4. Run the duration change algorithm with new duration set to the value being
     // assigned to this attribute.
@@ -227,17 +243,10 @@ void MediaSourceBase::endOfStreamInternal(const blink::WebMediaSource::EndOfStre
     // 2.2 http://www.w3.org/TR/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
     // 1. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
-    if (!isOpen()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
-        return;
-    }
-
     // 2. If the updating attribute equals true on any SourceBuffer in sourceBuffers, then throw an
     // InvalidStateError exception and abort these steps.
-    if (isUpdating()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
         return;
-    }
 
     // 3. Run the end of stream algorithm with the error parameter set to error.
     //   1. Change the readyState attribute value to "ended".
@@ -311,14 +320,14 @@ PassOwnPtr<WebSourceBuffer> MediaSourceBase::createWebSourceBuffer(const String&
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
         // a NotSupportedError exception and abort these steps.
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is not supported.");
         return nullptr;
     case WebMediaSource::AddStatusReachedIdLimit:
         ASSERT(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
-        exceptionState.throwUninformativeAndGenericDOMException(QuotaExceededError);
+        exceptionState.throwDOMException(QuotaExceededError, "This MediaSource has reached the limit of SourceBuffer objects it can handle. No additional SourceBuffer objects may be added.");
         return nullptr;
     }
 

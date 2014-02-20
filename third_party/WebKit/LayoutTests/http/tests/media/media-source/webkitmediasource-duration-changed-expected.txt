@@ -2,16 +2,16 @@ CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' ins
 Tests duration attribute on MediaSource object
 
 Test setting the duration when closed.
-Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+Got expected exception InvalidStateError: Failed to set the 'duration' property on 'WebKitMediaSource': The MediaSource's readyState is not 'open'.
 Test getting the duration when closed.
 
 running testExpectExceptionOnNegativeDuration
 EVENT(webkitsourceopen)
-Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration provided (-1) is less than the minimum bound (0).
 
 running testExpectExceptionOnNaNDuration
 EVENT(webkitsourceopen)
-Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
+Got expected exception InvalidAccessError: Failed to set the 'duration' property on 'WebKitMediaSource': The duration is not a number.
 
 running testDurationChange
 EVENT(webkitsourceopen)
