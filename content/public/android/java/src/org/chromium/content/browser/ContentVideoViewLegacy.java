@@ -20,24 +20,48 @@ import android.widget.MediaController;
  * https://code.google.com/p/chromium/issues/detail?id=331966
  */
 public class ContentVideoViewLegacy extends ContentVideoView {
-    private MediaController mMediaController;
+    private FullScreenMediaController mMediaController;
     private boolean mCanPause;
     private boolean mCanSeekBackward;
     private boolean mCanSeekForward;
     private int mCurrentBufferPercentage;
+    private MediaControlsVisibilityListener mListener;
+
+    /**
+     * A listener for changes in the MediaController visibility.
+     */
+    public interface MediaControlsVisibilityListener {
+        /**
+         * Callback for when the visibility of the media controls changes.
+         *
+         * @param shown true if the media controls are shown to the user, false otherwise
+         */
+        public void onMediaControlsVisibilityChanged(boolean shown);
+    }
 
     private static class FullScreenMediaController extends MediaController {
 
-        View mVideoView;
+        final View mVideoView;
+        final MediaControlsVisibilityListener mListener;
 
-        public FullScreenMediaController(Context context, View video) {
+        /**
+         * @param context The context.
+         * @param video The full screen video container view.
+         * @param listener A listener that listens to the visibility of media controllers.
+         */
+        public FullScreenMediaController(
+                Context context,
+                View video,
+                MediaControlsVisibilityListener listener) {
             super(context);
             mVideoView = video;
+            mListener = listener;
         }
 
         @Override
         public void show() {
             super.show();
+            if (mListener != null) mListener.onMediaControlsVisibilityChanged(true);
             if (mVideoView != null) {
                 mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             }
@@ -48,6 +72,7 @@ public class ContentVideoViewLegacy extends ContentVideoView {
             if (mVideoView != null) {
                 mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
             }
+            if (mListener != null)  mListener.onMediaControlsVisibilityChanged(false);
             super.hide();
         }
     }
@@ -112,7 +137,7 @@ public class ContentVideoViewLegacy extends ContentVideoView {
                 return false;
             }
         });
-        surfaceView.setOnTouchListener(new OnTouchListener() {
+        setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (isInPlaybackState() && mMediaController != null &&
@@ -184,7 +209,7 @@ public class ContentVideoViewLegacy extends ContentVideoView {
         mCurrentBufferPercentage = 0;
 
         if (mMediaController != null) return;
-        mMediaController = new FullScreenMediaController(getContext(), this);
+        mMediaController = new FullScreenMediaController(getContext(), this, mListener);
         mMediaController.setMediaPlayer(new MediaController.MediaPlayerControl() {
             @Override public boolean canPause() { return mCanPause; }
             @Override public boolean canSeekBackward() { return mCanSeekBackward; }
@@ -263,6 +288,15 @@ public class ContentVideoViewLegacy extends ContentVideoView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         return true;
+    }
+
+    /**
+     * Sets the MediaControlsVisibilityListener that wants to listen to visibility change events.
+     *
+     * @param listener the listener to send the events to.
+     */
+    public void setListener(MediaControlsVisibilityListener listener) {
+        mListener = listener;
     }
 
 }
