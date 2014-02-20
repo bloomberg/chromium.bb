@@ -1066,7 +1066,8 @@ void AppsGridView::CalculateIdealBounds() {
     if (drop_target_ == view_index) {
       if (EnableFolderDragDropUI() && drop_attempt_ == DROP_FOR_FOLDER) {
         view_index = GetIndexFromModelIndex(slot_index);
-      } else {
+      } else if (!EnableFolderDragDropUI() ||
+                 drop_attempt_ == DROP_FOR_REORDER) {
         ++slot_index;
         view_index = GetIndexFromModelIndex(slot_index);
       }
@@ -1262,16 +1263,8 @@ void AppsGridView::CalculateDropTargetWithFolderEnabled(
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
     int page = page_switcher_view_->GetPageForPoint(page_switcher_point);
-    if (pagination_model_->is_valid_page(page)) {
-      drop_target_.page = page;
-      drop_target_.slot = tiles_per_page() - 1;
-    }
-    if (drop_target_.page == pagination_model_->total_pages() - 1) {
-      drop_target_.slot = std::min(
-          (view_model_.view_size() - 1) % tiles_per_page(),
-          drop_target_.slot);
-    }
-    drop_attempt_ = DROP_FOR_REORDER;
+    if (pagination_model_->is_valid_page(page))
+      drop_attempt_ = DROP_FOR_NONE;
   } else {
     DCHECK(drag_view_);
     // Try to find the nearest target for folder dropping or re-ordering.
@@ -1933,6 +1926,14 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
   const int d_reorder =
       kReorderDroppingCircleRadius + kPreferredIconDimension / 2;
 
+  // If user drags an item across pages to the last page, and targets it
+  // to the last empty slot on it, push the last item for re-ordering.
+  if (IsFirstEmptySlot(nearest_tile) && d_min < d_reorder) {
+    drop_attempt_ = DROP_FOR_REORDER;
+    nearest_tile.slot = nearest_tile.slot - 1;
+    return nearest_tile;
+  }
+
   if (IsValidIndex(nearest_tile)) {
     if (d_min < d_folder_dropping) {
       views::View* target_view = GetViewAtSlotOnCurrentPage(nearest_tile.slot);
@@ -2005,10 +2006,6 @@ gfx::Rect AppsGridView::GetTileBoundsForPoint(const gfx::Point& point,
 
   // Check if |point| is outside a valid item's tile.
   Index index(pagination_model_->selected_page(), row * cols_ + col);
-  if (!IsValidIndex(index))
-    return gfx::Rect();
-
-  // |point| is inside of the valid item's tile.
   *tile_index = index;
   return tile_rect;
 }
@@ -2024,6 +2021,12 @@ gfx::Rect AppsGridView::GetTileBounds(int row, int col) const {
                  grid_rect.y() + row * tile_size.height()),
       tile_size);
   return tile_rect;
+}
+
+bool AppsGridView::IsFirstEmptySlot(const Index& index) const {
+  int last_possible_slot = (view_model_.view_size() - 1) % tiles_per_page();
+  return (index.page == pagination_model_->total_pages() - 1 &&
+          index.slot == last_possible_slot +1);
 }
 
 views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {

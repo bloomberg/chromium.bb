@@ -395,6 +395,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Gets the bounds of the tile located at |row| and |col| on current page.
   gfx::Rect GetTileBounds(int row, int col) const;
 
+  // Returns true if the slot of |index| is the first empty slot next to the
+  // last item on the last page.
+  bool IsFirstEmptySlot(const Index& index) const;
+
   // Gets the item view located at |slot| on the current page. If there is
   // no item located at |slot|, returns NULL.
   views::View* GetViewAtSlotOnCurrentPage(int slot);
