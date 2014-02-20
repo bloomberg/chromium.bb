@@ -57,11 +57,10 @@ static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context
         return 0;
 
     // Test that context has associated global dom window object.
-    v8::Handle<v8::Object> global = context->Global();
-    if (global.IsEmpty())
+    if (!V8WindowShell::contextHasCorrectPrototype(context))
         return 0;
 
-    global = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), worldTypeInMainThread(context->GetIsolate())));
+    v8::Handle<v8::Value> global = context->Global()->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), worldTypeInMainThread(context->GetIsolate())));
     if (global.IsEmpty())
         return 0;
 
