@@ -2406,6 +2406,8 @@
         'browser/sync/test/integration/extensions_helper.h',
         'browser/sync/test/integration/passwords_helper.cc',
         'browser/sync/test/integration/passwords_helper.h',
+        'browser/sync/test/integration/p2p_invalidation_forwarder.cc',
+        'browser/sync/test/integration/p2p_invalidation_forwarder.h',
         'browser/sync/test/integration/preferences_helper.cc',
         'browser/sync/test/integration/preferences_helper.h',
         'browser/sync/test/integration/profile_sync_service_harness.cc',

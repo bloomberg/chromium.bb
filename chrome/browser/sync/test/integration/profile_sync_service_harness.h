@@ -16,6 +16,7 @@
 
 class Profile;
 class StatusChangeChecker;
+class P2PInvalidationForwarder;
 
 namespace invalidation {
 class P2PInvalidationService;
@@ -231,8 +232,8 @@ class ProfileSyncServiceHarness
   // ProfileSyncService object associated with |profile_|.
   ProfileSyncService* service_;
 
-  // P2PInvalidationService associated with |profile_|.
-  invalidation::P2PInvalidationService* p2p_invalidation_service_;
+  // An bridge between the ProfileSyncService and P2PInvalidationService.
+  scoped_ptr<P2PInvalidationForwarder> p2p_invalidation_forwarder_;
 
   // The harness of the client whose update progress marker we're expecting
   // eventually match.

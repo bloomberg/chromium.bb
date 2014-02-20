@@ -31,6 +31,7 @@
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -162,13 +163,15 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     P2PInvalidationService* p2p_invalidation_service)
     : profile_(profile),
       service_(ProfileSyncServiceFactory::GetForProfile(profile)),
-      p2p_invalidation_service_(p2p_invalidation_service),
       progress_marker_partner_(NULL),
       username_(username),
       password_(password),
       oauth2_refesh_token_number_(0),
       profile_debug_name_(profile->GetDebugName()),
       status_change_checker_(NULL) {
+  // Start listening for and emitting notifications of commits.
+  p2p_invalidation_forwarder_.reset(
+      new P2PInvalidationForwarder(service_, p2p_invalidation_service));
 }
 
 ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {
@@ -311,16 +314,6 @@ void ProfileSyncServiceHarness::OnStateChanged() {
 }
 
 void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
-  // Integration tests still use p2p notifications.
-  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  bool is_notifiable_commit =
-      (snap.model_neutral_state().num_successful_commits > 0);
-  if (is_notifiable_commit && p2p_invalidation_service_) {
-    syncer::ModelTypeSet model_types =
-        snap.model_neutral_state().commit_request_types;
-    syncer::ObjectIdSet ids = ModelTypeSetToObjectIdSet(model_types);
-    p2p_invalidation_service_->SendInvalidation(ids);
-  }
   OnStateChanged();
 }
 
