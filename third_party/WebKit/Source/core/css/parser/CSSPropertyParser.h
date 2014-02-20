@@ -402,9 +402,6 @@ CSSPropertyID cssPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 
-bool isValidKeywordPropertyAndValue(CSSPropertyID, int valueID, const CSSParserContext&);
-bool isKeywordPropertyID(CSSPropertyID);
-
 bool isValidNthToken(const CSSParserString&);
 
 } // namespace WebCore
