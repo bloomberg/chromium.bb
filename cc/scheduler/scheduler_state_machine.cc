@@ -724,15 +724,12 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 }
 
 void SchedulerStateMachine::UpdateStateOnActivation() {
-  // Update output surface state.
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
     output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
 
-  // Update readback state
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION)
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
 
-  // Update forced redraw state
   if (readback_state_ == READBACK_STATE_WAITING_FOR_ACTIVATION)
     readback_state_ = READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK;
   else if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION)
