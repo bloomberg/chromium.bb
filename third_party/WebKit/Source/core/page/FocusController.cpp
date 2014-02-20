@@ -278,7 +278,9 @@ void FocusController::setFocused(bool focused)
     if (!m_focusedFrame)
         setFocusedFrame(m_page->mainFrame());
 
-    if (m_focusedFrame->view()) {
+    // setFocusedFrame above might reject to update m_focusedFrame, or
+    // m_focusedFrame might be changed by blur/focus event handlers.
+    if (m_focusedFrame && m_focusedFrame->view()) {
         m_focusedFrame->selection().setFocused(focused);
         dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), focused);
     }
