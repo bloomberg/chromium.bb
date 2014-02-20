@@ -210,15 +210,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
-    // Get the command line option.
-    group.add(function(done) {
-      chrome.commandLinePrivate.hasSwitch(
-          'file-manager-show-checkboxes', function(flag) {
-        this.showCheckboxes_ = flag;
-        done();
-      }.bind(this));
-    }.bind(this));
-
     group.run(callback);
   };
 
@@ -751,9 +742,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.grid_ = dom.querySelector('.thumbnail-grid');
     this.spinner_ = dom.querySelector('#list-container > .spinner-layer');
     this.showSpinner_(true);
-
-    // Check the option to hide the selecting checkboxes.
-    this.table_.showCheckboxes = this.showCheckboxes_;
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
     FileTable.decorate(this.table_, this.metadataCache_, fullPage);

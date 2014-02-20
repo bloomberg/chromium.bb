@@ -1149,59 +1149,6 @@ input.rename {
   -webkit-box-align: center;
 }
 
-.file-checkbox {
-  -webkit-margin-end: 0;
-  -webkit-margin-start: 0;
-  position: relative;
-  z-index: 2;
-}
-
-#select-all-checkbox {
-  -webkit-margin-end: 13px;
-  -webkit-margin-start: 3px;
-  margin-bottom: 0;
-  margin-top: 0;
-  vertical-align: middle;
-}
-
-#list-container .table-header #select-all-checkbox,
-#list-container li.table-row .file-checkbox {
-  -webkit-appearance: none;
-  background-image: -webkit-image-set(
-    url('../images/files/ui/select_checkbox.png') 1x,
-    url('../images/files/ui/2x/select_checkbox.png') 2x);
-  background-position: center;
-  background-repeat: no-repeat;
-  border-style: none;
-  height: 15px;
-  width: 15px;
-}
-
-#list-container li.table-row .file-checkbox {
-  vertical-align: top;
-}
-
-#list-container .table-header #select-all-checkbox::after,
-#list-container li.table-row .file-checkbox::after {
-  content: none;
-}
-
-#list-container .table-header #select-all-checkbox:checked,
-#list-container li.table-row .file-checkbox:checked {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/select_checkbox_checked.png') 1x,
-    url('../images/files/ui/2x/select_checkbox_checked.png') 2x);
-}
-
-#list-container .table-header #select-all-checkbox:checked,
-#list-container list li.table-row[selected] .file-checkbox {
-  -webkit-filter: brightness(0) opacity(40%);
-}
-
-#list-container list:focus li.table-row[selected] .file-checkbox {
-  -webkit-filter: brightness(0) invert();
-}
-
 #list-container li.table-row,
 #default-actions-list li {
   height: 29px;

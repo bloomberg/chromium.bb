@@ -240,15 +240,6 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
 
   var tableColumnModelClass;
   tableColumnModelClass = FileTableColumnModel;
-  if (self.showCheckboxes) {
-    columns.push(new cr.ui.table.TableColumn('selection',
-                                             '',
-                                             50, true));
-    columns[4].renderFunction = self.renderSelection_.bind(self);
-    columns[4].headerRenderFunction =
-        self.renderSelectionColumnHeader_.bind(self);
-    columns[4].fixed = true;
-  }
 
   var columnModel = Object.create(tableColumnModelClass.prototype, {
     /**
@@ -314,39 +305,8 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     e.preventDefault();
   });
 
-  var handleSelectionChange = function() {
-    var selectAll = self.querySelector('#select-all-checkbox');
-    if (selectAll)
-      self.updateSelectAllCheckboxState_(selectAll);
-  };
-
   self.relayoutAggregation_ =
       new AsyncUtil.Aggregation(self.relayoutImmediately_.bind(self));
-
-  Object.defineProperty(self.list_, 'selectionModel', {
-    /**
-     * @this {cr.ui.List}
-     * @return {cr.ui.ListSelectionModel} The current selection model.
-     */
-    get: function() {
-      return this.selectionModel_;
-    },
-    /**
-     * @this {cr.ui.List}
-     */
-    set: function(value) {
-      var sm = this.selectionModel;
-      if (sm)
-        sm.removeEventListener('change', handleSelectionChange);
-
-      util.callInheritedSetter(this, 'selectionModel', value);
-      sm = value;
-
-      if (sm)
-        sm.addEventListener('change', handleSelectionChange);
-      handleSelectionChange();
-    }
-  });
 
   // Override header#redraw to use FileTableSplitter.
   self.header_.redraw = function() {
@@ -462,19 +422,6 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 };
 
 /**
- * Update check and disable states of the 'Select all' checkbox.
- * @param {HTMLInputElement} checkbox The checkbox. If not passed, using
- *     the default one.
- * @private
- */
-FileTable.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
-  // TODO(serya): introduce this.selectionModel.selectedCount.
-  checkbox.checked = this.dataModel.length > 0 &&
-      this.dataModel.length === this.selectionModel.selectedIndexes.length;
-  checkbox.disabled = this.dataModel.length === 0;
-};
-
-/**
  * Prepares the data model to be sorted by columns.
  * @param {cr.ui.ArrayDataModel} dataModel Data model to prepare.
  */
@@ -506,28 +453,6 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
   label.entry = entry;
   label.className = 'detail-name';
   label.appendChild(filelist.renderFileNameLabel(this.ownerDocument, entry));
-  return label;
-};
-
-/**
- * Render the Selection column of the detail table.
- *
- * Invoked by cr.ui.Table when a file needs to be rendered.
- *
- * @param {Entry} entry The Entry object to render.
- * @param {string} columnId The id of the column to be rendered.
- * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
- * @private
- */
-FileTable.prototype.renderSelection_ = function(entry, columnId, table) {
-  var label = this.ownerDocument.createElement('div');
-  label.className = 'selection-label';
-  if (this.selectionModel.multiple) {
-    var checkBox = this.ownerDocument.createElement('input');
-    filelist.decorateSelectionCheckbox(checkBox, entry, this.list);
-    label.appendChild(checkBox);
-  }
   return label;
 };
 
@@ -777,69 +702,6 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
 };
 
 /**
- * Renders the name column header.
- * @param {string} name Localized column name.
- * @return {HTMLLiElement} Created element.
- * @private
- */
-FileTable.prototype.renderNameColumnHeader_ = function(name) {
-  if (!this.selectionModel.multiple)
-    return this.ownerDocument.createTextNode(name);
-
-  var input = this.ownerDocument.createElement('input');
-  input.setAttribute('type', 'checkbox');
-  input.setAttribute('tabindex', -1);
-  input.id = 'select-all-checkbox';
-  input.className = 'common';
-
-  this.updateSelectAllCheckboxState_(input);
-
-  input.addEventListener('click', function(event) {
-    if (input.checked)
-      this.selectionModel.selectAll();
-    else
-      this.selectionModel.unselectAll();
-    event.stopPropagation();
-  }.bind(this));
-
-  var fragment = this.ownerDocument.createDocumentFragment();
-  fragment.appendChild(input);
-  fragment.appendChild(this.ownerDocument.createTextNode(name));
-  return fragment;
-};
-
-/**
- * Renders the selection column header.
- * @param {string} name Localized column name.
- * @return {HTMLLiElement} Created element.
- * @private
- */
-FileTable.prototype.renderSelectionColumnHeader_ = function(name) {
-  if (!this.selectionModel.multiple)
-    return this.ownerDocument.createTextNode('');
-
-  var input = this.ownerDocument.createElement('input');
-  input.setAttribute('type', 'checkbox');
-  input.setAttribute('tabindex', -1);
-  input.id = 'select-all-checkbox';
-  input.className = 'common';
-
-  this.updateSelectAllCheckboxState_(input);
-
-  input.addEventListener('click', function(event) {
-    if (input.checked)
-      this.selectionModel.selectAll();
-    else
-      this.selectionModel.unselectAll();
-    event.stopPropagation();
-  }.bind(this));
-
-  var fragment = this.ownerDocument.createDocumentFragment();
-  fragment.appendChild(input);
-  return fragment;
-};
-
-/**
  * Render the type column of the detail table.
  *
  * Invoked by cr.ui.Table when a file needs to be rendered.
@@ -885,71 +747,6 @@ FileTable.prototype.relayoutImmediately_ = function() {
 };
 
 /**
- * Decorates (and wire up) a checkbox to be used in either a detail or a
- * thumbnail list item.
- * @param {HTMLInputElement} input Element to decorate.
- */
-filelist.decorateCheckbox = function(input) {
-  var stopEventPropagation = function(event) {
-    if (!event.shiftKey)
-      event.stopPropagation();
-  };
-  input.setAttribute('type', 'checkbox');
-  input.setAttribute('tabindex', -1);
-  input.classList.add('common');
-  input.addEventListener('mousedown', stopEventPropagation);
-  input.addEventListener('mouseup', stopEventPropagation);
-
-  input.addEventListener(
-      'click',
-      /**
-       * @this {HTMLInputElement}
-       */
-      function(event) {
-        // Revert default action and swallow the event
-        // if this is a multiple click or Shift is pressed.
-        if (event.detail > 1 || event.shiftKey) {
-          this.checked = !this.checked;
-          stopEventPropagation(event);
-        }
-      });
-};
-
-/**
- * Decorates selection checkbox.
- * @param {HTMLInputElement} input Element to decorate.
- * @param {Entry} entry Corresponding entry.
- * @param {cr.ui.List} list Owner list.
- */
-filelist.decorateSelectionCheckbox = function(input, entry, list) {
-  filelist.decorateCheckbox(input);
-  input.classList.add('file-checkbox');
-  input.addEventListener('click', function(e) {
-    var sm = list.selectionModel;
-    var listIndex = list.getListItemAncestor(this).listIndex;
-    sm.setIndexSelected(listIndex, this.checked);
-    sm.leadIndex = listIndex;
-    if (sm.anchorIndex === -1)
-      sm.anchorIndex = listIndex;
-
-  });
-  // Since we do not want to open the item when tap on checkbox, we need to
-  // stop propagation of TAP event dispatched by checkbox ideally. But all
-  // touch events from touch_handler are dispatched to the list control. So we
-  // have to stop propagation of native touchstart event to prevent list
-  // control from generating TAP event here. The synthetic click event will
-  // select the touched checkbox/item.
-  input.addEventListener('touchstart',
-                         function(e) { e.stopPropagation() });
-
-  var index = list.dataModel.indexOf(entry);
-  // Our DOM nodes get discarded as soon as we're scrolled out of view,
-  // so we have to make sure the check state is correct when we're brought
-  // back to life.
-  input.checked = list.selectionModel.getIndexSelected(index);
-};
-
-/**
  * Common item decoration for table's and grid's items.
  * @param {ListItem} li List item.
  * @param {Entry} entry The entry.
@@ -985,9 +782,6 @@ filelist.decorateListItem = function(li, entry, metadataCache) {
         this.setAttribute('selected', '');
       else
         this.removeAttribute('selected');
-      var checkBox = this.querySelector('input.file-checkbox');
-      if (checkBox)
-        checkBox.checked = !!v;
     }
   });
 };
