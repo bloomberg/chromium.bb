@@ -1319,12 +1319,12 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     if (IsEnabled()) {
       if (options != old_options) {
-        DLOG(ERROR) << "Attemting to re-enable tracing with a different "
+        DLOG(ERROR) << "Attempting to re-enable tracing with a different "
                     << "set of options.";
       }
 
       if (mode != mode_) {
-        DLOG(ERROR) << "Attemting to re-enable tracing with a different mode.";
+        DLOG(ERROR) << "Attempting to re-enable tracing with a different mode.";
       }
 
       category_filter_.Merge(category_filter);
@@ -1955,8 +1955,7 @@ void TraceLog::AddTraceEventEtw(char phase,
 void TraceLog::AddTraceEventEtw(char phase,
                                 const char* name,
                                 const void* id,
-                                const std::string& extra)
-{
+                                const std::string& extra) {
 #if defined(OS_WIN)
   TraceEventETWProvider::Trace(name, phase, id, extra);
 #endif

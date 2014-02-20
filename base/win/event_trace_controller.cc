@@ -64,7 +64,7 @@ HRESULT EtwTraceController::Start(const wchar_t* session_name,
 }
 
 HRESULT EtwTraceController::StartFileSession(const wchar_t* session_name,
-      const wchar_t* logfile_path, bool realtime) {
+    const wchar_t* logfile_path, bool realtime) {
   DCHECK(NULL == session_ && session_name_.empty());
 
   EtwTraceProperties prop;

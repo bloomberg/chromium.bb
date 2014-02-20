@@ -94,7 +94,7 @@ class EtwTraceConsumerBaseTest: public testing::Test {
   }
 
   virtual void TearDown() {
-    // Cleanup any potentially danging sessions.
+    // Cleanup any potentially dangling sessions.
     EtwTraceProperties ignore;
     EtwTraceController::Stop(session_name_.c_str(), &ignore);
   }

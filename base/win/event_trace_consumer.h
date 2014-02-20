@@ -16,7 +16,7 @@ namespace base {
 namespace win {
 
 // This class is a base class that makes it easier to consume events
-// from realtime or file sessions. Concrete consumers need to sublass
+// from realtime or file sessions. Concrete consumers need to subclass
 // a specialization of this class and override the ProcessEvent and/or
 // the ProcessBuffer methods to implement the event consumption logic.
 // Usage might look like:
