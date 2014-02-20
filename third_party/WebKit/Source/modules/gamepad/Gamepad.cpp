@@ -44,18 +44,11 @@ void Gamepad::axes(unsigned count, float* data)
         std::copy(data, data + count, m_axes.begin());
 }
 
-void Gamepad::buttons(unsigned count, blink::WebGamepadButton* data)
+void Gamepad::buttons(unsigned count, float* data)
 {
-    if (m_buttons.size() != count) {
-        m_buttons.resize(count);
-        for (unsigned i = 0; i < count; ++i)
-            m_buttons[i] = GamepadButton::create();
-    }
-
-    for (unsigned i = 0; i < count; ++i) {
-        m_buttons[i]->pressed(data[i].pressed);
-        m_buttons[i]->value(data[i].value);
-    }
+    m_buttons.resize(count);
+    if (count)
+        std::copy(data, data + count, m_buttons.begin());
 }
 
 Gamepad::~Gamepad()

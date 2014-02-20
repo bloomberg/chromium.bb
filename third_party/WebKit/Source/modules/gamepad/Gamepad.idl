@@ -29,10 +29,8 @@
 ] interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;
-    readonly attribute boolean connected;
     readonly attribute unsigned long long timestamp;
-    readonly attribute DOMString mapping;
     readonly attribute float[] axes;
-    readonly attribute GamepadButton[] buttons;
+    readonly attribute float[] buttons;
 };
 
