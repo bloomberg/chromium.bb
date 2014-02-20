@@ -79,9 +79,9 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
 Element* HTMLDetailsElement::findMainSummary() const
 {
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(summaryTag))
-            return toElement(child);
+            return child;
     }
 
     HTMLContentElement* content = toHTMLContentElement(userAgentShadowRoot()->firstChild());

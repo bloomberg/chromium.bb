@@ -2318,7 +2318,7 @@ HTMLElement* Document::body() const
     if (!documentElement())
         return 0;
 
-    for (Node* child = documentElement()->firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*documentElement()); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(framesetTag) || child->hasTagName(bodyTag))
             return toHTMLElement(child);
     }
@@ -2360,9 +2360,9 @@ HTMLHeadElement* Document::head()
     if (!de)
         return 0;
 
-    for (Node* node = de->firstChild(); node; node = node->nextSibling()) {
-        if (node->hasTagName(headTag))
-            return toHTMLHeadElement(node);
+    for (Element* child = ElementTraversal::firstWithin(*de); child; child = ElementTraversal::nextSibling(*child)) {
+        if (child->hasTagName(headTag))
+            return toHTMLHeadElement(child);
     }
     return 0;
 }

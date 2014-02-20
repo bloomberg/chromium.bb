@@ -172,7 +172,7 @@ void HTMLAppletElement::updateWidgetInternal()
         paramValues.append(mayScript.string());
     }
 
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (!child->hasTagName(paramTag))
             continue;
 

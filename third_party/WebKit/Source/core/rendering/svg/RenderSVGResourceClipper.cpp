@@ -89,16 +89,16 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
     WindRule clipRule = RULE_NONZERO;
     Path clipPath = Path();
 
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
         if (renderer->isSVGText())
             return false;
-        if (!childNode->isSVGElement() || !toSVGElement(childNode)->isSVGGraphicsElement())
+        if (!childElement->isSVGElement() || !toSVGElement(childElement)->isSVGGraphicsElement())
             continue;
-        SVGGraphicsElement* styled = toSVGGraphicsElement(childNode);
+        SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
@@ -271,9 +271,9 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
     PaintBehavior oldBehavior = frame()->view()->paintBehavior();
     frame()->view()->setPaintBehavior(oldBehavior | PaintBehaviorRenderingSVGMask);
 
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !renderer)
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
+        if (!childElement->isSVGElement() || !renderer)
             continue;
 
         RenderStyle* style = renderer->style();
@@ -281,9 +281,9 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
             continue;
 
         WindRule newClipRule = style->svgStyle()->clipRule();
-        bool isUseElement = childNode->hasTagName(SVGNames::useTag);
+        bool isUseElement = childElement->hasTagName(SVGNames::useTag);
         if (isUseElement) {
-            SVGUseElement* useElement = toSVGUseElement(childNode);
+            SVGUseElement* useElement = toSVGUseElement(childElement);
             renderer = useElement->rendererClipChild();
             if (!renderer)
                 continue;
@@ -298,7 +298,7 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
         context->setFillRule(newClipRule);
 
         if (isUseElement)
-            renderer = childNode->renderer();
+            renderer = childElement->renderer();
 
         SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
     }
@@ -311,11 +311,11 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
 void RenderSVGResourceClipper::calculateClipContentRepaintRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !renderer)
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
+        if (!childElement->isSVGElement() || !renderer)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childNode->hasTagName(SVGNames::useTag))
+        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
             continue;
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
@@ -341,11 +341,11 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
 
     point = clipPathElement->animatedLocalTransform().inverse().mapPoint(point);
 
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !renderer)
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
+        if (!childElement->isSVGElement() || !renderer)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childNode->hasTagName(SVGNames::useTag))
+        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
             continue;
         IntPoint hitPoint;
         HitTestResult result(hitPoint);

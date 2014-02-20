@@ -140,7 +140,7 @@ void SVGAnimateMotionElement::updateAnimationPath()
     m_animationPath = Path();
     bool foundMPath = false;
 
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(SVGNames::mpathTag)) {
             SVGMPathElement* mPath = toSVGMPathElement(child);
             SVGPathElement* pathElement = mPath->pathElement();

@@ -137,9 +137,9 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     context->beginRecording(strokeBoundingBox());
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !renderer)
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
+        if (!childElement->isSVGElement() || !renderer)
             continue;
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
@@ -153,9 +153,9 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
 
 void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
 {
-    for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
-        RenderObject* renderer = childNode->renderer();
-        if (!childNode->isSVGElement() || !renderer)
+    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+        RenderObject* renderer = childElement->renderer();
+        if (!childElement->isSVGElement() || !renderer)
             continue;
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)

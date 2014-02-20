@@ -83,11 +83,11 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
 
     // Add effects to the builder
     RefPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(SourceGraphic::create(filter), SourceAlpha::create(filter));
-    for (Node* node = filterElement->firstChild(); node; node = node->nextSibling()) {
-        if (!node->isSVGElement())
+    for (Element* child = ElementTraversal::firstWithin(*filterElement); child; child = ElementTraversal::nextSibling(*child)) {
+        if (!child->isSVGElement())
             continue;
 
-        SVGElement* element = toSVGElement(node);
+        SVGElement* element = toSVGElement(child);
         if (!element->isFilterEffect() || !element->renderer())
             continue;
 

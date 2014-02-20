@@ -27,6 +27,7 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -65,7 +66,7 @@ int HTMLTableRowElement::rowIndex() const
     int rIndex = 0;
 
     if (HTMLTableSectionElement* head = toHTMLTableElement(table)->tHead()) {
-        for (Node *row = head->firstChild(); row; row = row->nextSibling()) {
+        for (Element* row = ElementTraversal::firstWithin(*head); row; row = ElementTraversal::nextSibling(*row)) {
             if (row == this)
                 return rIndex;
             if (row->hasTagName(trTag))
@@ -73,10 +74,10 @@ int HTMLTableRowElement::rowIndex() const
         }
     }
 
-    for (Node *node = table->firstChild(); node; node = node->nextSibling()) {
-        if (node->hasTagName(tbodyTag)) {
-            HTMLTableSectionElement* section = toHTMLTableSectionElement(node);
-            for (Node* row = section->firstChild(); row; row = row->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*table); child; child = ElementTraversal::nextSibling(*child)) {
+        if (child->hasTagName(tbodyTag)) {
+            HTMLTableSectionElement* section = toHTMLTableSectionElement(child);
+            for (Element* row = ElementTraversal::firstWithin(*section); row; row = ElementTraversal::nextSibling(*row)) {
                 if (row == this)
                     return rIndex;
                 if (row->hasTagName(trTag))
@@ -86,7 +87,7 @@ int HTMLTableRowElement::rowIndex() const
     }
 
     if (HTMLTableSectionElement* foot = toHTMLTableElement(table)->tFoot()) {
-        for (Node *row = foot->firstChild(); row; row = row->nextSibling()) {
+        for (Element* row = ElementTraversal::firstWithin(*foot); row; row = ElementTraversal::nextSibling(*row)) {
             if (row == this)
                 return rIndex;
             if (row->hasTagName(trTag))

@@ -65,7 +65,7 @@ PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document& document)
 
 HTMLTableCaptionElement* HTMLTableElement::caption() const
 {
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(captionTag))
             return toHTMLTableCaptionElement(child);
     }
@@ -80,7 +80,7 @@ void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
 {
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(theadTag))
             return toHTMLTableSectionElement(child);
     }
@@ -91,17 +91,18 @@ void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, Exc
 {
     deleteTHead();
 
-    Node* child;
-    for (child = firstChild(); child; child = child->nextSibling())
-        if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
+    Element* child;
+    for (child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+        if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
+    }
 
     insertBefore(newHead, child, exceptionState);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
 {
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(tfootTag))
             return toHTMLTableSectionElement(child);
     }
@@ -112,10 +113,11 @@ void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, Exc
 {
     deleteTFoot();
 
-    Node* child;
-    for (child = firstChild(); child; child = child->nextSibling())
-        if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
+    Element* child;
+    for (child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+        if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
+    }
 
     insertBefore(newFoot, child, exceptionState);
 }

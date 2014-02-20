@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/track/LoadableTextTrack.h"
 
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/vtt/VTTRegionList.h"
@@ -143,10 +144,10 @@ size_t LoadableTextTrack::trackElementIndex()
     ASSERT(m_trackElement->parentNode());
 
     size_t index = 0;
-    for (Node* node = m_trackElement->parentNode()->firstChild(); node; node = node->nextSibling()) {
-        if (!node->hasTagName(trackTag) || !node->parentNode())
+    for (Element* child = ElementTraversal::firstWithin(*m_trackElement->parentNode()); child; child = ElementTraversal::nextSibling(*child)) {
+        if (!child->hasTagName(trackTag) || !child->parentNode())
             continue;
-        if (node == m_trackElement)
+        if (child == m_trackElement)
             return index;
         ++index;
     }

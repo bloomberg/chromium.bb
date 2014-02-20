@@ -36,6 +36,7 @@
 #include "core/css/RuleSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -360,20 +361,14 @@ bool RuleFeatureSet::invalidateStyleForClassChangeOnChildren(Element* element, V
 {
     bool someChildrenNeedStyleRecalc = false;
     for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        for (Node* child = root->firstChild(); child; child = child->nextSibling()) {
-            if (child->isElementNode()) {
-                Element* childElement = toElement(child);
-                bool childRecalced = invalidateStyleForClassChange(childElement, invalidationClasses, foundInvalidationSet);
-                someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
-            }
-        }
-    }
-    for (Node* child = element->firstChild(); child; child = child->nextSibling()) {
-        if (child->isElementNode()) {
-            Element* childElement = toElement(child);
-            bool childRecalced = invalidateStyleForClassChange(childElement, invalidationClasses, foundInvalidationSet);
+        for (Element* child = ElementTraversal::firstWithin(*root); child; child = ElementTraversal::nextSibling(*child)) {
+            bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
         }
+    }
+    for (Element* child = ElementTraversal::firstWithin(*element); child; child = ElementTraversal::nextSibling(*child)) {
+        bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
+        someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
     }
     return someChildrenNeedStyleRecalc;
 }

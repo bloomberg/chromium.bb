@@ -145,7 +145,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
 
     // Scan the PARAM children and store their name/value pairs.
     // Get the URL and type from the params if we don't already have them.
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
         if (!child->hasTagName(paramTag))
             continue;
 
@@ -420,8 +420,8 @@ bool HTMLObjectElement::isExposed() const
         if (ancestor->hasTagName(objectTag) && toHTMLObjectElement(ancestor)->isExposed())
             return false;
     }
-    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node, this)) {
-        if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
+    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
+        if (element->hasTagName(objectTag) || element->hasTagName(embedTag))
             return false;
     }
     return true;

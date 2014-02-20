@@ -266,12 +266,12 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
         contentTransformation = tileImageTransform;
 
     // Draw the content into the ImageBuffer.
-    for (Node* node = attributes.patternContentElement()->firstChild(); node; node = node->nextSibling()) {
-        if (!node->isSVGElement() || !node->renderer())
+    for (Element* element = ElementTraversal::firstWithin(*attributes.patternContentElement()); element; element = ElementTraversal::nextSibling(*element)) {
+        if (!element->isSVGElement() || !element->renderer())
             continue;
-        if (node->renderer()->needsLayout())
+        if (element->renderer()->needsLayout())
             return nullptr;
-        SVGRenderingContext::renderSubtree(tileImage->context(), node->renderer(), contentTransformation);
+        SVGRenderingContext::renderSubtree(tileImage->context(), element->renderer(), contentTransformation);
     }
 
     return tileImage.release();
