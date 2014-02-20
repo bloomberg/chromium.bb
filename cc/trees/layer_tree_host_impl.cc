@@ -2509,9 +2509,10 @@ void LayerTreeHostImpl::PinchGestureBegin() {
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
                                            gfx::Point anchor) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
+  if (!InnerViewportScrollLayer())
+    return;
 
-  DCHECK(InnerViewportScrollLayer());
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
 
   // Keep the center-of-pinch anchor specified by (x, y) in a stable
   // position over the course of the magnify.
