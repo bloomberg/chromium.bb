@@ -36,6 +36,7 @@
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager_base.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -411,7 +412,8 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
           ash::Shell::GetInstance()->GetPrimaryRootWindow());
 #else  // defined(OS_CHROMEOS)
       screen_id =
-          content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+          content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                                  webrtc::kFullDesktopScreenId);
 #endif  // !defined(OS_CHROMEOS)
 
       bool capture_audio =
