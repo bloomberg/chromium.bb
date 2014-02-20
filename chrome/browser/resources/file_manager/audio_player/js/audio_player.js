@@ -23,6 +23,7 @@ function AudioPlayer(container) {
   }.bind(this));
   this.trackListItems_ = [];
 
+  this.entries_ = [];
   this.currentTrackIndex_ = -1;
   this.playlistGeneration_ = 0;
 

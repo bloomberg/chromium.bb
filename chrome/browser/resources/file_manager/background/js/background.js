@@ -784,7 +784,7 @@ audioPlayerInitializationQueue.run(function(callback) {
 function launchAudioPlayer(playlist, opt_displayedId) {
   audioPlayerInitializationQueue.run(function(callback) {
     audioPlayer.launch(playlist, function(appWindow) {
-      audioPlayer.setIcon(AUDIO_PLAYRE_ICON);
+      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
       AppWindowWrapper.focusOnDesktop(audioPlayer.rawAppWindow,
                                       opt_displayedId);
     });
