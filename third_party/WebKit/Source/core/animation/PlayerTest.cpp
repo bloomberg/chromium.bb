@@ -606,6 +606,15 @@ TEST_F(AnimationPlayerTest, EmptyPlayersDontUpdateEffects)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
+TEST_F(AnimationPlayerTest, PlayersDisassociateFromSource)
+{
+    TimedItem* timedItem = player->source();
+    Player* player2 = timeline->createPlayer(timedItem);
+    EXPECT_EQ(0, player->source());
+    player->setSource(timedItem);
+    EXPECT_EQ(0, player2->source());
+}
+
 TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
 {
     Timing timing;

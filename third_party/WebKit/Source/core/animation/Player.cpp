@@ -53,8 +53,11 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_isPausedForTesting(false)
     , m_needsUpdate(false)
 {
-    if (m_content)
+    if (m_content) {
+        if (m_content->player())
+            m_content->player()->cancel();
         m_content->attach(this);
+    }
 }
 
 Player::~Player()
@@ -149,13 +152,13 @@ void Player::setSource(TimedItem* newSource)
     double storedCurrentTime = currentTime();
     if (m_content)
         m_content->detach();
+    m_content = newSource;
     if (newSource) {
         // FIXME: This logic needs to be updated once groups are implemented
         if (newSource->player())
-            newSource->detach();
+            newSource->player()->cancel();
         newSource->attach(this);
     }
-    m_content = newSource;
     updateTimingState(storedCurrentTime);
 }
 
