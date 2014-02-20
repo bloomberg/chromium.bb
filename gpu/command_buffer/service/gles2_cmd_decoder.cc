@@ -1065,6 +1065,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                           unsigned bind_target,
                           unsigned target,
                           int level,
+                          unsigned internal_format,
                           unsigned format,
                           unsigned type,
                           int width,
@@ -7672,6 +7673,7 @@ bool GLES2DecoderImpl::ClearLevel(
     unsigned bind_target,
     unsigned target,
     int level,
+    unsigned internal_format,
     unsigned format,
     unsigned type,
     int width,
@@ -7758,7 +7760,8 @@ bool GLES2DecoderImpl::ClearLevel(
       glTexSubImage2D(target, level, 0, y, width, h, format, type, zero.get());
     } else {
       glTexImage2D(
-          target, level, format, width, h, 0, format, type, zero.get());
+          target, level, internal_format, width, h, 0, format, type,
+          zero.get());
     }
     y += tile_height;
   }
@@ -8293,8 +8296,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // some part was clipped so clear the texture.
     if (!ClearLevel(
         texture->service_id(), texture->target(),
-        target, level, internal_format, GL_UNSIGNED_BYTE, width, height,
-        texture->IsImmutable())) {
+        target, level, internal_format, internal_format, GL_UNSIGNED_BYTE,
+        width, height, texture->IsImmutable())) {
       LOCAL_SET_GL_ERROR(
           GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too big");
       return;
@@ -8539,10 +8542,13 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
   if (!texture_state_.texsubimage2d_faster_than_teximage2d &&
       !texture->IsImmutable()) {
     ScopedTextureUploadTimer timer(&texture_state_);
-    // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
-    // same as internal_foramt. If that changes we'll need to look them up.
+    GLenum internal_format;
+    GLenum tex_type;
+    texture->GetLevelType(target, level, &tex_type, &internal_format);
+    // NOTE: In OpenGL ES 2.0 border is always zero. If that changes we'll need
+    // to look it up.
     glTexImage2D(
-        target, level, format, width, height, 0, format, type, data);
+        target, level, internal_format, width, height, 0, format, type, data);
   } else {
     ScopedTextureUploadTimer timer(&texture_state_);
     glTexSubImage2D(

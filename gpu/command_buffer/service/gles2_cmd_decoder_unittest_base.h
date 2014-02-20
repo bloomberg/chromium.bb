@@ -284,12 +284,13 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void DeleteIndexBuffer();
 
-  void SetupClearTextureExpections(
+  void SetupClearTextureExpectations(
       GLuint service_id,
       GLuint old_service_id,
       GLenum bind_target,
       GLenum target,
       GLint level,
+      GLenum internal_format,
       GLenum format,
       GLenum type,
       GLsizei width,

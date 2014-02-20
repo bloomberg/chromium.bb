@@ -442,12 +442,13 @@ void GLES2DecoderTestBase::SetBucketAsCString(
   }
 }
 
-void GLES2DecoderTestBase::SetupClearTextureExpections(
+void GLES2DecoderTestBase::SetupClearTextureExpectations(
       GLuint service_id,
       GLuint old_service_id,
       GLenum bind_target,
       GLenum target,
       GLint level,
+      GLenum internal_format,
       GLenum format,
       GLenum type,
       GLsizei width,
@@ -456,7 +457,7 @@ void GLES2DecoderTestBase::SetupClearTextureExpections(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, TexImage2D(
-      target, level, format, width, height, 0, format, type, _))
+      target, level, internal_format, width, height, 0, format, type, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(bind_target, old_service_id))

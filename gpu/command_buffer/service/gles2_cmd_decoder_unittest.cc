@@ -1873,9 +1873,9 @@ TEST_F(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
   EXPECT_CALL(*gl_, TexParameteri(
       GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))
       .Times(1)
@@ -4596,9 +4596,9 @@ TEST_F(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
           GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
           GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
     } else {
-      SetupClearTextureExpections(
+      SetupClearTextureExpectations(
           kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-          0, GL_RGBA, GL_UNSIGNED_BYTE, kWidth, kHeight);
+          0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, kWidth, kHeight);
       cmd.Init(
           GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
           GL_UNSIGNED_BYTE, 0, 0);
@@ -5914,9 +5914,9 @@ TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DNULL) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
   EXPECT_CALL(*gl_, TexSubImage2D(
       GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
       shared_memory_address_))
@@ -6037,9 +6037,9 @@ TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
   // It won't actually call TexImage2D, just mark it as uncleared.
   EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
   // Next call to TexSubImage2d should clear.
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
   EXPECT_CALL(*gl_, TexSubImage2D(
       GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
       shared_memory_address_))
@@ -6061,12 +6061,12 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   DoTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
-  SetupClearTextureExpections(
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      1, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
+      1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -6094,12 +6094,12 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   DoTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
-  SetupClearTextureExpections(
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      1, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
+      1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
   SetupExpectationsForApplyingDefaultDirtyState();
 
   EXPECT_CALL(*gl_, DrawElements(GL_TRIANGLES, kValidIndexRangeCount,
@@ -6249,9 +6249,9 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedTexture) {
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
 
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
   EXPECT_CALL(*gl_, CopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 1, 1))
       .Times(1)
       .RetiresOnSaturation();
@@ -6529,12 +6529,14 @@ TEST_F(GLES2DecoderTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
                  GL_UNSIGNED_BYTE, shm_id, shm_offset);
   }
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpections(
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_CUBE_MAP,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
-  SetupClearTextureExpections(
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+      2, 2);
+  SetupClearTextureExpectations(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_CUBE_MAP,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 1, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+      1, 1);
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
@@ -8944,6 +8946,65 @@ TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
                0, 0);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 16, 17, 0,
                GL_LUMINANCE_ALPHA, GL_FLOAT, 0, 0);
+}
+
+TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
+  InitDecoder("GL_OES_texture_float GL_EXT_color_buffer_float", // extensions
+              "opengl es 3.0",               // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+  const int kWidth = 8;
+  const int kHeight = 4;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, kWidth, kHeight, 0, GL_RGBA,
+               GL_FLOAT, 0, 0);
+  EXPECT_CALL(*gl_, TexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA32F, kWidth, kHeight, 0, GL_RGBA, GL_FLOAT,
+      shared_memory_address_))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexSubImage2D cmd;
+  cmd.Init(
+      GL_TEXTURE_2D, 0, 0, 0, kWidth, kHeight, GL_RGBA, GL_FLOAT,
+      kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
+  InitDecoder("GL_OES_texture_float GL_EXT_color_buffer_float", // extensions
+              "opengl es 3.0",               // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+  const int kWidth = 8;
+  const int kHeight = 4;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, kWidth, kHeight, 0, GL_RGBA,
+               GL_FLOAT, 0, 0);
+  SetupClearTextureExpectations(
+      kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
+      0, GL_RGBA32F, GL_RGBA, GL_FLOAT, kWidth, kHeight);
+  EXPECT_CALL(*gl_, TexSubImage2D(
+      GL_TEXTURE_2D, 0, 1, 0, kWidth - 1, kHeight, GL_RGBA, GL_FLOAT,
+      shared_memory_address_))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexSubImage2D cmd;
+  cmd.Init(
+      GL_TEXTURE_2D, 0, 1, 0, kWidth - 1, kHeight, GL_RGBA, GL_FLOAT,
+      kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
