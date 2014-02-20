@@ -36,7 +36,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -91,7 +90,6 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -1200,20 +1198,13 @@ void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
 void SystemTrayDelegateChromeOS::InputMethodChanged(
     input_method::InputMethodManager* manager,
     bool show_message) {
-  // |show_message| in ash means the message_center notifications
-  // which should not be shown unless kDisableIMEModeIndicator is
-  // on, since the mode indicator already notifies the user.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kDisableIMEModeIndicator)) {
-    show_message = false;
-  }
-  GetSystemTrayNotifier()->NotifyRefreshIME(show_message);
+  GetSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from InputMethodMenuManager::Observer.
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ash::ime::InputMethodMenuManager* manager) {
-  GetSystemTrayNotifier()->NotifyRefreshIME(false);
+  GetSystemTrayNotifier()->NotifyRefreshIME();
 }
 
 // Overridden from CrasAudioHandler::AudioObserver.

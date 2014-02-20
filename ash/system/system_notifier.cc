@@ -24,7 +24,6 @@ const char* kAshSystemNotifiers[] = {
   kNotifierDisplay,
   kNotifierDisplayResolutionChange,
   kNotifierDisplayError,
-  kNotifierInputMethod,
   kNotifierLocale,
   kNotifierLocallyManagedUser,
   kNotifierMultiProfileFirstRun,
@@ -55,7 +54,6 @@ bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
 const char kNotifierDisplay[] = "ash.display";
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 const char kNotifierDisplayError[] = "ash.display.error";
-const char kNotifierInputMethod[] = "ash.input-method";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierLocallyManagedUser[] = "ash.locally-managed-user";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";

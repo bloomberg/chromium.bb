@@ -12,9 +12,8 @@ class IMEObserver {
   virtual ~IMEObserver() {}
 
   // Notify the observer that the IME state has changed, and should be
-  // refreshed.  |show_message| indicates whether the user should be alerted of
-  // the change.
-  virtual void OnIMERefresh(bool show_message) = 0;
+  // refreshed.
+  virtual void OnIMERefresh() = 0;
 };
 
 }  // namespace ash

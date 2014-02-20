@@ -263,10 +263,10 @@ void SystemTrayNotifier::NotifyDriveJobUpdated(
                     OnDriveJobUpdated(status));
 }
 
-void SystemTrayNotifier::NotifyRefreshIME(bool show_message) {
+void SystemTrayNotifier::NotifyRefreshIME() {
   FOR_EACH_OBSERVER(IMEObserver,
                     ime_observers_,
-                    OnIMERefresh(show_message));
+                    OnIMERefresh());
 }
 
 void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {

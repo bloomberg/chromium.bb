@@ -17,7 +17,6 @@ namespace system_notifier {
 ASH_EXPORT extern const char kNotifierDisplay[];
 ASH_EXPORT extern const char kNotifierDisplayResolutionChange[];
 ASH_EXPORT extern const char kNotifierDisplayError[];
-ASH_EXPORT extern const char kNotifierInputMethod[];
 ASH_EXPORT extern const char kNotifierLocale[];
 ASH_EXPORT extern const char kNotifierLocallyManagedUser[];
 ASH_EXPORT extern const char kNotifierMultiProfileFirstRun[];

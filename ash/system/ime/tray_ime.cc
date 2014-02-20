@@ -10,7 +10,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/system_notifier.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -28,20 +27,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-
-using message_center::Notification;
-
-namespace {
-
-const char kIMENotificationId[] = "chrome://settings/ime";
-
-}  // namespace
 
 namespace ash {
 namespace internal {
@@ -189,16 +177,12 @@ TrayIME::TrayIME(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_label_(NULL),
       default_(NULL),
-      detailed_(NULL),
-      message_shown_(false),
-      weak_factory_(this) {
+      detailed_(NULL) {
   Shell::GetInstance()->system_tray_notifier()->AddIMEObserver(this);
 }
 
 TrayIME::~TrayIME() {
   Shell::GetInstance()->system_tray_notifier()->RemoveIMEObserver(this);
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kIMENotificationId, false /* by_user */);
 }
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
@@ -217,40 +201,6 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
     SetTrayLabelItemBorder(tray_label_, system_tray()->shelf_alignment());
     tray_label_->Layout();
   }
-}
-
-void TrayIME::UpdateOrCreateNotification() {
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-
-  if (!message_center->HasNotification(kIMENotificationId) && message_shown_)
-    return;
-
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
-  IMEInfo current;
-  delegate->GetCurrentIME(&current);
-
-  ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kIMENotificationId,
-      // TODO(zork): Use IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE
-      // for third party IMEs
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
-          current.medium_name),
-      base::string16(),  // message
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME),
-      base::string16(),  // display_source
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierInputMethod),
-      message_center::RichNotificationData(),
-      new message_center::HandleNotificationClickedDelegate(
-          base::Bind(&TrayIME::PopupDetailedView,
-                     weak_factory_.GetWeakPtr(), 0, true))));
-  message_center->AddNotification(notification.Pass());
-  message_shown_ = true;
 }
 
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
@@ -303,7 +253,7 @@ void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   tray_label_->Layout();
 }
 
-void TrayIME::OnIMERefresh(bool show_message) {
+void TrayIME::OnIMERefresh() {
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   IMEInfoList list;
   IMEInfo current;
@@ -318,9 +268,6 @@ void TrayIME::OnIMERefresh(bool show_message) {
     default_->UpdateLabel(current);
   if (detailed_)
     detailed_->Update(list, property_list);
-
-  if (list.size() > 1 && show_message)
-    UpdateOrCreateNotification();
 }
 
 }  // namespace internal

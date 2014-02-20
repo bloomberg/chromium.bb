@@ -30,7 +30,6 @@ CHROMEOS_EXPORT extern const char kDerelictIdleTimeout[];
 CHROMEOS_EXPORT extern const char kDisableBootAnimation[];
 CHROMEOS_EXPORT extern const char kDisableEnterpriseUserReporting[];
 CHROMEOS_EXPORT extern const char kDisableGeniusApp[];
-CHROMEOS_EXPORT extern const char kDisableIMEModeIndicator[];
 CHROMEOS_EXPORT extern const char kDisableLocalAccounts[];
 CHROMEOS_EXPORT extern const char kDisableLoginAnimations[];
 CHROMEOS_EXPORT extern const char kDisableNewChannelSwitcherUI[];

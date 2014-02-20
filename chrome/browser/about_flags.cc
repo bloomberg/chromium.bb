@@ -1859,15 +1859,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("disable-click-delay")
   },
 #endif
-#if defined(OS_CHROMEOS)
-  {
-    "disable-ime-mode-indicator",
-    IDS_FLAGS_DISABLE_IME_MODE_INDICATOR,
-    IDS_FLAGS_DISABLE_IME_MODE_INDICATOR_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableIMEModeIndicator)
-  },
-#endif
 #if defined(OS_MACOSX)
   {
     "enable-translate-new-ux",

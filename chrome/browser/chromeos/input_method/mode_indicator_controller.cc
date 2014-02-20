@@ -8,11 +8,9 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 namespace input_method {
@@ -93,13 +91,6 @@ void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
 }
 
 void ModeIndicatorController::ShowModeIndicator() {
-  // TODO(komatsu): When this is permanently enabled by defalut,
-  // delete command_line.h and chromeos_switches.h from the header
-  // files.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableIMEModeIndicator))
-    return;
-
   // TODO(komatsu): Show the mode indicator in the right bottom of the
   // display when the launch bar is hidden and the focus is out.  To
   // implement it, we should consider to use message center or system
