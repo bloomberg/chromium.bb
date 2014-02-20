@@ -81,9 +81,6 @@ public:
     virtual void throwTypeError(const String& message);
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
 
-    // Please don't use these methods. Use ::throwDOMException and ::throwTypeError, and pass in a useful exception message.
-    virtual void throwUninformativeAndGenericDOMException(const ExceptionCode& ec) { throwDOMException(ec, String()); }
-
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
 
@@ -94,7 +91,7 @@ public:
         if (m_exception.isEmpty()) {
             if (!m_code)
                 return false;
-            throwUninformativeAndGenericDOMException(m_code);
+            throwDOMException(m_code, String()); // FIXME: Do we ever hit this? If so, where and why?
         }
 
         V8ThrowException::throwError(m_exception.newLocal(m_isolate), m_isolate);
