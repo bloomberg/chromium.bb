@@ -17006,6 +17006,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SB2.DownloadBinhashAddsDeleted">
+  <obsolete>
+    Deleted in M-34 (February 2014).
+  </obsolete>
+  <summary>Obsolete download BINHASH add chunks deleted.</summary>
+</histogram>
+
+<histogram name="SB2.DownloadBinhashSubsDeleted">
+  <obsolete>
+    Deleted in M-34 (February 2014).
+  </obsolete>
+  <summary>Obsolete download BINHASH sub chunks deleted.</summary>
+</histogram>
+
 <histogram name="SB2.DownloadChecks" enum="SB2DownloadChecks">
   <summary>
     Records results of SafeBrowsing download check, including both url check and
