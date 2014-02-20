@@ -186,10 +186,15 @@
         ],
         'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
         'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
+        'generated_html_files': [
+          '<(SHARED_INTERMEDIATE_DIR)/main.html',
+          '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+        ],
       },
       'dependencies': [
         'remoting_resources',
         'remoting_host_plugin',
+        'remoting_webapp_html',
       ],
       'locale_files': [
         '<@(remoting_webapp_locale_files)',
@@ -218,7 +223,7 @@
             {
               'action_name': 'Verify remoting webapp',
               'inputs': [
-                '<@(remoting_webapp_js_files)',
+                '<@(remoting_webapp_all_js_files)',
                 '<@(remoting_webapp_js_proto_files)',
               ],
               'outputs': [
@@ -226,7 +231,7 @@
               ],
               'action': [
                 'python', 'tools/jscompile.py',
-                '<@(remoting_webapp_js_files)',
+                '<@(remoting_webapp_all_js_files)',
                 '<@(remoting_webapp_js_proto_files)',
                 '--success-stamp',
                 '<(success_stamp)'
@@ -242,6 +247,7 @@
             'webapp/build-webapp.py',
             '<(chrome_version_path)',
             '<(remoting_version_path)',
+            '<@(generated_html_files)',
             '<@(remoting_webapp_files)',
             '<@(_locale_files)',
           ],
@@ -264,6 +270,7 @@
             '<(output_dir)',
             '<(zip_path)',
             '<(plugin_path)',
+            '<@(generated_html_files)',
             '<@(remoting_webapp_files)',
             '--locales',
             '<@(_locale_files)',
@@ -326,12 +333,56 @@
     }, # end of target 'remoting_webapp'
 
     {
+      'target_name': 'remoting_webapp_html',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'Build Remoting Webapp main.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_main)',
+            '<@(remoting_webapp_template_files)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/main.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/main.html',
+            '<(remoting_webapp_template_main)',
+            '<@(remoting_webapp_main_html_js_files)',
+          ],
+        },
+        {
+          'action_name': 'Build Remoting Webapp wcs_sandbox.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_wcs_sandbox)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+            '<(remoting_webapp_template_wcs_sandbox)',
+            '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+          ],
+        },
+      ],
+    }, # end of target 'remoting_webapp_html'
+
+    {
       'target_name': 'remoting_resources',
       'type': 'none',
+      'dependencies': [
+        'remoting_webapp_html',
+      ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
         'grit_resource_ids': 'resources/resource_ids',
         'sources': [
+          '<(SHARED_INTERMEDIATE_DIR)/main.html',
           'base/resources_unittest.cc',
           'host/continue_window_mac.mm',
           'host/disconnect_window_mac.mm',
@@ -348,7 +399,6 @@
           'webapp/host_list.js',
           'webapp/host_setup_dialog.js',
           'webapp/host_table_entry.js',
-          'webapp/main.html',
           'webapp/manifest.json',
           'webapp/paired_client_manager.js',
           'webapp/remoting.js',

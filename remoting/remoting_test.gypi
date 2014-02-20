@@ -194,7 +194,7 @@
             'webapp/browser_globals.gtestjs',
             'webapp/all_js_load.gtestjs',
             'webapp/format_iq.gtestjs',
-            '<@(remoting_webapp_js_files)',
+            '<@(remoting_webapp_all_js_files)',
           ],
         }],
         [ 'OS=="android"', {

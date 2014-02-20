@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html class="scrollable full-height">
+  <head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="chromoting16.webp">
+    <link rel="stylesheet" href="open_sans.css">
+    <link rel="stylesheet" href="connection_stats.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="menu_button.css">
+    <link rel="stylesheet" href="toolbar.css">
+
+    <meta-include type="javascript"/>
+
+    <title i18n-content="PRODUCT_NAME"></title>
+  </head>
+
+  <body class="full-height">
+
+    <!-- loading-mode is initially visible, but becomes hidden as soon as an
+         AppMode is selected by remoting.init. All other divs are initially
+         hidden, but are shown appropriately when the mode changes. -->
+    <section id="loading-mode" data-ui-mode="">
+      <em>Loading&hellip;</em>
+    </section> <!-- loading-mode -->
+
+    <div id="daemon-plugin-container"></div>
+    <div id="host-plugin-container"></div>
+
+    <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
+
+    <div class="inset" data-ui-mode="home" hidden>
+
+      <meta-include src="webapp/html/ui_header.html"/>
+
+      <meta-include src="webapp/html/butterbar.html"/>
+
+      <meta-include src="webapp/html/ui_it2me.html"/>
+
+      <meta-include src="webapp/html/ui_me2me.html"/>
+
+    </div> <!-- inset -->
+
+    <meta-include src="webapp/html/dialog_auth.html"/>
+
+    <div class="dialog-screen"
+         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings"
+         hidden></div>
+
+    <div class="dialog-container"
+         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
+         hidden>
+
+      <div class="box-spacer"></div>
+
+      <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
+
+      <meta-include src="webapp/html/dialog_host_setup.html"/>
+
+      <meta-include src="webapp/html/dialog_host_install.html"/>
+
+      <meta-include src="webapp/html/dialog_host.html"/>
+
+      <meta-include src="webapp/html/dialog_client.html"/>
+
+      <meta-include src="webapp/html/dialog_connection_history.html"/>
+
+      <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
+
+      <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+
+      <div class="box-spacer"></div>
+
+    </div> <!-- dialog-container -->
+
+    <div id="session-mode"
+         data-ui-mode="in-session home.client"
+         class="full-height"
+         hidden>
+
+      <meta-include src="webapp/html/toolbar.html"/>
+
+      <meta-include src="webapp/html/client_plugin.html"/>
+
+    </div> <!-- session-mode -->
+
+    <div id="statistics" dir="ltr" class="selectable" hidden>
+    </div> <!-- statistics -->
+
+  </body>
+</html>

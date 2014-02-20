@@ -20,15 +20,20 @@
       'webapp/js_proto/remoting_proto.js',
     ],
 
+    # Auth (apps v1) JavaScript files.
+    # These files aren't included directly from main.html. They are
+    # referenced from the manifest.json file (appsv1 only).
+    'remoting_webapp_js_auth_v1_files': [
+      'webapp/cs_third_party_auth_trampoline.js',  # client to host
+      'webapp/cs_oauth2_trampoline.js',  # Google account
+    ],
     # Auth (client to host) JavaScript files.
     'remoting_webapp_js_auth_client2host_files': [
-      'webapp/cs_third_party_auth_trampoline.js',
       'webapp/third_party_host_permissions.js',
       'webapp/third_party_token_fetcher.js',
     ],
     # Auth (Google account) JavaScript files.
     'remoting_webapp_js_auth_google_files': [
-      'webapp/cs_oauth2_trampoline.js',
       'webapp/identity.js',
       'webapp/oauth2.js',
       'webapp/oauth2_api.js',
@@ -54,7 +59,6 @@
       'webapp/remoting.js',
       'webapp/typecheck.js',
       'webapp/xhr.js',
-      'webapp/xhr_proxy.js',
     ],
     # Host JavaScript files.
     # Includes both it2me and me2me files.
@@ -96,14 +100,20 @@
       'webapp/host_settings.js',
       'webapp/host_table_entry.js',
     ],
-    # Remoting WCS JavaScript files.
-    'remoting_webapp_js_wcs_files': [
+    # Remoting WCS container JavaScript files.
+    'remoting_webapp_js_wcs_container_files': [
+      'webapp/wcs_sandbox_container.js',
+    ],
+    # Remoting WCS sandbox JavaScript files.
+    'remoting_webapp_js_wcs_sandbox_files': [
       'webapp/wcs.js',
       'webapp/wcs_loader.js',
-      'webapp/wcs_sandbox_container.js',
       'webapp/wcs_sandbox_content.js',
+      'webapp/xhr_proxy.js',
     ],
-    'remoting_webapp_js_files': [
+
+    # The JavaScript files required by main.html.
+    'remoting_webapp_main_html_js_files': [
       '<@(remoting_webapp_js_auth_client2host_files)',
       '<@(remoting_webapp_js_auth_google_files)',
       '<@(remoting_webapp_js_client_files)',
@@ -113,7 +123,26 @@
       '<@(remoting_webapp_js_ui_files)',
       '<@(remoting_webapp_js_ui_host_control_files)',
       '<@(remoting_webapp_js_ui_host_display_files)',
-      '<@(remoting_webapp_js_wcs_files)',
+      '<@(remoting_webapp_js_wcs_container_files)',
+    ],
+
+    # The JavaScript files required by wcs_sandbox.html.
+    'remoting_webapp_wcs_sandbox_html_js_files': [
+      '<@(remoting_webapp_js_wcs_sandbox_files)',
+      'webapp/error.js',
+      'webapp/plugin_settings.js',
+    ],
+
+    # All the JavaScript files required by the webapp.
+    'remoting_webapp_all_js_files': [
+      # JS files for main.html.
+      '<@(remoting_webapp_main_html_js_files)',
+      # JS files for wcs_sandbox.html.
+      # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
+      # so that we don't double include error.js and plugin_settings.js.
+      '<@(remoting_webapp_js_wcs_sandbox_files)',
+      # JS files referenced in mainfest.json.
+      '<@(remoting_webapp_js_auth_v1_files)',
     ],
 
     'remoting_webapp_resource_files': [
@@ -131,20 +160,48 @@
       'resources/tick.webp',
       'webapp/connection_stats.css',
       'webapp/main.css',
-      'webapp/main.html',
       'webapp/menu_button.css',
       'webapp/open_sans.css',
       'webapp/open_sans.woff',
       'webapp/scale-to-fit.webp',
       'webapp/spinner.gif',
       'webapp/toolbar.css',
-      'webapp/wcs_sandbox.html',
     ],
 
     'remoting_webapp_files': [
       '<@(remoting_webapp_info_files)',
-      '<@(remoting_webapp_js_files)',
+      '<@(remoting_webapp_all_js_files)',
       '<@(remoting_webapp_resource_files)',
     ],
+
+    # These template files are used to construct the webapp html files.
+    'remoting_webapp_template_main':
+      'webapp/html/template_main.html',
+
+    'remoting_webapp_template_wcs_sandbox':
+      'webapp/html/template_wcs_sandbox.html',
+
+    'remoting_webapp_template_files': [
+      'webapp/html/butterbar.html',
+      'webapp/html/dialog_auth.html',
+      'webapp/html/dialog_client_host_needs_upgrade.html',
+      'webapp/html/dialog_client.html',
+      'webapp/html/dialog_client_pin_prompt.html',
+      'webapp/html/dialog_client_session_finished.html',
+      'webapp/html/dialog_client_third_party_auth.html',
+      'webapp/html/dialog_client_unconnected.html',
+      'webapp/html/dialog_confirm_host_delete.html',
+      'webapp/html/dialog_connection_history.html',
+      'webapp/html/dialog_host.html',
+      'webapp/html/dialog_host_install.html',
+      'webapp/html/dialog_host_setup.html',
+      'webapp/html/dialog_manage_pairings.html',
+      'webapp/html/dialog_token_refresh_failed.html',
+      'webapp/html/toolbar.html',
+      'webapp/html/ui_header.html',
+      'webapp/html/ui_it2me.html',
+      'webapp/html/ui_me2me.html',
+    ],
+
   },
 }
