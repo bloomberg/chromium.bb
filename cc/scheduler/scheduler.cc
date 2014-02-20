@@ -236,10 +236,6 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     // so the sychronous renderer compositor can take advantage of splitting
     // up the BeginImplFrame and deadline as well.
     OnBeginImplFrameDeadline();
-  } else if (!settings_.deadline_scheduling_enabled) {
-    // We emulate the old non-deadline scheduler here by posting the
-    // deadline task without any delay.
-    PostBeginImplFrameDeadline(base::TimeTicks());
   } else if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
     // We are ready to draw a new active tree immediately.
     PostBeginImplFrameDeadline(base::TimeTicks());

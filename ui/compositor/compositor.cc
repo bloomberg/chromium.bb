@@ -209,8 +209,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       ContextFactory::GetInstance()->DoesCreateTestContexts()
       ? kTestRefreshRate
       : kDefaultRefreshRate;
-  settings.deadline_scheduling_enabled =
-      switches::IsUIDeadlineSchedulingEnabled();
   settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
 #if defined(OS_CHROMEOS)

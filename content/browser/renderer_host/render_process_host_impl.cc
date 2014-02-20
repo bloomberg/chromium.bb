@@ -905,9 +905,6 @@ static void AppendGpuCommandLineFlags(CommandLine* command_line) {
   if (content::IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
-  if (content::IsDeadlineSchedulingEnabled())
-    command_line->AppendSwitch(switches::kEnableDeadlineScheduling);
-
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
@@ -973,7 +970,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableCompositingForFixedPosition,
     switches::kDisableCompositingForTransition,
     switches::kDisableDatabases,
-    switches::kDisableDeadlineScheduling,
     switches::kDisableDelegatedRenderer,
     switches::kDisableDesktopNotifications,
     switches::kDisableDirectNPAPIRequests,
@@ -1016,7 +1012,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableCompositingForFixedPosition,
     switches::kEnableCompositingForTransition,
     switches::kEnableDCHECK,
-    switches::kEnableDeadlineScheduling,
     switches::kEnableDeferredImageDecoding,
     switches::kEnableDelegatedRenderer,
     switches::kEnableEncryptedMedia,

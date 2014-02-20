@@ -269,19 +269,6 @@ bool IsDelegatedRendererEnabled() {
   return enabled;
 }
 
-bool IsDeadlineSchedulingEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // Default to enabled.
-  bool enabled = true;
-
-  // Flags override.
-  enabled |= command_line.HasSwitch(switches::kEnableDeadlineScheduling);
-  enabled &= !command_line.HasSwitch(switches::kDisableDeadlineScheduling);
-
-  return enabled;
-}
-
 base::Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();

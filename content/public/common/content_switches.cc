@@ -145,9 +145,6 @@ const char kDisableCompositingForTransition[] =
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
-// Disables the deadline scheduler.
-const char kDisableDeadlineScheduling[]     = "disable-deadline-scheduling";
-
 // Disables delegated renderer.
 const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
 
@@ -416,9 +413,6 @@ const char kEnableCompositingForTransition[] =
 
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
-
-// Enables the deadline scheduler.
-const char kEnableDeadlineScheduling[]      = "enable-deadline-scheduling";
 
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";

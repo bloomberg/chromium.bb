@@ -14,7 +14,6 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings();
   ~SchedulerSettings();
 
-  bool deadline_scheduling_enabled;
   bool impl_side_painting;
   bool timeout_and_draw_when_animation_checkerboards;
   int maximum_number_of_failed_draws_before_draw_is_forced_;

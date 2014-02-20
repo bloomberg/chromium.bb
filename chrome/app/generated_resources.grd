@@ -6651,18 +6651,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION" desc="Description of about:flags option for impl-side painting.">
         If enabled, painting is done on a separate thread instead of the main thread.
       </message>
-      <message name="IDS_FLAGS_DEADLINE_SCHEDULING_NAME" desc="Name of about:flags option for deadline scheduling.">
-        Deadline scheduling.
-      </message>
-      <message name="IDS_FLAGS_DEADLINE_SCHEDULING_DESCRIPTION" desc="Description of about:flags option for deadline scheduling.">
-        If enabled, latency in the Renderer may improve if the various stages of rendering are fast enough to beat a deadline. Requires threaded compositing.
-      </message>
-      <message name="IDS_FLAGS_UI_DEADLINE_SCHEDULING_NAME" desc="Name of about:flags option for UI deadline scheduling.">
-        UI deadline scheduling.
-      </message>
-      <message name="IDS_FLAGS_UI_DEADLINE_SCHEDULING_DESCRIPTION" desc="Description of about:flags option for UI deadline scheduling.">
-        If enabled, latency in the Browser may improve if the various stages of rendering are fast enough to beat a deadline. Requires threaded compositiing.
-      </message>
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
         LCD text antialiasing
       </message>

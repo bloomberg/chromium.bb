@@ -19,9 +19,6 @@ CONTENT_EXPORT bool IsForceCompositingModeEnabled();
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 
-// Returns true if deadline scheduling is on (via flags, or platform default).
-CONTENT_EXPORT bool IsDeadlineSchedulingEnabled();
-
 CONTENT_EXPORT base::Value* GetFeatureStatus();
 CONTENT_EXPORT base::Value* GetProblems();
 CONTENT_EXPORT base::Value* GetDriverBugWorkarounds();

@@ -476,19 +476,12 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
     return true;
 
-  // With deadline scheduling enabled, we should not send BeginMainFrame while
-  // we are in BEGIN_IMPL_FRAME_STATE_IDLE, since we might have new user input
-  // coming in soon.
-  // However, if we are not expecting a BeginImplFrame to take us out of idle,
-  // we should not early out here to avoid blocking commits forever.
-  // This only works well when deadline scheduling is enabled because there is
-  // an interval over which to accept the commit and draw. Without deadline
-  // scheduling, delaying the commit could prevent us from having something
-  // to draw on the next BeginImplFrame.
+  // We should not send BeginMainFrame while we are in
+  // BEGIN_IMPL_FRAME_STATE_IDLE since we might have new
+  // user input arriving soon.
   // TODO(brianderson): Allow sending BeginMainFrame while idle when the main
   // thread isn't consuming user input.
-  if (settings_.deadline_scheduling_enabled &&
-      begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE &&
+  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE &&
       BeginImplFrameNeeded())
     return false;
 

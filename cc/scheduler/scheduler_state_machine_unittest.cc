@@ -285,11 +285,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.RedrawPending());
 }
 
-void TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
-    bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest,
+     TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit) {
   SchedulerSettings scheduler_settings;
   scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ = 1;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
   state.UpdateState(state.NextAction());
@@ -299,16 +298,10 @@ void TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
 
   // Start a commit.
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.CommitPending());
 
@@ -342,27 +335,11 @@ void TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED);
 }
 
-TEST(SchedulerStateMachineTest,
-     TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit) {
-  bool deadline_scheduling_enabled = false;
-  TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
-      deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
-      deadline_scheduling_enabled);
-}
-
-void TestFailedDrawsDoNotRestartForcedDraw(
-    bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   SchedulerSettings scheduler_settings;
   int draw_limit = 1;
   scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
       draw_limit;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   scheduler_settings.impl_side_painting = true;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
@@ -373,16 +350,10 @@ void TestFailedDrawsDoNotRestartForcedDraw(
 
   // Start a commit.
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.CommitPending());
 
@@ -425,20 +396,6 @@ void TestFailedDrawsDoNotRestartForcedDraw(
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.ForcedRedrawState() ==
     SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestFailedDrawsDoNotRestartForcedDraw) {
-  bool deadline_scheduling_enabled = false;
-  TestFailedDrawsDoNotRestartForcedDraw(
-      deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestFailedDrawsDoNotRestartForcedDraw_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  TestFailedDrawsDoNotRestartForcedDraw(
-      deadline_scheduling_enabled);
 }
 
 TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
@@ -1100,9 +1057,8 @@ TEST(SchedulerStateMachineTest,
             state.NextAction());
 }
 
-void TestContextLostWhileCommitInProgress(bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
   state.UpdateState(state.NextAction());
@@ -1112,18 +1068,12 @@ void TestContextLostWhileCommitInProgress(bool deadline_scheduling_enabled) {
 
   // Get a commit in flight.
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
@@ -1169,20 +1119,9 @@ void TestContextLostWhileCommitInProgress(bool deadline_scheduling_enabled) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
-  bool deadline_scheduling_enabled = false;
-  TestContextLostWhileCommitInProgress(deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  TestContextLostWhileCommitInProgress(deadline_scheduling_enabled);
-}
-
-void TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
-    bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest,
+     TestContextLostWhileCommitInProgressAndAnotherCommitRequested) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
   state.UpdateState(state.NextAction());
@@ -1192,19 +1131,13 @@ void TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
 
   // Get a commit in flight.
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
@@ -1266,20 +1199,6 @@ void TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestContextLostWhileCommitInProgressAndAnotherCommitRequested) {
-  bool deadline_scheduling_enabled = false;
-  TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
-      deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestContextLostWhileCommitInProgressAndAnotherCommitRequested_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  TestContextLostWhileCommitInProgressAndAnotherCommitRequested(
-      deadline_scheduling_enabled);
 }
 
 TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
@@ -1497,9 +1416,8 @@ TEST(SchedulerStateMachineTest, TestImmediateFinishCommit) {
             state.CommitState());
 }
 
-void TestImmediateFinishCommitDuringCommit(bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest, TestImmediateFinishCommitDuringCommit) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
   state.UpdateState(state.NextAction());
@@ -1509,18 +1427,12 @@ void TestImmediateFinishCommitDuringCommit(bool deadline_scheduling_enabled) {
 
   // Start a normal commit.
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Schedule a readback, commit it, draw it.
   state.SetNeedsForcedCommitForReadback();
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
@@ -1540,21 +1452,8 @@ void TestImmediateFinishCommitDuringCommit(bool deadline_scheduling_enabled) {
       << *state.AsValue();
 }
 
-TEST(SchedulerStateMachineTest, TestImmediateFinishCommitDuringCommit) {
-  bool deadline_scheduling_enabled = false;
-  TestImmediateFinishCommitDuringCommit(deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestImmediateFinishCommitDuringCommit_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  TestImmediateFinishCommitDuringCommit(deadline_scheduling_enabled);
-}
-
-void ImmediateBeginMainFrameAbortedWhileInvisible(
-    bool deadline_scheduling_enabled) {
+TEST(SchedulerStateMachineTest, ImmediateBeginMainFrameAbortedWhileInvisible) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
   StateMachine state(scheduler_settings);
   state.SetCanStart();
   state.UpdateState(state.NextAction());
@@ -1563,18 +1462,12 @@ void ImmediateBeginMainFrameAbortedWhileInvisible(
   state.SetCanDraw(true);
 
   state.SetNeedsCommit();
-  if (!deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
-  if (deadline_scheduling_enabled) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   state.FinishCommit();
 
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
@@ -1600,20 +1493,6 @@ void ImmediateBeginMainFrameAbortedWhileInvisible(
   // Should be back in the idle state, but needing a commit.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
   EXPECT_TRUE(state.NeedsCommit());
-}
-
-TEST(SchedulerStateMachineTest,
-     ImmediateBeginMainFrameAbortedWhileInvisible) {
-  bool deadline_scheduling_enabled = false;
-  ImmediateBeginMainFrameAbortedWhileInvisible(
-      deadline_scheduling_enabled);
-}
-
-TEST(SchedulerStateMachineTest,
-     ImmediateBeginMainFrameAbortedWhileInvisible_Deadline) {
-  bool deadline_scheduling_enabled = true;
-  ImmediateBeginMainFrameAbortedWhileInvisible(
-      deadline_scheduling_enabled);
 }
 
 TEST(SchedulerStateMachineTest, ImmediateFinishCommitWhileCantDraw) {
@@ -1739,10 +1618,8 @@ TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
-TEST(SchedulerStateMachineTest,
-    TestTriggerDeadlineEarlyAfterAbortedCommit) {
+TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyAfterAbortedCommit) {
   SchedulerSettings settings;
-  settings.deadline_scheduling_enabled = true;
   settings.impl_side_painting = true;
   StateMachine state(settings);
   state.SetCanStart();
@@ -1776,7 +1653,6 @@ TEST(SchedulerStateMachineTest,
 
 TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyForSmoothness) {
   SchedulerSettings settings;
-  settings.deadline_scheduling_enabled = true;
   settings.impl_side_painting = true;
   StateMachine state(settings);
   state.SetCanStart();

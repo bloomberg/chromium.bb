@@ -3225,17 +3225,8 @@ void RenderWidgetHostViewAura::OnCompositingLockStateChanged(
 void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (IsShowing()) {
-    if (IsDeadlineSchedulingEnabled()) {
-      // The deadline scheduler has logic to stagger the draws of the
-      // Renderer and Browser built-in, so send it an accurate timebase.
-      host_->UpdateVSyncParameters(timebase, interval);
-    } else if (!last_draw_ended_.is_null()) {
-      // For the non-deadline scheduler, we send the Renderer an offset
-      // vsync timebase to avoid its draws racing the Browser's draws.
-      host_->UpdateVSyncParameters(last_draw_ended_, interval);
-    }
-  }
+  if (IsShowing())
+    host_->UpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -90,9 +90,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !cmd->HasSwitch(switches::kDisableGpuVsync);
   settings.begin_impl_frame_scheduling_enabled =
       cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
-  settings.deadline_scheduling_enabled =
-      cmd->HasSwitch(switches::kEnableDeadlineScheduling) &&
-      !cmd->HasSwitch(switches::kDisableDeadlineScheduling);
   settings.using_synchronous_renderer_compositor =
       widget->UsingSynchronousRendererCompositor();
   settings.accelerated_animation_enabled =
