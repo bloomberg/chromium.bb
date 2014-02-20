@@ -59,15 +59,6 @@ static const char kFooVideoCodecs[] = "fooaudio,foovideo";
 
 namespace content {
 
-// Helper functions that handle the WebString conversion to simplify tests.
-static std::string KeySystemNameForUMAUTF8(const std::string& key_system) {
-  return KeySystemNameForUMA(WebString::fromUTF8(key_system));
-}
-
-static bool IsConcreteSupportedKeySystemUTF8(const std::string& key_system) {
-  return IsConcreteSupportedKeySystem(WebString::fromUTF8(key_system));
-}
-
 class TestContentRendererClient : public ContentRendererClient {
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
@@ -206,30 +197,37 @@ class KeySystemsTest : public testing::Test {
 // TODO(ddorwin): Consider moving GetUUID() into these tests or moving
 // GetPepperType() calls out to their own test.
 
+TEST_F(KeySystemsTest, EmptyKeySystem) {
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(std::string()));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), std::string()));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(std::string()));
+}
+
 // Clear Key is the only key system registered in content.
 TEST_F(KeySystemsTest, ClearKey) {
-  EXPECT_TRUE(IsConcreteSupportedKeySystemUTF8(kPrefixedClearKey));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kPrefixedClearKey));
 
-  EXPECT_EQ("ClearKey", KeySystemNameForUMAUTF8(kPrefixedClearKey));
+  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kPrefixedClearKey));
 
   // Not yet out from behind the vendor prefix.
   EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnprefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUnprefixedClearKey));
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kUnprefixedClearKey));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnprefixedClearKey));
 }
 
 // The key system is not registered and therefore is unrecognized.
 TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   static const char* const kUnrecognized = "org.example.unrecognized";
 
-  EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8(kUnrecognized));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnrecognized));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUnrecognized));
 
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kUnrecognized));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnrecognized));
 
   bool can_use = false;
   EXPECT_DEBUG_DEATH_PORTABLE(
@@ -246,12 +244,12 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
 }
 
 TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
-  EXPECT_TRUE(IsConcreteSupportedKeySystemUTF8(kUsesAes));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kUsesAes));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUsesAes));
 
   // No UMA value for this test key system.
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kUsesAes));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUsesAes));
 
   EXPECT_TRUE(CanUseAesDecryptor(kUsesAes));
 #if defined(ENABLE_PEPPER_CDMS)
@@ -301,12 +299,12 @@ TEST_F(KeySystemsTest,
 
 // No parent is registered for UsesAes.
 TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
-  EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8(kUsesAesParent));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUsesAesParent));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUsesAesParent));
 
   // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kUsesAesParent));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUsesAesParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kUsesAesParent),
                               "org.example is not a known concrete system");
@@ -321,7 +319,7 @@ TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
 
 TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
-  EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8("org.example.ClEaR"));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem("org.example.ClEaR"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), "org.example.ClEaR"));
 
@@ -422,7 +420,7 @@ TEST_F(KeySystemsTest,
 //
 
 TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
-  EXPECT_TRUE(IsConcreteSupportedKeySystemUTF8(kExternal));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kExternal));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kExternal));
 
@@ -435,12 +433,12 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
 
 TEST_F(KeySystemsTest, Parent_ParentRegistered) {
   // The parent system is not a concrete system but is supported.
-  EXPECT_FALSE(IsConcreteSupportedKeySystemUTF8(kExternalParent));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternalParent));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kExternalParent));
 
   // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kExternalParent));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kExternalParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kExternalParent),
                               "com.example is not a known concrete system");
@@ -597,12 +595,12 @@ TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
 #endif  // defined(OS_ANDROID)
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
-  EXPECT_EQ("ClearKey", KeySystemNameForUMAUTF8(kPrefixedClearKey));
+  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kPrefixedClearKey));
   // Unprefixed is not yet supported.
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kUnprefixedClearKey));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnprefixedClearKey));
 
   // External Clear Key never has a UMA name.
-  EXPECT_EQ("Unknown", KeySystemNameForUMAUTF8(kExternalClearKey));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kExternalClearKey));
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   const char* const kTestWidevineUmaName = "Widevine";
@@ -610,7 +608,7 @@ TEST_F(KeySystemsTest, KeySystemNameForUMA) {
   const char* const kTestWidevineUmaName = "Unknown";
 #endif
   EXPECT_EQ(kTestWidevineUmaName,
-            KeySystemNameForUMAUTF8("com.widevine.alpha"));
+            KeySystemNameForUMA("com.widevine.alpha"));
 }
 
 }  // namespace content

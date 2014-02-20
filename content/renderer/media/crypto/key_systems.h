@@ -11,10 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
-namespace blink {
-class WebString;
-}
-
 namespace content {
 
 // Returns whether |key_system| is a real supported key system that can be
@@ -23,8 +19,7 @@ namespace content {
 // Call IsSupportedKeySystemWithMediaMimeType() to determine whether a
 // |key_system| supports a specific type of media or to check parent key
 // systems.
-CONTENT_EXPORT bool IsConcreteSupportedKeySystem(
-    const blink::WebString& key_system);
+CONTENT_EXPORT bool IsConcreteSupportedKeySystem(const std::string& key_system);
 
 // Returns whether |key_sytem| supports the specified media type and codec(s).
 CONTENT_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
@@ -33,8 +28,6 @@ CONTENT_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& key_system);
 
 // Returns a name for |key_system| suitable to UMA logging.
-CONTENT_EXPORT std::string KeySystemNameForUMA(
-    const blink::WebString& key_system);
 CONTENT_EXPORT std::string KeySystemNameForUMA(const std::string& key_system);
 
 // Returns whether AesDecryptor can be used for the given |concrete_key_system|.

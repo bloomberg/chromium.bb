@@ -15,8 +15,6 @@
 #include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems_support_uma.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -35,23 +33,6 @@ const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
 const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
-
-inline std::string KeySystemNameForUMAInternal(
-    const blink::WebString& key_system) {
-  if (key_system == kClearKeyKeySystem)
-    return "ClearKey";
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  if (key_system == kWidevineKeySystem)
-    return "Widevine";
-#endif  // WIDEVINE_CDM_AVAILABLE
-  return "Unknown";
-}
-
-// Convert a WebString to ASCII, falling back on an empty string in the case
-// of a non-ASCII string.
-static std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
-}
 
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(kClearKeyKeySystem);
@@ -352,9 +333,8 @@ std::vector<uint8> KeySystems::GetUUID(const std::string& concrete_key_system) {
 
 //------------------------------------------------------------------------------
 
-bool IsConcreteSupportedKeySystem(const blink::WebString& key_system) {
-  return KeySystems::GetInstance().IsConcreteSupportedKeySystem(
-      ToASCIIOrEmpty(key_system));
+bool IsConcreteSupportedKeySystem(const std::string& key_system) {
+  return KeySystems::GetInstance().IsConcreteSupportedKeySystem(key_system);
 }
 
 bool IsSupportedKeySystemWithMediaMimeType(
@@ -365,12 +345,14 @@ bool IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
-std::string KeySystemNameForUMA(const blink::WebString& key_system) {
-  return KeySystemNameForUMAInternal(key_system);
-}
-
 std::string KeySystemNameForUMA(const std::string& key_system) {
-  return KeySystemNameForUMAInternal(blink::WebString::fromUTF8(key_system));
+  if (key_system == kClearKeyKeySystem)
+    return "ClearKey";
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  if (key_system == kWidevineKeySystem)
+    return "Widevine";
+#endif  // WIDEVINE_CDM_AVAILABLE
+  return "Unknown";
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {

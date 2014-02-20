@@ -1090,14 +1090,20 @@ const gfx::RectF WebMediaPlayerAndroid::GetBoundaryRectangle() {
 // The following EME related code is copied from WebMediaPlayerImpl.
 // TODO(xhwang): Remove duplicate code between WebMediaPlayerAndroid and
 // WebMediaPlayerImpl.
-// TODO(kjyoun): Update Google TV EME implementation to use IPC.
+
+// Convert a WebString to ASCII, falling back on an empty string in the case
+// of a non-ASCII string.
+static std::string ToASCIIOrEmpty(const blink::WebString& string) {
+  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
+}
 
 // Helper functions to report media EME related stats to UMA. They follow the
 // convention of more commonly used macros UMA_HISTOGRAM_ENUMERATION and
 // UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
 // that UMA_* macros require the names to be constant throughout the process'
 // lifetime.
-static void EmeUMAHistogramEnumeration(const blink::WebString& key_system,
+
+static void EmeUMAHistogramEnumeration(const std::string& key_system,
                                        const std::string& method,
                                        int sample,
                                        int boundary_value) {
@@ -1107,7 +1113,7 @@ static void EmeUMAHistogramEnumeration(const blink::WebString& key_system,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
-static void EmeUMAHistogramCounts(const blink::WebString& key_system,
+static void EmeUMAHistogramCounts(const std::string& key_system,
                                   const std::string& method,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
@@ -1143,7 +1149,7 @@ static MediaKeyException MediaKeyExceptionForUMA(
 // values from above, for reporting to UMA.
 static void ReportMediaKeyExceptionToUMA(
     const std::string& method,
-    const WebString& key_system,
+    const std::string& key_system,
     WebMediaPlayer::MediaKeyException e) {
   MediaKeyException result_id = MediaKeyExceptionForUMA(e);
   DCHECK_NE(result_id, kUnknownResultId) << e;
@@ -1151,20 +1157,27 @@ static void ReportMediaKeyExceptionToUMA(
       key_system, method, result_id, kMaxMediaKeyException);
 }
 
+bool WebMediaPlayerAndroid::IsKeySystemSupported(
+    const std::string& key_system) {
+  // On Android, EME only works with MSE.
+  return player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE &&
+         IsConcreteSupportedKeySystem(key_system);
+}
+
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
     const WebString& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
-  WebMediaPlayer::MediaKeyException e =
-      GenerateKeyRequestInternal(key_system, init_data, init_data_length);
-  ReportMediaKeyExceptionToUMA("generateKeyRequest", key_system, e);
-  return e;
-}
+  DVLOG(1) << "generateKeyRequest: " << base::string16(key_system) << ": "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length));
 
-bool WebMediaPlayerAndroid::IsKeySystemSupported(const WebString& key_system) {
-  // On Android, EME only works with MSE.
-  return player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE &&
-         IsConcreteSupportedKeySystem(key_system);
+  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+
+  WebMediaPlayer::MediaKeyException e =
+      GenerateKeyRequestInternal(ascii_key_system, init_data, init_data_length);
+  ReportMediaKeyExceptionToUMA("generateKeyRequest", ascii_key_system, e);
+  return e;
 }
 
 // TODO(xhwang): Report an error when there is encrypted stream but EME is
@@ -1172,18 +1185,14 @@ bool WebMediaPlayerAndroid::IsKeySystemSupported(const WebString& key_system) {
 // ever.
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerAndroid::GenerateKeyRequestInternal(
-    const WebString& key_system,
+    const std::string& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
-  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
-           << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length));
-
   if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
-  if (current_key_system_.isEmpty()) {
+  if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
@@ -1202,7 +1211,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
                      weak_factory_.GetWeakPtr())));
     }
 
-    if (!proxy_decryptor_->InitializeCDM(key_system.utf8(),
+    if (!proxy_decryptor_->InitializeCDM(key_system,
                                          frame_->document().url())) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }
@@ -1222,7 +1231,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   // from the application.
   if (!proxy_decryptor_->GenerateKeyRequest(
            init_data_type_, init_data, init_data_length)) {
-    current_key_system_.reset();
+    current_key_system_.clear();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
 
@@ -1236,66 +1245,81 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::addKey(
     const unsigned char* init_data,
     unsigned init_data_length,
     const WebString& session_id) {
-  WebMediaPlayer::MediaKeyException e = AddKeyInternal(
-      key_system, key, key_length, init_data, init_data_length, session_id);
-  ReportMediaKeyExceptionToUMA("addKey", key_system, e);
-  return e;
-}
-
-WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
-    const WebString& key_system,
-    const unsigned char* key,
-    unsigned key_length,
-    const unsigned char* init_data,
-    unsigned init_data_length,
-    const WebString& session_id) {
-  DCHECK(key);
-  DCHECK_GT(key_length, 0u);
-  DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
+  DVLOG(1) << "addKey: " << base::string16(key_system) << ": "
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length))
-           << " [" << session_id.utf8().data() << "]";
+           << " [" << base::string16(session_id) << "]";
+
+  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+  std::string ascii_session_id = ToASCIIOrEmpty(session_id);
+
+  WebMediaPlayer::MediaKeyException e = AddKeyInternal(ascii_key_system,
+                                                       key,
+                                                       key_length,
+                                                       init_data,
+                                                       init_data_length,
+                                                       ascii_session_id);
+  ReportMediaKeyExceptionToUMA("addKey", ascii_key_system, e);
+  return e;
+}
+
+WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
+    const std::string& key_system,
+    const unsigned char* key,
+    unsigned key_length,
+    const unsigned char* init_data,
+    unsigned init_data_length,
+    const std::string& session_id) {
+  DCHECK(key);
+  DCHECK_GT(key_length, 0u);
 
   if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+  if (current_key_system_.empty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   proxy_decryptor_->AddKey(
-      key, key_length, init_data, init_data_length, session_id.utf8());
+      key, key_length, init_data, init_data_length, session_id);
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::cancelKeyRequest(
     const WebString& key_system,
     const WebString& session_id) {
+  DVLOG(1) << "cancelKeyRequest: " << base::string16(key_system) << ": "
+           << " [" << base::string16(session_id) << "]";
+
+  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+  std::string ascii_session_id = ToASCIIOrEmpty(session_id);
+
   WebMediaPlayer::MediaKeyException e =
-      CancelKeyRequestInternal(key_system, session_id);
-  ReportMediaKeyExceptionToUMA("cancelKeyRequest", key_system, e);
+      CancelKeyRequestInternal(ascii_key_system, ascii_session_id);
+  ReportMediaKeyExceptionToUMA("cancelKeyRequest", ascii_key_system, e);
   return e;
 }
 
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerAndroid::CancelKeyRequestInternal(
-    const WebString& key_system,
-    const WebString& session_id) {
+    const std::string& key_system,
+    const std::string& session_id) {
   if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+  if (current_key_system_.empty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-  proxy_decryptor_->CancelKeyRequest(session_id.utf8());
+  proxy_decryptor_->CancelKeyRequest(session_id);
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
-  client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
+  client_->keyAdded(WebString::fromUTF8(current_key_system_),
+                    WebString::fromUTF8(session_id));
 }
 
 void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
@@ -1305,7 +1329,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
                              error_code, media::MediaKeys::kMaxKeyError);
 
   client_->keyError(
-      current_key_system_,
+      WebString::fromUTF8(current_key_system_),
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
@@ -1318,7 +1342,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
   DLOG_IF(WARNING, !destination_url.empty() && !destination_url_gurl.is_valid())
       << "Invalid URL in destination_url: " << destination_url;
 
-  client_->keyMessage(current_key_system_,
+  client_->keyMessage(WebString::fromUTF8(current_key_system_),
                       WebString::fromUTF8(session_id),
                       message.empty() ? NULL : &message[0],
                       message.size(),

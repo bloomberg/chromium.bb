@@ -244,18 +244,18 @@ class WebMediaPlayerImpl
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
   MediaKeyException GenerateKeyRequestInternal(
-      const blink::WebString& key_system,
+      const std::string& key_system,
       const unsigned char* init_data,
       unsigned init_data_length);
-  MediaKeyException AddKeyInternal(const blink::WebString& key_system,
+  MediaKeyException AddKeyInternal(const std::string& key_system,
                                    const unsigned char* key,
                                    unsigned key_length,
                                    const unsigned char* init_data,
                                    unsigned init_data_length,
-                                   const blink::WebString& session_id);
+                                   const std::string& session_id);
   MediaKeyException CancelKeyRequestInternal(
-      const blink::WebString& key_system,
-      const blink::WebString& session_id);
+      const std::string& key_system,
+      const std::string& session_id);
 
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
@@ -292,7 +292,7 @@ class WebMediaPlayerImpl
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.
-  blink::WebString current_key_system_;
+  std::string current_key_system_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_;
