@@ -213,7 +213,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   ScopedPrinterHandle printer_handle;
-  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
+  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name))) {
     LOG(WARNING) << "Failed to open printer, error = " << GetLastError();
     return false;
   }
@@ -226,8 +226,9 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   DCHECK_EQ(name, base::UTF8ToUTF16(printer_name));
 
   PrinterSemanticCapsAndDefaults caps;
-  UserDefaultDevMode user_settings;
-  if (user_settings.Init(printer_handle)) {
+
+  scoped_ptr<DEVMODE[]> user_settings = CreateDevMode(printer_handle, NULL);
+  if (user_settings) {
     if (user_settings.get()->dmFields & DM_COLOR)
       caps.color_default = (user_settings.get()->dmColor == DMCOLOR_COLOR);
 
@@ -312,7 +313,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       printer_info->caps_mime_type = "text/xml";
     }
     ScopedPrinterHandle printer_handle;
-    if (printer_handle.OpenPrinter(printer_name_wide.c_str())) {
+    if (printer_handle.OpenPrinter(printer_name_wide)) {
       scoped_ptr<DEVMODE[]> devmode_out(CreateDevMode(printer_handle, NULL));
       if (!devmode_out)
         return false;
@@ -343,7 +344,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
+  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name))) {
     return std::string();
   }
   return GetDriverInfo(printer);
@@ -351,7 +352,7 @@ std::string PrintBackendWin::GetPrinterDriverInfo(
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   ScopedPrinterHandle printer_handle;
-  return printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str());
+  return printer_handle.OpenPrinter(base::UTF8ToWide(printer_name));
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(

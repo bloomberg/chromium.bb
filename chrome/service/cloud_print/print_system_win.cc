@@ -756,7 +756,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
   std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
-  printer_handle.OpenPrinter(printer_name_wide.c_str());
+  printer_handle.OpenPrinter(printer_name_wide);
   DCHECK(printer_handle.IsValid());
   bool ret = false;
   if (printer_handle.IsValid()) {
