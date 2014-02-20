@@ -520,8 +520,8 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->loading = contents->IsLoading();
   data->crashed_status = contents->GetCrashedStatus();
   data->incognito = contents->GetBrowserContext()->IsOffTheRecord();
-  data->show_icon = favicon_tab_helper->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
+  data->show_icon = data->mini || favicon_tab_helper->ShouldDisplayFavicon();
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
   data->media_state = chrome::GetTabMediaStateForContents(contents);
