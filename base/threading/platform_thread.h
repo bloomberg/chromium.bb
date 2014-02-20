@@ -53,15 +53,15 @@ class PlatformThreadHandle {
         id_(id) {
   }
 
-  bool is_equal(const PlatformThreadHandle& other) {
+  bool is_equal(const PlatformThreadHandle& other) const {
     return handle_ == other.handle_;
   }
 
-  bool is_null() {
+  bool is_null() const {
     return !handle_;
   }
 
-  Handle platform_handle() {
+  Handle platform_handle() const {
     return handle_;
   }
 
