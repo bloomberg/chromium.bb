@@ -6359,3 +6359,13 @@
    fun:_ZN7WebCore11ThreadState10visitRootsEPNS_7VisitorE
    fun:_ZN7WebCore4Heap14collectGarbageENS_11ThreadState10StackStateENS0_6GCTypeE
 }
+{
+   bug_345432
+   Memcheck:Leak
+   ...
+   fun:_ZN7content14GpuChannelHost7ConnectERKN3IPC13ChannelHandleE
+   fun:_ZN7content14GpuChannelHost6CreateEPNS_21GpuChannelHostFactoryERKN3gpu7GPUInfoERKN3IPC13ChannelHandleE
+   fun:_ZN7content28BrowserGpuChannelHostFactory21GpuChannelEstablishedEv
+   fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest12FinishOnMainEv
+   fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest4WaitEv
+}
