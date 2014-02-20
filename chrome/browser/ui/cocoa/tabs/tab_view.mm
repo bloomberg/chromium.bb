@@ -329,8 +329,9 @@ const CGFloat kRapidCloseDist = 2.5;
   CGRect maskBounds = CGRectMake(0, 0, maskCacheWidth_, kMaskHeight);
   CGContextClipToMask(cgContext, maskBounds, mask);
 
-  bool selected = [self state];
-  if (selected) {
+  // There is only 1 active tab at a time.
+  // It has a different fill color which draws over the separator line.
+  if ([controller_ active]) {
     [self drawFillForActiveTab:dirtyRect];
     return;
   }
@@ -339,6 +340,14 @@ const CGFloat kRapidCloseDist = 2.5;
   // two pixels high in both lodpi and hidpi.
   if (dirtyRect.origin.y < 1)
     dirtyRect.origin.y = 2 * [self cr_lineWidth];
+
+  // There can be multiple selected tabs.
+  // They have the same fill color as the active tab, but do not draw over
+  // the separator.
+  if ([controller_ selected]) {
+    [self drawFillForActiveTab:dirtyRect];
+    return;
+  }
 
   // Draw the tab background.
   NSColor* backgroundImageColor = [self backgroundColorForSelected:NO];
