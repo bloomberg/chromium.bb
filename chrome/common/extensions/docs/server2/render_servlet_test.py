@@ -95,14 +95,6 @@ class RenderServletTest(unittest.TestCase):
     self.assertTrue(len(response.content) >
                     len(ReadFile('%s%s.html' % (PUBLIC_TEMPLATES, html_file))))
 
-  def testDevelopersGoogleComRedirect(self):
-    def assert_redirect(request_path):
-      response = self._Render(request_path)
-      self.assertEqual(('//developers.google.com/chrome', False),
-                       response.GetRedirect())
-    assert_redirect('')
-    assert_redirect('index')
-
   def testIndexRedirect(self):
     response = self._Render('extensions')
     self.assertEqual(('/extensions/index', False),

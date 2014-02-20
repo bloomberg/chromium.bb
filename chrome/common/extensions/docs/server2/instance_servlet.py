@@ -35,11 +35,16 @@ class InstanceServletRenderServletDelegate(RenderServlet.Delegate):
   def CreateServerInstance(self):
     object_store_creator = ObjectStoreCreator(start_empty=False)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
-    # In production have offline=True so that we can catch cron errors.  In
+    # In production have offline=True so that we can catch cron errors. In
     # development it's annoying to have to run the cron job, so offline=False.
+    #
+    # XXX(kalman): The above comment is not true, I have temporarily disabled
+    # this while the cron is running out of memory and not reliably finishing.
+    # In the meantime, live dangerously and fetch content if it's not there.
+    # I.e. never offline. See http://crbug.com/345361.
     host_file_system_provider = self._delegate.CreateHostFileSystemProvider(
         object_store_creator,
-        offline=not IsDevServer())
+        offline=False)  # XXX(kalman): condition should be "not IsDevServer()"
     github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
         object_store_creator)
     return ServerInstance(object_store_creator,

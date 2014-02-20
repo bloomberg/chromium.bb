@@ -30,8 +30,10 @@ class InstanceServletTest(unittest.TestCase):
   It should never return a 500 (i.e. crash).
   '''
 
+  # XXX(kalman): Disabled, see comment in instance_servlet.py and
+  # http://crbug.com/345361.
   @DisableLogging('warning')
-  def testHostFileSystemNotAccessed(self):
+  def DISABLED_testHostFileSystemNotAccessed(self):
     delegate = _TestDelegate(FailOnAccessFileSystem)
     constructor = InstanceServlet.GetConstructor(delegate_for_test=delegate)
     def test_path(path, status=404):
