@@ -16,7 +16,8 @@ var closedSocket;
 var closeCode;
 document.childWebSocket = null;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/close-on-unload");
+document.wsUrl = "ws://127.0.0.1:8880/close-on-unload?p=close-on-unload-reference-in-parent.html";
+var ws = new WebSocket(document.wsUrl);
 ws.onopen = function()
 {
     debug("PASS ws on master document is ready.");

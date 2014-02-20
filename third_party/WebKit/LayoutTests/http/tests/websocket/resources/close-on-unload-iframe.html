@@ -6,7 +6,7 @@
 <div id="description"></div>
 <div id="console"></div>
 <script type="text/javascript">
-var ws = new WebSocket("ws://127.0.0.1:8880/close-on-unload");
+var ws = new WebSocket(parent.document.wsUrl);
 ws.onopen = function()
 {
     // Send "socket1" to server, so that "socket1" will be broadcasted to

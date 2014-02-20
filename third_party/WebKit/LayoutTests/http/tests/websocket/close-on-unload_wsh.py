@@ -27,11 +27,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import cgi
 import json
 from mod_pywebsocket import msgutil
 
 
-# we don't use set() here, because python on mac tiger doesn't support it.
 connections = {}
 
 
@@ -41,18 +41,28 @@ def web_socket_do_extra_handshake(request):
 
 def web_socket_transfer_data(request):
     global connections
-    connections[request] = True
+    r = request.ws_resource.split('?', 1)
+    if len(r) == 1:
+        return
+    param = cgi.parse_qs(r[1])
+    if "p" not in param:
+        return
+    page_group = param["p"][0]
+    if page_group in connections:
+        connections[page_group].add(request)
+    else:
+        connections[page_group] = set([request])
     message = None
     dataToBroadcast = {}
     try:
         message = msgutil.receive_message(request)
         # notify to client that message is received by server.
         msgutil.send_message(request, message)
-        msgutil.receive_message(request)  # wait, and exception by close.
+        msgutil.receive_message(request)
         dataToBroadcast["message"] = message
         dataToBroadcast["closeCode"] = str(request.ws_close_code)
     finally:
         # request is closed. notify this dataToBroadcast to other WebSockets.
-        del connections[request]
-        for ws in connections.keys():
+        connections[page_group].remove(request)
+        for ws in connections[page_group]:
             msgutil.send_message(ws, json.dumps(dataToBroadcast))

@@ -6,7 +6,7 @@
 <div id="description"></div>
 <div id="console"></div>
 <script type="text/javascript">
-parent.document.childWebSocket = new WebSocket("ws://127.0.0.1:8880/close-on-unload");
+parent.document.childWebSocket = new WebSocket(parent.document.wsUrl);
 
 parent.document.childWebSocket.onopen = function()
 {
