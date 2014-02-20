@@ -8,10 +8,10 @@
 # ======================================================================
 # failures in phase sel_ldr
 # ======================================================================
-# alignment issues using __alignof__ (or stack alignment)
-alloca-1.c arm,O0f
-alloca-1.c x86-64
-alloca-1.c x86-32
+# alloca() in C is currently not guaranteed to return an aligned
+# address with Clang/LLVM.
+# See: https://code.google.com/p/nativeclient/issues/detail?id=3795
+alloca-1.c
 # setjmp/longjmp TODO
 built-in-setjmp.c
 # ??? (funny shenanigans with bitfields)
