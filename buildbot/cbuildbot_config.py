@@ -637,7 +637,7 @@ class HWTestConfig(object):
 
 
 def PGORecordTest(**kwargs):
-  default_dict = dict(pool=constants.HWTEST_CHROME_PFQ_POOL,
+  default_dict = dict(pool=constants.HWTEST_SUITES_POOL,
                       critical=True, num=1, file_bugs=False)
   # Allows kwargs overrides to default_dict for cq.
   default_dict.update(kwargs)
