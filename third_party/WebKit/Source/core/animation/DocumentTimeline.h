@@ -82,10 +82,9 @@ public:
     double currentTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
-    const Vector<RefPtr<Player> >& currentPlayers() const { return m_currentPlayers; }
 
-    void setHasPlayerNeedingUpdate();
-    bool hasPlayerNeedingUpdate() const { return m_hasPlayerNeedingUpdate; }
+    void setOutdatedPlayer(Player*);
+    bool hasOutdatedPlayer() const { return m_hasOutdatedPlayer; }
 
     void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
     {
@@ -104,9 +103,11 @@ private:
     double m_zeroTime;
     Document* m_document;
     Timer<DocumentTimeline> m_eventDistpachTimer;
-    Vector<RefPtr<Player> > m_currentPlayers;
+    // Players which will be updated on the next frame
+    // i.e. current, in effect, or had timing changed
+    HashSet<RefPtr<Player> > m_playersNeedingUpdate;
     HashSet<Player*> m_players;
-    bool m_hasPlayerNeedingUpdate;
+    bool m_hasOutdatedPlayer;
 
     void eventDispatchTimerFired(Timer<DocumentTimeline>*);
     void wake();

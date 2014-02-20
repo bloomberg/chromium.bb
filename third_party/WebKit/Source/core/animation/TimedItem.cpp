@@ -91,7 +91,7 @@ void TimedItem::updateSpecifiedTiming(const Timing& timing)
     m_specified = timing;
     invalidate();
     if (m_player)
-        m_player->setNeedsUpdate();
+        m_player->setOutdated();
 }
 
 void TimedItem::updateInheritedTime(double inheritedTime) const
@@ -179,9 +179,9 @@ const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
 {
     if (!m_player)
         return m_calculated;
-    if (m_player->needsUpdate())
+    if (m_player->outdated())
         m_player->update();
-    ASSERT(!m_player->needsUpdate());
+    ASSERT(!m_player->outdated());
     return m_calculated;
 }
 

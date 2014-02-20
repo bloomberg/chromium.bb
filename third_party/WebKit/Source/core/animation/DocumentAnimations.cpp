@@ -80,7 +80,7 @@ void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (element.document().timeline()->hasPlayerNeedingUpdate()) {
+    if (element.document().timeline()->hasOutdatedPlayer()) {
         updateAnimationTiming(element.document());
         return;
     }

@@ -51,7 +51,7 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_paused(false)
     , m_held(false)
     , m_isPausedForTesting(false)
-    , m_needsUpdate(false)
+    , m_outdated(false)
 {
     if (m_content) {
         if (m_content->player())
@@ -106,7 +106,7 @@ void Player::updateTimingState(double newCurrentTime)
         m_holdTime = nullValue();
         m_storedTimeLag = currentTimeWithoutLag() - newCurrentTime;
     }
-    setNeedsUpdate();
+    setOutdated();
 }
 
 void Player::updateCurrentTimingState()
@@ -231,11 +231,11 @@ void Player::setPlaybackRate(double playbackRate)
     updateTimingState(storedCurrentTime);
 }
 
-void Player::setNeedsUpdate()
+void Player::setOutdated()
 {
-    m_needsUpdate = true;
+    m_outdated = true;
     if (m_timeline)
-        m_timeline->setHasPlayerNeedingUpdate();
+        m_timeline->setOutdatedPlayer(this);
 }
 
 bool Player::maybeStartAnimationOnCompositor()
@@ -268,20 +268,20 @@ bool Player::update()
         return false;
 
     double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
-    m_needsUpdate = false;
+    m_outdated = false;
 
     if (!m_content)
         return false;
 
     m_content->updateInheritedTime(inheritedTime);
 
-    ASSERT(!m_needsUpdate);
+    ASSERT(!m_outdated);
     return m_content->isCurrent() || m_content->isInEffect();
 }
 
 double Player::timeToEffectChange()
 {
-    ASSERT(!m_needsUpdate);
+    ASSERT(!m_outdated);
     if (!m_content || !m_playbackRate)
         return std::numeric_limits<double>::infinity();
     if (m_playbackRate > 0)

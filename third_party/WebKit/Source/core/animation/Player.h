@@ -89,8 +89,8 @@ public:
     // This should only be used for CSS
     void unpause();
 
-    void setNeedsUpdate();
-    bool needsUpdate() { return m_needsUpdate; }
+    void setOutdated();
+    bool outdated() { return m_outdated; }
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
@@ -119,7 +119,8 @@ private:
     bool m_held;
     bool m_isPausedForTesting;
 
-    bool m_needsUpdate;
+    // This indicates timing information relevant to the player has changed
+    bool m_outdated;
 };
 
 } // namespace
