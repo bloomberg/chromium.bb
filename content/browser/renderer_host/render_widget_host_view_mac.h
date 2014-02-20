@@ -398,8 +398,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // someone (other than superview) has retained |cocoa_view_|.
   RenderWidgetHostImpl* render_widget_host_;
 
-  // This is true when we are currently painting and thus should handle extra
-  // paint requests by expanding the invalid rect rather than actually painting.
+  // This is true when we are currently painting. In the legacy renderer, this
+  // means we should handle extra paint requests by expanding the invalid rect
+  // rather than actually painting. In hardware compositing it means that we
+  // are inside a draw callback and should not wait for frames to draw before
+  // acknowledging them.
   bool about_to_validate_and_paint_;
 
   // This is true when we have already scheduled a call to
@@ -491,9 +494,23 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void SendPendingLatencyInfoToHost();
   void TickPendingLatencyInfoDelay();
 
+  void SendPendingSwapAck();
+
  private:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
+
+  struct PendingSwapAck {
+    PendingSwapAck(int32 route_id, int gpu_host_id, int32 renderer_id)
+        : route_id(route_id),
+          gpu_host_id(gpu_host_id),
+          renderer_id(renderer_id) {}
+    int32 route_id;
+    int gpu_host_id;
+    int32 renderer_id;
+  };
+  scoped_ptr<PendingSwapAck> pending_swap_ack_;
+  void AddPendingSwapAck(int32 route_id, int gpu_host_id, int32 renderer_id);
 
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
