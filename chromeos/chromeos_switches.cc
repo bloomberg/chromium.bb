@@ -130,10 +130,6 @@ const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 const char kFileManagerEnableNewAudioPlayer[] =
     "file-manager-enable-new-audio-player";
 
-// Enables the multi-profile support in the Files.app.
-const char kFileManagerEnableMultiProfile[] =
-    "file-manager-enable-multi-profile";
-
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[]            = "first-exec-after-boot";
