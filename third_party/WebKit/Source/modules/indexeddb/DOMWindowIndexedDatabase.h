@@ -27,6 +27,7 @@
 #define DOMWindowIndexedDatabase_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "modules/indexeddb/IDBFactoryBackendInterface.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {

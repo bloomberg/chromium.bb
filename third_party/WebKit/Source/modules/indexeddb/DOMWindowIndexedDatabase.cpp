@@ -30,7 +30,6 @@
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/indexeddb/IDBFactory.h"
-#include "modules/indexeddb/PageGroupIndexedDatabase.h"
 
 namespace WebCore {
 
@@ -90,7 +89,7 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
         return 0;
 
     if (!m_idbFactory)
-        m_idbFactory = IDBFactory::create(PageGroupIndexedDatabase::from(page->group())->factoryBackend());
+        m_idbFactory = IDBFactory::create(IDBFactoryBackendInterface::create().get());
     return m_idbFactory.get();
 }
 

@@ -398,8 +398,6 @@
       'indexeddb/IndexedDB.h',
       'indexeddb/InspectorIndexedDBAgent.cpp',
       'indexeddb/InspectorIndexedDBAgent.h',
-      'indexeddb/PageGroupIndexedDatabase.cpp',
-      'indexeddb/PageGroupIndexedDatabase.h',
       'indexeddb/WebIDBCallbacksImpl.cpp',
       'indexeddb/WebIDBCallbacksImpl.h',
       'indexeddb/WebIDBDatabaseCallbacksImpl.cpp',
