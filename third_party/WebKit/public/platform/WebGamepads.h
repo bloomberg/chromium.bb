@@ -52,7 +52,7 @@ public:
 };
 
 #if BLINK_IMPLEMENTATION
-COMPILE_ASSERT(sizeof(WebGamepads) == 1864, WebGamepads_has_wrong_size);
+COMPILE_ASSERT(sizeof(WebGamepads) == 2120, WebGamepads_has_wrong_size);
 #endif
 
 #pragma pack(pop)

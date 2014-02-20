@@ -47,7 +47,9 @@ static void sampleGamepads(GamepadList* into)
                 gamepad = Gamepad::create();
             gamepad->id(webGamepad.id);
             gamepad->index(i);
+            gamepad->connected(webGamepad.connected);
             gamepad->timestamp(webGamepad.timestamp);
+            gamepad->mapping(webGamepad.mapping);
             gamepad->axes(webGamepad.axesLength, webGamepad.axes);
             gamepad->buttons(webGamepad.buttonsLength, webGamepad.buttons);
             into->set(i, gamepad);

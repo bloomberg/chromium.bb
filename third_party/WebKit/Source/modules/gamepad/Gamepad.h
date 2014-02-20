@@ -28,6 +28,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
+#include "modules/gamepad/GamepadButton.h"
+#include "public/platform/WebGamepad.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -44,6 +46,7 @@ public:
     ~Gamepad();
 
     typedef Vector<float> FloatVector;
+    typedef Vector<GamepadButton> ButtonVector;
 
     const String& id() const { return m_id; }
     void id(const String& id) { m_id = id; }
@@ -51,14 +54,20 @@ public:
     unsigned index() const { return m_index; }
     void index(unsigned val) { m_index = val; }
 
+    bool connected() const { return m_connected; }
+    void connected(const bool val) { m_connected = val; }
+
     unsigned long long timestamp() const { return m_timestamp; }
     void timestamp(unsigned long long val) { m_timestamp = val; }
+
+    const String& mapping() const { return m_mapping; }
+    void mapping(const String& val) { m_mapping = val; }
 
     const FloatVector& axes() const { return m_axes; }
     void axes(unsigned count, float* data);
 
-    const FloatVector& buttons() const { return m_buttons; }
-    void buttons(unsigned count, float* data);
+    const GamepadButtonVector& buttons() const { return m_buttons; }
+    void buttons(unsigned count, blink::WebGamepadButton* data);
 
     void trace(Visitor*);
 
@@ -66,9 +75,11 @@ private:
     Gamepad();
     String m_id;
     unsigned m_index;
+    bool m_connected;
     unsigned long long m_timestamp;
+    String m_mapping;
     FloatVector m_axes;
-    FloatVector m_buttons;
+    GamepadButtonVector m_buttons;
 };
 
 } // namespace WebCore
