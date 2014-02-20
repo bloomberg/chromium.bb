@@ -5848,5 +5848,119 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, NoIdleAnimations) {
   EXPECT_FALSE(did_request_redraw_);
 }
 
+class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
+ public:
+  void SetupVirtualViewportLayers(const gfx::Size& content_size,
+                                  const gfx::Size& outer_viewport,
+                                  const gfx::Size& inner_viewport) {
+    LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+    const int kOuterViewportClipLayerId = 6;
+    const int kOuterViewportScrollLayerId = 7;
+    const int kInnerViewportScrollLayerId = 2;
+    const int kInnerViewportClipLayerId = 4;
+    const int kPageScaleLayerId = 5;
+
+    scoped_ptr<LayerImpl> inner_scroll =
+        LayerImpl::Create(layer_tree_impl, kInnerViewportScrollLayerId);
+    inner_scroll->SetIsContainerForFixedPositionLayers(true);
+    inner_scroll->SetScrollOffset(gfx::Vector2d());
+
+    scoped_ptr<LayerImpl> inner_clip =
+        LayerImpl::Create(layer_tree_impl, kInnerViewportClipLayerId);
+    inner_clip->SetBounds(inner_viewport);
+
+    scoped_ptr<LayerImpl> page_scale =
+        LayerImpl::Create(layer_tree_impl, kPageScaleLayerId);
+
+    inner_scroll->SetScrollClipLayer(inner_clip->id());
+    inner_scroll->SetBounds(outer_viewport);
+    inner_scroll->SetContentBounds(outer_viewport);
+    inner_scroll->SetPosition(gfx::PointF());
+    inner_scroll->SetAnchorPoint(gfx::PointF());
+
+    scoped_ptr<LayerImpl> outer_clip =
+        LayerImpl::Create(layer_tree_impl, kOuterViewportClipLayerId);
+    outer_clip->SetBounds(outer_viewport);
+    outer_clip->SetIsContainerForFixedPositionLayers(true);
+
+    scoped_ptr<LayerImpl> outer_scroll =
+        LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);
+    outer_scroll->SetScrollClipLayer(outer_clip->id());
+    outer_scroll->SetScrollOffset(gfx::Vector2d());
+    outer_scroll->SetBounds(content_size);
+    outer_scroll->SetContentBounds(content_size);
+    outer_scroll->SetPosition(gfx::PointF());
+    outer_scroll->SetAnchorPoint(gfx::PointF());
+
+    scoped_ptr<LayerImpl> contents =
+        LayerImpl::Create(layer_tree_impl, 8);
+    contents->SetDrawsContent(true);
+    contents->SetBounds(content_size);
+    contents->SetContentBounds(content_size);
+    contents->SetPosition(gfx::PointF());
+    contents->SetAnchorPoint(gfx::PointF());
+
+    outer_scroll->AddChild(contents.Pass());
+    outer_clip->AddChild(outer_scroll.Pass());
+    inner_scroll->AddChild(outer_clip.Pass());
+    page_scale->AddChild(inner_scroll.Pass());
+    inner_clip->AddChild(page_scale.Pass());
+
+    layer_tree_impl->SetRootLayer(inner_clip.Pass());
+    layer_tree_impl->SetViewportLayersFromIds(kPageScaleLayerId,
+        kInnerViewportScrollLayerId, kOuterViewportScrollLayerId);
+
+    host_impl_->active_tree()->DidBecomeActive();
+  }
+};
+
+TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
+  gfx::Size content_size = gfx::Size(100, 160);
+  gfx::Size outer_viewport = gfx::Size(50, 80);
+  gfx::Size inner_viewport = gfx::Size(25, 40);
+
+  SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
+
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+  DrawFrame();
+  {
+    gfx::Vector2dF inner_expected;
+    gfx::Vector2dF outer_expected;
+    EXPECT_VECTOR_EQ(inner_expected, inner_scroll->TotalScrollOffset());
+    EXPECT_VECTOR_EQ(outer_expected, outer_scroll->TotalScrollOffset());
+
+    // Make sure the fling goes to the outer viewport first
+    EXPECT_EQ(InputHandler::ScrollStarted,
+        host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+    EXPECT_EQ(InputHandler::ScrollStarted, host_impl_->FlingScrollBegin());
+
+    gfx::Vector2d scroll_delta(inner_viewport.width(), inner_viewport.height());
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    outer_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
+
+    host_impl_->ScrollEnd();
+
+    EXPECT_VECTOR_EQ(inner_expected, inner_scroll->TotalScrollOffset());
+    EXPECT_VECTOR_EQ(outer_expected, outer_scroll->TotalScrollOffset());
+
+    // Fling past the outer viewport boundry, make sure inner viewport scrolls.
+    EXPECT_EQ(InputHandler::ScrollStarted,
+        host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+    EXPECT_EQ(InputHandler::ScrollStarted, host_impl_->FlingScrollBegin());
+
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    outer_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
+
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    inner_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
+
+    host_impl_->ScrollEnd();
+
+    EXPECT_VECTOR_EQ(inner_expected, inner_scroll->TotalScrollOffset());
+    EXPECT_VECTOR_EQ(outer_expected, outer_scroll->TotalScrollOffset());
+  }
+}
+
 }  // namespace
 }  // namespace cc

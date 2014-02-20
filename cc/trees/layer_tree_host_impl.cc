@@ -2240,7 +2240,9 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     did_scroll_x |= did_move_layer_x;
     did_scroll_y |= did_move_layer_y;
     if (!did_move_layer_x && !did_move_layer_y) {
-      if (should_bubble_scrolls_ || !did_lock_scrolling_layer_)
+      // Scrolls should always bubble between the outer and inner viewports
+      if (should_bubble_scrolls_ || !did_lock_scrolling_layer_ ||
+          layer_impl == OuterViewportScrollLayer())
         continue;
       else
         break;
