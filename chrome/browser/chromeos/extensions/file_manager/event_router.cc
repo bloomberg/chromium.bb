@@ -38,6 +38,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -120,6 +121,7 @@ void JobInfoToTransferStatus(
 }
 
 // Checks for availability of the Google+ Photos app.
+// TODO(mtomasz): Replace with crbug.com/341902 solution.
 bool IsGooglePhotosInstalled(Profile *profile) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -129,14 +131,36 @@ bool IsGooglePhotosInstalled(Profile *profile) {
   // Google+ Photos uses several ids for different channels. Therefore, all of
   // them should be checked.
   const std::string kGooglePlusPhotosIds[] = {
-    "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
-    "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
-    "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
+      "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
+      "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
+      "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
   };
 
   for (size_t i = 0; i < arraysize(kGooglePlusPhotosIds); ++i) {
     if (service->GetExtensionById(kGooglePlusPhotosIds[i],
                                   false /* include_disable */) != NULL)
+      return true;
+  }
+
+  return false;
+}
+
+// Checks if the Recovery Tool is running. This is a temporary solution.
+// TODO(mtomasz): Replace with crbug.com/341902 solution.
+bool IsRecoveryToolRunning(Profile* profile) {
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(profile);
+  if (!extension_prefs)
+    return false;
+
+  const std::string kRecoveryToolIds[] = {
+      "kkebgepbbgbcmghedmmdfcbdcodlkngh",  // Recovert tool staging
+      "jndclpdbaamdhonoechobihbbiimdgai"   // Recovery tool prod
+  };
+
+  for (size_t i = 0; i < arraysize(kRecoveryToolIds); ++i) {
+    const std::string extension_id = kRecoveryToolIds[i];
+    if (extension_prefs->IsExtensionRunning(extension_id))
       return true;
   }
 
@@ -690,18 +714,22 @@ void EventRouter::ShowRemovableDeviceInFileManager(
       profile_ != ProfileManager::GetActiveUserProfile())
     return;
 
+  // Do not pop-up the File Manager, if the recovery tool is running.
+  if (IsRecoveryToolRunning(profile_))
+    return;
+
   // According to DCF (Design rule of Camera File system) by JEITA / CP-3461
   // cameras should have pictures located in the DCIM root directory.
   const base::FilePath dcim_path = mount_path.Append(
       FILE_PATH_LITERAL("DCIM"));
 
-  // If there is no DCIM folder or an external photo importer is not available,
-  // then launch Files.app.
+  // If there is a DCIM folder and Google+ Photos is installed, then do not
+  // launch Files.app.
   DirectoryExistsOnUIThread(
       dcim_path,
-      IsGooglePhotosInstalled(profile_) ?
-      base::Bind(&base::DoNothing) :
-      base::Bind(&util::OpenRemovableDrive, profile_, mount_path),
+      IsGooglePhotosInstalled(profile_)
+          ? base::Bind(&base::DoNothing)
+          : base::Bind(&util::OpenRemovableDrive, profile_, mount_path),
       base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
 }
 
