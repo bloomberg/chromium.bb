@@ -888,11 +888,6 @@ const char kForceFirstRun[]                 = "force-first-run";
 // experiment ids.
 const char kForceVariationIds[]             = "force-variation-ids";
 
-// Tries to load cloud policy for every signed in user, regardless of whether
-// they are a dasher user or not. Used to allow any GAIA account to be used for
-// testing the cloud policy framework.
-const char kForceLoadCloudPolicy[]          = "force-load-cloud-policy";
-
 // Specifies an alternate URL to use for speaking to Google. Useful for testing.
 const char kGoogleBaseURL[]                 = "google-base-url";
 

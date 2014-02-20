@@ -161,11 +161,9 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::OnGetTokenFailure(
 
 CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
     CloudPolicyClient* client,
-    bool should_force_load_policy,
     enterprise_management::DeviceRegisterRequest::Type registration_type)
     : context_(client->GetRequestContext()),
       client_(client),
-      should_force_load_policy_(should_force_load_policy),
       registration_type_(registration_type) {
   DCHECK(context_);
   DCHECK(client_);
@@ -248,7 +246,7 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoFailure(
 void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
     const base::DictionaryValue* data) {
   user_info_fetcher_.reset();
-  if (!data->HasKey(kGetHostedDomainKey) && !should_force_load_policy_) {
+  if (!data->HasKey(kGetHostedDomainKey)) {
     DVLOG(1) << "User not from a hosted domain - skipping registration";
     RequestCompleted();
     return;

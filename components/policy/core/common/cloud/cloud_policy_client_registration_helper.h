@@ -32,12 +32,8 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
       public CloudPolicyClient::Observer {
  public:
   // |context| and |client| are not owned and must outlive this object.
-  // If |should_force_load_policy| then the cloud policy registration is
-  // performed even if Gaia indicates that this account doesn't have management
-  // enabled.
   CloudPolicyClientRegistrationHelper(
       CloudPolicyClient* client,
-      bool should_force_load_policy,
       enterprise_management::DeviceRegisterRequest::Type registration_type);
   virtual ~CloudPolicyClientRegistrationHelper();
 
@@ -103,7 +99,6 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
 
   net::URLRequestContextGetter* context_;
   CloudPolicyClient* client_;
-  bool should_force_load_policy_;
   enterprise_management::DeviceRegisterRequest::Type registration_type_;
   base::Closure callback_;
 

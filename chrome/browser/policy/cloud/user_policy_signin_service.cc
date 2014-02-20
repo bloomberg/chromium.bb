@@ -89,7 +89,6 @@ void UserPolicySigninService::RegisterForPolicy(
   // this user).
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       policy_client.get(),
-      ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistrationWithLoginToken(
       oauth2_refresh_token,
@@ -176,7 +175,6 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // policy fetch will automatically happen.
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       policy_manager()->core()->client(),
-      ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistration(
       oauth2_token_service_,

@@ -142,12 +142,6 @@ void UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown() {
     manager->core()->service()->RemoveObserver(this);
 }
 
-// static
-bool UserPolicySigninServiceBase::ShouldForceLoadPolicy() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceLoadCloudPolicy);
-}
-
 scoped_ptr<CloudPolicyClient>
 UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
     const std::string& username) {
@@ -173,9 +167,6 @@ bool UserPolicySigninServiceBase::ShouldLoadPolicyForUser(
     const std::string& username) {
   if (username.empty())
     return false;  // Not signed in.
-
-  if (ShouldForceLoadPolicy())
-    return true;
 
   return !BrowserPolicyConnector::IsNonEnterpriseUser(username);
 }

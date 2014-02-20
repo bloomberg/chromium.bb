@@ -72,10 +72,8 @@ void UserPolicySigninService::RegisterForPolicy(
 
   // Fire off the registration process. Callback keeps the CloudPolicyClient
   // alive for the length of the registration process.
-  const bool force_load_policy = false;
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       policy_client.get(),
-      force_load_policy,
       GetRegistrationType()));
   registration_helper_->StartRegistration(
       oauth2_token_service_,

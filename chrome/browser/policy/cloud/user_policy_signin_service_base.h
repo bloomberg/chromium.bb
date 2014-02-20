@@ -105,10 +105,6 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
     return system_request_context_;
   }
 
-  // Returns true if policy should be loaded even when Gaia reports that the
-  // account doesn't have management enabled.
-  static bool ShouldForceLoadPolicy();
-
   // Returns a CloudPolicyClient to perform a registration with the DM server,
   // or NULL if |username| shouldn't register for policy management.
   scoped_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
