@@ -616,6 +616,7 @@ class GitWrapper(SCMWrapper):
       deps_revision = default_rev
     if deps_revision.startswith('refs/heads/'):
       deps_revision = deps_revision.replace('refs/heads/', self.remote + '/')
+    deps_revision = self.GetUsableRev(deps_revision, options)
 
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()

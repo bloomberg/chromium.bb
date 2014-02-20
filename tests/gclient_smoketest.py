@@ -1000,47 +1000,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
-  def testRevertAndStatus(self):
-    if not self.enabled:
-      return
-    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    # Tested in testSync.
-    self.gclient(['sync', '--deps', 'mac'])
-    write(join(self.root_dir, 'src', 'repo2', 'hi'), 'Hey!')
-
-    expected1 = ('running', os.path.join(self.root_dir, 'src'))
-    expected2 = ('running', os.path.join(expected1[1], 'repo2'))
-    expected3 = ('running', os.path.join(expected2[1], 'repo_renamed'))
-    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
-                            [expected1, expected2, expected3])
-    # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
-    # files.
-    self.assertEquals(3, len(out))
-
-    # Revert implies --force implies running hooks without looking at pattern
-    # matching. For each expected path, 'git reset' and 'git clean' are run, so
-    # there should be two results for each. The last two results should reflect
-    # writing git_hooked1 and git_hooked2.
-    expected4 = ('running', self.root_dir)
-    out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
-                            [expected1, expected1,
-                             expected2, expected2,
-                             expected3, expected3,
-                             expected4, expected4])
-    self.assertEquals(8, len(out))
-    tree = self.mangle_git_tree(('repo_1@2', 'src'),
-                                ('repo_2@1', 'src/repo2'),
-                                ('repo_3@2', 'src/repo2/repo_renamed'))
-    tree['src/git_hooked1'] = 'git_hooked1'
-    tree['src/git_hooked2'] = 'git_hooked2'
-    self.assertTree(tree)
-
-    results = self.gclient(['status', '--deps', 'mac', '--jobs', '1'])
-    out = results[0].splitlines(False)
-    # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
-    # files.
-    self.assertEquals(6, len(out))
-
   def testRunHooks(self):
     if not self.enabled:
       return
@@ -1169,6 +1128,100 @@ class GClientSmokeGIT(GClientSmokeBase):
           })
     self.check((out, '', 0), results)
 
+
+class GClientSmokeGITMutates(GClientSmokeBase):
+  """testRevertAndStatus mutates the git repo so move it to its own suite."""
+  def setUp(self):
+    super(GClientSmokeGITMutates, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git()
+
+  def testRevertAndStatus(self):
+    if not self.enabled:
+      return
+
+    # Commit new change to repo to make repo_2's hash use a custom_var.
+    cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
+    repo_2_hash = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
+    new_deps = cur_deps.replace('repo_2@%s\'' % repo_2_hash,
+                                'repo_2@\' + Var(\'r2hash\')')
+    new_deps = 'vars = {\'r2hash\': \'%s\'}\n%s' % (repo_2_hash, new_deps)
+    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=W0212
+      'DEPS': new_deps,
+      'origin': 'git/repo_1@3\n',
+    })
+
+    config_template = (
+"""solutions = [{
+  "name"        : "src",
+  "url"         : "%(git_base)srepo_1",
+  "deps_file"   : "DEPS",
+  "managed"     : True,
+  "custom_vars" : %(custom_vars)s,
+}]""")
+
+    self.gclient(['config', '--spec', config_template % {
+      'git_base': self.git_base,
+      'custom_vars': {}
+    }])
+
+    # Tested in testSync.
+    self.gclient(['sync', '--deps', 'mac'])
+    write(join(self.root_dir, 'src', 'repo2', 'hi'), 'Hey!')
+
+    expected1 = ('running', os.path.join(self.root_dir, 'src'))
+    expected2 = ('running', os.path.join(expected1[1], 'repo2'))
+    expected3 = ('running', os.path.join(expected2[1], 'repo_renamed'))
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
+                            [expected1, expected2, expected3])
+    # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
+    # files.
+    self.assertEquals(3, len(out))
+
+    # Revert implies --force implies running hooks without looking at pattern
+    # matching. For each expected path, 'git reset' and 'git clean' are run, so
+    # there should be two results for each. The last two results should reflect
+    # writing git_hooked1 and git_hooked2.
+    expected4 = ('running', self.root_dir)
+    out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
+                            [expected1, expected1,
+                             expected2, expected2,
+                             expected3, expected3,
+                             expected4, expected4])
+    self.assertEquals(8, len(out))
+    tree = self.mangle_git_tree(('repo_1@3', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
+    # Make a new commit object in the origin repo, to force reset to fetch.
+    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=W0212
+      'origin': 'git/repo_2@3\n',
+    })
+
+    self.gclient(['config', '--spec', config_template % {
+      'git_base': self.git_base,
+      'custom_vars': {'r2hash': self.FAKE_REPOS.git_hashes['repo_2'][-1][0] }
+    }])
+    out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
+                            [expected1, expected1,
+                             expected2, expected2,
+                             expected3, expected3,
+                             expected4, expected4])
+    self.assertEquals(8, len(out))
+    tree = self.mangle_git_tree(('repo_1@3', 'src'),
+                                ('repo_2@3', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
+    results = self.gclient(['status', '--deps', 'mac', '--jobs', '1'])
+    out = results[0].splitlines(False)
+    # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
+    # files.
+    self.assertEquals(6, len(out))
 
 class GClientSmokeBoth(GClientSmokeBase):
   def setUp(self):
