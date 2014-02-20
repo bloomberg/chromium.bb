@@ -161,6 +161,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setCaretBrowsingEnabled(prefs.caret_browsing_enabled);
   settings->setHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);
   settings->setCookieEnabled(prefs.cookie_enabled);
+  settings->setNavigateOnDragDrop(prefs.navigate_on_drag_drop);
 
   // This setting affects the behavior of links in an editable region:
   // clicking the link should select it rather than navigate to it.

@@ -160,6 +160,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   int pinch_overlay_scrollbar_thickness;
   bool use_solid_color_scrollbars;
   bool compositor_touch_hit_testing;
+  bool navigate_on_drag_drop;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
