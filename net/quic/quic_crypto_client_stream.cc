@@ -11,6 +11,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -74,7 +75,8 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       crypto_config_(crypto_config),
       server_hostname_(server_hostname),
       generation_counter_(0),
-      proof_verify_callback_(NULL) {
+      proof_verify_callback_(NULL),
+      disk_cache_load_result_(ERR_UNEXPECTED) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -91,7 +93,7 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
-  next_state_ = STATE_SEND_CHLO;
+  next_state_ = STATE_LOAD_QUIC_SERVER_INFO;
   DoHandshakeLoop(NULL);
   return true;
 }
@@ -159,6 +161,16 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     const State state = next_state_;
     next_state_ = STATE_IDLE;
     switch (state) {
+      case STATE_LOAD_QUIC_SERVER_INFO: {
+        if (DoLoadQuicServerInfo(cached) == ERR_IO_PENDING) {
+          return;
+        }
+        break;
+      }
+      case STATE_LOAD_QUIC_SERVER_INFO_COMPLETE: {
+        DoLoadQuicServerInfoComplete(cached);
+        break;
+      }
       case STATE_SEND_CHLO: {
         // Send the client hello in plaintext.
         session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
@@ -391,6 +403,73 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
         return;
     }
+  }
+}
+
+void QuicCryptoClientStream::OnIOComplete(int result) {
+  DCHECK_EQ(STATE_LOAD_QUIC_SERVER_INFO_COMPLETE, next_state_);
+  DCHECK_NE(ERR_IO_PENDING, result);
+  disk_cache_load_result_ = result;
+  DoHandshakeLoop(NULL);
+}
+
+int QuicCryptoClientStream::DoLoadQuicServerInfo(
+    QuicCryptoClientConfig::CachedState* cached) {
+  next_state_ = STATE_SEND_CHLO;
+  QuicServerInfo* quic_server_info = cached->quic_server_info();
+  if (!quic_server_info) {
+    return OK;
+  }
+
+  generation_counter_ = cached->generation_counter();
+  next_state_ = STATE_LOAD_QUIC_SERVER_INFO_COMPLETE;
+
+  // TODO(rtenneti): If multiple tabs load the same URL, all requests except for
+  // the first request send InchoateClientHello. Fix the code to handle multiple
+  // requests. A possible solution is to wait for the first request to finish
+  // and use the data from the disk cache for all requests.
+  // quic_server_info->Persist requires quic_server_info to be ready. We might
+  // have already initialized |cached| config from a the cached state for a
+  // canonical hostname.
+  int rv = quic_server_info->WaitForDataReady(
+      base::Bind(&QuicCryptoClientStream::OnIOComplete,
+                 base::Unretained(this)));
+
+  if (rv != ERR_IO_PENDING) {
+    disk_cache_load_result_ = rv;
+  }
+  return rv;
+}
+
+void QuicCryptoClientStream::DoLoadQuicServerInfoComplete(
+    QuicCryptoClientConfig::CachedState* cached) {
+  next_state_ = STATE_SEND_CHLO;
+
+  // If someone else already saved a server config, we don't want to overwrite
+  // it. Also, if someone else saved a server config and then cleared it (so
+  // cached->IsEmpty() is true, but the generation counter changed), we still
+  // want to load from QuicServerInfo.
+  if (!cached->IsEmpty()) {
+    // Someone else has already saved a server config received from the network
+    // or the canonical server config.
+    return;
+  }
+
+  if (disk_cache_load_result_ != OK || !cached->LoadQuicServerInfo(
+          session()->connection()->clock()->WallNow())) {
+    // It is ok to proceed to STATE_SEND_CHLO when we cannot load QuicServerInfo
+    // from the disk cache.
+    DCHECK(cached->IsEmpty());
+    DVLOG(1) << "Empty server_config";
+    return;
+  }
+
+  ProofVerifier* verifier = crypto_config_->proof_verifier();
+  if (!verifier) {
+    // If no verifier is set then we don't check the certificates.
+    cached->SetProofValid();
+  } else if (!cached->signature().empty()) {
+    next_state_ = STATE_VERIFY_PROOF;
   }
 }
 

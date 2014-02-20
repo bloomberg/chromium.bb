@@ -4,9 +4,17 @@
 
 #include "net/quic/crypto/quic_server_info.h"
 
-#include "base/bind.h"
+#include <limits>
+
 #include "base/pickle.h"
-#include "base/strings/string_piece.h"
+
+using std::string;
+
+namespace {
+
+const int kQuicCryptoConfigVersion = 1;
+
+}  // namespace
 
 namespace net {
 
@@ -15,14 +23,13 @@ QuicServerInfo::State::State() {}
 QuicServerInfo::State::~State() {}
 
 void QuicServerInfo::State::Clear() {
-  data.clear();
+  server_config.clear();
+  source_address_token.clear();
+  server_config_sig.clear();
+  certs.clear();
 }
 
-// TODO(rtenneti): Flesh out the details.
-QuicServerInfo::QuicServerInfo(
-    const std::string& hostname)
-    : hostname_(hostname),
-      weak_factory_(this) {
+QuicServerInfo::QuicServerInfo(const string& hostname) : hostname_(hostname) {
 }
 
 QuicServerInfo::~QuicServerInfo() {
@@ -36,7 +43,7 @@ QuicServerInfo::State* QuicServerInfo::mutable_state() {
   return &state_;
 }
 
-bool QuicServerInfo::Parse(const std::string& data) {
+bool QuicServerInfo::Parse(const string& data) {
   State* state = mutable_state();
 
   state->Clear();
@@ -47,21 +54,79 @@ bool QuicServerInfo::Parse(const std::string& data) {
   return r;
 }
 
-bool QuicServerInfo::ParseInner(const std::string& data) {
-  // TODO(rtenneti): restore QuicCryptoClientConfig::CachedState.
-  // State* state = mutable_state();
+bool QuicServerInfo::ParseInner(const string& data) {
+  State* state = mutable_state();
 
-  // Pickle p(data.data(), data.size());
-  // PickleIterator iter(p);
+  // No data was read from the disk cache.
+  if (data.empty()) {
+    return false;
+  }
+
+  Pickle p(data.data(), data.size());
+  PickleIterator iter(p);
+
+  int version = -1;
+  if (!p.ReadInt(&iter, &version)) {
+    DVLOG(1) << "Missing version";
+    return false;
+  }
+
+  if (version != kQuicCryptoConfigVersion) {
+    DVLOG(1) << "Unsupported version";
+    return false;
+  }
+
+  if (!p.ReadString(&iter, &state->server_config)) {
+    DVLOG(1) << "Malformed server_config";
+    return false;
+  }
+  if (!p.ReadString(&iter, &state->source_address_token)) {
+    DVLOG(1) << "Malformed source_address_token";
+    return false;
+  }
+  if (!p.ReadString(&iter, &state->server_config_sig)) {
+    DVLOG(1) << "Malformed server_config_sig";
+    return false;
+  }
+
+  // Read certs.
+  uint32 num_certs;
+  if (!p.ReadUInt32(&iter, &num_certs)) {
+    DVLOG(1) << "Malformed num_certs";
+    return false;
+  }
+
+  for (uint32 i = 0; i < num_certs; i++) {
+    string cert;
+    if (!p.ReadString(&iter, &cert)) {
+      DVLOG(1) << "Malformed cert";
+      return false;
+    }
+    state->certs.push_back(cert);
+  }
 
   return true;
 }
 
-std::string QuicServerInfo::Serialize() const {
+string QuicServerInfo::Serialize() const {
   Pickle p(sizeof(Pickle::Header));
 
-  // TODO(rtenneti): serialize QuicCryptoClientConfig::CachedState.
-  return std::string(reinterpret_cast<const char *>(p.data()), p.size());
+  if (!p.WriteInt(kQuicCryptoConfigVersion) ||
+      !p.WriteString(state_.server_config) ||
+      !p.WriteString(state_.source_address_token) ||
+      !p.WriteString(state_.server_config_sig) ||
+      state_.certs.size() > std::numeric_limits<uint32>::max() ||
+      !p.WriteUInt32(state_.certs.size())) {
+    return string();
+  }
+
+  for (size_t i = 0; i < state_.certs.size(); i++) {
+    if (!p.WriteString(state_.certs[i])) {
+      return string();
+    }
+  }
+
+  return string(reinterpret_cast<const char *>(p.data()), p.size());
 }
 
 QuicServerInfoFactory::~QuicServerInfoFactory() {}

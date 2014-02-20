@@ -44,6 +44,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // cached server config has expired.
     bool IsComplete(QuicWallTime now) const;
 
+    // IsEmpty returns true if |server_config_| is empty.
+    bool IsEmpty() const;
+
     // GetServerConfig returns the parsed contents of |server_config|, or NULL
     // if |server_config| is empty. The return value is owned by this object
     // and is destroyed when this object is.
@@ -67,7 +70,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     void ClearProof();
 
     // SetProofValid records that the certificate chain and signature have been
-    // validated and that it's safe to assume that the server is legitimate.
+    // validated and that it's safe to assume that the server is legitimate. It
+    // persists the server config information to disk cache.
     // (Note: this does not check the chain or signature.)
     void SetProofValid();
 
@@ -83,6 +87,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool proof_valid() const;
     uint64 generation_counter() const;
     const ProofVerifyDetails* proof_verify_details() const;
+    QuicServerInfo* quic_server_info() const;
 
     void set_source_address_token(base::StringPiece token);
 
@@ -95,6 +100,17 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // unchanged.
     void InitializeFrom(const CachedState& other);
 
+    // Fill out the |server_config_|, |source_address_token_|, |certs_| and
+    // |server_config_sig_| fields from |quic_server_info_|. |quic_server_info_|
+    // reads this information from the disk cache. |now| is used to judge
+    // whether server config from disk cache has expired. Returns true if it has
+    // loaded the data from disk cache successfully.
+    bool LoadQuicServerInfo(QuicWallTime now);
+
+    // Save the server config information so that we can perform 0-RTT handshake
+    // with a server.
+    void SaveQuicServerInfo();
+
    private:
     std::string server_config_;         // A serialized handshake message.
     std::string source_address_token_;  // An opaque proof of IP ownership.
@@ -104,6 +120,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool server_config_valid_;          // True if |server_config_| is correctly
                                         // signed and |certs_| has been
                                         // validated.
+    bool need_to_persist_;              // Persist to disk if True.
     // Generation counter associated with the |server_config_|, |certs_| and
     // |server_config_sig_| combination. It is incremented whenever we set
     // server_config_valid_ to false.

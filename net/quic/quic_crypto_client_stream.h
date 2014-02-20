@@ -48,6 +48,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Gets the SSL connection information.
   virtual bool GetSSLInfo(SSLInfo* ssl_info);
 
+  void OnIOComplete(int result);
+
  private:
   // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.
   // The ProofVerifier calls this class with the result of proof verification
@@ -75,6 +77,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   enum State {
     STATE_IDLE,
+    STATE_LOAD_QUIC_SERVER_INFO,
+    STATE_LOAD_QUIC_SERVER_INFO_COMPLETE,
     STATE_SEND_CHLO,
     STATE_RECV_REJ,
     STATE_VERIFY_PROOF,
@@ -85,6 +89,15 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
   // |in| may be NULL if the call did not result from a received message
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
+
+  // TODO(rtenneti): convert the other states of the state machine into DoXXX
+  // functions.
+
+  // Call QuicServerInfo's WaitForDataReady to load the server information from
+  // the disk cache.
+  int DoLoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
+  void DoLoadQuicServerInfoComplete(
+      QuicCryptoClientConfig::CachedState* cached);
 
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this
@@ -114,6 +127,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // The result of certificate verification.
   scoped_ptr<CertVerifyResult> cert_verify_result_;
+
+  // This member is used to store the result of an asynchronous disk cache read.
+  // It must not be used after STATE_LOAD_QUIC_SERVER_INFO_COMPLETE.
+  int disk_cache_load_result_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

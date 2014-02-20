@@ -32,6 +32,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   // QuicServerInfo implementation.
   virtual void Start() OVERRIDE;
   virtual int WaitForDataReady(const CompletionCallback& callback) OVERRIDE;
+  virtual bool IsDataReady() OVERRIDE;
   virtual void Persist() OVERRIDE;
 
  private:

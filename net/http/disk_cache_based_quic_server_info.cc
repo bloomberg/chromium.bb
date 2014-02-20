@@ -70,22 +70,29 @@ void DiskCacheBasedQuicServerInfo::Start() {
 int DiskCacheBasedQuicServerInfo::WaitForDataReady(
     const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(state_ != GET_BACKEND);
+  DCHECK_NE(GET_BACKEND, state_);
 
   if (ready_)
     return OK;
 
   if (!callback.is_null()) {
-    DCHECK(user_callback_.is_null());
+    // Prevent a new callback for WaitForDataReady overwriting an existing
+    // pending callback (|user_callback_|).
+    if (!user_callback_.is_null())
+      return ERR_INVALID_ARGUMENT;
     user_callback_ = callback;
   }
 
   return ERR_IO_PENDING;
 }
 
+bool DiskCacheBasedQuicServerInfo::IsDataReady() {
+  return ready_;
+}
+
 void DiskCacheBasedQuicServerInfo::Persist() {
   DCHECK(CalledOnValidThread());
-  DCHECK(state_ != GET_BACKEND);
+  DCHECK_NE(GET_BACKEND, state_);
 
   DCHECK(new_data_.empty());
   CHECK(ready_);
@@ -111,6 +118,7 @@ std::string DiskCacheBasedQuicServerInfo::key() const {
 
 void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,
                                                 int rv) {
+  DCHECK_NE(NONE, state_);
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING && !user_callback_.is_null()) {
     CompletionCallback callback = user_callback_;
@@ -272,6 +280,7 @@ int DiskCacheBasedQuicServerInfo::DoSetDone() {
   if (entry_)
     entry_->Close();
   entry_ = NULL;
+  new_data_.clear();
   state_ = NONE;
   return OK;
 }

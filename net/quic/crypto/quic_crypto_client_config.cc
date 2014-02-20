@@ -38,11 +38,13 @@ QuicCryptoClientConfig::~QuicCryptoClientConfig() {
 
 QuicCryptoClientConfig::CachedState::CachedState()
     : server_config_valid_(false),
+      need_to_persist_(false),
       generation_counter_(0) {}
 
 QuicCryptoClientConfig::CachedState::CachedState(
     scoped_ptr<QuicServerInfo> quic_server_info)
     : server_config_valid_(false),
+      need_to_persist_(false),
       generation_counter_(0),
       quic_server_info_(quic_server_info.Pass()) {}
 
@@ -67,6 +69,10 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
   }
 
   return true;
+}
+
+bool QuicCryptoClientConfig::CachedState::IsEmpty() const {
+  return server_config_.empty();
 }
 
 const CryptoHandshakeMessage*
@@ -118,6 +124,7 @@ QuicErrorCode QuicCryptoClientConfig::CachedState::SetServerConfig(
     server_config_ = server_config.as_string();
     SetProofInvalid();
     scfg_.reset(new_scfg_storage.release());
+    need_to_persist_ = true;
   }
   return QUIC_NO_ERROR;
 }
@@ -160,6 +167,7 @@ void QuicCryptoClientConfig::CachedState::ClearProof() {
 
 void QuicCryptoClientConfig::CachedState::SetProofValid() {
   server_config_valid_ = true;
+  SaveQuicServerInfo();
 }
 
 void QuicCryptoClientConfig::CachedState::SetProofInvalid() {
@@ -197,6 +205,10 @@ QuicCryptoClientConfig::CachedState::proof_verify_details() const {
   return proof_verify_details_.get();
 }
 
+QuicServerInfo* QuicCryptoClientConfig::CachedState::quic_server_info() const {
+  return quic_server_info_.get();
+}
+
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
     StringPiece token) {
   source_address_token_ = token.as_string();
@@ -216,6 +228,63 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   certs_ = other.certs_;
   server_config_sig_ = other.server_config_sig_;
   server_config_valid_ = other.server_config_valid_;
+  ++generation_counter_;
+}
+
+// TODO(rtenneti): LoadQuicServerInfo and SaveQuicServerInfo have duplication of
+// data in CachedState and QuicServerInfo. We should eliminate the duplication
+// of data.
+// An issue to be solved: while we are loading the data from disk cache, it is
+// possible for another request for the same hostname update the CachedState
+// because that request has sent FillInchoateClientHello and got REJ message.
+// Loading of data from disk cache shouldn't blindly overwrite what is in
+// CachedState.
+bool QuicCryptoClientConfig::CachedState::LoadQuicServerInfo(QuicWallTime now) {
+  DCHECK(server_config_.empty());
+  DCHECK(quic_server_info_.get());
+  DCHECK(quic_server_info_->IsDataReady());
+
+  const QuicServerInfo::State& state(quic_server_info_->state());
+  if (state.server_config.empty()) {
+    return false;
+  }
+
+  string error_details;
+  QuicErrorCode error = SetServerConfig(state.server_config, now,
+                                        &error_details);
+  if (error != QUIC_NO_ERROR) {
+    DVLOG(1) << "SetServerConfig failed with " << error_details;
+    return false;
+  }
+
+  source_address_token_ = state.source_address_token;
+  server_config_sig_ = state.server_config_sig;
+  certs_ = state.certs;
+  need_to_persist_ = false;
+  return true;
+}
+
+void QuicCryptoClientConfig::CachedState::SaveQuicServerInfo() {
+  if (!quic_server_info_.get() || !need_to_persist_) {
+    return;
+  }
+  DCHECK(server_config_valid_);
+
+  // If the QuicServerInfo hasn't managed to load from disk yet then we can't
+  // save anything. TODO(rtenneti): we should fix this.
+  if (!quic_server_info_->IsDataReady()) {
+    return;
+  }
+
+  QuicServerInfo::State* state = quic_server_info_->mutable_state();
+
+  state->server_config = server_config_;
+  state->source_address_token = source_address_token_;
+  state->server_config_sig = server_config_sig_;
+  state->certs = certs_;
+
+  quic_server_info_->Persist();
+  need_to_persist_ = false;
 }
 
 void QuicCryptoClientConfig::SetDefaults() {

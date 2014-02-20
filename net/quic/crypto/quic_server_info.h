@@ -44,6 +44,10 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // but, obviously, a callback will never be made.
   virtual int WaitForDataReady(const CompletionCallback& callback) = 0;
 
+  // Returns true if data is loaded from disk cache and ready (WaitForDataReady
+  // doesn't have a pending callback).
+  virtual bool IsDataReady() = 0;
+
   // Persist allows for the server information to be updated for future users.
   // This is a fire and forget operation: the caller may drop its reference
   // from this object and the store operation will still complete. This can
@@ -57,8 +61,12 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
 
     void Clear();
 
-    // TODO(rtenneti): figure out what are the data members.
-    std::vector<std::string> data;
+    // This class matches QuicClientCryptoConfig::CachedState.
+    std::string server_config;         // A serialized handshake message.
+    std::string source_address_token;  // An opaque proof of IP ownership.
+    std::vector<std::string> certs;    // A list of certificates in leaf-first
+                                       // order.
+    std::string server_config_sig;     // A signature of |server_config_|.
 
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
@@ -70,9 +78,9 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   State* mutable_state();
 
  protected:
-  // Parse parses an opaque blob of data and fills out the public member fields
-  // of this object. It returns true iff the parse was successful. The public
-  // member fields will be set to something sane in any case.
+  // Parse parses pickled data and fills out the public member fields of this
+  // object. It returns true iff the parse was successful. The public member
+  // fields will be set to something sane in any case.
   bool Parse(const std::string& data);
   std::string Serialize() const;
   State state_;
@@ -83,7 +91,6 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
 
   // This is the QUIC server hostname for which we restore the crypto_config.
   const std::string hostname_;
-  base::WeakPtrFactory<QuicServerInfo> weak_factory_;
 };
 
 class QuicServerInfoFactory {
