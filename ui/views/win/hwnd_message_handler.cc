@@ -15,6 +15,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/touch/touch_enabled.h"
+#include "ui/base/view_prop.h"
 #include "ui/base/win/lock_state.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
@@ -40,11 +41,6 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
-
-#if !defined(USE_AURA)
-#include "ui/views/accessibility/native_view_accessibility_win.h"
-#include "ui/views/widget/child_window_message_processor.h"
-#endif
 
 namespace views {
 namespace {
@@ -197,19 +193,6 @@ struct FindOwnedWindowsData {
   std::vector<Widget*> owned_widgets;
 };
 
-BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
-  // TODO(beng): resolve wrt aura.
-#if !defined(USE_AURA)
-  FindOwnedWindowsData* data = reinterpret_cast<FindOwnedWindowsData*>(param);
-  if (GetWindow(hwnd, GW_OWNER) == data->window) {
-    Widget* widget = Widget::GetWidgetForNativeView(hwnd);
-    if (widget)
-      data->owned_widgets.push_back(widget);
-  }
-#endif
-  return TRUE;
-}
-
 // Enables or disables the menu item for the specified command and menu.
 void EnableMenuItemByCommand(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
@@ -250,54 +233,6 @@ static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
   }
   return TRUE;
 }
-
-#if !defined(USE_AURA)
-
-// Get the source HWND of the specified message. Depending on the message, the
-// source HWND is encoded in either the WPARAM or the LPARAM value.
-HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
-  // Each of the following messages can be sent by a child HWND and must be
-  // forwarded to its associated NativeControlWin for handling.
-  switch (message) {
-    case WM_NOTIFY:
-      return reinterpret_cast<NMHDR*>(l_param)->hwndFrom;
-    case WM_COMMAND:
-      return reinterpret_cast<HWND>(l_param);
-    case WM_CONTEXTMENU:
-      return reinterpret_cast<HWND>(w_param);
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      return reinterpret_cast<HWND>(l_param);
-  }
-  return NULL;
-}
-
-// Some messages may be sent to us by a child HWND. If this is the case, this
-// function will forward those messages on to the object associated with the
-// source HWND and return true, in which case the window procedure must not do
-// any further processing of the message. If there is no associated
-// ChildWindowMessageProcessor, the return value will be false and the WndProc
-// can continue processing the message normally.  |l_result| contains the result
-// of the message processing by the control and must be returned by the WndProc
-// if the return value is true.
-bool ProcessChildWindowMessage(UINT message,
-                               WPARAM w_param,
-                               LPARAM l_param,
-                               LRESULT* l_result) {
-  *l_result = 0;
-
-  HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
-  if (IsWindow(control_hwnd)) {
-    ChildWindowMessageProcessor* processor =
-        ChildWindowMessageProcessor::Get(control_hwnd);
-    if (processor)
-      return processor->ProcessMessage(message, w_param, l_param, l_result);
-  }
-
-  return false;
-}
-
-#endif
 
 // The thickness of an auto-hide taskbar in pixels.
 const int kAutoHideTaskbarThicknessPx = 2;
@@ -429,7 +364,6 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   // Create the window.
   WindowImpl::Init(parent, bounds);
 
-#if defined(USE_AURA)
   // Certain trackpad drivers on Windows have bugs where in they don't generate
   // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
   // unless there is an entry for Chrome with the class name of the Window.
@@ -448,7 +382,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       needs_scroll_styles_ = true;
     }
   }
-#endif
+  prop_window_target_.reset(new ui::ViewProp(hwnd(),
+                            ui::WindowEventTarget::kWin32InputEventTarget,
+                            static_cast<ui::WindowEventTarget*>(this)));
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -679,9 +615,6 @@ void HWNDMessageHandler::Hide() {
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
                  SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
                  SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
-
-    if (!GetParent(hwnd()))
-      NotifyOwnedWindowsParentClosing();
   }
 }
 
@@ -745,12 +678,11 @@ bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
                                      bool hide_on_escape) {
   ReleaseCapture();
   MoveLoopMouseWatcher watcher(this, hide_on_escape);
-#if defined(USE_AURA)
   // In Aura, we handle touch events asynchronously. So we need to allow nested
   // tasks while in windows move loop.
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(
       base::MessageLoop::current());
-#endif
+
   SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());
   // Windows doesn't appear to offer a way to determine whether the user
   // canceled the move or not. We assume if the user released the mouse it was
@@ -981,6 +913,39 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   return result;
 }
 
+LRESULT HWNDMessageHandler::HandleMouseMessage(unsigned int message,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
+  // Don't track forwarded mouse messages. We expect the caller to track the
+  // mouse.
+  return HandleMouseEventInternal(message, w_param, l_param, false);
+}
+
+LRESULT HWNDMessageHandler::HandleTouchMessage(unsigned int message,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
+  return OnTouchEvent(message, w_param, l_param);
+}
+
+LRESULT HWNDMessageHandler::HandleKeyboardMessage(unsigned int message,
+                                                  WPARAM w_param,
+                                                  LPARAM l_param) {
+  return OnKeyEvent(message, w_param, l_param);
+}
+
+LRESULT HWNDMessageHandler::HandleScrollMessage(unsigned int message,
+                                                WPARAM w_param,
+                                                LPARAM l_param) {
+  return OnScrollMessage(message, w_param, l_param);
+}
+
+LRESULT HWNDMessageHandler::HandleNcHitTestMessage(unsigned int message,
+                                                   WPARAM w_param,
+                                                   LPARAM l_param) {
+  return OnNCHitTest(
+      gfx::Point(CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
 
@@ -1189,15 +1154,6 @@ LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
   return result;
 }
 
-void HWNDMessageHandler::NotifyOwnedWindowsParentClosing() {
-  FindOwnedWindowsData data;
-  data.window = hwnd();
-  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
-                    reinterpret_cast<LPARAM>(&data));
-  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
-    data.owned_widgets[i]->OnOwnerClosing();
-}
-
 void HWNDMessageHandler::LockUpdates(bool force) {
   // We skip locked updates when Aero is on for two reasons:
   // 1. Because it isn't necessary
@@ -1315,7 +1271,6 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
-#if defined(USE_AURA)
   if (window_ex_style() &  WS_EX_COMPOSITED) {
     if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       // This is part of the magic to emulate layered windows with Aura
@@ -1324,7 +1279,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       DwmExtendFrameIntoClientArea(hwnd(), &margins);
     }
   }
-#endif
 
   fullscreen_handler_->set_hwnd(hwnd());
 
@@ -1530,7 +1484,6 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
 LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-#if defined(USE_AURA)
   // On Windows, if we select the menu item by touch and if the window at the
   // location is another window on the same thread, that window gets a
   // WM_MOUSEACTIVATE message and ends up activating itself, which is not
@@ -1549,7 +1502,7 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
   HWND child = ::RealChildWindowFromPoint(hwnd(), cursor_pos);
   if (::IsWindow(child) && child != hwnd() && ::IsWindowVisible(child))
     PostProcessActivateMessage(WA_INACTIVE, false);
-#endif
+
   // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
   //             line.
   if (delegate_->IsWidgetWindow())
@@ -1563,119 +1516,7 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
 LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
-#if defined(USE_AURA)
-  if (!touch_ids_.empty())
-    return 0;
-  // We handle touch events on Windows Aura. Windows generates synthesized
-  // mouse messages in response to touch which we should ignore. However touch
-  // messages are only received for the client area. We need to ignore the
-  // synthesized mouse messages for all points in the client area and places
-  // which return HTNOWHERE.
-  if (ui::IsMouseEventFromTouch(message)) {
-    LPARAM l_param_ht = l_param;
-    // For mouse events (except wheel events), location is in window coordinates
-    // and should be converted to screen coordinates for WM_NCHITTEST.
-    if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
-      POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
-      MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
-      l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
-    }
-    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
-    if (hittest == HTCLIENT || hittest == HTNOWHERE)
-      return 0;
-  }
-#endif
-  if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
-    is_right_mouse_pressed_on_caption_ = false;
-    ReleaseCapture();
-    // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
-    // expect screen coordinates.
-    POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param);
-    MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
-    w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
-                          MAKELPARAM(screen_point.x, screen_point.y));
-    if (w_param == HTCAPTION || w_param == HTSYSMENU) {
-      gfx::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
-      return 0;
-    }
-  } else if (message == WM_NCLBUTTONDOWN && delegate_->IsUsingCustomFrame()) {
-    switch (w_param) {
-      case HTCLOSE:
-      case HTMINBUTTON:
-      case HTMAXBUTTON: {
-        // When the mouse is pressed down in these specific non-client areas,
-        // we need to tell the RootView to send the mouse pressed event (which
-        // sets capture, allowing subsequent WM_LBUTTONUP (note, _not_
-        // WM_NCLBUTTONUP) to fire so that the appropriate WM_SYSCOMMAND can be
-        // sent by the applicable button's ButtonListener. We _have_ to do this
-        // way rather than letting Windows just send the syscommand itself (as
-        // would happen if we never did this dance) because for some insane
-        // reason DefWindowProc for WM_NCLBUTTONDOWN also renders the pressed
-        // window control button appearance, in the Windows classic style, over
-        // our view! Ick! By handling this message we prevent Windows from
-        // doing this undesirable thing, but that means we need to roll the
-        // sys-command handling ourselves.
-        // Combine |w_param| with common key state message flags.
-        w_param |= base::win::IsCtrlPressed() ? MK_CONTROL : 0;
-        w_param |= base::win::IsShiftPressed() ? MK_SHIFT : 0;
-      }
-    }
-  } else if (message == WM_NCRBUTTONDOWN &&
-      (w_param == HTCAPTION || w_param == HTSYSMENU)) {
-    is_right_mouse_pressed_on_caption_ = true;
-    // We SetCapture() to ensure we only show the menu when the button
-    // down and up are both on the caption. Note: this causes the button up to
-    // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
-    SetCapture();
-  }
-  MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime(),
-              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
-  ui::MouseEvent event(msg);
-  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
-    event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
-
-  if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-    delegate_->HandleTooltipMouseMove(message, w_param, l_param);
-
-  // Certain child windows forward mouse events to us. We don't want to track
-  // these mouse moves as the child window will also send us a WM_MOUSELEAVE.
-  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture() &&
-      HIWORD(w_param) != SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED) {
-    // Windows only fires WM_MOUSELEAVE events if the application begins
-    // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
-    // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
-    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
-        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
-  } else if (event.type() == ui::ET_MOUSE_EXITED) {
-    // Reset our tracking flags so future mouse movement over this
-    // NativeWidgetWin results in a new tracking session. Fall through for
-    // OnMouseEvent.
-    active_mouse_tracking_flags_ = 0;
-  } else if (event.type() == ui::ET_MOUSEWHEEL) {
-    // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
-            delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
-  }
-
-  // There are cases where the code handling the message destroys the window,
-  // so use the weak ptr to check if destruction occured or not.
-  base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
-  bool handled = delegate_->HandleMouseEvent(event);
-  if (!ref.get())
-    return 0;
-  if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
-      delegate_->IsUsingCustomFrame()) {
-    // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
-    // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
-    // need to call it inside a ScopedRedrawLock. This may cause other negative
-    // side-effects (ex/ stifling non-client mouse releases).
-    DefWindowProcWithRedrawLock(message, w_param, l_param);
-    handled = true;
-  }
-
-  if (ref.get())
-    SetMsgHandled(handled);
-  return 0;
+  return HandleMouseEventInternal(message, w_param, l_param, true);
 }
 
 void HWNDMessageHandler::OnMove(const gfx::Point& point) {
@@ -1865,7 +1706,6 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 
   // Otherwise, we let Windows do all the native frame non-client handling for
   // us.
-#if defined(USE_AURA)
   LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
                                         MAKELPARAM(point.x(), point.y()));
   if (needs_scroll_styles_) {
@@ -1912,9 +1752,6 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
     }
   }
   return hit_test_code;
-#else
-  SetMsgHandled(FALSE);
-#endif
 }
 
 void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
@@ -2041,13 +1878,7 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
   // Try to paint accelerated first.
   if (!IsRectEmpty(&ps.rcPaint) &&
       !delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint))) {
-#if defined(USE_AURA)
     delegate_->HandlePaint(NULL);
-#else
-    scoped_ptr<gfx::CanvasSkiaPaint> canvas(
-        new gfx::CanvasSkiaPaint(hwnd(), display_dc, ps));
-    delegate_->HandlePaint(canvas.get());
-#endif
   }
 
   EndPaint(hwnd(), &ps);
@@ -2157,7 +1988,6 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
   // invoked OnSize we ensure the RootView has been laid out.
   ResetWindowRegion(false, true);
 
-#if defined(USE_AURA)
   // We add the WS_VSCROLL and WS_HSCROLL styles to top level windows to ensure
   // that legacy trackpad/trackpoint drivers generate the WM_VSCROLL and
   // WM_HSCROLL messages and scrolling works.
@@ -2170,7 +2000,6 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&AddScrollStylesToWindow, hwnd()));
   }
-#endif
 }
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
@@ -2239,10 +2068,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
   // Handle touch events only on Aura for now.
-#if !defined(USE_AURA)
-  SetMsgHandled(FALSE);
-  return 0;
-#endif
   int num_points = LOWORD(w_param);
   scoped_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
@@ -2395,6 +2220,121 @@ void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   for (size_t i = 0; i < touch_events.size() && ref; ++i)
     delegate_->HandleTouchEvent(touch_events[i]);
+}
+
+LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
+                                                     WPARAM w_param,
+                                                     LPARAM l_param,
+                                                     bool track_mouse) {
+  if (!touch_ids_.empty())
+    return 0;
+  // We handle touch events on Windows Aura. Windows generates synthesized
+  // mouse messages in response to touch which we should ignore. However touch
+  // messages are only received for the client area. We need to ignore the
+  // synthesized mouse messages for all points in the client area and places
+  // which return HTNOWHERE.
+  if (ui::IsMouseEventFromTouch(message)) {
+    LPARAM l_param_ht = l_param;
+    // For mouse events (except wheel events), location is in window coordinates
+    // and should be converted to screen coordinates for WM_NCHITTEST.
+    if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
+      POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
+      MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
+      l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
+    }
+    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
+    if (hittest == HTCLIENT || hittest == HTNOWHERE)
+      return 0;
+  }
+
+  if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
+    is_right_mouse_pressed_on_caption_ = false;
+    ReleaseCapture();
+    // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
+    // expect screen coordinates.
+    POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param);
+    MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
+    w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
+                          MAKELPARAM(screen_point.x, screen_point.y));
+    if (w_param == HTCAPTION || w_param == HTSYSMENU) {
+      gfx::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
+      return 0;
+    }
+  } else if (message == WM_NCLBUTTONDOWN && delegate_->IsUsingCustomFrame()) {
+    switch (w_param) {
+      case HTCLOSE:
+      case HTMINBUTTON:
+      case HTMAXBUTTON: {
+        // When the mouse is pressed down in these specific non-client areas,
+        // we need to tell the RootView to send the mouse pressed event (which
+        // sets capture, allowing subsequent WM_LBUTTONUP (note, _not_
+        // WM_NCLBUTTONUP) to fire so that the appropriate WM_SYSCOMMAND can be
+        // sent by the applicable button's ButtonListener. We _have_ to do this
+        // way rather than letting Windows just send the syscommand itself (as
+        // would happen if we never did this dance) because for some insane
+        // reason DefWindowProc for WM_NCLBUTTONDOWN also renders the pressed
+        // window control button appearance, in the Windows classic style, over
+        // our view! Ick! By handling this message we prevent Windows from
+        // doing this undesirable thing, but that means we need to roll the
+        // sys-command handling ourselves.
+        // Combine |w_param| with common key state message flags.
+        w_param |= base::win::IsCtrlPressed() ? MK_CONTROL : 0;
+        w_param |= base::win::IsShiftPressed() ? MK_SHIFT : 0;
+      }
+    }
+  } else if (message == WM_NCRBUTTONDOWN &&
+      (w_param == HTCAPTION || w_param == HTSYSMENU)) {
+    is_right_mouse_pressed_on_caption_ = true;
+    // We SetCapture() to ensure we only show the menu when the button
+    // down and up are both on the caption. Note: this causes the button up to
+    // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
+    SetCapture();
+  }
+  MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime(),
+              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
+  ui::MouseEvent event(msg);
+  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
+    event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
+
+  if (!(event.flags() & ui::EF_IS_NON_CLIENT))
+    delegate_->HandleTooltipMouseMove(message, w_param, l_param);
+
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture() && track_mouse) {
+    // Windows only fires WM_MOUSELEAVE events if the application begins
+    // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
+    // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
+    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
+        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
+  } else if (event.type() == ui::ET_MOUSE_EXITED) {
+    // Reset our tracking flags so future mouse movement over this
+    // NativeWidgetWin results in a new tracking session. Fall through for
+    // OnMouseEvent.
+    active_mouse_tracking_flags_ = 0;
+  } else if (event.type() == ui::ET_MOUSEWHEEL) {
+    // Reroute the mouse wheel to the window under the pointer if applicable.
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+            delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
+  }
+
+  // There are cases where the code handling the message destroys the window,
+  // so use the weak ptr to check if destruction occured or not.
+  base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
+  bool handled = delegate_->HandleMouseEvent(event);
+  if (!ref.get())
+    return 0;
+  if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
+      delegate_->IsUsingCustomFrame()) {
+    // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
+    // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
+    // need to call it inside a ScopedRedrawLock. This may cause other negative
+    // side-effects (ex/ stifling non-client mouse releases).
+    DefWindowProcWithRedrawLock(message, w_param, l_param);
+    handled = true;
+  }
+
+  if (ref.get())
+    SetMsgHandled(handled);
+  return 0;
 }
 
 }  // namespace views

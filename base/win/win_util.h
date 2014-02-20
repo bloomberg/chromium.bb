@@ -129,9 +129,6 @@ BASE_EXPORT bool DismissVirtualKeyboard();
 // Returns true if the machine is enrolled to a domain.
 BASE_EXPORT bool IsEnrolledToDomain();
 
-// Marker added to certain WM_MOUSEMOVE messages.
-#define SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED 0xbeef
-
 }  // namespace win
 }  // namespace base
 

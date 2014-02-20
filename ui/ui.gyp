@@ -306,6 +306,8 @@
         'base/win/shell.h',
         'base/win/touch_input.cc',
         'base/win/touch_input.h',
+        'base/win/window_event_target.cc',
+        'base/win/window_event_target.h',
         'base/window_open_disposition.cc',
         'base/window_open_disposition.h',
         'base/work_area_watcher_observer.h',

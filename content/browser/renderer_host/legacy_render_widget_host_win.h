@@ -16,6 +16,10 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
+namespace ui {
+class WindowEventTarget;
+}
+
 namespace content {
 class BrowserAccessibilityManagerWin;
 
@@ -71,8 +75,8 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor)
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouch)
-    MESSAGE_HANDLER_EX(WM_VSCROLL, OnScroll)
     MESSAGE_HANDLER_EX(WM_HSCROLL, OnScroll)
+    MESSAGE_HANDLER_EX(WM_VSCROLL, OnScroll)
     MESSAGE_HANDLER_EX(WM_NCHITTEST, OnNCHitTest)
     MESSAGE_RANGE_HANDLER(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK,
                           OnMouseRange)
@@ -108,6 +112,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LegacyRenderWidgetHostHWND(HWND parent);
 
   bool Init();
+
+  // Returns the target to which the windows input events are forwarded.
+  static ui::WindowEventTarget* GetWindowEventTarget(HWND parent);
 
   LRESULT OnEraseBkGnd(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);

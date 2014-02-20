@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
-#include "base/win/win_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_enabled.h"
+#include "ui/base/view_prop.h"
+#include "ui/base/win/window_event_target.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -23,8 +24,12 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
 // static
 scoped_ptr<LegacyRenderWidgetHostHWND> LegacyRenderWidgetHostHWND::Create(
     HWND parent) {
+  // content_unittests passes in the desktop window as the parent. We allow
+  // the LegacyRenderWidgetHostHWND instance to be created in this case for
+  // these tests to pass.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableLegacyIntermediateWindow))
+          switches::kDisableLegacyIntermediateWindow) ||
+      (!GetWindowEventTarget(parent) && parent != ::GetDesktopWindow()))
     return scoped_ptr<LegacyRenderWidgetHostHWND>();
 
   scoped_ptr<LegacyRenderWidgetHostHWND> legacy_window_instance;
@@ -97,6 +102,13 @@ bool LegacyRenderWidgetHostHWND::Init() {
   return !!SUCCEEDED(hr);
 }
 
+// static
+ui::WindowEventTarget* LegacyRenderWidgetHostHWND::GetWindowEventTarget(
+    HWND parent) {
+  return reinterpret_cast<ui::WindowEventTarget*>(ui::ViewProp::GetValue(
+      parent, ui::WindowEventTarget::kWin32InputEventTarget));
+}
+
 LRESULT LegacyRenderWidgetHostHWND::OnEraseBkGnd(UINT message,
                                                  WPARAM w_param,
                                                  LPARAM l_param) {
@@ -127,21 +139,17 @@ LRESULT LegacyRenderWidgetHostHWND::OnKeyboardRange(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param,
                                                     BOOL& handled) {
-  return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetWindowEventTarget(GetParent())) {
+    return GetWindowEventTarget(GetParent())->HandleKeyboardMessage(
+        message, w_param, l_param);
+  }
+  return 0;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
                                                  WPARAM w_param,
                                                  LPARAM l_param,
                                                  BOOL& handled) {
-  // Mark the WM_MOUSEMOVE message with a special flag in the high word of
-  // the WPARAM.
-  // The parent window has code to track mouse events, i.e to detect if the
-  // cursor left the bounds of the parent window. Technically entering a child
-  // window indicates that the cursor left the parent window.
-  // To ensure that the parent does not turn on tracking for the WM_MOUSEMOVE
-  // messages sent from us, we flag this in the WPARAM and track the mouse for
-  // our window to send the WM_MOUSELEAVE if needed to the parent.
   if (message == WM_MOUSEMOVE) {
     if (!mouse_tracking_enabled_) {
       mouse_tracking_enabled_ = true;
@@ -152,9 +160,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
       tme.dwHoverTime = 0;
       TrackMouseEvent(&tme);
     }
-    w_param = MAKEWPARAM(LOWORD(w_param), SPECIAL_MOUSEMOVE_NOT_TO_BE_TRACKED);
   }
-
   // The offsets for WM_NCXXX and WM_MOUSEWHEEL and WM_MOUSEHWHEEL messages are
   // in screen coordinates. We should not be converting them to parent
   // coordinates.
@@ -166,20 +172,26 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
     ::MapWindowPoints(hwnd(), GetParent(), &mouse_coords, 1);
     l_param = MAKELPARAM(mouse_coords.x, mouse_coords.y);
   }
-  return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetWindowEventTarget(GetParent())) {
+    return GetWindowEventTarget(GetParent())->HandleMouseMessage(
+        message, w_param, l_param);
+  }
+  return 0;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
                                                  WPARAM w_param,
                                                  LPARAM l_param) {
   mouse_tracking_enabled_ = false;
-  if (GetCapture() != GetParent()) {
+  if ((::GetCapture() != GetParent()) && GetWindowEventTarget(GetParent())) {
     // We should send a WM_MOUSELEAVE to the parent window only if the mouse
     // has moved outside the bounds of the parent.
     POINT cursor_pos;
     ::GetCursorPos(&cursor_pos);
-    if (::WindowFromPoint(cursor_pos) != GetParent())
-      return ::SendMessage(GetParent(), message, w_param, l_param);
+    if (::WindowFromPoint(cursor_pos) != GetParent()) {
+      return GetWindowEventTarget(GetParent())->HandleMouseMessage(
+          message, w_param, l_param);
+    }
   }
   return 0;
 }
@@ -203,19 +215,31 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseActivate(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnTouch(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetWindowEventTarget(GetParent())) {
+    return GetWindowEventTarget(GetParent())->HandleTouchMessage(
+        message, w_param, l_param);
+  }
+  return 0;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnScroll(UINT message,
                                              WPARAM w_param,
                                              LPARAM l_param) {
-  return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetWindowEventTarget(GetParent())) {
+    return GetWindowEventTarget(GetParent())->HandleScrollMessage(
+        message, w_param, l_param);
+  }
+  return 0;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnNCHitTest(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param) {
-  return ::SendMessage(GetParent(), message, w_param, l_param);
+  if (GetWindowEventTarget(GetParent())) {
+    return GetWindowEventTarget(GetParent())->HandleNcHitTestMessage(
+        message, w_param, l_param);
+  }
+  return HTNOWHERE;
 }
 
 LRESULT LegacyRenderWidgetHostHWND::OnNCPaint(UINT message,
