@@ -70,7 +70,7 @@ static ARIARoleMap* createARIARoleMap()
         { "contentinfo", ContentInfoRole },
         { "dialog", DialogRole },
         { "directory", DirectoryRole },
-        { "grid", TableRole },
+        { "grid", GridRole },
         { "gridcell", CellRole },
         { "columnheader", ColumnHeaderRole },
         { "combobox", ComboBoxRole },
