@@ -16,8 +16,8 @@ namespace {
 // over.
 const int kStatisticsWindow = 3;
 
-// The hard limit is 20fps or 50ms per recording cycle.
-const int64 kMinimumRecordingDelay = 50;
+// The hard limit is 30fps or 33ms per recording cycle.
+const int64 kDefaultMinimumIntervalMs = 33;
 
 // Controls how much CPU time we can use for encode and capture.
 // Range of this value is between 0 to 1. 0 means using 0% of of all CPUs
@@ -30,7 +30,9 @@ namespace remoting {
 
 // We assume that the number of available cores is constant.
 CaptureScheduler::CaptureScheduler()
-    : num_of_processors_(base::SysInfo::NumberOfProcessors()),
+    : minimum_interval_(
+          base::TimeDelta::FromMilliseconds(kDefaultMinimumIntervalMs)),
+      num_of_processors_(base::SysInfo::NumberOfProcessors()),
       capture_time_(kStatisticsWindow),
       encode_time_(kStatisticsWindow) {
   DCHECK(num_of_processors_);
@@ -43,13 +45,13 @@ base::TimeDelta CaptureScheduler::NextCaptureDelay() {
   // Delay by an amount chosen such that if capture and encode times
   // continue to follow the averages, then we'll consume the target
   // fraction of CPU across all cores.
-  double delay =
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
       (capture_time_.Average() + encode_time_.Average()) /
-      (kRecordingCpuConsumption * num_of_processors_);
+      (kRecordingCpuConsumption * num_of_processors_));
 
-  if (delay < kMinimumRecordingDelay)
-    return base::TimeDelta::FromMilliseconds(kMinimumRecordingDelay);
-  return base::TimeDelta::FromMilliseconds(delay);
+  if (delay < minimum_interval_)
+    return minimum_interval_;
+  return delay;
 }
 
 void CaptureScheduler::RecordCaptureTime(base::TimeDelta capture_time) {

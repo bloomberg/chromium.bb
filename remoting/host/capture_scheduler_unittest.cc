@@ -8,6 +8,7 @@
 namespace remoting {
 
 static const int kTestInputs[] = { 100, 50, 30, 20, 10, 30, 60, 80 };
+static const int kMinumumFrameIntervalMs = 50;
 
 TEST(CaptureSchedulerTest, SingleSampleSameTimes) {
   const int kTestResults[][arraysize(kTestInputs)] = {
@@ -21,12 +22,14 @@ TEST(CaptureSchedulerTest, SingleSampleSameTimes) {
     for (size_t j = 0; j < arraysize(kTestInputs); ++j) {
       CaptureScheduler scheduler;
       scheduler.SetNumOfProcessorsForTest(1 << i);
+      scheduler.set_minimum_interval(
+          base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
       scheduler.RecordCaptureTime(
           base::TimeDelta::FromMilliseconds(kTestInputs[j]));
       scheduler.RecordEncodeTime(
           base::TimeDelta::FromMilliseconds(kTestInputs[j]));
       EXPECT_EQ(kTestResults[i][j],
-                scheduler.NextCaptureDelay().InMilliseconds());
+                scheduler.NextCaptureDelay().InMilliseconds()) << i  << " "<< j;
     }
   }
 }
@@ -43,6 +46,8 @@ TEST(CaptureSchedulerTest, SingleSampleDifferentTimes) {
     for (size_t j = 0; j < arraysize(kTestInputs); ++j) {
       CaptureScheduler scheduler;
       scheduler.SetNumOfProcessorsForTest(1 << i);
+      scheduler.set_minimum_interval(
+          base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
       scheduler.RecordCaptureTime(
           base::TimeDelta::FromMilliseconds(kTestInputs[j]));
       scheduler.RecordEncodeTime(
@@ -65,6 +70,8 @@ TEST(CaptureSchedulerTest, RollingAverageDifferentTimes) {
   for (size_t i = 0; i < arraysize(kTestResults); ++i) {
     CaptureScheduler scheduler;
     scheduler.SetNumOfProcessorsForTest(1 << i);
+    scheduler.set_minimum_interval(
+        base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
     for (size_t j = 0; j < arraysize(kTestInputs); ++j) {
       scheduler.RecordCaptureTime(
           base::TimeDelta::FromMilliseconds(kTestInputs[j]));

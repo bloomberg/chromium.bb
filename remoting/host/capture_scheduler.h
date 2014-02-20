@@ -27,10 +27,16 @@ class CaptureScheduler {
   void RecordCaptureTime(base::TimeDelta capture_time);
   void RecordEncodeTime(base::TimeDelta encode_time);
 
+  // Sets minimum interval between frames.
+  void set_minimum_interval(base::TimeDelta minimum_interval) {
+    minimum_interval_ = minimum_interval;
+  }
+
   // Overrides the number of processors for testing.
   void SetNumOfProcessorsForTest(int num_of_processors);
 
  private:
+  base::TimeDelta minimum_interval_;
   int num_of_processors_;
   RunningAverage capture_time_;
   RunningAverage encode_time_;
