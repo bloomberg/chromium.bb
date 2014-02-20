@@ -518,6 +518,12 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
     layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
     layerPaint.setImageFilter(imageFilter);
 
+    // Filters will adjust the clip to accomodate for filter bounds, but
+    // need the kClipToLayer_SaveFlag to do so. We also save the clip here, so
+    // it is restored back before the filtered layer is drawn in restore().
+    if (imageFilter)
+        saveFlags = static_cast<SkCanvas::SaveFlags>(saveFlags | SkCanvas::kClipToLayer_SaveFlag | SkCanvas::kClip_SaveFlag);
+
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);
         saveLayer(&skBounds, &layerPaint, saveFlags);
