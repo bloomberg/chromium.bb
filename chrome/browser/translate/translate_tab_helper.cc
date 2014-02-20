@@ -130,8 +130,6 @@ void TranslateTabHelper::WebContentsDestroyed(
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with NULL WebContents.
-  // TODO(droger): Simplify the TranslateManager code by removing the handling
-  // of NULL WebContents.
   translate_manager_.reset();
 }
 

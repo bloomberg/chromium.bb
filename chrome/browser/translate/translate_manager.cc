@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -232,9 +231,7 @@ TranslateManager::TranslateManager(TranslateTabHelper* helper)
 
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  if (!web_contents)
-    return;
-
+  DCHECK(web_contents);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
@@ -352,8 +349,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 void TranslateManager::InitiateTranslationPosted(const std::string& page_lang,
                                                  int attempt) {
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  if (!web_contents)
-    return;
+  DCHECK(web_contents);
 
   if (translate_tab_helper_->GetLanguageState().translation_pending())
     return;
@@ -467,8 +463,7 @@ void TranslateManager::DoTranslatePage(const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  if (!web_contents)
-    return;
+  DCHECK(web_contents);
   NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
@@ -514,10 +509,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
     bool success,
     const std::string& data) {
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  if (!web_contents) {
-    // The tab went away while we were retrieving the script.
-    return;
-  }
+  DCHECK(web_contents);
   NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry || entry->GetPageID() != page_id) {
     // We navigated away from the page the translation was triggered on.

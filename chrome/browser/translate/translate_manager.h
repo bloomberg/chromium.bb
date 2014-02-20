@@ -29,6 +29,9 @@ class WebContents;
 // The TranslateManager class is responsible for showing an info-bar when a page
 // in a language different than the user language is loaded.  It triggers the
 // page translation the user requests.
+// TranslateManager expects its associated TranslateTabHelper to always have a
+// valid WebContents (i.e. the WebContents is never destroyed within the
+// lifetime of TranslateManager).
 
 class TranslateManager : public content::NotificationObserver {
  public:
