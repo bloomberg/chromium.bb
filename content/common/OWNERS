@@ -32,6 +32,18 @@ per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
 
+per-file *param_traits*.h=set noparent
+per-file *param_traits*.h=cdn@chromium.org
+per-file *param_traits*.h=cevans@chromium.org
+per-file *param_traits*.h=dcheng@chromium.org
+per-file *param_traits*.h=inferno@chromium.org
+per-file *param_traits*.h=jln@chromium.org
+per-file *param_traits*.h=jschuh@chromium.org
+per-file *param_traits*.h=kenrb@chromium.org
+per-file *param_traits*.h=nasko@chromium.org
+per-file *param_traits*.h=palmer@chromium.org
+per-file *param_traits*.h=tsepez@chromium.org
+
 # Accessibility
 per-file accessibility_node_data.*=dmazzoni@chromium.org
 per-file accessibility_node_data.*=dtseng@chromium.org
