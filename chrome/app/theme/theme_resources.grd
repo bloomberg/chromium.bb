@@ -501,6 +501,10 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_GLOBE" file="cros/globe_icon.png" />
+      </if>
       <if expr="is_win or desktop_linux">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_ATTENTION" file="common/notification_tray_do_not_disturb_attention.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_EMPTY" file="common/notification_tray_do_not_disturb_empty.png" />
