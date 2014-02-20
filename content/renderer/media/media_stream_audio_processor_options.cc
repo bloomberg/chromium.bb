@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
+#include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
 namespace content {
 
@@ -122,11 +123,15 @@ void EnableHighPassFilter(AudioProcessing* audio_processing) {
   CHECK_EQ(audio_processing->high_pass_filter()->Enable(true), 0);
 }
 
-void EnableTypingDetection(AudioProcessing* audio_processing) {
+void EnableTypingDetection(AudioProcessing* audio_processing,
+                           webrtc::TypingDetection* typing_detector) {
   int err = audio_processing->voice_detection()->Enable(true);
   err |= audio_processing->voice_detection()->set_likelihood(
       webrtc::VoiceDetection::kVeryLowLikelihood);
   CHECK_EQ(err, 0);
+
+  // Configure the update period to 100ms (10 * 10ms) in the typing detector.
+  typing_detector->SetParameters(0, 0, 0, 0, 0, 10);
 }
 
 void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing) {

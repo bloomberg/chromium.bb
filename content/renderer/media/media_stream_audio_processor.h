@@ -26,6 +26,7 @@ class AudioParameters;
 
 namespace webrtc {
 class AudioFrame;
+class TypingDetection;
 }
 
 namespace content {
@@ -154,6 +155,12 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Flag to enable the stereo channels mirroring.
   bool audio_mirroring_;
+
+  // Used by the typing detection.
+  scoped_ptr<webrtc::TypingDetection> typing_detector_;
+
+  // Result from the typing detection.
+  bool typing_detected_;
 };
 
 }  // namespace content

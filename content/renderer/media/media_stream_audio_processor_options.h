@@ -16,6 +16,7 @@ namespace webrtc {
 class AudioFrame;
 class AudioProcessing;
 class MediaConstraintsInterface;
+class TypingDetection;
 
 }
 
@@ -57,7 +58,8 @@ void EnableNoiseSuppression(AudioProcessing* audio_processing);
 void EnableHighPassFilter(AudioProcessing* audio_processing);
 
 // Enables the typing detection in |audio_processing|.
-void EnableTypingDetection(AudioProcessing* audio_processing);
+void EnableTypingDetection(AudioProcessing* audio_processing,
+                           webrtc::TypingDetection* typing_detector);
 
 // Enables the experimental echo cancellation in |audio_processing|.
 void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing);

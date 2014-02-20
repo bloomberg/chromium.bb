@@ -15,6 +15,7 @@
 #include "media/base/channel_layout.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
+#include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
 namespace content {
 
@@ -143,7 +144,8 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
     int effects)
     : render_delay_ms_(0),
-      audio_mirroring_(false) {
+      audio_mirroring_(false),
+      typing_detected_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
@@ -264,7 +266,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Return immediately if no audio processing component is enabled.
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
-      !enable_high_pass_filter && !enable_typing_detection && !enable_agc) {
+      !enable_high_pass_filter && !enable_typing_detection && !enable_agc &&
+      !audio_mirroring_) {
     return;
   }
 
@@ -284,8 +287,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (enable_high_pass_filter)
     EnableHighPassFilter(audio_processing_.get());
 
-  if (enable_typing_detection)
-    EnableTypingDetection(audio_processing_.get());
+  if (enable_typing_detection) {
+    // TODO(xians): Remove this |typing_detector_| after the typing suppression
+    // is enabled by default.
+    typing_detector_.reset(new webrtc::TypingDetection());
+    EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
+  }
 
   if (enable_agc)
     EnableAutomaticGainControl(audio_processing_.get());
@@ -396,6 +403,14 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 
   if (audio_mirroring_ && audio_frame->num_channels_ == 2) {
     // TODO(xians): Swap the stereo channels after switching to media::AudioBus.
+  }
+
+  if (typing_detector_ &&
+      audio_frame->vad_activity_ != webrtc::AudioFrame::kVadUnknown) {
+    bool vad_active =
+        (audio_frame->vad_activity_ == webrtc::AudioFrame::kVadActive);
+    // TODO(xians): Pass this |typing_detected_| to peer connection.
+    typing_detected_ = typing_detector_->Process(key_pressed, vad_active);
   }
 
   // Return 0 if the volume has not been changed, otherwise return the new
