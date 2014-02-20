@@ -511,10 +511,6 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-bool RenderWidget::AllowPartialSwap() const {
-  return true;
-}
-
 bool RenderWidget::UsingSynchronousRendererCompositor() const {
 #if defined(OS_ANDROID)
   return SynchronousCompositorFactory::GetInstance() != NULL;

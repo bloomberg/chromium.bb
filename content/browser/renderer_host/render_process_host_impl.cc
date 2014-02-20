@@ -1103,7 +1103,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnableLCDText,
     cc::switches::kEnableMapImage,
-    cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePinchVirtualViewport,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kMaxTilesForInterestArea,

@@ -824,12 +824,6 @@ class BrowserPluginThreadedCompositorPixelTest
     EnablePixelOutput();
     BrowserPluginThreadedCompositorTest::SetUp();
   }
-
-  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
-    BrowserPluginThreadedCompositorTest::SetUpCommandLine(cmd);
-    // http://crbug.com/327035
-    cmd->AppendSwitch(switches::kDisableDelegatedRenderer);
-  }
 };
 
 static void CompareSkBitmaps(const SkBitmap& expected_bitmap,
@@ -896,8 +890,9 @@ static void CompareSkBitmapAndRun(const base::Closure& callback,
   callback.Run();
 }
 
-// http://crbug.com/171744
-#if defined(OS_MACOSX)
+// Mac: http://crbug.com/171744
+// Aura/Ubercomp: http://crbug.com//327035
+#if defined(OS_MACOSX) || defined(USE_AURA)
 #define MAYBE_GetBackingStore DISABLED_GetBackingStore
 #else
 #define MAYBE_GetBackingStore GetBackingStore

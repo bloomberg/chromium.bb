@@ -519,11 +519,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The accessibility mode of the renderer.
   IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)
-
-  // Specifies whether partially swapping composited buffers is
-  // allowed for a renderer. Partial swaps will be used if they are both
-  // allowed and supported.
-  IPC_STRUCT_MEMBER(bool, allow_partial_swap)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)

@@ -318,7 +318,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
   params.accessibility_mode = accessibility_mode();
-  params.allow_partial_swap = !GetProcess()->IsGuest();
 
   Send(new ViewMsg_New(params));
 

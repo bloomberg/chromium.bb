@@ -174,22 +174,21 @@ void RenderViewTest::SetUp() {
   mock_process_.reset(new MockRenderProcess);
 
   // This needs to pass the mock render thread to the view.
-  RenderViewImpl* view = RenderViewImpl::Create(
-      kOpenerId,
-      RendererPreferences(),
-      WebPreferences(),
-      kRouteId,
-      kMainFrameRouteId,
-      kSurfaceId,
-      kInvalidSessionStorageNamespaceId,
-      base::string16(),
-      false, // is_renderer_created
-      false, // swapped_out
-      false, // hidden
-      1, // next_page_id
-      blink::WebScreenInfo(),
-      AccessibilityModeOff,
-      true);
+  RenderViewImpl* view =
+      RenderViewImpl::Create(kOpenerId,
+                             RendererPreferences(),
+                             WebPreferences(),
+                             kRouteId,
+                             kMainFrameRouteId,
+                             kSurfaceId,
+                             kInvalidSessionStorageNamespaceId,
+                             base::string16(),
+                             false,  // is_renderer_created
+                             false,  // swapped_out
+                             false,  // hidden
+                             1,      // next_page_id
+                             blink::WebScreenInfo(),
+                             AccessibilityModeOff);
   view->AddRef();
   view_ = view;
 }

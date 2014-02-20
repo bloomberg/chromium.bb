@@ -197,7 +197,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void InstrumentDidCancelFrame() {}
   virtual void InstrumentWillComposite() {}
 
-  virtual bool AllowPartialSwap() const;
   bool UsingSynchronousRendererCompositor() const;
 
   bool is_swapped_out() { return is_swapped_out_; }

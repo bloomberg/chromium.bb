@@ -750,8 +750,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       load_progress_tracker_(new LoadProgressTracker(this)),
       session_storage_namespace_id_(params->session_storage_namespace_id),
       handling_select_range_(false),
-      next_snapshot_id_(0),
-      allow_partial_swap_(params->allow_partial_swap) {
+      next_snapshot_id_(0) {
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
@@ -982,25 +981,22 @@ RenderViewImpl* RenderViewImpl::Create(
     bool hidden,
     int32 next_page_id,
     const blink::WebScreenInfo& screen_info,
-    unsigned int accessibility_mode,
-    bool allow_partial_swap) {
+    unsigned int accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  RenderViewImplParams params(
-      opener_id,
-      renderer_prefs,
-      webkit_prefs,
-      routing_id,
-      main_frame_routing_id,
-      surface_id,
-      session_storage_namespace_id,
-      frame_name,
-      is_renderer_created,
-      swapped_out,
-      hidden,
-      next_page_id,
-      screen_info,
-      accessibility_mode,
-      allow_partial_swap);
+  RenderViewImplParams params(opener_id,
+                              renderer_prefs,
+                              webkit_prefs,
+                              routing_id,
+                              main_frame_routing_id,
+                              surface_id,
+                              session_storage_namespace_id,
+                              frame_name,
+                              is_renderer_created,
+                              swapped_out,
+                              hidden,
+                              next_page_id,
+                              screen_info,
+                              accessibility_mode);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(&params);
@@ -1839,13 +1835,12 @@ WebView* RenderViewImpl::createView(
       surface_id,
       cloned_session_storage_namespace_id,
       base::string16(),  // WebCore will take care of setting the correct name.
-      true,  // is_renderer_created
-      false, // swapped_out
-      params.disposition == NEW_BACKGROUND_TAB, // hidden
-      1,     // next_page_id
+      true,              // is_renderer_created
+      false,             // swapped_out
+      params.disposition == NEW_BACKGROUND_TAB,  // hidden
+      1,                                         // next_page_id
       screen_info_,
-      accessibility_mode_,
-      allow_partial_swap_);
+      accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -5057,10 +5052,6 @@ void RenderViewImpl::InstrumentWillComposite() {
   if (!webview()->devToolsAgent())
     return;
   webview()->devToolsAgent()->willComposite();
-}
-
-bool RenderViewImpl::AllowPartialSwap() const {
-  return allow_partial_swap_;
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(

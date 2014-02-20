@@ -178,22 +178,20 @@ class CONTENT_EXPORT RenderViewImpl
  public:
   // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
   // responsible for creating this RenderView.
-  static RenderViewImpl* Create(
-      int32 opener_id,
-      const RendererPreferences& renderer_prefs,
-      const WebPreferences& webkit_prefs,
-      int32 routing_id,
-      int32 main_frame_routing_id,
-      int32 surface_id,
-      int64 session_storage_namespace_id,
-      const base::string16& frame_name,
-      bool is_renderer_created,
-      bool swapped_out,
-      bool hidden,
-      int32 next_page_id,
-      const blink::WebScreenInfo& screen_info,
-      unsigned int accessibility_mode,
-      bool allow_partial_swap);
+  static RenderViewImpl* Create(int32 opener_id,
+                                const RendererPreferences& renderer_prefs,
+                                const WebPreferences& webkit_prefs,
+                                int32 routing_id,
+                                int32 main_frame_routing_id,
+                                int32 surface_id,
+                                int64 session_storage_namespace_id,
+                                const base::string16& frame_name,
+                                bool is_renderer_created,
+                                bool swapped_out,
+                                bool hidden,
+                                int32 next_page_id,
+                                const blink::WebScreenInfo& screen_info,
+                                unsigned int accessibility_mode);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
@@ -727,7 +725,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void InstrumentDidBeginFrame() OVERRIDE;
   virtual void InstrumentDidCancelFrame() OVERRIDE;
   virtual void InstrumentWillComposite() OVERRIDE;
-  virtual bool AllowPartialSwap() const OVERRIDE;
 
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
@@ -1446,10 +1443,6 @@ class CONTENT_EXPORT RenderViewImpl
   int next_snapshot_id_;
   typedef std::map<int, WindowSnapshotCallback> PendingSnapshotMap;
   PendingSnapshotMap pending_snapshots_;
-
-  // Allows to selectively disable partial buffer swap for this renderer's
-  // compositor.
-  bool allow_partial_swap_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop
