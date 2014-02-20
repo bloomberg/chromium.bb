@@ -821,19 +821,6 @@ GL_FUNCTIONS = [
       'const GLenum* attachments' },
 ]
 
-GL_NULLDRAW_FUNCTIONS = [
-{ 'return_type': 'void',
-  'names': ['glClear'],
-  'arguments': 'GLbitfield mask', },
-{ 'return_type': 'void',
-  'names': ['glDrawArrays'],
-  'arguments': 'GLenum mode, GLint first, GLsizei count', },
-{ 'return_type': 'void',
-  'names': ['glDrawElements'],
-  'arguments':
-      'GLenum mode, GLsizei count, GLenum type, const void* indices', },
-]
-
 OSMESA_FUNCTIONS = [
 { 'return_type': 'OSMesaContext',
   'names': ['OSMesaCreateContext'],
@@ -1264,7 +1251,7 @@ GLX_FUNCTIONS = [
 ]
 
 FUNCTION_SETS = [
-  [GL_FUNCTIONS, GL_NULLDRAW_FUNCTIONS, 'gl', [
+  [GL_FUNCTIONS, 'gl', [
       'GL/glext.h',
       'GLES2/gl2ext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
@@ -1272,8 +1259,8 @@ FUNCTION_SETS = [
       'GLES2/gl2chromium.h',
       'GLES2/gl2extchromium.h'
   ], []],
-  [OSMESA_FUNCTIONS, [], 'osmesa', [], []],
-  [EGL_FUNCTIONS, [], 'egl', [
+  [OSMESA_FUNCTIONS, 'osmesa', [], []],
+  [EGL_FUNCTIONS, 'egl', [
       'EGL/eglext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
       'EGL/eglextchromium.h',
@@ -1283,8 +1270,8 @@ FUNCTION_SETS = [
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],
-  [WGL_FUNCTIONS, [], 'wgl', ['GL/wglext.h'], []],
-  [GLX_FUNCTIONS, [], 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
+  [WGL_FUNCTIONS, 'wgl', ['GL/wglext.h'], []],
+  [GLX_FUNCTIONS, 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
 ]
 
 def GenerateHeader(file, functions, set_name, used_extensions):
@@ -1405,8 +1392,7 @@ def GenerateMockHeader(file, functions, set_name):
   file.write('\n')
 
 
-def GenerateSource(
-  file, functions, nulldraw_functions, set_name, used_extensions):
+def GenerateSource(file, functions, set_name, used_extensions):
   """Generates gl_bindings_autogen_x.cc"""
 
   # Write file header.
@@ -1567,17 +1553,6 @@ namespace gfx {
   file.write('}\n')
   file.write('\n')
 
-  # Write empty stubs for functions that want one.
-  file.write('extern "C" {\n')
-  for func in nulldraw_functions:
-    known_as = func['known_as']
-    return_type = func['return_type']
-    arguments = func['arguments']
-    file.write('\n')
-    file.write('static %s GL_BINDING_CALL Stub_%s(%s) {}\n' %
-        (return_type, known_as, arguments))
-  file.write('}  // extern "C"\n')
-
   # Write logging wrappers for each function.
   file.write('extern "C" {\n')
   for func in functions:
@@ -1655,17 +1630,6 @@ namespace gfx {
     file.write('  }\n')
   file.write('  g_debugBindingsInitialized = true;\n')
   file.write('}\n')
-
-  # Write function to initialize the nulldraw function pointers.
-  if nulldraw_functions:
-    file.write('\n')
-    file.write('void Driver%s::InitializeNullDrawBindings() {\n' %
-               set_name.upper())
-
-    for func in nulldraw_functions:
-      first_name = func['known_as']
-      file.write('  fn.%sFn = Stub_%s;\n' % (first_name, first_name))
-    file.write('}\n')
 
   # Write function to clear all function pointers.
   file.write('\n')
@@ -1979,7 +1943,7 @@ def main(argv):
   options, args = parser.parse_args(argv)
 
   if options.inputs:
-    for [_, _, _, headers, _] in FUNCTION_SETS:
+    for [_, _, headers, _] in FUNCTION_SETS:
       for header in headers:
         print ResolveHeader(header, options.header_paths)
     return 0
@@ -1988,15 +1952,11 @@ def main(argv):
   if len(args) >= 1:
     directory = args[0]
 
-  for [functions,
-       nulldraw_functions,
-       set_name,
-       extension_headers,
-       extensions] in FUNCTION_SETS:
+  for [functions, set_name, extension_headers, extensions] in FUNCTION_SETS:
     # Function names can be specified in two ways (list of unique names or list
     # of versions with different binding conditions). Fill in the data to the
     # versions list in case it is missing, so that can be used from here on:
-    for func in functions + nulldraw_functions:
+    for func in functions:
       assert 'versions' in func or 'names' in func, 'Function with no names'
       if 'versions' not in func:
         func['versions'] = [{'name': n} for n in func['names']]
@@ -2025,11 +1985,7 @@ def main(argv):
 
     source_file = open(
         os.path.join(directory, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
-    GenerateSource(source_file,
-                   functions,
-                   nulldraw_functions,
-                   set_name,
-                   used_extensions)
+    GenerateSource(source_file, functions, set_name, used_extensions)
     source_file.close()
 
   header_file = open(

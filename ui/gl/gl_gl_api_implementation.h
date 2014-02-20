@@ -23,6 +23,7 @@ void InitializeStaticGLBindingsGL();
 void InitializeDynamicGLBindingsGL(GLContext* context);
 void InitializeDebugGLBindingsGL();
 void InitializeNullDrawGLBindingsGL();
+bool SetNullDrawGLBindingsEnabledGL(bool enabled);
 void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);

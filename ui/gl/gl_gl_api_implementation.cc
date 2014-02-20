@@ -202,6 +202,51 @@ void DriverGL::InitializeCustomDynamicBindings(GLContext* context) {
       CustomRenderbufferStorageMultisampleEXT);
 }
 
+static void GL_BINDING_CALL NullDrawClearFn(GLbitfield mask) {
+  if (!g_driver_gl.null_draw_bindings_enabled)
+    g_driver_gl.orig_fn.glClearFn(mask);
+}
+
+static void GL_BINDING_CALL
+NullDrawDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
+  if (!g_driver_gl.null_draw_bindings_enabled)
+    g_driver_gl.orig_fn.glDrawArraysFn(mode, first, count);
+}
+
+static void GL_BINDING_CALL NullDrawDrawElementsFn(GLenum mode,
+                                                   GLsizei count,
+                                                   GLenum type,
+                                                   const void* indices) {
+  if (!g_driver_gl.null_draw_bindings_enabled)
+    g_driver_gl.orig_fn.glDrawElementsFn(mode, count, type, indices);
+}
+
+void DriverGL::InitializeNullDrawBindings() {
+  DCHECK(orig_fn.glClearFn == NULL);
+  orig_fn.glClearFn = fn.glClearFn;
+  fn.glClearFn = NullDrawClearFn;
+
+  DCHECK(orig_fn.glDrawArraysFn == NULL);
+  orig_fn.glDrawArraysFn = fn.glDrawArraysFn;
+  fn.glDrawArraysFn = NullDrawDrawArraysFn;
+
+  DCHECK(orig_fn.glDrawElementsFn == NULL);
+  orig_fn.glDrawElementsFn = fn.glDrawElementsFn;
+  fn.glDrawElementsFn = NullDrawDrawElementsFn;
+
+  null_draw_bindings_enabled = true;
+}
+
+bool DriverGL::SetNullDrawBindingsEnabled(bool enabled) {
+  DCHECK(orig_fn.glClearFn != NULL);
+  DCHECK(orig_fn.glDrawArraysFn != NULL);
+  DCHECK(orig_fn.glDrawElementsFn != NULL);
+
+  bool before = null_draw_bindings_enabled;
+  null_draw_bindings_enabled = enabled;
+  return before;
+}
+
 void InitializeStaticGLBindingsGL() {
   g_current_gl_context_tls = new base::ThreadLocalPointer<GLApi>;
   g_driver_gl.InitializeStaticBindings();
@@ -243,6 +288,10 @@ void InitializeDebugGLBindingsGL() {
 
 void InitializeNullDrawGLBindingsGL() {
   g_driver_gl.InitializeNullDrawBindings();
+}
+
+bool SetNullDrawGLBindingsEnabledGL(bool enabled) {
+  return g_driver_gl.SetNullDrawBindingsEnabled(enabled);
 }
 
 void ClearGLBindingsGL() {

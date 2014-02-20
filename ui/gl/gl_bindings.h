@@ -229,12 +229,14 @@ struct GL_EXPORT DriverGL {
   void InitializeCustomDynamicBindings(GLContext* context);
   void InitializeDebugBindings();
   void InitializeNullDrawBindings();
+  bool SetNullDrawBindingsEnabled(bool enabled);
   void ClearBindings();
 
   ProcsGL fn;
   ProcsGL orig_fn;
   ProcsGL debug_fn;
   ExtensionsGL ext;
+  bool null_draw_bindings_enabled;
 
  private:
   void InitializeDynamicBindings(GLContext* context);
