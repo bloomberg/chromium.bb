@@ -94,20 +94,30 @@ uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {
   // Start a capture on the host, so that it continues to receive events during
-  // the drag.
-  ScopedCapturer capturer(source->GetDispatcher()->host());
+  // the drag. This may be second time we are capturing the mouse events - the
+  // first being when a mouse is first pressed. That first capture needs to be
+  // released before the call to GrabPointerWithCursor below, otherwise it may
+  // get released while we still need the pointer grab, which is why we restrict
+  // the scope here.
+  {
+    ScopedCapturer capturer(source->GetDispatcher()->host());
 
-  DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
-  in_move_loop_ = true;
+    DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
+    in_move_loop_ = true;
 
-  XDisplay* display = gfx::GetXDisplay();
+    XDisplay* display = gfx::GetXDisplay();
 
-  grab_input_window_ = CreateDragInputWindow(display);
-  if (!drag_image_.isNull())
-    CreateDragImageWindow();
-  base::MessagePumpX11::Current()->AddDispatcherForWindow(
-      this, grab_input_window_);
-
+    grab_input_window_ = CreateDragInputWindow(display);
+    if (!drag_image_.isNull())
+      CreateDragImageWindow();
+    base::MessagePumpX11::Current()->AddDispatcherForWindow(
+        this, grab_input_window_);
+    // Releasing ScopedCapturer ensures that any other instance of
+    // X11ScopedCapture will not prematurely release grab that will be acquired
+    // below.
+  }
+  // TODO(varkha): Consider integrating GrabPointerWithCursor with
+  // ScopedCapturer to avoid possibility of logically keeping multiple grabs.
   if (!GrabPointerWithCursor(cursor))
     return false;
 
