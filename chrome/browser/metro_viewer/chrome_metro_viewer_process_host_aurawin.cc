@@ -32,6 +32,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/gfx/win/dpi.h"
 #include "url/gurl.h"
 
 namespace {
@@ -154,7 +155,7 @@ void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
                                                        uint32 height) {
   std::vector<ash::internal::DisplayInfo> info_list;
   info_list.push_back(ash::internal::DisplayInfo::CreateFromSpec(
-      base::StringPrintf("%dx%d", width, height)));
+      base::StringPrintf("%dx%d*%f", width, height, gfx::GetModernUIScale())));
   ash::Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(
       info_list);
   aura::RemoteWindowTreeHostWin::Instance()->HandleWindowSizeChanged(width,
