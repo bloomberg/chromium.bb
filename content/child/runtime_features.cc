@@ -117,9 +117,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableWebAudio(false);
 #endif
 
-  if (command_line.HasSwitch(switches::kDisableFullScreen))
-    WebRuntimeFeatures::enableFullscreen(false);
-
   if (command_line.HasSwitch(switches::kEnableEncryptedMedia))
     WebRuntimeFeatures::enableEncryptedMedia(true);
 

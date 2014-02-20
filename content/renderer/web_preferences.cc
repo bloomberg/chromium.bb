@@ -285,7 +285,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(prefs.tabs_to_links);
 
-  settings->setFullScreenEnabled(prefs.fullscreen_enabled);
+  // TODO(scheib): crbug.com/344002 Remove FullScreenEnabled from Blink
+  settings->setFullScreenEnabled(true);
   settings->setAllowDisplayOfInsecureContent(
       prefs.allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(

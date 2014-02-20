@@ -79,7 +79,6 @@ WebPreferences::WebPreferences()
       gesture_tap_highlight_enabled(false),
       accelerated_compositing_for_plugins_enabled(false),
       memory_info_enabled(false),
-      fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
       password_echo_enabled(false),

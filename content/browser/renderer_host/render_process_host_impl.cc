@@ -979,7 +979,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDirectNPAPIRequests,
     switches::kDisableFileSystem,
     switches::kDisableFiltersOverIPC,
-    switches::kDisableFullScreen,
     switches::kDisableGpu,
     switches::kDisableGpuCompositing,
     switches::kDisableGpuVsync,

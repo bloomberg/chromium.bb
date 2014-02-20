@@ -188,9 +188,6 @@ const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 // via field trials.
 const char kDisableForceCompositingMode[]   = "disable-force-compositing-mode";
 
-// Disable the JavaScript Full Screen API.
-const char kDisableFullScreen[]             = "disable-fullscreen";
-
 // Disable deferral of scroll-ending gesture events when a scroll is active.
 const char kDisableGestureDebounce[]        = "disable-gesture-debounce";
 
