@@ -90,7 +90,7 @@ class AddressSanitizerTool(BaseTool):
   # Disable memcmp overlap check.There are blobs (gl drivers)
   # on some android devices that use memcmp on overlapping regions,
   # nothing we can do about that.
-  EXTRA_OPTIONS = 'strict_memcmp=0'
+  EXTRA_OPTIONS = 'strict_memcmp=0,use_sigaltstack=1'
 
   def __init__(self, adb):
     self._adb = adb
