@@ -469,26 +469,26 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
 }
 
 // This helper function scans the active page list for a suitable new active
-// page, starting at the current active page, and optionally skipping the
-// current active page as a candidate.
+// page, starting at the passed in page.
 // When it finds a suitable new active page (one that has free slots), it is
 // set as the new active page and true is returned. If there is no suitable new
-// active page, false is returned.
-static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionBucket* bucket, bool currentPageOk)
+// active page, false is returned and the current active page is set to null.
+// As potential pages are scanned, they are tidied up according to their state.
+// Freed pages are swept on to the free page list and full pages are unlinked
+// from any list.
+static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
 {
-    PartitionPage* page = bucket->activePagesHead;
     if (page == &PartitionRootBase::gSeedPage) {
         ASSERT(!page->nextPage);
         return false;
     }
 
-    if (!currentPageOk)
-        page = page->nextPage;
-
     PartitionPage* nextPage = 0;
+    PartitionBucket* bucket = page->bucket;
+
     for (; page; page = nextPage) {
         nextPage = page->nextPage;
-        ASSERT(page->bucket == bucket->activePagesHead->bucket);
+        ASSERT(page->bucket == bucket);
         ASSERT(page != bucket->freePagesHead);
         ASSERT(!bucket->freePagesHead || page != bucket->freePagesHead->nextPage);
 
@@ -520,7 +520,7 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionBucket* bucket, boo
         }
     }
 
-    bucket->activePagesHead->nextPage = 0;
+    bucket->activePagesHead = 0;
     return false;
 }
 
@@ -624,7 +624,7 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
 
     // First, look for a usable page in the existing active pages list.
     // Change active page, accepting the current page as a candidate.
-    if (LIKELY(partitionSetNewActivePage(bucket, true))) {
+    if (LIKELY(partitionSetNewActivePage(bucket->activePagesHead))) {
         PartitionPage* newPage = bucket->activePagesHead;
         if (LIKELY(newPage->freelistHead != 0)) {
             PartitionFreelistEntry* ret = newPage->freelistHead;
@@ -724,8 +724,8 @@ void partitionFreeSlowPath(PartitionPage* page)
         }
         // If it's the current page, attempt to change it. We'd prefer to leave
         // the page empty as a gentle force towards defragmentation.
-        if (LIKELY(page == bucket->activePagesHead)) {
-            if (partitionSetNewActivePage(bucket, false)) {
+        if (LIKELY(page == bucket->activePagesHead) && page->nextPage) {
+            if (partitionSetNewActivePage(page->nextPage)) {
                 ASSERT(bucket->activePagesHead != page);
                 // Link the empty page back in after the new current page, to
                 // avoid losing a reference to it.
@@ -734,6 +734,9 @@ void partitionFreeSlowPath(PartitionPage* page)
                 PartitionPage* currentPage = bucket->activePagesHead;
                 page->nextPage = currentPage->nextPage;
                 currentPage->nextPage = page;
+            } else {
+                bucket->activePagesHead = page;
+                page->nextPage = 0;
             }
         }
         partitionRegisterEmptyPage(page);

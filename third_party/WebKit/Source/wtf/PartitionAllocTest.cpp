@@ -135,6 +135,19 @@ static void CycleFreeCache(size_t size)
     }
 }
 
+static void CycleGenericFreeCache(size_t size)
+{
+    for (size_t i = 0; i < WTF::kMaxFreeableSpans; ++i) {
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+        WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+        WTF::PartitionBucket* bucket = page->bucket;
+        EXPECT_EQ(1, bucket->activePagesHead->numAllocatedSlots);
+        partitionFreeGeneric(genericAllocator.root(), ptr);
+        EXPECT_EQ(0, bucket->activePagesHead->numAllocatedSlots);
+        EXPECT_NE(-1, bucket->activePagesHead->freeCacheIndex);
+    }
+}
+
 // Check that the most basic of allocate / free pairs work.
 TEST(WTF_PartitionAlloc, Basic)
 {
@@ -894,6 +907,68 @@ TEST(WTF_PartitionAlloc, FreeCache)
         partitionFree(ptr);
         EXPECT_TRUE(page->freelistHead);
     }
+
+    TestShutdown();
+}
+
+// Tests for a bug we had with losing references to free pages.
+TEST(WTF_PartitionAlloc, LostFreePagesBug)
+{
+    TestSetup();
+
+    size_t size = WTF::kPartitionPageSize - kExtraAllocSize;
+
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_TRUE(ptr);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_TRUE(ptr2);
+
+    WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+    WTF::PartitionPage* page2 = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr2));
+    WTF::PartitionBucket* bucket = page->bucket;
+
+    EXPECT_EQ(0, bucket->freePagesHead);
+    EXPECT_EQ(-1, page->numAllocatedSlots);
+    EXPECT_EQ(1, page2->numAllocatedSlots);
+
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+    partitionFreeGeneric(genericAllocator.root(), ptr2);
+
+    EXPECT_EQ(0, bucket->freePagesHead);
+    EXPECT_EQ(0, page->numAllocatedSlots);
+    EXPECT_EQ(0, page2->numAllocatedSlots);
+    EXPECT_TRUE(page->freelistHead);
+    EXPECT_TRUE(page2->freelistHead);
+
+    CycleGenericFreeCache(kTestAllocSize);
+
+    EXPECT_FALSE(page->freelistHead);
+    EXPECT_FALSE(page2->freelistHead);
+
+    EXPECT_FALSE(bucket->freePagesHead);
+    EXPECT_TRUE(bucket->activePagesHead);
+    EXPECT_TRUE(bucket->activePagesHead->nextPage);
+
+    // At this moment, we have two freed pages, on the freelist.
+
+    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_TRUE(ptr);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    EXPECT_TRUE(bucket->activePagesHead);
+    EXPECT_TRUE(bucket->freePagesHead);
+
+    CycleGenericFreeCache(kTestAllocSize);
+
+    // We're now set up to trigger the bug by scanning over the active pages
+    // list, where the current active page is freed, and there exists at least
+    // one freed page in the free pages list.
+    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_TRUE(ptr);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    EXPECT_TRUE(bucket->activePagesHead);
+    EXPECT_TRUE(bucket->freePagesHead);
 
     TestShutdown();
 }
