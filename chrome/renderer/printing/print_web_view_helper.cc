@@ -464,7 +464,9 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::create(NULL);
   web_view->settings()->setJavaScriptEnabled(true);
-  blink::WebFrame* frame = blink::WebFrame::create(NULL);
+
+  // We don't need to use the frame ID for this frame, so we pass 0 for it.
+  blink::WebFrame* frame = blink::WebFrame::create(NULL, 0);
   web_view->setMainFrame(frame);
 
   base::StringValue html(

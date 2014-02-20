@@ -34,9 +34,6 @@ class RenderWidgetHostDelegate;
 // TODO(ajwong): Move NavigationController ownership to the main frame
 // FrameTreeNode. Possibly expose access to it from here.
 //
-// TODO(ajwong): Currently this class only contains FrameTreeNodes for
-// subframes if the --site-per-process flag is enabled.
-//
 // This object is only used on the UI thread.
 class CONTENT_EXPORT FrameTree {
  public:
@@ -58,6 +55,9 @@ class CONTENT_EXPORT FrameTree {
   // Returns the FrameTreeNode with the given |frame_tree_node_id|.
   FrameTreeNode* FindByID(int64 frame_tree_node_id);
 
+  // Returns the FrameTreeNode with the given renderer-specific |routing_id|.
+  FrameTreeNode* FindByRoutingID(int routing_id, int process_id);
+
   // Executes |on_node| on each node in the frame tree.  If |on_node| returns
   // false, terminates the iteration immediately. Returning false is useful
   // if |on_node| is just doing a search over the tree.  The iteration proceeds
@@ -65,27 +65,11 @@ class CONTENT_EXPORT FrameTree {
   // it safe to remove children during the callback.
   void ForEach(const base::Callback<bool(FrameTreeNode*)>& on_node) const;
 
-  // After the FrameTree is created, or after SwapMainFrame() has been called,
-  // the root node does not yet have a frame id. This is allocated by the
-  // renderer and is published to the browser process on the first navigation
-  // after a swap. These two functions are used to set the root node's frame
-  // id.
-  //
-  // TODO(ajwong): Remove these once RenderFrameHost's routing id replaces
-  // frame_id.
-  bool IsFirstNavigationAfterSwap() const;
-  void OnFirstNavigationAfterSwap(int main_frame_id);
-
   // Frame tree manipulation routines.
-  // TODO(creis): These should take in RenderFrameHost routing IDs.
-  RenderFrameHostImpl* AddFrame(int frame_routing_id,
-                                int64 parent_frame_tree_node_id,
-                                int64 frame_id,
+  RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
+                                int new_routing_id,
                                 const std::string& frame_name);
-  void RemoveFrame(RenderFrameHostImpl* render_frame_host,
-                   int64 parent_frame_id,
-                   int64 frame_id);
-  void SetFrameUrl(int64 frame_id, const GURL& url);
+  void RemoveFrame(FrameTreeNode* child);
 
   // Clears process specific-state after a main frame process swap.
   // This destroys most of the frame tree but retains the root node so that
@@ -106,12 +90,10 @@ class CONTENT_EXPORT FrameTree {
 
   // Allows a client to listen for frame removal.  The listener should expect
   // to receive the RenderViewHostImpl containing the frame and the renderer-
-  // specific frame ID of the removed frame.
+  // specific frame routing ID of the removed frame.
   // TODO(creis): These parameters will later change to be the RenderFrameHost.
   void SetFrameRemoveListener(
-      const base::Callback<void(RenderViewHostImpl*, int64)>& on_frame_removed);
-
-  void ClearFrameRemoveListenerForTesting();
+      const base::Callback<void(RenderViewHostImpl*, int)>& on_frame_removed);
 
   // Creates a RenderViewHost for a new main frame RenderFrameHost in the given
   // |site_instance|.  The RenderViewHost will have its Shutdown method called
@@ -132,11 +114,6 @@ class CONTENT_EXPORT FrameTree {
   // the number drops to zero, we call Shutdown on the RenderViewHost.
   void RegisterRenderFrameHost(RenderFrameHostImpl* render_frame_host);
   void UnregisterRenderFrameHost(RenderFrameHostImpl* render_frame_host);
-
-  // Returns the FrameTreeNode with the given renderer-specific |frame_id|.
-  // TODO(creis): Make this private and replace this with a version that takes
-  // in a routing ID.
-  FrameTreeNode* FindByFrameID(int64 frame_id);
 
  private:
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
@@ -168,7 +145,7 @@ class CONTENT_EXPORT FrameTree {
 
   scoped_ptr<FrameTreeNode> root_;
 
-  base::Callback<void(RenderViewHostImpl*, int64)> on_frame_removed_;
+  base::Callback<void(RenderViewHostImpl*, int)> on_frame_removed_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

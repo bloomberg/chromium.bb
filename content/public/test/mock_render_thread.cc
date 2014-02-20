@@ -224,8 +224,6 @@ void MockRenderThread::OnCreateWindow(
 
 // The Frame expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
-                                          int64 parent_frame_id,
-                                          int64 frame_id,
                                           const std::string& frame_name,
                                           int* new_render_frame_id) {
   *new_render_frame_id = new_frame_routing_id_;

@@ -327,7 +327,10 @@ void RenderFrameHostManager::SwappedOutFrame(
   }
 
   // Sanity check that this is for the correct frame.
-  DCHECK_EQ(frame_tree_node_->frame_id(), pending_nav_params_->frame_id);
+  DCHECK_EQ(frame_tree_node_->current_frame_host()->GetRoutingID(),
+            pending_nav_params_->frame_id);
+  DCHECK_EQ(frame_tree_node_->current_frame_host()->GetProcess()->GetID(),
+            pending_nav_params_->global_request_id.child_id);
 
   // Now that the unload handler has run, we need to either initiate the
   // pending transfer (if there is one) or resume the paused response (if not).

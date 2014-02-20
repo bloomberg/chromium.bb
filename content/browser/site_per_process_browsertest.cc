@@ -483,8 +483,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrashSubframe) {
           GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* child = root->child_at(0);
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->child_at(0)->frame_id());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(cross_site_url, child->current_url());
 
   // Crash the subframe process.
   RenderProcessHost* root_process = root->current_frame_host()->GetProcess();
@@ -499,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrashSubframe) {
 
   // Ensure that the child frame still exists but has been cleared.
   EXPECT_EQ(1U, root->child_count());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->child_at(0)->frame_id());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(GURL(), child->current_url());
 
   // Now crash the top-level page to clear the child frame.
   {
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrashSubframe) {
     crash_observer.Wait();
   }
   EXPECT_EQ(0U, root->child_count());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->frame_id());
+  EXPECT_EQ(GURL(), root->current_url());
 }
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the

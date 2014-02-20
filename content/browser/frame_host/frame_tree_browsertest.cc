@@ -70,15 +70,11 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
                 test_server()->GetURL("files/frame_tree/top.html"));
 
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      wc->GetRenderViewHost());
   FrameTreeNode* root = wc->GetFrameTree()->root();
 
-  // Check that the root node is properly created with the frame id of the
-  // initial navigation.
+  // Check that the root node is properly created.
   ASSERT_EQ(3UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
-  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
 
   ASSERT_EQ(2UL, root->child_at(0)->child_count());
   EXPECT_STREQ("1-1-name", root->child_at(0)->frame_name().c_str());
@@ -97,7 +93,6 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
   root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
-  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
 }
 
 // Test that we can navigate away if the previous renderer doesn't clean up its
@@ -114,22 +109,16 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   NavigateToURL(shell(), GURL(kChromeUICrashURL));
   crash_observer.Wait();
 
-  // The frame tree should be cleared, and the frame ID should be reset.
+  // The frame tree should be cleared.
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      wc->GetRenderViewHost());
   FrameTreeNode* root = wc->GetFrameTree()->root();
   EXPECT_EQ(0UL, root->child_count());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->frame_id());
-  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
 
   // Navigate to a new URL.
-  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
-
-  // The frame ID should now be set.
+  GURL url(test_server()->GetURL("files/title1.html"));
+  NavigateToURL(shell(), url);
   EXPECT_EQ(0UL, root->child_count());
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
-  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+  EXPECT_EQ(url, root->current_url());
 }
 
 // Test that we can navigate away if the previous renderer doesn't clean up its
@@ -162,9 +151,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateWithLeftoverFrames) {
   shell()->LoadURL(base_url.Resolve("blank.html"));
   tab_observer.Wait();
 
-  // The frame tree should now be cleared, and the frame ID should be valid.
+  // The frame tree should now be cleared.
   EXPECT_EQ(0UL, root->child_count());
-  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
 }
 
 }  // namespace content

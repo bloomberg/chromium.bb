@@ -31,7 +31,8 @@ class FrameTreeTest : public RenderViewHostTestHarness {
 
  private:
   void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
-    result->append(base::Int64ToString(node->frame_id()));
+    result->append(base::Int64ToString(
+        node->current_frame_host()->GetRoutingID()));
     if (!node->frame_name().empty()) {
       result->append(" '");
       result->append(node->frame_name());
@@ -48,25 +49,6 @@ class FrameTreeTest : public RenderViewHostTestHarness {
   }
 };
 
-// Test that swapping the main frame resets the renderer-assigned frame id.
-//  - On creation, frame id is unassigned.
-//  - After a swap, frame id is unassigned.
-TEST_F(FrameTreeTest, FirstNavigationAfterSwap) {
-  FrameTree frame_tree(new NavigatorImpl(NULL, NULL), NULL, NULL, NULL, NULL);
-
-  EXPECT_TRUE(frame_tree.IsFirstNavigationAfterSwap());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId,
-            frame_tree.root()->frame_id());
-  frame_tree.OnFirstNavigationAfterSwap(1);
-  EXPECT_FALSE(frame_tree.IsFirstNavigationAfterSwap());
-  EXPECT_EQ(1, frame_tree.root()->frame_id());
-
-  frame_tree.ResetForMainFrameSwap();
-  EXPECT_TRUE(frame_tree.IsFirstNavigationAfterSwap());
-  EXPECT_EQ(FrameTreeNode::kInvalidFrameId,
-            frame_tree.root()->frame_id());
-}
-
 // Exercise tree manipulation routines.
 //  - Add a series of nodes and verify tree structure.
 //  - Remove a series of nodes and verify tree structure.
@@ -75,72 +57,71 @@ TEST_F(FrameTreeTest, Shape) {
   // needs.  We may want to consider a test version of this.
   FrameTree* frame_tree =
       static_cast<WebContentsImpl*>(web_contents())->GetFrameTree();
+  FrameTreeNode* root = frame_tree->root();
 
   std::string no_children_node("no children node");
   std::string deep_subtree("node with deep subtree");
 
-  frame_tree->OnFirstNavigationAfterSwap(5);
-
-  ASSERT_EQ("5: []", GetTreeState(frame_tree));
+  ASSERT_EQ("1: []", GetTreeState(frame_tree));
 
   // Simulate attaching a series of frames to build the frame tree.
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 5, 14, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 5, 15, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 5, 16, std::string());
+  frame_tree->AddFrame(root, 14, std::string());
+  frame_tree->AddFrame(root, 15, std::string());
+  frame_tree->AddFrame(root, 16, std::string());
 
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 14, 244, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 15, 255,
-                       no_children_node);
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 14, 245, std::string());
+  frame_tree->AddFrame(root->child_at(0), 244, std::string());
+  frame_tree->AddFrame(root->child_at(1), 255, no_children_node);
+  frame_tree->AddFrame(root->child_at(0), 245, std::string());
 
-  ASSERT_EQ("5: [14: [244: [], 245: []], "
+  ASSERT_EQ("1: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: []]",
             GetTreeState(frame_tree));
 
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 16, 264, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 16, 265, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 16, 266, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 16, 267, deep_subtree);
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 16, 268, std::string());
+  FrameTreeNode* child_16 = root->child_at(2);
+  frame_tree->AddFrame(child_16, 264, std::string());
+  frame_tree->AddFrame(child_16, 265, std::string());
+  frame_tree->AddFrame(child_16, 266, std::string());
+  frame_tree->AddFrame(child_16, 267, deep_subtree);
+  frame_tree->AddFrame(child_16, 268, std::string());
 
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 267, 365, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 365, 455, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 455, 555, std::string());
-  frame_tree->AddFrame(process()->GetNextRoutingID(), 555, 655, std::string());
+  FrameTreeNode* child_267 = child_16->child_at(3);
+  frame_tree->AddFrame(child_267, 365, std::string());
+  frame_tree->AddFrame(child_267->child_at(0), 455, std::string());
+  frame_tree->AddFrame(child_267->child_at(0)->child_at(0), 555, std::string());
+  frame_tree->AddFrame(child_267->child_at(0)->child_at(0)->child_at(0), 655,
+                       std::string());
 
   // Now that's it's fully built, verify the tree structure is as expected.
-  ASSERT_EQ("5: [14: [244: [], 245: []], "
+  ASSERT_EQ("1: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: [264: [], 265: [], 266: [], "
                      "267 'node with deep subtree': "
                          "[365: [455: [555: [655: []]]]], 268: []]]",
             GetTreeState(frame_tree));
 
-  // Test removing of nodes.  Clear the frame removal listener so we can pass a
-  // NULL RFH here.
-  frame_tree->ClearFrameRemoveListenerForTesting();
-  frame_tree->RemoveFrame(NULL, 555, 655);
-  ASSERT_EQ("5: [14: [244: [], 245: []], "
+  FrameTreeNode* child_555 = child_267->child_at(0)->child_at(0)->child_at(0);
+  frame_tree->RemoveFrame(child_555);
+  ASSERT_EQ("1: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: [264: [], 265: [], 266: [], "
                      "267 'node with deep subtree': "
-                         "[365: [455: [555: []]]], 268: []]]",
+                         "[365: [455: []]], 268: []]]",
             GetTreeState(frame_tree));
 
-  frame_tree->RemoveFrame(NULL, 16, 265);
-  ASSERT_EQ("5: [14: [244: [], 245: []], "
+  frame_tree->RemoveFrame(child_16->child_at(1));
+  ASSERT_EQ("1: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: [264: [], 266: [], "
                      "267 'node with deep subtree': "
-                         "[365: [455: [555: []]]], 268: []]]",
+                         "[365: [455: []]], 268: []]]",
             GetTreeState(frame_tree));
 
-  frame_tree->RemoveFrame(NULL, 5, 15);
-  ASSERT_EQ("5: [14: [244: [], 245: []], "
+  frame_tree->RemoveFrame(root->child_at(1));
+  ASSERT_EQ("1: [14: [244: [], 245: []], "
                 "16: [264: [], 266: [], "
                      "267 'node with deep subtree': "
-                         "[365: [455: [555: []]]], 268: []]]",
+                         "[365: [455: []]], 268: []]]",
             GetTreeState(frame_tree));
 }
 

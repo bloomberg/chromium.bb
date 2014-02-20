@@ -460,11 +460,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // User rotated the screen. Calls the "onorientationchange" Javascript hook.
   void SendOrientationChangeEvent(int orientation);
 
-  // TODO(creis): Remove this when we replace frame IDs with RenderFrameHost
-  // routing IDs.
-  int64 main_frame_id() const {
-    return main_frame_id_;
-  }
   int main_frame_routing_id() const {
     return main_frame_routing_id_;
   }
@@ -697,12 +692,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The current state of this RVH.
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   RenderViewHostImplState rvh_state_;
-
-  // The frame id of the main (top level) frame. This value is set on the
-  // initial navigation of a RenderView and reset when the RenderView's
-  // process is terminated (in RenderProcessGone).
-  // TODO(creis): Remove this when we switch to routing IDs for frames.
-  int64 main_frame_id_;
 
   // Routing ID for the main frame's RenderFrameHost.
   int main_frame_routing_id_;

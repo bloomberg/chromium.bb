@@ -28,7 +28,6 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
-  static const int64 kInvalidFrameId;
 
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
@@ -36,7 +35,6 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderViewHostDelegate* render_view_delegate,
                 RenderWidgetHostDelegate* render_widget_delegate,
                 RenderFrameHostManager::Delegate* manager_delegate,
-                int64 frame_id,
                 const std::string& name);
 
   ~FrameTreeNode();
@@ -63,16 +61,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   int64 frame_tree_node_id() const {
     return frame_tree_node_id_;
-  }
-
-  // DO NOT USE.  Only used by FrameTree until we replace renderer-specific
-  // frame IDs with RenderFrameHost routing IDs.
-  void set_frame_id(int64 frame_id) {
-    DCHECK_EQ(frame_id_, kInvalidFrameId);
-    frame_id_ = frame_id;
-  }
-  int64 frame_id() const {
-    return frame_id_;
   }
 
   const std::string& frame_name() const {
@@ -123,12 +111,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
   const int64 frame_tree_node_id_;
-
-  // The renderer-specific identifier for the frame in the page.
-  // TODO(creis): Remove this in favor of the RenderFrameHost's routing ID once
-  // we create FrameTreeNodes for all frames (even without a flag), since this
-  // value can change after cross-process navigations.
-  int64 frame_id_;
 
   // The assigned name of the frame. This name can be empty, unlike the unique
   // name generated internally in the DOM tree.

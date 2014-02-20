@@ -839,7 +839,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
   gfx::Size GetSizeForNewRenderView() const;
 
-  void OnFrameRemoved(RenderViewHostImpl* render_view_host, int64 frame_id);
+  void OnFrameRemoved(RenderViewHostImpl* render_view_host,
+                      int frame_routing_id);
 
   // Helper method that's called whenever |preferred_size_| or
   // |preferred_size_for_capture_| changes, to propagate the new value to the

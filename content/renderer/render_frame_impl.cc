@@ -967,19 +967,16 @@ void RenderFrameImpl::didAccessInitialDocument(blink::WebFrame* frame) {
 blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebFrame* parent,
     const blink::WebString& name) {
-  long long child_frame_identifier = WebFrame::generateEmbedderIdentifier();
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
-  int routing_id = MSG_ROUTING_NONE;
+  int child_routing_id = MSG_ROUTING_NONE;
   Send(new FrameHostMsg_CreateChildFrame(routing_id_,
-                                         parent->identifier(),
-                                         child_frame_identifier,
                                          base::UTF16ToUTF8(name),
-                                         &routing_id));
+                                         &child_routing_id));
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
   // out state.
-  if (routing_id == MSG_ROUTING_NONE) {
+  if (child_routing_id == MSG_ROUTING_NONE) {
     base::debug::Alias(parent);
     base::debug::Alias(&routing_id_);
     bool render_view_is_swapped_out = GetRenderWidget()->is_swapped_out();
@@ -992,9 +989,9 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   }
 
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
-      render_view_.get(), routing_id);
+      render_view_.get(), child_routing_id);
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
-                                                child_frame_identifier);
+                                                child_routing_id);
   parent->appendChild(web_frame);
   child_render_frame->SetWebFrame(web_frame);
 
@@ -1013,12 +1010,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
 
   bool is_subframe = !!frame->parent();
 
-  int64 parent_frame_id = -1;
-  if (is_subframe)
-    parent_frame_id = frame->parent()->identifier();
-
-  Send(new FrameHostMsg_Detach(routing_id_, parent_frame_id,
-                               frame->identifier()));
+  Send(new FrameHostMsg_Detach(routing_id_));
 
   render_view_->UnregisterSwappedOutChildFrame(this);
 

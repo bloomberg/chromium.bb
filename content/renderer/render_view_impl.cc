@@ -832,7 +832,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       RenderFrameImpl::Create(this, params->main_frame_routing_id));
   // The main frame WebFrame object is closed by
   // RenderFrameImpl::frameDetached().
-  webview()->setMainFrame(WebFrame::create(main_render_frame_.get()));
+  webview()->setMainFrame(WebFrame::create(main_render_frame_.get(),
+                                           params->main_frame_routing_id));
   main_render_frame_->SetWebFrame(webview()->mainFrame());
 
   if (switches::IsTouchDragDropEnabled())

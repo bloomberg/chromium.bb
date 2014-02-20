@@ -24,13 +24,6 @@
 
 namespace content {
 
-namespace {
-
-const int64 kFrameId = 13UL;
-
-}  // namespace
-
-
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         int page_id,
                         const GURL& url,
@@ -251,8 +244,6 @@ TestRenderViewHost::TestRenderViewHost(
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
   new TestRenderWidgetHostView(this);
-
-  main_frame_id_ = kFrameId;
 }
 
 TestRenderViewHost::~TestRenderViewHost() {

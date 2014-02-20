@@ -383,15 +383,6 @@ void NavigatorImpl::DidNavigate(
   RenderViewHostImpl* rvh = render_frame_host->render_view_host();
   bool use_site_per_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
-  if (frame_tree->IsFirstNavigationAfterSwap()) {
-    // First navigation should be a main frame navigation.
-    // TODO(creis): This DCHECK is currently disabled for --site-per-process
-    // because cross-process subframe navigations still have a main frame
-    // PageTransition.
-    if (!use_site_per_process)
-      DCHECK(PageTransitionIsMainFrame(params.transition));
-    frame_tree->OnFirstNavigationAfterSwap(params.frame_id);
-  }
 
   // When using --site-per-process, look up the FrameTreeNode ID that the
   // renderer-specific frame ID corresponds to.
@@ -474,7 +465,11 @@ void NavigatorImpl::DidNavigate(
   // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
   // us estimate our process count for implementing OOP iframes.
   // TODO(creis): Remove this when we track which pages commit in each frame.
-  frame_tree->SetFrameUrl(params.frame_id, params.url);
+  FrameTreeNode* node =
+      frame_tree->FindByRoutingID(params.frame_id,
+                                  render_frame_host->GetProcess()->GetID());
+  if (node)
+    node->set_current_url(params.url);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

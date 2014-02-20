@@ -297,27 +297,18 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SwapOut)
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
-// Sent by the renderer when a child frame is created in the renderer. The
-// |parent_frame_id| and |frame_id| are NOT routing ids. They are
-// renderer-allocated identifiers used for tracking a frame's creation.
+// Sent by the renderer when a child frame is created in the renderer.
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-//
-// TOOD(ajwong): replace parent_render_frame_id and frame_id with just the
-// routing ids.
-IPC_SYNC_MESSAGE_CONTROL4_1(FrameHostMsg_CreateChildFrame,
-                            int32 /* parent_render_frame_id */,
-                            int64 /* parent_frame_id */,
-                            int64 /* frame_id */,
+IPC_SYNC_MESSAGE_CONTROL2_1(FrameHostMsg_CreateChildFrame,
+                            int32 /* parent_routing_id */,
                             std::string /* frame_name */,
-                            int /* new_render_frame_id */)
+                            int32 /* new_routing_id */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_Detach,
-                    int64 /* parent_frame_id */,
-                    int64 /* frame_id */)
+IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
 // Sent when the renderer starts a provisional load for a frame.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,

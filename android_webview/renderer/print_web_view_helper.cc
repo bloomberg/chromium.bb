@@ -654,7 +654,9 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::create(this);
   owns_web_view_ = true;
   content::ApplyWebPreferences(prefs, web_view);
-  web_view->setMainFrame(blink::WebFrame::create(this));
+
+  // We don't need to use the frame ID for this frame, so we pass 0 for it.
+  web_view->setMainFrame(blink::WebFrame::create(this, 0));
   frame_.Reset(web_view->mainFrame());
   node_to_print_.reset();
 

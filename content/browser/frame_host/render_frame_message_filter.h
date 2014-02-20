@@ -27,9 +27,7 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
  private:
   virtual ~RenderFrameMessageFilter();
 
-  void OnCreateChildFrame(int parent_render_frame_id,
-                          int64 parent_frame_id,
-                          int64 frame_id,
+  void OnCreateChildFrame(int parent_routing_id,
                           const std::string& frame_name,
                           int* new_render_frame_id);
 

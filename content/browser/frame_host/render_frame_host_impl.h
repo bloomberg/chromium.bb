@@ -56,9 +56,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   void Init();
   int routing_id() const { return routing_id_; }
-  void OnCreateChildFrame(int new_frame_routing_id,
-                          int64 parent_frame_id,
-                          int64 frame_id,
+  void OnCreateChildFrame(int new_routing_id,
                           const std::string& frame_name);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
@@ -124,7 +122,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   friend class TestRenderViewHost;
 
   // IPC Message handlers.
-  void OnDetach(int64 parent_frame_id, int64 frame_id);
+  void OnDetach();
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          int64 parent_frame_id,
                                          bool main_frame,

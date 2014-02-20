@@ -206,7 +206,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       enabled_bindings_(0),
       navigations_suspended_(false),
       has_accessed_initial_document_(false),
-      main_frame_id_(-1),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
@@ -654,7 +653,8 @@ void RenderViewHostImpl::OnCrossSiteResponse(
   FrameTreeNode* node = NULL;
   if (frame_id != -1 &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    node = delegate_->GetFrameTree()->FindByFrameID(frame_id);
+    node = delegate_->GetFrameTree()->FindByRoutingID(frame_id,
+                                                      GetProcess()->GetID());
   }
 
   // TODO(creis): We should always be able to get the RFHM for a frame_id,
@@ -1367,7 +1367,6 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
       static_cast<base::TerminationStatus>(status);
 
   // Reset frame tree state associated with this process.
-  main_frame_id_ = -1;
   delegate_->GetFrameTree()->RenderProcessGone(this);
 
   // Our base class RenderWidgetHost needs to reset some stuff.
@@ -2097,9 +2096,6 @@ void RenderViewHostImpl::AttachToFrameTree() {
   FrameTree* frame_tree = delegate_->GetFrameTree();
 
   frame_tree->ResetForMainFrameSwap();
-  if (main_frame_id() != FrameTreeNode::kInvalidFrameId) {
-    frame_tree->OnFirstNavigationAfterSwap(main_frame_id());
-  }
 }
 
 }  // namespace content

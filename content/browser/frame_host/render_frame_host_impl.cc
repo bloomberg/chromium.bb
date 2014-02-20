@@ -161,18 +161,16 @@ void RenderFrameHostImpl::Init() {
   GetProcess()->ResumeRequestsForView(routing_id_);
 }
 
-void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,
-                                             int64 parent_frame_id,
-                                             int64 frame_id,
+void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
                                              const std::string& frame_name) {
   RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
-      new_frame_routing_id, parent_frame_id, frame_id, frame_name);
+      frame_tree_node_, new_routing_id, frame_name);
   if (delegate_)
     delegate_->RenderFrameCreated(new_frame);
 }
 
-void RenderFrameHostImpl::OnDetach(int64 parent_frame_id, int64 frame_id) {
-  frame_tree_->RemoveFrame(this, parent_frame_id, frame_id);
+void RenderFrameHostImpl::OnDetach() {
+  frame_tree_->RemoveFrame(frame_tree_node_);
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
@@ -251,18 +249,6 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   if (render_view_host_->IsWaitingForUnloadACK())
     return;
 
-  // Cache the main frame id, so we can use it for creating the frame tree
-  // root node when needed.
-  if (PageTransitionIsMainFrame(validated_params.transition)) {
-    if (render_view_host_->main_frame_id_ == -1) {
-      render_view_host_->main_frame_id_ = validated_params.frame_id;
-    } else {
-      // TODO(nasko): We plan to remove the usage of frame_id in navigation
-      // and move to routing ids. This is in place to ensure that a
-      // renderer is not misbehaving and sending us incorrect data.
-      DCHECK_EQ(render_view_host_->main_frame_id_, validated_params.frame_id);
-    }
-  }
   RenderProcessHost* process = GetProcess();
 
   // Attempts to commit certain off-limits URL should be caught more strictly

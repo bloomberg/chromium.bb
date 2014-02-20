@@ -14,21 +14,16 @@ namespace content {
 namespace {
 
 void CreateChildFrameOnUI(int process_id,
-                          int parent_render_frame_id,
-                          int64 parent_frame_id,
-                          int64 frame_id,
+                          int parent_routing_id,
                           const std::string& frame_name,
-                          int new_render_frame_id) {
+                          int new_routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(process_id, parent_render_frame_id);
+      RenderFrameHostImpl::FromID(process_id, parent_routing_id);
   // Handles the RenderFrameHost being deleted on the UI thread while
   // processing a subframe creation message.
-  if (render_frame_host) {
-    render_frame_host->OnCreateChildFrame(new_render_frame_id,
-                                          parent_frame_id, frame_id,
-                                          frame_name);
-  }
+  if (render_frame_host)
+    render_frame_host->OnCreateChildFrame(new_routing_id, frame_name);
 }
 
 }  // namespace
@@ -56,17 +51,14 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void RenderFrameMessageFilter::OnCreateChildFrame(
-    int parent_render_frame_id,
-    int64 parent_frame_id,
-    int64 frame_id,
+    int parent_routing_id,
     const std::string& frame_name,
-    int* new_render_frame_id) {
-  *new_render_frame_id = render_widget_helper_->GetNextRoutingID();
+    int* new_routing_id) {
+  *new_routing_id = render_widget_helper_->GetNextRoutingID();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CreateChildFrameOnUI, render_process_id_,
-                 parent_render_frame_id, parent_frame_id, frame_id, frame_name,
-                 *new_render_frame_id));
+                 parent_routing_id, frame_name, *new_routing_id));
 }
 
 }  // namespace content

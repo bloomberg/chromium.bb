@@ -14,7 +14,6 @@
 
 namespace content {
 
-const int64 FrameTreeNode::kInvalidFrameId = -1;
 int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 
 FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
@@ -23,7 +22,6 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                              RenderViewHostDelegate* render_view_delegate,
                              RenderWidgetHostDelegate* render_widget_delegate,
                              RenderFrameHostManager::Delegate* manager_delegate,
-                             int64 frame_id,
                              const std::string& name)
     : frame_tree_(frame_tree),
       navigator_(navigator),
@@ -33,7 +31,6 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       render_widget_delegate,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
-      frame_id_(frame_id),
       frame_name_(name),
       parent_(NULL) {}
 
@@ -73,7 +70,6 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 }
 
 void FrameTreeNode::ResetForNewProcess() {
-  frame_id_ = kInvalidFrameId;
   current_url_ = GURL();
 
   // The children may not have been cleared if a cross-process navigation

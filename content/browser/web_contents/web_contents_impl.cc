@@ -3079,7 +3079,8 @@ void WebContentsImpl::RequestTransferURL(
   int64 frame_tree_node_id = -1;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
       source_frame_id != -1) {
-    FrameTreeNode* source_node = frame_tree_.FindByFrameID(source_frame_id);
+    FrameTreeNode* source_node = frame_tree_.FindByRoutingID(
+        source_frame_id, old_request_id.child_id);
     if (source_node)
       frame_tree_node_id = source_node->frame_tree_node_id();
   }
@@ -3637,9 +3638,9 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView() const {
 
 void WebContentsImpl::OnFrameRemoved(
     RenderViewHostImpl* render_view_host,
-    int64 frame_id) {
+    int frame_routing_id) {
    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                     FrameDetached(render_view_host, frame_id));
+                     FrameDetached(render_view_host, frame_routing_id));
 }
 
 void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {

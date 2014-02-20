@@ -31,11 +31,13 @@ bool FrameTreeNodeForId(int64 frame_tree_node_id,
   return true;
 }
 
-// TODO(creis): Remove this version along with FrameTreeNode::frame_id().
-bool FrameTreeNodeForFrameId(int64 frame_id,
-                             FrameTreeNode** out_node,
-                             FrameTreeNode* node) {
-  if (node->frame_id() == frame_id) {
+bool FrameTreeNodeForRoutingId(int routing_id,
+                               int process_id,
+                               FrameTreeNode** out_node,
+                               FrameTreeNode* node) {
+  // TODO(creis): Look through the swapped out RFHs as well.
+  if (node->current_frame_host()->GetProcess()->GetID() == process_id &&
+      node->current_frame_host()->GetRoutingID() == routing_id) {
     *out_node = node;
     // Terminate iteration once the node has been found.
     return false;
@@ -69,7 +71,6 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
-                              FrameTreeNode::kInvalidFrameId,
                               std::string())) {
 }
 
@@ -79,6 +80,13 @@ FrameTree::~FrameTree() {
 FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
   FrameTreeNode* node = NULL;
   ForEach(base::Bind(&FrameTreeNodeForId, frame_tree_node_id, &node));
+  return node;
+}
+
+FrameTreeNode* FrameTree::FindByRoutingID(int routing_id, int process_id) {
+  FrameTreeNode* node = NULL;
+  ForEach(
+      base::Bind(&FrameTreeNodeForRoutingId, routing_id, process_id, &node));
   return node;
 }
 
@@ -98,67 +106,34 @@ void FrameTree::ForEach(
   }
 }
 
-bool FrameTree::IsFirstNavigationAfterSwap() const {
-  return root_->frame_id() == FrameTreeNode::kInvalidFrameId;
-}
-
-void FrameTree::OnFirstNavigationAfterSwap(int main_frame_id) {
-  root_->set_frame_id(main_frame_id);
-}
-
-RenderFrameHostImpl* FrameTree::AddFrame(int frame_routing_id,
-                                         int64 parent_frame_id,
-                                         int64 frame_id,
+RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
+                                         int new_routing_id,
                                          const std::string& frame_name) {
-  FrameTreeNode* parent = FindByFrameID(parent_frame_id);
-  // TODO(ajwong): Should the renderer be killed here? Would there be a race on
-  // shutdown that might make this case possible?
-  if (!parent)
-    return NULL;
-
   scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
       this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
-      render_widget_delegate_, manager_delegate_, frame_id, frame_name));
+      render_widget_delegate_, manager_delegate_, frame_name));
   FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
-  parent->AddChild(node.Pass(), frame_routing_id);
+  parent->AddChild(node.Pass(), new_routing_id);
   return node_ptr->current_frame_host();
 }
 
-void FrameTree::RemoveFrame(RenderFrameHostImpl* render_frame_host,
-                            int64 parent_frame_id,
-                            int64 frame_id) {
-  // If switches::kSitePerProcess is not specified, then the FrameTree only
-  // contains a node for the root element. However, even in this case
-  // frame detachments need to be broadcast outwards.
-  //
-  // TODO(ajwong): Move this below the |parent| check after the FrameTree is
-  // guaranteed to be correctly populated even without the
-  // switches::kSitePerProcess flag.
-  FrameTreeNode* parent = FindByFrameID(parent_frame_id);
-  FrameTreeNode* child = FindByFrameID(frame_id);
-  if (!on_frame_removed_.is_null()) {
-    on_frame_removed_.Run(
-        render_frame_host->render_view_host(), frame_id);
+void FrameTree::RemoveFrame(FrameTreeNode* child) {
+  FrameTreeNode* parent = child->parent();
+  if (!parent) {
+    NOTREACHED() << "Unexpected RemoveFrame call for main frame.";
+    return;
   }
 
-  // TODO(ajwong): Should the renderer be killed here? Would there be a race on
-  // shutdown that might make this case possible?
-  if (!parent || !child)
-    return;
+  // Notify observers of the frame removal.
+  RenderFrameHostImpl* render_frame_host = child->current_frame_host();
+  if (!on_frame_removed_.is_null()) {
+    on_frame_removed_.Run(
+        render_frame_host->render_view_host(),
+        render_frame_host->GetRoutingID());
+  }
 
   parent->RemoveChild(child);
-}
-
-void FrameTree::SetFrameUrl(int64 frame_id, const GURL& url) {
-  FrameTreeNode* node = FindByFrameID(frame_id);
-  // TODO(ajwong): Should the renderer be killed here? Would there be a race on
-  // shutdown that might make this case possible?
-  if (!node)
-    return;
-
-  if (node)
-    node->set_current_url(url);
 }
 
 void FrameTree::ResetForMainFrameSwap() {
@@ -180,12 +155,8 @@ RenderFrameHostImpl* FrameTree::GetMainFrame() const {
 }
 
 void FrameTree::SetFrameRemoveListener(
-    const base::Callback<void(RenderViewHostImpl*, int64)>& on_frame_removed) {
+    const base::Callback<void(RenderViewHostImpl*, int)>& on_frame_removed) {
   on_frame_removed_ = on_frame_removed;
-}
-
-void FrameTree::ClearFrameRemoveListenerForTesting() {
-  on_frame_removed_.Reset();
 }
 
 RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
@@ -285,12 +256,6 @@ void FrameTree::UnregisterRenderFrameHost(
     }
     CHECK(render_view_host_found);
   }
-}
-
-FrameTreeNode* FrameTree::FindByFrameID(int64 frame_id) {
-  FrameTreeNode* node = NULL;
-  ForEach(base::Bind(&FrameTreeNodeForFrameId, frame_id, &node));
-  return node;
 }
 
 }  // namespace content
