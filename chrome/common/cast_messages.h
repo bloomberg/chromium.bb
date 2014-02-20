@@ -16,10 +16,14 @@
 #define IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_START CastMsgStart
 
-IPC_ENUM_TRAITS(media::cast::transport::AudioCodec)
-IPC_ENUM_TRAITS(media::cast::transport::VideoCodec)
-IPC_ENUM_TRAITS(media::cast::transport::RtcpSenderFrameStatus)
-IPC_ENUM_TRAITS(media::cast::transport::CastTransportStatus)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::AudioCodec,
+                          media::cast::transport::kAudioCodecLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::VideoCodec,
+                          media::cast::transport::kVideoCodecLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::RtcpSenderFrameStatus,
+                          media::cast::transport::kRtcpSenderFrameStatusLast)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
+                          media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedAudioFrame)
   IPC_STRUCT_TRAITS_MEMBER(codec)

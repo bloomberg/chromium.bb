@@ -23,9 +23,18 @@ enum RtcpMode {
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
 };
 
-enum VideoCodec { kVp8, kH264, };
+enum VideoCodec {
+  kVp8,
+  kH264,
+  kVideoCodecLast = kH264
+};
 
-enum AudioCodec { kOpus, kPcm16, kExternalAudio, };
+enum AudioCodec {
+  kOpus,
+  kPcm16,
+  kExternalAudio,
+  kAudioCodecLast = kExternalAudio
+};
 
 struct RtpConfig {
   RtpConfig();
@@ -104,6 +113,7 @@ enum RtcpSenderFrameStatus {
   kRtcpSenderFrameStatusDroppedByEncoder = 1,
   kRtcpSenderFrameStatusDroppedByFlowControl = 2,
   kRtcpSenderFrameStatusSentToNetwork = 3,
+  kRtcpSenderFrameStatusLast = kRtcpSenderFrameStatusSentToNetwork
 };
 
 struct RtcpSenderFrameLogMessage {
