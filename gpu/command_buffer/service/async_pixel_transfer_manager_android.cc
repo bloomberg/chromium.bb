@@ -57,7 +57,6 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           !base::android::SysUtils::IsLowEndDevice()) {
         return new AsyncPixelTransferManagerEGL;
       }
-      LOG(INFO) << "Async pixel transfers not supported";
       return new AsyncPixelTransferManagerIdle;
     case gfx::kGLImplementationMockGL:
       return new AsyncPixelTransferManagerStub;
