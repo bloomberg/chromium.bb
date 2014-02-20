@@ -225,6 +225,8 @@
     'renderer/media/buffered_resource_loader.h',
     'renderer/media/cache_util.cc',
     'renderer/media/cache_util.h',
+    'renderer/media/cdm_session_adapter.cc',
+    'renderer/media/cdm_session_adapter.h',
     'renderer/media/crypto/content_decryption_module_factory.cc',
     'renderer/media/crypto/content_decryption_module_factory.h',
     'renderer/media/crypto/key_systems.cc',

@@ -7,24 +7,23 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/renderer/media/cdm_session_adapter.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     uint32 session_id,
-    media::MediaKeys* media_keys,
     Client* client,
-    const SessionClosedCB& session_closed_cb)
-    : media_keys_(media_keys),
+    const scoped_refptr<CdmSessionAdapter>& adapter)
+    : adapter_(adapter),
       client_(client),
-      session_closed_cb_(session_closed_cb),
       session_id_(session_id) {
-  DCHECK(media_keys_);
 }
 
 WebContentDecryptionModuleSessionImpl::
-~WebContentDecryptionModuleSessionImpl() {
+    ~WebContentDecryptionModuleSessionImpl() {
+  adapter_->RemoveSession(session_id_);
 }
 
 blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
@@ -42,18 +41,18 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     return;
   }
 
-  media_keys_->CreateSession(
+  adapter_->InitializeNewSession(
       session_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
                                                    size_t response_length) {
   DCHECK(response);
-  media_keys_->UpdateSession(session_id_, response, response_length);
+  adapter_->UpdateSession(session_id_, response, response_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::release() {
-  media_keys_->ReleaseSession(session_id_);
+  adapter_->ReleaseSession(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
@@ -83,8 +82,6 @@ void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
   client_->close();
-  if (!session_closed_cb_.is_null())
-    base::ResetAndReturn(&session_closed_cb_).Run(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
