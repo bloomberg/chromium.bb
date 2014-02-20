@@ -34,6 +34,20 @@ std::string GetDefaultLocale() {
   return ConvertJavaStringToUTF8(locale);
 }
 
+bool IsSystemLayoutDirectionRtl() {
+  static bool is_system_layout_direction_rtl_cached = false;
+  static bool system_layout_direction_rtl_cache;
+
+  if (!is_system_layout_direction_rtl_cached) {
+    is_system_layout_direction_rtl_cached = true;
+    JNIEnv* env = base::android::AttachCurrentThread();
+    system_layout_direction_rtl_cache = static_cast<bool>(
+        Java_LocalizationUtils_isSystemLayoutDirectionRtl(env));
+  }
+
+  return system_layout_direction_rtl_cache;
+}
+
 namespace {
 
 // Common prototype of ICU uloc_getXXX() functions.

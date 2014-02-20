@@ -4,10 +4,9 @@
 
 package org.chromium.ui.base;
 
-import android.os.Build;
-import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
@@ -23,6 +22,8 @@ public class LocalizationUtils {
     public static final int UNKNOWN_DIRECTION = 0;
     public static final int RIGHT_TO_LEFT = 1;
     public static final int LEFT_TO_RIGHT = 2;
+
+    private static Boolean sIsSystemLayoutDirectionRtl;
 
     private LocalizationUtils() { /* cannot be instantiated */ }
 
@@ -65,12 +66,15 @@ public class LocalizationUtils {
      *         RTL layout support is from Jelly Bean MR1, so if the version is lower
      *         than that, it is always false.
      */
+    @CalledByNative
     public static boolean isSystemLayoutDirectionRtl() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
-                    == View.LAYOUT_DIRECTION_RTL;
+        if (sIsSystemLayoutDirectionRtl == null) {
+            sIsSystemLayoutDirectionRtl = Boolean.valueOf(
+                    ApiCompatibilityUtils.getLayoutDirectionFromLocale(Locale.getDefault()) ==
+                    View.LAYOUT_DIRECTION_RTL);
         }
-        return false;
+
+        return sIsSystemLayoutDirectionRtl.booleanValue();
     }
 
     /**

@@ -21,6 +21,8 @@ UI_BASE_EXPORT base::string16 GetDisplayNameForLocale(
     const std::string& locale,
     const std::string& display_locale);
 
+UI_BASE_EXPORT bool IsSystemLayoutDirectionRtl();
+
 UI_BASE_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
 
 }  // namespace l10n_util
