@@ -446,4 +446,26 @@ public class AwContentsTest extends AwTestBase {
         });
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testEscapingOfErrorPage() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+        String SCRIPT = "window.failed == true";
+
+        enableJavaScriptOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        loadUrlAsync(awContents,
+                "file:///file-that-does-not-exist#<script>window.failed = true;</script>");
+        // We must wait for two onPageFinished callbacks. One for the original failing URL, and
+        // one for the error page that we then display to the user.
+        onPageFinishedHelper.waitForCallback(currentCallCount, 2, WAIT_TIMEOUT_MS,
+                                             TimeUnit.MILLISECONDS);
+
+        assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
+                SCRIPT));
+    }
+
 }

@@ -22,6 +22,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -170,7 +171,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     }
 
     ReplaceSubstringsAfterOffset(&contents, 0, "%s",
-                                 error_url.possibly_invalid_spec());
+        net::EscapeForHTML(error_url.possibly_invalid_spec()));
     *error_html = contents;
   }
   if (error_description) {
