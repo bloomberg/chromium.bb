@@ -144,19 +144,6 @@ enum OpenMode {
   OPEN_OR_CREATE_FILE,
 };
 
-// Priority of a job.  Higher values are lower priority.
-enum ContextType {
-  USER_INITIATED,
-  BACKGROUND,
-  // Indicates the number of values of this enum.
-  NUM_CONTEXT_TYPES,
-};
-
-struct ClientContext {
-  explicit ClientContext(ContextType in_type) : type(in_type) {}
-  ContextType type;
-};
-
 // Option enum to control eligible entries for SearchMetadata().
 // SEARCH_METADATA_ALL is the default to investigate all the entries.
 // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS excludes the hosted documents.

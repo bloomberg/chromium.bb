@@ -25,6 +25,7 @@ namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace internal {
 class FileCache;

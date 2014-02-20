@@ -10,7 +10,6 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/job_queue.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -26,6 +25,19 @@ class SeqencedTaskRunner;
 namespace drive {
 
 class EventLogger;
+
+// Priority of a job.  Higher values are lower priority.
+enum ContextType {
+  USER_INITIATED,
+  BACKGROUND,
+  // Indicates the number of values of this enum.
+  NUM_CONTEXT_TYPES,
+};
+
+struct ClientContext {
+  explicit ClientContext(ContextType in_type) : type(in_type) {}
+  ContextType type;
+};
 
 // The JobScheduler is responsible for queuing and scheduling drive jobs.
 // Because jobs are executed concurrently by priority and retried for network
