@@ -130,14 +130,13 @@ PingLoader::PingLoader(Frame* frame, ResourceRequest& request, const FetchInitia
     , m_identifier(createUniqueIdentifier())
 {
     frame->loader().client()->didDispatchPingLoader(request.url());
+    frame->loader().fetchContext().dispatchWillSendRequest(frame->loader().documentLoader(), m_identifier, request, ResourceResponse(), initiatorInfo);
 
     m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
     ASSERT(m_loader);
     blink::WrappedResourceRequest wrappedRequest(request);
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
-
-    InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
     // If the server never responds, FrameLoader won't be able to cancel this load and
     // we'll sit here waiting forever. Set a very generous timeout, just in case.
