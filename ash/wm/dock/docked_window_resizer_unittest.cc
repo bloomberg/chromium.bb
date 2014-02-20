@@ -545,11 +545,16 @@ TEST_P(DockedWindowResizerTest, AttachMaximize) {
 TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
   if (!SupportsHostWindowResize())
     return;
+  UpdateDisplay("600x600");
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 50);
+
+  // Docking second window should not minimize the first.
+  wm::WindowState* window_state1 = wm::GetWindowState(w1.get());
+  EXPECT_FALSE(window_state1->IsMinimized());
 
   // Both windows should be docked at the right edge.
   EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
@@ -569,6 +574,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
   DragEnd();
 
   // The first window should be still docked.
+  EXPECT_FALSE(window_state1->IsMinimized());
   EXPECT_EQ(w1->GetRootWindow()->GetBoundsInScreen().right(),
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
