@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // Use the <code>chrome.socket</code> API to send and receive data over the
-// network using TCP and UDP connections.
+// network using TCP and UDP connections. <b>Note:</b> Starting with Chrome 33,
+// this API is deprecated in favor of the $ref:sockets.udp, $ref:sockets.tcp and
+// $ref:sockets.tcpServer APIs.
 namespace socket {
   enum SocketType {
     tcp,
