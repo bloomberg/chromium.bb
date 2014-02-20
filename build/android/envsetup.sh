@@ -14,13 +14,6 @@ fi
 
 # Source functions script.  The file is in the same directory as this script.
 SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
-. "${SCRIPT_DIR}"/envsetup_functions.sh
-
-export ANDROID_SDK_BUILD=1  # Default to SDK build.
-
-if ! process_options "$@" ; then
-  return 1
-fi
 
 # Get host architecture, and abort if it is 32-bit.
 host_arch=$(uname -m)
@@ -53,7 +46,43 @@ the one you want."
   echo "${CHROME_SRC}"
 fi
 
-sdk_build_init
+# Allow the caller to override a few environment variables. If any of them is
+# unset, we default to a sane value that's known to work. This allows for
+# experimentation with a custom SDK.
+if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
+  export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
+fi
+if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
+  export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+fi
+
+# Add Android SDK tools to system path.
+export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
+export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
+
+# Add Chromium Android development scripts to system path.
+# Must be after CHROME_SRC is set.
+export PATH=$PATH:${CHROME_SRC}/build/android
+
+# The set of GYP_DEFINES to pass to gyp.
+DEFINES="OS=android"
+
+if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
+  # These defines are used by various chrome build scripts to tag the binary's
+  # version string as 'official' in linux builds (e.g. in
+  # chrome/trunk/src/chrome/tools/build/version.py).
+  export OFFICIAL_BUILD=1
+  export CHROMIUM_BUILD="_google_chrome"
+  export CHROME_BUILD_TYPE="_official"
+fi
+
+# TODO(thakis), Jan 18 2014: Remove this after two weeks or so, after telling
+# everyone to set use_goma in GYP_DEFINES instead of a GOMA_DIR env var.
+if [[ -d $GOMA_DIR ]]; then
+  DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
+fi
+
+export GYP_DEFINES="${DEFINES}"
 
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh
