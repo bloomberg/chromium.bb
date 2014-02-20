@@ -46,8 +46,6 @@ class TestLoginUtils : public LoginUtils {
 
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
-  virtual void StartCertLoader(Profile* user_profile) OVERRIDE;
-
  private:
   std::string expected_username_;
   std::string expected_password_;

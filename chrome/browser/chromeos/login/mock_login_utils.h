@@ -46,7 +46,6 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
   MOCK_METHOD1(InitRlzDelayed, void(Profile*));
-  MOCK_METHOD1(StartCertLoader, void(Profile*));
 
   void DelegateToFake();
   FakeLoginUtils* GetFakeLoginUtils();

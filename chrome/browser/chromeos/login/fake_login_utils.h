@@ -34,7 +34,6 @@ class FakeLoginUtils : public LoginUtils {
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
-  virtual void StartCertLoader(Profile* user_profile) OVERRIDE;
 
   void SetExpectedCredentials(const std::string& username,
                               const std::string& password);

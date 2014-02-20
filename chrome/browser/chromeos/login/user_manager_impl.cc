@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/managed_mode/chromeos/managed_user_password_service_factory.h"
 #include "chrome/browser/managed_mode/chromeos/manager_password_service_factory.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -54,6 +55,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -167,6 +169,15 @@ void ResolveLocale(
   l10n_util::CheckAndResolveLocale(raw_locale, &resolved_locale);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(on_resolve_callback, resolved_locale));
+}
+
+// Callback to GetNSSCertDatabaseForProfile. It starts CertLoader using the
+// provided NSS database. It must be called for primary user only.
+void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
+  if (!CertLoader::IsInitialized())
+    return;
+
+  CertLoader::Get()->StartWithNSSDB(database);
 }
 
 }  // namespace
@@ -909,12 +920,11 @@ void UserManagerImpl::Observe(int type,
       RetrieveTrustedDevicePolicies();
       UpdateOwnership();
       break;
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
+      Profile* profile = content::Details<Profile>(details).ptr();
       if (IsUserLoggedIn() &&
           !IsLoggedInAsGuest() &&
           !IsLoggedInAsKioskApp()) {
-        Profile* profile = content::Details<Profile>(details).ptr();
-
         if (IsLoggedInAsLocallyManagedUser())
           ManagedUserPasswordServiceFactory::GetForProfile(profile);
         if (IsLoggedInAsRegularUser())
@@ -928,7 +938,20 @@ void UserManagerImpl::Observe(int type,
           multi_profile_first_run_notification_->UserProfilePrepared(profile);
         }
       }
+
+      // Now that the user profile has been initialized and
+      // |GetNSSCertDatabaseForProfile| is safe to be used, get the NSS cert
+      // database for the primary user and start certificate loader with it.
+      if (IsUserLoggedIn() &&
+          GetPrimaryUser() &&
+          profile == GetProfileByUser(GetPrimaryUser()) &&
+          CertLoader::IsInitialized() &&
+          base::SysInfo::IsRunningOnChromeOS()) {
+        GetNSSCertDatabaseForProfile(profile,
+                                     base::Bind(&OnGetNSSCertDatabaseForUser));
+      }
       break;
+    }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       User* user = GetUserByProfile(profile);

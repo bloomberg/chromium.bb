@@ -55,7 +55,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -68,7 +67,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -86,10 +84,6 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
-
-namespace net {
-class NSSCertDatabase;
-}
 
 namespace chromeos {
 
@@ -144,7 +138,6 @@ class LoginUtilsImpl
       LoginStatusConsumer* consumer) OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
-  virtual void StartCertLoader(Profile* user_profile) OVERRIDE;
 
   // OAuth2LoginManager::Observer overrides.
   virtual void OnSessionRestoreStateChanged(
@@ -216,10 +209,6 @@ class LoginUtilsImpl
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
-
-  // Starts CertLoader with the provided NSS database. It must be called at most
-  // once, and with the primary user's database.
-  void StartCertLoaderWithNSSDB(net::NSSCertDatabase* database);
 
   // Attempts restarting the browser process and esures that this does
   // not happen while we are still fetching new OAuth refresh tokens.
@@ -659,12 +648,10 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(user_profile));
 
-  // Initialize RLZ and CertLoader only for primary user.
+  // Initialize RLZ only for primary user.
   if (UserManager::Get()->GetPrimaryUser() ==
       UserManager::Get()->GetUserByProfile(user_profile)) {
     InitRlzDelayed(user_profile);
-    if (CertLoader::IsInitialized())
-      StartCertLoader(user_profile);
   }
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
@@ -715,16 +702,6 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
   if (delegate_)
     delegate_->OnRlzInitialized(user_profile);
 #endif
-}
-
-void LoginUtilsImpl::StartCertLoader(Profile* user_profile) {
-  GetNSSCertDatabaseForProfile(
-      user_profile,
-      base::Bind(&LoginUtilsImpl::StartCertLoaderWithNSSDB, AsWeakPtr()));
-}
-
-void LoginUtilsImpl::StartCertLoaderWithNSSDB(net::NSSCertDatabase* database) {
-  CertLoader::Get()->StartWithNSSDB(database);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

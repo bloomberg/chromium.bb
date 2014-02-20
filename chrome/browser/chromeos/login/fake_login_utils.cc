@@ -109,10 +109,6 @@ void FakeLoginUtils::InitRlzDelayed(Profile* user_profile) {
   NOTREACHED() << "Method not implemented.";
 }
 
-void FakeLoginUtils::StartCertLoader(Profile* user_profile) {
-  NOTREACHED() << "Method not implemented.";
-}
-
 Profile* FakeLoginUtils::CreateProfile(const std::string& username_hash) {
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);

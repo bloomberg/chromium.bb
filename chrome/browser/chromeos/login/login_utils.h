@@ -103,9 +103,6 @@ class LoginUtils {
 
   // Initialize RLZ.
   virtual void InitRlzDelayed(Profile* user_profile) = 0;
-
-  // Initiates process of starting CertLoader for the user_profile.
-  virtual void StartCertLoader(Profile* user_profile) = 0;
 };
 
 }  // namespace chromeos
