@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 #include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 
@@ -59,27 +60,58 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
   // Unknow url will return false.
   EXPECT_FALSE(handler_->Open(kUnknownStreamUrl, &reader));
   EXPECT_TRUE(handler_->Open(kTestStreamUrl, &reader));
-  cricket::WebRtcVideoFrame test_frame;
-  int width = 640;
-  int height = 360;
+
+  size_t width = 640;
+  size_t height = 360;
   int64 et = 123456;
   int64 ts = 789012;
-  test_frame.InitToBlack(width, height, 1, 1, et, ts);
+  size_t size = VideoFrame::SizeOf(width, height);
+  std::vector<uint8_t> test_buffer(size);
+  for (size_t i = 0; i < size; ++i) {
+    test_buffer[i] = (i & 0xFF);
+  }
+
+  // A new frame is captured.
+  cricket::CapturedFrame captured_frame;
+  captured_frame.width = width;
+  captured_frame.height = height;
+  captured_frame.fourcc = cricket::FOURCC_I420;
+  // cricket::CapturedFrame time is in nanoseconds.
+  captured_frame.elapsed_time = et;
+  captured_frame.time_stamp = ts;
+  captured_frame.data = &test_buffer[0];
+  captured_frame.data_size = size;
+  captured_frame.pixel_height = 1;
+  captured_frame.pixel_width = 1;
+
+  // The frame is delivered to VideoSourceHandler as cricket::VideoFrame.
+  cricket::WebRtcVideoFrame i420_frame;
+  EXPECT_TRUE(i420_frame.Alias(&captured_frame, width, height));
   cricket::VideoRenderer* receiver = handler_->GetReceiver(&reader);
   ASSERT(receiver != NULL);
-  receiver->RenderFrame(&test_frame);
+  receiver->RenderFrame(&i420_frame);
 
+  // Compare |frame| to |captured_frame|.
   const VideoFrame* frame = reader.last_frame();
   ASSERT_TRUE(frame != NULL);
+  EXPECT_EQ(width, frame->GetWidth());
+  EXPECT_EQ(height, frame->GetHeight());
+  EXPECT_EQ(et, frame->GetElapsedTime());
+  EXPECT_EQ(ts, frame->GetTimeStamp());
+  std::vector<uint8_t> tmp_buffer1(size);
+  EXPECT_EQ(size, frame->CopyToBuffer(&tmp_buffer1[0], size));
+  EXPECT_TRUE(std::equal(test_buffer.begin(), test_buffer.end(),
+                         tmp_buffer1.begin()));
 
-  // Compare |frame| to |test_frame|.
-  EXPECT_EQ(test_frame.GetWidth(), frame->GetWidth());
-  EXPECT_EQ(test_frame.GetHeight(), frame->GetHeight());
-  EXPECT_EQ(test_frame.GetElapsedTime(), frame->GetElapsedTime());
-  EXPECT_EQ(test_frame.GetTimeStamp(), frame->GetTimeStamp());
-  EXPECT_EQ(test_frame.GetYPlane(), frame->GetYPlane());
-  EXPECT_EQ(test_frame.GetUPlane(), frame->GetUPlane());
-  EXPECT_EQ(test_frame.GetVPlane(), frame->GetVPlane());
+  // Invalid the original frame
+  memset(&test_buffer[0], 0, size);
+  test_buffer.clear();
+
+  // We should still have the same |frame|.
+  std::vector<uint8_t> tmp_buffer2(size);
+  EXPECT_EQ(size, frame->CopyToBuffer(&tmp_buffer2[0], size));
+  EXPECT_TRUE(std::equal(tmp_buffer1.begin(), tmp_buffer1.end(),
+                         tmp_buffer2.begin()));
 
   EXPECT_FALSE(handler_->Close(NULL));
   EXPECT_TRUE(handler_->Close(&reader));

@@ -36,9 +36,11 @@ class PpFrameReceiver : public cricket::VideoRenderer {
   virtual bool RenderFrame(const cricket::VideoFrame* frame) OVERRIDE {
     base::AutoLock auto_lock(lock_);
     if (reader_) {
-      // Make a shallow copy of the frame as the |reader_| may need to queue it.
-      // Both frames will share a single reference-counted frame buffer.
-      reader_->GotFrame(frame->Copy());
+      // |frame| will be invalid after this function is returned. So keep a copy
+      // before return.
+      cricket::VideoFrame* copied_frame = frame->Copy();
+      copied_frame->MakeExclusive();
+      reader_->GotFrame(copied_frame);
     }
     return true;
   }
