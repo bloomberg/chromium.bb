@@ -646,7 +646,7 @@ static void AppendQuadsToFillScreen(
   float opacity = 1.f;
   SharedQuadState* shared_quad_state =
       quad_culler.UseSharedQuadState(SharedQuadState::Create());
-  shared_quad_state->SetAll(root_layer->draw_transform(),
+  shared_quad_state->SetAll(gfx::Transform(),
                             root_target_rect.size(),
                             root_target_rect,
                             root_target_rect,
@@ -655,45 +655,37 @@ static void AppendQuadsToFillScreen(
                             SkXfermode::kSrcOver_Mode);
 
   AppendQuadsData append_quads_data;
-
-  gfx::Transform transform_to_layer_space(gfx::Transform::kSkipInitialization);
-  bool did_invert = root_layer->screen_space_transform().GetInverse(
-      &transform_to_layer_space);
-  DCHECK(did_invert);
   for (Region::Iterator fill_rects(screen_background_color_region);
        fill_rects.has_rect();
        fill_rects.next()) {
-    // The root layer transform is composed of translations and scales only,
-    // no perspective, so mapping is sufficient (as opposed to projecting).
-    gfx::Rect layer_rect = MathUtil::MapEnclosingClippedRect(
-        transform_to_layer_space, fill_rects.rect());
+    gfx::Rect screen_space_rect = fill_rects.rect();
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(
-        shared_quad_state, layer_rect, screen_background_color, false);
+        shared_quad_state, screen_space_rect, screen_background_color, false);
     quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
   }
   for (Region::Iterator fill_rects(overhang_region);
        fill_rects.has_rect();
        fill_rects.next()) {
     DCHECK(overhang_resource_id);
-    gfx::Rect layer_rect = MathUtil::MapEnclosingClippedRect(
-        transform_to_layer_space, fill_rects.rect());
+    gfx::Rect screen_space_rect = fill_rects.rect();
     scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
     const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
     tex_quad->SetNew(
         shared_quad_state,
-        layer_rect,
-        layer_rect,
+        screen_space_rect,
+        screen_space_rect,
         overhang_resource_id,
         false,
-        gfx::PointF(layer_rect.x() / overhang_resource_scaled_size.width(),
-                    layer_rect.y() / overhang_resource_scaled_size.height()),
-        gfx::PointF(layer_rect.right() /
-                        overhang_resource_scaled_size.width(),
-                    layer_rect.bottom() /
-                        overhang_resource_scaled_size.height()),
+        gfx::PointF(
+            screen_space_rect.x() / overhang_resource_scaled_size.width(),
+            screen_space_rect.y() / overhang_resource_scaled_size.height()),
+        gfx::PointF(
+            screen_space_rect.right() / overhang_resource_scaled_size.width(),
+            screen_space_rect.bottom() /
+                overhang_resource_scaled_size.height()),
         screen_background_color,
         vertex_opacity,
         false);
