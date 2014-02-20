@@ -30,6 +30,7 @@ cricket::CaptureState RtcVideoCapturer::Start(
   }
 
   media::VideoCaptureParams request;
+  request.allow_resolution_change = is_screencast_;
   request.requested_format = media::VideoCaptureFormat(
       gfx::Size(capture_format.width, capture_format.height),
       capture_format.framerate(),

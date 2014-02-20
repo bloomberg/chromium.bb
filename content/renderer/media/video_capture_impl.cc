@@ -144,15 +144,16 @@ void VideoCaptureImpl::StartCaptureOnIOThread(
     handler->OnStarted(this);
     if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
       clients_[handler] = params;
+      // TODO(sheu): Allowing resolution change will require that all
+      // outstanding clients of a capture session support resolution change.
+      DCHECK_EQ(params_.allow_resolution_change,
+                params.allow_resolution_change);
     } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
       clients_pending_on_restart_[handler] = params;
       DVLOG(1) << "StartCapture: Got new resolution "
                << params.requested_format.frame_size.ToString()
                << " during stopping.";
     } else {
-      // TODO(sheu): Allowing resolution change will require that all
-      // outstanding clients of a capture session support resolution change.
-      DCHECK(!params.allow_resolution_change);
       clients_[handler] = params;
       DCHECK_EQ(1ul, clients_.size());
       params_ = params;
