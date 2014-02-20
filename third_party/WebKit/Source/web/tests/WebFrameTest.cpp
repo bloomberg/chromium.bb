@@ -1393,6 +1393,17 @@ TEST_F(WebFrameTest, LayoutSize320Quirk)
     document->setViewportDescription(description);
     webViewHelper.webView()->layout();
     EXPECT_EQ(600, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+
+    description = document->viewportDescription();
+    description.maxHeight = WebCore::Length(1000, WebCore::Fixed);
+    document->setViewportDescription(description);
+    webViewHelper.webView()->layout();
+    EXPECT_EQ(1000, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
+
+    description.maxHeight = WebCore::Length(320, WebCore::Fixed);
+    document->setViewportDescription(description);
+    webViewHelper.webView()->layout();
+    EXPECT_EQ(800, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
 TEST_F(WebFrameTest, ZeroValuesQuirk)

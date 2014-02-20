@@ -2868,7 +2868,7 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
         const int legacyWidthSnappingMagicNumber = 320;
         if (adjustedDescription.maxWidth.isFixed() && adjustedDescription.maxWidth.value() <= legacyWidthSnappingMagicNumber)
             adjustedDescription.maxWidth = Length(DeviceWidth);
-        if (adjustedDescription.maxHeight.isFixed() && adjustedDescription.maxWidth.value() <= m_size.height)
+        if (adjustedDescription.maxHeight.isFixed() && adjustedDescription.maxHeight.value() <= m_size.height)
             adjustedDescription.maxHeight = Length(DeviceHeight);
         adjustedDescription.minWidth = adjustedDescription.maxWidth;
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
