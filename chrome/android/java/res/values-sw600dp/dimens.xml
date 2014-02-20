@@ -9,15 +9,4 @@
     <!-- Necessary to align the menu with the bottom of the toolbar (the anchored button does not
          extend to the bottom of the toolbar). -->
     <dimen name="menu_vertical_offset">2dp</dimen>
-
-    <!-- App banner dimensions -->
-    <dimen name="app_banner_icon_size">112dp</dimen>
-    <dimen name="app_banner_icon_margin_end">16dp</dimen>
-    <dimen name="app_banner_button_height">32dp</dimen>
-    <dimen name="app_banner_button_padding_sides">16dp</dimen>
-    <dimen name="app_banner_button_padding_above_below">8dp</dimen>
-    <dimen name="app_banner_text_margin_top">8dp</dimen>
-    <dimen name="app_banner_margin_bottom">8dp</dimen>
-    <dimen name="app_banner_logo_height">24dp</dimen>
-    <dimen name="app_banner_star_height">16dp</dimen>
 </resources>

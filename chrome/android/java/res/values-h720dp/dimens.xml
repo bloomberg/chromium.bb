@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources>
+    <!-- App banner dimensions -->
+    <dimen name="app_banner_max_width">570dp</dimen>
+    <dimen name="app_banner_margin_bottom">16dp</dimen>
+
+    <dimen name="app_banner_button_text_size">16sp</dimen>
+    <dimen name="app_banner_button_height">34dp</dimen>
+    <dimen name="app_banner_button_padding_sides">16dp</dimen>
+
+    <dimen name="app_banner_icon_size">90dp</dimen>
+    <dimen name="app_banner_icon_margin_end">16dp</dimen>
+
+    <dimen name="app_banner_title_text_size">21sp</dimen>
+    <dimen name="app_banner_title_margin_top">8dp</dimen>
+
+    <dimen name="app_banner_logo_height">24dp</dimen>
+    <dimen name="app_banner_logo_margin_bottom">2dp</dimen>
+
+    <dimen name="app_banner_star_height">16dp</dimen>
+</resources>

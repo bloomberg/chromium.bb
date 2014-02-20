@@ -16,6 +16,8 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.content.browser.ContentView;
@@ -64,11 +66,11 @@ import org.chromium.ui.UiUtils;
  * fling is completed, the more forgiving FLING_THRESHOLD is used to determine how far a user must
  * swipe to dismiss the View rather than try to use the fling velocity.
  */
-public class SwipableOverlayView extends FrameLayout {
+public abstract class SwipableOverlayView extends FrameLayout {
     private static final float ALPHA_THRESHOLD = 0.25f;
-    private static final float FLING_THRESHOLD = 0.25f;
+    private static final float FLING_THRESHOLD = 0.33f;
     private static final float FULL_THRESHOLD = 0.5f;
-    private static final float SWIPE_THRESHOLD = 0.33f;
+    private static final float SWIPE_THRESHOLD = 0.75f;
     protected static final float ZERO_THRESHOLD = 0.001f;
 
     private static final int GESTURE_NONE = 0;
@@ -79,7 +81,7 @@ public class SwipableOverlayView extends FrameLayout {
     private static final int DRAGGED_CANCEL = 0;
     private static final int DRAGGED_RIGHT = 1;
 
-    protected static final long MS_ANIMATION_DURATION = 150;
+    protected static final long MS_ANIMATION_DURATION = 200;
 
     // Detects when the user is dragging the View.
     private final GestureDetector mGestureDetector;
@@ -105,6 +107,9 @@ public class SwipableOverlayView extends FrameLayout {
     // Offset from the top of the page when the current gesture was first started.
     private int mInitialOffsetY;
 
+    // How tall the View is, including its margins.
+    private int mTotalHeight;
+
     /**
      * Creates a SwipableOverlayView.
      * @param context Context for acquiring resources.
@@ -123,14 +128,21 @@ public class SwipableOverlayView extends FrameLayout {
      * @param layout Layout to add this View to.
      */
     protected void addToView(ContentView contentView) {
-        FrameLayout.LayoutParams params =
-                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
-                        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        contentView.addView(this, 0, params);
+        contentView.addView(this, 0, createLayoutParams());
         contentView.getContentViewCore().addGestureStateListener(mGestureStateListener);
 
         // Listen for the layout to know when to animate the banner coming onto the screen.
         addOnLayoutChangeListener(createLayoutChangeListener());
+    }
+
+    /**
+     * Creates a set of LayoutParams that makes the View hug the bottom of the screen.  Override it
+     * for other types of behavior.
+     * @return LayoutParams for use when adding the View to its parent.
+     */
+    protected ViewGroup.MarginLayoutParams createLayoutParams() {
+        return new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
     }
 
     /**
@@ -161,6 +173,13 @@ public class SwipableOverlayView extends FrameLayout {
             mParentHeight = currentParentHeight;
             mGestureState = GESTURE_NONE;
             if (mCurrentAnimation != null) mCurrentAnimation.end();
+        }
+
+        // Update the known effective height of the View.
+        mTotalHeight = getMeasuredHeight();
+        if (getLayoutParams() instanceof MarginLayoutParams) {
+            MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
+            mTotalHeight += params.topMargin + params.bottomMargin;
         }
 
         super.onLayout(changed, l, t, r, b);
@@ -214,6 +233,12 @@ public class SwipableOverlayView extends FrameLayout {
                 createHorizontalAnimation();
                 return true;
             }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                onViewClicked();
+                return true;
+            }
         };
     }
 
@@ -237,8 +262,8 @@ public class SwipableOverlayView extends FrameLayout {
                 int finalScrollY = computeScrollDifference(scrollOffsetY, scrollExtentY);
 
                 boolean isScrollIncreasing = finalScrollY > ZERO_THRESHOLD;
-                boolean isNearTheTop = getTranslationY() < getHeight();
-                boolean isInitiallyVisible = mInitialTranslationY < getHeight();
+                boolean isNearTheTop = getTranslationY() < mTotalHeight;
+                boolean isInitiallyVisible = mInitialTranslationY < mTotalHeight;
                 if (isInitiallyVisible) {
                     // Hide the View if the user flung downward.
                     createVerticalSnapAnimation(!isScrollIncreasing);
@@ -261,7 +286,7 @@ public class SwipableOverlayView extends FrameLayout {
 
                 float translation = mInitialTranslationY
                         + computeScrollDifference(scrollOffsetY, scrollExtentY);
-                translation = Math.max(0.0f, Math.min(getHeight(), translation));
+                translation = Math.max(0.0f, Math.min(mTotalHeight, translation));
                 setTranslationY(translation);
             }
 
@@ -270,9 +295,9 @@ public class SwipableOverlayView extends FrameLayout {
                 if (mGestureState != GESTURE_SCROLLING) return;
 
                 int finalOffsetY = computeScrollDifference(scrollOffsetY, scrollExtentY);
-                boolean isAtTopOfPage = finalOffsetY < getHeight() * FULL_THRESHOLD;
-                boolean isPastBannerHeight = finalOffsetY > getHeight();
-                boolean isBannerVisibleEnough = getTranslationY() < getHeight() * FULL_THRESHOLD;
+                boolean isAtTopOfPage = finalOffsetY < mTotalHeight * FULL_THRESHOLD;
+                boolean isPastBannerHeight = finalOffsetY > mTotalHeight;
+                boolean isBannerVisibleEnough = getTranslationY() < mTotalHeight * FULL_THRESHOLD;
 
                 boolean shouldBeVisible = false;
                 if (isAtTopOfPage) {
@@ -301,7 +326,7 @@ public class SwipableOverlayView extends FrameLayout {
                 removeOnLayoutChangeListener(this);
 
                 // Animate the banner coming in from the bottom of the screen.
-                setTranslationY(getHeight());
+                setTranslationY(mTotalHeight);
                 createVerticalSnapAnimation(true);
                 mCurrentAnimation.start();
             }
@@ -314,9 +339,9 @@ public class SwipableOverlayView extends FrameLayout {
      *                translates the View below the bottom-center of the screen so that it is
      *                effectively invisible.
      */
-    protected void createVerticalSnapAnimation(boolean visible) {
-        float translationY = visible ? 0.0f : getHeight();
-        float yDifference = Math.abs(translationY - getTranslationY()) / getHeight();
+    void createVerticalSnapAnimation(boolean visible) {
+        float translationY = visible ? 0.0f : mTotalHeight;
+        float yDifference = Math.abs(translationY - getTranslationY()) / mTotalHeight;
         long duration = (long) (MS_ANIMATION_DURATION * yDifference);
         createAnimation(1.0f, 0, translationY, duration, false);
     }
@@ -327,8 +352,8 @@ public class SwipableOverlayView extends FrameLayout {
     void dismiss() {
         if (getParent() == null) return;
 
-        float translationY = getHeight();
-        float yDifference = Math.abs(translationY - getTranslationY()) / getHeight();
+        float translationY = mTotalHeight;
+        float yDifference = Math.abs(translationY - getTranslationY()) / mTotalHeight;
         long duration = (long) (MS_ANIMATION_DURATION * yDifference);
         createAnimation(1.0f, 0, translationY, duration, true);
     }
@@ -413,6 +438,7 @@ public class SwipableOverlayView extends FrameLayout {
                 if (remove) removeFromParent();
             }
         });
+        mCurrentAnimation.setInterpolator(new AccelerateInterpolator());
         mCurrentAnimation.start();
     }
 
@@ -421,8 +447,13 @@ public class SwipableOverlayView extends FrameLayout {
      */
     private void beginGesture(int scrollOffsetY, int scrollExtentY) {
         mInitialTranslationY = getTranslationY();
-        boolean isInitiallyVisible = mInitialTranslationY < getHeight();
-        int startingY = isInitiallyVisible ? scrollOffsetY : Math.min(scrollOffsetY, getHeight());
+        boolean isInitiallyVisible = mInitialTranslationY < mTotalHeight;
+        int startingY = isInitiallyVisible ? scrollOffsetY : Math.min(scrollOffsetY, mTotalHeight);
         mInitialOffsetY = startingY + scrollExtentY;
     }
+
+    /**
+     * Called when the View has been clicked.
+     */
+    protected abstract void onViewClicked();
 }

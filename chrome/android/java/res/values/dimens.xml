@@ -39,17 +39,28 @@
     <dimen name="infobar_icon_size">31dp</dimen>
 
     <!-- App banner dimensions -->
-    <dimen name="app_banner_max_width">570dp</dimen>
-    <dimen name="app_banner_margin_full">8dp</dimen>
-    <dimen name="app_banner_margin_bottom">0dp</dimen>
-    <dimen name="app_banner_button_height">24dp</dimen>
-    <dimen name="app_banner_button_padding_sides">8dp</dimen>
+    <dimen name="app_banner_max_width">424dp</dimen>
+    <dimen name="app_banner_margin_sides">8dp</dimen>
+    <dimen name="app_banner_margin_bottom">8dp</dimen>
+    <dimen name="app_banner_padding">8dp</dimen>
+    <dimen name="app_banner_padding_content">4dp</dimen>
+
+    <dimen name="app_banner_button_text_size">14sp</dimen>
+    <dimen name="app_banner_button_height">28dp</dimen>
+    <dimen name="app_banner_button_margin_top">8dp</dimen>
+    <dimen name="app_banner_button_margin_start">8dp</dimen>
+    <dimen name="app_banner_button_padding_sides">12dp</dimen>
     <dimen name="app_banner_button_padding_above_below">0dp</dimen>
+
     <dimen name="app_banner_icon_size">80dp</dimen>
     <dimen name="app_banner_icon_margin_end">8dp</dimen>
-    <dimen name="app_banner_text_margin_top">0dp</dimen>
-    <dimen name="app_banner_text_line_spacing">8dp</dimen>
-    <dimen name="app_banner_logo_height">20dp</dimen>
-    <dimen name="app_banner_logo_margin_bottom">4dp</dimen>
-    <dimen name="app_banner_star_height">12dp</dimen>
+
+    <dimen name="app_banner_title_text_size">20sp</dimen>
+    <dimen name="app_banner_title_margin_top">0dp</dimen>
+    <dimen name="app_banner_title_margin_bottom">8dp</dimen>
+
+    <dimen name="app_banner_logo_height">22dp</dimen>
+    <dimen name="app_banner_logo_margin_bottom">3dp</dimen>
+
+    <dimen name="app_banner_star_height">16dp</dimen>
 </resources>

@@ -7,10 +7,9 @@
 <org.chromium.chrome.browser.banners.AppBannerView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/app_banner_view"
-        android:background="@drawable/app_banner_background"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/app_banner_margin_bottom">
+        android:background="@drawable/card_background_default"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <ImageView
             android:id="@+id/app_icon"
             android:adjustViewBounds="true"
@@ -20,24 +19,27 @@
     <TextView
             android:id="@+id/app_title"
             android:textAppearance="@style/AppBannerTitle"
+            android:includeFontPadding="false"
             android:minLines="1"
+            android:maxLines="1"
             android:ellipsize="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/app_banner_text_margin_top" />
+            android:layout_marginTop="@dimen/app_banner_title_margin_top"
+            android:layout_marginBottom="@dimen/app_banner_title_margin_bottom" />
     <Button
             android:id="@+id/app_install_button"
-            android:background="@color/app_banner_install_button"
-            android:text="Install"
-            android:textAppearance="@style/AppBannerInstallButton"
+            android:background="@color/app_banner_install_button_bg"
+            android:minHeight="@dimen/app_banner_button_height"
+            android:textAppearance="@style/AppBannerButton"
             android:paddingStart="@dimen/app_banner_button_padding_sides"
             android:paddingEnd="@dimen/app_banner_button_padding_sides"
             android:paddingTop="@dimen/app_banner_button_padding_above_below"
             android:paddingBottom="@dimen/app_banner_button_padding_above_below"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/app_banner_button_height"
-            android:layout_marginTop="@dimen/app_banner_margin_full"
-            android:layout_marginStart="@dimen/app_banner_margin_full" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/app_banner_button_margin_top"
+            android:layout_marginStart="@dimen/app_banner_button_margin_start" />
     <ImageView
             android:id="@+id/store_logo"
             android:src="@drawable/google_play_logo"
@@ -45,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_logo_height"
             android:layout_marginBottom="@dimen/app_banner_logo_margin_bottom" />
-    <ImageView
+    <org.chromium.chrome.browser.banners.RatingView
             android:id="@+id/app_rating"
             android:adjustViewBounds="true"
             android:layout_width="wrap_content"

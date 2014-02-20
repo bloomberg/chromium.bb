@@ -276,6 +276,13 @@ You are signing in with a managed account and giving its administrator control o
         Smart card
       </message>
 
+      <!-- App banner strings -->
+      <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed.">
+        Installing...
+      </message>
+      <message name="IDS_APP_BANNER_OPEN" desc="Text that indicates that clicking on the button will launch an application.">
+        Open
+      </message>
     </messages>
   </release>
 </grit>

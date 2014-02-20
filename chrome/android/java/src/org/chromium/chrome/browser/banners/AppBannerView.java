@@ -6,14 +6,14 @@ package org.chromium.chrome.browser.banners;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
-import android.graphics.drawable.ClipDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,20 +35,23 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      */
     public static interface Observer {
         /**
-         * Called when the BannerView is dismissed.
-         * @param banner BannerView being dismissed.
+         * Called when the banner is dismissed.
+         * @param banner Banner being dismissed.
          */
         public void onBannerDismissed(AppBannerView banner);
 
         /**
-         * Called when the button has been clicked.
-         * @param banner BannerView firing the event.
+         * Called when the install button has been clicked.
+         * @param banner Banner firing the event.
          */
         public void onButtonClicked(AppBannerView banner);
-    }
 
-    // Maximum number of stars in the rating.
-    private static final int NUM_STARS = 5;
+        /**
+         * Called when something other than the button is clicked.
+         * @param banner Banner firing the event.
+         */
+        public void onBannerClicked(AppBannerView banner);
+    }
 
     // XML layout for the BannerView.
     private static final int BANNER_LAYOUT = R.layout.app_banner_view;
@@ -56,21 +59,18 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     // True if the layout is in left-to-right layout mode (regular mode).
     private final boolean mIsLayoutLTR;
 
-    // Class to alert when the BannerView is dismissed.
-    private Observer mObserver;
+    // Class to alert about BannerView events.
+    private AppBannerView.Observer mObserver;
 
     // Views comprising the app banner.
     private ImageView mIconView;
     private TextView mTitleView;
     private Button mButtonView;
-    private ImageView mRatingView;
+    private RatingView mRatingView;
     private ImageView mLogoView;
-    private ClipDrawable mRatingClipperDrawable;
 
     // Information about the package.
-    private String mUrl;
-    private String mPackageName;
-    private float mAppRating;
+    private AppData mAppData;
 
     // Variables used during layout calculations and saved to avoid reallocations.
     private final Point mSpaceMain;
@@ -78,21 +78,27 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     private final Point mSpaceForRating;
     private final Point mSpaceForTitle;
 
+    // Dimension values.
+    private int mDefinedMaxWidth;
+    private int mPaddingContent;
+    private int mMarginSide;
+    private int mMarginBottom;
+
+    // Initial padding values.
+    private final Rect mBackgroundDrawablePadding;
+
     /**
      * Creates a BannerView and adds it to the given ContentView.
-     * @param contentView ContentView to display the BannerView for.
-     * @param observer    Class that is alerted for BannerView events.
-     * @param icon        Icon to display for the app.
-     * @param title       Title of the app.
-     * @param rating      Rating of the app.
-     * @param buttonText  Text to show on the button.
+     * @param contentView ContentView to display the AppBannerView for.
+     * @param observer    Class that is alerted for AppBannerView events.
+     * @param data        Data about the app.
+     * @return            The created banner.
      */
-    public static AppBannerView create(ContentView contentView, Observer observer, String url,
-            String packageName, String title, Drawable icon, float rating, String buttonText) {
+    public static AppBannerView create(ContentView contentView, Observer observer, AppData data) {
         Context context = contentView.getContext().getApplicationContext();
         AppBannerView banner =
                 (AppBannerView) LayoutInflater.from(context).inflate(BANNER_LAYOUT, null);
-        banner.initialize(observer, url, packageName, title, icon, rating, buttonText);
+        banner.initialize(observer, data);
         banner.addToView(contentView);
         return banner;
     }
@@ -107,27 +113,59 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mSpaceForLogo = new Point();
         mSpaceForRating = new Point();
         mSpaceForTitle = new Point();
+
+        // Store the background Drawable's padding.  The background used for banners is a 9-patch,
+        // which means that it already defines padding.  We need to take it into account when adding
+        // even more padding to the inside of it.
+        mBackgroundDrawablePadding = new Rect();
+        mBackgroundDrawablePadding.left = getPaddingStart();
+        mBackgroundDrawablePadding.right = getPaddingEnd();
+        mBackgroundDrawablePadding.top = getPaddingTop();
+        mBackgroundDrawablePadding.bottom = getPaddingBottom();
     }
 
     /**
      * Initialize the banner with information about the package.
-     * @param observer   Class to alert about changes to the banner.
-     * @param title      Title of the package.
-     * @param icon       Icon for the package.
-     * @param rating     Play store rating for the package.
-     * @param buttonText Text to show on the button.
+     * @param observer Class to alert about changes to the banner.
+     * @param data     Information about the app being advertised.
      */
-    private void initialize(Observer observer, String url, String packageName,
-            String title, Drawable icon, float rating, String buttonText) {
+    private void initialize(Observer observer, AppData data) {
         mObserver = observer;
-        mUrl = url;
-        mPackageName = packageName;
+        mAppData = data;
+        initializeControls();
+    }
+
+    private void initializeControls() {
+        // Cache the banner dimensions, adjusting margins for drop shadows defined in the background
+        // Drawable.  The Drawable is defined to have the same margin on both the left and right.
+        Resources res = getResources();
+        mDefinedMaxWidth = res.getDimensionPixelSize(R.dimen.app_banner_max_width);
+        mPaddingContent = res.getDimensionPixelSize(R.dimen.app_banner_padding_content);
+        mMarginSide = res.getDimensionPixelSize(R.dimen.app_banner_margin_sides)
+                - mBackgroundDrawablePadding.left;
+        mMarginBottom = res.getDimensionPixelSize(R.dimen.app_banner_margin_bottom)
+                - mBackgroundDrawablePadding.bottom;
+        if (getLayoutParams() != null) {
+            MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
+            params.leftMargin = mMarginSide;
+            params.rightMargin = mMarginSide;
+            params.bottomMargin = mMarginBottom;
+        }
+
+        // Add onto the padding defined by the Drawable's drop shadow.
+        int padding = res.getDimensionPixelSize(R.dimen.app_banner_padding);
+        int paddingStart = mBackgroundDrawablePadding.left + padding;
+        int paddingTop = mBackgroundDrawablePadding.top + padding;
+        int paddingEnd = mBackgroundDrawablePadding.right + padding;
+        int paddingBottom = mBackgroundDrawablePadding.bottom + padding;
+        ApiCompatibilityUtils.setPaddingRelative(
+                this, paddingStart, paddingTop, paddingEnd, paddingBottom);
 
         // Pull out all of the controls we are expecting.
         mIconView = (ImageView) findViewById(R.id.app_icon);
         mTitleView = (TextView) findViewById(R.id.app_title);
         mButtonView = (Button) findViewById(R.id.app_install_button);
-        mRatingView = (ImageView) findViewById(R.id.app_rating);
+        mRatingView = (RatingView) findViewById(R.id.app_rating);
         mLogoView = (ImageView) findViewById(R.id.store_logo);
         assert mIconView != null;
         assert mTitleView != null;
@@ -139,33 +177,30 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mButtonView.setOnClickListener(this);
 
         // Configure the controls with the package information.
-        mTitleView.setText(title);
-        mIconView.setImageDrawable(icon);
-        mAppRating = rating;
-        mButtonView.setText(buttonText);
-        initializeRatingView();
-    }
+        mTitleView.setText(mAppData.title());
+        mIconView.setImageDrawable(mAppData.icon());
+        mRatingView.initialize(mAppData.rating());
 
-    private void initializeRatingView() {
-        // Set up the stars Drawable.
-        Drawable ratingDrawable = getResources().getDrawable(R.drawable.app_banner_rating);
-        mRatingClipperDrawable =
-                new ClipDrawable(ratingDrawable, Gravity.START, ClipDrawable.HORIZONTAL);
-        mRatingView.setImageDrawable(mRatingClipperDrawable);
-
-        // Clips the ImageView for the ratings so that it shows an appropriate number of stars.
-        // Ratings are rounded to the nearest 0.5 increment, like in the Play Store.
-        float roundedRating = Math.round(mAppRating * 2) / 2.0f;
-        float percentageRating = roundedRating / NUM_STARS;
-        int clipLevel = (int) (percentageRating * 10000);
-        mRatingClipperDrawable.setLevel(clipLevel);
+        // Update the button state.
+        updateButtonState();
     }
 
     @Override
     public void onClick(View view) {
-        if (mObserver != null && view == mButtonView) {
-            mObserver.onButtonClicked(this);
-        }
+        if (mObserver != null && view == mButtonView) mObserver.onButtonClicked(this);
+    }
+
+    @Override
+    protected void onViewClicked() {
+        if (mObserver != null) mObserver.onBannerClicked(this);
+    }
+
+    @Override
+    protected ViewGroup.MarginLayoutParams createLayoutParams() {
+        // Define the margin around the entire banner that accounts for the drop shadow.
+        ViewGroup.MarginLayoutParams params = super.createLayoutParams();
+        params.setMargins(mMarginSide, 0, mMarginSide, mMarginBottom);
+        return params;
     }
 
     /**
@@ -180,17 +215,39 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     }
 
     /**
-     * @return The URL that the banner was created for.
+     * Returns data for the app the banner is being shown for.
+     * @return The AppData being used by the banner.
      */
-    String getUrl() {
-        return mUrl;
+    AppData getAppData() {
+        return mAppData;
     }
 
     /**
-     * @return The package that the banner is displaying information for.
+     * Updates the text and color of the button displayed on the button.
      */
-    String getPackageName() {
-        return mPackageName;
+    void updateButtonState() {
+        if (mButtonView == null) return;
+
+        int bgColor;
+        int fgColor;
+        String text;
+        if (mAppData.installState() == AppData.INSTALL_STATE_INSTALLED) {
+            bgColor = getResources().getColor(R.color.app_banner_open_button_bg);
+            fgColor = getResources().getColor(R.color.app_banner_open_button_fg);
+            text = getResources().getString(R.string.app_banner_open);
+        } else {
+            bgColor = getResources().getColor(R.color.app_banner_install_button_bg);
+            fgColor = getResources().getColor(R.color.app_banner_install_button_fg);
+            if (mAppData.installState() == AppData.INSTALL_STATE_NOT_INSTALLED) {
+                text = mAppData.installButtonText();
+            } else {
+                text = getResources().getString(R.string.app_banner_installing);
+            }
+        }
+
+        mButtonView.setBackgroundColor(bgColor);
+        mButtonView.setTextColor(fgColor);
+        mButtonView.setText(text);
     }
 
     /**
@@ -223,6 +280,39 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     }
 
     /**
+     * Watch for changes in the available screen height, which triggers a complete recreation of the
+     * banner widgets.  This is mainly due to the fact that the Nexus 7 has a smaller banner defined
+     * for its landscape versus its portrait layouts.
+     */
+    @Override
+    protected void onConfigurationChanged(Configuration config) {
+        super.onConfigurationChanged(config);
+
+        // If the card's maximum width hasn't changed, the individual views can't have, either.
+        int newDefinedWidth = getResources().getDimensionPixelSize(R.dimen.app_banner_max_width);
+        if (mDefinedMaxWidth == newDefinedWidth) return;
+
+        // Cannibalize another version of this layout to get Views using the new resources and
+        // sizes.
+        while (getChildCount() > 0) removeViewAt(0);
+        mIconView = null;
+        mTitleView = null;
+        mButtonView = null;
+        mRatingView = null;
+        mLogoView = null;
+
+        AppBannerView cannibalized =
+                (AppBannerView) LayoutInflater.from(getContext()).inflate(BANNER_LAYOUT, null);
+        while (cannibalized.getChildCount() > 0) {
+            View child = cannibalized.getChildAt(0);
+            cannibalized.removeViewAt(0);
+            addView(child);
+        }
+        initializeControls();
+        requestLayout();
+    }
+
+    /**
      * Measurement for components of the banner are performed using the following procedure:
      *
      * 00000000000000000000000000000000000000000000000000000
@@ -250,9 +340,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         Resources res = getResources();
         float density = res.getDisplayMetrics().density;
         int screenSmallestWidth = (int) (res.getConfiguration().smallestScreenWidthDp * density);
-        int definedMaxWidth = (int) res.getDimension(R.dimen.app_banner_max_width);
         int specWidth = MeasureSpec.getSize(widthMeasureSpec);
-        int maxWidth = Math.min(Math.min(specWidth, definedMaxWidth), screenSmallestWidth);
+        int maxWidth = Math.min(Math.min(specWidth, mDefinedMaxWidth), screenSmallestWidth);
         int maxHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         // Track how much space is available for the banner content.
@@ -264,6 +353,10 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         measureChildForSpace(mIconView, mSpaceMain);
         mSpaceMain.x -= getChildWidthWithMargins(mIconView);
         mSpaceMain.y = getChildHeightWithMargins(mIconView) + getPaddingTop() + getPaddingBottom();
+
+        // Additional padding is defined by the mock for non-icon content on the end and bottom.
+        mSpaceMain.x -= mPaddingContent;
+        mSpaceMain.y -= mPaddingContent;
 
         // Measure the install button, which sits in the bottom-right corner.
         measureChildForSpace(mButtonView, mSpaceMain);
@@ -282,15 +375,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mSpaceForTitle.x = mSpaceMain.x;
         mSpaceForTitle.y = mSpaceMain.y - getChildHeightWithMargins(mLogoView)
                 - getChildHeightWithMargins(mRatingView);
-        mTitleView.setMaxLines(2);
         measureChildForSpace(mTitleView, mSpaceForTitle);
-
-        // Ensure the text doesn't get cut in half through one of the lines.
-        int requiredHeight = mTitleView.getLineHeight() * mTitleView.getLineCount();
-        if (getChildHeightWithMargins(mTitleView) < requiredHeight) {
-            mTitleView.setMaxLines(1);
-            measureChildForSpace(mTitleView, mSpaceForTitle);
-        }
 
         // Set the measured dimensions for the banner.
         int measuredHeight = mIconView.getMeasuredHeight() + getPaddingTop() + getPaddingBottom();
@@ -303,6 +388,8 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+
         int top = getPaddingTop();
         int bottom = getMeasuredHeight() - getPaddingBottom();
         int start = ApiCompatibilityUtils.getPaddingStart(this);
@@ -314,13 +401,21 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         mIconView.layout(iconLeft, top, iconLeft + iconWidth, top + mIconView.getMeasuredHeight());
         start += getChildWidthWithMargins(mIconView);
 
-        // Lay out the app title text.  The TextView seems to internally account for its margins.
+        // Factor in the additional padding.
+        end -= mPaddingContent;
+        bottom -= mPaddingContent;
+
+        // Lay out the app title text.
         int titleWidth = mTitleView.getMeasuredWidth();
-        int titleTop = top;
-        int titleBottom = titleTop + getChildHeightWithMargins(mTitleView);
+        int titleTop = top + ((MarginLayoutParams) mTitleView.getLayoutParams()).topMargin;
+        int titleBottom = titleTop + mTitleView.getMeasuredHeight();
         int titleLeft = mIsLayoutLTR ? start : (getMeasuredWidth() - start - titleWidth);
         mTitleView.layout(titleLeft, titleTop, titleLeft + titleWidth, titleBottom);
-        top += getChildHeightWithMargins(mTitleView);
+
+        // The mock shows the margin eating into the descender area of the TextView.
+        int textBaseline = mTitleView.getLineBounds(mTitleView.getLineCount() - 1, null);
+        top = titleTop + textBaseline
+                + ((MarginLayoutParams) mTitleView.getLayoutParams()).bottomMargin;
 
         // Lay out the app rating below the title.
         int starWidth = mRatingView.getMeasuredWidth();
