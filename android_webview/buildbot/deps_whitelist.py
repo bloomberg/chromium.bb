@@ -56,6 +56,7 @@ class DepsWhitelist(object):
       'third_party/skia/include',
       'third_party/skia/src',
       'third_party/smhasher/src',
+      'third_party/usrsctp/usrsctplib',
       'third_party/webrtc',
       'third_party/yasm/source/patched-yasm',
       'tools/grit',
