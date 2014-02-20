@@ -97,23 +97,28 @@ public:
 
         // WebMouseEvent
         MouseDown,
+        MouseTypeFirst = MouseDown,
         MouseUp,
         MouseMove,
         MouseEnter,
         MouseLeave,
         ContextMenu,
+        MouseTypeLast = ContextMenu,
 
         // WebMouseWheelEvent
         MouseWheel,
 
         // WebKeyboardEvent
         RawKeyDown,
+        KeyboardTypeFirst = RawKeyDown,
         KeyDown,
         KeyUp,
         Char,
+        KeyboardTypeLast = Char,
 
         // WebGestureEvent
         GestureScrollBegin,
+        GestureTypeFirst = GestureScrollBegin,
         GestureScrollEnd,
         GestureScrollUpdate,
         GestureScrollUpdateWithoutPropagation,
@@ -131,13 +136,17 @@ public:
         GesturePinchBegin,
         GesturePinchEnd,
         GesturePinchUpdate,
+        GestureTypeLast = GesturePinchUpdate,
 
         // WebTouchEvent
         TouchStart,
+        TouchTypeFirst = TouchStart,
         TouchMove,
         TouchEnd,
         TouchCancel,
-        TypeLast = TouchCancel
+        TouchTypeLast = TouchCancel,
+
+        TypeLast = TouchTypeLast
     };
 
     enum Modifiers {
@@ -185,30 +194,19 @@ public:
     // Returns true if the WebInputEvent |type| is a mouse event.
     static bool isMouseEventType(int type)
     {
-        return type == MouseDown
-            || type == MouseUp
-            || type == MouseMove
-            || type == MouseEnter
-            || type == MouseLeave
-            || type == ContextMenu;
+        return MouseTypeFirst <= type && type <= MouseTypeLast;
     }
 
     // Returns true if the WebInputEvent |type| is a keyboard event.
     static bool isKeyboardEventType(int type)
     {
-        return type == RawKeyDown
-            || type == KeyDown
-            || type == KeyUp
-            || type == Char;
+        return KeyboardTypeFirst <= type && type <= KeyboardTypeLast;
     }
 
     // Returns true if the WebInputEvent |type| is a touch event.
     static bool isTouchEventType(int type)
     {
-        return type == TouchStart
-            || type == TouchMove
-            || type == TouchEnd
-            || type == TouchCancel;
+        return TouchTypeFirst <= type && type <= TouchTypeLast;
     }
 
     // Returns true if the WebInputEvent |type| should be handled as user gesture.
@@ -224,24 +222,7 @@ public:
     // Returns true if the WebInputEvent is a gesture event.
     static bool isGestureEventType(int type)
     {
-        return type == GestureScrollBegin
-            || type == GestureScrollEnd
-            || type == GestureScrollUpdate
-            || type == GestureScrollUpdateWithoutPropagation
-            || type == GestureFlingStart
-            || type == GestureFlingCancel
-            || type == GesturePinchBegin
-            || type == GesturePinchEnd
-            || type == GesturePinchUpdate
-            || type == GestureTap
-            || type == GestureTapUnconfirmed
-            || type == GestureTapDown
-            || type == GestureTapCancel
-            || type == GestureShowPress
-            || type == GestureDoubleTap
-            || type == GestureTwoFingerTap
-            || type == GestureLongPress
-            || type == GestureLongTap;
+        return GestureTypeFirst <= type && type <= GestureTypeLast;
     }
 };
 
