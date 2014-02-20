@@ -334,6 +334,8 @@ def _ComputeChromeCategories(options):
     categories.append('disabled-by-default-cc.debug*')
   if options.trace_gpu:
     categories.append('disabled-by-default-gpu.debug*')
+  if options.trace_flow:
+    categories.append('disabled-by-default-toplevel.flow')
   if options.chrome_categories:
     categories += options.chrome_categories.split(',')
   return categories
@@ -393,6 +395,8 @@ def main():
                         'ubercompositor frame data.', action='store_true')
   categories.add_option('--trace-gpu', help='Enable extra trace categories for '
                         'GPU data.', action='store_true')
+  categories.add_option('--trace-flow', help='Enable extra trace categories '
+                        'for IPC message flows.', action='store_true')
   parser.add_option_group(categories)
 
   output_options = optparse.OptionGroup(parser, 'Output options')
