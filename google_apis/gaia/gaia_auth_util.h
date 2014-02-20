@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GAIA_GAIA_AUTH_UTIL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 class GURL;
@@ -35,11 +36,13 @@ std::string ExtractDomainName(const std::string& email);
 
 bool IsGaiaSignonRealm(const GURL& url);
 
-// Parses JSON data returned by /ListAccounts call, returns vector of
-// accounts (email addresses).  If there an error parsing the JSON, then
-// false is returned.
-bool ParseListAccountsData(const std::string& data,
-                           std::vector<std::string>* accounts);
+// Parses JSON data returned by /ListAccounts call, returning a vector of
+// email/valid pairs.  An email addresses is considered valid if a passive
+// login would succeed (i.e. the user does not need to reauthenticate).
+// If there an error parsing the JSON, then false is returned.
+bool ParseListAccountsData(
+    const std::string& data,
+    std::vector<std::pair<std::string, bool> >* accounts);
 
 }  // namespace gaia
 

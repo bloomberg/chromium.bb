@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 
+#include <utility>
 #include <vector>
 
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -28,12 +29,12 @@ AuthenticatedUserEmailRetriever::~AuthenticatedUserEmailRetriever() {
 
 void AuthenticatedUserEmailRetriever::OnListAccountsSuccess(
     const std::string& data) {
-  std::vector<std::string> accounts;
+  std::vector<std::pair<std::string, bool> > accounts;
   gaia::ParseListAccountsData(data, &accounts);
   if (accounts.size() != 1)
     callback_.Run(std::string());
   else
-    callback_.Run(accounts.front());
+    callback_.Run(accounts.front().first);
 }
 
 void AuthenticatedUserEmailRetriever::OnListAccountsFailure(

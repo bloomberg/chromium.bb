@@ -5,6 +5,9 @@
 #define CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
 
 #include <deque>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -56,10 +59,12 @@ class AccountReconcilor : public BrowserContextKeyedService,
 
   bool AreAllRefreshTokensChecked() const;
 
-  const std::vector<std::string>& GetGaiaAccountsForTesting() const {
+  const std::vector<std::pair<std::string, bool> >&
+      GetGaiaAccountsForTesting() const {
     return gaia_accounts_;
   }
 
+ private:
   const std::set<std::string>& GetValidChromeAccountsForTesting() const {
     return valid_chrome_accounts_;
   }
@@ -68,12 +73,12 @@ class AccountReconcilor : public BrowserContextKeyedService,
     return invalid_chrome_accounts_;
   }
 
- private:
   // Used during GetAccountsFromCookie.
   // Stores a callback for the next action to perform.
   typedef base::Callback<void(
       const GoogleServiceAuthError& error,
-      const std::vector<std::string>&)> GetAccountsFromCookieCallback;
+      const std::vector<std::pair<std::string, bool> >&)>
+          GetAccountsFromCookieCallback;
 
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieSuccess);
@@ -89,6 +94,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToChrome);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           StartReconcileWithSessionInfoExpiredDefault);
 
   class RefreshTokenFetcher;
   class UserIdFetcher;
@@ -122,7 +129,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   virtual void FinishRemoveAction(
       const std::string& account_id,
       const GoogleServiceAuthError& error,
-      const std::vector<std::string>& accounts);
+      const std::vector<std::pair<std::string, bool> >& accounts);
 
   // Used during periodic reconciliation.
   void StartReconcile();
@@ -137,7 +144,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   void GetAccountsFromCookie(GetAccountsFromCookieCallback callback);
   void ContinueReconcileActionAfterGetGaiaAccounts(
       const GoogleServiceAuthError& error,
-      const std::vector<std::string>& accounts);
+      const std::vector<std::pair<std::string, bool> >& accounts);
   void ValidateAccountsFromTokenService();
 
   void OnCookieChanged(ChromeCookieDetails* details);
@@ -189,9 +196,13 @@ class AccountReconcilor : public BrowserContextKeyedService,
   bool is_reconcile_started_;
 
   // Used during reconcile action.
-  // These members are used used to validate the gaia cookie.
+  // These members are used used to validate the gaia cookie.  |gaia_accounts_|
+  // holds the state of google accounts in the gaia cookie.  Each element is
+  // a pair that holds the email address of the account and a boolean that
+  // indicates whether the account is valid or not.  The accounts in the vector
+  // are ordered the in same way as the gaia cookie.
   bool are_gaia_accounts_set_;
-  std::vector<std::string> gaia_accounts_;
+  std::vector<std::pair<std::string, bool> > gaia_accounts_;
 
   // Used during reconcile action.
   // These members are used to validate the tokens in OAuth2TokenService.

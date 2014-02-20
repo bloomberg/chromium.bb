@@ -362,13 +362,18 @@ void AccountReconcilor::StartRemoveAction(const std::string& account_id) {
 void AccountReconcilor::FinishRemoveAction(
     const std::string& account_id,
     const GoogleServiceAuthError& error,
-    const std::vector<std::string>& accounts) {
+    const std::vector<std::pair<std::string, bool> >& accounts) {
   VLOG(1) << "AccountReconcilor::FinishRemoveAction:"
           << " account=" << account_id
           << " error=" << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     AbortReconcile();
-    merge_session_helper_.LogOut(account_id, accounts);
+    std::vector<std::string> accounts_only;
+    for (std::vector<std::pair<std::string, bool> >::const_iterator i =
+             accounts.begin(); i != accounts.end(); ++i) {
+      accounts_only.push_back(i->first);
+    }
+    merge_session_helper_.LogOut(account_id, accounts_only);
   }
   // Wait for the next ReconcileAction if there is an error.
 }
@@ -430,14 +435,14 @@ void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
   gaia_fetcher_.reset();
 
   // Get account information from response data.
-  std::vector<std::string> gaia_accounts;
+  std::vector<std::pair<std::string, bool> > gaia_accounts;
   bool valid_json = gaia::ParseListAccountsData(data, &gaia_accounts);
   if (!valid_json) {
     VLOG(1) << "AccountReconcilor::OnListAccountsSuccess: parsing error";
   } else if (gaia_accounts.size() > 0) {
     VLOG(1) << "AccountReconcilor::OnListAccountsSuccess: "
             << "Gaia " << gaia_accounts.size() << " accounts, "
-            << "Primary is '" << gaia_accounts[0] << "'";
+            << "Primary is '" << gaia_accounts[0].first << "'";
   } else {
     VLOG(1) << "AccountReconcilor::OnListAccountsSuccess: No accounts";
   }
@@ -459,7 +464,7 @@ void AccountReconcilor::OnListAccountsFailure(
     const GoogleServiceAuthError& error) {
   gaia_fetcher_.reset();
   VLOG(1) << "AccountReconcilor::OnListAccountsFailure: " << error.ToString();
-  std::vector<std::string> empty_accounts;
+  std::vector<std::pair<std::string, bool> > empty_accounts;
 
   // There must be at least one callback waiting for result.
   DCHECK(!get_gaia_accounts_callbacks_.empty());
@@ -480,7 +485,7 @@ void AccountReconcilor::MayBeDoNextListAccounts() {
 
 void AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts(
     const GoogleServiceAuthError& error,
-    const std::vector<std::string>& accounts) {
+    const std::vector<std::pair<std::string, bool> >& accounts) {
   if (error.state() == GoogleServiceAuthError::NONE) {
     gaia_accounts_ = accounts;
     are_gaia_accounts_set_ = true;
@@ -569,13 +574,14 @@ void AccountReconcilor::FinishReconcile() {
   DCHECK(add_to_cookie_.empty());
   DCHECK(add_to_chrome_.empty());
   bool are_primaries_equal =
-      gaia_accounts_.size() > 0 && primary_account_ == gaia_accounts_[0];
+      gaia_accounts_.size() > 0 && primary_account_ == gaia_accounts_[0].first;
 
   if (are_primaries_equal) {
     // Determine if we need to merge accounts from gaia cookie to chrome.
     for (size_t i = 0; i < gaia_accounts_.size(); ++i) {
-      const std::string& gaia_account = gaia_accounts_[i];
-      if (valid_chrome_accounts_.find(gaia_account) ==
+      const std::string& gaia_account = gaia_accounts_[i].first;
+      if (gaia_accounts_[i].second &&
+              valid_chrome_accounts_.find(gaia_account) ==
           valid_chrome_accounts_.end()) {
         add_to_chrome_.push_back(std::make_pair(gaia_account, i));
       }
@@ -585,10 +591,15 @@ void AccountReconcilor::FinishReconcile() {
     for (std::set<std::string>::const_iterator i =
              valid_chrome_accounts_.begin();
          i != valid_chrome_accounts_.end(); ++i) {
-      if (std::find(gaia_accounts_.begin(), gaia_accounts_.end(), *i) ==
-          gaia_accounts_.end()) {
-        add_to_cookie_.push_back(*i);
+      bool add_to_cookie = true;
+      for (size_t j = 0; j < gaia_accounts_.size(); ++j) {
+        if (gaia_accounts_[j].first == *i) {
+          add_to_cookie = !gaia_accounts_[j].second;
+          break;
+        }
       }
+      if (add_to_cookie)
+        add_to_cookie_.push_back(*i);
     }
   } else {
     VLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";

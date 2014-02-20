@@ -28,7 +28,7 @@ const char kOAuthGetAccessTokenUrlSuffix[] = "OAuthGetAccessToken";
 const char kOAuthWrapBridgeUrlSuffix[] = "OAuthWrapBridge";
 const char kOAuth1LoginUrlSuffix[] = "OAuthLogin";
 const char kOAuthRevokeTokenUrlSuffix[] = "AuthSubRevokeToken";
-const char kListAccountsSuffix[] = "ListAccounts";
+const char kListAccountsSuffix[] = "ListAccounts?json=standard";
 const char kEmbeddedSigninSuffix[] = "EmbeddedSignIn";
 const char kAddAccountSuffix[] = "AddSession";
 

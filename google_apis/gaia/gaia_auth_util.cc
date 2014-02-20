@@ -75,8 +75,9 @@ bool IsGaiaSignonRealm(const GURL& url) {
 }
 
 
-bool ParseListAccountsData(const std::string& data,
-                           std::vector<std::string>* accounts) {
+bool ParseListAccountsData(
+    const std::string& data,
+    std::vector<std::pair<std::string, bool> >* accounts) {
   accounts->clear();
 
   // Parse returned data and make sure we have data.
@@ -100,8 +101,18 @@ bool ParseListAccountsData(const std::string& data,
     if (account_list->GetList(i, &account) && account != NULL) {
       std::string email;
       // Canonicalize the email since ListAccounts returns "display email".
-      if (account->GetString(3, &email) && !email.empty())
-        accounts->push_back(CanonicalizeEmail(email));
+      if (account->GetString(3, &email) && !email.empty()) {
+        // New version if ListAccounts indicates whether the email's session
+        // is still valid or not.  If this value is present and false, assume
+        // its invalid.  Otherwise assume it's valid to remain compatible with
+        // old version.
+        int is_email_valid = 1;
+        if (!account->GetInteger(9, &is_email_valid))
+          is_email_valid = 1;
+
+        accounts->push_back(
+            std::make_pair(CanonicalizeEmail(email), is_email_valid != 0));
+      }
     }
   }
 

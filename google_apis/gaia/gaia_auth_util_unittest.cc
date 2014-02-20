@@ -109,7 +109,7 @@ TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
 }
 
 TEST(GaiaAuthUtilTest, ParseListAccountsData) {
-  std::vector<std::string> accounts;
+  std::vector<std::pair<std::string, bool> > accounts;
   ASSERT_FALSE(ParseListAccountsData("", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
@@ -133,23 +133,55 @@ TEST(GaiaAuthUtilTest, ParseListAccountsData) {
       "[\"foo\", [[\"bar\", 0, \"name\", \"u@g.c\", \"photo\", 0, 0, 0]]]",
       &accounts));
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ("u@g.c", accounts[0]);
+  ASSERT_EQ("u@g.c", accounts[0].first);
+  ASSERT_TRUE(accounts[0].second);
 
   ASSERT_TRUE(ParseListAccountsData(
       "[\"foo\", [[\"bar1\", 0, \"name1\", \"u1@g.c\", \"photo1\", 0, 0, 0], "
                  "[\"bar2\", 0, \"name2\", \"u2@g.c\", \"photo2\", 0, 0, 0]]]",
       &accounts));
   ASSERT_EQ(2u, accounts.size());
-  ASSERT_EQ("u1@g.c", accounts[0]);
-  ASSERT_EQ("u2@g.c", accounts[1]);
+  ASSERT_EQ("u1@g.c", accounts[0].first);
+  ASSERT_TRUE(accounts[0].second);
+  ASSERT_EQ("u2@g.c", accounts[1].first);
+  ASSERT_TRUE(accounts[1].second);
 
   ASSERT_TRUE(ParseListAccountsData(
       "[\"foo\", [[\"b1\", 0, \"name1\", \"U1@g.c\", \"photo1\", 0, 0, 0], "
                  "[\"b2\", 0, \"name2\", \"u.2@g.c\", \"photo2\", 0, 0, 0]]]",
       &accounts));
   ASSERT_EQ(2u, accounts.size());
-  ASSERT_EQ(CanonicalizeEmail("U1@g.c"), accounts[0]);
-  ASSERT_EQ(CanonicalizeEmail("u.2@g.c"), accounts[1]);
+  ASSERT_EQ(CanonicalizeEmail("U1@g.c"), accounts[0].first);
+  ASSERT_TRUE(accounts[0].second);
+  ASSERT_EQ(CanonicalizeEmail("u.2@g.c"), accounts[1].first);
+  ASSERT_TRUE(accounts[1].second);
+}
+
+TEST(GaiaAuthUtilTest, ParseListAccountsDataValidSession) {
+  std::vector<std::pair<std::string, bool> > accounts;
+
+  // Missing valid session means: return account.
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0]]]",
+      &accounts));
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_EQ("u@g.c", accounts[0].first);
+  ASSERT_TRUE(accounts[0].second);
+
+  // Valid session is true means: return account.
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0, 0, 1]]]",
+      &accounts));
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_EQ("u@g.c", accounts[0].first);
+  ASSERT_TRUE(accounts[0].second);
+
+  // Valid session is false means: return account with valid bit false.
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0, 0, 0]]]",
+      &accounts));
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_FALSE(accounts[0].second);
 }
 
 }  // namespace gaia
