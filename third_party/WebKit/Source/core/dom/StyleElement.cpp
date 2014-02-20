@@ -30,6 +30,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/frame/ContentSecurityPolicy.h"
+#include "platform/TraceEvent.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -56,6 +57,7 @@ StyleElement::~StyleElement()
 
 void StyleElement::processStyleSheet(Document& document, Element* element)
 {
+    TRACE_EVENT0("webkit", "StyleElement::processStyleSheet");
     ASSERT(element);
     document.styleEngine()->addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
