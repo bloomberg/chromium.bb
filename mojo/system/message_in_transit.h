@@ -53,6 +53,28 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Destroys a |MessageInTransit| created using |Create()| or |Clone()|.
   void Destroy();
 
+  // Gets the size of the next message from |buffer|, which has |buffer_size|
+  // bytes currently available, returning true and setting |*next_message_size|
+  // on success. |buffer| should be aligned on a |kMessageAlignment| boundary
+  // (and on success, |*next_message_size| will be a multiple of
+  // |kMessageAlignment|).
+  // TODO(vtl): In |RawChannelPosix|, the alignment requirements are currently
+  // satisified on a faith-based basis.
+  static bool GetNextMessageSize(const void* buffer,
+                                 size_t buffer_size,
+                                 size_t* next_message_size);
+
+  // Creates a read-only |MessageInTransit| from |buffer|, which must have
+  // enough data (as indicated by |GetNextMessageSize()|). |buffer| has the same
+  // alignment requirements as in |GetNextMessageSize()|.
+  //
+  // The returned message should not be destroyed using |Destroy()|, and the
+  // underlying buffer must remain alive and unmodified as long as the returned
+  // message is in use.
+  // TODO(vtl): Change these odd semantics (once I make |MessageInTransit|s have
+  // pointers to the buffers, instead of being POD).
+  static const MessageInTransit* CreateReadOnlyFromBuffer(const void* buffer);
+
   // Gets the "main" buffer for a |MessageInTransit|. A |MessageInTransit| can
   // be serialized by writing the main buffer. The returned pointer will be
   // aligned to a multiple of |kMessageAlignment| bytes, and the size of the

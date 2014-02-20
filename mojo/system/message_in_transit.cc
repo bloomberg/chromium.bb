@@ -77,6 +77,33 @@ void MessageInTransit::Destroy() {
   base::AlignedFree(this);
 }
 
+// static
+bool MessageInTransit::GetNextMessageSize(const void* buffer,
+                                          size_t buffer_size,
+                                          size_t* next_message_size) {
+  DCHECK(buffer);
+  DCHECK_EQ(reinterpret_cast<uintptr_t>(buffer) %
+                MessageInTransit::kMessageAlignment, 0u);
+  DCHECK(next_message_size);
+
+  if (buffer_size < sizeof(Header))
+    return false;
+
+  const Header* header = static_cast<const Header*>(buffer);
+  *next_message_size =
+      RoundUpMessageAlignment(sizeof(MessageInTransit) + header->data_size);
+  return true;
+}
+
+// static
+const MessageInTransit* MessageInTransit::CreateReadOnlyFromBuffer(
+    const void* buffer) {
+  DCHECK(buffer);
+  DCHECK_EQ(reinterpret_cast<uintptr_t>(buffer) %
+                MessageInTransit::kMessageAlignment, 0u);
+  return static_cast<const MessageInTransit*>(buffer);
+}
+
 MessageInTransit::MessageInTransit(uint32_t data_size,
                                    Type type,
                                    Subtype subtype,

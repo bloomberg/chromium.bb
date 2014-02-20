@@ -251,15 +251,22 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
     read_buffer_num_valid_bytes_ += static_cast<size_t>(bytes_read);
 
     // Dispatch all the messages that we can.
-    while (read_buffer_num_valid_bytes_ >= sizeof(MessageInTransit)) {
+    size_t message_size;
+    // Note that we rely on short-circuit evaluation here:
+    //   - |read_buffer_start| may be an invalid index into |read_buffer_| if
+    //     |read_buffer_num_valid_bytes_| is zero.
+    //   - |message_size| is only valid if |GetNextMessageSize()| returns true.
+    // TODO(vtl): Use |message_size| more intelligently (e.g., to request the
+    // next read).
+    while (read_buffer_num_valid_bytes_ > 0 &&
+           MessageInTransit::GetNextMessageSize(
+               &read_buffer_[read_buffer_start], read_buffer_num_valid_bytes_,
+               &message_size) &&
+           read_buffer_num_valid_bytes_ >= message_size) {
       const MessageInTransit* message =
-          reinterpret_cast<const MessageInTransit*>(
+          MessageInTransit::CreateReadOnlyFromBuffer(
               &read_buffer_[read_buffer_start]);
-      DCHECK_EQ(reinterpret_cast<size_t>(message) %
-                    MessageInTransit::kMessageAlignment, 0u);
-      // If we have the header, not the whole message....
-      if (read_buffer_num_valid_bytes_ < message->main_buffer_size())
-        break;
+      DCHECK_EQ(message->main_buffer_size(), message_size);
 
       // Dispatch the message.
       delegate()->OnReadMessage(*message);
@@ -271,8 +278,8 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       did_dispatch_message = true;
 
       // Update our state.
-      read_buffer_start += message->main_buffer_size();
-      read_buffer_num_valid_bytes_ -= message->main_buffer_size();
+      read_buffer_start += message_size;
+      read_buffer_num_valid_bytes_ -= message_size;
     }
 
     // If we dispatched any messages, stop reading for now (and let the message

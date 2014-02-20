@@ -145,20 +145,21 @@ class TestMessageReaderAndChecker {
       bytes_.insert(bytes_.end(), buffer, buffer + read_size);
 
       // If we have the header....
-      if (bytes_.size() >= sizeof(MessageInTransit)) {
-        const MessageInTransit* message =
-            reinterpret_cast<const MessageInTransit*>(bytes_.data());
-        CHECK_EQ(reinterpret_cast<size_t>(message) %
-                     MessageInTransit::kMessageAlignment, 0u);
-
-        if (message->data_size() != expected_size) {
-          LOG(ERROR) << "Wrong size: " << message->data_size() << " instead of "
-                     << expected_size << " bytes.";
-          return false;
-        }
-
+      size_t message_size;
+      if (MessageInTransit::GetNextMessageSize(bytes_.data(), bytes_.size(),
+                                               &message_size)) {
         // If we've read the whole message....
-        if (bytes_.size() >= message->main_buffer_size()) {
+        if (bytes_.size() >= message_size) {
+          const MessageInTransit* message =
+              MessageInTransit::CreateReadOnlyFromBuffer(bytes_.data());
+          CHECK_EQ(message->main_buffer_size(), message_size);
+
+          if (message->data_size() != expected_size) {
+            LOG(ERROR) << "Wrong size: " << message_size << " instead of "
+                       << expected_size << " bytes.";
+            return false;
+          }
+
           if (!CheckMessageData(message->data(), message->data_size())) {
             LOG(ERROR) << "Incorrect message data.";
             return false;
