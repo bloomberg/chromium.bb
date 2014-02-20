@@ -1048,12 +1048,23 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
   // Don't try play startup sound if login prompt is already visible
   // for a long time or can't be played.
   if (base::TimeTicks::Now() - login_prompt_visible_time_ >
-      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs) ||
-      !ash::PlaySystemSound(SOUND_STARTUP,
-                            startup_sound_honors_spoken_feedback_)) {
+      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
     EnableSystemSoundsForAccessibility();
     return;
   }
+
+  if (!startup_sound_honors_spoken_feedback_ &&
+      !ash::PlaySystemSoundAlways(SOUND_STARTUP)) {
+    EnableSystemSoundsForAccessibility();
+    return;
+  }
+
+  if (startup_sound_honors_spoken_feedback_ &&
+      !ash::PlaySystemSoundIfSpokenFeedback(SOUND_STARTUP)) {
+    EnableSystemSoundsForAccessibility();
+    return;
+  }
+
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&EnableSystemSoundsForAccessibility),

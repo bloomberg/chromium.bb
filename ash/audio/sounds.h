@@ -10,18 +10,18 @@
 
 namespace ash {
 
+// A wrapper around media::SoundsManager::Play() method, which plays sound
+// identified by |key|. Returns true when sound is successfully played.
+ASH_EXPORT bool PlaySystemSoundAlways(media::SoundsManager::SoundKey key);
+
 // A wrapper around media::SoundsManager::Play() method, which plays
 // sound identified by |key| iff at least one of the following
 // conditions is true:
 // * ash::switches::kAshEnableSystemSounds flag is set
-// * |honor_spoken_feedback| is true and spoken feedback is enabled
-// * ash::switches::kAshEnableSystemSounds is not set and
-//   |honor_spoken_feedback| is false
-//
-// Currently the latter case is applied for startup sound at OOBE screen
-// and ChromeVox enable/disable sounds.
-ASH_EXPORT bool PlaySystemSound(media::SoundsManager::SoundKey key,
-                                bool honor_spoken_feedback);
+// * spoken feedback is enabled
+// Returns true when sound is succesfully played.
+ASH_EXPORT bool PlaySystemSoundIfSpokenFeedback(
+    media::SoundsManager::SoundKey key);
 
 }  // namespace ash
 

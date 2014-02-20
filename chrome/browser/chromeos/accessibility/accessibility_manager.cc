@@ -833,7 +833,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   if (!system_sounds_enabled_)
     return base::TimeDelta();
   system_sounds_enabled_ = false;
-  if (!ash::PlaySystemSound(SOUND_SHUTDOWN, true /* honor_spoken_feedback */))
+  if (!ash::PlaySystemSoundIfSpokenFeedback(SOUND_SHUTDOWN))
     return base::TimeDelta();
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
@@ -945,27 +945,23 @@ void AccessibilityManager::OnDisplayStateChanged(
 
 void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
   // Do any setup work needed immediately after ChromeVox actually loads.
-  if (system_sounds_enabled_) {
-    ash::PlaySystemSound(SOUND_SPOKEN_FEEDBACK_ENABLED,
-                         false /* honor_spoken_feedback */);
-  }
+  if (system_sounds_enabled_)
+    ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_ENABLED);
 
-    ExtensionAccessibilityEventRouter::GetInstance()->
-        OnChromeVoxLoadStateChanged(profile_,
-            IsSpokenFeedbackEnabled(),
-            chrome_vox_loaded_on_lock_screen_ ||
-                should_speak_chrome_vox_announcements_on_user_screen_);
+  ExtensionAccessibilityEventRouter::GetInstance()->
+      OnChromeVoxLoadStateChanged(profile_,
+          IsSpokenFeedbackEnabled(),
+          chrome_vox_loaded_on_lock_screen_ ||
+              should_speak_chrome_vox_announcements_on_user_screen_);
 
-    should_speak_chrome_vox_announcements_on_user_screen_ =
-        chrome_vox_loaded_on_lock_screen_;
+  should_speak_chrome_vox_announcements_on_user_screen_ =
+      chrome_vox_loaded_on_lock_screen_;
 }
 
 void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
-  if (system_sounds_enabled_) {
-    ash::PlaySystemSound(SOUND_SPOKEN_FEEDBACK_DISABLED,
-                         false /* honor_spoken_feedback */);
-  }
+  if (system_sounds_enabled_)
+    ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_DISABLED);
 }
 
 }  // namespace chromeos

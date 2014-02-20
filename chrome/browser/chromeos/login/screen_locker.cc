@@ -156,10 +156,9 @@ ScreenLocker::ScreenLocker(const UserList& users)
 
   ash::Shell::GetInstance()->
       lock_state_controller()->SetLockScreenDisplayedCallback(
-          base::Bind(base::IgnoreResult(&ash::PlaySystemSound),
+          base::Bind(base::IgnoreResult(&ash::PlaySystemSoundIfSpokenFeedback),
                      static_cast<media::SoundsManager::SoundKey>(
-                         chromeos::SOUND_LOCK),
-                     true /* honor_spoken_feedback */));
+                         chromeos::SOUND_LOCK)));
 }
 
 void ScreenLocker::Init() {
@@ -411,7 +410,7 @@ void ScreenLocker::ScheduleDeletion() {
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
-  ash::PlaySystemSound(SOUND_UNLOCK, true /* honor_spoken_feedback */);
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_UNLOCK);
 
   delete screen_locker_;
   screen_locker_ = NULL;

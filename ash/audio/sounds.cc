@@ -13,17 +13,18 @@ using media::SoundsManager;
 
 namespace ash {
 
-bool PlaySystemSound(SoundsManager::SoundKey key, bool honor_spoken_feedback) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableSystemSounds)) {
-    return SoundsManager::Get()->Play(key);
-  }
+bool PlaySystemSoundAlways(media::SoundsManager::SoundKey key) {
+  return SoundsManager::Get()->Play(key);
+}
 
-  if (honor_spoken_feedback &&
-      !Shell::GetInstance()->accessibility_delegate()->
-      IsSpokenFeedbackEnabled()) {
+bool PlaySystemSoundIfSpokenFeedback(SoundsManager::SoundKey key) {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kAshEnableSystemSounds))
+    return SoundsManager::Get()->Play(key);
+
+  Shell* shell = Shell::GetInstance();
+  if (!shell->accessibility_delegate()->IsSpokenFeedbackEnabled())
     return false;
-  }
   return SoundsManager::Get()->Play(key);
 }
 
