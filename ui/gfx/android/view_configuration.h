@@ -12,16 +12,24 @@
 namespace gfx {
 
 // Provides access to Android's ViewConfiguration for gesture-related constants.
+// Note: All methods may be safely called from any thread.
 class GFX_EXPORT ViewConfiguration {
  public:
   static int GetDoubleTapTimeoutInMs();
   static int GetLongPressTimeoutInMs();
   static int GetTapTimeoutInMs();
 
+  // Dimensionless coefficient of friction.
+  static float GetScrollFriction();
+
   static int GetMaximumFlingVelocityInPixelsPerSecond();
   static int GetMinimumFlingVelocityInPixelsPerSecond();
 
   static int GetTouchSlopInPixels();
+  static int GetDoubleTapSlopInPixels();
+
+  static int GetMinScalingSpanInPixels();
+  static int GetMinScalingTouchMajorInPixels();
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);

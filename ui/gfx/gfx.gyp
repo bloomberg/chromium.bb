@@ -526,23 +526,12 @@
     ['OS=="android"' , {
      'targets': [
        {
-         'target_name': 'gfx_view_jni_headers',
-         'type': 'none',
-         'variables': {
-           'jni_gen_package': 'ui/gfx',
-           'input_java_class': 'android/view/ViewConfiguration.class',
-         },
-         'includes': [ '../../build/jar_file_jni_generator.gypi' ],
-       },
-       {
          'target_name': 'gfx_jni_headers',
          'type': 'none',
-         'dependencies': [
-           'gfx_view_jni_headers'
-         ],
          'sources': [
            '../android/java/src/org/chromium/ui/gfx/BitmapHelper.java',
            '../android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java',
+           '../android/java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java',
          ],
          'variables': {
            'jni_gen_package': 'ui/gfx',
