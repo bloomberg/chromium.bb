@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
@@ -45,6 +46,9 @@ class BluetoothProfileChromeOSTest : public testing::Test {
     fake_dbus_thread_manager->SetBluetoothProfileManagerClient(
         scoped_ptr<BluetoothProfileManagerClient>(
             fake_bluetooth_profile_manager_client_));
+    fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
+        scoped_ptr<BluetoothAgentManagerClient>(
+            new FakeBluetoothAgentManagerClient));
     fake_dbus_thread_manager->SetBluetoothAdapterClient(
         scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
     fake_dbus_thread_manager->SetBluetoothDeviceClient(
