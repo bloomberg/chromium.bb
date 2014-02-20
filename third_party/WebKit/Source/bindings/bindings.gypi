@@ -80,6 +80,7 @@
             'v8/ScriptWrappable.h',
             'v8/SerializedScriptValue.cpp',
             'v8/SerializedScriptValue.h',
+            'v8/SharedPersistent.h',
             'v8/UnsafePersistent.h',
             'v8/V8AbstractEventListener.cpp',
             'v8/V8AbstractEventListener.h',

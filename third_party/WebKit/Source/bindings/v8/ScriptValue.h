@@ -31,8 +31,8 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
-#include "bindings/v8/ScopedPersistent.h"
-#include "wtf/RefCounted.h"
+#include "bindings/v8/SharedPersistent.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -52,7 +52,7 @@ public:
 
     ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
         : m_isolate(isolate)
-        , m_value(value.IsEmpty() ? 0 : SharedPersistent::create(value, isolate))
+        , m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value, isolate))
     {
     }
 
@@ -165,37 +165,8 @@ public:
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
 
 private:
-    class SharedPersistent : public RefCounted<SharedPersistent> {
-        WTF_MAKE_NONCOPYABLE(SharedPersistent);
-    public:
-        static PassRefPtr<SharedPersistent> create(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-        {
-            return adoptRef(new SharedPersistent(value, isolate));
-        }
-
-        v8::Local<v8::Value> newLocal(v8::Isolate* isolate) const
-        {
-            return m_value.newLocal(isolate);
-        }
-
-        bool isEmpty() { return m_value.isEmpty(); }
-
-        bool operator==(const SharedPersistent& other)
-        {
-            return m_value == other.m_value;
-        }
-
-    private:
-        SharedPersistent(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-            : m_value(isolate, value)
-        {
-        }
-
-        ScopedPersistent<v8::Value> m_value;
-    };
-
     mutable v8::Isolate* m_isolate;
-    RefPtr<SharedPersistent> m_value;
+    RefPtr<SharedPersistent<v8::Value> > m_value;
 };
 
 } // namespace WebCore
