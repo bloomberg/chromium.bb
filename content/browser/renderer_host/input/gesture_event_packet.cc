@@ -52,9 +52,24 @@ GestureEventPacket::GestureEventPacket(GestureSource source)
   DCHECK_NE(gesture_source_, UNDEFINED);
 }
 
+GestureEventPacket::GestureEventPacket(const GestureEventPacket& other)
+    : gesture_count_(other.gesture_count_),
+      gesture_source_(other.gesture_source_) {
+  std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
+}
+
 GestureEventPacket::~GestureEventPacket() {}
 
+GestureEventPacket& GestureEventPacket::operator=(
+    const GestureEventPacket& other) {
+  gesture_count_ = other.gesture_count_;
+  gesture_source_ = other.gesture_source_;
+  std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
+  return *this;
+}
+
 void GestureEventPacket::Push(const blink::WebGestureEvent& gesture) {
+  DCHECK(WebInputEvent::isGestureEventType(gesture.type));
   CHECK_LT(gesture_count_, static_cast<size_t>(kMaxGesturesPerTouch));
   gestures_[gesture_count_++] = gesture;
 }

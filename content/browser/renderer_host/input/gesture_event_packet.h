@@ -26,7 +26,9 @@ class CONTENT_EXPORT GestureEventPacket {
   };
 
   GestureEventPacket();
+  GestureEventPacket(const GestureEventPacket& other);
   ~GestureEventPacket();
+  GestureEventPacket& operator=(const GestureEventPacket& other);
 
   // Factory methods for creating a packet from a particular event.
   static GestureEventPacket FromTouch(const blink::WebTouchEvent& event);

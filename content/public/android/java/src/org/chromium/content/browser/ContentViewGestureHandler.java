@@ -781,41 +781,42 @@ class ContentViewGestureHandler {
     private boolean processTouchEvent(MotionEvent event) {
         if (!canHandle(event)) return false;
 
-        mMotionEventDelegate.onTouchEventHandlingBegin(event);
+        try {
+            mMotionEventDelegate.onTouchEventHandlingBegin(event);
 
-        final boolean wasTouchScrolling = mTouchScrolling;
+            final boolean wasTouchScrolling = mTouchScrolling;
 
-        mSnapScrollController.setSnapScrollingMode(event, isScaleGestureDetectionInProgress());
+            mSnapScrollController.setSnapScrollingMode(event, isScaleGestureDetectionInProgress());
 
-        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-            endDoubleTapDragIfNecessary(event);
-        } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mGestureDetector.setIsLongpressEnabled(true);
-            mCurrentDownEvent = MotionEvent.obtain(event);
-        }
-
-        boolean handled = mGestureDetector.onTouchEvent(event);
-        handled |= processTouchEventForMultiTouch(event);
-
-        if (event.getAction() == MotionEvent.ACTION_UP
-                || event.getAction() == MotionEvent.ACTION_CANCEL) {
-            if (event.getAction() == MotionEvent.ACTION_CANCEL) {
-                sendTapCancelIfNecessary(event);
+            if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+                endDoubleTapDragIfNecessary(event);
+            } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mGestureDetector.setIsLongpressEnabled(true);
+                mCurrentDownEvent = MotionEvent.obtain(event);
             }
 
-            // "Last finger raised" could be an end to movement, but it should
-            // only terminate scrolling if the event did not cause a fling.
-            if (wasTouchScrolling && !handled) {
-                endTouchScrollIfNecessary(event.getEventTime(), true);
+            boolean handled = mGestureDetector.onTouchEvent(event);
+            handled |= processTouchEventForMultiTouch(event);
+
+            if (event.getAction() == MotionEvent.ACTION_UP
+                    || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                if (event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    sendTapCancelIfNecessary(event);
+                }
+
+                // "Last finger raised" could be an end to movement, but it should
+                // only terminate scrolling if the event did not cause a fling.
+                if (wasTouchScrolling && !handled) {
+                    endTouchScrollIfNecessary(event.getEventTime(), true);
+                }
+
+                if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+                mCurrentDownEvent = null;
             }
-
-            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
-            mCurrentDownEvent = null;
+            return handled;
+        } finally {
+            mMotionEventDelegate.onTouchEventHandlingEnd();
         }
-
-        mMotionEventDelegate.onTouchEventHandlingEnd();
-
-        return handled;
     }
 
     private boolean isScaleGestureDetectionInProgress() {

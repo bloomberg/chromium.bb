@@ -1034,7 +1034,12 @@ void ContentViewCoreImpl::OnTouchEventHandlingBegin(JNIEnv* env,
 }
 
 void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {
-  DCHECK(handling_touch_event_);
+  if (!handling_touch_event_)
+    return;
+
+  GestureEventPacket gesture_packet;
+  std::swap(gesture_packet, pending_gesture_packet_);
+
   handling_touch_event_ = false;
 
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
@@ -1043,8 +1048,7 @@ void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {
 
   // Note: Order is important here, as the touch may be ack'ed synchronously
   TouchDispositionGestureFilter::PacketResult result =
-      touch_disposition_gesture_filter_.OnGestureEventPacket(
-          pending_gesture_packet_);
+      touch_disposition_gesture_filter_.OnGestureEventPacket(gesture_packet);
   if (result != TouchDispositionGestureFilter::SUCCESS) {
     NOTREACHED() << "Invalid touch gesture sequence detected.";
     return;
