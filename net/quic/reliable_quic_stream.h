@@ -83,10 +83,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool read_side_closed() const { return read_side_closed_; }
   bool write_side_closed() const { return write_side_closed_; }
 
-  uint64 stream_bytes_read() { return stream_bytes_read_; }
-  uint64 stream_bytes_written() { return stream_bytes_written_; }
+  uint64 stream_bytes_read() const { return stream_bytes_read_; }
+  uint64 stream_bytes_written() const { return stream_bytes_written_; }
 
-  QuicVersion version();
+  QuicVersion version() const;
 
   void set_fin_sent(bool fin_sent) { fin_sent_ = fin_sent; }
   void set_rst_sent(bool rst_sent) { rst_sent_ = rst_sent; }
@@ -117,6 +117,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   bool fin_buffered() { return fin_buffered_; }
 
+  const QuicSession* session() const { return session_; }
   QuicSession* session() { return session_; }
 
   const QuicStreamSequencer* sequencer() const { return &sequencer_; }

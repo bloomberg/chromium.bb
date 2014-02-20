@@ -181,8 +181,8 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     }
   }
   if (event->in_events & EPOLLOUT) {
-    bool can_write_more = dispatcher_->OnCanWrite();
-    if (can_write_more) {
+    dispatcher_->OnCanWrite();
+    if (dispatcher_->HasPendingWrites()) {
       event->out_ready_mask |= EPOLLOUT;
     }
   }
@@ -194,7 +194,7 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
 bool QuicServer::ReadAndDispatchSinglePacket(int fd,
                                              int port,
                                              QuicDispatcher* dispatcher,
-                                             int* packets_dropped) {
+                                             uint32* packets_dropped) {
   // Allocate some extra space so we can send an error if the client goes over
   // the limit.
   char buf[2 * kMaxPacketSize];

@@ -129,18 +129,15 @@ QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
   return (it->second).version;
 }
 
-bool QuicTimeWaitListManager::OnCanWrite() {
+void QuicTimeWaitListManager::OnCanWrite() {
   while (!pending_packets_queue_.empty()) {
     QueuedPacket* queued_packet = pending_packets_queue_.front();
-    if (WriteToWire(queued_packet)) {
-      pending_packets_queue_.pop_front();
-      delete queued_packet;
-    } else {
-      break;
+    if (!WriteToWire(queued_packet)) {
+      return;
     }
+    pending_packets_queue_.pop_front();
+    delete queued_packet;
   }
-
-  return !writer_->IsWriteBlocked();
 }
 
 void QuicTimeWaitListManager::ProcessPacket(

@@ -31,11 +31,9 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
 
   // SendAlgorithmInterface methods.
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
-  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time,
-      const SendAlgorithmInterface::SentPacketsMap& sent_packets) OVERRIDE;
+      QuicTime feedback_receive_time) OVERRIDE;
   virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes) OVERRIDE;
   virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,

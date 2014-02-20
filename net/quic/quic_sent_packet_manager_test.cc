@@ -39,7 +39,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                             size_t num_packets) {
     if (num_packets == 0) {
       EXPECT_FALSE(manager_.HasUnackedPackets());
-      EXPECT_EQ(0u, manager_.GetNumRetransmittablePackets());
+      EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
+          &manager_));
       return;
     }
 
@@ -52,7 +53,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   void VerifyRetransmittablePackets(QuicPacketSequenceNumber* packets,
                                     size_t num_packets) {
-    SequenceNumberSet unacked = manager_.GetUnackedPackets();
+    SequenceNumberSet unacked =
+        QuicSentPacketManagerPeer::GetUnackedPackets(&manager_);
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(ContainsKey(unacked, packets[i])) << packets[i];
     }
@@ -63,7 +65,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         ++num_retransmittable;
       }
     }
-    EXPECT_EQ(num_packets, manager_.GetNumRetransmittablePackets());
+    EXPECT_EQ(num_packets,
+              QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
+                  &manager_));
     EXPECT_EQ(num_packets, num_retransmittable);
   }
 
@@ -590,7 +594,7 @@ TEST_F(QuicSentPacketManagerTest, GetSentTime) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 1, _, _, _))
                   .Times(1).WillOnce(Return(true));
   manager_.OnPacketSent(
-      1, QuicTime::Zero(), 0, NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
+      1, QuicTime::Zero(), 1000, NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
 
   SerializedPacket serialized_packet2(CreateFecPacket(2));
   QuicTime sent_time = QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(1));
@@ -598,7 +602,7 @@ TEST_F(QuicSentPacketManagerTest, GetSentTime) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, _, _))
                   .Times(1).WillOnce(Return(true));
   manager_.OnPacketSent(
-      2, sent_time, 0, NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
+      2, sent_time, 1000, NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
 
   QuicPacketSequenceNumber unacked[] = { 1, 2 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -838,9 +842,10 @@ TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
                 OnPacketAcked(_, _)).Times(i == 3 ? 2 : 1);
     manager_.OnIncomingAck(received_info, clock_.Now());
     EXPECT_FALSE(manager_.HasPendingRetransmissions());
-    // The nack count remains at 2 when the packet is acked.
-    EXPECT_EQ(i == 3 ? 2u : i,
-              QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
+    // The nack count is not available once the packet has been acked.
+    if (i != 3) {
+      EXPECT_EQ(i, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
+    }
   }
 }
 

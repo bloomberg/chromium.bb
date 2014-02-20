@@ -77,7 +77,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // Called by the dispatcher when the underlying socket becomes writable again,
   // since we might need to send pending public reset packets which we didn't
   // send because the underlying socket was write blocked.
-  virtual bool OnCanWrite() OVERRIDE;
+  virtual void OnCanWrite() OVERRIDE;
 
   // Used to delete guid entries that have outlived their time wait period.
   void CleanUpOldGuids();

@@ -18,21 +18,15 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
 
 PacingSender::~PacingSender() {}
 
-void PacingSender::SetMaxPacketSize(QuicByteCount max_packet_size) {
-  max_segment_size_ = max_packet_size;
-  sender_->SetMaxPacketSize(max_packet_size);
-}
-
 void PacingSender::SetFromConfig(const QuicConfig& config, bool is_server) {
   sender_->SetFromConfig(config, is_server);
 }
 
 void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time,
-      const SendAlgorithmInterface::SentPacketsMap& sent_packets) {
+      QuicTime feedback_receive_time) {
   sender_->OnIncomingQuicCongestionFeedbackFrame(
-      feedback, feedback_receive_time, sent_packets);
+      feedback, feedback_receive_time);
 }
 
 void PacingSender::OnPacketAcked(

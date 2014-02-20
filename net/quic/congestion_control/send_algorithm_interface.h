@@ -22,29 +22,6 @@ namespace net {
 
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
-  class SentPacket {
-   public:
-    SentPacket(QuicByteCount bytes, QuicTime timestamp)
-        : bytes_sent_(bytes),
-          send_timestamp_(timestamp),
-          nack_count_(0) {
-    }
-    QuicByteCount bytes_sent() const { return bytes_sent_; }
-    const QuicTime& send_timestamp() const { return send_timestamp_; }
-    size_t nack_count() const { return nack_count_; }
-
-    void Nack(size_t min_nacks) {
-      nack_count_ = std::max(min_nacks, nack_count_ + 1);
-    }
-
-   private:
-    QuicByteCount bytes_sent_;
-    QuicTime send_timestamp_;
-    size_t nack_count_;
-  };
-
-  typedef std::map<QuicPacketSequenceNumber, SentPacket*> SentPacketsMap;
-
   static SendAlgorithmInterface* Create(const QuicClock* clock,
                                         CongestionFeedbackType type);
 
@@ -52,14 +29,10 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) = 0;
 
-  // Sets the maximum size of packets that will be sent.
-  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) = 0;
-
   // Called when we receive congestion feedback from remote peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time,
-      const SentPacketsMap& sent_packets) = 0;
+      QuicTime feedback_receive_time) = 0;
 
   // Called for each received ACK, with sequence number from remote peer.
   virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,

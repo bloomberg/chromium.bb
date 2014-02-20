@@ -18,9 +18,8 @@ class NET_EXPORT_PRIVATE QuicBlockedWriterInterface {
   virtual ~QuicBlockedWriterInterface() {}
 
   // Called by the PacketWriter when the underlying socket becomes writable
-  // so that the BlockedWriter can go ahead and try writing. This methods
-  // should return false if the socket has become blocked while writing.
-  virtual bool OnCanWrite() = 0;
+  // so that the BlockedWriter can go ahead and try writing.
+  virtual void OnCanWrite() = 0;
 };
 
 }  // namespace net

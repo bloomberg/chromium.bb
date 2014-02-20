@@ -102,6 +102,17 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame)
+      OVERRIDE {
+    window_update_frames_.push_back(frame);
+    return true;
+  }
+
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE {
+    blocked_frames_.push_back(frame);
+    return true;
+  }
+
   virtual void OnPacketComplete() OVERRIDE {}
 
   const QuicPacketHeader& header() const { return header_; }
@@ -121,6 +132,12 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const vector<QuicStreamFrame>& stream_frames() const {
     return stream_frames_;
   }
+  const vector<QuicWindowUpdateFrame>& window_update_frames() const {
+    return window_update_frames_;
+  }
+  const vector<QuicBlockedFrame>& blocked_frames() const {
+    return blocked_frames_;
+  }
   const QuicFecData& fec_data() const {
     return fec_data_;
   }
@@ -137,6 +154,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   vector<QuicRstStreamFrame> rst_stream_frames_;
   vector<QuicGoAwayFrame> goaway_frames_;
   vector<QuicConnectionCloseFrame> connection_close_frames_;
+  vector<QuicWindowUpdateFrame> window_update_frames_;
+  vector<QuicBlockedFrame> blocked_frames_;
   vector<string*> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFramerVisitor);

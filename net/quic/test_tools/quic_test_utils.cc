@@ -123,6 +123,15 @@ bool NoOpFramerVisitor::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   return true;
 }
 
+bool NoOpFramerVisitor::OnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  return true;
+}
+
 FramerVisitorCapturingFrames::FramerVisitorCapturingFrames() : frame_count_(0) {
 }
 

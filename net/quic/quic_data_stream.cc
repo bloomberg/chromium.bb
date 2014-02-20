@@ -389,4 +389,10 @@ bool QuicDataStream::FinishedReadingHeaders() {
       headers_decompressed_ && decompressed_headers_.empty();
 }
 
+void QuicDataStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
+  DVLOG(1) << "Received WindowUpdateFrame for stream: " << id()
+           << ", with byte offset: " << frame.byte_offset;
+  // TODO(rjshade): Adjust flow control window.
+}
+
 }  // namespace net

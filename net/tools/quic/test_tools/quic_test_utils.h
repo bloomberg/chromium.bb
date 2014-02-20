@@ -79,7 +79,8 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const std::string& reason));
-  MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_METHOD0(OnCanWrite, void());
+  MOCK_CONST_METHOD0(HasPendingWrites, bool());
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,

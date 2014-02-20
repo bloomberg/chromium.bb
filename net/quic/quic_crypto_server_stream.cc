@@ -24,7 +24,11 @@ QuicCryptoServerStream::QuicCryptoServerStream(
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {
-  // Detach from the validation callback.
+  CancelOutstandingCallbacks();
+}
+
+void QuicCryptoServerStream::CancelOutstandingCallbacks() {
+  // Detach from the validation callback.  Calling this multiple times is safe.
   if (validate_client_hello_cb_ != NULL) {
     validate_client_hello_cb_->Cancel();
   }

@@ -124,12 +124,10 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
 
   // Called when a WindowUpdateFrame has been parsed.
-  // TODO(rjshade): Make this abstract, and implement in subclasses.
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) = 0;
 
   // Called when a BlockedFrame has been parsed.
-  // TODO(rjshade): Make this abstract, and implement in subclasses.
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame);
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) = 0;
 
   // Called when FEC data has been parsed.
   virtual void OnFecData(const QuicFecData& fec) = 0;

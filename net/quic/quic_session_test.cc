@@ -328,8 +328,8 @@ TEST_P(QuicSessionTest, OnCanWrite) {
       InvokeWithoutArgs(&stream2_blocker, &StreamBlocker::MarkWriteBlocked));
   EXPECT_CALL(*stream6, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
-
-  EXPECT_FALSE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_TRUE(session_.HasPendingWrites());
 }
 
 TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
@@ -358,21 +358,22 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
       QuicTime::Delta::Infinite()));
   // stream4->OnCanWrite is not called.
 
-  // TODO(avd) change return value to 'true', since the connection
-  // can't write because it is congestion control blocked.
-  EXPECT_FALSE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_TRUE(session_.HasPendingWrites());
 
   // Still congestion-control blocked.
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
-  EXPECT_FALSE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_TRUE(session_.HasPendingWrites());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_TRUE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.HasPendingWrites());
 }
 
 TEST_P(QuicSessionTest, BufferedHandshake) {
@@ -418,7 +419,8 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(
       InvokeWithoutArgs(&stream4_blocker, &StreamBlocker::MarkWriteBlocked));
 
-  EXPECT_FALSE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_TRUE(session_.HasPendingWrites());
   EXPECT_FALSE(session_.HasPendingHandshake());  // Crypto stream wrote.
 }
 
@@ -435,7 +437,8 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
   InSequence s;
   EXPECT_CALL(*stream2, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_TRUE(session_.OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.HasPendingWrites());
 }
 
 // Regression test for http://crbug.com/248737

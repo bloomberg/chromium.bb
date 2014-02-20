@@ -324,9 +324,13 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
     dispatcher_.Shutdown();
   }
 
-  bool SetBlocked() {
+  void SetBlocked() {
     writer_->write_blocked_ = true;
-    return true;
+  }
+
+  void BlockConnection2() {
+    writer_->write_blocked_ = true;
+    dispatcher_.OnWriteBlocked(connection2());
   }
 
  protected:
@@ -346,7 +350,8 @@ TEST_F(QuicDispatcherWriteBlockedListTest, BasicOnCanWrite) {
 
   // It should get only one notification.
   EXPECT_CALL(*connection1(), OnCanWrite()).Times(0);
-  EXPECT_FALSE(dispatcher_.OnCanWrite());
+  dispatcher_.OnCanWrite();
+  EXPECT_FALSE(dispatcher_.HasPendingWrites());
 }
 
 TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteOrder) {
@@ -433,13 +438,16 @@ TEST_F(QuicDispatcherWriteBlockedListTest, LimitedWrites) {
   SetBlocked();
   dispatcher_.OnWriteBlocked(connection1());
   dispatcher_.OnWriteBlocked(connection2());
-  EXPECT_CALL(*connection1(), OnCanWrite()).WillOnce(Return(true));
-  EXPECT_CALL(*connection2(), OnCanWrite()).WillOnce(Return(false));
+  EXPECT_CALL(*connection1(), OnCanWrite());
+  EXPECT_CALL(*connection2(), OnCanWrite()).WillOnce(
+      Invoke(this, &QuicDispatcherWriteBlockedListTest::BlockConnection2));
   dispatcher_.OnCanWrite();
+  EXPECT_TRUE(dispatcher_.HasPendingWrites());
 
   // Now call OnCanWrite again, and connection1 should get its second chance
-  EXPECT_CALL(*connection1(), OnCanWrite());
+  EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_.OnCanWrite();
+  EXPECT_FALSE(dispatcher_.HasPendingWrites());
 }
 
 TEST_F(QuicDispatcherWriteBlockedListTest, TestWriteLimits) {
@@ -452,10 +460,12 @@ TEST_F(QuicDispatcherWriteBlockedListTest, TestWriteLimits) {
       Invoke(this, &QuicDispatcherWriteBlockedListTest::SetBlocked));
   EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
   dispatcher_.OnCanWrite();
+  EXPECT_TRUE(dispatcher_.HasPendingWrites());
 
   // And we'll resume where we left off when we get another call.
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_.OnCanWrite();
+  EXPECT_FALSE(dispatcher_.HasPendingWrites());
 }
 
 }  // namespace

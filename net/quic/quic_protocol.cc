@@ -356,6 +356,7 @@ ostream& operator<<(ostream& os, const SentPacketInfo& sent_info) {
 
 ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
   os << "entropy_hash: " << static_cast<int>(received_info.entropy_hash)
+     << " is_truncated: " << received_info.is_truncated
      << " largest_observed: " << received_info.largest_observed
      << " missing_packets: [ ";
   for (SequenceNumberSet::const_iterator it =
@@ -369,7 +370,7 @@ ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
        it != received_info.revived_packets.end(); ++it) {
     os << *it << " ";
   }
-  os << " ] ";
+  os << " ]";
   return os;
 }
 

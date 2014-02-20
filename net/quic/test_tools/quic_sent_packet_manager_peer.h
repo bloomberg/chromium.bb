@@ -51,6 +51,12 @@ class QuicSentPacketManagerPeer {
   static bool HasUnackedCryptoPackets(
       const QuicSentPacketManager* sent_packet_manager);
 
+  static size_t GetNumRetransmittablePackets(
+      const QuicSentPacketManager* sent_packet_manager);
+
+  static SequenceNumberSet GetUnackedPackets(
+      const QuicSentPacketManager* sent_packet_manager);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);
 };

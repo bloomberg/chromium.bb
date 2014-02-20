@@ -27,17 +27,11 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   explicit InterArrivalSender(const QuicClock* clock);
   virtual ~InterArrivalSender();
 
-  static QuicBandwidth CalculateSentBandwidth(
-      const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
-      QuicTime feedback_receive_time);
-
   // Start implementation of SendAlgorithmInterface.
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
-  virtual void SetMaxPacketSize(QuicByteCount max_packet_size) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time,
-      const SentPacketsMap& sent_packets) OVERRIDE;
+      QuicTime feedback_receive_time) OVERRIDE;
   virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes) OVERRIDE;
   virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
@@ -64,6 +58,22 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   // End implementation of SendAlgorithmInterface.
 
  private:
+  class SentPacket {
+   public:
+    SentPacket(QuicByteCount bytes, QuicTime timestamp)
+        : bytes_sent_(bytes),
+          send_timestamp_(timestamp) { }
+    QuicByteCount bytes_sent() const { return bytes_sent_; }
+    const QuicTime& send_timestamp() const { return send_timestamp_; }
+
+   private:
+    QuicByteCount bytes_sent_;
+    QuicTime send_timestamp_;
+  };
+
+  typedef std::map<QuicPacketSequenceNumber, SentPacket*> SentPacketsMap;
+
+  QuicBandwidth CalculateSentBandwidth(QuicTime feedback_receive_time) const;
   void EstimateDelayBandwidth(QuicTime feedback_receive_time,
                               QuicBandwidth sent_bandwidth);
   void EstimateNewBandwidth(QuicTime feedback_receive_time,
@@ -78,7 +88,13 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   void ResetCurrentBandwidth(QuicTime feedback_receive_time,
                              QuicBandwidth new_rate);
   bool ProbingPhase(QuicTime feedback_receive_time);
+  void CleanupPacketHistory();
 
+  // Tracks the send time and size of sent packets.  Packets are
+  // removed 5 seconds and they've been added.
+  SentPacketsMap packet_history_map_;
+
+  const QuicClock* clock_;
   bool probing_;  // Are we currently in the probing phase?
   QuicByteCount max_segment_size_;
   QuicBandwidth current_bandwidth_;
@@ -89,7 +105,6 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   scoped_ptr<InterArrivalProbe> probe_;
   scoped_ptr<InterArrivalStateMachine> state_machine_;
   scoped_ptr<PacedSender> paced_sender_;
-  int accumulated_number_of_lost_packets_;
   BandwidthUsage bandwidth_usage_state_;
   QuicTime back_down_time_;  // Time when we decided to back down.
   QuicBandwidth back_down_bandwidth_;  // Bandwidth before backing down.

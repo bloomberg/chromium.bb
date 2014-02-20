@@ -62,9 +62,6 @@ TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
-void TcpCubicSender::SetMaxPacketSize(QuicByteCount /*max_packet_size*/) {
-}
-
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
   if (is_server) {
     // Set the initial window size.
@@ -74,8 +71,7 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
-    QuicTime feedback_receive_time,
-    const SentPacketsMap& /*sent_packets*/) {
+    QuicTime feedback_receive_time) {
   receive_window_ = feedback.tcp.receive_window;
 }
 
@@ -100,7 +96,7 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
   // already sent should be treated as a single loss event, since it's expected.
   if (sequence_number <= largest_sent_at_last_cutback_) {
     DVLOG(1) << "Ignoring loss for largest_missing:" << sequence_number
-               << " because it was sent prior to the last CWND cutback.";
+             << " because it was sent prior to the last CWND cutback.";
     return;
   }
 
@@ -131,7 +127,11 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
     congestion_window_ = kMinimumCongestionWindow;
   }
   largest_sent_at_last_cutback_ = largest_sent_sequence_number_;
-  DVLOG(1) << "Incoming loss; congestion window:" << congestion_window_;
+  // reset packet count from congestion avoidance mode. We start
+  // counting again when we're out of recovery.
+  congestion_window_count_ = 0;
+  DVLOG(1) << "Incoming loss; congestion window: " << congestion_window_
+           << " slowstart threshold: " << slowstart_threshold_;
 }
 
 bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
@@ -283,7 +283,8 @@ void TcpCubicSender::MaybeIncreaseCwnd(
       // TCP slow start, exponential growth, increase by one for each ACK.
       ++congestion_window_;
     }
-    DVLOG(1) << "Slow start; congestion window:" << congestion_window_;
+    DVLOG(1) << "Slow start; congestion window: " << congestion_window_
+             << " slowstart threshold: " << slowstart_threshold_;
     return;
   }
   if (congestion_window_ >= max_tcp_congestion_window_) {
@@ -292,18 +293,22 @@ void TcpCubicSender::MaybeIncreaseCwnd(
   // Congestion avoidance
   if (reno_) {
     // Classic Reno congestion avoidance provided for testing.
+
+    ++congestion_window_count_;
     if (congestion_window_count_ >= congestion_window_) {
       ++congestion_window_;
       congestion_window_count_ = 0;
-    } else {
-      ++congestion_window_count_;
     }
-    DVLOG(1) << "Reno; congestion window:" << congestion_window_;
+
+    DVLOG(1) << "Reno; congestion window: " << congestion_window_
+             << " slowstart threshold: " << slowstart_threshold_
+             << " congestion window count: " << congestion_window_count_;
   } else {
     congestion_window_ = min(
         max_tcp_congestion_window_,
         cubic_.CongestionWindowAfterAck(congestion_window_, delay_min_));
-    DVLOG(1) << "Cubic; congestion window:" << congestion_window_;
+    DVLOG(1) << "Cubic; congestion window: " << congestion_window_
+             << " slowstart threshold: " << slowstart_threshold_;
   }
 }
 
@@ -319,7 +324,7 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
   if (rtt.IsInfinite() || rtt.IsZero()) {
     DVLOG(1) << "Ignoring rtt, because it's "
-               << (rtt.IsZero() ? "Zero" : "Infinite");
+             << (rtt.IsZero() ? "Zero" : "Infinite");
     return;
   }
   // RTT can't be negative.
@@ -346,7 +351,7 @@ void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
         kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
         kAlpha * rtt.ToMicroseconds());
     DVLOG(1) << "Cubic; smoothed_rtt_:" << smoothed_rtt_.ToMicroseconds()
-               << " mean_deviation_:" << mean_deviation_.ToMicroseconds();
+             << " mean_deviation_:" << mean_deviation_.ToMicroseconds();
   }
 
   // Hybrid start triggers when cwnd is larger than some threshold.

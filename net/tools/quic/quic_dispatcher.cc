@@ -6,6 +6,7 @@
 
 #include <errno.h>
 
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/quic_blocked_writer_interface.h"
@@ -110,6 +111,15 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     return false;
   }
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) OVERRIDE {
+    DCHECK(false);
+    return false;
+  }
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/)
+      OVERRIDE {
+    DCHECK(false);
+    return false;
+  }
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE {
     DCHECK(false);
     return false;
   }
@@ -239,7 +249,7 @@ void QuicDispatcher::DeleteSessions() {
   STLDeleteElements(&closed_session_list_);
 }
 
-bool QuicDispatcher::OnCanWrite() {
+void QuicDispatcher::OnCanWrite() {
   // We got an EPOLLOUT: the socket should not be blocked.
   writer_->SetWritable();
 
@@ -247,25 +257,21 @@ bool QuicDispatcher::OnCanWrite() {
   int num_writers = write_blocked_list_.size();
   for (int i = 0; i < num_writers; ++i) {
     if (write_blocked_list_.empty()) {
-      break;
+      return;
     }
-    QuicBlockedWriterInterface* writer = write_blocked_list_.begin()->first;
+    QuicBlockedWriterInterface* blocked_writer =
+        write_blocked_list_.begin()->first;
     write_blocked_list_.erase(write_blocked_list_.begin());
-    bool can_write_more = writer->OnCanWrite();
+    blocked_writer->OnCanWrite();
     if (writer_->IsWriteBlocked()) {
-      // We were unable to write.  Wait for the next EPOLLOUT.
-      // In this case, the session would have been added to the blocked list
-      // up in WritePacket.
-      return false;
-    }
-    // The socket is not blocked but the writer has ceded work.  Add it to the
-    // end of the list.
-    if (can_write_more) {
-      write_blocked_list_.insert(make_pair(writer, true));
+      // We were unable to write.  Wait for the next EPOLLOUT. The writer is
+      // responsible for adding itself to the blocked list via OnWriteBlocked().
+      return;
     }
   }
+}
 
-  // We're not write blocked.  Return true if there's more work to do.
+bool QuicDispatcher::HasPendingWrites() const {
   return !write_blocked_list_.empty();
 }
 
@@ -284,6 +290,7 @@ void QuicDispatcher::OnConnectionClosed(QuicGuid guid, QuicErrorCode error) {
   if (it == session_map_.end()) {
     LOG(DFATAL) << "GUID " << guid << " does not exist in the session map.  "
                 << "Error: " << QuicUtils::ErrorToString(error);
+    LOG(DFATAL) << base::debug::StackTrace().ToString();
     return;
   }
 

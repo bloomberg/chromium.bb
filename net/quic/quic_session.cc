@@ -49,10 +49,21 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
-  virtual bool OnCanWrite() OVERRIDE {
-    bool rc = session_->OnCanWrite();
+  virtual void OnWindowUpdateFrames(const vector<QuicWindowUpdateFrame>& frames)
+      OVERRIDE {
+    session_->OnWindowUpdateFrames(frames);
     session_->PostProcessAfterData();
-    return rc;
+  }
+
+  virtual void OnBlockedFrames(const vector<QuicBlockedFrame>& frames)
+      OVERRIDE {
+    session_->OnBlockedFrames(frames);
+    session_->PostProcessAfterData();
+  }
+
+  virtual void OnCanWrite() OVERRIDE {
+    session_->OnCanWrite();
+    session_->PostProcessAfterData();
   }
 
   virtual void OnSuccessfulVersionNegotiation(
@@ -68,6 +79,10 @@ class VisitorShim : public QuicConnectionVisitorInterface {
 
   virtual void OnWriteBlocked() OVERRIDE {
     session_->OnWriteBlocked();
+  }
+
+  virtual bool HasPendingWrites() const OVERRIDE {
+    return session_->HasPendingWrites();
   }
 
   virtual bool HasPendingHandshake() const OVERRIDE {
@@ -221,6 +236,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   if (!stream) {
     return;  // Errors are handled by GetStream.
   }
+  // TODO(rjshade): Adjust flow control windows based on frame.byte_offset.
   if (ContainsKey(zombie_streams_, stream->id())) {
     // If this was a zombie stream then we close it out now.
     CloseZombieStream(stream->id());
@@ -264,17 +280,53 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   }
 }
 
-bool QuicSession::OnCanWrite() {
-  // We latch this here rather than doing a traditional loop, because streams
-  // may be modifying the list as we loop.
-  int remaining_writes = write_blocked_streams_.NumBlockedStreams();
+void QuicSession::OnWindowUpdateFrames(
+    const vector<QuicWindowUpdateFrame>& frames) {
+  for (size_t i = 0; i < frames.size(); ++i) {
+    // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
+    // assume that it still exists.
+    QuicStreamId stream_id = frames[i].stream_id;
+    if (stream_id == 0) {
+      // This is a window update that applies to the connection, rather than an
+      // individual stream.
+      // TODO(rjshade): Adjust connection level flow control window.
+      DVLOG(1) << "Received connection level flow control window update with "
+                  "byte offset: " << frames[i].byte_offset;
+      continue;
+    }
 
-  while (remaining_writes > 0 && connection_->CanWriteStreamData()) {
-    DCHECK(write_blocked_streams_.HasWriteBlockedStreams());
+    QuicDataStream* stream = GetDataStream(stream_id);
+    if (stream) {
+      stream->OnWindowUpdateFrame(frames[i]);
+    }
+  }
+}
+
+void QuicSession::OnBlockedFrames(const vector<QuicBlockedFrame>& frames) {
+  for (size_t i = 0; i < frames.size(); ++i) {
+    // TODO(rjshade): Compare our flow control receive windows for specified
+    //                streams: if we have a large window then maybe something
+    //                had gone wrong with the flow control accounting.
+    DVLOG(1) << "Received BLOCKED frame with stream id: "
+             << frames[i].stream_id;
+  }
+}
+
+void QuicSession::OnCanWrite() {
+  // We limit the number of writes to the number of pending streams. If more
+  // streams become pending, HasPendingWrites will be true, which will cause
+  // the connection to request resumption before yielding to other connections.
+  size_t num_writes = write_blocked_streams_.NumBlockedStreams();
+
+  for (size_t i = 0; i < num_writes; ++i) {
     if (!write_blocked_streams_.HasWriteBlockedStreams()) {
+      // Writing one stream removed another?! Something's broken.
       LOG(DFATAL) << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
-      return true;  // We have no write blocked streams.
+      return;
+    }
+    if (!connection_->CanWriteStreamData()) {
+      return;
     }
     QuicStreamId stream_id = write_blocked_streams_.PopFront();
     if (stream_id == kCryptoStreamId) {
@@ -286,10 +338,11 @@ bool QuicSession::OnCanWrite() {
       // list.
       stream->OnCanWrite();
     }
-    --remaining_writes;
   }
+}
 
-  return !write_blocked_streams_.HasWriteBlockedStreams();
+bool QuicSession::HasPendingWrites() const {
+  return write_blocked_streams_.HasWriteBlockedStreams();
 }
 
 bool QuicSession::HasPendingHandshake() const {
@@ -465,7 +518,7 @@ QuicConfig* QuicSession::config() {
 
 void QuicSession::ActivateStream(QuicDataStream* stream) {
   DVLOG(1) << ENDPOINT << "num_streams: " << stream_map_.size()
-             << ". activating " << stream->id();
+           << ". activating " << stream->id();
   DCHECK_EQ(stream_map_.count(stream->id()), 0u);
   stream_map_[stream->id()] = stream;
 }

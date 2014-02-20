@@ -30,17 +30,12 @@ class InterArrivalSenderTest : public ::testing::Test {
   }
 
   virtual ~InterArrivalSenderTest() {
-    STLDeleteValues(&sent_packets_);
   }
 
   void SendAvailableCongestionWindow() {
     while (sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero()) {
       QuicByteCount bytes_in_packet = kDefaultMaxPacketSize;
-      sent_packets_[sequence_number_] =
-          new class SendAlgorithmInterface::SentPacket(
-              bytes_in_packet, send_clock_.Now());
-
       sender_.OnPacketSent(send_clock_.Now(), sequence_number_, bytes_in_packet,
                            NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
       sequence_number_++;
@@ -73,8 +68,7 @@ class InterArrivalSenderTest : public ::testing::Test {
             feedback_sequence_number_, receive_time));
     feedback_sequence_number_++;
 
-    sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now(),
-                                                  sent_packets_);
+    sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now());
   }
 
   void SendFeedbackMessageNPackets(int n,
@@ -94,8 +88,7 @@ class InterArrivalSenderTest : public ::testing::Test {
               feedback_sequence_number_, receive_time));
       feedback_sequence_number_++;
     }
-    sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now(),
-                                                  sent_packets_);
+    sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now());
   }
 
   QuicTime::Delta SenderDeltaSinceStart() {
@@ -112,7 +105,6 @@ class InterArrivalSenderTest : public ::testing::Test {
   QuicPacketSequenceNumber sequence_number_;
   QuicPacketSequenceNumber acked_sequence_number_;
   QuicPacketSequenceNumber feedback_sequence_number_;
-  SendAlgorithmInterface::SentPacketsMap sent_packets_;
 };
 
 TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {

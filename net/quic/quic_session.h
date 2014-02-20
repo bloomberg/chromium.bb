@@ -64,11 +64,16 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       const std::vector<QuicStreamFrame>& frames) OVERRIDE;
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
+  virtual void OnWindowUpdateFrames(
+      const std::vector<QuicWindowUpdateFrame>& frames) OVERRIDE;
+  virtual void OnBlockedFrames(
+      const std::vector<QuicBlockedFrame>& frames) OVERRIDE;
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnWriteBlocked() OVERRIDE {}
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE {}
-  virtual bool OnCanWrite() OVERRIDE;
+  virtual void OnCanWrite() OVERRIDE;
+  virtual bool HasPendingWrites() const OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
 
   // Called by the headers stream when headers have been received for a stream.

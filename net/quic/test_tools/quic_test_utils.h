@@ -113,6 +113,8 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnConnectionCloseFrame,
                bool(const QuicConnectionCloseFrame& frame));
   MOCK_METHOD1(OnGoAwayFrame, bool(const QuicGoAwayFrame& frame));
+  MOCK_METHOD1(OnWindowUpdateFrame, bool(const QuicWindowUpdateFrame& frame));
+  MOCK_METHOD1(OnBlockedFrame, bool(const QuicBlockedFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
 
  private:
@@ -145,6 +147,8 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE;
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
+  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) OVERRIDE;
+  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE;
   virtual void OnPacketComplete() OVERRIDE {}
 
  private:
@@ -226,11 +230,16 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   virtual ~MockConnectionVisitor();
 
   MOCK_METHOD1(OnStreamFrames, bool(const std::vector<QuicStreamFrame>& frame));
+  MOCK_METHOD1(OnWindowUpdateFrames,
+               void(const std::vector<QuicWindowUpdateFrame>& frame));
+  MOCK_METHOD1(OnBlockedFrames,
+               void(const std::vector<QuicBlockedFrame>& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD0(OnWriteBlocked, void());
-  MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_METHOD0(OnCanWrite, void());
+  MOCK_CONST_METHOD0(HasPendingWrites, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
@@ -286,7 +295,7 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason));
-  MOCK_METHOD0(OnCanWrite, bool());
+  MOCK_METHOD0(OnCanWrite, void());
 
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
@@ -397,10 +406,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
 
   MOCK_METHOD2(SetFromConfig, void(const QuicConfig& config, bool is_server));
   MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
-  MOCK_METHOD3(OnIncomingQuicCongestionFeedbackFrame,
+  MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,
-                    QuicTime feedback_receive_time,
-                    const SentPacketsMap&));
+                    QuicTime feedback_receive_time));
   MOCK_METHOD2(OnPacketAcked,
                void(QuicPacketSequenceNumber, QuicByteCount));
   MOCK_METHOD2(OnPacketLost, void(QuicPacketSequenceNumber, QuicTime));

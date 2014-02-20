@@ -29,6 +29,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   explicit QuicCryptoServerStream(QuicSession* session);
   virtual ~QuicCryptoServerStream();
 
+  // Cancel any outstanding callbacks, such as asynchronous validation of client
+  // hello.
+  void CancelOutstandingCallbacks();
+
   // CryptoFramerVisitorInterface implementation
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE;

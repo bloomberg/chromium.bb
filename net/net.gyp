@@ -937,6 +937,8 @@
         'quic/quic_stream_sequencer.h',
         'quic/quic_time.cc',
         'quic/quic_time.h',
+        'quic/quic_unacked_packet_map.cc',
+        'quic/quic_unacked_packet_map.h',
         'quic/quic_utils.cc',
         'quic/quic_utils.h',
         'quic/quic_utils_chromium.h',

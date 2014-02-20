@@ -115,7 +115,7 @@ void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
   session()->connection()->SendConnectionCloseWithDetails(error, details);
 }
 
-QuicVersion ReliableQuicStream::version() {
+QuicVersion ReliableQuicStream::version() const {
   return session()->connection()->version();
 }
 
@@ -180,6 +180,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
   size_t write_length = 0u;
   for (int i = 0; i < iov_count; ++i) {
     write_length += iov[i].iov_len;
+    // TODO(rjshade): Maybe block write based on available flow control window.
   }
   QuicConsumedData consumed_data = session()->WritevData(
       id(), iov, iov_count, stream_bytes_written_, fin, ack_notifier_delegate);

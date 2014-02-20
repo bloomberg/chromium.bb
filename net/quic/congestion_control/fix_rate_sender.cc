@@ -36,18 +36,11 @@ FixRateSender::~FixRateSender() {
 void FixRateSender::SetFromConfig(const QuicConfig& config, bool is_server) {
 }
 
-void FixRateSender::SetMaxPacketSize(QuicByteCount max_packet_size) {
-  max_segment_size_ = max_packet_size;
-  paced_sender_.set_max_segment_size(max_segment_size_);
-}
-
 void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
-    QuicTime feedback_receive_time,
-    const SentPacketsMap& /*sent_packets*/) {
-  if (feedback.type != kFixRate) {
-    LOG(DFATAL) << "Invalid incoming CongestionFeedbackType:" << feedback.type;
-  }
+    QuicTime feedback_receive_time) {
+  LOG_IF(DFATAL, feedback.type != kFixRate) <<
+      "Invalid incoming CongestionFeedbackType:" << feedback.type;
   if (feedback.type == kFixRate) {
     bitrate_ = feedback.fix_rate.bitrate;
     fix_rate_leaky_bucket_.SetDrainingRate(feedback_receive_time, bitrate_);

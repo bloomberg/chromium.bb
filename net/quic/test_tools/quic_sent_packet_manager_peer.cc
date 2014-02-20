@@ -29,8 +29,8 @@ void QuicSentPacketManagerPeer::SetSendAlgorithm(
 size_t QuicSentPacketManagerPeer::GetNackCount(
     const QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {
-  return sent_packet_manager->packet_history_map_.find(
-      sequence_number)->second->nack_count();
+  return sent_packet_manager->unacked_packets_.
+      GetTransmissionInfo(sequence_number).nack_count;
 }
 
 // static
@@ -42,17 +42,17 @@ size_t QuicSentPacketManagerPeer::GetPendingRetransmissionCount(
 // static
 bool QuicSentPacketManagerPeer::HasPendingPackets(
     const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->HasPendingPackets();
+  return sent_packet_manager->unacked_packets_.HasPendingPackets();
 }
 
 // static
 QuicTime QuicSentPacketManagerPeer::GetSentTime(
     const QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {
-  DCHECK(ContainsKey(sent_packet_manager->unacked_packets_, sequence_number));
+  DCHECK(sent_packet_manager->unacked_packets_.IsUnacked(sequence_number));
 
-  return sent_packet_manager->unacked_packets_
-      .find(sequence_number)->second.sent_time;
+  return sent_packet_manager->unacked_packets_.GetTransmissionInfo(
+      sequence_number).sent_time;
 }
 
 // static
@@ -67,8 +67,8 @@ bool QuicSentPacketManagerPeer::IsRetransmission(
     QuicPacketSequenceNumber sequence_number) {
   DCHECK(sent_packet_manager->HasRetransmittableFrames(sequence_number));
   return sent_packet_manager->HasRetransmittableFrames(sequence_number) &&
-      sent_packet_manager->
-          unacked_packets_[sequence_number].all_transmissions->size() > 1;
+      sent_packet_manager->unacked_packets_.GetTransmissionInfo(
+          sequence_number).all_transmissions->size() > 1;
 }
 
 // static
@@ -90,6 +90,18 @@ QuicTime::Delta QuicSentPacketManagerPeer::GetRetransmissionDelay(
 bool QuicSentPacketManagerPeer::HasUnackedCryptoPackets(
     const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->pending_crypto_packet_count_ > 0;
+}
+
+// static
+size_t QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
+    const QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->unacked_packets_.GetNumRetransmittablePackets();
+}
+
+// static
+SequenceNumberSet QuicSentPacketManagerPeer::GetUnackedPackets(
+    const QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->unacked_packets_.GetUnackedPackets();
 }
 
 }  // namespace test

@@ -36,7 +36,6 @@ class FixRateTest : public ::testing::Test {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   }
   MockClock clock_;
-  SendAlgorithmInterface::SentPacketsMap unused_packet_map_;
   scoped_ptr<FixRateSender> sender_;
   scoped_ptr<FixRateReceiverPeer> receiver_;
   const QuicTime start_;
@@ -56,8 +55,7 @@ TEST_F(FixRateTest, SenderAPI) {
   QuicCongestionFeedbackFrame feedback;
   feedback.type = kFixRate;
   feedback.fix_rate.bitrate = QuicBandwidth::FromKBytesPerSecond(300);
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback,  clock_.Now(),
-                                                 unused_packet_map_);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback,  clock_.Now());
   EXPECT_EQ(300000, sender_->BandwidthEstimate().ToBytesPerSecond());
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
@@ -90,8 +88,7 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicCongestionFeedbackFrame feedback;
   receiver_->SetBitrate(QuicBandwidth::FromKBytesPerSecond(240));
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
-                                                 unused_packet_map_);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
   QuicTime acc_advance_time(QuicTime::Zero());
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {

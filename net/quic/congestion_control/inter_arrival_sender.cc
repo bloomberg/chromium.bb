@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
+
 using std::max;
 using std::min;
 
@@ -22,13 +24,15 @@ const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
 const float kAlpha = 0.125f;
 const float kOneMinusAlpha = 1 - kAlpha;
 
+static const int kHistoryPeriodMs = 5000;
 static const int kBitrateSmoothingPeriodMs = 1000;
 static const int kMinBitrateSmoothingPeriodMs = 500;
 
 }  // namespace
 
 InterArrivalSender::InterArrivalSender(const QuicClock* clock)
-    : probing_(true),
+    : clock_(clock),
+      probing_(true),
       max_segment_size_(kDefaultMaxPacketSize),
       current_bandwidth_(QuicBandwidth::Zero()),
       smoothed_rtt_(QuicTime::Delta::Zero()),
@@ -46,23 +50,17 @@ InterArrivalSender::InterArrivalSender(const QuicClock* clock)
 }
 
 InterArrivalSender::~InterArrivalSender() {
+  STLDeleteValues(&packet_history_map_);
 }
 
 void InterArrivalSender::SetFromConfig(const QuicConfig& config,
                                        bool is_server) {
 }
 
-void InterArrivalSender::SetMaxPacketSize(QuicByteCount max_packet_size) {
-  max_segment_size_ = max_packet_size;
-  paced_sender_->set_max_segment_size(max_segment_size_);
-  probe_->set_max_segment_size(max_segment_size_);
-}
-
 // TODO(pwestin): this is really inefficient (4% CPU on the GFE loadtest).
 // static
 QuicBandwidth InterArrivalSender::CalculateSentBandwidth(
-    const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
-    QuicTime feedback_receive_time) {
+    QuicTime feedback_receive_time) const {
   const QuicTime::Delta kBitrateSmoothingPeriod =
       QuicTime::Delta::FromMilliseconds(kBitrateSmoothingPeriodMs);
   const QuicTime::Delta kMinBitrateSmoothingPeriod =
@@ -71,11 +69,11 @@ QuicBandwidth InterArrivalSender::CalculateSentBandwidth(
   QuicByteCount sum_bytes_sent = 0;
 
   // Sum packet from new until they are kBitrateSmoothingPeriod old.
-  SendAlgorithmInterface::SentPacketsMap::const_reverse_iterator history_rit =
-      sent_packets_map.rbegin();
+  SentPacketsMap::const_reverse_iterator history_rit =
+      packet_history_map_.rbegin();
 
   QuicTime::Delta max_diff = QuicTime::Delta::Zero();
-  for (; history_rit != sent_packets_map.rend(); ++history_rit) {
+  for (; history_rit != packet_history_map_.rend(); ++history_rit) {
     QuicTime::Delta diff =
         feedback_receive_time.Subtract(history_rit->second->send_timestamp());
     if (diff > kBitrateSmoothingPeriod) {
@@ -93,16 +91,14 @@ QuicBandwidth InterArrivalSender::CalculateSentBandwidth(
 
 void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
-    QuicTime feedback_receive_time,
-    const SentPacketsMap& sent_packets) {
+    QuicTime feedback_receive_time) {
   DCHECK(feedback.type == kInterArrival);
 
   if (feedback.type != kInterArrival) {
     return;
   }
 
-  QuicBandwidth sent_bandwidth = CalculateSentBandwidth(sent_packets,
-                                                        feedback_receive_time);
+  QuicBandwidth sent_bandwidth = CalculateSentBandwidth(feedback_receive_time);
 
   TimeMap::const_iterator received_it;
   for (received_it = feedback.inter_arrival.received_packet_times.begin();
@@ -110,8 +106,9 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
       ++received_it) {
     QuicPacketSequenceNumber sequence_number = received_it->first;
 
-    SentPacketsMap::const_iterator sent_it = sent_packets.find(sequence_number);
-    if (sent_it == sent_packets.end()) {
+    SentPacketsMap::const_iterator sent_it =
+        packet_history_map_.find(sequence_number);
+    if (sent_it == packet_history_map_.end()) {
       // Too old data; ignore and move forward.
       DVLOG(1) << "Too old feedback move forward, sequence_number:"
                  << sequence_number;
@@ -129,7 +126,7 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     } else {
       bool last_of_send_time = false;
       SentPacketsMap::const_iterator next_sent_it = ++sent_it;
-      if (next_sent_it == sent_packets.end()) {
+      if (next_sent_it == packet_history_map_.end()) {
         // No more sent packets; hence this must be the last.
         last_of_send_time = true;
       } else {
@@ -230,6 +227,9 @@ bool InterArrivalSender::OnPacketSent(
     probe_->OnPacketSent(bytes);
   }
   paced_sender_->OnPacketSent(sent_time, bytes);
+
+  packet_history_map_[sequence_number] = new SentPacket(bytes, sent_time);
+  CleanupPacketHistory();
   return true;
 }
 
@@ -517,6 +517,22 @@ void InterArrivalSender::ResetCurrentBandwidth(QuicTime feedback_receive_time,
     paced_sender_->UpdateBandwidthEstimate(feedback_receive_time,
                                            current_bandwidth_);
     state_machine_->DecreaseBitrateDecision();
+  }
+}
+
+void InterArrivalSender::CleanupPacketHistory() {
+  const QuicTime::Delta kHistoryPeriod =
+      QuicTime::Delta::FromMilliseconds(kHistoryPeriodMs);
+  QuicTime now = clock_->ApproximateNow();
+
+  SentPacketsMap::iterator history_it = packet_history_map_.begin();
+  for (; history_it != packet_history_map_.end(); ++history_it) {
+    if (now.Subtract(history_it->second->send_timestamp()) <= kHistoryPeriod) {
+      return;
+    }
+    delete history_it->second;
+    packet_history_map_.erase(history_it);
+    history_it = packet_history_map_.begin();
   }
 }
 

@@ -75,11 +75,11 @@ class QuicDispatcher : public QuicServerSessionVisitor {
                              const IPEndPoint& client_address,
                              const QuicEncryptedPacket& packet);
 
-  // Called when the underyling connection becomes writable to allow
-  // queued writes to happen.
-  //
-  // Returns true if more writes are possible, false otherwise.
-  virtual bool OnCanWrite();
+  // Called when the socket becomes writable to allow queued writes to happen.
+  virtual void OnCanWrite();
+
+  // Returns true if there's anything in the blocked writer list.
+  virtual bool HasPendingWrites() const;
 
   // Sends ConnectionClose frames to all connected clients.
   void Shutdown();
