@@ -162,6 +162,29 @@ function load() {
           e.preventDefault();
         }
         return;
+      case 187:  // +/= key.
+      case 107:  // Numpad + key.
+        if (e.ctrlKey)
+          viewport.zoomIn();
+        return;
+      case 189:  // -/_ key.
+      case 109:  // Numpad - key.
+        if (e.ctrlKey)
+          viewport.zoomOut();
+        return;
+      case 83:  // s key.
+        if (e.ctrlKey) {
+          // Simulate a click on the button so that the <a download ...>
+          // attribute is used.
+          $('save-button-link').click();
+        }
+        return;
+      case 80:  // p key.
+        if (e.ctrlKey) {
+          print();
+          e.preventDefault();
+        }
+        return;
     }
   };
 }
