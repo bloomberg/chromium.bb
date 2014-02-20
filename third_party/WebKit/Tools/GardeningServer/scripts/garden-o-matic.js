@@ -89,8 +89,8 @@ function update()
 
         updating.update('Analyzing test failures ...');
 
-        model.analyzeUnexpectedFailures(function(failureAnalysis) {
-            updating.update('Analyzing test failures ... ' + ++numberOfTestsAnalyzed + ' tests analyzed.');
+        model.analyzeUnexpectedFailures(function(failureAnalysis, total) {
+            updating.update('Analyzing test failures ... ' + ++numberOfTestsAnalyzed + '/' + total + ' tests analyzed.');
             g_unexpectedFailuresController.update(failureAnalysis);
         }).then(function() {
             updatePartyTime();

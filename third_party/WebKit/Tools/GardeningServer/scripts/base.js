@@ -156,48 +156,29 @@ base.parseJSONP = function(jsonp)
     return JSON.parse(jsonp.substr(startIndex, endIndex - startIndex));
 };
 
+// This is effectively a cache of possibly-resolved promises.
 base.AsynchronousCache = function(fetch)
 {
     this._fetch = fetch;
-    this._dataCache = {};
-    this._callbackCache = {};
+    this._promiseCache = {};
 };
 
+base.AsynchronousCache._sentinel = new Object();
 base.AsynchronousCache.prototype.get = function(key)
 {
-    var self = this;
-    return new Promise(function(resolve, reject) {
+    if (!(key in this._promiseCache)) {
+        this._promiseCache[key] = base.AsynchronousCache._sentinel;
+        this._promiseCache[key] = this._fetch.call(null, key);
+    }
+    if (this._promiseCache[key] === base.AsynchronousCache._sentinel)
+        return Promise.reject(Error("Reentrant request for ", key));
 
-        if (self._dataCache[key]) {
-            // FIXME: Consider always calling callback asynchronously.
-            resolve(self._dataCache[key]);
-            return;
-        }
-
-        if (key in self._callbackCache) {
-            self._callbackCache[key].push(resolve);
-            return;
-        }
-
-        self._callbackCache[key] = [resolve];
-
-        self._fetch.call(null, key).then(function(data) {
-            self._dataCache[key] = data;
-
-            var callbackList = self._callbackCache[key];
-            delete self._callbackCache[key];
-
-            callbackList.forEach(function(cachedCallback) {
-                cachedCallback(data);
-            });
-        });
-    });
+    return this._promiseCache[key];
 };
 
 base.AsynchronousCache.prototype.clear = function()
 {
-    this._dataCache = {};
-    this._callbackCache = {};
+    this._promiseCache = {};
 };
 
 /*

@@ -206,7 +206,7 @@ model.analyzeUnexpectedFailures = function(failureCallback)
 
             model.state.failureAnalysisByTest[testName] = failureAnalysis;
 
-            failureCallback(failureAnalysis);
+            failureCallback(failureAnalysis, failurePromises.length);
         }));
     });
     return Promise.all(failurePromises);

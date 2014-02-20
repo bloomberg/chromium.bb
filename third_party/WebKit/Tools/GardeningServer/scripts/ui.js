@@ -287,7 +287,7 @@ ui.revisionDetails = base.extends('span', {
 
         // Get the list of builders sorted with the most recent one first.
         var builders = Object.keys(latestRevisions);
-        builders.sort(function (a, b) { return parseInt(latestRevisions[b]) - parseInt(latestRevisions[a])});
+        builders.sort(function (a, b) { return parseInt(latestRevisions[b]) - parseInt(latestRevisions[a]);});
 
         var summaryNode = document.createElement('summary');
         var summaryLinkNode = base.createLinkNode(trac.changesetURL(latestRevision), latestRevision);
@@ -303,9 +303,9 @@ ui.revisionDetails = base.extends('span', {
 
             var tdNode = document.createElement('td');
             tdNode.appendChild(document.createTextNode(latestRevisions[builderName]));
-            trNode.appendChild(tdNode)
+            trNode.appendChild(tdNode);
 
-            revisionsTableNode.appendChild(trNode)
+            revisionsTableNode.appendChild(trNode);
         });
 
         var revisionsNode = document.createElement('details');
@@ -321,7 +321,7 @@ ui.revisionDetails = base.extends('span', {
                 var tPosX = $(summaryNode).position().left;
                 var tPosY = $(summaryNode).position().top + 16;
                 $(revisionsPopUp).css({'position': 'absolute', 'top': tPosY, 'left': tPosX});
-                $(revisionsPopUp).addClass('active')
+                $(revisionsPopUp).addClass('active');
             }
         });
         $(summaryLinkNode).mouseout(function(ev) {
