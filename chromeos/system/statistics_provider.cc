@@ -67,6 +67,7 @@ const CommandLine::CharType kOemManifestFilePath[] =
 
 // Key values for GetMachineStatistic()/GetMachineFlag() calls.
 const char kDevSwitchBootMode[] = "devsw_boot";
+const char kCustomizationIdKey[] = "customization_id";
 const char kHardwareClassKey[] = "hardware_class";
 const char kOffersCouponCodeKey[] = "ubind_attribute";
 const char kOffersGroupCodeKey[] = "gbind_attribute";

@@ -32,6 +32,9 @@ namespace {
 // Key which corresponds to the HWID setting.
 const char kPropertyHWID[] = "hwid";
 
+// Key which corresponds to the customization ID setting.
+const char kPropertyCustomizationID[] = "customizationId";
+
 // Key which corresponds to the home provider property.
 const char kPropertyHomeProvider[] = "homeProvider";
 
@@ -133,6 +136,13 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
     return new base::StringValue(hwid);
+  } else if (property_name == kPropertyCustomizationID) {
+    std::string customization_id;
+    chromeos::system::StatisticsProvider* provider =
+        chromeos::system::StatisticsProvider::GetInstance();
+    provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
+                                  &customization_id);
+    return new base::StringValue(customization_id);
   } else if (property_name == kPropertyHomeProvider) {
     const chromeos::DeviceState* cellular_device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(

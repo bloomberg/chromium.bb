@@ -33,6 +33,7 @@
                 "description": "Dictionary which contains all requested properties",
                 "properties": {
                   "board" : {"type": "string", "optional": "true", "description": "Board name"},
+                  "customizationId": {"type": "string", "optional": "true", "description": "Customization ID"},
                   "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"},
                   "hwid": {"type": "string", "optional": "true", "description": "Hardware ID"},
                   "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"},

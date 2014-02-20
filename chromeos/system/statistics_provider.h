@@ -20,6 +20,9 @@ namespace system {
 // Developer switch value.
 CHROMEOS_EXPORT extern const char kDevSwitchBootMode[];
 
+// Customization ID key.
+CHROMEOS_EXPORT extern const char kCustomizationIdKey[];
+
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 
