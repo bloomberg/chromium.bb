@@ -40,6 +40,8 @@ const char kArch[] =
     "x86";
 #elif defined(__arm__)
     "arm";
+#elif defined(__arm64__)
+    "arm64";
 #elif defined(__mips__)
     "mipsel";
 #else
@@ -119,6 +121,8 @@ const char* OmahaQueryParams::GetNaclArch() {
 #endif
 #elif defined(ARCH_CPU_ARMEL)
   return "arm";
+#elif defined(ARCH_CPU_ARM64)
+  return "arm64";
 #elif defined(ARCH_CPU_MIPSEL)
   return "mips32";
 #else
