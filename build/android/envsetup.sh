@@ -3,11 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Sets up environment for building Chromium on Android.  It can either be
-# compiled with the Android tree or using the Android SDK/NDK. To build with
-# NDK/SDK: ". build/android/envsetup.sh".  Environment variable
-# ANDROID_SDK_BUILD=1 will then be defined and used in the rest of the setup to
-# specifiy build type.
+# Sets up environment for building Chromium on Android.
 
 # Make sure we're being sourced (possibly by another script). Check for bash
 # since zsh sets $0 when sourcing.
@@ -24,16 +20,6 @@ export ANDROID_SDK_BUILD=1  # Default to SDK build.
 
 if ! process_options "$@" ; then
   return 1
-fi
-
-# When building WebView as part of Android we can't use the SDK. Other builds
-# default to using the SDK.
-if [[ "${CHROME_ANDROID_BUILD_WEBVIEW}" -eq 1 ]]; then
-  export ANDROID_SDK_BUILD=0
-fi
-
-if [[ "${ANDROID_SDK_BUILD}" -ne 1 ]]; then
-  echo "Initializing for non-SDK build."
 fi
 
 # Get host architecture, and abort if it is 32-bit.
@@ -67,23 +53,7 @@ the one you want."
   echo "${CHROME_SRC}"
 fi
 
-if [[ "${ANDROID_SDK_BUILD}" -eq 1 ]]; then
-  sdk_build_init
-# Sets up environment for building Chromium for Android with source. Expects
-# android environment setup and lunch.
-elif [[ -z "$ANDROID_BUILD_TOP" || \
-        -z "$ANDROID_TOOLCHAIN" || \
-        -z "$ANDROID_PRODUCT_OUT" ]]; then
-  echo "Android build environment variables must be set."
-  echo "Please cd to the root of your Android tree and do: "
-  echo "  . build/envsetup.sh"
-  echo "  lunch"
-  echo "Then try this again."
-  echo "Or did you mean NDK/SDK build. Run envsetup.sh without any arguments."
-  return 1
-elif [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
-  webview_build_init
-fi
+sdk_build_init
 
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh

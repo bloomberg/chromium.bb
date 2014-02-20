@@ -13,34 +13,66 @@ set -e
 PLATFORM=${1:-linux-arm}
 echo "Generating makefiles for $PLATFORM"
 
-export CHROME_ANDROID_BUILD_WEBVIEW=1
-export CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
 export PYTHONDONTWRITEBYTECODE=1
 
+CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
+GYP="${CHROME_SRC}/build/gyp_chromium"
+
+# Use the latest API in the AOSP prebuilts directory (change with AOSP roll).
+android_sdk_version=18
+
+# For the WebView build we always use the SDK in the Android tree.
+export ANDROID_SDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/sdk/\
+${android_sdk_version}
+
+DEFINES="OS=android"
+DEFINES+=" android_webview_build=1"
+
+# We need to supply SDK paths relative to the top of the Android tree to make
+# sure the generated Android makefiles are portable, as they will be checked
+# into the Android tree.
+android_sdk=$(python -c \
+    "import os.path; print os.path.relpath('${ANDROID_SDK_ROOT}', \
+    '${ANDROID_BUILD_TOP}')")
+android_sdk_tools=$(python -c \
+    "import os.path, sys; \
+    print os.path.relpath( \
+    '${ANDROID_SDK_ROOT}/../tools/' + sys.platform.rstrip('23'), \
+    '${ANDROID_BUILD_TOP}')")
+DEFINES+=" android_src=\$(PWD)"
+DEFINES+=" android_ndk_root=ndk_root_unused_in_webview_build"
+DEFINES+=" android_sdk=\$(PWD)/${android_sdk}"
+DEFINES+=" android_sdk_root=\$(PWD)/${android_sdk}"
+DEFINES+=" android_sdk_tools=\$(PWD)/${android_sdk_tools}"
+DEFINES+=" android_sdk_version=sdk_version_unused_in_webview_build"
+DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
+
+# TODO: Get rid of this block, crbug.com/334021
+if [[ -n "$CHROME_ANDROID_WEBVIEW_OFFICIAL_BUILD" ]]; then
+  DEFINES+=" logging_like_official_build=1"
+  DEFINES+=" tracing_like_official_build=1"
+fi
+
+export GYP_DEFINES="${GYP_DEFINES} ${DEFINES}"
+
 FLAGS="-f android -Gdefault_target=All -Glimit_to_target_all=1 "\
-"${CHROME_SRC}/android_webview/all_webview.gyp"
+"--depth=${CHROME_SRC} ${CHROME_SRC}/android_webview/all_webview.gyp"
 
 if [ "$PLATFORM" == "linux-arm" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh \
-    && android_gyp --suffix .linux-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=linux )
+  ${GYP} --suffix .linux-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=linux
 fi
 if [ "$PLATFORM" == "linux-x86" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh \
-    && android_gyp --suffix .linux-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=linux )
+  ${GYP} --suffix .linux-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=linux
 fi
 if [ "$PLATFORM" == "linux-mips" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh \
-    && android_gyp --suffix .linux-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=linux )
+  ${GYP} --suffix .linux-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=linux
 fi
 if [ "$PLATFORM" == "darwin-arm" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=arm \
-    && android_gyp --suffix .darwin-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=mac )
+  ${GYP} --suffix .darwin-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=mac
 fi
 if [ "$PLATFORM" == "darwin-x86" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh \
-    && android_gyp --suffix .darwin-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=mac )
+  ${GYP} --suffix .darwin-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=mac
 fi
 if [ "$PLATFORM" == "darwin-mips" -o "$PLATFORM" == "all" ]; then
-  ( . $CHROME_SRC/build/android/envsetup.sh \
-    && android_gyp --suffix .darwin-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=mac )
+  ${GYP} --suffix .darwin-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=mac
 fi
