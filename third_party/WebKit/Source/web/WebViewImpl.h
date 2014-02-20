@@ -396,6 +396,7 @@ public:
     // unless the view did not need a layout.
     void layoutUpdated(WebFrameImpl*);
 
+    void willInsertBody(WebFrameImpl*);
     void didChangeContentsSize();
     void deviceOrPageScaleFactorChanged();
 
@@ -534,6 +535,7 @@ public:
 private:
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();
+    void resumeTreeViewCommits();
     void setUserAgentPageScaleConstraints(WebCore::PageScaleConstraints newConstraints);
     float clampPageScaleFactorToLimits(float) const;
     WebCore::IntSize contentsSize() const;

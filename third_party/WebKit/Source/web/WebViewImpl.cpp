@@ -3474,18 +3474,35 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     resetSavedScrollAndScaleState();
 }
 
+void WebViewImpl::willInsertBody(WebFrameImpl* webframe)
+{
+    if (webframe != mainFrameImpl())
+        return;
+
+    // If we get to the <body> tag and we have no pending stylesheet loads, we
+    // can be fairly confident we'll have something sensible to paint soon and
+    // can turn off deferred commits.
+    if (m_page->mainFrame()->document()->haveStylesheetsLoaded())
+        resumeTreeViewCommits();
+}
+
+void WebViewImpl::resumeTreeViewCommits()
+{
+    if (m_layerTreeViewCommitsDeferred) {
+        if (m_layerTreeView)
+            m_layerTreeView->setDeferCommits(false);
+        m_layerTreeViewCommitsDeferred = false;
+    }
+}
+
 void WebViewImpl::layoutUpdated(WebFrameImpl* webframe)
 {
     if (!m_client || webframe != mainFrameImpl())
         return;
 
-    if (m_layerTreeViewCommitsDeferred) {
-        // If we finished a layout while in deferred commit mode,
-        // that means it's time to start producing frames again so un-defer.
-        if (m_layerTreeView)
-            m_layerTreeView->setDeferCommits(false);
-        m_layerTreeViewCommitsDeferred = false;
-    }
+    // If we finished a layout while in deferred commit mode,
+    // that means it's time to start producing frames again so un-defer.
+    resumeTreeViewCommits();
 
     if (m_shouldAutoResize && mainFrameImpl()->frame() && mainFrameImpl()->frame()->view()) {
         WebSize frameSize = mainFrameImpl()->frame()->view()->frameRect().size();
