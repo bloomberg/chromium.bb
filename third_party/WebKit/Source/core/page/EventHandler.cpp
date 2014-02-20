@@ -2672,7 +2672,6 @@ bool EventHandler::shouldApplyTouchAdjustment(const PlatformGestureEvent& event)
     return !event.area().isEmpty();
 }
 
-
 bool EventHandler::bestClickableNodeForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntPoint& targetPoint, Node*& targetNode)
 {
     IntPoint hitTestPoint = m_frame->view()->windowToContents(touchCenter);
@@ -2693,8 +2692,9 @@ bool EventHandler::bestClickableNodeForTouchPoint(const IntPoint& touchCenter, c
     // regression in touchadjustment/html-label.html. Some refinement is required to testing/internals to
     // handle targetNode being a shadow DOM node.
 
-    // FIXME: the explicit Vector conversion copies into a temporary and is
-    // wasteful.
+    // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
+    // FIXME: targetNode and success are only used by Internals functions. We should
+    // instead have dedicated test methods so we only do this work in tests.
     bool success = findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, Vector<RefPtr<Node> > (nodes));
     if (success && targetNode)
         targetNode = targetNode->deprecatedShadowAncestorNode();
@@ -2710,8 +2710,7 @@ bool EventHandler::bestContextMenuNodeForTouchPoint(const IntPoint& touchCenter,
     Vector<RefPtr<Node>, 11> nodes;
     copyToVector(result.rectBasedTestResult(), nodes);
 
-    // FIXME: the explicit Vector conversion copies into a temporary and is
-    // wasteful.
+    // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
     return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, Vector<RefPtr<Node> >(nodes));
 }
 
@@ -2724,15 +2723,14 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, co
     Vector<RefPtr<Node>, 11> nodes;
     copyToVector(result.rectBasedTestResult(), nodes);
 
-    // FIXME: the explicit Vector conversion copies into a temporary and is
-    // wasteful.
+    // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
     return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, Vector<RefPtr<Node> >(nodes));
 }
 
-bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEvent, IntPoint& adjustedPoint)
+void EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEvent, IntPoint& adjustedPoint)
 {
     if (!shouldApplyTouchAdjustment(gestureEvent))
-        return false;
+        return;
 
     Node* targetNode = 0;
     switch (gestureEvent.type()) {
@@ -2751,7 +2749,6 @@ bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEven
         // FIXME: Implement handling for other types as needed.
         ASSERT_NOT_REACHED();
     }
-    return targetNode;
 }
 
 bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)

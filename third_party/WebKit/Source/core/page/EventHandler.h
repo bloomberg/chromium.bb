@@ -149,7 +149,7 @@ public:
     bool bestContextMenuNodeForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntPoint& targetPoint, Node*& targetNode);
     bool bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode);
 
-    bool adjustGesturePosition(const PlatformGestureEvent&, IntPoint& adjustedPoint);
+    void adjustGesturePosition(const PlatformGestureEvent&, IntPoint& adjustedPoint);
 
     bool sendContextMenuEvent(const PlatformMouseEvent&);
     bool sendContextMenuEventForKey();
