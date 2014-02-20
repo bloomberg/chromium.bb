@@ -117,8 +117,8 @@ void DesktopNotificationsTest::SetUp() {
   // is not created for these tests.
   message_center::MessageCenter::Initialize();
   // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = true;
-  ui::InitializeContextFactoryForTests(allow_test_contexts);
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate);

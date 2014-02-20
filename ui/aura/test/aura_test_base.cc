@@ -10,6 +10,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
@@ -69,9 +70,12 @@ void AuraTestBase::SetUp() {
       3, 0.8f);
   ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
 
+  // The ContextFactory must exist before any Compositors are created.
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
+
   helper_.reset(new AuraTestHelper(&message_loop_));
-  bool allow_test_contexts = true;
-  helper_->SetUp(allow_test_contexts);
+  helper_->SetUp();
 }
 
 void AuraTestBase::TearDown() {
@@ -82,6 +86,7 @@ void AuraTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   helper_->TearDown();
+  ui::TerminateContextFactoryForTests();
   ui::ShutdownInputMethodForTesting();
   testing::Test::TearDown();
 }

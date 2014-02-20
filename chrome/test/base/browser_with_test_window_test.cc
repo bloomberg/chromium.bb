@@ -19,6 +19,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #endif
 
 #if defined(USE_ASH)
@@ -62,10 +63,13 @@ void BrowserWithTestWindowTest::SetUp() {
       base::MessageLoopForUI::current()));
   ash_test_helper_->SetUp(true);
 #elif defined(USE_AURA)
+  // The ContextFactory must exist before any Compositors are created.
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
+
   aura_test_helper_.reset(new aura::test::AuraTestHelper(
       base::MessageLoopForUI::current()));
-  bool allow_test_contexts = true;
-  aura_test_helper_->SetUp(allow_test_contexts);
+  aura_test_helper_->SetUp();
 #endif  // USE_AURA
 #if defined(TOOLKIT_VIEWS)
   views_delegate_.reset(CreateViewsDelegate());
@@ -96,6 +100,7 @@ void BrowserWithTestWindowTest::TearDown() {
   ash_test_helper_->TearDown();
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
+  ui::TerminateContextFactoryForTests();
 #endif
   testing::Test::TearDown();
 

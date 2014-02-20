@@ -17,7 +17,7 @@ namespace ui {
 static ContextFactory* g_implicit_factory = NULL;
 
 // static
-void InitializeContextFactoryForTests(bool allow_test_contexts) {
+void InitializeContextFactoryForTests(bool enable_pixel_output) {
   DCHECK(!g_implicit_factory) <<
       "ContextFactory for tests already initialized.";
 
@@ -35,7 +35,7 @@ void InitializeContextFactoryForTests(bool allow_test_contexts) {
     use_test_contexts = false;
 #endif
 
-  if (!allow_test_contexts)
+  if (enable_pixel_output)
     use_test_contexts = false;
 
   if (use_test_contexts) {

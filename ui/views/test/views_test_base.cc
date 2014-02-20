@@ -10,6 +10,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/wm_state.h"
 
@@ -32,9 +33,12 @@ void ViewsTestBase::SetUp() {
   setup_called_ = true;
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
+  // The ContextFactory must exist before any Compositors are created.
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
+
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-  bool allow_test_contexts = true;
-  aura_test_helper_->SetUp(allow_test_contexts);
+  aura_test_helper_->SetUp();
   wm_state_.reset(new views::corewm::WMState);
   ui::InitializeInputMethodForTesting();
 }
@@ -50,6 +54,7 @@ void ViewsTestBase::TearDown() {
   testing::Test::TearDown();
   ui::ShutdownInputMethodForTesting();
   aura_test_helper_->TearDown();
+  ui::TerminateContextFactoryForTests();
   wm_state_.reset();
   CHECK(!corewm::ScopedCaptureClient::IsActive());
 }

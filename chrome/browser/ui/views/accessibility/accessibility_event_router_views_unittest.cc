@@ -34,6 +34,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -106,9 +107,12 @@ class AccessibilityEventRouterViewsTest
 #endif
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
+    // The ContextFactory must exist before any Compositors are created.
+    bool enable_pixel_output = false;
+    ui::InitializeContextFactoryForTests(enable_pixel_output);
+
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    bool allow_test_contexts = true;
-    aura_test_helper_->SetUp(allow_test_contexts);
+    aura_test_helper_->SetUp();
 #endif  // USE_AURA
     EnableAccessibilityAndListenToFocusNotifications();
   }
@@ -117,6 +121,7 @@ class AccessibilityEventRouterViewsTest
     ClearCallback();
 #if defined(USE_AURA)
     aura_test_helper_->TearDown();
+    ui::TerminateContextFactoryForTests();
 #endif
     delete views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = NULL;

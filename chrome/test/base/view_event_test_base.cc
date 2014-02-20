@@ -31,6 +31,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/corewm/wm_state.h"
 #endif
 
@@ -102,10 +103,13 @@ void ViewEventTestBase::SetUp() {
   ui::InitializeInputMethodForTesting();
   gfx::NativeView context = NULL;
 
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = true;
-  ui::InitializeContextFactoryForTests(allow_test_contexts);
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
+#endif
+
+#if defined(USE_ASH)
 #if defined(OS_WIN)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
@@ -135,8 +139,7 @@ void ViewEventTestBase::SetUp() {
   // the test screen.
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  bool allow_test_contexts = true;
-  aura_test_helper_->SetUp(allow_test_contexts);
+  aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
 #endif  // !USE_ASH && USE_AURA
 
@@ -163,10 +166,13 @@ void ViewEventTestBase::TearDown() {
   message_center::MessageCenter::Shutdown();
 #endif  // !OS_WIN
   aura::Env::DeleteInstance();
-  ui::TerminateContextFactoryForTests();
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
 #endif  // !USE_ASH && USE_AURA
+
+#if defined(USE_AURA)
+  ui::TerminateContextFactoryForTests();
+#endif
 
   ui::ShutdownInputMethodForTesting();
   views::ViewsDelegate::views_delegate = NULL;

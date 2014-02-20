@@ -24,6 +24,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #endif
 
 namespace content {
@@ -166,10 +167,13 @@ void RenderViewHostTestHarness::SetUp() {
   ole_initializer_.reset(new ui::ScopedOleInitializer());
 #endif
 #if defined(USE_AURA)
+  // The ContextFactory must exist before any Compositors are created.
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
+
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  bool allow_test_contexts = true;
-  aura_test_helper_->SetUp(allow_test_contexts);
+  aura_test_helper_->SetUp();
 #endif
 
   DCHECK(!browser_context_);
@@ -182,6 +186,7 @@ void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
+  ui::TerminateContextFactoryForTests();
 #endif
   // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.

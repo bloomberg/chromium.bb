@@ -112,8 +112,8 @@ int DemoMain() {
   gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = false;
-  ui::InitializeContextFactoryForTests(allow_test_contexts);
+  bool enable_pixel_output = true;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   aura::Env::CreateInstance();
   scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());

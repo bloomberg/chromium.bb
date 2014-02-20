@@ -14,6 +14,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -56,9 +57,11 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
+    // The ContextFactory must exist before any Compositors are created.
+    bool enable_pixel_output = false;
+    ui::InitializeContextFactoryForTests(enable_pixel_output);
     helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    bool allow_test_contexts = true;
-    helper_->SetUp(allow_test_contexts);
+    helper_->SetUp();
 
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the
@@ -79,6 +82,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     desktop_window_.reset();
     window_delegate_.reset();
     helper_->TearDown();
+    ui::TerminateContextFactoryForTests();
   }
 
   aura::Window* root_window() { return helper_->root_window(); }

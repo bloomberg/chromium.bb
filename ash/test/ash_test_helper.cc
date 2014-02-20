@@ -59,8 +59,8 @@ void AshTestHelper::SetUp(bool start_session) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::InitializeInputMethodForTesting();
 
-  bool allow_test_contexts = true;
-  ui::InitializeContextFactoryForTests(allow_test_contexts);
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;

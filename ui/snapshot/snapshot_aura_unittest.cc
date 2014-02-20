@@ -14,6 +14,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gfx_paths.h"
@@ -83,11 +84,15 @@ class SnapshotAuraTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
+
+    // The ContextFactory must exist before any Compositors are created.
+    // Snapshot test tests real drawing and readback, so needs pixel output.
+    bool enable_pixel_output = true;
+    ui::InitializeContextFactoryForTests(enable_pixel_output);
+
     helper_.reset(
         new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-    // Snapshot test tests real drawing and readback, so needs a real context.
-    bool allow_test_contexts = false;
-    helper_->SetUp(allow_test_contexts);
+    helper_->SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -95,6 +100,7 @@ class SnapshotAuraTest : public testing::Test {
     delegate_.reset();
     helper_->RunAllPendingInMessageLoop();
     helper_->TearDown();
+    ui::TerminateContextFactoryForTests();
     testing::Test::TearDown();
   }
 

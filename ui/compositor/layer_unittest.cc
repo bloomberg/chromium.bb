@@ -89,8 +89,8 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    bool allow_test_contexts = false;
-    InitializeContextFactoryForTests(allow_test_contexts);
+    bool enable_pixel_output = true;
+    InitializeContextFactoryForTests(enable_pixel_output);
     Compositor::Initialize();
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
@@ -401,8 +401,8 @@ class LayerWithDelegateTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    bool allow_test_contexts = true;
-    InitializeContextFactoryForTests(allow_test_contexts);
+    bool enable_pixel_output = false;
+    InitializeContextFactoryForTests(enable_pixel_output);
     Compositor::Initialize();
     compositor_.reset(new Compositor(gfx::kNullAcceleratedWidget));
     compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
