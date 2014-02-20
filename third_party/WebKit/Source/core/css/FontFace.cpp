@@ -488,8 +488,16 @@ unsigned FontFace::traitsMask() const
 
 void FontFace::initCSSFontFace(Document* document)
 {
-    ASSERT(!m_cssFontFace);
-    m_cssFontFace = adoptPtr(new CSSFontFace(this));
+    Vector<CSSFontFace::UnicodeRange> ranges;
+    if (CSSValueList* rangeList = toCSSValueList(m_unicodeRange.get())) {
+        unsigned numRanges = rangeList->length();
+        for (unsigned i = 0; i < numRanges; i++) {
+            CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->itemWithoutBoundsCheck(i));
+            ranges.append(CSSFontFace::UnicodeRange(range->from(), range->to()));
+        }
+    }
+
+    m_cssFontFace = adoptPtr(new CSSFontFace(this, ranges));
 
     // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
     CSSValueList* srcList = toCSSValueList(m_src.get());
@@ -527,14 +535,6 @@ void FontFace::initCSSFontFace(Document* document)
             source->setSVGFontFaceElement(item->svgFontFaceElement());
 #endif
             m_cssFontFace->addSource(source.release());
-        }
-    }
-
-    if (CSSValueList* rangeList = toCSSValueList(m_unicodeRange.get())) {
-        unsigned numRanges = rangeList->length();
-        for (unsigned i = 0; i < numRanges; i++) {
-            CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->itemWithoutBoundsCheck(i));
-            m_cssFontFace->ranges().add(range->from(), range->to());
         }
     }
 }

@@ -44,10 +44,12 @@ class StyleRuleFontFace;
 
 class CSSFontFace {
 public:
+    struct UnicodeRange;
     class UnicodeRangeSet;
 
-    CSSFontFace(FontFace* fontFace)
-        : m_segmentedFontFace(0)
+    CSSFontFace(FontFace* fontFace, Vector<UnicodeRange>& ranges)
+        : m_ranges(ranges)
+        , m_segmentedFontFace(0)
         , m_fontFace(fontFace)
     {
         ASSERT(m_fontFace);
@@ -79,6 +81,8 @@ public:
         UChar32 from() const { return m_from; }
         UChar32 to() const { return m_to; }
         bool contains(UChar32 c) const { return m_from <= c && c <= m_to; }
+        bool operator<(const UnicodeRange& other) const { return m_from < other.m_from; }
+        bool operator<(UChar32 c) const { return m_to < c; }
 
     private:
         UChar32 m_from;
@@ -87,7 +91,7 @@ public:
 
     class UnicodeRangeSet {
     public:
-        void add(UChar32 from, UChar32 to) { m_ranges.append(UnicodeRange(from, to)); }
+        explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
         bool intersectsWith(const String&) const;
         bool isEntireRange() const { return m_ranges.isEmpty(); }
         size_t size() const { return m_ranges.size(); }

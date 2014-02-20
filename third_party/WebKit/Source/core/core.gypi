@@ -3238,6 +3238,7 @@
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
             'css/CSSCalculationValueTest.cpp',
+            'css/CSSFontFaceTest.cpp',
             'css/CSSTestHelper.cpp',
             'css/CSSTestHelper.h',
             'css/CSSValueTestHelper.h',
