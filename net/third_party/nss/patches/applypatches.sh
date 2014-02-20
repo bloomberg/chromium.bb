@@ -37,8 +37,6 @@ patch -p4 < $patches_dir/chacha20poly1305.patch
 
 patch -p4 < $patches_dir/cachelocks.patch
 
-patch -p4 < $patches_dir/paddingextensionall.patch
-
 patch -p4 < $patches_dir/signedcertificatetimestamps.patch
 
 patch -p4 < $patches_dir/cipherorder.patch

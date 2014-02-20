@@ -75,9 +75,6 @@ Patches:
     patches/cachelocks.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=764646
 
-  * Always add an extension to a ClientHello to make it 512 bytes.
-    patches/paddingextensionall.patch
-
   * Support the Certificate Transparency (RFC 6962) TLS extension
     signed_certificate_timestamp (client only).
     patches/signedcertificatetimestamps.patch
