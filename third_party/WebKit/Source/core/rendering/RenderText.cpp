@@ -786,7 +786,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         stripFrontSpaces = false;
 
     if (m_hasTab || preferredLogicalWidthsDirty())
-        computePreferredLogicalWidths(leadWidth);
+        computePreferredLogicalWidths(leadWidth, direction);
 
     hasBreakableStart = !stripFrontSpaces && m_hasBreakableStart;
     hasBreakableEnd = m_hasBreakableEnd;
@@ -865,27 +865,27 @@ void RenderText::trimmedPrefWidths(float leadWidth,
     }
 }
 
-float RenderText::minLogicalWidth() const
+float RenderText::minLogicalWidth(TextDirection textDirection) const
 {
     if (preferredLogicalWidthsDirty())
-        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
+        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, textDirection);
 
     return m_minWidth;
 }
 
-float RenderText::maxLogicalWidth() const
+float RenderText::maxLogicalWidth(TextDirection textDirection) const
 {
     if (preferredLogicalWidthsDirty())
-        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
+        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, textDirection);
 
     return m_maxWidth;
 }
 
-void RenderText::computePreferredLogicalWidths(float leadWidth)
+void RenderText::computePreferredLogicalWidths(float leadWidth, TextDirection textDirection)
 {
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
-    computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphOverflow);
+    computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphOverflow, textDirection);
     if (fallbackFonts.isEmpty() && !glyphOverflow.left && !glyphOverflow.right && !glyphOverflow.top && !glyphOverflow.bottom)
         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
 }
@@ -1501,8 +1501,9 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
                         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
                 }
                 w = m_maxWidth;
-            } else
-                w = maxLogicalWidth();
+            } else {
+                w = maxLogicalWidth(textDirection);
+            }
         } else {
             w = widthFromCache(f, from, len, xPos, textDirection, fallbackFonts, glyphOverflow);
         }

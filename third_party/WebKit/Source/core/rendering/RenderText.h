@@ -87,8 +87,9 @@ public:
     virtual float width(unsigned from, unsigned len, const Font&, float xPos, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
     virtual float width(unsigned from, unsigned len, float xPos, TextDirection, bool firstLine = false, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
 
-    float minLogicalWidth() const;
-    float maxLogicalWidth() const;
+    // TextDirection required as these compute the preferred width if dirty.
+    float minLogicalWidth(TextDirection) const;
+    float maxLogicalWidth(TextDirection) const;
 
     void trimmedPrefWidths(float leadWidth,
         float& firstLineMinWidth, bool& hasBreakableStart,
@@ -150,7 +151,7 @@ public:
     PassRefPtr<AbstractInlineTextBox> firstAbstractInlineTextBox();
 
 protected:
-    virtual void computePreferredLogicalWidths(float leadWidth);
+    virtual void computePreferredLogicalWidths(float leadWidth, TextDirection);
     virtual void willBeDestroyed() OVERRIDE;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle*) OVERRIDE FINAL { }
@@ -164,7 +165,7 @@ protected:
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 
 private:
-    void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&, TextDirection = LTR);
+    void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&, TextDirection);
 
     bool computeCanUseSimpleFontCodePath() const;
 
