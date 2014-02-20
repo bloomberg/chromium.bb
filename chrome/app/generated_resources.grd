@@ -6450,12 +6450,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_DESCRIPTION" desc="Description for the flag enable immersive fullscreen for all windows.">
         Sets non-browser windows (apps, task manager) to use immersive fullscreen when fullscreened via the F4 key.
       </message>
-      <message name="IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_NAME" desc="Name for the flag to show a menu that lets you change the alignment of the shelf.">
-        Show shelf alignment menu.
-      </message>
-      <message name="IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_DESCRIPTION" desc="Description for the flag to show a menu that lets you change the alignment of the shelf.">
-        Enables a menu that allows changing the side the shelf is aligned to.
-      </message>
       <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
         Disallow shelf to minimize-on-click.
       </message>

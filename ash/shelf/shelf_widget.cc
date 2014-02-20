@@ -683,8 +683,6 @@ ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
 
 // static
 bool ShelfWidget::ShelfAlignmentAllowed() {
-  if (!ash::switches::ShowShelfAlignmentMenu())
-    return false;
   user::LoginStatus login_status =
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 

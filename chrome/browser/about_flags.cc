@@ -1061,15 +1061,6 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(USE_ASH)
   {
-    "show-launcher-alignment-menu",
-    IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_NAME,
-    IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(
-        ash::switches::kShowShelfAlignmentMenu,
-        ash::switches::kHideShelfAlignmentMenu)
-  },
-  {
     "disable-minimize-on-second-launcher-item-click",
     IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME,
     IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION,

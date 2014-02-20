@@ -71,8 +71,6 @@ ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 #if defined(OS_WIN)
 ASH_EXPORT extern const char kForceAshToDesktop[];
 #endif
-ASH_EXPORT extern const char kShowShelfAlignmentMenu[];
-ASH_EXPORT extern const char kHideShelfAlignmentMenu[];
 
 // Returns true if the alternate visual style for the caption buttons (minimize,
 // maximize, restore, close) should be used.
@@ -87,9 +85,6 @@ ASH_EXPORT bool UseDragOffShelf();
 // Returns true if all windows (barring frameless apps) can be put into
 // immersive fullscreen via <F4>.
 ASH_EXPORT bool UseImmersiveFullscreenForAllWindows();
-
-// Returns true if side shelf alignment is enabled.
-ASH_EXPORT bool ShowShelfAlignmentMenu();
 
 // Returns true if multiple user icons are allowed in the tray.
 ASH_EXPORT bool UseMultiUserTray();

@@ -203,10 +203,6 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 
 #endif
 
-// Flags explicitly show or hide the shelf alignment menu.
-const char kShowShelfAlignmentMenu[] = "show-launcher-alignment-menu";
-const char kHideShelfAlignmentMenu[] = "hide-launcher-alignment-menu";
-
 bool UseAlternateFrameCaptionButtonStyle() {
   // For the sake of simplicity, the alternate caption button style is only
   // used if snapped windows are always 50% of the screen's width.
@@ -228,11 +224,6 @@ bool UseDragOffShelf() {
 bool UseImmersiveFullscreenForAllWindows() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableImmersiveFullscreenForBrowserOnly);
-}
-
-bool ShowShelfAlignmentMenu() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kHideShelfAlignmentMenu);
 }
 
 bool UseMultiUserTray() {
