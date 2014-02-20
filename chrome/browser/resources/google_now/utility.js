@@ -437,24 +437,13 @@ wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
 wrapper.instrumentChromeApiFunction('webstorePrivate.getBrowserLogin', 0);
 
 /**
- * Add task tracking support to Promise.then.
+ * Add task tracking support to Promises.
  * @override
  */
 Promise.prototype.then = function() {
   var originalThen = Promise.prototype.then;
   return function(callback) {
-    return originalThen.call(this, wrapper.wrapCallback(callback, false));
-  }
-}();
-
-/**
- * Add task tracking support to Promise.catch.
- * @override
- */
-Promise.prototype.catch = function() {
-  var originalCatch = Promise.prototype.catch;
-  return function(callback) {
-    return originalCatch.call(this, wrapper.wrapCallback(callback, false));
+    originalThen.call(this, wrapper.wrapCallback(callback, false));
   }
 }();
 
@@ -737,46 +726,36 @@ function buildAuthenticationManager() {
 
   /**
    * Gets an OAuth2 access token.
-   * @return {Promise} A promise to get the authentication token. If there is
-   *     no token, the request is rejected.
+   * @param {function(string=)} callback Called on completion.
+   *     The string contains the token. It's undefined if there was an error.
    */
-  function getAuthToken() {
-    return new Promise(function(resolve, reject) {
-      instrumented.identity.getAuthToken({interactive: false}, function(token) {
-        if (chrome.runtime.lastError || !token) {
-          reject();
-        } else {
-          resolve(token);
-        }
-      });
+  function getAuthToken(callback) {
+    instrumented.identity.getAuthToken({interactive: false}, function(token) {
+      token = chrome.runtime.lastError ? undefined : token;
+      callback(token);
     });
   }
 
   /**
    * Determines whether there is an account attached to the profile.
-   * @return {Promise} A promise to determine if there is an account attached
-   *     to the profile.
+   * @param {function(boolean)} callback Called on completion.
    */
-  function isSignedIn() {
-    return new Promise(function(resolve) {
-      instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
-        resolve(!!accountInfo.login);
-      });
+  function isSignedIn(callback) {
+    instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
+      callback(!!accountInfo.login);
     });
   }
 
   /**
    * Removes the specified cached token.
    * @param {string} token Authentication Token to remove from the cache.
-   * @return {Promise} A promise that resolves on completion.
+   * @param {function()} callback Called on completion.
    */
-  function removeToken(token) {
-    return new Promise(function(resolve) {
-      instrumented.identity.removeCachedAuthToken({token: token}, function() {
-        // Let Chrome know about a possible problem with the token.
-        getAuthToken();
-        resolve();
-      });
+  function removeToken(token, callback) {
+    instrumented.identity.removeCachedAuthToken({token: token}, function() {
+      // Let Chrome now about a possible problem with the token.
+      getAuthToken(function() {});
+      callback();
     });
   }
 
@@ -796,7 +775,7 @@ function buildAuthenticationManager() {
    * If it doesn't, it notifies the listeners of the change.
    */
   function checkAndNotifyListeners() {
-    isSignedIn().then(function(signedIn) {
+    isSignedIn(function(signedIn) {
       instrumented.storage.local.get('lastSignedInState', function(items) {
         items = items || {};
         if (items.lastSignedInState != signedIn) {

@@ -265,7 +265,12 @@ function recordEvent(event) {
  *     parameter.
  */
 function setAuthorization(request, callbackBoolean) {
-  authenticationManager.getAuthToken().then(function(token) {
+  authenticationManager.getAuthToken(function(token) {
+    if (!token) {
+      callbackBoolean(false);
+      return;
+    }
+
     request.setRequestHeader('Authorization', 'Bearer ' + token);
 
     // Instrument onloadend to remove stale auth tokens.
@@ -273,7 +278,7 @@ function setAuthorization(request, callbackBoolean) {
     request.onloadend = wrapper.wrapCallback(function(event) {
       if (request.status == HTTP_FORBIDDEN ||
           request.status == HTTP_UNAUTHORIZED) {
-        authenticationManager.removeToken(token).then(function() {
+        authenticationManager.removeToken(token, function() {
           originalOnLoadEnd(event);
         });
       } else {
@@ -282,8 +287,6 @@ function setAuthorization(request, callbackBoolean) {
     });
 
     callbackBoolean(true);
-  }).catch(function() {
-    callbackBoolean(false);
   });
 }
 
@@ -1085,7 +1088,7 @@ function updateRunningState(
 function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function() {
     Promise.all([
-        authenticationManager.isSignedIn(),
+        isSignedIn(),
         isGeolocationEnabled(),
         canEnableBackground(),
         isNotificationsEnabled(),
@@ -1093,6 +1096,18 @@ function onStateChange() {
         .then(function(results) {
           updateRunningState.apply(null, results);
         });
+  });
+}
+
+/**
+ * Determines if the user is signed in.
+ * @return {Promise} A promise to evaluate the signed in state.
+ */
+function isSignedIn() {
+  return new Promise(function(resolve) {
+    authenticationManager.isSignedIn(function(signedIn) {
+      resolve(signedIn);
+    });
   });
 }
 

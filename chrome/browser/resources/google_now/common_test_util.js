@@ -82,35 +82,16 @@ function getMockHandlerContainer(eventIdentifier) {
 var Promise = function() {
   function PromisePrototypeObject(asyncTask) {
     var result;
-    var resolved = false;
     asyncTask(
         function(asyncResult) {
           result = asyncResult;
-          resolved = true;
         },
-        function(asyncFailureResult) {
-          result = asyncFailureResult;
-          resolved = false;
-        });
+        function() {}); // Errors are unsupported.
 
     function then(callback) {
-      if (resolved) {
-        callback.call(null, result);
-      }
-      return this;
+      callback.call(null, result);
     }
-
-    // Promises use the function name "catch" to call back error handlers.
-    // We can't use "catch" since function or variable names cannot use the word
-    // "catch".
-    function catchFunc(callback) {
-      if (!resolved) {
-        callback.call(null, result);
-      }
-      return this;
-    }
-
-    return {then: then, catch: catchFunc, isPromise: true};
+    return {then: then, isPromise: true};
   }
 
   function all(arrayOfPromises) {
