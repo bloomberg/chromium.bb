@@ -471,9 +471,6 @@ extern const char kEnableHTMLImports[]      = "enable-html-imports";
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[]        = "enable-inband-text-tracks";
 
-// Enable inputmode attribute of HTML input or text element.
-extern const char kEnableInputModeAttribute[] = "enable-input-mode-attribute";
-
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

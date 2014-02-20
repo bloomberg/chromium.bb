@@ -165,9 +165,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 
-  if (command_line.HasSwitch(switches::kEnableInputModeAttribute))
-    WebRuntimeFeatures::enableInputModeAttribute(true);
-
   if (command_line.HasSwitch(switches::kEnableFastTextAutosizing))
     WebRuntimeFeatures::enableFastTextAutosizing(true);
 

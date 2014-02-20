@@ -142,7 +142,6 @@ CONTENT_EXPORT extern const char kEnableHighResolutionTime[];
 #endif
 CONTENT_EXPORT extern const char kEnableHTMLImports[];
 CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
-extern const char kEnableInputModeAttribute[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableMonitorProfile[];

@@ -1025,7 +1025,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableHighDpiCompositingForFixedPosition,
     switches::kEnableHTMLImports,
     switches::kEnableInbandTextTracks,
-    switches::kEnableInputModeAttribute,
     switches::kEnableLayerSquashing,
     switches::kEnableLogging,
     switches::kEnableMP3StreamParser,
