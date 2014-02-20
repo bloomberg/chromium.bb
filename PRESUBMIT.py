@@ -1060,7 +1060,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
-  results.extend(_CheckJavaStyle(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1206,6 +1205,7 @@ def _CheckForInvalidOSMacros(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
+  results.extend(_CheckJavaStyle(input_api, output_api))
   return results
 
 
