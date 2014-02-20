@@ -31,6 +31,14 @@
 using content::DomOperationNotificationDetails;
 using content::RenderViewHost;
 
+#if defined(DISABLE_NACL)
+#define RETURN_IF_NO_NACL() do { \
+  LOG(WARNING) << "This test always passes with disable_nacl=1."; \
+  return; } while (0)
+#else
+#define RETURN_IF_NO_NACL() do { } while (0)
+#endif
+
 namespace {
 
 // Platform-specific filename relative to the chrome executable.
@@ -347,6 +355,7 @@ void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
+  RETURN_IF_NO_NACL();
   PPAPITestBase::SetUpCommandLine(command_line);
 
   base::FilePath plugin_lib;
@@ -358,6 +367,43 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+}
+
+void PPAPINaClTest::RunTest(const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTest(test_case);
+}
+
+void PPAPINaClTest::RunTestAndReload(const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestAndReload(test_case);
+}
+
+void PPAPINaClTest::RunTestViaHTTP(const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestViaHTTP(test_case);
+}
+
+void PPAPINaClTest::RunTestWithSSLServer(const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestWithSSLServer(test_case);
+}
+
+void PPAPINaClTest::RunTestWithWebSocketServer(const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestWithWebSocketServer(test_case);
+}
+
+void PPAPINaClTest::RunTestIfAudioOutputAvailable(
+    const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestIfAudioOutputAvailable(test_case);
+}
+
+void PPAPINaClTest::RunTestViaHTTPIfAudioOutputAvailable(
+    const std::string& test_case) {
+  RETURN_IF_NO_NACL();
+  PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(test_case);
 }
 
 // Append the correct mode and testcase string
