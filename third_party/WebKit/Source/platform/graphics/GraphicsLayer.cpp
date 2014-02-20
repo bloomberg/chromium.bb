@@ -531,7 +531,7 @@ void GraphicsLayer::collectTrackedRepaintRects(Vector<FloatRect>& rects) const
 
     RepaintMap::iterator repaintIt = repaintRectMap().find(this);
     if (repaintIt != repaintRectMap().end())
-        rects.append(repaintIt->value);
+        rects.appendVector(repaintIt->value);
 }
 
 void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const

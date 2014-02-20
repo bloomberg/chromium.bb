@@ -51,7 +51,7 @@ public:
     DataIterator begin() { return m_data.begin(); }
     DataIterator end() { return m_data.end(); }
     void append(unsigned char byte) { m_data.append(byte); }
-    void append(SVGPathByteStream* other) { m_data.append(other->m_data); }
+    void append(SVGPathByteStream* other) { m_data.appendVector(other->m_data); }
     void clear() { m_data.clear(); }
     void reserveInitialCapacity(size_t size) { m_data.reserveInitialCapacity(size); }
     void shrinkToFit() { m_data.shrinkToFit(); }

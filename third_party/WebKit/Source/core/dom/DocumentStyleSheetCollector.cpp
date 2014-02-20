@@ -45,7 +45,7 @@ DocumentStyleSheetCollector::~DocumentStyleSheetCollector()
 
 void DocumentStyleSheetCollector::appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)
 {
-    m_activeAuthorStyleSheets.append(sheets);
+    m_activeAuthorStyleSheets.appendVector(sheets);
 }
 
 void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet)

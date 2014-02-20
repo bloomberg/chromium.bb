@@ -54,7 +54,7 @@ void StyleSheetCollection::swapSheetsForSheetList(Vector<RefPtr<StyleSheet> >& s
 
 void StyleSheetCollection::appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)
 {
-    m_activeAuthorStyleSheets.append(sheets);
+    m_activeAuthorStyleSheets.appendVector(sheets);
 }
 
 void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet)

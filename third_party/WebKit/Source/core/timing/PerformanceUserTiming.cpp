@@ -171,7 +171,7 @@ static PerformanceEntryVector convertToEntrySequence(const PerformanceEntryMap& 
     PerformanceEntryVector entries;
 
     for (PerformanceEntryMap::const_iterator it = performanceEntryMap.begin(); it != performanceEntryMap.end(); ++it)
-        entries.append(it->value);
+        entries.appendVector(it->value);
 
     return entries;
 }
@@ -182,7 +182,7 @@ static PerformanceEntryVector getEntrySequenceByName(const PerformanceEntryMap& 
 
     PerformanceEntryMap::const_iterator it = performanceEntryMap.find(name);
     if (it != performanceEntryMap.end())
-        entries.append(it->value);
+        entries.appendVector(it->value);
 
     return entries;
 }

@@ -37,7 +37,7 @@ namespace WebCore {
 
 void CachedMatchedProperties::set(const RenderStyle* style, const RenderStyle* parentStyle, const MatchResult& matchResult)
 {
-    matchedProperties.append(matchResult.matchedProperties);
+    matchedProperties.appendVector(matchResult.matchedProperties);
     ranges = matchResult.ranges;
 
     // Note that we don't cache the original RenderStyle instance. It may be further modified.

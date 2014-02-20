@@ -54,7 +54,7 @@ void ThreadSafeDataTransport::setData(SharedBuffer* buffer, bool allDataReceived
     }
 
     MutexLocker locker(m_mutex);
-    m_newBufferQueue.append(newBufferQueue);
+    m_newBufferQueue.appendVector(newBufferQueue);
     m_allDataReceived = allDataReceived;
 }
 

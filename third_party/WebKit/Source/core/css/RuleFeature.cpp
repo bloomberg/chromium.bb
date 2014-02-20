@@ -248,8 +248,8 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
 
     m_metadata.add(other.m_metadata);
 
-    siblingRules.append(other.siblingRules);
-    uncommonAttributeRules.append(other.uncommonAttributeRules);
+    siblingRules.appendVector(other.siblingRules);
+    uncommonAttributeRules.appendVector(other.uncommonAttributeRules);
 }
 
 void RuleFeatureSet::clear()

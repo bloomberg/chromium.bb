@@ -113,7 +113,7 @@ TransformOperations TransformOperations::add(const TransformOperations& addend) 
 {
     TransformOperations result;
     result.m_operations = operations();
-    result.m_operations.append(addend.operations());
+    result.m_operations.appendVector(addend.operations());
     return result;
 }
 

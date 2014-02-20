@@ -99,11 +99,11 @@ PerformanceEntryVector Performance::getEntries() const
 {
     PerformanceEntryVector entries;
 
-    entries.append(m_resourceTimingBuffer);
+    entries.appendVector(m_resourceTimingBuffer);
 
     if (m_userTiming) {
-        entries.append(m_userTiming->getMarks());
-        entries.append(m_userTiming->getMeasures());
+        entries.appendVector(m_userTiming->getMarks());
+        entries.appendVector(m_userTiming->getMeasures());
     }
 
     std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
@@ -120,9 +120,9 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entryType)
 
     if (m_userTiming) {
         if (equalIgnoringCase(entryType, "mark"))
-            entries.append(m_userTiming->getMarks());
+            entries.appendVector(m_userTiming->getMarks());
         else if (equalIgnoringCase(entryType, "measure"))
-            entries.append(m_userTiming->getMeasures());
+            entries.appendVector(m_userTiming->getMeasures());
     }
 
     std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
@@ -140,9 +140,9 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name, const S
 
     if (m_userTiming) {
         if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
-            entries.append(m_userTiming->getMarks(name));
+            entries.appendVector(m_userTiming->getMarks(name));
         if (entryType.isNull() || equalIgnoringCase(entryType, "measure"))
-            entries.append(m_userTiming->getMeasures(name));
+            entries.appendVector(m_userTiming->getMeasures(name));
     }
 
     std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);

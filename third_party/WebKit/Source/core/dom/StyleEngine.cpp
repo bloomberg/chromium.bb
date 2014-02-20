@@ -408,13 +408,13 @@ const Vector<RefPtr<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() c
 
     Vector<RefPtr<StyleSheet> > activeStyleSheets;
 
-    activeStyleSheets.append(m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
+    activeStyleSheets.appendVector(m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
 
     TreeScopeSet::const_iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::const_iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::const_iterator it = begin; it != end; ++it) {
         if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
-            activeStyleSheets.append(collection->styleSheetsForStyleSheetList());
+            activeStyleSheets.appendVector(collection->styleSheetsForStyleSheetList());
     }
 
     // FIXME: Inspector needs a vector which has all active stylesheets.

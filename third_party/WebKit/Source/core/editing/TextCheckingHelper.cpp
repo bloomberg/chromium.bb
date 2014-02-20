@@ -559,7 +559,7 @@ void checkTextOfParagraph(TextCheckerClient& client, const String& text, TextChe
         if (results.isEmpty())
             results.swap(spellingResult);
         else
-            results.append(spellingResult);
+            results.appendVector(spellingResult);
     }
 }
 

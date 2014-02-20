@@ -620,7 +620,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         template<typename U> void append(const U*, size_t);
         template<typename U> void append(const U&);
         template<typename U> void uncheckedAppend(const U& val);
-        template<size_t otherCapacity> void append(const Vector<T, otherCapacity, Allocator>&);
         template<typename U, size_t otherCapacity, typename V> void appendVector(const Vector<U, otherCapacity, V>&);
 
         template<typename U> void insert(size_t position, const U*, size_t);
@@ -1004,15 +1003,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const U* ptr = &val;
         new (NotNull, end()) T(*ptr);
         ++m_size;
-    }
-
-    // This method should not be called append, a better name would be appendElements.
-    // It could also be eliminated entirely, and call sites could just use
-    // appendRange(val.begin(), val.end()).
-    template<typename T, size_t inlineCapacity, typename Allocator> template<size_t otherCapacity>
-    inline void Vector<T, inlineCapacity, Allocator>::append(const Vector<T, otherCapacity, Allocator>& val)
-    {
-        append(val.begin(), val.size());
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U, size_t otherCapacity, typename OtherAllocator>

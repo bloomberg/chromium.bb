@@ -439,7 +439,7 @@ void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)
     int numRows = m_rows.size();
     for (int row = 0; row < numRows; ++row) {
         AccessibilityChildrenVector rowChildren = m_rows[row]->children();
-        cells.append(rowChildren);
+        cells.appendVector(rowChildren);
     }
 }
 

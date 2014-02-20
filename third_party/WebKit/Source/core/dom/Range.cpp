@@ -1843,7 +1843,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                     renderBoxModelObject->absoluteQuads(elementQuads);
                     m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(elementQuads, *renderBoxModelObject);
 
-                    quads.append(elementQuads);
+                    quads.appendVector(elementQuads);
                 }
             }
         } else if (node->isTextNode()) {
@@ -1856,7 +1856,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 renderText.absoluteQuadsForRange(textQuads, startOffset, endOffset);
                 m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, renderText);
 
-                quads.append(textQuads);
+                quads.appendVector(textQuads);
             }
         }
     }
