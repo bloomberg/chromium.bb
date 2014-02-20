@@ -104,6 +104,9 @@ const char PolicyWatcher::kHostTokenValidationCertIssuerPolicyName[] =
 const char PolicyWatcher::kHostAllowClientPairing[] =
     "RemoteAccessHostAllowClientPairing";
 
+const char PolicyWatcher::kHostAllowGnubbyAuthPolicyName[] =
+    "RemoteAccessHostAllowGnubbyAuth";
+
 const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
     "RemoteAccessHostDebugOverridePolicies";
 
@@ -126,6 +129,7 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetString(kHostTokenValidationCertIssuerPolicyName,
                              std::string());
   default_values_->SetBoolean(kHostAllowClientPairing, true);
+  default_values_->SetBoolean(kHostAllowGnubbyAuthPolicyName, true);
 #if !defined(NDEBUG)
   default_values_->SetString(kHostDebugOverridePoliciesName, std::string());
 #endif

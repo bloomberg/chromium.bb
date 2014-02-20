@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -42,6 +43,11 @@ std::string BasicDesktopEnvironment::GetCapabilities() const {
 }
 
 void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
+}
+
+scoped_ptr<GnubbyAuthHandler> BasicDesktopEnvironment::CreateGnubbyAuthHandler(
+    protocol::ClientStub* client_stub) {
+  return scoped_ptr<GnubbyAuthHandler>();
 }
 
 scoped_ptr<webrtc::ScreenCapturer>

@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/desktop_resizer.h"
+#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window_proxy.h"
@@ -58,8 +60,21 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner) {
+                              ui_task_runner),
+      gnubby_auth_enabled_(false) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+}
+
+scoped_ptr<GnubbyAuthHandler> Me2MeDesktopEnvironment::CreateGnubbyAuthHandler(
+    protocol::ClientStub* client_stub) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  if (gnubby_auth_enabled_)
+    return scoped_ptr<GnubbyAuthHandler>(
+        GnubbyAuthHandler::Create(client_stub));
+
+  HOST_LOG << "gnubby auth is not enabled";
+  return scoped_ptr<GnubbyAuthHandler>();
 }
 
 bool Me2MeDesktopEnvironment::InitializeSecurity(
@@ -115,6 +130,10 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
   return true;
 }
 
+void Me2MeDesktopEnvironment::SetEnableGnubbyAuth(bool gnubby_auth_enabled) {
+  gnubby_auth_enabled_ = gnubby_auth_enabled;
+}
+
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
@@ -140,6 +159,7 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
                                                curtain_enabled_)) {
     return scoped_ptr<DesktopEnvironment>();
   }
+  desktop_environment->SetEnableGnubbyAuth(gnubby_auth_enabled_);
 
   return desktop_environment.PassAs<DesktopEnvironment>();
 }
@@ -148,6 +168,11 @@ void Me2MeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   curtain_enabled_ = enable;
+}
+
+void Me2MeDesktopEnvironmentFactory::SetEnableGnubbyAuth(
+    bool gnubby_auth_enabled) {
+  gnubby_auth_enabled_ = gnubby_auth_enabled;
 }
 
 }  // namespace remoting

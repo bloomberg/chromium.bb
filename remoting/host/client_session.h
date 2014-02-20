@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -134,6 +135,8 @@ class ClientSession
       const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
 
+  void SetGnubbyAuthHandlerForTesting(GnubbyAuthHandler* gnubby_auth_handler);
+
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
   }
@@ -232,6 +235,9 @@ class ClientSession
 
   // The pairing registry for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
+
+  // Used to proxy gnubby auth traffic.
+  scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

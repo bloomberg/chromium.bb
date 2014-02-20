@@ -39,6 +39,12 @@ MockDesktopEnvironment::CreateVideoCapturer() {
   return scoped_ptr<webrtc::ScreenCapturer>(CreateVideoCapturerPtr());
 }
 
+scoped_ptr<GnubbyAuthHandler>
+MockDesktopEnvironment::CreateGnubbyAuthHandler(
+    protocol::ClientStub* client_stub) {
+  return scoped_ptr<GnubbyAuthHandler>(CreateGnubbyAuthHandlerPtr(client_stub));
+}
+
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
@@ -68,5 +74,9 @@ MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
 MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
+
+MockGnubbyAuthHandler::MockGnubbyAuthHandler() {}
+
+MockGnubbyAuthHandler::~MockGnubbyAuthHandler() {}
 
 }  // namespace remoting

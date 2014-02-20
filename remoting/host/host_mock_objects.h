@@ -5,11 +5,14 @@
 #ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
+#include <string>
+
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
@@ -34,12 +37,16 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateVideoCapturerPtr, webrtc::ScreenCapturer*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
+  MOCK_METHOD1(CreateGnubbyAuthHandlerPtr, GnubbyAuthHandler*(
+      protocol::ClientStub* client_stub));
 
   // DesktopEnvironment implementation.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
+      protocol::ClientStub* client_stub) OVERRIDE;
 };
 
 class MockClientSessionControl : public ClientSessionControl {
@@ -124,6 +131,19 @@ class MockHostStatusObserver : public HostStatusObserver {
                     const protocol::TransportRoute& route));
   MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
+};
+
+class MockGnubbyAuthHandler : public GnubbyAuthHandler {
+ public:
+  MockGnubbyAuthHandler();
+  virtual ~MockGnubbyAuthHandler();
+
+  MOCK_METHOD1(DeliverClientMessage, void(const std::string& message));
+  MOCK_CONST_METHOD2(DeliverHostDataMessage,
+                     void(int connection_id, const std::string& data));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockGnubbyAuthHandler);
 };
 
 }  // namespace remoting

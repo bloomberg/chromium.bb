@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/audio_capturer.h"
@@ -11,6 +12,7 @@
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/screen_capturer_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -35,6 +37,8 @@ using testing::Expectation;
 using testing::Return;
 using testing::ReturnRef;
 using testing::Sequence;
+using testing::StrEq;
+using testing::StrictMock;
 
 namespace {
 
@@ -55,7 +59,15 @@ ACTION_P2(LocalMouseMoved, client_session, event) {
       webrtc::DesktopVector(event.x(), event.y()));
 }
 
-}  // namespace
+ACTION_P2(SetGnubbyAuthHandlerForTesting, client_session, gnubby_auth_handler) {
+  client_session->SetGnubbyAuthHandlerForTesting(gnubby_auth_handler);
+}
+
+ACTION_P2(DeliverClientMessage, client_session, message) {
+  client_session->DeliverClientMessage(message);
+}
+
+}
 
 class ClientSessionTest : public testing::Test {
  public:
@@ -294,7 +306,7 @@ MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
   return arg.button() == button && arg.button_down() == down;
 }
 
-}
+}  // namespace
 
 TEST_F(ClientSessionTest, InputStubFilter) {
   protocol::KeyEvent key_event1;
@@ -534,6 +546,54 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
       .WillOnce(DoAll(
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+
+  ConnectClientSession();
+  message_loop_.Run();
+}
+
+TEST_F(ClientSessionTest, NoGnubbyAuth) {
+  protocol::ExtensionMessage message;
+  message.set_type("gnubby-auth");
+  message.set_data("test");
+
+  Expectation authenticated =
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
+  EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
+      .After(authenticated)
+      .WillOnce(DoAll(
+           DeliverClientMessage(client_session_.get(), message),
+           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
+           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
+
+  ConnectClientSession();
+  message_loop_.Run();
+}
+
+TEST_F(ClientSessionTest, EnableGnubbyAuth) {
+  // Lifetime controlled by object under test.
+  MockGnubbyAuthHandler* gnubby_auth_handler = new MockGnubbyAuthHandler();
+
+  protocol::ExtensionMessage message;
+  message.set_type("gnubby-auth");
+  message.set_data("test");
+
+  Expectation authenticated =
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
+  EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
+      .After(authenticated)
+      .WillOnce(DoAll(
+           SetGnubbyAuthHandlerForTesting(client_session_.get(),
+                                          gnubby_auth_handler),
+           DeliverClientMessage(client_session_.get(), message),
+           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
+           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+  EXPECT_CALL(*gnubby_auth_handler, DeliverClientMessage(_));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   ConnectClientSession();
   message_loop_.Run();

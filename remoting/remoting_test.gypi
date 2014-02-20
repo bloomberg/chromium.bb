@@ -74,6 +74,8 @@
         'host/daemon_process_unittest.cc',
         'host/desktop_process_unittest.cc',
         'host/desktop_shape_tracker_unittest.cc',
+        'host/gnubby_auth_handler_posix_unittest.cc',
+        'host/gnubby_util_unittest.cc',
         'host/heartbeat_sender_unittest.cc',
         'host/host_change_notification_listener_unittest.cc',
         'host/host_mock_objects.cc',

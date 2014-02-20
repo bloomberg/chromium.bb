@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 256
+#   For your editing convenience: highest ID currently used: 257
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -622,6 +622,22 @@
           'desc': '''If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
           If this setting is disabled, then this feature will not be available.''',
+        },
+        {
+          'name': 'RemoteAccessHostAllowGnubbyAuth',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:35-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': True,
+          'id': 257,
+          'caption': '''Allow gnubby authentication''',
+          'desc': '''If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
+
+          If this setting is disabled or not configured, gnubby authentication requests will not be proxied.''',
         },
       ],
     },

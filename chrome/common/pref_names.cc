@@ -1993,6 +1993,10 @@ const char kRemoteAccessHostRequireCurtain[] =
 const char kRemoteAccessHostAllowClientPairing[] =
     "remote_access.host_allow_client_pairing";
 
+// Whether Chrome Remote Desktop can proxy gnubby authentication traffic.
+const char kRemoteAccessHostAllowGnubbyAuth[] =
+    "remote_access.host_allow_gnubby_auth";
+
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";

@@ -233,6 +233,14 @@
     ]
   },
 
+  "RemoteAccessHostAllowGnubbyAuth": {
+    "os": [],
+    "test_policy": { "RemoteAccessHostAllowGnubbyAuth": true },
+    "pref_mappings": [
+      { "pref": "remote_access.host_allow_gnubby_auth" }
+    ]
+  },
+
   "PrintingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrintingEnabled": false },

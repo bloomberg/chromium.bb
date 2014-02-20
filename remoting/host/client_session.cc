@@ -197,9 +197,15 @@ void ClientSession::DeliverClientMessage(
         reply.set_data(message.data().substr(0, 16));
       connection_->client_stub()->DeliverHostMessage(reply);
       return;
+    } else if (message.type() == "gnubby-auth") {
+      if (gnubby_auth_handler_) {
+        gnubby_auth_handler_->DeliverClientMessage(message.data());
+      } else {
+        HOST_LOG << "gnubby auth is not enabled";
+      }
+      return;
     }
   }
-  // No messages are currently supported.
   HOST_LOG << "Unexpected message received: "
             << message.type() << ": " << message.data();
 }
@@ -288,6 +294,10 @@ void ClientSession::OnConnectionAuthenticated(
         audio_encoder.Pass(),
         connection_->audio_stub());
   }
+
+  // Create a GnubbyAuthHandler to proxy gnubbyd messages.
+  gnubby_auth_handler_ = desktop_environment_->CreateGnubbyAuthHandler(
+      connection_->client_stub());
 }
 
 void ClientSession::OnConnectionChannelsConnected(
@@ -410,6 +420,11 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 
   disable_input_filter_.set_enabled(!disable_inputs);
   disable_clipboard_filter_.set_enabled(!disable_inputs);
+}
+
+void ClientSession::SetGnubbyAuthHandlerForTesting(
+    GnubbyAuthHandler* gnubby_auth_handler) {
+  gnubby_auth_handler_.reset(gnubby_auth_handler);
 }
 
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {

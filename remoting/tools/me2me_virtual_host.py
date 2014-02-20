@@ -204,6 +204,7 @@ class Desktop:
     self.pulseaudio_pipe = None
     self.server_supports_exact_resize = False
     self.host_ready = False
+    self.ssh_auth_sockname = None
     g_desktops.append(self)
 
   @staticmethod
@@ -304,6 +305,10 @@ class Desktop:
 
     return True
 
+  def _setup_gnubby(self):
+    self.ssh_auth_sockname = ("/tmp/chromoting.%s.ssh_auth_sock" %
+                              os.environ["USER"])
+
   def _launch_x_server(self, extra_x_args):
     x_auth_file = os.path.expanduser("~/.Xauthority")
     self.child_env["XAUTHORITY"] = x_auth_file
@@ -360,6 +365,10 @@ class Desktop:
     # multiple DISPLAYs, but Chrome Sync allows for a reasonable compromise.
     chrome_profile = os.path.join(CONFIG_DIR, "chrome-profile")
     self.child_env["CHROME_USER_DATA_DIR"] = chrome_profile
+
+    # Set SSH_AUTH_SOCK to the file name to listen on.
+    if self.ssh_auth_sockname:
+      self.child_env["SSH_AUTH_SOCK"] = self.ssh_auth_sockname
 
     # Wait for X to be active.
     for _test in range(5):
@@ -433,6 +442,7 @@ class Desktop:
   def launch_session(self, x_args):
     self._init_child_env()
     self._setup_pulseaudio()
+    self._setup_gnubby()
     self._launch_x_server(x_args)
     self._launch_x_session()
 
@@ -443,6 +453,8 @@ class Desktop:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     if self.server_supports_exact_resize:
       args.append("--server-supports-exact-resize")
+    if self.ssh_auth_sockname:
+      args.append("--ssh-auth-sockname=%s" % self.ssh_auth_sockname)
 
     # Have the host process use SIGUSR1 to signal a successful start.
     def sigusr1_handler(signum, frame):

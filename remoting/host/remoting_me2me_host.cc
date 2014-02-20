@@ -112,6 +112,10 @@ const char kApplicationName[] = "chromoting";
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
+
+// The command line switch used to pass name of the unix domain socket used to
+// listen for gnubby requests.
+const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
 #endif  // defined(OS_LINUX)
 
 // The command line switch used by the parent to request the host to signal it
@@ -229,6 +233,7 @@ class HostProcess
       const GURL& token_validation_url,
       const std::string& token_validation_cert_issuer);
   bool OnPairingPolicyUpdate(bool pairing_enabled);
+  bool OnGnubbyAuthPolicyUpdate(bool enable_gnubby_auth);
 
   void StartHost();
 
@@ -286,6 +291,7 @@ class HostProcess
 
   bool curtain_required_;
   ThirdPartyAuthConfig third_party_auth_config_;
+  bool enable_gnubby_auth_;
 
   scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
@@ -319,6 +325,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       allow_nat_traversal_(true),
       allow_pairing_(true),
       curtain_required_(false),
+      enable_gnubby_auth_(false),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
@@ -631,6 +638,11 @@ void HostProcess::StartOnUiThread() {
     remoting::AudioCapturerLinux::InitializePipeReader(
         context_->audio_task_runner(), audio_pipe_name);
   }
+
+  base::FilePath gnubby_socket_name = CommandLine::ForCurrentProcess()->
+      GetSwitchValuePath(kAuthSocknameSwitchName);
+  if (!gnubby_socket_name.empty())
+    remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
 #endif  // defined(OS_LINUX)
 
   // Create a desktop environment factory appropriate to the build type &
@@ -653,6 +665,7 @@ void HostProcess::StartOnUiThread() {
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
+  desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth_);
 
   context_->network_task_runner()->PostTask(
       FROM_HERE,
@@ -847,6 +860,10 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
           &bool_value)) {
     restart_required |= OnPairingPolicyUpdate(bool_value);
   }
+  if (policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostAllowGnubbyAuthPolicyName,
+          &bool_value))
+    restart_required |= OnGnubbyAuthPolicyUpdate(bool_value);
 
   if (state_ == HOST_INITIALIZING) {
     StartHost();
@@ -1009,6 +1026,25 @@ bool HostProcess::OnPairingPolicyUpdate(bool allow_pairing) {
   else
     HOST_LOG << "Policy disables client pairing.";
   allow_pairing_ = allow_pairing;
+  return true;
+}
+
+bool HostProcess::OnGnubbyAuthPolicyUpdate(bool enable_gnubby_auth) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (enable_gnubby_auth_ == enable_gnubby_auth)
+    return false;
+
+  if (enable_gnubby_auth) {
+    HOST_LOG << "Policy enables gnubby auth.";
+  } else {
+    HOST_LOG << "Policy disables gnubby auth.";
+  }
+  enable_gnubby_auth_ = enable_gnubby_auth;
+
+  if (desktop_environment_factory_)
+    desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth);
+
   return true;
 }
 

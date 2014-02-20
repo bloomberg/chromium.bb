@@ -23,8 +23,13 @@ class ScreenCapturer;
 
 namespace remoting {
 
+namespace protocol {
+class ClientStub;
+}  // namespace protocol
+
 class AudioCapturer;
 class ClientSessionControl;
+class GnubbyAuthHandler;
 class InputInjector;
 class ScreenControls;
 
@@ -47,6 +52,11 @@ class DesktopEnvironment {
   // Passes the final set of capabilities negotiated between the client and host
   // to |this|.
   virtual void SetCapabilities(const std::string& capabilities) = 0;
+
+  // Factory method to create a gnubby auth handler suitable for the particular
+  // desktop environment.
+  virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
+      protocol::ClientStub* client_stub) = 0;
 };
 
 // Used to create |DesktopEnvironment| instances.
@@ -67,6 +77,9 @@ class DesktopEnvironmentFactory {
   // Returns |true| if created |DesktopEnvironment| instances support audio
   // capture.
   virtual bool SupportsAudioCapture() const = 0;
+
+  // Enables or disables gnubby authentication.
+  virtual void SetEnableGnubbyAuth(bool enable) {}
 };
 
 }  // namespace remoting
