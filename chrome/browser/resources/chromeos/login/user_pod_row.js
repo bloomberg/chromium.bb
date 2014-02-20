@@ -41,7 +41,8 @@ cr.define('login', function() {
    * synced with computed CSS sizes of pods.
    */
   var POD_WIDTH = 180;
-  var POD_HEIGHT = 213;
+  var CROS_POD_HEIGHT = 213;
+  var DESKTOP_POD_HEIGHT = 216;
   var POD_ROW_PADDING = 10;
 
   /**
@@ -1181,6 +1182,10 @@ cr.define('login', function() {
     // Whether pod placement has been postponed.
     podPlacementPostponed_: false,
 
+    // Standard user pod height/width.
+    userPodHeight_: 0,
+    userPodWidth_: 0,
+
     // Array of apps that are shown in addition to other user pods.
     apps_: [],
 
@@ -1197,6 +1202,13 @@ cr.define('login', function() {
         mousemove: [this.handleMouseMove_.bind(this), false],
         keydown: [this.handleKeyDown.bind(this), false]
       };
+
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      this.userPodHeight_ = isDesktopUserManager ? DESKTOP_POD_HEIGHT :
+                                                   CROS_POD_HEIGHT;
+      // Same for Chrome OS and desktop.
+      this.userPodWidth_ = POD_WIDTH;
     },
 
     /**
@@ -1412,8 +1424,15 @@ cr.define('login', function() {
         $('pod-row').classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      if ($('login-header-bar').signinUIState ==
-              SIGNIN_UI_STATE.ACCOUNT_PICKER) {
+      var isCrosAccountPicker = $('login-header-bar').signinUIState ==
+          SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+
+      // Chrome OS: immediately recalculate pods layout only when current UI
+      //            is account picker. Otherwise postpone it.
+      // Desktop: recalculate pods layout right away.
+      if (isDesktopUserManager || isCrosAccountPicker) {
         this.placePods_();
 
         // Without timeout changes in pods positions will be animated even
@@ -1486,7 +1505,8 @@ cr.define('login', function() {
      */
     columnsToWidth_: function(columns) {
       var margin = MARGIN_BY_COLUMNS[columns];
-      return 2 * POD_ROW_PADDING + columns * POD_WIDTH + (columns - 1) * margin;
+      return 2 * POD_ROW_PADDING + columns *
+          this.userPodWidth_ + (columns - 1) * margin;
     },
 
     /**
@@ -1494,7 +1514,7 @@ cr.define('login', function() {
      * @private
      */
     rowsToHeight_: function(rows) {
-      return 2 * POD_ROW_PADDING + rows * POD_HEIGHT;
+      return 2 * POD_ROW_PADDING + rows * this.userPodHeight_;
     },
 
     /**
@@ -1539,11 +1559,17 @@ cr.define('login', function() {
       var margin = MARGIN_BY_COLUMNS[columns];
       this.parentNode.setPreferredSize(
           this.columnsToWidth_(columns), this.rowsToHeight_(rows));
+      var height = this.userPodHeight_;
+      var width = this.userPodWidth_;
       this.pods.forEach(function(pod, index) {
-        if (pod.offsetHeight != POD_HEIGHT)
-          console.error('Pod offsetHeight and POD_HEIGHT are not equal.');
-        if (pod.offsetWidth != POD_WIDTH)
-          console.error('Pod offsetWidht and POD_WIDTH are not equal.');
+        if (pod.offsetHeight != height) {
+          console.error('Pod offsetHeight (' + pod.offsetHeight +
+              ') and POD_HEIGHT (' + height + ') are not equal.');
+        }
+        if (pod.offsetWidth != width) {
+          console.error('Pod offsetWidth (' + pod.offsetWidth +
+              ') and POD_WIDTH (' + width + ') are not equal.');
+        }
         if (index >= maxPodsNumber) {
            pod.hidden = true;
            return;
@@ -1551,8 +1577,8 @@ cr.define('login', function() {
         pod.hidden = false;
         var column = index % columns;
         var row = Math.floor(index / columns);
-        pod.left = POD_ROW_PADDING + column * (POD_WIDTH + margin);
-        pod.top = POD_ROW_PADDING + row * POD_HEIGHT;
+        pod.left = POD_ROW_PADDING + column * (width + margin);
+        pod.top = POD_ROW_PADDING + row * height;
       });
       Oobe.getInstance().updateScreenSize(this.parentNode);
     },

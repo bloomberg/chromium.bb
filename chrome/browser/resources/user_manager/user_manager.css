@@ -27,6 +27,11 @@
   width: 180px;
 }
 
+.pod .user-image-container {
+  height: 180px;
+  width: 180px;
+}
+
 .pod .user-image {
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;

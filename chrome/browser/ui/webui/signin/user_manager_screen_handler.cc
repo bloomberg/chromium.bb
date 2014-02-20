@@ -423,6 +423,14 @@ void UserManagerScreenHandler::GetLocalizedValues(
                                base::string16());
   localized_strings->SetString("multiple-signin-banner-text",
                                base::string16());
+  localized_strings->SetString("signinBannerText", base::string16());
+  localized_strings->SetString("launchAppButton", base::string16());
+  localized_strings->SetString("multiProfilesRestrictedPolicyTitle",
+                               base::string16());
+  localized_strings->SetString("multiProfilesNotAllowedPolicyMsg",
+                                base::string16());
+  localized_strings->SetString("multiProfilesPrimaryOnlyPolicyMsg",
+                                base::string16());
 }
 
 void UserManagerScreenHandler::SendUserList() {
