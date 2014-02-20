@@ -160,6 +160,11 @@ bool V8TestException::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* is
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestException* V8TestException::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> V8TestException::createWrapper(PassRefPtr<TestException> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

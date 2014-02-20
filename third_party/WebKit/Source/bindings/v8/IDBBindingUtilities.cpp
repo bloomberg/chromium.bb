@@ -436,9 +436,7 @@ PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState* state, const S
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value(scriptValue.v8Value());
-    if (V8IDBKeyRange::hasInstance(value, isolate))
-        return V8IDBKeyRange::toNative(value.As<v8::Object>());
-    return 0;
+    return V8IDBKeyRange::toNativeWithTypeCheck(isolate, value);
 }
 
 #ifndef NDEBUG

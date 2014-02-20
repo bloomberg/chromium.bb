@@ -547,7 +547,7 @@ static void testInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestInterfaceEmptyAttribute(WTF::getPtr(cppValue));
 }
 
@@ -574,7 +574,7 @@ static void testObjectPythonAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void testObjectPythonAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObjectPython*, cppValue, V8TestObjectPython::hasInstance(jsValue, info.GetIsolate()) ? V8TestObjectPython::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObjectPython*, cppValue, V8TestObjectPython::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestObjectPythonAttribute(WTF::getPtr(cppValue));
 }
 
@@ -902,7 +902,7 @@ static void documentAttributeAttributeGetterCallback(v8::Local<v8::String>, cons
 static void documentAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Document*, cppValue, V8Document::hasInstance(jsValue, info.GetIsolate()) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Document*, cppValue, V8Document::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setDocumentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -929,7 +929,7 @@ static void documentFragmentAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentFragment*, cppValue, V8DocumentFragment::hasInstance(jsValue, info.GetIsolate()) ? V8DocumentFragment::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(DocumentFragment*, cppValue, V8DocumentFragment::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -956,7 +956,7 @@ static void documentTypeAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentType*, cppValue, V8DocumentType::hasInstance(jsValue, info.GetIsolate()) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(DocumentType*, cppValue, V8DocumentType::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setDocumentTypeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -983,7 +983,7 @@ static void elementAttributeAttributeGetterCallback(v8::Local<v8::String>, const
 static void elementAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Element*, cppValue, V8Element::hasInstance(jsValue, info.GetIsolate()) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Element*, cppValue, V8Element::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setElementAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1010,7 +1010,7 @@ static void nodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 static void nodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1037,7 +1037,7 @@ static void shadowRootAttributeAttributeGetterCallback(v8::Local<v8::String>, co
 static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(ShadowRoot*, cppValue, V8ShadowRoot::hasInstance(jsValue, info.GetIsolate()) ? V8ShadowRoot::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(ShadowRoot*, cppValue, V8ShadowRoot::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setShadowRootAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1364,7 +1364,7 @@ static void nullableTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::
 static void nullableTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setNullableTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -2773,7 +2773,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setRaisesExceptionTestInterfaceEmptyAttribute(WTF::getPtr(cppValue), exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -2844,7 +2844,7 @@ static void reflectTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::S
 static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
 }
@@ -2873,7 +2873,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(v8
 static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
 }
@@ -3669,7 +3669,7 @@ static void strictTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setStrictTypeCheckingTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -3895,7 +3895,7 @@ static void testInterfacePythonAttributeAttributeGetterCallback(v8::Local<v8::St
 static void testInterfacePythonAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfacePython::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestInterfacePythonAttribute(WTF::getPtr(cppValue));
 }
 
@@ -3928,7 +3928,7 @@ static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback(
 static void testInterfaceWillBeGarbageCollectedAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestInterfaceWillBeGarbageCollectedAttribute(WTF::getPtr(cppValue));
 }
 
@@ -4436,7 +4436,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -4457,7 +4457,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     imp->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
 
@@ -4635,7 +4635,7 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Attr*, attrArg, V8Attr::hasInstance(info[0], info.GetIsolate()) ? V8Attr::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Attr*, attrArg, V8Attr::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodAttrArg(attrArg);
 }
 
@@ -4653,7 +4653,7 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Document*, documentArg, V8Document::hasInstance(info[0], info.GetIsolate()) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Document*, documentArg, V8Document::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodDocumentArg(documentArg);
 }
 
@@ -4671,7 +4671,7 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentType*, documentTypeArg, V8DocumentType::hasInstance(info[0], info.GetIsolate()) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(DocumentType*, documentTypeArg, V8DocumentType::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodDocumentTypeArg(documentTypeArg);
 }
 
@@ -4689,7 +4689,7 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Element*, elementArg, V8Element::hasInstance(info[0], info.GetIsolate()) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Element*, elementArg, V8Element::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodElementArg(elementArg);
 }
 
@@ -4707,7 +4707,7 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, nodeArg, V8Node::hasInstance(info[0], info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Node*, nodeArg, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodNodeArg(nodeArg);
 }
 
@@ -5066,7 +5066,7 @@ static void voidMethodNullableStringArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodNullableStringArg(nullableTestInterfaceEmptyArg);
 }
 
@@ -5409,7 +5409,7 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
         imp->voidMethodOptionalTestInterfaceEmptyArg();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
 
@@ -5565,7 +5565,7 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
         imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
 
@@ -5585,7 +5585,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     if (UNLIKELY(info.Length() <= 1)) {
         imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
         return;
@@ -5680,7 +5680,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
     for (int i = 1; i < info.Length(); ++i) {
         if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
@@ -5885,7 +5885,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->overloadedMethodD(testInterfaceEmptyArg);
 }
 
@@ -5987,7 +5987,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyNullableArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyNullableArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->overloadedMethodF(testInterfaceEmptyNullableArg);
 }
 
@@ -6300,7 +6300,7 @@ static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Event*, event, V8Event::hasInstance(info[0], info.GetIsolate()) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Event*, event, V8Event::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     bool result = imp->dispatchEvent(event, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -6363,7 +6363,7 @@ static void voidMethodClampUnsignedLongArgMethodCallback(const v8::FunctionCallb
 static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
 
@@ -6877,7 +6877,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -6895,7 +6895,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -7174,7 +7174,7 @@ static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::Fu
         throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->strictTypeCheckingVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -7196,7 +7196,7 @@ static void strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArgMethod(cons
         throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -7663,6 +7663,11 @@ bool V8TestObjectPython::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate*
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestObjectPython* V8TestObjectPython::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 void V8TestObjectPython::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestObjectPython* impl, v8::Isolate* isolate)

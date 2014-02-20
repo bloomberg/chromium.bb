@@ -86,7 +86,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[1], exceptionState), exceptionState);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[2]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultNullStringOptionalStringArg, argumentOrNull(info, 3));
@@ -179,6 +179,11 @@ bool V8TestInterfaceConstructor2::hasInstance(v8::Handle<v8::Value> jsValue, v8:
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestInterfaceConstructor2* V8TestInterfaceConstructor2::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 v8::Handle<v8::Object> V8TestInterfaceConstructor2::createWrapper(PassRefPtr<TestInterfaceConstructor2> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -279,11 +279,9 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
     if (info.Length() < 1)
         return;
 
-    EventTarget* target = 0;
-    v8::Local<v8::Value> value = info[0];
 
-    if (V8EventTarget::hasInstance(value, info.GetIsolate()))
-        target = V8EventTarget::toNative(value->ToObject());
+    v8::Local<v8::Value> value = info[0];
+    EventTarget* target = V8EventTarget::toNativeWithTypeCheck(info.GetIsolate(), value);
 
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper exists on a prototype chain.
     if (!target)

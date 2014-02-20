@@ -104,7 +104,7 @@ static void testInterfacePythonAttributeAttributeSetter(v8::Local<v8::Value> jsV
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfacePython::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestInterfacePythonAttribute(WTF::getPtr(cppValue));
 }
 
@@ -293,7 +293,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -354,7 +354,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsRuntimeEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -387,7 +387,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsPerContextEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -643,7 +643,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -708,7 +708,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -1002,6 +1002,11 @@ bool V8TestInterfacePython::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isola
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestInterfacePythonImplementation* V8TestInterfacePython::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 void V8TestInterfacePython::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestInterfacePythonImplementation* impl, v8::Isolate* isolate)

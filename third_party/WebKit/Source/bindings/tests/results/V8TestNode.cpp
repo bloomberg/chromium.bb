@@ -227,6 +227,11 @@ bool V8TestNode::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestNode* V8TestNode::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
 {
     return toNative(object);

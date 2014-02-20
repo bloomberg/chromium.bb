@@ -53,6 +53,7 @@ class V8ArrayBuffer {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static ArrayBuffer* toNative(v8::Handle<v8::Object>);
+    static ArrayBuffer* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;

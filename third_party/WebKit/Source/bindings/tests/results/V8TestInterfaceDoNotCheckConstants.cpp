@@ -116,6 +116,11 @@ bool V8TestInterfaceDoNotCheckConstants::hasInstance(v8::Handle<v8::Value> jsVal
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestInterfaceDoNotCheckConstants* V8TestInterfaceDoNotCheckConstants::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> V8TestInterfaceDoNotCheckConstants::createWrapper(PassRefPtr<TestInterfaceDoNotCheckConstants> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

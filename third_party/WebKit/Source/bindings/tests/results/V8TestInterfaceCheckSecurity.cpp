@@ -605,6 +605,11 @@ bool V8TestInterfaceCheckSecurity::hasInstance(v8::Handle<v8::Value> jsValue, v8
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> V8TestInterfaceCheckSecurity::createWrapper(PassRefPtr<TestInterfaceCheckSecurity> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

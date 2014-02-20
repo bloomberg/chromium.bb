@@ -337,9 +337,7 @@ bool Dictionary::get(const String& key, RefPtr<Storage>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8Storage::hasInstance(v8Value, m_isolate))
-        value = V8Storage::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8Storage::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -427,9 +425,7 @@ bool Dictionary::get(const String& key, RefPtr<Uint8Array>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8Uint8Array::hasInstance(v8Value, m_isolate))
-        value = V8Uint8Array::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8Uint8Array::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -439,9 +435,7 @@ bool Dictionary::get(const String& key, RefPtr<ArrayBufferView>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8ArrayBufferView::hasInstance(v8Value, m_isolate))
-        value = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8ArrayBufferView::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -451,9 +445,7 @@ bool Dictionary::get(const String& key, RefPtr<MIDIPort>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8MIDIPort::hasInstance(v8Value, m_isolate))
-        value = V8MIDIPort::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8MIDIPort::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -463,9 +455,7 @@ bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8MediaKeyError::hasInstance(v8Value, m_isolate))
-        value = V8MediaKeyError::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8MediaKeyError::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -495,9 +485,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) c
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8SpeechRecognitionError::hasInstance(v8Value, m_isolate))
-        value = V8SpeechRecognitionError::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8SpeechRecognitionError::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -507,9 +495,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<SpeechRecognitionResu
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8SpeechRecognitionResult::hasInstance(v8Value, m_isolate))
-        value = V8SpeechRecognitionResult::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8SpeechRecognitionResult::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -519,9 +505,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<SpeechRecognitionResu
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8SpeechRecognitionResultList::hasInstance(v8Value, m_isolate))
-        value = V8SpeechRecognitionResultList::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8SpeechRecognitionResultList::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -531,9 +515,7 @@ bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
-    if (V8MediaStream::hasInstance(v8Value, m_isolate))
-        value = V8MediaStream::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    value = V8MediaStream::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 

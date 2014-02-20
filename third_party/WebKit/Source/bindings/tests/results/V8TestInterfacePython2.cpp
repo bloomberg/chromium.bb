@@ -126,6 +126,11 @@ bool V8TestInterfacePython2::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isol
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestInterfacePython2* V8TestInterfacePython2::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> wrap(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

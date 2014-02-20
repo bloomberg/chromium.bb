@@ -50,6 +50,7 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
+    static TestObj* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);

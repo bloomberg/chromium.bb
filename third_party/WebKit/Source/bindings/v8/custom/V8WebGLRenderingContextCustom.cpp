@@ -303,9 +303,7 @@ static void getObjectParameter(const v8::FunctionCallbackInfo<v8::Value>& info, 
 
 static WebGLUniformLocation* toWebGLUniformLocation(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    if (!V8WebGLUniformLocation::hasInstance(value, isolate))
-        return 0;
-    return V8WebGLUniformLocation::toNative(value->ToObject());
+    return V8WebGLUniformLocation::toNativeWithTypeCheck(isolate, value);
 }
 
 enum WhichProgramCall {
@@ -328,7 +326,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
         exceptionState.throwIfNeeded();
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::hasInstance(info[0], info.GetIsolate()) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::toNativeWithTypeCheck(info.GetIsolate(), info[programArgumentIndex]);
     Vector<RefPtr<WebGLShader> > shaders;
     bool succeed = context->getAttachedShaders(program, shaders);
     if (!succeed) {
@@ -415,7 +413,7 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
         exceptionState.throwIfNeeded();
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::hasInstance(info[0], info.GetIsolate()) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::toNativeWithTypeCheck(info.GetIsolate(), info[programArgumentIndex]);
     unsigned pname = toInt32(info[1], exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -445,7 +443,7 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
         exceptionState.throwIfNeeded();
         return;
     }
-    WebGLShader* shader = V8WebGLShader::hasInstance(info[shaderArgumentIndex], info.GetIsolate()) ? V8WebGLShader::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLShader* shader = V8WebGLShader::toNativeWithTypeCheck(info.GetIsolate(), info[shaderArgumentIndex]);
     unsigned pname = toInt32(info[1], exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -490,7 +488,7 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
         exceptionState.throwIfNeeded();
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::hasInstance(info[programArgumentIndex], info.GetIsolate()) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::toNativeWithTypeCheck(info.GetIsolate(), info[programArgumentIndex]);
 
     const int uniformArgumentIndex = 1;
     if (info.Length() > 1 && !isUndefinedOrNull(info[uniformArgumentIndex]) && !V8WebGLUniformLocation::hasInstance(info[uniformArgumentIndex], info.GetIsolate())) {

@@ -188,6 +188,11 @@ bool V8TestSpecialOperationsOverrideBuiltins::hasInstance(v8::Handle<v8::Value> 
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestSpecialOperationsOverrideBuiltins* V8TestSpecialOperationsOverrideBuiltins::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> V8TestSpecialOperationsOverrideBuiltins::createWrapper(PassRefPtr<TestSpecialOperationsOverrideBuiltins> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

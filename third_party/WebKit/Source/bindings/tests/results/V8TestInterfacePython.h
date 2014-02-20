@@ -51,6 +51,7 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
+    static TestInterfacePythonImplementation* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);

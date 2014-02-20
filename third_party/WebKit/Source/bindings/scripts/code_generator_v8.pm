@@ -764,6 +764,7 @@ END
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
+    static ${nativeType}* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
 END
 
@@ -4769,6 +4770,11 @@ bool ${v8ClassName}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* iso
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+${nativeType}* ${v8ClassName}::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 END
 
     if (@perContextEnabledAttributes) {
@@ -5637,7 +5643,7 @@ sub JSValueToNative
     AddIncludesForType($type);
 
     AddToImplIncludes("V8${type}.h");
-    return "V8${type}::hasInstance($value, $getIsolate) ? V8${type}::toNative(v8::Handle<v8::Object>::Cast($value)) : 0";
+    return "V8${type}::toNativeWithTypeCheck(info.GetIsolate(), $value)";
 }
 
 sub IsUnionType

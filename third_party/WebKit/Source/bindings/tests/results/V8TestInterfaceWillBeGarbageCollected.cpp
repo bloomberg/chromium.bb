@@ -87,7 +87,7 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 static void attr1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -105,7 +105,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->func(arg);
 }
 
@@ -194,6 +194,11 @@ bool V8TestInterfaceWillBeGarbageCollected::hasInstance(v8::Handle<v8::Value> js
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestInterfaceWillBeGarbageCollected* V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 EventTarget* V8TestInterfaceWillBeGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)

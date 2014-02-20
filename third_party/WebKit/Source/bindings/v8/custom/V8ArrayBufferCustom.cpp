@@ -94,6 +94,11 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
 }
 
+ArrayBuffer* V8ArrayBuffer::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return V8ArrayBuffer::hasInstance(value, isolate) ? V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+}
+
 template<>
 v8::Handle<v8::Value> toV8NoInline(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

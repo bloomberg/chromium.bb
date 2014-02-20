@@ -174,7 +174,7 @@ static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>
 static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -229,7 +229,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Loc
 static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsRuntimeEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -256,7 +256,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::
 static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsPerContextEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
 }
 
@@ -389,7 +389,7 @@ static void supplementalNodeAttributeGetterCallback(v8::Local<v8::String>, const
 static void supplementalNodeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestPartialInterface::setSupplementalNode(imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(CONDITION_PARTIAL)
@@ -424,7 +424,7 @@ static void Node13AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 static void Node13AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestPartialInterface::setNode13(imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(CONDITION_PARTIAL)
@@ -492,7 +492,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -554,7 +554,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -837,6 +837,11 @@ bool V8TestInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* is
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestInterface* V8TestInterface::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestInterface* impl, v8::Isolate* isolate)

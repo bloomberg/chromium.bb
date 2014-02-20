@@ -53,6 +53,7 @@ public:
     }
 
     static TypedArray* toNative(v8::Handle<v8::Object>);
+    static TypedArray* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
@@ -169,6 +170,11 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
     return reinterpret_cast<TypedArray*>(typedarrayPtr);
 }
 
+template <typename TypedArray>
+TypedArray* V8TypedArray<TypedArray>::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return V8TypedArray<TypedArray>::hasInstance(value, isolate) ? V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+}
 
 template <typename TypedArray>
 const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {

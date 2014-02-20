@@ -407,6 +407,11 @@ bool V8TestInterfaceEventConstructor::hasInstance(v8::Handle<v8::Value> jsValue,
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
+TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
 v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtr<TestInterfaceEventConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

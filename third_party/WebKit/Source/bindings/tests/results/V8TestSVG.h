@@ -49,6 +49,7 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
+    static TestSVG* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

@@ -544,7 +544,7 @@ static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::
 static void testObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setTestObjAttr(WTF::getPtr(cppValue));
 }
 
@@ -600,7 +600,7 @@ static void XMLObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 static void XMLObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setXMLObjAttr(WTF::getPtr(cppValue));
 }
 
@@ -1576,7 +1576,7 @@ static void withExecutionContextAttributeAttributeGetterCallback(v8::Local<v8::S
 static void withExecutionContextAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAttribute(scriptContext, WTF::getPtr(cppValue));
 }
@@ -1604,7 +1604,7 @@ static void withActiveWindowAndFirstWindowAttributeAttributeGetterCallback(v8::L
 static void withActiveWindowAndFirstWindowAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setWithActiveWindowAndFirstWindowAttribute(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), WTF::getPtr(cppValue));
 }
 
@@ -1635,7 +1635,7 @@ static void withScriptStateAttributeRaisesAttributeGetterCallback(v8::Local<v8::
 static void withScriptStateAttributeRaisesAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setWithScriptStateAttributeRaises(WTF::getPtr(cppValue));
 }
 
@@ -2497,7 +2497,7 @@ static void perWorldAttributeAttributeGetterCallback(v8::Local<v8::String>, cons
 static void perWorldAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setPerWorldAttribute(WTF::getPtr(cppValue));
 }
 
@@ -2524,7 +2524,7 @@ static void perWorldAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::S
 static void perWorldAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     imp->setPerWorldAttribute(WTF::getPtr(cppValue));
 }
 
@@ -3208,7 +3208,7 @@ static void voidMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
     imp->voidMethodWithArgs(longArg, strArg, objArg);
 }
 
@@ -3243,7 +3243,7 @@ static void longMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
     v8SetReturnValueInt(info, imp->longMethodWithArgs(longArg, strArg, objArg));
 }
 
@@ -3279,7 +3279,7 @@ static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
     v8SetReturnValue(info, imp->objMethodWithArgs(longArg, strArg, objArg));
 }
 
@@ -3361,7 +3361,7 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -4280,7 +4280,7 @@ static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->overloadedMethod(objArg);
 }
 
@@ -4354,7 +4354,7 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     if (UNLIKELY(info.Length() <= 1)) {
         imp->overloadedMethodA(objArg);
         return;
@@ -4370,7 +4370,7 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
     imp->overloadedMethodA(objArg, strArg);
 }
@@ -4658,7 +4658,7 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(DOMStringList*, values, V8DOMStringList::hasInstance(info[0], info.GetIsolate()) ? V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(DOMStringList*, values, V8DOMStringList::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     RefPtr<DOMStringList> result = imp->domStringListFunction(values, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -4679,7 +4679,7 @@ static void convert1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestNode*, value, V8TestNode::hasInstance(info[0], info.GetIsolate()) ? V8TestNode::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestNode*, value, V8TestNode::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->convert1(value);
 }
 
@@ -4697,7 +4697,7 @@ static void convert2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestNode*, value, V8TestNode::hasInstance(info[0], info.GetIsolate()) ? V8TestNode::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestNode*, value, V8TestNode::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     imp->convert2(value);
 }
 
@@ -4791,7 +4791,7 @@ static void variadicNodeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, head, V8Node::hasInstance(info[0], info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Node*, head, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     Vector<RefPtr<Node> > tail;
     for (int i = 1; i < info.Length(); ++i) {
         if (!V8Node::hasInstance(info[i], info.GetIsolate())) {
@@ -5551,6 +5551,11 @@ bool V8TestObject::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isola
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestObj* V8TestObject::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestObj* impl, v8::Isolate* isolate)

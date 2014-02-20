@@ -51,6 +51,7 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
+    static TestInterfaceEventConstructor* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

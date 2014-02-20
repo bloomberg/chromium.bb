@@ -129,7 +129,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, propertyValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, propertyValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     if (!isUndefinedOrNull(jsValue) && !V8Node::hasInstance(jsValue, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
@@ -313,6 +313,11 @@ bool V8TestEventTarget::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* 
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestEventTarget* V8TestEventTarget::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 EventTarget* V8TestEventTarget::toEventTarget(v8::Handle<v8::Object> object)

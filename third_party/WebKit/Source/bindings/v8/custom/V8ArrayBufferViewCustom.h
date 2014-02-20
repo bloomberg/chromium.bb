@@ -48,6 +48,7 @@ public:
         return value->IsArrayBufferView();
     }
     static ArrayBufferView* toNative(v8::Handle<v8::Object>);
+    static ArrayBufferView* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
 
     static inline void* toInternalPointer(ArrayBufferView* impl)
     {

@@ -82,5 +82,9 @@ ArrayBufferView* V8ArrayBufferView::toNative(v8::Handle<v8::Object> object)
     return 0;
 }
 
+ArrayBufferView* V8ArrayBufferView::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return V8ArrayBufferView::hasInstance(value, isolate) ? V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+}
 
 } // namespace WebCore

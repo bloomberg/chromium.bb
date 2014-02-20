@@ -93,7 +93,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
     V8TRYCATCH_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[1]);
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
     V8TRYCATCH_VOID(Dictionary, dictionaryArg, Dictionary(info[3], info.GetIsolate()));
     if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
         exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
@@ -107,7 +107,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[6])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[6]));
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
@@ -189,6 +189,11 @@ bool V8TestInterfaceConstructor::hasInstance(v8::Handle<v8::Value> jsValue, v8::
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
+}
+
+TestInterfaceConstructor* V8TestInterfaceConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
 v8::Handle<v8::Object> V8TestInterfaceConstructor::createWrapper(PassRefPtr<TestInterfaceConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
