@@ -71,8 +71,7 @@ class MigrationChecker : public StatusChangeChecker,
                          public browser_sync::MigrationObserver {
  public:
   explicit MigrationChecker(ProfileSyncServiceHarness* harness)
-      : StatusChangeChecker("MigrationChecker"),
-        harness_(harness) {
+      : harness_(harness) {
     DCHECK(harness_);
     browser_sync::BackendMigrator* migrator =
         harness_->service()->GetBackendMigratorForTest();
@@ -96,6 +95,10 @@ class MigrationChecker : public StatusChangeChecker,
              << syncer::ModelTypeSetToString(expected_types_);
     return all_expected_types_migrated &&
            !HasPendingBackendMigration();
+  }
+
+  virtual std::string GetDebugMessage() const OVERRIDE {
+    return "Waiting to migrate (" + ModelTypeSetToString(expected_types_) + ")";
   }
 
   bool HasPendingBackendMigration() const {
@@ -234,7 +237,7 @@ class MigrationTest : public SyncTest  {
       MigrationChecker* checker = migration_checkers_[i];
       checker->set_expected_types(migrate_types);
       if (!checker->IsExitConditionSatisfied())
-        ASSERT_TRUE(GetClient(i)->AwaitStatusChange(checker, "AwaitMigration"));
+        ASSERT_TRUE(GetClient(i)->AwaitStatusChange(checker));
     }
   }
 

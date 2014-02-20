@@ -32,8 +32,7 @@ class SyncErrorTest : public SyncTest {
 class ActionableErrorChecker : public StatusChangeChecker {
  public:
   explicit ActionableErrorChecker(ProfileSyncService* service)
-      : StatusChangeChecker("ActionableErrorChecker"),
-        service_(service) {}
+      : service_(service) {}
 
   virtual ~ActionableErrorChecker() {}
 
@@ -45,6 +44,10 @@ class ActionableErrorChecker : public StatusChangeChecker {
     service_->QueryDetailedSyncStatus(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
             service_->HasUnrecoverableError());
+  }
+
+  virtual std::string GetDebugMessage() const OVERRIDE {
+    return "ActionableErrorChecker";
   }
 
  private:
@@ -89,8 +92,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   // Wait until an actionable error is encountered.
   ActionableErrorChecker actionable_error_checker(GetClient(0)->service());
-  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&actionable_error_checker,
-                                              "Awaiting actionable error"));
+  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&actionable_error_checker));
 
   ProfileSyncService::Status status = GetClient(0)->GetStatus();
   ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);

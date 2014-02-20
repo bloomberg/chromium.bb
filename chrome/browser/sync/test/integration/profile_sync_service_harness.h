@@ -183,9 +183,8 @@ class ProfileSyncServiceHarness
   // returns true, indicating that the status change we are waiting for has
   // taken place. Caller retains ownership of |checker|, which must outlive this
   // method. Returns true if the status change was observed. In case of a
-  // timeout, we log the |source| of the call to this method, and return false.
-  bool AwaitStatusChange(StatusChangeChecker* checker,
-                         const std::string& source);
+  // timeout, we CHECK(false).
+  bool AwaitStatusChange(StatusChangeChecker* checker);
 
   // Returns a string that can be used as the value of an oauth2 refresh token.
   // This function guarantees that a different string is returned each time

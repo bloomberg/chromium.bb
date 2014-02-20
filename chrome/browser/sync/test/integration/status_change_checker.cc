@@ -4,9 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
-StatusChangeChecker::StatusChangeChecker(const std::string& source)
-    : source_(source) {
-}
+StatusChangeChecker::StatusChangeChecker() {}
 
-StatusChangeChecker::~StatusChangeChecker() {
-}
+StatusChangeChecker::~StatusChangeChecker() {}

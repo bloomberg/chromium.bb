@@ -50,13 +50,14 @@ class TestForAuthError : public StatusChangeChecker {
   explicit TestForAuthError(ProfileSyncService* service);
   virtual ~TestForAuthError();
   virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
 
  private:
   ProfileSyncService* service_;
 };
 
 TestForAuthError::TestForAuthError(ProfileSyncService* service)
-  : StatusChangeChecker("Testing for auth error"), service_(service) {}
+  : service_(service) {}
 
 TestForAuthError::~TestForAuthError() {}
 
@@ -64,6 +65,10 @@ bool TestForAuthError::IsExitConditionSatisfied() {
   return !service_->HasUnsyncedItems() ||
       (service_->GetSyncTokenStatus().last_get_token_error.state() !=
        GoogleServiceAuthError::NONE);
+}
+
+std::string TestForAuthError::GetDebugMessage() const {
+  return "Waiting for auth error";
 }
 
 class SyncAuthTest : public SyncTest {
@@ -82,7 +87,7 @@ class SyncAuthTest : public SyncTest {
 
     // Run until the bookmark is committed or an auth error is encountered.
     TestForAuthError checker_(GetClient(0)->service());
-    GetClient(0)->AwaitStatusChange(&checker_, "Attempt to trigger auth error");
+    GetClient(0)->AwaitStatusChange(&checker_);
 
     GoogleServiceAuthError oauth_error =
         GetClient(0)->service()->GetSyncTokenStatus().last_get_token_error;

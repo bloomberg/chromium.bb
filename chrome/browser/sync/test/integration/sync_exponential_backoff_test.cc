@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
@@ -29,8 +30,7 @@ class SyncExponentialBackoffTest : public SyncTest {
 class ExponentialBackoffChecker : public StatusChangeChecker {
  public:
   explicit ExponentialBackoffChecker(const ProfileSyncServiceHarness* harness)
-      : StatusChangeChecker("ExponentialBackoffChecker"),
-        harness_(harness) {
+        : harness_(harness) {
     DCHECK(harness);
     const SyncSessionSnapshot& snap = harness_->GetLastSessionSnapshot();
     retry_verifier_.Initialize(snap);
@@ -44,6 +44,12 @@ class ExponentialBackoffChecker : public StatusChangeChecker {
     const SyncSessionSnapshot& snap = harness_->GetLastSessionSnapshot();
     retry_verifier_.VerifyRetryInterval(snap);
     return (retry_verifier_.done() && retry_verifier_.Succeeded());
+  }
+
+  virtual std::string GetDebugMessage() const OVERRIDE {
+    return base::StringPrintf("Verifying backoff intervals (%d/%d)",
+                              retry_verifier_.retry_count(),
+                              RetryVerifier::kMaxRetry);
   }
 
  private:
@@ -73,8 +79,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
   ExponentialBackoffChecker exponential_backoff_checker(GetClient(0));
-  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker,
-                                              "Checking exponential backoff"));
+  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
 
   // Recover from the network error.
   EnableNetwork(GetProfile(0));
@@ -100,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
   ExponentialBackoffChecker exponential_backoff_checker(GetClient(0));
-  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker,
-                                              "Checking exponential backoff"));
+  ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
 }
 
 }  // namespace
