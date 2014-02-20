@@ -582,6 +582,8 @@ function requestNotificationGroups(groupNames) {
     requestParameters += ('&requestTypes=' + groupName);
   });
 
+  requestParameters += '&uiLocale=' + navigator.language;
+
   console.log('requestNotificationGroups: request=' + requestParameters);
 
   var request = buildServerRequest('GET', 'notifications' + requestParameters);
