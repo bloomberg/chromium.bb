@@ -162,7 +162,7 @@ asyncTest("fetchCurrentRoll", 6, function() {
     };
 
     simulator.runTest(function() {
-        rollbot.fetchCurrentRoll(function(roll) {
+        rollbot.fetchCurrentRoll().then(function(roll) {
             equals(roll.issue, 16337011);
             equals(roll.url, "https://codereview.chromium.org/16337011");
             equals(roll.isStopped, false);

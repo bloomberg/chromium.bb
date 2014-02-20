@@ -294,7 +294,7 @@ controllers.UnexpectedFailures = base.extends(FailureStreamController, {
     },
     onRollout: function(revision, testNameList)
     {
-        checkout.rollout(revision, ui.rolloutReasonForTestNameList(testNameList), $.noop, function() {
+        checkout.rollout(revision, ui.rolloutReasonForTestNameList(testNameList)).then($.noop, function() {
             // FIXME: We should have a better error UI.
             alert(kCheckoutUnavailableMessage);
         });

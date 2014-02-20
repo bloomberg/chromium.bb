@@ -78,12 +78,12 @@ function update()
 
     g_info.add(updating);
 
-    builders.buildersFailingNonLayoutTests(function(failuresList) {
+    builders.buildersFailingNonLayoutTests().then(function(failuresList) {
         g_nonLayoutTestFailureBuilders.update(failuresList);
         updatePartyTime();
     });
 
-    base.callInParallel([model.updateRecentCommits, model.updateResultsByBuilder], function() {
+    Promise.all([model.updateRecentCommits(), model.updateResultsByBuilder()]).then(function() {
         if (g_failuresController)
             g_failuresController.update();
 
@@ -92,7 +92,7 @@ function update()
         model.analyzeUnexpectedFailures(function(failureAnalysis) {
             updating.update('Analyzing test failures ... ' + ++numberOfTestsAnalyzed + ' tests analyzed.');
             g_unexpectedFailuresController.update(failureAnalysis);
-        }, function() {
+        }).then(function() {
             updatePartyTime();
             g_unexpectedFailuresController.purge();
 

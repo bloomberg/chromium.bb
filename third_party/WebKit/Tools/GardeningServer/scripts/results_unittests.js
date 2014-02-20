@@ -366,15 +366,20 @@ asyncTest("walkHistory", 5, function() {
     };
 
     simulator.runTest(function() {
-        results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html", function(oldestFailingRevision, newestPassingRevision) {
-            equals(oldestFailingRevision, 90426);
-            equals(newestPassingRevision, 90424);
-        });
-
-        results.unifyRegressionRanges(["Mock Builder", "Another Builder"], "userscripts/another-test.html", function(oldestFailingRevision, newestPassingRevision) {
-            equals(oldestFailingRevision, 90426);
-            equals(newestPassingRevision, 90425);
-        });
+            results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html")
+                .then(function(result) {
+                    var oldestFailingRevision = result[0];
+                    var newestPassingRevision = result[1];
+                    equals(oldestFailingRevision, 90426);
+                    equals(newestPassingRevision, 90424);
+                });
+            results.unifyRegressionRanges(["Mock Builder", "Another Builder"], "userscripts/another-test.html")
+                .then(function(result) {
+                    var oldestFailingRevision = result[0];
+                    var newestPassingRevision = result[1];
+                    equals(oldestFailingRevision, 90426);
+                    equals(newestPassingRevision, 90425);
+                });
     }).then(start);
 });
 
@@ -416,11 +421,13 @@ asyncTest("walkHistory (no revision)", 3, function() {
     };
 
     simulator.runTest(function() {
-        results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html", function(oldestFailingRevision, newestPassingRevision) {
+        results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html").then(function(result) {
+            var oldestFailingRevision = result[0];
+            var newestPassingRevision = result[1];
             equals(oldestFailingRevision, 0);
             equals(newestPassingRevision, 0);
-        });
-    }).then(start);
+        }).then(start);
+    });
 });
 
 test("collectUnexpectedResults", 1, function() {
@@ -479,7 +486,7 @@ asyncTest("fetchResultsURLs", 5, function() {
             'builderName': "Mock Builder",
             'testName': "userscripts/another-test.html",
             'failureTypeList': ['IMAGE', 'CRASH'],
-        }, function(resultURLs) {
+        }).then(function(resultURLs) {
             deepEqual(resultURLs, [
                 MockResultsBaseURL + "/userscripts/another-test-crash-log.txt"
             ]);
@@ -488,14 +495,14 @@ asyncTest("fetchResultsURLs", 5, function() {
             'builderName': "Mock Builder",
             'testName': "userscripts/another-test.html",
             'failureTypeList': ['TIMEOUT'],
-        }, function(resultURLs) {
+        }).then(function(resultURLs) {
             deepEqual(resultURLs, []);
         });
         results.fetchResultsURLs({
             'builderName': "Mock Builder",
             'testName': "userscripts/taco.html",
             'failureTypeList': ['IMAGE', 'IMAGE+TEXT'],
-        }, function(resultURLs) {
+        }).then(function(resultURLs) {
             deepEqual(resultURLs, [
                 MockResultsBaseURL + "/userscripts/taco-expected.png",
                 MockResultsBaseURL + "/userscripts/taco-actual.png",
@@ -533,7 +540,7 @@ asyncTest("fetchResultsByBuilder", 3, function() {
     };
 
     simulator.runTest(function() {
-        results.fetchResultsByBuilder(['MockBuilder1', 'MockBuilder2'], function(resultsByBuilder) {
+        results.fetchResultsByBuilder(['MockBuilder1', 'MockBuilder2']).then(function(resultsByBuilder) {
             deepEqual(resultsByBuilder, {
                 "MockBuilder1": true,
                 "MockBuilder2": true,

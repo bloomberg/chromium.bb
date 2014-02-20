@@ -105,17 +105,11 @@ trac.changesetURL = function(revision)
     return config.kBlinkRevisionURL + '?' + $.param(queryParameters);
 };
 
-trac.recentCommitData = function(path, limit, callback)
+trac.recentCommitData = function(path, limit)
 {
-    net.xml('http://blink.lc/blink/atom').then(function(commitData) {
-        callback(parseCommitData(commitData));
+    return net.xml('http://blink.lc/blink/atom').then(function(commitData) {
+        return parseCommitData(commitData);
     });
-};
-
-trac.commitDataForRevisionRange = function(path, startRevision, endRevision, callback)
-{
-    var key = [path, startRevision, endRevision].join('\n');
-    g_cache.get(key, callback);
 };
 
 })();

@@ -29,52 +29,48 @@ var checkout = checkout || {};
 
 var g_haveSeenCheckoutAvailable = false;
 
-function callIfCheckoutAvailable(callback, checkoutUnavailable)
+function checkoutAvailable()
 {
     if (g_haveSeenCheckoutAvailable) {
-        callback();
-        return;
+        return Promise.resolve();
     }
-    checkout.isAvailable(function(isAvailable) {
+
+    return checkout.isAvailable().then(function(isAvailable) {
         if (isAvailable) {
             g_haveSeenCheckoutAvailable = true;
-            callback();
             return;
         }
-        if (checkoutUnavailable)
-            checkoutUnavailable();
     });
-}
+};
 
-checkout.isAvailable = function(callback)
+checkout.isAvailable = function()
 {
-    net.ajax({
+    return net.ajax({
         url: '/ping',
     }).then(function() { return true; },
-            function() { return false; })
-    .then(callback);
+            function() { return false; });
 };
 
-checkout.lastBlinkRollRevision = function(callback, checkoutUnavailable)
+checkout.lastBlinkRollRevision = function()
 {
-    callIfCheckoutAvailable(function() {
-        net.get('/lastroll').then(callback);
-    }, checkoutUnavailable);
-}
+    return checkoutAvailable().then(function() {
+        return net.get('/lastroll');
+    });
+};
 
-checkout.rollout = function(revision, reason, callback, checkoutUnavailable)
+checkout.rollout = function(revision, reason)
 {
-    callIfCheckoutAvailable(function() {
-        net.post('/rollout?' + $.param({
+    return checkoutAvailable().then(function() {
+        return net.post('/rollout?' + $.param({
             'revision': revision,
             'reason': reason
-        })).then(callback);
-    }, checkoutUnavailable);
+        }));
+    });
 };
 
-checkout.rebaseline = function(failureInfoList, callback, progressCallback, checkoutUnavailable, debugBotsCallback)
+checkout.rebaseline = function(failureInfoList, progressCallback, debugBotsCallback)
 {
-    callIfCheckoutAvailable(function() {
+    return checkoutAvailable().then(function() {
         var tests = {};
         for (var i = 0; i < failureInfoList.length; i++) {
             var failureInfo = failureInfoList[i];
@@ -86,8 +82,8 @@ checkout.rebaseline = function(failureInfoList, callback, progressCallback, chec
             tests[failureInfo.testName][failureInfo.builderName] =
                 base.uniquifyArray(base.flattenArray(failureInfo.failureTypeList.map(results.failureTypeToExtensionList)));
         }
-        net.post('/rebaselineall', JSON.stringify(tests)).then(callback);
-    }, checkoutUnavailable);
+        return net.post('/rebaselineall', JSON.stringify(tests));
+    });
 };
 
 })();

@@ -80,61 +80,6 @@ test("flattenArray", 5, function() {
     deepEqual(base.flattenArray([["a"], [], ["b"]]), ["a", "b"]);
 });
 
-test("callInParallel", 4, function() {
-    var expectedCall = [true, true, true];
-    var expectCompletionCallback = true;
-
-    base.callInParallel([
-        function(callback) {
-            ok(expectedCall[0]);
-            expectedCall[0] = false;
-            callback();
-        },
-        function(callback) {
-            ok(expectedCall[1]);
-            expectedCall[1] = false;
-            callback();
-        },
-        function(callback) {
-            ok(expectedCall[2]);
-            expectedCall[2] = false;
-            callback();
-        },
-    ], function() {
-        ok(expectCompletionCallback);
-        expectCompletionCallback = false;
-    })
-});
-
-test("RequestTracker", 5, function() {
-    var ready = false;
-    var tracker = new base.RequestTracker(1, function() {
-        ok(ready);
-    });
-    ready = true;
-    tracker.requestComplete();
-    ready = false;
-
-    tracker = new base.RequestTracker(2, function(parameter) {
-        ok(ready);
-        equals(parameter, 'argument');
-    }, ['argument']);
-    tracker.requestComplete();
-    ready = true;
-    tracker.requestComplete();
-    ready = false;
-
-    tracker = new base.RequestTracker(0, function() {
-        ok(true);
-    });
-    tracker.requestComplete();
-
-    tracker = new base.RequestTracker(0);
-    tracker.requestComplete();
-    // Should not barf.
-    ok(true);
-});
-
 test("filterDictionary", 3, function() {
     var dictionary = {
         'foo': 43,

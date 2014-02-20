@@ -124,7 +124,7 @@ var kExampleGreaterThanFourResultsByTest = {
 
 test('View', 18, function() {
     var delegate = {
-        fetchResultsURLs: function(failureInfo, callback) { return; }
+        fetchResultsURLs: function(failureInfo) { return Promise.resolve(); }
     };
 
     var view = new ui.results.View(delegate);
@@ -166,7 +166,7 @@ test('View', 18, function() {
 
 test('View with more than four tests', 2, function() {
     var delegate = {
-        fetchResultsURLs: function(failureInfo, callback) { return; }
+        fetchResultsURLs: function(failureInfo) { return Promise.resolve(); }
     };
 
     var view = new ui.results.View(delegate);
@@ -181,7 +181,7 @@ test('View with more than four tests', 2, function() {
 
 test('View with reftests', 2, function() {
     var delegate = {
-        fetchResultsURLs: function(failureInfo, callback) { return; }
+        fetchResultsURLs: function(failureInfo) { return Promise.resolve(); }
     };
 
     var view = new ui.results.View(delegate);
@@ -192,16 +192,19 @@ test('View with reftests', 2, function() {
     equals($('.action', view).length, 0);
 });
 
-test('View of timeouts', 1, function() {
+asyncTest('View of timeouts', 1, function() {
+    var emptyPromise = Promise.resolve([]);
     var delegate = {
-        fetchResultsURLs: function(failureInfo, callback) { callback([]); }
+        fetchResultsURLs: function(failureInfo) { return emptyPromise; }
     };
 
     var view = new ui.results.View(delegate);
     view.setResultsByTest(kExampleResultsWithTimeoutByTest);
     view.firstResult();
-
-    equals($('.results-grid', view).html(), 'No results to display.');
+    emptyPromise.then(function() {
+        equals($('.results-grid', view).html(), 'No results to display.');
+        start();
+    });
 });
 
 })();

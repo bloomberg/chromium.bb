@@ -334,12 +334,12 @@ ui.revisionDetails = base.extends('span', {
         theSpan.appendChild(document.createTextNode(', trunk is at '));
         theSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), totRevision));
 
-        checkout.lastBlinkRollRevision(function(revision) {
+        checkout.lastBlinkRollRevision().then(function(revision) {
             theSpan.appendChild(document.createTextNode(', last roll is to '));
             theSpan.appendChild(base.createLinkNode(trac.changesetURL(revision), revision));
         }, function() {});
 
-        rollbot.fetchCurrentRoll(function(roll) {
+        rollbot.fetchCurrentRoll().then(function(roll) {
             theSpan.appendChild(document.createTextNode(', current autoroll '));
             if (roll) {
                 var linkText = "" + roll.fromRevision + ":" + roll.toRevision;

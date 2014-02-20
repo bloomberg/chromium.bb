@@ -717,7 +717,7 @@ asyncTest("buildersFailing", 3, function() {
     };
 
     simulator.runTest(function() {
-        builders.buildersFailingNonLayoutTests(function(builderNameList) {
+        builders.buildersFailingNonLayoutTests().then(function(builderNameList) {
             deepEqual(builderNameList, {
                 "WebKit Linux": [
                     "webkit_gpu_tests"
@@ -771,7 +771,7 @@ asyncTest("buildersFailing (run-webkit-tests crash)", 3, function() {
     };
 
     simulator.runTest(function() {
-        builders.buildersFailingNonLayoutTests(function(builderNameList) {
+        builders.buildersFailingNonLayoutTests().then(function(builderNameList) {
             deepEqual(builderNameList, {
                 "WebKit Linux": [
                     "webkit_tests",
@@ -827,7 +827,7 @@ asyncTest("buildersFailing (taskkill warning)", 3, function() {
     };
 
     simulator.runTest(function() {
-        builders.buildersFailingNonLayoutTests(function(builderNameList) {
+        builders.buildersFailingNonLayoutTests().then(function(builderNameList) {
             deepEqual(builderNameList, {});
         });
     }).then(function() {

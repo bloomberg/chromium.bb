@@ -149,7 +149,6 @@ ui.results.ResultsGrid = base.extends('div', {
             }
             this.addComparison(resultType, resultsURLsByKind);
         }.bind(this));
-
         if (!this.children.length)
             this.textContent = 'No results to display.'
     }
@@ -167,7 +166,7 @@ ui.results.ResultsDetails = base.extends('div', {
         if (this._haveShownOnce)
             return;
         this._haveShownOnce = true;
-        this._delegate.fetchResultsURLs(this._failureInfo, function(resultsURLs) {
+        this._delegate.fetchResultsURLs(this._failureInfo).then(function(resultsURLs) {
             var resultsGrid = new ui.results.ResultsGrid();
             resultsGrid.addResults(resultsURLs);
 
@@ -432,9 +431,9 @@ ui.results.View = base.extends('div', {
         this._testSelector = new ui.results.TestSelector(this, resultsByTest);
         this.appendChild(this._testSelector);
     },
-    fetchResultsURLs: function(failureInfo, callback)
+    fetchResultsURLs: function(failureInfo)
     {
-        this._delegate.fetchResultsURLs(failureInfo, callback)
+        return this._delegate.fetchResultsURLs(failureInfo);
     },
     nextResult: function()
     {

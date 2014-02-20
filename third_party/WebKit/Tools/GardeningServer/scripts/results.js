@@ -74,9 +74,9 @@ results.kDiffKind = 'diff';
 results.kUnknownKind = 'unknown';
 
 // Types of tests.
-results.kImageType = 'image'
-results.kAudioType = 'audio'
-results.kTextType = 'text'
+results.kImageType = 'image';
+results.kAudioType = 'audio';
+results.kTextType = 'text';
 // FIXME: There are more types of tests.
 
 function possibleSuffixListFor(failureTypeList)
@@ -195,8 +195,8 @@ function resultsSummaryURLForBuildNumber(builderName, buildNumber)
     return resultsDirectoryURLForBuildNumber(builderName, buildNumber) + kResultsName;
 }
 
-var g_resultsCache = new base.AsynchronousCache(function (key, callback) {
-    net.jsonp(key).then(callback);
+var g_resultsCache = new base.AsynchronousCache(function(key) {
+    return net.jsonp(key);
 });
 
 results.ResultAnalyzer = base.extends(Object, {
@@ -313,10 +313,9 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
 };
 
 // Callback data is [{ buildNumber:, url: }]
-function historicalResultsLocations(builderName, callback)
+function historicalResultsLocations(builderName)
 {
     var historicalResultsData = [];
-
     function parseListingDocument(prefixListingDocument) {
         $(prefixListingDocument).find("Prefix").each(function() {
             var buildString = this.textContent.replace(config.resultsDirectoryNameFromBuilderName(builderName) + '/', '');
@@ -327,25 +326,30 @@ function historicalResultsLocations(builderName, callback)
                     'url': resultsSummaryURLForBuildNumber(builderName, buildNumber)
                 };
                 historicalResultsData.unshift(resultsData);
-           }
+            }
         });
         var nextMarker = $(prefixListingDocument).find('NextMarker').get();
         if (nextMarker.length) {
             var nextListingURL = resultsPrefixListingURL(builderName, nextMarker[0].textContent);
-            net.xml(nextListingURL).then(parseListingDocument);
+            return net.xml(nextListingURL).then(function(doc) {
+                return parseListingDocument(doc);
+            });
         } else {
-            callback(historicalResultsData);
+            return historicalResultsData;
         }
     }
 
-    builders.mostRecentBuildForBuilder(builderName, function (mostRecentBuildNumber) {
+    return builders.mostRecentBuildForBuilder(builderName).then(function (mostRecentBuildNumber) {
         var marker = config.resultsDirectoryNameFromBuilderName(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
         var listingURL = resultsPrefixListingURL(builderName, marker);
-        net.xml(listingURL).then(parseListingDocument);
+        return net.xml(listingURL).then(function(doc) {
+            return parseListingDocument(doc);
+        });
     });
 }
 
-function walkHistory(builderName, testName, callback)
+// This will repeatedly call continueCallback(revision, resultNode) until it returns false.
+function walkHistory(builderName, testName, continueCallback)
 {
     var indexOfNextKeyToFetch = 0;
     var keyList = [];
@@ -359,13 +363,13 @@ function walkHistory(builderName, testName, callback)
 
         var resultsURL = keyList[indexOfNextKeyToFetch].url;
         ++indexOfNextKeyToFetch;
-        g_resultsCache.get(resultsURL, function(resultsTree) {
+        g_resultsCache.get(resultsURL).then(function(resultsTree) {
             if ($.isEmptyObject(resultsTree)) {
                 continueWalk();
                 return;
             }
             var resultNode = results.resultNodeForTest(resultsTree, testName);
-            var revision = parseInt(resultsTree['blink_revision'])
+            var revision = parseInt(resultsTree['blink_revision']);
             if (isNaN(revision))
                 revision = 0;
             processResultNode(revision, resultNode);
@@ -374,42 +378,43 @@ function walkHistory(builderName, testName, callback)
 
     function processResultNode(revision, resultNode)
     {
-        var shouldContinue = callback(revision, resultNode);
+        var shouldContinue = continueCallback(revision, resultNode);
         if (!shouldContinue)
             return;
         continueWalk();
     }
 
-    historicalResultsLocations(builderName, function(resultsLocations) {
+    historicalResultsLocations(builderName).then(function(resultsLocations) {
         keyList = resultsLocations;
         continueWalk();
     });
 }
 
-results.regressionRangeForFailure = function(builderName, testName, callback)
-{
-    var oldestFailingRevision = 0;
-    var newestPassingRevision = 0;
+results.regressionRangeForFailure = function(builderName, testName) {
+    return new Promise(function(resolve, reject) {
+        var oldestFailingRevision = 0;
+        var newestPassingRevision = 0;
 
-    walkHistory(builderName, testName, function(revision, resultNode) {
-        if (!revision) {
-            callback(oldestFailingRevision, newestPassingRevision);
-            return false;
-        }
-        if (!resultNode) {
+        walkHistory(builderName, testName, function(revision, resultNode) {
+            if (!revision) {
+                resolve([oldestFailingRevision, newestPassingRevision]);
+                return false;
+            }
+            if (!resultNode) {
+                newestPassingRevision = revision;
+                resolve([oldestFailingRevision, newestPassingRevision]);
+                return false;
+            }
+            if (isUnexpectedFailure(resultNode)) {
+                oldestFailingRevision = revision;
+                return true;
+            }
+            if (!oldestFailingRevision)
+                return true;  // We need to keep looking for a failing revision.
             newestPassingRevision = revision;
-            callback(oldestFailingRevision, newestPassingRevision);
+            resolve([oldestFailingRevision, newestPassingRevision]);
             return false;
-        }
-        if (isUnexpectedFailure(resultNode)) {
-            oldestFailingRevision = revision;
-            return true;
-        }
-        if (!oldestFailingRevision)
-            return true;  // We need to keep looking for a failing revision.
-        newestPassingRevision = revision;
-        callback(oldestFailingRevision, newestPassingRevision);
-        return false;
+        });
     });
 };
 
@@ -438,23 +443,24 @@ function mergeRegressionRanges(regressionRanges)
     return mergedRange;
 }
 
-results.unifyRegressionRanges = function(builderNameList, testName, callback)
-{
+results.unifyRegressionRanges = function(builderNameList, testName) {
     var regressionRanges = {};
 
-    var tracker = new base.RequestTracker(builderNameList.length, function() {
-        var mergedRange = mergeRegressionRanges(regressionRanges);
-        callback(mergedRange.oldestFailingRevision, mergedRange.newestPassingRevision);
-    });
-
+    var rangePromises = [];
     $.each(builderNameList, function(index, builderName) {
-        results.regressionRangeForFailure(builderName, testName, function(oldestFailingRevision, newestPassingRevision) {
-            var range = {};
-            range.oldestFailingRevision = oldestFailingRevision;
-            range.newestPassingRevision = newestPassingRevision;
-            regressionRanges[builderName] = range;
-            tracker.requestComplete();
-        });
+        rangePromises.push(results.regressionRangeForFailure(builderName, testName)
+                           .then(function(result) {
+                               var oldestFailingRevision = result[0];
+                               var newestPassingRevision = result[1];
+                               var range = {};
+                               range.oldestFailingRevision = oldestFailingRevision;
+                               range.newestPassingRevision = newestPassingRevision;
+                               regressionRanges[builderName] = range;
+                           }));
+    });
+    return Promise.all(rangePromises).then(function() {
+        var mergedRange = mergeRegressionRanges(regressionRanges);
+        return [mergedRange.oldestFailingRevision, mergedRange.newestPassingRevision];
     });
 };
 
@@ -501,45 +507,43 @@ function sortResultURLsBySuffix(urls)
         });
     });
     if (sortedURLs.length != urls.length)
-        throw "sortResultURLsBySuffix failed to return the same number of URLs."
+        throw "sortResultURLsBySuffix failed to return the same number of URLs.";
     return sortedURLs;
 }
 
-results.fetchResultsURLs = function(failureInfo, callback)
+results.fetchResultsURLs = function(failureInfo)
 {
     var testNameStem = base.trimExtension(failureInfo.testName);
     var urlStem = resultsDirectoryURL(failureInfo.builderName);
 
     var suffixList = possibleSuffixListFor(failureInfo.failureTypeList);
     var resultURLs = [];
-    var tracker = new base.RequestTracker(suffixList.length, function() {
-        callback(sortResultURLsBySuffix(resultURLs));
-    });
+    var probePromises = [];
     $.each(suffixList, function(index, suffix) {
         var url = urlStem + testNameStem + suffix;
-        net.probe(url).then(
+        probePromises.push(net.probe(url).then(
             function() {
                 resultURLs.push(url);
-                tracker.requestComplete();
             },
-            function() {
-                tracker.requestComplete();
-            });
+            function() {}));
+    });
+    return Promise.all(probePromises).then(function() {
+        return sortResultURLsBySuffix(resultURLs);
     });
 };
 
-results.fetchResultsByBuilder = function(builderNameList, callback)
+results.fetchResultsByBuilder = function(builderNameList)
 {
     var resultsByBuilder = {};
-    var tracker = new base.RequestTracker(builderNameList.length, function() {
-        callback(resultsByBuilder);
-    });
+    var fetchPromises = [];
     $.each(builderNameList, function(index, builderName) {
         var resultsURL = resultsSummaryURL(builderName);
-        net.jsonp(resultsURL).then(function(resultsTree) {
+        fetchPromises.push(net.jsonp(resultsURL).then(function(resultsTree) {
             resultsByBuilder[builderName] = resultsTree;
-            tracker.requestComplete();
-        });
+        }));
+    });
+    return Promise.all(fetchPromises).then(function() {
+        return resultsByBuilder;
     });
 };
 

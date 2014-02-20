@@ -128,7 +128,7 @@ asyncTest("updateRecentCommits", 2, function() {
     };
 
     simulator.runTest(function() {
-        model.updateRecentCommits(function() {
+        model.updateRecentCommits().then(function() {
             var recentCommits = model.state.recentCommits;
             delete model.state.recentCommits;
             $.each(recentCommits, function(index, commitData) {
@@ -180,7 +180,7 @@ asyncTest("commitDataListForRevisionRange", 6, function() {
     };
 
     simulator.runTest(function() {
-        model.updateRecentCommits(function() {
+        model.updateRecentCommits().then(function() {
             function extractBugIDs(commitData)
             {
                 return commitData.bugID;

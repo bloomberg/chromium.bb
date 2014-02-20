@@ -70,9 +70,9 @@ function mostRecentCompletedBuildNumber(individualBuilderStatus)
     return null;
 }
 
-var g_buildInfoCache = new base.AsynchronousCache(function(key, callback) {
+var g_buildInfoCache = new base.AsynchronousCache(function(key) {
     var explodedKey = key.split('\n');
-    net.json(urlForBuildInfo(explodedKey[0], explodedKey[1])).then(callback);
+    return net.json(urlForBuildInfo(explodedKey[0], explodedKey[1]));
 });
 
 builders.clearBuildInfoCache = function()
@@ -80,36 +80,35 @@ builders.clearBuildInfoCache = function()
     g_buildInfoCache.clear();
 };
 
-function fetchMostRecentBuildInfoByBuilder(callback)
+function fetchMostRecentBuildInfoByBuilder()
 {
-    net.json(config.buildConsoleURL + '/json/builders').then(function(builderStatus) {
-        var buildInfoByBuilder = {};
+    var buildInfoByBuilder = {};
+    var requestPromises = [];
+    return net.json(config.buildConsoleURL + '/json/builders').then(function(builderStatus) {
         var builderNames = Object.keys(builderStatus);
-        var requestTracker = new base.RequestTracker(builderNames.length, callback, [buildInfoByBuilder]);
         builderNames.forEach(function(builderName) {
-            if (!config.builderApplies(builderName)) {
-                requestTracker.requestComplete();
+            if (!config.builderApplies(builderName))
                 return;
-            }
 
             var buildNumber = mostRecentCompletedBuildNumber(builderStatus[builderName]);
-            if (!buildNumber) {
-                buildInfoByBuilder[builderName] = null;
-                requestTracker.requestComplete();
+            if (!buildNumber)
                 return;
-            }
 
-            g_buildInfoCache.get(builderName + '\n' + buildNumber, function(buildInfo) {
-                buildInfoByBuilder[builderName] = buildInfo;
-                requestTracker.requestComplete();
-            });
+            requestPromises.push(g_buildInfoCache.get(builderName + '\n' + buildNumber)
+                                 .then(function(buildInfo) {
+                                     buildInfoByBuilder[builderName] = buildInfo;
+                                 }));
+        });
+
+        return Promise.all(requestPromises).then(function() {
+            return buildInfoByBuilder;
         });
     });
 }
 
-builders.buildersFailingNonLayoutTests = function(callback)
+builders.buildersFailingNonLayoutTests = function()
 {
-    fetchMostRecentBuildInfoByBuilder(function(buildInfoByBuilder) {
+    return fetchMostRecentBuildInfoByBuilder().then(function(buildInfoByBuilder) {
         var failureList = {};
         $.each(buildInfoByBuilder, function(builderName, buildInfo) {
             if (!buildInfo)
@@ -118,15 +117,15 @@ builders.buildersFailingNonLayoutTests = function(callback)
             if (failures.length)
                 failureList[builderName] = failures.map(function(failure) { return failure.name; });
         });
-        callback(failureList);
+        return failureList;
     });
 };
 
-builders.mostRecentBuildForBuilder = function(builderName, callback) {
-    net.json(config.buildConsoleURL + '/json/builders/' + builderName).then(function(builderStatus) {
+builders.mostRecentBuildForBuilder = function(builderName) {
+    return net.json(config.buildConsoleURL + '/json/builders/' + builderName).then(function(builderStatus) {
         var cachedBuilds = builderStatus.cachedBuilds;
         var mostRecentBuild = Math.max.apply(Math, cachedBuilds);
-        callback(mostRecentBuild);
+        return mostRecentBuild;
     });
 };
 

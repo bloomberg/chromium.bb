@@ -97,14 +97,14 @@ asyncTest("rebaseline", 3, function() {
             'builderName': 'Webkit Win7',
             'testName': 'fast/test.html',
             'failureTypeList': ['IMAGE+TEXT'],
-        }], function() {
-            ok(true);
-        }, function(failureInfo) {
+        }], function(failureInfo) {
             equals(failureInfo.testName, kExpectedTestNameProgressStack.pop());
         }, function() {
-            ok(false, 'Checkout should be available.');
-        }, function() {
             ok(false, 'There are no debug bots in the list');
+        }).catch().then(function() {
+            ok(true);
+        }, function() {
+            ok(false, 'Checkout should be available.');
         });
     }).then(function() {
 
@@ -138,14 +138,14 @@ asyncTest("rebaseline-debug-bot", 3, function() {
             'builderName': 'WebKit Linux (dbg)',
             'testName': 'another/test.svg',
             'failureTypeList': ['IMAGE'],
-        }], function() {
-            ok(true);
-        }, function(failureInfo) {
+        }], function(failureInfo) {
             ok(false);
-        }, function() {
-            ok(false, 'Checkout should be available.');
         }, function(failureInfo) {
             ok(true);
+        }).then(function() {
+            ok(true);
+        }, function() {
+            ok(false);
         });
     }).then(start);
 });

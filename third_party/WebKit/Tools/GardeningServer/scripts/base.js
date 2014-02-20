@@ -76,7 +76,7 @@ base.flattenArray = function(arrayOfArrays)
     if (!arrayOfArrays.length)
         return [];
     return arrayOfArrays.reduce(function(left, right) {
-        return left.concat(right);  
+        return left.concat(right);
     });
 };
 
@@ -156,38 +156,6 @@ base.parseJSONP = function(jsonp)
     return JSON.parse(jsonp.substr(startIndex, endIndex - startIndex));
 };
 
-base.RequestTracker = function(requestsInFlight, callback, args)
-{
-    this._requestsInFlight = requestsInFlight;
-    this._callback = callback;
-    this._args = args || [];
-    this._tryCallback();
-};
-
-base.RequestTracker.prototype = {
-    _tryCallback: function()
-    {
-        if (!this._requestsInFlight && this._callback)
-            this._callback.apply(null, this._args);
-    },
-    requestComplete: function()
-    {
-        --this._requestsInFlight;
-        this._tryCallback();
-    }
-}
-
-base.callInParallel = function(functionList, callback)
-{
-    var requestTracker = new base.RequestTracker(functionList.length, callback);
-
-    $.each(functionList, function(index, func) {
-        func(function() {
-            requestTracker.requestComplete();
-        });
-    });
-};
-
 base.AsynchronousCache = function(fetch)
 {
     this._fetch = fetch;
@@ -195,31 +163,33 @@ base.AsynchronousCache = function(fetch)
     this._callbackCache = {};
 };
 
-base.AsynchronousCache.prototype.get = function(key, callback)
+base.AsynchronousCache.prototype.get = function(key)
 {
     var self = this;
+    return new Promise(function(resolve, reject) {
 
-    if (self._dataCache[key]) {
-        // FIXME: Consider always calling callback asynchronously.
-        callback(self._dataCache[key]);
-        return;
-    }
+        if (self._dataCache[key]) {
+            // FIXME: Consider always calling callback asynchronously.
+            resolve(self._dataCache[key]);
+            return;
+        }
 
-    if (key in self._callbackCache) {
-        self._callbackCache[key].push(callback);
-        return;
-    }
+        if (key in self._callbackCache) {
+            self._callbackCache[key].push(resolve);
+            return;
+        }
 
-    self._callbackCache[key] = [callback];
+        self._callbackCache[key] = [resolve];
 
-    self._fetch.call(null, key, function(data) {
-        self._dataCache[key] = data;
+        self._fetch.call(null, key).then(function(data) {
+            self._dataCache[key] = data;
 
-        var callbackList = self._callbackCache[key];
-        delete self._callbackCache[key];
+            var callbackList = self._callbackCache[key];
+            delete self._callbackCache[key];
 
-        callbackList.forEach(function(cachedCallback) {
-            cachedCallback(data);
+            callbackList.forEach(function(cachedCallback) {
+                cachedCallback(data);
+            });
         });
     });
 };
@@ -228,7 +198,7 @@ base.AsynchronousCache.prototype.clear = function()
 {
     this._dataCache = {};
     this._callbackCache = {};
-}
+};
 
 /*
     Maintains a dictionary of items, tracking their updates and removing items that haven't been updated.

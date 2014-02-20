@@ -53,23 +53,21 @@ function isRollbotStopped(issue) {
     return issue.messages.slice(1).some(function(message) { return message.text.match(/STOP/); });
 }
 
-rollbot.fetchCurrentRoll = function(callback) {
-    net.json(issueSearchURL).then(function(searchJSON) {
+rollbot.fetchCurrentRoll = function() {
+    return net.json(issueSearchURL).then(function(searchJSON) {
         var issue = findRollIssue(searchJSON);
-        if (!issue) {
-            callback(null);
-            return;
-        }
+        if (!issue)
+            return null;
 
         var issueNumber = issue['issue'];
         var subjectMatch = issue['subject'].match(rollSubjectRegexp);
-        callback({
+        return {
             'issue': issueNumber,
             'url': config.kRietveldURL + "/" + issueNumber,
             'isStopped': isRollbotStopped(issue),
             'fromRevision': subjectMatch[1],
             'toRevision': subjectMatch[2],
-        });
+        };
     });
 };
 
