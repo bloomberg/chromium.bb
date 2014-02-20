@@ -127,6 +127,10 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
     return;
 
+  // Don't show the menu for incognito windows.
+  if (browser()->profile()->IsOffTheRecord())
+    return;
+
   // To show the menu we need at least two logged in users.
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
