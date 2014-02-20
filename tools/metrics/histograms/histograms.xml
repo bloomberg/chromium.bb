@@ -28585,7 +28585,7 @@ other types of suffix sets.
   <int value="1" label="Gallery permission added from dialog"/>
   <int value="2" label="Gallery permission removed from dialog"/>
   <int value="3" label="GetMediaFileSystems API invocations"/>
-  <int value="4" label="Profiles With API Usage"/>
+  <int value="4" label="Profiles With API Usage (corrected in M35)"/>
   <int value="5" label="Dialog shown"/>
   <int value="6" label="Dialog permissions saved"/>
   <int value="7" label="Gallery added from WebUI"/>
