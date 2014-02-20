@@ -158,10 +158,14 @@ void SyncEngine::RegisterOrigin(
   if (!metadata_database_ && drive_service_->HasRefreshToken())
     PostInitializeTask();
 
+  scoped_ptr<RegisterAppTask> task(new RegisterAppTask(this, origin.host()));
+  if (task->CanFinishImmediately()) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   task_manager_->ScheduleSyncTaskAtPriority(
-      scoped_ptr<SyncTask>(new RegisterAppTask(this, origin.host())),
-      SyncTaskManager::PRIORITY_HIGH,
-      callback);
+      task.PassAs<SyncTask>(), SyncTaskManager::PRIORITY_HIGH, callback);
 }
 
 void SyncEngine::EnableOrigin(

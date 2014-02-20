@@ -34,6 +34,7 @@ class RegisterAppTask : public SyncTask {
   RegisterAppTask(SyncEngineContext* sync_context, const std::string& app_id);
   virtual ~RegisterAppTask();
 
+  bool CanFinishImmediately();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
 
  private:

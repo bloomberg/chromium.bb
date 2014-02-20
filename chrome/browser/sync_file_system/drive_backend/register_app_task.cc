@@ -42,6 +42,11 @@ RegisterAppTask::RegisterAppTask(SyncEngineContext* sync_context,
 RegisterAppTask::~RegisterAppTask() {
 }
 
+bool RegisterAppTask::CanFinishImmediately() {
+  return metadata_database() &&
+         metadata_database()->FindAppRootTracker(app_id_, NULL);
+}
+
 void RegisterAppTask::Run(const SyncStatusCallback& callback) {
   if (create_folder_retry_count_++ >= kMaxRetry) {
     callback.Run(SYNC_STATUS_FAILED);
@@ -68,6 +73,8 @@ void RegisterAppTask::Run(const SyncStatusCallback& callback) {
   }
 
   if (candidate.active()) {
+    DCHECK(candidate.tracker_kind() == TRACKER_KIND_APP_ROOT ||
+           candidate.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT);
     RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
