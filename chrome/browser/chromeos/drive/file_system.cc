@@ -687,29 +687,35 @@ void FileSystem::OnGetAboutResource(
                about_resource->quota_bytes_used());
 }
 
-void FileSystem::GetShareUrl(
-    const base::FilePath& file_path,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) {
+void FileSystem::GetShareUrl(const base::FilePath& file_path,
+                             const GURL& embed_origin,
+                             const GetShareUrlCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // Resolve the resource id.
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      file_path,
+  ResourceEntry* entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(resource_metadata_),
+                 file_path,
+                 entry),
       base::Bind(&FileSystem::GetShareUrlAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  embed_origin,
-                 callback));
+                 callback,
+                 base::Owned(entry)));
 }
 
 void FileSystem::GetShareUrlAfterGetResourceEntry(
     const base::FilePath& file_path,
     const GURL& embed_origin,
     const GetShareUrlCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    ResourceEntry* entry,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

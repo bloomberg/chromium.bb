@@ -9,15 +9,10 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -133,118 +128,6 @@ void SetUpEntries(ResourceMetadata* resource_metadata) {
 
 }  // namespace
 
-// Tests for methods invoked from the UI thread.
-class ResourceMetadataTestOnUIThread : public testing::Test {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    base::ThreadRestrictions::SetIOAllowed(false);  // For strict thread check.
-    scoped_refptr<base::SequencedWorkerPool> pool =
-        content::BrowserThread::GetBlockingPool();
-    blocking_task_runner_ =
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-
-    metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), blocking_task_runner_.get()));
-    bool success = false;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(&ResourceMetadataStorage::Initialize,
-                   base::Unretained(metadata_storage_.get())),
-        google_apis::test_util::CreateCopyResultCallback(&success));
-    test_util::RunBlockingPoolTask();
-    ASSERT_TRUE(success);
-
-    resource_metadata_.reset(new ResourceMetadata(metadata_storage_.get(),
-                                                  blocking_task_runner_));
-
-    FileError error = FILE_ERROR_FAILED;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(&ResourceMetadata::Initialize,
-                   base::Unretained(resource_metadata_.get())),
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    test_util::RunBlockingPoolTask();
-    ASSERT_EQ(FILE_ERROR_OK, error);
-
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SetUpEntries,
-                   base::Unretained(resource_metadata_.get())));
-    test_util::RunBlockingPoolTask();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    metadata_storage_.reset();
-    resource_metadata_.reset();
-    base::ThreadRestrictions::SetIOAllowed(true);
-  }
-
-  content::TestBrowserThreadBundle thread_bundle_;
-  base::ScopedTempDir temp_dir_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
-      metadata_storage_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata_;
-};
-
-TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
-  // Confirm that an existing file is found.
-  FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file4", entry->base_name());
-
-  // Confirm that a non existing file is not found.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existing"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-
-  // Confirm that the root is found.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(entry.get());
-
-  // Confirm that a non existing file is not found at the root level.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("non_existing"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-
-  // Confirm that an entry is not found with a wrong root.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      base::FilePath::FromUTF8Unsafe("non_existing/root"),
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-}
-
 // Tests for methods running on the blocking task runner.
 class ResourceMetadataTest : public testing::Test {
  protected:
@@ -276,6 +159,30 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->SetLargestChangestamp(kChangestamp));
   EXPECT_EQ(kChangestamp, resource_metadata_->GetLargestChangestamp());
+}
+
+TEST_F(ResourceMetadataTest, GetResourceEntryByPath) {
+  // Confirm that an existing file is found.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entry));
+  EXPECT_EQ("file4", entry.base_name());
+
+  // Confirm that a non existing file is not found.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existing"), &entry));
+
+  // Confirm that the root is found.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive"), &entry));
+
+  // Confirm that a non existing file is not found at the root level.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("non_existing"), &entry));
+
+   // Confirm that an entry is not found with a wrong root.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("non_existing/root"), &entry));
 }
 
 TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {

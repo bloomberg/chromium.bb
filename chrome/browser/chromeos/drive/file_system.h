@@ -228,16 +228,14 @@ class FileSystem : public FileSystemInterface,
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.
-  void GetShareUrlAfterGetResourceEntry(
-      const base::FilePath& file_path,
-      const GURL& embed_origin,
-      const GetShareUrlCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-  void OnGetResourceEntryForGetShareUrl(
-      const GetShareUrlCallback& callback,
-      google_apis::GDataErrorCode status,
-      const GURL& share_url);
+  void GetShareUrlAfterGetResourceEntry(const base::FilePath& file_path,
+                                        const GURL& embed_origin,
+                                        const GetShareUrlCallback& callback,
+                                        ResourceEntry* entry,
+                                        FileError error);
+  void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
+                                        google_apis::GDataErrorCode status,
+                                        const GURL& share_url);
 
   // Part of OnDriveSyncError().
   virtual void OnDriveSyncErrorAfterGetFilePath(

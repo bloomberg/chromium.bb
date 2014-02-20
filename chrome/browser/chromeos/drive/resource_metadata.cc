@@ -36,17 +36,6 @@ bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
       kRequiredDiskSpaceInMB * (1 << 20);
 }
 
-// Runs |callback| with arguments.
-void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
-                                 scoped_ptr<ResourceEntry> entry,
-                                 FileError error) {
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK)
-    entry.reset();
-  callback.Run(error, entry.Pass());
-}
-
 }  // namespace
 
 namespace internal {
@@ -55,8 +44,7 @@ ResourceMetadata::ResourceMetadata(
     ResourceMetadataStorage* storage,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
-      storage_(storage),
-      weak_ptr_factory_(this) {
+      storage_(storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -75,7 +63,6 @@ FileError ResourceMetadata::Initialize() {
 void ResourceMetadata::Destroy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  weak_ptr_factory_.InvalidateWeakPtrs();
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ResourceMetadata::DestroyOnBlockingPool,
@@ -240,24 +227,6 @@ FileError ResourceMetadata::GetResourceEntryById(const std::string& id,
 
   return storage_->GetEntry(id, out_entry) ?
       FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
-}
-
-void ResourceMetadata::GetResourceEntryByPathOnUIThread(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  ResourceEntry* entry_ptr = entry.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(this),
-                 file_path,
-                 entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
 }
 
 FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,

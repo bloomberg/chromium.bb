@@ -59,6 +59,12 @@ struct MetadataSearchResult {
 
 typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
 
+// Used to get a resource entry from the file system.
+// If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
+typedef base::Callback<void(FileError error,
+                            scoped_ptr<ResourceEntry> entry)>
+    GetResourceEntryCallback;
+
 // Used to get files from the file system.
 typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path,

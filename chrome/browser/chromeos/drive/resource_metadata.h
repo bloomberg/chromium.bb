@@ -9,10 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
@@ -24,18 +22,11 @@ namespace drive {
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
 
-// Used to get a resource entry from the file system.
-// If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
-typedef base::Callback<void(FileError error,
-                            scoped_ptr<ResourceEntry> entry)>
-    GetResourceEntryCallback;
-
-typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
-
 namespace internal {
 
 // Storage for Drive Metadata.
-// All methods must be run with |blocking_task_runner| unless otherwise noted.
+// All methods except the constructor and Destroy() function must be run with
+// |blocking_task_runner| unless otherwise noted.
 class ResourceMetadata {
  public:
   typedef ResourceMetadataStorage::Iterator Iterator;
@@ -71,13 +62,6 @@ class ResourceMetadata {
   // Finds an entry (a file or a directory) by |id|.
   FileError GetResourceEntryById(const std::string& id,
                                  ResourceEntry* out_entry);
-
-  // Finds an entry (a file or a directory) by |file_path|.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void GetResourceEntryByPathOnUIThread(
-      const base::FilePath& file_path,
-      const GetResourceEntryCallback& callback);
 
   // Synchronous version of GetResourceEntryByPathOnUIThread().
   FileError GetResourceEntryByPath(const base::FilePath& file_path,
@@ -139,10 +123,6 @@ class ResourceMetadata {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   ResourceMetadataStorage* storage_;
-
-  // This should remain the last member so it'll be destroyed first and
-  // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<ResourceMetadata> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadata);
 };
