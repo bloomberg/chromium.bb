@@ -431,7 +431,10 @@ scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
                                              const base::string16& printer_name,
                                              bool color) {
   scoped_ptr<DEVMODE[]> default = CreateDevMode(printer, NULL);
-  if (default && (default.get()->dmFields & DM_COLOR) &&
+  if (!default)
+    return default.Pass();
+
+  if ((default.get()->dmFields & DM_COLOR) &&
       ((default.get()->dmColor == DMCOLOR_COLOR) == color)) {
     return default.Pass();
   }
