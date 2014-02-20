@@ -319,7 +319,7 @@ bool BasicRawVarData::Read(PP_VarType type,
     case PP_VARTYPE_UNDEFINED:
     case PP_VARTYPE_NULL:
       // These don't have any data associated with them other than the type we
-      // just serialized.
+      // just deserialized.
       break;
     case PP_VARTYPE_BOOL: {
       bool bool_value;
