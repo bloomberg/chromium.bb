@@ -135,7 +135,6 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile) {
 
   const ServerFieldType more_required_fields[] = {
       NAME_FULL,
-      EMAIL_ADDRESS,
       PHONE_HOME_WHOLE_NUMBER
   };
 

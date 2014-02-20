@@ -1091,6 +1091,22 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
   controller()->GetTestingManager()->AddTestingProfile(&profile);
 
+  // Same as shipping, manage, add new.
+  EXPECT_EQ(3,
+      controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+  EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
+}
+
+TEST_F(AutofillDialogControllerTest, DoSuggestShippingAddressWithoutEmail) {
+  SwitchToAutofill();
+  AutofillProfile profile(test::GetVerifiedProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, base::string16());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  // Same as shipping, manage, add new, profile with missing email.
+  EXPECT_EQ(4,
+      controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+  // Billing addresses require email.
   EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
 }
 
