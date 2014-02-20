@@ -173,7 +173,7 @@ public:
     bool canGetItem(unsigned index, ExceptionState& exceptionState)
     {
         if (index >= m_values->size()) {
-            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, m_values->size()));
             return false;
         }
 
@@ -275,7 +275,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, m_values->size()));
             return false;
         }
 
@@ -354,7 +354,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, m_values->size()));
             return false;
         }
 

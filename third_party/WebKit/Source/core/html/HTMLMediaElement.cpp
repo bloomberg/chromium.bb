@@ -2335,7 +2335,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
     WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
     if (vol < 0.0f || vol > 1.0f) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0f, ExceptionMessages::ExclusiveBound, 1.0f, ExceptionMessages::ExclusiveBound));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0, ExceptionMessages::ExclusiveBound, 1.0, ExceptionMessages::ExclusiveBound));
         return;
     }
 

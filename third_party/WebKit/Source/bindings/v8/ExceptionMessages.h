@@ -31,6 +31,8 @@
 #ifndef ExceptionMessages_h
 #define ExceptionMessages_h
 
+#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -66,12 +68,72 @@ public:
 
     static String readOnly(const char* detail = 0);
 
-    static String indexExceedsMaximumBound(const char* name, unsigned given, unsigned bound);
-    static String indexExceedsMinimumBound(const char* name, double given, double bound);
-    static String indexOutsideRange(const char* name, double given, double lowerBound, BoundType lowerType, double upperBound, BoundType upperType);
+    template <typename NumberType>
+    static String indexExceedsMaximumBound(const char* name, NumberType given, NumberType bound)
+    {
+        bool eq = given == bound;
+        StringBuilder result;
+        result.append("The ");
+        result.append(name);
+        result.append(" provided (");
+        result.append(formatNumber(given));
+        result.append(") is greater than ");
+        result.append(eq ? "or equal to " : "");
+        result.append("the maximum bound (");
+        result.append(formatNumber(bound));
+        result.append(").");
+        return result.toString();
+    }
+
+    template <typename NumberType>
+    static String indexExceedsMinimumBound(const char* name, NumberType given, NumberType bound)
+    {
+        bool eq = given == bound;
+        StringBuilder result;
+        result.append("The ");
+        result.append(name);
+        result.append(" provided (");
+        result.append(formatNumber(given));
+        result.append(") is less than ");
+        result.append(eq ? "or equal to " : "");
+        result.append("the minimum bound (");
+        result.append(formatNumber(bound));
+        result.append(").");
+        return result.toString();
+    }
+
+    template <typename NumberType>
+    static String indexOutsideRange(const char* name, NumberType given, NumberType lowerBound, BoundType lowerType, NumberType upperBound, BoundType upperType)
+    {
+        StringBuilder result;
+        result.append("The ");
+        result.append(name);
+        result.append(" provided (");
+        result.append(formatNumber(given));
+        result.append(") is outside the range ");
+        result.append(lowerBound == ExclusiveBound ? '(' : '[');
+        result.append(formatNumber(lowerBound));
+        result.append(", ");
+        result.append(formatNumber(upperBound));
+        result.append(upperBound == ExclusiveBound ? ')' : ']');
+        result.append('.');
+        return result.toString();
+    }
 
 private:
     static String ordinalNumber(int number);
+
+    template <typename NumType>
+    static String formatNumber(NumType number)
+    {
+        if (std::isnan(number))
+            return "NaN";
+        if (std::isinf(number))
+            return number > 0 ? "Infinity" : "-Infinity";
+        if (number > 1e20 || number < -1e20)
+            return String::format("%e", 1.0*number);
+        return String::number(number);
+    }
 };
 
 } // namespace WebCore
