@@ -143,6 +143,12 @@ void Canvas2DLayerBridge::beginDestruction()
     // in the case where destruction is caused by a canvas resize. Test:
     // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
     m_layer->layer()->removeFromParent();
+    // To anyone who ever hits this assert: Please update crbug.com/344666
+    // with repro steps.
+    ASSERT(!m_bytesAllocated);
+    // The following line of code is a safety net and should be removed once
+    // crbug.com/344666 is fixed.
+    storageAllocatedForRecordingChanged(0);
 }
 
 void Canvas2DLayerBridge::setIsHidden(bool hidden)
