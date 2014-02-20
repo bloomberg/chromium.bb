@@ -14213,6 +14213,13 @@ other types of suffix sets.
   <summary>Temperature reading at sensor 9 (PECI) taken every 30s.</summary>
 </histogram>
 
+<histogram name="Platform.TPM.DictionaryAttackCounter">
+  <summary>
+    Each sample is the value of the TPM dictionary attack counter during
+    startup.  Any non-zero value is unexpected.
+  </summary>
+</histogram>
+
 <histogram name="Platform.TPMForcedReboot" units="reboots">
   <summary>
     Each sample is the number of consecutive reboots performed while attempting
@@ -23791,6 +23798,17 @@ other types of suffix sets.
 
 <enum name="CrosEventEnum" type="int">
   <int value="0" label="ModemManagerCommandSendFailure"/>
+  <int value="1" label="HwWatchdogReboot"/>
+  <int value="2" label="Cras.NoCodecsFoundAtBoot"/>
+  <int value="3" label="Chaps.DatabaseCorrupted"/>
+  <int value="4" label="Chaps.DatabaseRepairFailure"/>
+  <int value="5" label="Chaps.DatabaseCreateFailure"/>
+  <int value="6" label="Attestation.OriginSpecificExhausted"/>
+  <int value="7" label="SpringPowerSupply.Original.High"/>
+  <int value="8" label="SpringPowerSupply.Other.High"/>
+  <int value="9" label="SpringPowerSupply.Original.Low"/>
+  <int value="10" label="SpringPowerSupply.ChargerIdle"/>
+  <int value="11" label="TPM.NonZeroDictionaryAttackCounter"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType" type="int">
