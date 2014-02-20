@@ -21,6 +21,8 @@
 #include "remoting/host/setup/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace remoting {
+
 namespace {
 
 const char kTestAccessCode[] = "888888";
@@ -61,8 +63,6 @@ void VerifyCommonProperties(scoped_ptr<base::DictionaryValue> response,
 }
 
 }  // namespace
-
-namespace remoting {
 
 class MockIt2MeHost : public It2MeHost {
  public:
@@ -552,3 +552,4 @@ TEST_F(It2MeNativeMessagingHostTest, InvalidType) {
 }
 
 }  // namespace remoting
+

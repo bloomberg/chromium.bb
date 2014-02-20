@@ -21,15 +21,13 @@ namespace remoting {
 // Implementation of the native messaging host process.
 class It2MeNativeMessagingHost : public It2MeHost::Observer {
  public:
-  typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
-
   It2MeNativeMessagingHost(
       scoped_refptr<AutoThreadTaskRunner> task_runner,
       scoped_ptr<NativeMessagingChannel> channel,
       scoped_ptr<It2MeHostFactory> factory);
   virtual ~It2MeNativeMessagingHost();
 
-  void Start(const base::Closure& quit_closure);
+  void Start(const base::Closure& quit_closure) const;
 
   // It2MeHost::Observer implementation
   virtual void OnClientAuthenticated(const std::string& client_username)
@@ -48,15 +46,15 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer {
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
   void ProcessHello(const base::DictionaryValue& message,
-                    scoped_ptr<base::DictionaryValue> response);
+                    scoped_ptr<base::DictionaryValue> response) const;
   void ProcessConnect(const base::DictionaryValue& message,
                       scoped_ptr<base::DictionaryValue> response);
   void ProcessDisconnect(const base::DictionaryValue& message,
                          scoped_ptr<base::DictionaryValue> response);
   void SendErrorAndExit(scoped_ptr<base::DictionaryValue> response,
-                        const std::string& description);
+                        const std::string& description) const;
 
-  scoped_refptr<AutoThreadTaskRunner> task_runner();
+  scoped_refptr<AutoThreadTaskRunner> task_runner() const;
 
   scoped_ptr<NativeMessagingChannel> channel_;
   scoped_ptr<It2MeHostFactory> factory_;
@@ -84,3 +82,4 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer {
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_IT2ME_IT2ME_NATIVE_MESSAGING_HOST_H_
+

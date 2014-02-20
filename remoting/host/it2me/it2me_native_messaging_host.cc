@@ -54,8 +54,8 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
 
   host_context_.reset(ChromotingHostContext::Create(task_runner).release());
 
-  ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  bool xmpp_server_valid =
+  const ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  const bool xmpp_server_valid =
       net::ParseHostAndPort(service_urls->xmpp_server_address(),
                             &xmpp_server_config_.host,
                             &xmpp_server_config_.port);
@@ -74,7 +74,7 @@ It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
   }
 }
 
-void It2MeNativeMessagingHost::Start(const base::Closure& quit_closure) {
+void It2MeNativeMessagingHost::Start(const base::Closure& quit_closure) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   channel_->Start(
@@ -115,7 +115,7 @@ void It2MeNativeMessagingHost::ProcessMessage(
 
 void It2MeNativeMessagingHost::ProcessHello(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response) {
+    scoped_ptr<base::DictionaryValue> response) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   response->SetString("version", STRINGIZE(VERSION));
@@ -215,7 +215,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
 
 void It2MeNativeMessagingHost::SendErrorAndExit(
     scoped_ptr<base::DictionaryValue> response,
-    const std::string& description) {
+    const std::string& description) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   LOG(ERROR) << description;
@@ -289,7 +289,8 @@ void It2MeNativeMessagingHost::OnClientAuthenticated(
   client_username_ = client_username;
 }
 
-scoped_refptr<AutoThreadTaskRunner> It2MeNativeMessagingHost::task_runner() {
+scoped_refptr<AutoThreadTaskRunner>
+It2MeNativeMessagingHost::task_runner() const {
   return host_context_->ui_task_runner();
 }
 
@@ -300,3 +301,4 @@ std::string It2MeNativeMessagingHost::HostStateToString(
 }
 
 }  // namespace remoting
+
