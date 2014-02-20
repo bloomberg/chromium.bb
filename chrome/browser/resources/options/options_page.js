@@ -887,11 +887,16 @@ cr.define('options', function() {
         // TODO(flackr): Use an event delegate to avoid having to subscribe and
         // unsubscribe for webkitTransitionEnd events.
         container.addEventListener('webkitTransitionEnd', function f(e) {
-            if (e.target != e.currentTarget || e.propertyName != 'opacity')
+            var propName = e.propertyName;
+            if (e.target != e.currentTarget ||
+                (propName && propName != 'opacity')) {
               return;
+            }
             container.removeEventListener('webkitTransitionEnd', f);
             self.fadeCompleted_();
         });
+        // -webkit-transition is 200ms. Let's wait for 400ms.
+        ensureTransitionEndEvent(container, 400);
       }
 
       if (visible) {
