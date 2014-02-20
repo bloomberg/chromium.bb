@@ -40,6 +40,18 @@ class WindowTargeterTest : public test::AuraTestBase {
   Window* root_window() { return AuraTestBase::root_window(); }
 };
 
+gfx::RectF GetEffectiveVisibleBoundsInRootWindow(Window* window) {
+  gfx::RectF bounds = gfx::Rect(window->bounds().size());
+  Window* root = window->GetRootWindow();
+  CHECK(window->layer());
+  CHECK(root->layer());
+  gfx::Transform transform;
+  if (!window->layer()->GetTargetTransformRelativeTo(root->layer(), &transform))
+    return gfx::RectF();
+  transform.TransformRect(&bounds);
+  return bounds;
+}
+
 TEST_F(WindowTargeterTest, Basic) {
   test::TestWindowDelegate delegate;
   scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), &delegate));
@@ -103,6 +115,50 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
                          ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(child, targeter->FindTargetForEvent(root, &mouse));
+  }
+}
+
+TEST_F(WindowTargeterTest, TargetTransformedWindow) {
+  root_window()->Show();
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<Window> window(CreateNormalWindow(2, root_window(), &delegate));
+
+  const gfx::Rect window_bounds(100, 20, 400, 80);
+  window->SetBounds(window_bounds);
+
+  ui::EventTarget* root_target = root_window();
+  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+  gfx::Point event_location(490, 50);
+  {
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                         ui::EF_NONE, ui::EF_NONE);
+    EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &mouse));
+  }
+
+  // Scale |window| by 50%. This should move it away from underneath
+  // |event_location|, so an event in that location will not be targeted to it.
+  gfx::Transform transform;
+  transform.Scale(0.5, 0.5);
+  window->SetTransform(transform);
+  EXPECT_EQ(gfx::RectF(100, 20, 200, 40).ToString(),
+            GetEffectiveVisibleBoundsInRootWindow(window.get()).ToString());
+  {
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                         ui::EF_NONE, ui::EF_NONE);
+    EXPECT_EQ(root_window(), targeter->FindTargetForEvent(root_target, &mouse));
+  }
+
+  transform = gfx::Transform();
+  transform.Translate(200, 10);
+  transform.Scale(0.5, 0.5);
+  window->SetTransform(transform);
+  EXPECT_EQ(gfx::RectF(300, 30, 200, 40).ToString(),
+            GetEffectiveVisibleBoundsInRootWindow(window.get()).ToString());
+  {
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                         ui::EF_NONE, ui::EF_NONE);
+    EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &mouse));
   }
 }
 

@@ -198,6 +198,20 @@ class WindowSelectorTest : public test::AshTestBase {
     return bounds;
   }
 
+  gfx::RectF GetTransformedBoundsInRootWindow(aura::Window* window) {
+    gfx::RectF bounds = gfx::Rect(window->bounds().size());
+    aura::Window* root = window->GetRootWindow();
+    CHECK(window->layer());
+    CHECK(root->layer());
+    gfx::Transform transform;
+    if (!window->layer()->GetTargetTransformRelativeTo(root->layer(),
+                                                       &transform)) {
+      return gfx::RectF();
+    }
+    transform.TransformRect(&bounds);
+    return bounds;
+  }
+
   void ClickWindow(aura::Window* window) {
     aura::test::EventGenerator event_generator(window->GetRootWindow(), window);
     gfx::RectF target = GetTransformedBounds(window);
@@ -1028,6 +1042,38 @@ TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
   EXPECT_FALSE(drag_canceled_by_test);
   ASSERT_TRUE(IsSelecting());
   RunAllPendingInMessageLoop();
+}
+
+TEST_F(WindowSelectorTest, HitTestingInOverview) {
+  gfx::Rect window_bounds(20, 10, 200, 300);
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  scoped_ptr<aura::Window> window1(CreateWindow(window_bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(window_bounds));
+
+  ToggleOverview();
+  gfx::RectF bounds1 = GetTransformedBoundsInRootWindow(window1.get());
+  gfx::RectF bounds2 = GetTransformedBoundsInRootWindow(window2.get());
+  EXPECT_NE(bounds1.ToString(), bounds2.ToString());
+
+  ui::EventTarget* root_target = root_window;
+  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+  aura::Window* windows[] = { window1.get(), window2.get() };
+  for (size_t w = 0; w < arraysize(windows); ++w) {
+    gfx::RectF bounds = GetTransformedBoundsInRootWindow(windows[w]);
+    gfx::Point points[] = {
+      gfx::Point(bounds.x(), bounds.y()),
+      gfx::Point(bounds.right() - 1, bounds.y()),
+      gfx::Point(bounds.x(), bounds.bottom() - 1),
+      gfx::Point(bounds.right() - 1, bounds.bottom() - 1),
+    };
+
+    for (size_t p = 0; p < arraysize(points); ++p) {
+      ui::MouseEvent event(ui::ET_MOUSE_MOVED, points[p], points[p],
+                           ui::EF_NONE, ui::EF_NONE);
+      EXPECT_EQ(windows[w],
+                targeter->FindTargetForEvent(root_target, &event));
+    }
+  }
 }
 
 }  // namespace internal

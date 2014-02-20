@@ -37,10 +37,10 @@ bool WindowTargeter::WindowCanAcceptEvent(aura::Window* window,
 
 bool WindowTargeter::EventLocationInsideBounds(
     aura::Window* window, const ui::LocatedEvent& event) const {
-  gfx::RectF bounds = window->bounds();
-  if (window->layer())
-    window->layer()->transform().TransformRect(&bounds);
-  return bounds.Contains(event.location());
+  gfx::Point point = event.location();
+  if (window->parent())
+    aura::Window::ConvertPointToTarget(window->parent(), window, &point);
+  return gfx::Rect(window->bounds().size()).Contains(point);
 }
 
 ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,

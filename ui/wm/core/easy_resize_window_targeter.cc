@@ -27,18 +27,19 @@ bool EasyResizeWindowTargeter::EventLocationInsideBounds(
     aura::Window* window,
     const ui::LocatedEvent& event) const {
   if (ShouldUseExtendedBounds(window)) {
-    gfx::RectF bounds(window->bounds());
-    gfx::Transform transform = window->layer()->transform();
-    transform.TransformRect(&bounds);
-    if (event.IsTouchEvent() || event.IsGestureEvent()) {
-      bounds.Inset(touch_extend_);
-    } else {
-      bounds.Inset(mouse_extend_);
-    }
+    // Note that |event|'s location is in |window|'s parent's coordinate system,
+    // so convert it to |window|'s coordinate system first.
+    gfx::Point point = event.location();
+    if (window->parent())
+      aura::Window::ConvertPointToTarget(window->parent(), window, &point);
 
-    // Note that |event|'s location is in the |container_|'s coordinate system,
-    // as is |bounds|.
-    return bounds.Contains(event.location());
+    gfx::Rect bounds(window->bounds().size());
+    if (event.IsTouchEvent() || event.IsGestureEvent())
+      bounds.Inset(touch_extend_);
+    else
+      bounds.Inset(mouse_extend_);
+
+    return bounds.Contains(point);
   }
   return WindowTargeter::EventLocationInsideBounds(window, event);
 }
