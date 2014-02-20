@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/html/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportChild.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
-#include "core/html/HTMLImportChildClient.h"
-#include "core/html/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportChildClient.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 namespace WebCore {
 

@@ -45,7 +45,7 @@
 #include "core/fetch/XSLStyleSheetResource.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLImport.h"
+#include "core/html/imports/HTMLImport.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

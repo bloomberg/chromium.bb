@@ -31,9 +31,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLImportsController.h"
 #include "core/frame/Frame.h"
+#include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/imports/HTMLImportsController.h"
 
 namespace WebCore {
 

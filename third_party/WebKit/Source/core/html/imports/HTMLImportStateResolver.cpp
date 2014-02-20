@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/html/HTMLImportStateResolver.h"
+#include "core/html/imports/HTMLImportStateResolver.h"
 
-#include "core/html/HTMLImport.h"
+#include "core/html/imports/HTMLImport.h"
 
 namespace WebCore {
 

@@ -33,8 +33,8 @@
 
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/html/HTMLImport.h"
-#include "core/html/HTMLImportLoaderClient.h"
+#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportLoaderClient.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 

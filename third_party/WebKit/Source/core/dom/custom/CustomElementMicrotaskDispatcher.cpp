@@ -10,7 +10,7 @@
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementScheduler.h"
-#include "core/html/HTMLImport.h"
+#include "core/html/imports/HTMLImport.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

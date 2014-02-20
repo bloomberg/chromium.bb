@@ -31,9 +31,9 @@
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
-#include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html/imports/HTMLImport.h"
 #include "core/svg/SVGStyleElement.h"
 
 namespace WebCore {

@@ -40,7 +40,7 @@
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
-#include "core/html/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportChild.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #ifndef HTMLImportStateResolver_h
 #define HTMLImportStateResolver_h
 
-#include "core/html/HTMLImportState.h"
+#include "core/html/imports/HTMLImportState.h"
 
 namespace WebCore {
 

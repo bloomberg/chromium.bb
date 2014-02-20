@@ -40,7 +40,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/html/LinkImport.h"
+#include "core/html/imports/LinkImport.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"

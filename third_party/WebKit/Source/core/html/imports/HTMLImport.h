@@ -31,7 +31,7 @@
 #ifndef HTMLImport_h
 #define HTMLImport_h
 
-#include "core/html/HTMLImportState.h"
+#include "core/html/imports/HTMLImportState.h"
 #include "wtf/TreeNode.h"
 #include "wtf/Vector.h"
 

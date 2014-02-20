@@ -32,8 +32,8 @@
 #include "core/html/LinkResource.h"
 
 #include "HTMLNames.h"
-#include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/imports/HTMLImport.h"
 
 namespace WebCore {
 

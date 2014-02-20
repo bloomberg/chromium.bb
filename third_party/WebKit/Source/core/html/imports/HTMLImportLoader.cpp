@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "core/html/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/html/HTMLDocument.h"
-#include "core/html/HTMLImport.h"
-#include "core/html/HTMLImportLoaderClient.h"
+#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
 
 

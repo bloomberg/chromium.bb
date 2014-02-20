@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/html/LinkImport.h"
+#include "core/html/imports/LinkImport.h"
 
 #include "core/dom/Document.h"
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "core/html/HTMLImportChild.h"
-#include "core/html/HTMLImportsController.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportsController.h"
 
 
 namespace WebCore {
