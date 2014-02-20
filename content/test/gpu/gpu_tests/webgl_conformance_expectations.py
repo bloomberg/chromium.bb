@@ -174,8 +174,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'amd'], bug=308328)
     self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
         ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/canvas/drawingbuffer-test.html',
-        ['mac', 'amd'], bug=314997)
 
     # Linux/NVIDIA failures
     self.Fail('conformance/glsl/misc/empty_main.vert.html',
@@ -189,8 +187,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
-    self.Fail('conformance/canvas/drawingbuffer-test.html',
-        ['android'], bug=314997)
     self.Fail('conformance/glsl/misc/empty_main.vert.html',
         ['android'], bug=315976)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
