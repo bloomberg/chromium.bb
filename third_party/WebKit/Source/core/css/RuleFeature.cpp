@@ -209,10 +209,8 @@ void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* sele
     if (!selectorList)
         return;
 
-    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
-        for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory())
-            collectFeaturesFromSelector(*subSelector, metadata, collectionMode);
-    }
+    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
+        collectFeaturesFromSelector(*selector, metadata, collectionMode);
 }
 
 void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
