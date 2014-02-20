@@ -43,7 +43,6 @@ namespace android_webview {
 
 namespace {
 
-
 const void* kUserDataKey = &kUserDataKey;
 
 class UserData : public content::WebContents::Data {
@@ -139,12 +138,14 @@ AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 
 const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
-
 // Used to calculate memory and resource allocation. Determined experimentally.
 size_t g_memory_multiplier = 10;
 size_t g_num_gralloc_limit = 150;
 const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
+
+base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager =
+    LAZY_INSTANCE_INITIALIZER;
 
 class ScopedAllowGL {
  public:
@@ -152,7 +153,7 @@ class ScopedAllowGL {
   ~ScopedAllowGL();
 
   static bool IsAllowed() {
-    return BrowserThread::CurrentlyOn(BrowserThread::UI) && allow_gl;
+    return g_view_renderer_manager.Get().OnRenderThread() && allow_gl;
   }
 
  private:
@@ -162,7 +163,7 @@ class ScopedAllowGL {
 };
 
 ScopedAllowGL::ScopedAllowGL() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(g_view_renderer_manager.Get().OnRenderThread());
   DCHECK(!allow_gl);
   allow_gl = true;
 }
@@ -172,9 +173,6 @@ ScopedAllowGL::~ScopedAllowGL() {
 }
 
 bool ScopedAllowGL::allow_gl = false;
-
-base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager =
-    LAZY_INSTANCE_INITIALIZER;
 
 void RequestProcessGLOnUIThread() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {

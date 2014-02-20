@@ -8,6 +8,8 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 
 namespace android_webview {
 
@@ -21,6 +23,8 @@ class GLViewRendererManager {
   GLViewRendererManager();
   ~GLViewRendererManager();
 
+  bool OnRenderThread() const;
+
   // If |key| is NullKey(), then |view| is inserted at the front and a new key
   // is returned. Otherwise |key| must point to |view| which is moved to the
   // front.
@@ -33,6 +37,10 @@ class GLViewRendererManager {
   Key NullKey();
 
  private:
+  void MarkRenderThread();
+
+  mutable base::Lock lock_;
+  base::PlatformThreadHandle render_thread_;
   ListType mru_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GLViewRendererManager);
