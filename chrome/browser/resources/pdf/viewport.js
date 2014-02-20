@@ -129,13 +129,14 @@ Viewport.prototype = {
    * Called when the viewport should be updated.
    */
   updateViewport_: function() {
-    // Shift the toolbar so that it doesn't move when the scrollbars display
     var needsScrollbars = this.documentHasScrollbars();
+    var page = this.getMostVisiblePage();
     this.viewportChangedCallback_(this.zoom_,
                                   this.window_.pageXOffset,
                                   this.window_.pageYOffset,
                                   this.scrollbarWidth_,
-                                  needsScrollbars);
+                                  needsScrollbars,
+                                  page);
   },
 
   /**

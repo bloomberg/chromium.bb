@@ -11,12 +11,26 @@
   <link rel="import" href="../../../../third_party/polymer/polymer-selector/polymer-selector.html">
   <link rel="import" href="html_office/elements/viewer-toolbar/viewer-toolbar.html">
   <link rel="import" href="html_office/elements/viewer-button/viewer-button.html">
+  <link rel="import" href="html_office/elements/viewer-page-indicator/viewer-page-indicator.html">
+  <link rel="import" href="html_office/elements/viewer-progress-bar/viewer-progress-bar.html">
   <style>
     body {
       background-color: #ccc;
       margin: 0;
     }
     viewer-toolbar {
+      visibility: hidden;
+      z-index: 3;
+    }
+    viewer-page-indicator {
+      visibility: hidden;
+      z-index: 3;
+    }
+    viewer-progress-bar {
+      z-index: 3;
+    }
+    viewer-error-screen {
+      visibility: hidden;
       z-index: 2;
     }
     #plugin {
@@ -34,6 +48,8 @@
 <body>
 
 <div id="sizer"></div>
+<viewer-page-indicator id="page-indicator"></viewer-page-indicator>
+<viewer-progress-bar id="progress-bar"></viewer-progress-bar>
 
 <viewer-toolbar id="toolbar">
   <polymer-selector>

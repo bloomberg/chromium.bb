@@ -21,28 +21,66 @@ var sizer;
 // The toolbar element.
 var viewerToolbar;
 
+// The page indicator element.
+var viewerPageIndicator;
+
+// The progress bar element.
+var viewerProgressBar;
+
 // The viewport object.
 var viewport;
+
+// The document dimensions.
+var documentDimensions;
 
 // Returns true if the fit-to-page button is enabled.
 function isFitToPageEnabled() {
   return $('fit-to-page-button').classList.contains('polymer-selected');
 }
 
+function updateProgress(progress) {
+  viewerProgressBar.progress = progress;
+  if (progress == -1) {
+    // Document load failed.
+    sizer.style.display = 'none';
+    viewerToolbar.style.visibility = 'hidden';
+  }
+}
+
 // Called when a message is received from the plugin.
 function handleMessage(message) {
   if (message.data.type == 'documentDimensions') {
-    viewport.setDocumentDimensions(message.data);
+    documentDimensions = message.data;
+    viewport.setDocumentDimensions(documentDimensions);
+    viewerToolbar.style.visibility = 'visible';
+    viewerPageIndicator.initialFadeIn();
+    viewerToolbar.initialFadeIn();
+  } else if (message.data.type == 'loadProgress') {
+    updateProgress(message.data['progress']);
   }
 }
 
 // Callback that's called when the viewport changes.
-function viewportChangedCallback(zoom, x, y, scrollbarWidth, hasScrollbars) {
+function viewportChangedCallback(zoom,
+                                 x,
+                                 y,
+                                 scrollbarWidth,
+                                 hasScrollbars,
+                                 page) {
   // Offset the toolbar position so that it doesn't move if scrollbars appear.
   var toolbarRight = hasScrollbars.y ? 0 : scrollbarWidth;
   var toolbarBottom = hasScrollbars.x ? 0 : scrollbarWidth;
   viewerToolbar.style.right = toolbarRight + 'px';
   viewerToolbar.style.bottom = toolbarBottom + 'px';
+
+  // Show or hide the page indicator.
+  if (documentDimensions.pageDimensions.length > 1 && hasScrollbars.y)
+    viewerPageIndicator.style.visibility = 'visible';
+  else
+    viewerPageIndicator.style.visibility = 'hidden';
+
+  // Update the most visible page.
+  viewerPageIndicator.text = page + 1;
 
   // Notify the plugin of the viewport change.
   plugin.postMessage({
@@ -56,6 +94,8 @@ function viewportChangedCallback(zoom, x, y, scrollbarWidth, hasScrollbars) {
 function load() {
   sizer = $('sizer');
   viewerToolbar = $('toolbar');
+  viewerPageIndicator = $('page-indicator');
+  viewerProgressBar = $('progress-bar');
 
   // Create the viewport.
   viewport = new Viewport(window,
