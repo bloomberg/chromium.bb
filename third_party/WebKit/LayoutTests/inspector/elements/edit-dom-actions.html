@@ -62,7 +62,7 @@ function test()
         function testSetAttribute(next)
         {
             domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
-         
+
             function testBody(node, done)
             {
                 editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
@@ -82,7 +82,7 @@ function test()
         function testRemoveAttribute(next)
         {
             domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
-         
+
             function testBody(node, done)
             {
                 editNodePartAndRun(node, "webkit-html-attribute", "", done, true);

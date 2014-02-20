@@ -442,8 +442,8 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
         }
     }
 
-    WebInspector.panels.elements.treeOutline._updateModifiedNodes();
     var treeOutline = WebInspector.panels.elements.treeOutline;
+    treeOutline._updateModifiedNodes();
     print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
 };
 
