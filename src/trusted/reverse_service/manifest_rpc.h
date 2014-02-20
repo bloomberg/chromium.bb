@@ -12,6 +12,5 @@
 
 #define NACL_MANIFEST_LIST    "manifest_list::C"
 #define NACL_MANIFEST_LOOKUP  "manifest_lookup:si:ihllC"
-#define NACL_MANIFEST_UNREF   "mainfest_unref:C:"
 
 #endif

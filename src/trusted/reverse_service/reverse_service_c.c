@@ -369,32 +369,6 @@ static void NaClReverseServiceManifestLookupRpc(
   NaClDescSafeUnref((struct NaClDesc *) io_desc);
 }
 
-/*
- * Dereferences the file by object proxy handle. The file descriptor
- * should have been closed on the other side (it was a copy due to the
- * sendmsg anyway).
- */
-static void NaClReverseServiceManifestUnrefRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  char                      *proxy_handle = in_args[0]->arrays.carr;
-
-  NaClLog(4, "Entered ManifestUnrefRpc: 0x%08"NACL_PRIxPTR", %.*s\n",
-          (uintptr_t) nrsp, 10, proxy_handle);
-  /*
-   * Placeholder.  This RPC will be replaced by real code that
-   * looks up the object proxy handle to close the Pepper file object.
-   * TODO(phosek): replace with real code.
-   */
-  out_args[0]->u.ival = 0; /* OK */
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 static void NaClReverseServiceRequestQuotaForWriteRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -539,7 +513,6 @@ struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
     NaClReverseServiceCreateProcessFunctorResultRpc, },
   { NACL_MANIFEST_LIST, NaClReverseServiceManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
-  { NACL_MANIFEST_UNREF, NaClReverseServiceManifestUnrefRpc, },
   { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, NaClReverseServiceRequestQuotaForWriteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
