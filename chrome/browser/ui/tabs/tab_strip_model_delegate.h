@@ -10,7 +10,6 @@
 #include "content/public/common/page_transition_types.h"
 
 class Browser;
-class DockInfo;
 class GURL;
 
 namespace content {
@@ -55,10 +54,8 @@ class TabStripModelDelegate {
 
   // Asks for a new TabStripModel to be created and the given web contentses to
   // be added to it. Its size and position are reflected in |window_bounds|.
-  // If |dock_info|'s type is other than NONE, the newly created window should
-  // be docked as identified by |dock_info|. Returns the Browser object
-  // representing the newly created window and tab strip. This does not
-  // show the window; it's up to the caller to do so.
+  // Returns the Browser object representing the newly created window and tab
+  // strip. This does not show the window; it's up to the caller to do so.
   //
   // TODO(avi): This is a layering violation; the TabStripModel should not know
   // about the Browser type. At least fix so that this returns a
@@ -72,7 +69,6 @@ class TabStripModelDelegate {
   virtual Browser* CreateNewStripWithContents(
       const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,
-      const DockInfo& dock_info,
       bool maximize) = 0;
 
   // Notifies the delegate that the specified WebContents will be added to the

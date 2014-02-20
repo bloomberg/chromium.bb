@@ -34,16 +34,10 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/animation/animation.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
@@ -68,12 +62,6 @@ using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::WebContents;
 
-static const int kHorizontalMoveThreshold = 16;  // Pixels.
-
-// Distance from the next/previous stacked before before we consider the tab
-// close enough to trigger moving.
-static const int kStackedDistance = 36;
-
 // If non-null there is a drag underway.
 static TabDragController* instance_ = NULL;
 
@@ -89,113 +77,11 @@ const int kMoveAttachedInitialDelay = 600;
 // Delay for moving tabs after the initial delay has passed.
 const int kMoveAttachedSubsequentDelay = 300;
 
-// Radius of the rect drawn by DockView.
-const int kRoundedRectRadius = 4;
+const int kHorizontalMoveThreshold = 16;  // Pixels.
 
-// Spacing between tab icons when DockView is showing a docking location that
-// contains more than one tab.
-const int kTabSpacing = 4;
-
-// DockView is the view responsible for giving a visual indicator of where a
-// dock is going to occur.
-
-class DockView : public views::View {
- public:
-  explicit DockView(DockInfo::Type type) : type_(type) {}
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(DockInfo::popup_width(), DockInfo::popup_height());
-  }
-
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
-    // Fill the background rect.
-    SkPaint paint;
-    paint.setColor(SkColorSetRGB(108, 108, 108));
-    paint.setStyle(SkPaint::kFill_Style);
-    canvas->DrawRoundRect(GetLocalBounds(), kRoundedRectRadius, paint);
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-    gfx::ImageSkia* high_icon = rb.GetImageSkiaNamed(IDR_DOCK_HIGH);
-    gfx::ImageSkia* wide_icon = rb.GetImageSkiaNamed(IDR_DOCK_WIDE);
-
-    canvas->Save();
-    bool rtl_ui = base::i18n::IsRTL();
-    if (rtl_ui) {
-      // Flip canvas to draw the mirrored tab images for RTL UI.
-      canvas->Translate(gfx::Vector2d(width(), 0));
-      canvas->Scale(-1, 1);
-    }
-    int x_of_active_tab = width() / 2 + kTabSpacing / 2;
-    int x_of_inactive_tab = width() / 2 - high_icon->width() - kTabSpacing / 2;
-    switch (type_) {
-      case DockInfo::LEFT_OF_WINDOW:
-      case DockInfo::LEFT_HALF:
-        if (!rtl_ui)
-          std::swap(x_of_active_tab, x_of_inactive_tab);
-        canvas->DrawImageInt(*high_icon, x_of_active_tab,
-                             (height() - high_icon->height()) / 2);
-        if (type_ == DockInfo::LEFT_OF_WINDOW) {
-          DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
-                             (height() - high_icon->height()) / 2);
-        }
-        break;
-
-
-      case DockInfo::RIGHT_OF_WINDOW:
-      case DockInfo::RIGHT_HALF:
-        if (rtl_ui)
-          std::swap(x_of_active_tab, x_of_inactive_tab);
-        canvas->DrawImageInt(*high_icon, x_of_active_tab,
-                             (height() - high_icon->height()) / 2);
-        if (type_ == DockInfo::RIGHT_OF_WINDOW) {
-         DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
-                           (height() - high_icon->height()) / 2);
-        }
-        break;
-
-      case DockInfo::TOP_OF_WINDOW:
-        canvas->DrawImageInt(*wide_icon, (width() - wide_icon->width()) / 2,
-                             height() / 2 - high_icon->height());
-        break;
-
-      case DockInfo::MAXIMIZE: {
-        gfx::ImageSkia* max_icon = rb.GetImageSkiaNamed(IDR_DOCK_MAX);
-        canvas->DrawImageInt(*max_icon, (width() - max_icon->width()) / 2,
-                             (height() - max_icon->height()) / 2);
-        break;
-      }
-
-      case DockInfo::BOTTOM_HALF:
-      case DockInfo::BOTTOM_OF_WINDOW:
-        canvas->DrawImageInt(*wide_icon, (width() - wide_icon->width()) / 2,
-                             height() / 2 + kTabSpacing / 2);
-        if (type_ == DockInfo::BOTTOM_OF_WINDOW) {
-          DrawImageWithAlpha(canvas, *wide_icon,
-              (width() - wide_icon->width()) / 2,
-              height() / 2 - kTabSpacing / 2 - wide_icon->height());
-        }
-        break;
-
-      default:
-        NOTREACHED();
-        break;
-    }
-    canvas->Restore();
-  }
-
- private:
-  void DrawImageWithAlpha(gfx::Canvas* canvas, const gfx::ImageSkia& image,
-                          int x, int y) {
-    SkPaint paint;
-    paint.setAlpha(128);
-    canvas->DrawImageInt(image, x, y, paint);
-  }
-
-  DockInfo::Type type_;
-
-  DISALLOW_COPY_AND_ASSIGN(DockView);
-};
+// Distance from the next/previous stacked before before we consider the tab
+// close enough to trigger moving.
+const int kStackedDistance = 36;
 
 void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
 #if defined(USE_ASH)
@@ -250,111 +136,6 @@ class WindowPositionManagedUpdater : public views::WidgetObserver {
 };
 
 }  // namespace
-
-///////////////////////////////////////////////////////////////////////////////
-// DockDisplayer
-
-// DockDisplayer is responsible for giving the user a visual indication of a
-// possible dock position (as represented by DockInfo). DockDisplayer shows
-// a window with a DockView in it. Two animations are used that correspond to
-// the state of DockInfo::in_enable_area.
-class TabDragController::DockDisplayer : public gfx::AnimationDelegate {
- public:
-  DockDisplayer(TabDragController* controller, const DockInfo& info)
-      : controller_(controller),
-        popup_(NULL),
-        popup_view_(NULL),
-        animation_(this),
-        hidden_(false),
-        in_enable_area_(info.in_enable_area()) {
-    popup_ = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.keep_on_top = true;
-    params.bounds = info.GetPopupRect();
-    popup_->Init(params);
-    popup_->SetContentsView(new DockView(info.type()));
-    popup_->SetOpacity(0x00);
-    if (info.in_enable_area())
-      animation_.Reset(1);
-    else
-      animation_.Show();
-    popup_->Show();
-    popup_view_ = popup_->GetNativeView();
-  }
-
-  virtual ~DockDisplayer() {
-    if (controller_)
-      controller_->DockDisplayerDestroyed(this);
-  }
-
-  // Updates the state based on |in_enable_area|.
-  void UpdateInEnabledArea(bool in_enable_area) {
-    if (in_enable_area != in_enable_area_) {
-      in_enable_area_ = in_enable_area;
-      UpdateLayeredAlpha();
-    }
-  }
-
-  // Resets the reference to the hosting TabDragController. This is
-  // invoked when the TabDragController is destroyed.
-  void clear_controller() { controller_ = NULL; }
-
-  // NativeView of the window we create.
-  gfx::NativeView popup_view() { return popup_view_; }
-
-  // Starts the hide animation. When the window is closed the
-  // TabDragController is notified by way of the DockDisplayerDestroyed
-  // method
-  void Hide() {
-    if (hidden_)
-      return;
-
-    if (!popup_) {
-      delete this;
-      return;
-    }
-    hidden_ = true;
-    animation_.Hide();
-  }
-
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
-    UpdateLayeredAlpha();
-  }
-
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
-    if (!hidden_)
-      return;
-    popup_->Close();
-    delete this;
-  }
-
- private:
-  void UpdateLayeredAlpha() {
-    double scale = in_enable_area_ ? 1 : .5;
-    popup_->SetOpacity(static_cast<unsigned char>(animation_.GetCurrentValue() *
-        scale * 255.0));
-  }
-
-  // TabDragController that created us.
-  TabDragController* controller_;
-
-  // Window we're showing.
-  views::Widget* popup_;
-
-  // NativeView of |popup_|. We cache this to avoid the possibility of
-  // invoking a method on popup_ after we close it.
-  gfx::NativeView popup_view_;
-
-  // Animation for when first made visible.
-  gfx::SlideAnimation animation_;
-
-  // Have we been hidden?
-  bool hidden_;
-
-  // Value of DockInfo::in_enable_area.
-  bool in_enable_area_;
-};
 
 TabDragController::TabDragData::TabDragData()
     : contents(NULL),
@@ -756,12 +537,6 @@ void TabDragController::InitWindowCreatePoint() {
 
 gfx::Point TabDragController::GetWindowCreatePoint(
     const gfx::Point& origin) const {
-  if (dock_info_.type() != DockInfo::NONE && dock_info_.in_enable_area()) {
-    // If we're going to dock, we need to return the exact coordinate,
-    // otherwise we may attempt to maximize on the wrong monitor.
-    return origin;
-  }
-
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
   gfx::Rect work_area = screen_->GetDisplayNearestPoint(origin).work_area();
@@ -778,38 +553,6 @@ gfx::Point TabDragController::GetWindowCreatePoint(
   }
   return gfx::Point(create_point.x() - window_create_point_.x(),
                     create_point.y() - window_create_point_.y());
-}
-
-void TabDragController::UpdateDockInfo(const gfx::Point& point_in_screen) {
-  TRACE_EVENT1("views", "TabDragController::UpdateDockInfo",
-               "point_in_screen", point_in_screen.ToString());
-
-  // Update the DockInfo for the current mouse coordinates.
-  DockInfo dock_info = GetDockInfoAtPoint(point_in_screen);
-  if (!dock_info.equals(dock_info_)) {
-    // DockInfo for current position differs.
-    if (dock_info_.type() != DockInfo::NONE &&
-        !dock_controllers_.empty()) {
-      // Hide old visual indicator.
-      dock_controllers_.back()->Hide();
-    }
-    dock_info_ = dock_info;
-    if (dock_info_.type() != DockInfo::NONE) {
-      // Show new docking position.
-      DockDisplayer* controller = new DockDisplayer(this, dock_info_);
-      if (controller->popup_view()) {
-        dock_controllers_.push_back(controller);
-        dock_windows_.insert(controller->popup_view());
-      } else {
-        delete controller;
-      }
-    }
-  } else if (dock_info_.type() != DockInfo::NONE &&
-             !dock_controllers_.empty()) {
-    // Current dock position is the same as last, update the controller's
-    // in_enable_area state as it may have changed.
-    dock_controllers_.back()->UpdateInEnabledArea(dock_info_.in_enable_area());
-  }
 }
 
 void TabDragController::SaveFocus() {
@@ -888,8 +631,6 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
         base::Bind(&TabDragController::BringWindowUnderPointToFront,
                    base::Unretained(this), point_in_screen));
   }
-
-  UpdateDockInfo(point_in_screen);
 
   if (!is_dragging_window_ && attached_tabstrip_) {
     if (move_only()) {
@@ -1147,31 +888,6 @@ TabDragController::DetachPosition TabDragController::GetDetachPosition(
   return DETACH_ABOVE_OR_BELOW;
 }
 
-DockInfo TabDragController::GetDockInfoAtPoint(
-    const gfx::Point& point_in_screen) {
-  // TODO: add support for dock info when |detach_into_browser_| is true.
-  if (attached_tabstrip_ || detach_into_browser_) {
-    // If the mouse is over a tab strip, don't offer a dock position.
-    return DockInfo();
-  }
-
-  if (dock_info_.IsValidForPoint(point_in_screen)) {
-    // It's possible any given screen coordinate has multiple docking
-    // positions. Check the current info first to avoid having the docking
-    // position bounce around.
-    return dock_info_;
-  }
-
-  gfx::NativeView dragged_view = GetAttachedBrowserWidget()->GetNativeView();
-  dock_windows_.insert(dragged_view);
-  DockInfo info = DockInfo::GetDockInfoAtPoint(
-      host_desktop_type_,
-      point_in_screen,
-      dock_windows_);
-  dock_windows_.erase(dragged_view);
-  return info;
-}
-
 TabStrip* TabDragController::GetTargetTabStripForPoint(
     const gfx::Point& point_in_screen) {
   TRACE_EVENT1("views", "TabDragController::GetTargetTabStripForPoint",
@@ -1187,17 +903,8 @@ TabStrip* TabDragController::GetTargetTabStripForPoint(
                                              point_in_screen.y()))
       return attached_tabstrip_;
   }
-  gfx::NativeView dragged_view = NULL;
-  if (is_dragging_window_)
-    dragged_view = attached_tabstrip_->GetWidget()->GetNativeView();
-  if (dragged_view)
-    dock_windows_.insert(dragged_view);
   gfx::NativeWindow local_window =
-      GetLocalProcessWindowAtPoint(host_desktop_type_,
-                                   point_in_screen,
-                                   dock_windows_);
-  if (dragged_view)
-    dock_windows_.erase(dragged_view);
+      GetLocalProcessWindow(point_in_screen, is_dragging_window_);
   TabStrip* tab_strip = GetTabStripForWindow(local_window);
   if (tab_strip && DoesTabStripContain(tab_strip, point_in_screen))
     return tab_strip;
@@ -1719,16 +1426,6 @@ void TabDragController::EndDragImpl(EndDragType type) {
     GetAttachedBrowserWidget()->EndMoveLoop();
   }
 
-  // Hide the current dock controllers.
-  for (size_t i = 0; i < dock_controllers_.size(); ++i) {
-    // Be sure and clear the controller first, that way if Hide ends up
-    // deleting the controller it won't call us back.
-    dock_controllers_[i]->clear_controller();
-    dock_controllers_[i]->Hide();
-  }
-  dock_controllers_.clear();
-  dock_windows_.clear();
-
   if (type != TAB_DESTROYED) {
     // We only finish up the drag if we were actually dragging. If start_drag_
     // is false, the user just clicked and released and didn't move the mouse
@@ -1906,64 +1603,12 @@ void TabDragController::CompleteDrag() {
         move_behavior_ == MOVE_VISIBILE_TABS,
         true);
   } else {
-    if (dock_info_.type() != DockInfo::NONE) {
-      switch (dock_info_.type()) {
-        case DockInfo::LEFT_OF_WINDOW:
-          content::RecordAction(UserMetricsAction("DockingWindow_Left"));
-          break;
-
-        case DockInfo::RIGHT_OF_WINDOW:
-          content::RecordAction(UserMetricsAction("DockingWindow_Right"));
-          break;
-
-        case DockInfo::BOTTOM_OF_WINDOW:
-          content::RecordAction(UserMetricsAction("DockingWindow_Bottom"));
-          break;
-
-        case DockInfo::TOP_OF_WINDOW:
-          content::RecordAction(UserMetricsAction("DockingWindow_Top"));
-          break;
-
-        case DockInfo::MAXIMIZE:
-          content::RecordAction(
-              UserMetricsAction("DockingWindow_Maximize"));
-          break;
-
-        case DockInfo::LEFT_HALF:
-          content::RecordAction(
-              UserMetricsAction("DockingWindow_LeftHalf"));
-          break;
-
-        case DockInfo::RIGHT_HALF:
-          content::RecordAction(
-              UserMetricsAction("DockingWindow_RightHalf"));
-          break;
-
-        case DockInfo::BOTTOM_HALF:
-          content::RecordAction(
-              UserMetricsAction("DockingWindow_BottomHalf"));
-          break;
-
-        default:
-          NOTREACHED();
-          break;
-      }
-    }
     // Compel the model to construct a new window for the detached
     // WebContentses.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
     window_bounds.set_origin(GetWindowCreatePoint(last_point_in_screen_));
 
-    // When modifying the following if statement, please make sure not to
-    // introduce issue listed in http://crbug.com/6223 comment #11.
-    bool rtl_ui = base::i18n::IsRTL();
-    bool has_dock_position = (dock_info_.type() != DockInfo::NONE);
-    if (rtl_ui && has_dock_position) {
-      // Mirror X axis so the docked tab is aligned using the mouse click as
-      // the top-right corner.
-      window_bounds.set_x(window_bounds.x() - window_bounds.width());
-    }
     base::AutoReset<bool> setter(&is_mutating_, true);
 
     std::vector<TabStripModelDelegate::NewStripContents> contentses;
@@ -1977,7 +1622,7 @@ void TabDragController::CompleteDrag() {
 
     Browser* new_browser =
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
-            contentses, window_bounds, dock_info_, widget->IsMaximized());
+            contentses, window_bounds, widget->IsMaximized());
     ResetSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
 
@@ -2028,41 +1673,15 @@ void TabDragController::CleanUpHiddenFrame() {
     GetModel(source_tabstrip_)->delegate()->CloseFrameAfterDragSession();
 }
 
-void TabDragController::DockDisplayerDestroyed(
-    DockDisplayer* controller) {
-  DockWindows::iterator dock_i =
-      dock_windows_.find(controller->popup_view());
-  if (dock_i != dock_windows_.end())
-    dock_windows_.erase(dock_i);
-  else
-    NOTREACHED();
-
-  std::vector<DockDisplayer*>::iterator i =
-      std::find(dock_controllers_.begin(), dock_controllers_.end(),
-                controller);
-  if (i != dock_controllers_.end())
-    dock_controllers_.erase(i);
-  else
-    NOTREACHED();
-}
-
 void TabDragController::BringWindowUnderPointToFront(
     const gfx::Point& point_in_screen) {
-  // If we're going to dock to another window, bring it to the front.
-  gfx::NativeWindow window = dock_info_.window();
-  if (!window) {
-    gfx::NativeView dragged_native_view =
-        attached_tabstrip_->GetWidget()->GetNativeView();
-    dock_windows_.insert(dragged_native_view);
-    window = GetLocalProcessWindowAtPoint(host_desktop_type_,
-                                          point_in_screen,
-                                          dock_windows_);
-    dock_windows_.erase(dragged_native_view);
-    // Only bring browser windows to front - only windows with a TabStrip can
-    // be tab drag targets.
-    if (!GetTabStripForWindow(window))
-      return;
-  }
+  aura::Window* window = GetLocalProcessWindow(point_in_screen, true);
+
+  // Only bring browser windows to front - only windows with a TabStrip can
+  // be tab drag targets.
+  if (!GetTabStripForWindow(window))
+    return;
+
   if (window) {
     views::Widget* widget_window = views::Widget::GetWidgetForNativeView(
         window);
@@ -2270,4 +1889,20 @@ gfx::Vector2d TabDragController::GetWindowOffset(
   gfx::Point point = point_in_screen;
   views::View::ConvertPointFromScreen(toplevel_view, &point);
   return point.OffsetFromOrigin();
+}
+
+gfx::NativeWindow TabDragController::GetLocalProcessWindow(
+    const gfx::Point& screen_point,
+    bool exclude_dragged_view) {
+  std::set<aura::Window*> exclude;
+  if (exclude_dragged_view) {
+    aura::Window* dragged_window =
+        attached_tabstrip_->GetWidget()->GetNativeView();
+    if (dragged_window)
+      exclude.insert(dragged_window);
+  }
+  return GetLocalProcessWindowAtPoint(host_desktop_type_,
+                                      screen_point,
+                                      exclude);
+
 }

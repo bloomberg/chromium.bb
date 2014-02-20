@@ -1672,7 +1672,6 @@
         'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
         'browser/ui/sync/sync_promo_ui_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
-        'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',
         'browser/ui/tabs/pinned_tab_service_unittest.cc',
         'browser/ui/tabs/pinned_tab_test_utils.cc',
@@ -2410,7 +2409,6 @@
             'chrome',
           ],
           'sources!': [
-            'browser/ui/tabs/dock_info_unittest.cc',
             'browser/ui/tests/ui_gfx_image_unittest.cc',
             'browser/ui/gtk/reload_button_gtk_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',

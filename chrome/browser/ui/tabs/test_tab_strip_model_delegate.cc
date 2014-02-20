@@ -21,7 +21,6 @@ void TestTabStripModelDelegate::AddTabAt(const GURL& url,
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
     const std::vector<NewStripContents>& contentses,
     const gfx::Rect& window_bounds,
-    const DockInfo& dock_info,
     bool maximize) {
   return NULL;
 }

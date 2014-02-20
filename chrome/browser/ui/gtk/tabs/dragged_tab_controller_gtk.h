@@ -7,7 +7,6 @@
 
 #include <gtk/gtk.h>
 
-#include <set>
 #include <vector>
 
 #include "base/basictypes.h"

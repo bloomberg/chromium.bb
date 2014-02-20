@@ -65,7 +65,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
@@ -1407,7 +1406,6 @@ enum {
 
   // Create the new window with a single tab in its model, the one being
   // dragged.
-  DockInfo dockInfo;
   TabStripModelDelegate::NewStripContents item;
   item.web_contents = contents;
   item.add_types = TabStripModel::ADD_ACTIVE |
@@ -1416,7 +1414,7 @@ enum {
   std::vector<TabStripModelDelegate::NewStripContents> contentses;
   contentses.push_back(item);
   Browser* newBrowser = browser_->tab_strip_model()->delegate()->
-      CreateNewStripWithContents(contentses, browserRect, dockInfo, false);
+      CreateNewStripWithContents(contentses, browserRect, false);
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller =

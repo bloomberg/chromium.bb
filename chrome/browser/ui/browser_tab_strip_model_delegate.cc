@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -52,18 +51,13 @@ void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
     const std::vector<NewStripContents>& contentses,
     const gfx::Rect& window_bounds,
-    const DockInfo& dock_info,
     bool maximize) {
   DCHECK(browser_->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP));
-
-  gfx::Rect new_window_bounds = window_bounds;
-  if (dock_info.GetNewWindowBounds(&new_window_bounds, &maximize))
-    dock_info.AdjustOtherWindowBounds();
 
   // Create an empty new browser window the same size as the old one.
   Browser::CreateParams params(browser_->profile(),
                                browser_->host_desktop_type());
-  params.initial_bounds = new_window_bounds;
+  params.initial_bounds = window_bounds;
   params.initial_show_state =
       maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
   Browser* browser = new Browser(params);

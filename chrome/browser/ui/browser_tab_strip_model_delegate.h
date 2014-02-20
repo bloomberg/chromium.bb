@@ -26,7 +26,6 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   virtual Browser* CreateNewStripWithContents(
       const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,
-      const DockInfo& dock_info,
       bool maximize) OVERRIDE;
   virtual void WillAddWebContents(content::WebContents* contents) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;

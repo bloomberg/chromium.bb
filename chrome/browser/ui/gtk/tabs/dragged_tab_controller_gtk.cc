@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/window_finder.h"
 #include "chrome/browser/ui/media_utils.h"
-#include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/browser/notification_source.h"
@@ -775,7 +774,7 @@ bool DraggedTabControllerGtk::CompleteDrag() {
 
     Browser* new_browser =
         source_tabstrip_->model()->delegate()->CreateNewStripWithContents(
-            contentses, window_bounds, DockInfo(), window->IsMaximized());
+            contentses, window_bounds, window->IsMaximized());
     RestoreSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
     CleanUpHiddenFrame();
