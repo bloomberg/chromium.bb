@@ -3853,7 +3853,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     const RenderStyle* newStyle = renderer()->style();
 
-    compositor()->updateLayerCompositingState(this);
+    compositor()->updateLayerCompositingState(this, RenderLayerCompositor::UseChickenEggHacks);
     // FIXME: this compositing logic should be pushed into the compositing code, not here.
     if (needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)

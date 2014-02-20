@@ -744,7 +744,7 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
         allocateOrClearCompositedLayerMapping(layer);
 }
 
-void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
+void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
 {
     updateDirectCompositingReasons(layer);
     CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
@@ -763,7 +763,8 @@ void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
             setCompositingLayersNeedRebuild();
     }
 
-    applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
+    if (options == UseChickenEggHacks)
+        applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
 }
 
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)

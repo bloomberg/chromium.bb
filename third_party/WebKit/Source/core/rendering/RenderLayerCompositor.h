@@ -98,9 +98,14 @@ public:
     // composited layer tree.
     void updateCompositingLayers();
 
+    enum UpdateLayerCompositingStateOptions {
+        Normal,
+        UseChickenEggHacks // Use this to trigger temporary chicken-egg hacks. See crbug.com/339892.
+    };
+
     // Update the compositing dirty bits, based on the compositing-impacting properties of the layer.
     // (At the moment, it also has some legacy compatibility hacks.)
-    void updateLayerCompositingState(RenderLayer*);
+    void updateLayerCompositingState(RenderLayer*, UpdateLayerCompositingStateOptions = Normal);
 
     // Update the geometry for compositing children of compositingAncestor.
     void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);

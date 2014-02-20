@@ -1688,12 +1688,6 @@ void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
         return;
     }
 
-    if ((changeType == MaskImageChanged) && m_maskLayer) {
-        // The composited layer bounds relies on box->maskClipRect(), which changes
-        // when the mask image becomes available.
-        updateAfterLayout(CompositingChildrenOnly | IsUpdateRoot);
-    }
-
     if ((changeType == CanvasChanged || changeType == CanvasPixelsChanged) && isAcceleratedCanvas(renderer())) {
         m_graphicsLayer->setContentsNeedsDisplay();
         return;
