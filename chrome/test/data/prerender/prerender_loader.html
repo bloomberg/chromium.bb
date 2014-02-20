@@ -5,7 +5,11 @@
 </head>
 <body>
 <script>
-  AddPrerender('REPLACE_WITH_PRERENDER_URL', 0);
+var numLinksToInsert =
+    ExtractGetParameterBadlyAndInsecurely('links_to_insert', 1);
+for (var i = 0; i < numLinksToInsert; ++i) {
+  AddPrerender('REPLACE_WITH_PRERENDER_URL', i);
+}
 </script>
 </body>
 </html>

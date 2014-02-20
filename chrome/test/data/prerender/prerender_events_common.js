@@ -10,71 +10,98 @@
 // Currently only errors with the ordering of Prerender events are caught.
 var hadPrerenderEventErrors = false;
 
-var receivedPrerenderStartEvents = [];
-var receivedPrerenderLoadEvents = [];
-var receivedPrerenderDomContentLoadedEvents = [];
-var receivedPrerenderStopEvents = [];
+var receivedPrerenderEvents = {
+  'webkitprerenderstart': [],
+  'webkitprerenderdomcontentloaded': [],
+  'webkitprerenderload': [],
+  'webkitprerenderstop': [],
+}
+// A list of callbacks to be called on every prerender event. Each callback
+// returns true if it should never be called again, or false to remain in the
+// list and be called on future events. These are used to implement
+// WaitForPrerenderEventCount.
+var prerenderEventCallbacks = [];
 
-function PrerenderStartHandler(index) {
-  if (receivedPrerenderStartEvents[index] ||
-      receivedPrerenderLoadEvents[index] ||
-      receivedPrerenderStopEvents[index]) {
-    hadPrerenderEventErrors = true;
-    return;
-  }
-  receivedPrerenderStartEvents[index] = true;
+function GetPrerenderEventCount(index, type) {
+  return receivedPrerenderEvents[type][index] || 0;
 }
 
-function PrerenderLoadHandler(index) {
-  if (!receivedPrerenderStartEvents[index] ||
-      receivedPrerenderStopEvents[index]) {
-    hadPrerenderEventErrors = true;
-    return;
+function PrerenderEventHandler(index, ev) {
+  // Check for errors.
+  if (ev.type == 'webkitprerenderstart') {
+    // No event may preceed start.
+    if (GetPrerenderEventCount(index, 'webkitprerenderstart') ||
+        GetPrerenderEventCount(index, 'webkitprerenderdomcontentloaded') ||
+        GetPrerenderEventCount(index, 'webkitprerenderload') ||
+        GetPrerenderEventCount(index, 'webkitprerenderstop')) {
+      hadPrerenderEventErrors = true;
+    }
+  } else {
+    // There may be multiple load or domcontentloaded events, but they must not
+    // come after start and must come before stop. And there may be at most one
+    // start. Note that stop may be delivered without any load events.
+    if (!GetPrerenderEventCount(index, 'webkitprerenderstart') ||
+        GetPrerenderEventCount(index, 'webkitprerenderstop')) {
+      hadPrerenderEventErrors = true;
+    }
   }
-  if (!receivedPrerenderLoadEvents[index])
-    receivedPrerenderLoadEvents[index] = 0;
-  receivedPrerenderLoadEvents[index]++;
+
+  // Update count.
+  receivedPrerenderEvents[ev.type][index] =
+      (receivedPrerenderEvents[ev.type][index] || 0) + 1;
+
+  // Run all callbacks. Remove the ones that are done.
+  prerenderEventCallbacks = prerenderEventCallbacks.filter(function(callback) {
+    return !callback();
+  });
 }
 
-function PrerenderDomContentLoadedHandler(index) {
-  if (!receivedPrerenderStartEvents[index] ||
-      receivedPrerenderStopEvents[index]) {
-    hadPrerenderEventErrors = true;
-    return;
-  }
-  if (!receivedPrerenderDomContentLoadedEvents[index])
-    receivedPrerenderDomContentLoadedEvents[index] = 0;
-  receivedPrerenderDomContentLoadedEvents[index]++;
-}
-
-function PrerenderStopHandler(index) {
-  if (!receivedPrerenderStartEvents[index] ||
-      receivedPrerenderStopEvents[index]) {
-    hadPrerenderEventErrors = true;
-    return;
-  }
-  receivedPrerenderStopEvents[index] = true;
+// Calls |callback| when at least |count| instances of event |type| have been
+// observed for prerender |index|.
+function WaitForPrerenderEventCount(index, type, count, callback) {
+  var checkCount = function() {
+    if (GetPrerenderEventCount(index, type) >= count) {
+      callback();
+      return true;
+    }
+    return false;
+  };
+  if (!checkCount())
+    prerenderEventCallbacks.push(checkCount);
 }
 
 function AddEventHandlersToLinkElement(link, index) {
   link.addEventListener('webkitprerenderstart',
-                        PrerenderStartHandler.bind(null, index), false);
-  link.addEventListener('webkitprerenderload',
-                        PrerenderLoadHandler.bind(null, index), false);
+                        PrerenderEventHandler.bind(null, index), false);
   link.addEventListener('webkitprerenderdomcontentloaded',
-                        PrerenderDomContentLoadedHandler.bind(null, index),
-                        false);
+                        PrerenderEventHandler.bind(null, index), false);
+  link.addEventListener('webkitprerenderload',
+                        PrerenderEventHandler.bind(null, index), false);
   link.addEventListener('webkitprerenderstop',
-                        PrerenderStopHandler.bind(null, index), false);
+                        PrerenderEventHandler.bind(null, index), false);
 }
 
 function AddPrerender(url, index) {
   var link = document.createElement('link');
+  link.id = 'prerenderElement' + index;
   link.rel = 'prerender';
   link.href = url;
   AddEventHandlersToLinkElement(link, index);
   document.body.appendChild(link);
   return link;
+}
+
+function RemoveLinkElement(index) {
+  var link = document.getElementById('prerenderElement' + index);
+  link.parentElement.removeChild(link);
+}
+
+function ExtractGetParameterBadlyAndInsecurely(param, defaultValue) {
+  var re = RegExp('[&?]' + param + '=([^&?#]*)');
+  var result = re.exec(document.location);
+  if (result)
+    return result[1];
+  return defaultValue;
 }
 
 function AddAnchor(href, target) {
