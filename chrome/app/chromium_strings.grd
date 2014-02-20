@@ -785,9 +785,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
         Remove from Chromium
       </message>
 
-      <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY" desc="Body of the dialog shown when suspicious extensions have been disabled">
-        To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
-      </message>
+      <if expr="enable_extensions">
+        <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY" desc="Body of the dialog shown when suspicious extensions have been disabled">
+          To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
+        </message>
+      </if>
 
       <!-- Main Chrome menu -->
       <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
@@ -870,30 +872,34 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- Enterprise sign-in profile linking -->
-      <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
-        Important information regarding your Chromium data
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
-        You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_MESSAGE" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
-        If you prefer to keep your existing Chromium data separate, you can create a new Chromium user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
-        Link my Chromium data to this account
-      </message>
+      <if expr="not is_android">
+        <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
+          Important information regarding your Chromium data
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
+          You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_MESSAGE" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
+          If you prefer to keep your existing Chromium data separate, you can create a new Chromium user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
+          Link my Chromium data to this account
+        </message>
+      </if>
 
       <!-- Enterprise sign-in dialog (new-style) -->
       <!-- TODO(dconnelly): remove "new-style" once the old dialog is gone. -->
-      <message name="IDS_ENTERPRISE_SIGNIN_TITLE_NEW_STYLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
-        Link your Chromium data to this account?
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
-        You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
-      </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. Additionally notifies the user that they can create a new profile instead. This message is followed by a 'Learn more' link.">
-        You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
-      </message>
+      <if expr="toolkit_views or is_macosx">
+        <message name="IDS_ENTERPRISE_SIGNIN_TITLE_NEW_STYLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
+          Link your Chromium data to this account?
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
+          You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
+        </message>
+        <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. Additionally notifies the user that they can create a new profile instead. This message is followed by a 'Learn more' link.">
+          You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
+        </message>
+      </if>
 
       <!-- Sync sign-in global error message-->
       <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
@@ -990,18 +996,20 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- App list -->
-      <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
-        Chromium App Launcher
-      </message>
-      <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
-        Chromium App Launcher
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
-        Sign in to Chromium
-      </message>
-      <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
-        You need to be signed in to Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.
-      </message>
+      <if expr="enable_app_list">
+        <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
+          Chromium App Launcher
+        </message>
+        <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
+          Chromium App Launcher
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
+          Sign in to Chromium
+        </message>
+        <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
+          You need to be signed in to Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.
+        </message>
+      </if>
 
       <!-- App shortcuts -->
       <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME" desc="Name for the Chromium Apps Start Menu folder name.">
@@ -1026,20 +1034,22 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- Chrome Notifications center -->
-      <if expr="is_win">
-        <message name="IDS_MESSAGE_CENTER_BALLOON_TITLE" desc="Title of the first run notification ballon describing the notification center.">
-          Chromium Notification Center
+      <if expr="enable_notifications">
+        <if expr="is_win">
+          <message name="IDS_MESSAGE_CENTER_BALLOON_TITLE" desc="Title of the first run notification ballon describing the notification center.">
+            Chromium Notification Center
+          </message>
+          <message name="IDS_MESSAGE_CENTER_BALLOON_TEXT" desc="Body text for the the first run notification ballon describing the notification center.">
+            You can see all your notifications from Chromium apps, extensions, and websites here.
+          </message>
+        </if>
+        <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
+          Chromium - Notifications
         </message>
-        <message name="IDS_MESSAGE_CENTER_BALLOON_TEXT" desc="Body text for the the first run notification ballon describing the notification center.">
-          You can see all your notifications from Chromium apps, extensions, and websites here.
+        <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
+          Chromium - Notifications (<ph name="QUANTITY">$1<ex>3</ex></ph> unread)
         </message>
       </if>
-      <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
-        Chromium - Notifications
-      </message>
-      <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
-        Chromium - Notifications (<ph name="QUANTITY">$1<ex>3</ex></ph> unread)
-      </message>
 
       <!-- MediaStream capture status tray icon -->
       <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
@@ -1053,9 +1063,11 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </message>
 
       <!-- ProcessSingleton -->
-      <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
-        The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID">$1<ex>12345</ex></ph>) on another computer (<ph name="HOST_NAME">$2<ex>example.com</ex></ph>). Chromium has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chromium.
-      </message>
+      <if expr="is_linux">
+        <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
+          The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID">$1<ex>12345</ex></ph>) on another computer (<ph name="HOST_NAME">$2<ex>example.com</ex></ph>). Chromium has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chromium.
+        </message>
+      </if>
 
       <!-- Mac First-run dialog messages -->
       <if expr="is_macosx">
