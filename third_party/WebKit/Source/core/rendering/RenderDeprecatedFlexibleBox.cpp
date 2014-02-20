@@ -258,7 +258,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         return;
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, locationOffset());
 
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (updateRegionsAndShapesLogicalSize(flowThread))

@@ -981,6 +981,8 @@ public:
     bool layoutDidGetCalled() { return m_bitfields.layoutDidGetCalled(); }
     void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
 
+    bool shouldDisableLayoutState() const { return hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(); }
+
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 

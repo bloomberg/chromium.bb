@@ -909,7 +909,7 @@ bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject* renderer) cons
 {
     RenderObject* o = renderer;
     while (o) {
-        if (o->hasColumns() || o->hasTransform() || o->hasReflection())
+        if (o->shouldDisableLayoutState())
             return true;
         o = o->container();
     }

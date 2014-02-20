@@ -163,7 +163,7 @@ void RenderTableRow::layout()
     LayoutRectRecorder recorder(*this);
 
     // Table rows do not add translation.
-    LayoutStateMaintainer statePusher(this, LayoutSize(), style()->isFlippedBlocksWritingMode());
+    LayoutStateMaintainer statePusher(this, LayoutSize());
 
     bool paginated = view()->layoutState()->isPaginated();
 
