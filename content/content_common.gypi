@@ -9,6 +9,7 @@
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
+    '../third_party/libjingle/libjingle.gyp:libjingle',
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',

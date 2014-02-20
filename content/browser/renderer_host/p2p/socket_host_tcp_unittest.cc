@@ -92,17 +92,18 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet3, options, 0);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet1.size()));
@@ -123,17 +124,18 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet3, options, 0);
 
   std::string received_data;
   received_data.append(IntToSize(packet1.size()));
@@ -169,9 +171,10 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet, options, 0);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -179,6 +182,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
 // Verify that we can send data after we've received STUN response
 // from the other side.
 TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
+  talk_base::PacketOptions options;
   // Receive packet from |dest_|.
   std::vector<char> request_packet;
   CreateStunRequest(&request_packet);
@@ -197,7 +201,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   // Now we should be able to send any data to |dest_|.
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet, options, 0);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet.size()));
@@ -209,6 +213,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
 // Verify that asynchronous writes are handled correctly.
 TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   base::MessageLoop message_loop;
+  talk_base::PacketOptions options;
 
   socket_->set_async_write(true);
 
@@ -220,11 +225,11 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
 
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   message_loop.RunUntilIdle();
 
@@ -245,17 +250,18 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet3, options, 0);
 
   std::string expected_data;
   expected_data.append(packet1.begin(), packet1.end());
@@ -273,17 +279,18 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_, packet3, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet3, options, 0);
 
   std::string received_data;
   received_data.append(packet1.begin(), packet1.end());
@@ -316,9 +323,10 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_, packet, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet, options, 0);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -334,13 +342,14 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
+  talk_base::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_, packet1, net::DSCP_NO_CHANGE,0);
+  socket_host_->Send(dest_, packet1, options, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_, packet2, net::DSCP_NO_CHANGE, 0);
+  socket_host_->Send(dest_, packet2, options, 0);
 
   message_loop.RunUntilIdle();
 

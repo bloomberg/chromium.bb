@@ -12,6 +12,10 @@
 #include "content/public/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 
+namespace talk_base {
+struct PacketOptions;
+};
+
 namespace content {
 
 class P2PSocketClientDelegate;
@@ -40,9 +44,9 @@ class CONTENT_EXPORT P2PSocketClient :
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|.
-  virtual void SendWithDscp(const net::IPEndPoint& address,
-                            const std::vector<char>& data,
-                            net::DiffServCodePoint dscp) = 0;
+  virtual void SendWithOptions(const net::IPEndPoint& address,
+                               const std::vector<char>& data,
+                               const talk_base::PacketOptions& options) = 0;
 
   virtual void SetOption(P2PSocketOption option, int value) = 0;
 

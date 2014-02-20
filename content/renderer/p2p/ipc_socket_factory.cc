@@ -296,8 +296,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 
   const char* data_char = reinterpret_cast<const char*>(data);
   std::vector<char> data_vector(data_char, data_char + data_size);
-  client_->SendWithDscp(address_chrome, data_vector,
-                        static_cast<net::DiffServCodePoint>(options.dscp));
+  client_->SendWithOptions(address_chrome, data_vector, options);
 
   // Fake successful send. The caller ignores result anyway.
   return data_size;

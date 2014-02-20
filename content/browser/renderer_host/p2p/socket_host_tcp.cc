@@ -289,7 +289,7 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
 // but may be honored in the future.
 void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
                                 const std::vector<char>& data,
-                                net::DiffServCodePoint dscp,
+                                const talk_base::PacketOptions& options,
                                 uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
