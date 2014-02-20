@@ -321,23 +321,6 @@ struct nacl_irt_blockhook {
 };
 
 /*
- * TODO(mseaborn): Remove ppapihook from here after it has been moved
- * to the Chromium repo.
- */
-#if !defined(NACL_IRT_PPAPIHOOK_v0_1)
-
-struct PP_StartFunctions;
-struct PP_ThreadFunctions;
-
-#define NACL_IRT_PPAPIHOOK_v0_1 "nacl-irt-ppapihook-0.1"
-struct nacl_irt_ppapihook {
-  int (*ppapi_start)(const struct PP_StartFunctions *);
-  void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions *);
-};
-
-#endif
-
-/*
  * In Chromium, open_resource() opens a file listed in the NaCl
  * manifest file (NMF).  It returns a read-only file descriptor.
  *

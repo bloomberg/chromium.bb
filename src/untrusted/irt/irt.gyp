@@ -10,7 +10,7 @@
     'irt_sources': [
 # irt_support_sources
       'irt_entry.c',
-      'irt_entry_core.c',
+      'irt_interfaces.c',
       'irt_malloc.c',
       'irt_private_pthread.c',
       'irt_private_tls.c',
@@ -42,11 +42,10 @@
       '../valgrind/dynamic_annotations.c',
     ],
     'irt_nonbrowser': [
-      'irt_interfaces.c',
       'irt_core_resource.c',
+      'irt_entry_core.c',
     ],
     'irt_browser': [
-      'irt_interfaces_ppapi.c',
       'irt_manifest.c',
     ],
   },

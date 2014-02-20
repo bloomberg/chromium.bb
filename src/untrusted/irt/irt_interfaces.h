@@ -23,7 +23,6 @@ extern const struct nacl_irt_cond nacl_irt_cond;
 extern const struct nacl_irt_sem nacl_irt_sem;
 extern const struct nacl_irt_tls nacl_irt_tls;
 extern const struct nacl_irt_blockhook nacl_irt_blockhook;
-extern const struct nacl_irt_ppapihook nacl_irt_ppapihook;
 extern const struct nacl_irt_resource_open nacl_irt_resource_open;
 extern const struct nacl_irt_random nacl_irt_random;
 extern const struct nacl_irt_clock nacl_irt_clock;
