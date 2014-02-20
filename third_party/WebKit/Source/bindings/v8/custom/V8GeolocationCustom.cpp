@@ -129,13 +129,15 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
 {
     bool succeeded = false;
 
-    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "getCurrentPosition", "Geolocation", info.Holder(), info.GetIsolate());
+
+    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], 1, succeeded, info.GetIsolate(), exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
-    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
+    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], 2, succeeded, info.GetIsolate(), exceptionState, CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
         return;
 
@@ -152,13 +154,15 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
 {
     bool succeeded = false;
 
-    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "watchCurrentPosition", "Geolocation", info.Holder(), info.GetIsolate());
+
+    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], 1, succeeded, info.GetIsolate(), exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
-    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
+    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], 2, succeeded, info.GetIsolate(), exceptionState, CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
         return;
 

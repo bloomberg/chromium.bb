@@ -58,11 +58,6 @@ namespace WebCore {
 
     const int kMaxRecursionDepth = 22;
 
-    // Schedule a DOM exception to be thrown, if the exception code is different
-    // from zero.
-    v8::Handle<v8::Value> setDOMException(int, v8::Isolate*);
-    v8::Handle<v8::Value> setDOMException(int, const String&, v8::Isolate*);
-
     // Schedule a JavaScript error to be thrown.
     v8::Handle<v8::Value> throwError(V8ErrorType, const String&, v8::Isolate*);
 

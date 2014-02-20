@@ -15,7 +15,7 @@ function test(expression, expressionShouldThrow, expectedException) {
         if (expectedException)
             shouldThrow(expression, '(function() { return "' + expectedException + '"; })();');
         else
-            shouldThrow(expression, '(function() { return "TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object."; })();');
+            shouldThrow(expression);
     } else {
         shouldNotThrow(expression);
     }

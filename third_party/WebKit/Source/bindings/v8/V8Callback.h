@@ -31,6 +31,7 @@
 #ifndef V8Callback_h
 #define V8Callback_h
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
@@ -53,7 +54,7 @@ typedef unsigned CallbackAllowedValueFlags;
 
 // 'FunctionOnly' is assumed for the created callback.
 template <typename V8CallbackType>
-PassOwnPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value, bool& succeeded, v8::Isolate* isolate, CallbackAllowedValueFlags acceptedValues = 0)
+PassOwnPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value, unsigned index, bool& succeeded, v8::Isolate* isolate, ExceptionState& exceptionState, CallbackAllowedValueFlags acceptedValues = 0)
 {
     succeeded = true;
 
@@ -65,7 +66,8 @@ PassOwnPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value
 
     if (!value->IsFunction()) {
         succeeded = false;
-        setDOMException(TypeMismatchError, isolate);
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(index, "Function"));
+        exceptionState.throwIfNeeded();
         return nullptr;
     }
 

@@ -46,8 +46,10 @@ namespace WebCore {
 
 void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "executeSql", "SQLTransactionSync", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
-        setDOMException(SyntaxError, info.GetIsolate());
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::notEnoughArguments(1, 0));
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -57,7 +59,8 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
     if (info.Length() > 1 && !isUndefinedOrNull(info[1])) {
         if (!info[1]->IsObject()) {
-            setDOMException(TypeMismatchError, info.GetIsolate());
+            exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "DOMString"));
+            exceptionState.throwIfNeeded();
             return;
         }
 
@@ -88,7 +91,6 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
     SQLTransactionSync* transaction = V8SQLTransactionSync::toNative(info.Holder());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "executeSql", "SQLTransactionSync", info.Holder(), info.GetIsolate());
     v8::Handle<v8::Value> result = toV8(transaction->executeSQL(statement, sqlValues, exceptionState), info.Holder(), info.GetIsolate());
     if (exceptionState.throwIfNeeded())
         return;

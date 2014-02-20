@@ -29,12 +29,12 @@
     NoInterfaceObject,
 ] interface Geolocation {
     // FIXME: should be: PositionOptions options (need PositionOptions.idl)
-    [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
+    [RaisesException, Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
                                      optional object options);
 
     // FIXME: should be: PositionOptions options (need PositionOptions.idl)
-    [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
+    [RaisesException, Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
                                 optional object options);
 
