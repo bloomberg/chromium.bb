@@ -151,7 +151,7 @@ void UnregistrationRequest::Start() {
   DCHECK(!url_fetcher_.get());
 
   url_fetcher_.reset(net::URLFetcher::Create(
-      GURL(kRegistrationURL), net::URLFetcher::DELETE_REQUEST, this));
+      GURL(kRegistrationURL), net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_);
 
   std::string android_id = base::Uint64ToString(request_info_.android_id);
