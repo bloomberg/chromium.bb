@@ -145,9 +145,7 @@ class VIEWS_EXPORT RootView : public View,
   // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const ui::MouseEvent& event);
 
-  ui::EventDispatchDetails DispatchEventToTarget(
-      View* target,
-      ui::Event* event) WARN_UNUSED_RESULT;
+  void DispatchEventToTarget(View* target, ui::Event* event);
 
   // |view| is the view receiving |event|. This function sends the event to all
   // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag
