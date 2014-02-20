@@ -29,6 +29,9 @@
       'include_dirs': [
         '../../..',
       ],
+      'defines': [
+        'USE_CUPS',
+      ],
     },
     {
       'target_name': 'ipc_fuzzer_generate',
@@ -52,6 +55,9 @@
       'include_dirs': [
         '../../..',
       ],
+      'defines': [
+        'USE_CUPS',
+      ],
     },
     {
       'target_name': 'ipc_message_util',
@@ -65,6 +71,9 @@
       ],
       'include_dirs': [
         '../../..',
+      ],
+      'defines': [
+        'USE_CUPS',
       ],
     },
   ],

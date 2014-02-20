@@ -25,6 +25,9 @@
       'include_dirs': [
         '../../..',
       ],
+      'defines': [
+        'USE_CUPS',
+      ],
     },
   ],
 }
