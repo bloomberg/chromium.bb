@@ -10,6 +10,18 @@
 
 #include "base/files/file_path.h"
 
+// Make sure some of the newer macros from magic.h are defined.
+// TODO(mostynb@opera.com): remove this after 2014.
+#ifndef BTRFS_SUPER_MAGIC
+#define BTRFS_SUPER_MAGIC 0x9123683E
+#endif
+#ifndef HUGETLBFS_MAGIC
+#define HUGETLBFS_MAGIC 0x958458f6
+#endif
+#ifndef TMPFS_MAGIC
+#define TMPFS_MAGIC 0x01021994
+#endif
+
 namespace file_util {
 
 bool GetFileSystemType(const base::FilePath& path, FileSystemType* type) {
