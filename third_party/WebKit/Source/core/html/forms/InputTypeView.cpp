@@ -209,4 +209,8 @@ void InputTypeView::updateClearButtonVisibility()
 {
 }
 
+void InputTypeView::updatePlaceholderText()
+{
+}
+
 } // namespace WebCore

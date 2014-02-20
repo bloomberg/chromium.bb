@@ -748,10 +748,6 @@ bool InputType::supportsReadOnly() const
     return false;
 }
 
-void InputType::updatePlaceholderText()
-{
-}
-
 String InputType::defaultToolTip() const
 {
     return String();

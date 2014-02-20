@@ -111,6 +111,7 @@ public:
     virtual void valueAttributeChanged();
     virtual void listAttributeTargetChanged();
     virtual void updateClearButtonVisibility();
+    virtual void updatePlaceholderText();
 
 protected:
     InputTypeView(HTMLInputElement& element) : m_element(element) { }

@@ -1644,7 +1644,7 @@ bool HTMLInputElement::supportsPlaceholder() const
 
 void HTMLInputElement::updatePlaceholderText()
 {
-    return m_inputType->updatePlaceholderText();
+    return m_inputTypeView->updatePlaceholderText();
 }
 
 void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)

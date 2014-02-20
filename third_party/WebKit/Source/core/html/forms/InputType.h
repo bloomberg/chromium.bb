@@ -189,7 +189,6 @@ public:
     virtual bool shouldRespectHeightAndWidthAttributes();
     virtual bool supportsPlaceholder() const;
     virtual bool supportsReadOnly() const;
-    virtual void updatePlaceholderText();
     virtual String defaultToolTip() const;
     virtual Decimal findClosestTickMarkValue(const Decimal&);
     virtual void handleDOMActivateEvent(Event*);

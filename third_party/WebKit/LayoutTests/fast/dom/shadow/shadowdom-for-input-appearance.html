@@ -8,6 +8,7 @@ input {
     color: black;
     margin: 2px;
     padding: 2px;
+    outline-offset: 0;
 }
 </style>
 <div><input type="button" value="button"></div>
@@ -20,7 +21,7 @@ input {
 <div><input type="radio"></div>
 <div><input type="range"></div>
 <div><input type="search" value="search"></div>
-<div><input type="text" value="text"></div>
+<div><input type="text" value="text" placeholder="placeholder"></div>
 <script>
 window.onload = function() {
     var inputs = document.querySelectorAll('input');
@@ -30,6 +31,7 @@ window.onload = function() {
         inputs[i].appendChild(contentSpan);
         inputs[i].createShadowRoot().innerHTML = '<span>Shadow!</span><content select="*"></content>';
     }
+    document.querySelector('input[type=text]').focus();
 };
 </script>
 </body>
