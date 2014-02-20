@@ -98,16 +98,16 @@ bool PruneInvisibleFolders(const BookmarkNode* node) {
 // This traces parents up to root, determines if node is contained in a
 // selected folder.
 bool HasSelectedAncestor(BookmarkModel* model,
-                         const std::vector<const BookmarkNode*>& selectedNodes,
+                         const std::vector<const BookmarkNode*>& selected_nodes,
                          const BookmarkNode* node) {
   if (!node || model->is_permanent_node(node))
     return false;
 
-  for (size_t i = 0; i < selectedNodes.size(); ++i)
-    if (node->id() == selectedNodes[i]->id())
+  for (size_t i = 0; i < selected_nodes.size(); ++i)
+    if (node->id() == selected_nodes[i]->id())
       return true;
 
-  return HasSelectedAncestor(model, selectedNodes, node->parent());
+  return HasSelectedAncestor(model, selected_nodes, node->parent());
 }
 
 }  // namespace
@@ -139,22 +139,22 @@ void CopyToClipboard(BookmarkModel* model,
     return;
 
   // Create array of selected nodes with descendants filtered out.
-  std::vector<const BookmarkNode*> filteredNodes;
+  std::vector<const BookmarkNode*> filtered_nodes;
   for (size_t i = 0; i < nodes.size(); ++i)
     if (!HasSelectedAncestor(model, nodes, nodes[i]->parent()))
-      filteredNodes.push_back(nodes[i]);
+      filtered_nodes.push_back(nodes[i]);
 
-  BookmarkNodeData(filteredNodes).
+  BookmarkNodeData(filtered_nodes).
       WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   if (remove_nodes) {
 #if !defined(OS_ANDROID)
     ScopedGroupBookmarkActions group_cut(model->profile());
 #endif
-    for (size_t i = 0; i < filteredNodes.size(); ++i) {
-      int index = filteredNodes[i]->parent()->GetIndexOf(filteredNodes[i]);
+    for (size_t i = 0; i < filtered_nodes.size(); ++i) {
+      int index = filtered_nodes[i]->parent()->GetIndexOf(filtered_nodes[i]);
       if (index > -1)
-        model->Remove(filteredNodes[i]->parent(), index);
+        model->Remove(filtered_nodes[i]->parent(), index);
     }
   }
 }

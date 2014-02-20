@@ -22,13 +22,18 @@ namespace {
 
 class BookmarkUtilsTest : public ::testing::Test {
  public:
+  BookmarkUtilsTest() {}
+  virtual ~BookmarkUtilsTest() {}
+
   virtual void TearDown() OVERRIDE {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
  private:
   // Clipboard requires a message loop.
-  base::MessageLoopForUI loop;
+  base::MessageLoopForUI loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkUtilsTest);
 };
 
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
@@ -92,17 +97,15 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
   BookmarkModel model(NULL);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
-                                        0,
-                                        ASCIIToUTF16("Google"),
-                                        GURL("https://www.google.com/"));
+                                           0,
+                                           ASCIIToUTF16("Google"),
+                                           GURL("https://www.google.com/"));
   model.AddURL(model.other_node(),
                0,
                ASCIIToUTF16("Google Calendar"),
                GURL("https://www.google.com/calendar"));
 
-  model.AddFolder(model.other_node(),
-                  0,
-                  ASCIIToUTF16("Folder"));
+  model.AddFolder(model.other_node(), 0, ASCIIToUTF16("Folder"));
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
@@ -129,17 +132,16 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
   BookmarkModel model(NULL);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
-                                        0,
-                                        ASCIIToUTF16("Google"),
-                                        GURL("https://www.google.com/"));
+                                           0,
+                                           ASCIIToUTF16("Google"),
+                                           GURL("https://www.google.com/"));
   model.AddURL(model.other_node(),
                0,
                ASCIIToUTF16("Google Calendar"),
                GURL("https://www.google.com/calendar"));
 
-  const BookmarkNode* folder1 = model.AddFolder(model.other_node(),
-                                           0,
-                                           ASCIIToUTF16("Folder"));
+  const BookmarkNode* folder1 =
+      model.AddFolder(model.other_node(), 0, ASCIIToUTF16("Folder"));
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
@@ -167,17 +169,15 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   BookmarkModel model(NULL);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
-                                        0,
-                                        ASCIIToUTF16("Google"),
-                                        GURL("https://www.google.com/"));
+                                           0,
+                                           ASCIIToUTF16("Google"),
+                                           GURL("https://www.google.com/"));
   model.AddURL(model.other_node(),
                0,
                ASCIIToUTF16("Google Calendar"),
                GURL("https://www.google.com/calendar"));
 
-  model.AddFolder(model.other_node(),
-                  0,
-                  ASCIIToUTF16("Folder"));
+  model.AddFolder(model.other_node(), 0, ASCIIToUTF16("Folder"));
 
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
@@ -258,7 +258,8 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
 
   // This tests the case where selection contains one item and that item is an
   // url.
-  const BookmarkNode* page1 = model.AddURL(model.bookmark_bar_node(), 0,
+  const BookmarkNode* page1 = model.AddURL(model.bookmark_bar_node(),
+                                           0,
                                            ASCIIToUTF16("Google"),
                                            GURL("http://google.com"));
   nodes.push_back(page1);
