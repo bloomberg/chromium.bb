@@ -29,18 +29,17 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         bug=322764)
     self.Skip('conformance/textures/texture-size-limit.html',
         bug=322789)
+    # Skip slow tests.
+    self.Skip('conformance/context/context-creation-and-destruction.html',
+        bug=322689)
+    self.Skip('conformance/rendering/multisample-corruption.html',
+        bug=322689)
 
-    # Windows/Intel failures
+    # Win7/Intel failures
     self.Fail('conformance/textures/texture-size.html',
-        ['win', 'intel'], bug=121139)
+        ['win7', 'intel'], bug=121139)
     self.Fail('conformance/rendering/gl-scissor-test.html',
-        ['win', 'intel'], bug=314997)
-
-    # Windows/AMD failures
-    self.Fail('conformance/rendering/more-than-65536-indices.html',
-        ['win', 'amd'], bug=314997)
-
-    # Windows 7/Intel failures
+        ['win7', 'intel'], bug=314997)
     self.Fail('conformance/context/context-lost-restored.html',
         ['win7', 'intel'])
     self.Fail('conformance/context/premultiplyalpha-test.html',
@@ -194,9 +193,3 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['android'], bug=341698)
     self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-video-rgba5551.html',
         ['android'], bug=341698)
-
-    # Skip slow tests.
-    self.Skip('conformance/context/context-creation-and-destruction.html',
-        bug=322689)
-    self.Skip('conformance/rendering/multisample-corruption.html',
-        bug=322689)
