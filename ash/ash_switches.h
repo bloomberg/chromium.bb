@@ -52,7 +52,6 @@ ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnableMultiUserTray[];
 #endif
-ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableSystemSounds[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];

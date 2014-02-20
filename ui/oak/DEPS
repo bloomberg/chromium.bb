@@ -1,8 +1,0 @@
-include_rules = [
-  "+grit/ui_resources.h",
-  "+skia/ext",
-  "+ui/aura",
-  "+ui/base",
-  "+ui/gfx",
-  "+ui/views",
-]

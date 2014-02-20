@@ -67,7 +67,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/screen.h"
-#include "ui/oak/oak.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
@@ -453,15 +452,6 @@ void HandleShowMessageCenterBubble() {
     if (notification_tray->visible())
       notification_tray->ShowMessageCenterBubble();
   }
-}
-
-bool HandleShowOak() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAshEnableOak)) {
-    oak::ShowOakWindowWithContext(Shell::GetPrimaryRootWindow());
-    return true;
-  }
-  return false;
 }
 
 bool HandleShowSystemTrayBubble() {
@@ -1039,8 +1029,6 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRotatePaneFocus(Shell::BACKWARD);
     case SHOW_KEYBOARD_OVERLAY:
       return HandleShowKeyboardOverlay();
-    case SHOW_OAK:
-      return HandleShowOak();
     case SHOW_SYSTEM_TRAY_BUBBLE:
       return HandleShowSystemTrayBubble();
     case SHOW_MESSAGE_CENTER_BUBBLE:

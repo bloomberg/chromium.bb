@@ -34,7 +34,6 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/message_center/message_center.gyp:message_center',
-        '../ui/oak/oak.gyp:oak',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/ui.gyp:ui',
         '../ui/views/controls/webview/webview.gyp:webview',

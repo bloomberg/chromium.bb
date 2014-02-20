@@ -127,9 +127,6 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnableMultiUserTray[] = "ash-enable-multi-user-tray";
 #endif
 
-// Enables the Oak tree viewer.
-const char kAshEnableOak[] = "ash-enable-oak";
-
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
