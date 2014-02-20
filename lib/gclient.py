@@ -124,9 +124,6 @@ def _GetGclientSolutions(internal, use_pdf, rev):
       'sourceforge_url': SVN_MIRROR_URL + '/%(repo)s'
     })
 
-  # TODO(petermayo): Update DEPS file to exclude LayoutTests on Chrome OS.
-  custom_deps['src/third_party/WebKit/LayoutTests'] = None
-
   solutions = [{'name': name,
                 'url': url,
                 'custom_deps': custom_deps,
