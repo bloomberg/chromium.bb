@@ -5,6 +5,7 @@
 #include "cc/test/fake_scrollbar.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -62,7 +63,16 @@ void FakeScrollbar::PaintPart(SkCanvas* canvas,
 
   // Fill the scrollbar with a different color each time.
   fill_color_++;
-  canvas->clear(SK_ColorBLACK | fill_color_);
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setColor(paint_fill_color());
+  paint.setStyle(SkPaint::kFill_Style);
+
+  // Emulate the how the real scrollbar works by using scrollbar's rect for
+  // TRACK and the given content_rect for the THUMB
+  SkRect rect = part == TRACK ? RectToSkRect(TrackRect())
+                              : RectToSkRect(content_rect);
+  canvas->drawRect(rect, paint);
 }
 
 }  // namespace cc

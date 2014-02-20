@@ -584,6 +584,13 @@ class MockLayerTreeHost : public LayerTreeHost {
     return gfx::Size();
   }
 
+  UIResourceBitmap* ui_resource_bitmap(UIResourceId id) {
+    UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
+    if (iter != ui_resource_bitmap_map_.end())
+      return &iter->second;
+    return NULL;
+  }
+
  private:
   typedef base::hash_map<UIResourceId, UIResourceBitmap>
       UIResourceBitmapMap;
@@ -764,6 +771,105 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
   TestResourceUpload(.041f);
   TestResourceUpload(1.41f);
   TestResourceUpload(4.1f);
+}
+
+class ScaledScrollbarLayerTestScaledRasterization : public testing::Test {
+ public:
+  ScaledScrollbarLayerTestScaledRasterization()
+      : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
+  void TestScale(const gfx::Rect scrollbar_rect, const float test_scale) {
+    layer_tree_host_.reset(
+        new MockLayerTreeHost(&fake_client_, layer_tree_settings_));
+
+    bool paint_during_update = true;
+    bool has_thumb = false;
+    scoped_refptr<Layer> layer_tree_root = Layer::Create();
+    scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer =
+        FakePaintedScrollbarLayer::Create(paint_during_update,
+                                          has_thumb,
+                                          layer_tree_root->id());
+
+    layer_tree_root->AddChild(scrollbar_layer);
+
+    layer_tree_host_->SetRootLayer(layer_tree_root);
+
+    scrollbar_layer->SetBounds(scrollbar_rect.size());
+    scrollbar_layer->SetPosition(scrollbar_rect.origin());
+    scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
+    scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
+    gfx::SizeF scaled_size =
+        gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
+    gfx::PointF scaled_location =
+        gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
+    scrollbar_layer->draw_properties().content_bounds =
+        gfx::Size(scaled_size.width(), scaled_size.height());
+    scrollbar_layer->draw_properties().contents_scale_x = test_scale;
+    scrollbar_layer->draw_properties().contents_scale_y = test_scale;
+    scrollbar_layer->draw_properties().visible_content_rect =
+        gfx::Rect(scaled_location.x(),
+                  scaled_location.y(),
+                  scaled_size.width(),
+                  scaled_size.height());
+
+    ResourceUpdateQueue queue;
+    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+    scrollbar_layer->SavePaintProperties();
+
+    scrollbar_layer->Update(&queue, &occlusion_tracker);
+
+    UIResourceBitmap* bitmap = layer_tree_host_->ui_resource_bitmap(
+        scrollbar_layer->track_resource_id());
+
+    DCHECK(bitmap);
+
+    AutoLockUIResourceBitmap locked_bitmap(*bitmap);
+
+    const SkColor* pixels =
+        reinterpret_cast<const SkColor*>(locked_bitmap.GetPixels());
+    SkColor color = argb_to_skia(
+        scrollbar_layer->fake_scrollbar()->paint_fill_color());
+    int width = bitmap->GetSize().width();
+    int height = bitmap->GetSize().height();
+
+    // Make sure none of the corners of the bitmap were inadvertently clipped.
+    EXPECT_EQ(color, pixels[0])
+        << "Top left pixel doesn't match scrollbar color.";
+
+    EXPECT_EQ(color, pixels[width - 1])
+        << "Top right pixel doesn't match scrollbar color.";
+
+    EXPECT_EQ(color, pixels[width * (height - 1)])
+        << "Bottom left pixel doesn't match scrollbar color.";
+
+    EXPECT_EQ(color, pixels[width * height - 1])
+        << "Bottom right pixel doesn't match scrollbar color.";
+  }
+
+ protected:
+  // On Android, Skia uses ABGR
+  static SkColor argb_to_skia(SkColor c) {
+      return (SkColorGetA(c) << SK_A32_SHIFT) |
+             (SkColorGetR(c) << SK_R32_SHIFT) |
+             (SkColorGetG(c) << SK_G32_SHIFT) |
+             (SkColorGetB(c) << SK_B32_SHIFT);
+  }
+
+  FakeLayerTreeHostClient fake_client_;
+  LayerTreeSettings layer_tree_settings_;
+  scoped_ptr<MockLayerTreeHost> layer_tree_host_;
+};
+
+TEST_F(ScaledScrollbarLayerTestScaledRasterization, TestLostPrecisionInClip) {
+  // Try rasterization at coordinates and scale that caused problematic
+  // rounding and clipping errors.
+  // Vertical Scrollbars.
+  TestScale(gfx::Rect(1240, 0, 15, 1333), 2.7754839f);
+  TestScale(gfx::Rect(1240, 0, 15, 677), 2.46677136f);
+
+  // Horizontal Scrollbars.
+  TestScale(gfx::Rect(0, 1240, 1333, 15), 2.7754839f);
+  TestScale(gfx::Rect(0, 1240, 677, 15), 2.46677136f);
 }
 
 }  // namespace
