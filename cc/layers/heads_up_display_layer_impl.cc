@@ -71,8 +71,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       typeface_(skia::AdoptRef(
           SkTypeface::CreateFromName("monospace", SkTypeface::kBold))),
       fps_graph_(60.0, 80.0),
-      paint_time_graph_(16.0, 48.0),
-      current_paint_rect_color_(0) {}
+      paint_time_graph_(16.0, 48.0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 
@@ -226,7 +225,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   paint_time_graph_.UpdateUpperBound();
 }
 
-void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
+void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) const {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
   if (debug_state.ShowHudRects())
@@ -589,10 +588,9 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
 
 void HeadsUpDisplayLayerImpl::DrawDebugRects(
     SkCanvas* canvas,
-    DebugRectHistory* debug_rect_history) {
+    DebugRectHistory* debug_rect_history) const {
   const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
   SkPaint paint = CreatePaint();
-  current_paint_rect_color_++;
 
   for (size_t i = 0; i < debug_rects.size(); ++i) {
     SkColor stroke_color = 0;
@@ -602,9 +600,8 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 
     switch (debug_rects[i].type) {
       case PAINT_RECT_TYPE:
-        stroke_color =
-            DebugColors::PaintRectBorderColor(current_paint_rect_color_);
-        fill_color = DebugColors::PaintRectFillColor(current_paint_rect_color_);
+        stroke_color = DebugColors::PaintRectBorderColor();
+        fill_color = DebugColors::PaintRectFillColor();
         stroke_width = DebugColors::PaintRectBorderWidth();
         break;
       case PROPERTY_CHANGED_RECT_TYPE:

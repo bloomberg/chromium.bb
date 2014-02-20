@@ -173,23 +173,13 @@ SkColor DebugColors::EvictedTileCheckerboardColor() {
 
 // ======= Debug rect colors =======
 
-// Paint rects in shades of green.
-static const int kPaintRectColors[][3] = {{0, 155, 0}, {0, 195, 0},
-                                          {0, 235, 0}};
-SkColor DebugColors::PaintRectBorderColor(int color_index) {
-  int real_index = color_index % arraysize(kPaintRectColors);
-  return SkColorSetARGB(255,
-                        kPaintRectColors[real_index][0],
-                        kPaintRectColors[real_index][1],
-                        kPaintRectColors[real_index][2]);
+// Paint rects in green.
+SkColor DebugColors::PaintRectBorderColor() {
+  return SkColorSetARGB(255, 0, 195, 0);
 }
 int DebugColors::PaintRectBorderWidth() { return 2; }
-SkColor DebugColors::PaintRectFillColor(int color_index) {
-  int real_index = color_index % arraysize(kPaintRectColors);
-  return SkColorSetARGB(30,
-                        kPaintRectColors[real_index][0],
-                        kPaintRectColors[real_index][1],
-                        kPaintRectColors[real_index][2]);
+SkColor DebugColors::PaintRectFillColor() {
+  return SkColorSetARGB(30, 0, 195, 0);
 }
 
 // Property-changed rects in blue.
