@@ -20,6 +20,7 @@
 #define DOMParser_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -29,11 +30,17 @@ namespace WebCore {
 class Document;
 class ExceptionState;
 
-class DOMParser : public RefCounted<DOMParser>, public ScriptWrappable {
+class DOMParser : public RefCountedWillBeGarbageCollectedFinalized<DOMParser>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DOMParser> create() { return adoptRef(new DOMParser); }
+    static PassRefPtrWillBeRawPtr<DOMParser> create()
+    {
+        return adoptRefWillBeNoop(new DOMParser);
+    }
 
     PassRefPtr<Document> parseFromString(const String&, const String& contentType, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     DOMParser()

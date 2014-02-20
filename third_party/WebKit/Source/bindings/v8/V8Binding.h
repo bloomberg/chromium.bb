@@ -431,7 +431,7 @@ namespace WebCore {
 
     // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
     PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
-    PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
+    PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
     template<class T> struct NativeValueTraits;
 

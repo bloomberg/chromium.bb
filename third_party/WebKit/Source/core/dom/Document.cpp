@@ -4264,7 +4264,7 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
 {
     ASSERT(!pi->isLoading());
     UseCounter::count(*this, UseCounter::XSLProcessingInstruction);
-    RefPtr<XSLTProcessor> processor = XSLTProcessor::create();
+    RefPtrWillBeRawPtr<XSLTProcessor> processor = XSLTProcessor::create();
     processor->setXSLStyleSheet(toXSLStyleSheet(pi->sheet()));
     String resultMIMEType;
     String newSource;

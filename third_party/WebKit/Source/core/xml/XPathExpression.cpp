@@ -38,11 +38,13 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(XPathExpression);
+
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
-    RefPtr<XPathExpression> expr = XPathExpression::create();
+    RefPtrWillBeRawPtr<XPathExpression> expr = XPathExpression::create();
     Parser parser;
 
     expr->m_topExpression = parser.parseStatement(expression, resolver, exceptionState);
@@ -57,7 +59,7 @@ XPathExpression::~XPathExpression()
     delete m_topExpression;
 }
 
-PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& exceptionState)
 {
     if (!contextNode) {
         exceptionState.throwDOMException(NotSupportedError, "The context node provided is null.");
@@ -74,7 +76,7 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
     evaluationContext.size = 1;
     evaluationContext.position = 1;
     evaluationContext.hadTypeConversionError = false;
-    RefPtr<XPathResult> result = XPathResult::create(&contextNode->document(), m_topExpression->evaluate());
+    RefPtrWillBeRawPtr<XPathResult> result = XPathResult::create(&contextNode->document(), m_topExpression->evaluate());
     evaluationContext.node = 0; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
 
     if (evaluationContext.hadTypeConversionError) {

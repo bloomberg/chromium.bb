@@ -51,4 +51,9 @@ AtomicString NativeXPathNSResolver::lookupNamespaceURI(const String& prefix)
     return m_node ? m_node->lookupNamespaceURI(prefix) : nullAtom;
 }
 
+void NativeXPathNSResolver::trace(Visitor* visitor)
+{
+    XPathNSResolver::trace(visitor);
+}
+
 } // namespace WebCore

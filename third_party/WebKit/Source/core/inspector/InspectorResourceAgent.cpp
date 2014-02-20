@@ -668,7 +668,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
         return;
     }
 
-    RefPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
+    RefPtrWillBeRawPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
 
     Resource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
     if (cachedResource)

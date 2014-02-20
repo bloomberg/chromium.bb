@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(XPathNSResolver);
+
 XPathNSResolver::~XPathNSResolver()
 {
 }

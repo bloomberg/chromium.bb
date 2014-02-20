@@ -39,18 +39,20 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
+DEFINE_GC_INFO(XPathEvaluator);
+
+PassRefPtrWillBeRawPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     return XPathExpression::createExpression(expression, resolver, exceptionState);
 }
 
-PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
+PassRefPtrWillBeRawPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
 {
     return NativeXPathNSResolver::create(nodeResolver);
 }
 
-PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
-    PassRefPtr<XPathNSResolver> resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
+    PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
 {
     if (!contextNode) {
         exceptionState.throwDOMException(NotSupportedError, "The context node provided is null.");
@@ -62,7 +64,7 @@ PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node*
         return 0;
     }
 
-    RefPtr<XPathExpression> expr = createExpression(expression, resolver, exceptionState);
+    RefPtrWillBeRawPtr<XPathExpression> expr = createExpression(expression, resolver, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

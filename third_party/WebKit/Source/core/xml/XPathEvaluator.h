@@ -28,6 +28,7 @@
 #define XPathEvaluator_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -40,14 +41,20 @@ class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
 
-class XPathEvaluator : public RefCounted<XPathEvaluator>, public ScriptWrappable {
+class XPathEvaluator : public RefCountedWillBeGarbageCollectedFinalized<XPathEvaluator>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<XPathEvaluator> create() { return adoptRef(new XPathEvaluator); }
+    static PassRefPtrWillBeRawPtr<XPathEvaluator> create()
+    {
+        return adoptRefWillBeNoop(new XPathEvaluator);
+    }
 
-    PassRefPtr<XPathExpression> createExpression(const String& expression, PassRefPtr<XPathNSResolver>, ExceptionState&);
-    PassRefPtr<XPathNSResolver> createNSResolver(Node* nodeResolver);
-    PassRefPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
-        PassRefPtr<XPathNSResolver>, unsigned short type, XPathResult*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(Node* nodeResolver);
+    PassRefPtrWillBeRawPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
+        PassRefPtrWillBeRawPtr<XPathNSResolver>, unsigned short type, XPathResult*, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     XPathEvaluator()

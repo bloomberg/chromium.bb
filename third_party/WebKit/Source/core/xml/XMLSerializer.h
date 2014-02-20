@@ -21,6 +21,7 @@
 #define XMLSerializer_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -30,11 +31,17 @@ namespace WebCore {
 class ExceptionState;
 class Node;
 
-class XMLSerializer : public RefCounted<XMLSerializer>, public ScriptWrappable {
+class XMLSerializer : public RefCountedWillBeGarbageCollectedFinalized<XMLSerializer>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<XMLSerializer> create() { return adoptRef(new XMLSerializer); }
+    static PassRefPtrWillBeRawPtr<XMLSerializer> create()
+    {
+        return adoptRefWillBeNoop(new XMLSerializer);
+    }
 
     String serializeToString(Node*, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     XMLSerializer()

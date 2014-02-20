@@ -31,6 +31,7 @@
 // http://bugs.webkit.org/show_bug.cgi?id=5446
 
 [
+    WillBeGarbageCollected,
     Constructor,
     RuntimeEnabled=XSLT,
     MeasureAs=XSLTProcessor

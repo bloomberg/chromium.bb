@@ -469,9 +469,9 @@ float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     return numberObject->NumberValue();
 }
 
-PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    RefPtr<XPathNSResolver> resolver;
+    RefPtrWillBeRawPtr<XPathNSResolver> resolver;
     if (V8XPathNSResolver::hasInstance(value, isolate))
         resolver = V8XPathNSResolver::toNative(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())

@@ -43,9 +43,9 @@
 
 namespace WebCore {
 
-PassRefPtr<V8CustomXPathNSResolver> V8CustomXPathNSResolver::create(v8::Handle<v8::Object> resolver, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> V8CustomXPathNSResolver::create(v8::Handle<v8::Object> resolver, v8::Isolate* isolate)
 {
-    return adoptRef(new V8CustomXPathNSResolver(resolver, isolate));
+    return adoptRefWillBeNoop(new V8CustomXPathNSResolver(resolver, isolate));
 }
 
 V8CustomXPathNSResolver::V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver, v8::Isolate* isolate)
@@ -93,6 +93,11 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, returnString, retval, nullAtom);
     return returnString;
+}
+
+void V8CustomXPathNSResolver::trace(Visitor* visitor)
+{
+    XPathNSResolver::trace(visitor);
 }
 
 } // namespace WebCore

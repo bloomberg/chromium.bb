@@ -3184,9 +3184,10 @@ sub GenerateNamedConstructor
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
     my $derefObject = "${v8ClassName}::derefObject";
+    my $isGarbageCollected = IsWillBeGarbageCollectedType($interfaceName) ? "true" : "false";
 
     $implementation{nameSpaceWebCore}->add(<<END);
-const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::domTemplate, $derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::domTemplate, $derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, $isGarbageCollected };
 
 END
 
@@ -5482,7 +5483,7 @@ sub GetNativeType
     }
 
     # We need to check [ImplementedAs] extended attribute for wrapper types.
-    return "RefPtr<$type>" if $type eq "XPathNSResolver";  # FIXME: can this be put in nonWrapperTypes instead?
+    return "RefPtrWillBeRawPtr<$type>" if $type eq "XPathNSResolver";  # FIXME: Remove custom bindings for XPathNSResolver.
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
         my $implClassName = GetImplName($interface);

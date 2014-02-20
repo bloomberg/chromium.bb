@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(XMLSerializer);
+
 String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {

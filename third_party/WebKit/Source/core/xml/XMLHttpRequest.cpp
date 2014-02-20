@@ -60,6 +60,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(XMLHttpRequest);
+
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
 // Histogram enum to see when we can deprecate xhr.send(ArrayBuffer).
@@ -153,9 +155,9 @@ static void logConsoleError(ExecutionContext* context, const String& message)
     context->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-PassRefPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
+PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
 {
-    RefPtr<XMLHttpRequest> xmlHttpRequest(adoptRef(new XMLHttpRequest(context, securityOrigin)));
+    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefCountedWillBeRefCountedGarbageCollected(new XMLHttpRequest(context, securityOrigin));
     xmlHttpRequest->suspendIfNeeded();
 
     return xmlHttpRequest.release();
@@ -870,7 +872,7 @@ void XMLHttpRequest::abort()
     WTF_LOG(Network, "XMLHttpRequest %p abort()", this);
 
     // internalAbort() calls dropProtection(), which may release the last reference.
-    RefPtr<XMLHttpRequest> protect(this);
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     bool sendFlag = m_loader;
 
@@ -1264,7 +1266,7 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, identifier, m_responseText, m_method, m_url, m_lastSendURL, m_lastSendLineNumber);
 
     // Prevent dropProtection releasing the last reference, and retain |this| until the end of this method.
-    RefPtr<XMLHttpRequest> protect(this);
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     if (m_loader) {
         m_loader = 0;
@@ -1383,7 +1385,7 @@ void XMLHttpRequest::handleDidTimeout()
     WTF_LOG(Network, "XMLHttpRequest %p handleDidTimeout()", this);
 
     // internalAbort() calls dropProtection(), which may release the last reference.
-    RefPtr<XMLHttpRequest> protect(this);
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();

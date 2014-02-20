@@ -1008,7 +1008,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             TrackExceptionState exceptionState;
-            RefPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, exceptionState);
+            RefPtrWillBeRawPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, exceptionState);
             if (exceptionState.hadException() || !result)
                 continue;
 

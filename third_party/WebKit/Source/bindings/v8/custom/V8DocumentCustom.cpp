@@ -68,7 +68,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
         contextNode = V8Node::toNative(v8::Handle<v8::Object>::Cast(info[1]));
 
     const int resolverArgumentIndex = 2;
-    RefPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
+    RefPtrWillBeRawPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
     if (!resolver && !isUndefinedOrNull(info[resolverArgumentIndex])) {
         exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(resolverArgumentIndex + 1, "is not a resolver function."));
         exceptionState.throwIfNeeded();
@@ -76,11 +76,11 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     }
 
     int type = toInt32(info[3]);
-    RefPtr<XPathResult> inResult;
+    RefPtrWillBeRawPtr<XPathResult> inResult;
     if (V8XPathResult::hasInstance(info[4], info.GetIsolate()))
         inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(info[4]));
 
-    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.release(), type, inResult.get(), exceptionState));
+    V8TRYCATCH_VOID(RefPtrWillBeRawPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.release(), type, inResult.get(), exceptionState));
     if (exceptionState.throwIfNeeded())
         return;
 

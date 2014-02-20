@@ -28,6 +28,7 @@
 #define XPathExpression_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,13 +44,19 @@ namespace XPath {
 class Expression;
 }
 
-class XPathExpression : public RefCounted<XPathExpression>, public ScriptWrappable {
+class XPathExpression : public RefCountedWillBeGarbageCollectedFinalized<XPathExpression>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<XPathExpression> create() { return adoptRef(new XPathExpression); }
+    static PassRefPtrWillBeRawPtr<XPathExpression> create()
+    {
+        return adoptRefWillBeNoop(new XPathExpression);
+    }
     ~XPathExpression();
 
-    static PassRefPtr<XPathExpression> createExpression(const String& expression, PassRefPtr<XPathNSResolver>, ExceptionState&);
-    PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     XPathExpression()

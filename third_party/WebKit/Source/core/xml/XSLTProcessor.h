@@ -39,12 +39,13 @@ class Frame;
 class Document;
 class DocumentFragment;
 
-class XSLTProcessor : public RefCounted<XSLTProcessor>, public ScriptWrappable {
+class XSLTProcessor : public RefCountedWillBeGarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<XSLTProcessor> create()
+    static PassRefPtrWillBeRawPtr<XSLTProcessor> create()
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRef(new XSLTProcessor);
+        return adoptRefWillBeNoop(new XSLTProcessor);
     }
     ~XSLTProcessor();
 
@@ -75,6 +76,8 @@ public:
     XSLStyleSheet* xslStylesheet() const { return m_stylesheet.get(); }
 
     typedef HashMap<String, String> ParameterMap;
+
+    void trace(Visitor*) { }
 
 private:
     XSLTProcessor()

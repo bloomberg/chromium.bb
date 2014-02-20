@@ -37,6 +37,7 @@ enum XMLHttpRequestResponseType {
 };
 
 [
+    WillBeGarbageCollected,
     ActiveDOMObject,
     CustomConstructor(optional XMLHttpRequestOptions options),
     GlobalContext=Window&WorkerGlobalScope,

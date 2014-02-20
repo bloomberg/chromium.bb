@@ -31,6 +31,7 @@
 #ifndef ThreadableLoaderClient_h
 #define ThreadableLoaderClient_h
 
+#include "heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
@@ -40,7 +41,8 @@ namespace WebCore {
     class ResourceResponse;
 
     class ThreadableLoaderClient {
-        WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient); WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
         virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
 

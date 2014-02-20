@@ -18,6 +18,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     Constructor
 ] interface DOMParser {
     [RaisesException] Document parseFromString([Default=Undefined] optional DOMString str,

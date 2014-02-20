@@ -35,10 +35,15 @@ class Node;
 
 class NativeXPathNSResolver FINAL : public XPathNSResolver {
 public:
-    static PassRefPtr<NativeXPathNSResolver> create(PassRefPtr<Node> node) { return adoptRef(new NativeXPathNSResolver(node)); }
+    static PassRefPtrWillBeRawPtr<NativeXPathNSResolver> create(PassRefPtr<Node> node)
+    {
+        return adoptRefWillBeNoop(new NativeXPathNSResolver(node));
+    }
     virtual ~NativeXPathNSResolver();
 
     virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit NativeXPathNSResolver(PassRefPtr<Node>);

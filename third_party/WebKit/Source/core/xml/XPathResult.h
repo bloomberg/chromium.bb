@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/xml/XPathValue.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -38,7 +39,8 @@ class Document;
 class ExceptionState;
 class Node;
 
-class XPathResult : public RefCounted<XPathResult>, public ScriptWrappable {
+class XPathResult : public RefCountedWillBeGarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
     enum XPathResultType {
         ANY_TYPE = 0,
@@ -53,7 +55,10 @@ public:
         FIRST_ORDERED_NODE_TYPE = 9
     };
 
-    static PassRefPtr<XPathResult> create(Document* document, const XPath::Value& value) { return adoptRef(new XPathResult(document, value)); }
+    static PassRefPtrWillBeRawPtr<XPathResult> create(Document* document, const XPath::Value& value)
+    {
+        return adoptRefWillBeNoop(new XPathResult(document, value));
+    }
     ~XPathResult();
 
     void convertTo(unsigned short type, ExceptionState&);
@@ -71,6 +76,8 @@ public:
     Node* snapshotItem(unsigned long index, ExceptionState&);
 
     const XPath::Value& value() const { return m_value; }
+
+    void trace(Visitor*) { }
 
 private:
     XPathResult(Document*, const XPath::Value&);
