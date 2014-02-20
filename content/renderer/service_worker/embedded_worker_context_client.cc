@@ -123,6 +123,11 @@ void EmbeddedWorkerContextClient::didHandleInstallEvent(int request_id) {
   script_context_->DidHandleInstallEvent(request_id);
 }
 
+void EmbeddedWorkerContextClient::didHandleFetchEvent(int request_id) {
+  DCHECK(script_context_);
+  NOTIMPLEMENTED();
+}
+
 void EmbeddedWorkerContextClient::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,

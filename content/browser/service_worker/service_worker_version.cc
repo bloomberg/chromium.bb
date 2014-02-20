@@ -74,6 +74,20 @@ void HandleInstallFinished(const StatusCallback& callback,
   callback.Run(SERVICE_WORKER_OK);
 }
 
+void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
+                         ServiceWorkerStatusCode status,
+                         const IPC::Message& message) {
+  Tuple1<ServiceWorkerFetchResponse> response;
+  if (message.type() != ServiceWorkerHostMsg_FetchEventFinished::ID) {
+    NOTREACHED() << "Got unexpected response for FetchEvent: "
+                 << message.type();
+    callback.Run(SERVICE_WORKER_ERROR_FAILED, response.a);
+    return;
+  }
+  ServiceWorkerHostMsg_FetchEventFinished::Read(&message, &response);
+  callback.Run(status, response.a);
+}
+
 }  // namespace
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -194,13 +208,12 @@ void ServiceWorkerVersion::DispatchInstallEvent(
       base::Bind(&HandleInstallFinished, callback));
 }
 
-bool ServiceWorkerVersion::DispatchFetchEvent(
-    const ServiceWorkerFetchRequest& request) {
-  if (status() != RUNNING)
-    return false;
-  return embedded_worker_->SendMessage(
-      kInvalidRequestId, ServiceWorkerMsg_FetchEvent(request))
-          == SERVICE_WORKER_OK;
+void ServiceWorkerVersion::DispatchFetchEvent(
+    const ServiceWorkerFetchRequest& request,
+    const FetchCallback& callback) {
+  SendMessageAndRegisterCallback(
+      ServiceWorkerMsg_FetchEvent(request),
+      base::Bind(&HandleFetchResponse, callback));
 }
 
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {

@@ -19,6 +19,7 @@ namespace content {
 
 class EmbeddedWorkerContextClient;
 struct ServiceWorkerFetchRequest;
+struct ServiceWorkerFetchResponse;
 
 // TODO(kinuko): This should implement WebServiceWorkerContextClient
 // rather than having EmbeddedWorkerContextClient implement it.
@@ -34,6 +35,8 @@ class ServiceWorkerScriptContext {
   void OnMessageReceived(int request_id, const IPC::Message& message);
 
   void DidHandleInstallEvent(int request_id);
+  void DidHandleFetchEvent(int request_id,
+                           const ServiceWorkerFetchResponse& response);
 
  private:
   // Send message back to the browser.

@@ -41,6 +41,12 @@ void ServiceWorkerScriptContext::DidHandleInstallEvent(int request_id) {
   Send(request_id, ServiceWorkerHostMsg_InstallEventFinished());
 }
 
+void ServiceWorkerScriptContext::DidHandleFetchEvent(
+    int request_id,
+    const ServiceWorkerFetchResponse& response) {
+  Send(request_id, ServiceWorkerHostMsg_FetchEventFinished(response));
+}
+
 void ServiceWorkerScriptContext::Send(int request_id,
                                       const IPC::Message& message) {
   embedded_context_->SendMessageToBrowser(request_id, message);
@@ -53,7 +59,10 @@ void ServiceWorkerScriptContext::OnInstallEvent(
 
 void ServiceWorkerScriptContext::OnFetchEvent(
     const ServiceWorkerFetchRequest& request) {
-  NOTIMPLEMENTED();
+  // TODO(falken): Dispatch the event to Blink and wait for the response from
+  // respondWith. This is just a dummy response now.
+  DidHandleFetchEvent(current_request_id_, ServiceWorkerFetchResponse(
+      200, "OK", "GET", std::map<std::string, std::string>()));
 }
 
 }  // namespace content

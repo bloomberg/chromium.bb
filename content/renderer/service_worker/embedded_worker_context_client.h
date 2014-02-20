@@ -55,6 +55,7 @@ class EmbeddedWorkerContextClient
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void workerContextDestroyed();
   virtual void didHandleInstallEvent(int request_id);
+  virtual void didHandleFetchEvent(int request_id);
 
   // TODO: Implement DevTools related method overrides.
 

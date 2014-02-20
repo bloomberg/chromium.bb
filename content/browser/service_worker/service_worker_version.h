@@ -24,6 +24,7 @@ namespace content {
 class EmbeddedWorkerRegistry;
 class ServiceWorkerRegistration;
 struct ServiceWorkerFetchRequest;
+struct ServiceWorkerFetchResponse;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -64,6 +65,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               const IPC::Message& message)> MessageCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode,
+                              const ServiceWorkerFetchResponse& response)>
+      FetchCallback;
 
   enum Status {
     STOPPED = EmbeddedWorkerInstance::STOPPED,
@@ -120,11 +124,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchInstallEvent(int active_version_embedded_worker_id,
                             const StatusCallback& callback);
 
-  // Sends fetch event to the associated embedded worker.
-  // This immediately returns false if the worker is not running
-  // or sending a message to the child process fails.
-  // TODO(kinuko): Make this take callback as well.
-  bool DispatchFetchEvent(const ServiceWorkerFetchRequest& request);
+  // Sends fetch event to the associated embedded worker and calls
+  // |callback| with the response from the worker.
+  void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
+                          const FetchCallback& callback);
 
   // These are expected to be called when a renderer process host for the
   // same-origin as for this ServiceWorkerVersion is created.  The added

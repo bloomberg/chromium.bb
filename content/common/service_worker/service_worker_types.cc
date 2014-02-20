@@ -19,4 +19,19 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
+ServiceWorkerFetchResponse::ServiceWorkerFetchResponse() {}
+
+ServiceWorkerFetchResponse::ServiceWorkerFetchResponse(
+    int status_code,
+    const std::string& status_text,
+    const std::string& method,
+    const std::map<std::string, std::string>& headers)
+    : status_code(status_code),
+      status_text(status_text),
+      method(method),
+      headers(headers) {
+}
+
+ServiceWorkerFetchResponse::~ServiceWorkerFetchResponse() {}
+
 }  // namespace content

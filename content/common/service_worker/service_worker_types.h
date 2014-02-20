@@ -38,6 +38,22 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   std::map<std::string, std::string> headers;
 };
 
+// The response sent from the child process to the browser.
+struct CONTENT_EXPORT ServiceWorkerFetchResponse {
+  ServiceWorkerFetchResponse();
+  ServiceWorkerFetchResponse(
+      int status_code,
+      const std::string& status_text,
+      const std::string& method,
+      const std::map<std::string, std::string>& headers);
+  ~ServiceWorkerFetchResponse();
+
+  int status_code;
+  std::string status_text;
+  std::string method;
+  std::map<std::string, std::string> headers;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_
