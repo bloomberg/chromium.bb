@@ -83,6 +83,7 @@ class WebPublicSuffixList;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
+class WebScreenOrientationListener;
 class WebSocketHandle;
 class WebSocketStreamHandle;
 class WebSpeechSynthesizer;
@@ -604,6 +605,10 @@ public:
     // Sets a Listener to listen for device orientation data updates.
     // If null, the platform stops proving device orientation data to the current listener.
     virtual void setDeviceOrientationListener(blink::WebDeviceOrientationListener*) { }
+
+    // Screen Orientation -------------------------------------------------
+
+    virtual void setScreenOrientationListener(blink::WebScreenOrientationListener*) { }
 
 
     // Quota -----------------------------------------------------------

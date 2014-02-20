@@ -8,8 +8,46 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Screen.h"
+#include "modules/screen_orientation/ScreenOrientationController.h"
+#include "public/platform/WebScreenOrientation.h"
 
 namespace WebCore {
+
+struct ScreenOrientationInfo {
+    const AtomicString& name;
+    blink::WebScreenOrientation orientation;
+};
+
+static ScreenOrientationInfo* orientationsMap(unsigned& length)
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, portraitPrimary, ("portrait-primary", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, portraitSecondary, ("portrait-secondary", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscapePrimary, ("landscape-primary", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscapeSecondary, ("landscape-secondary", AtomicString::ConstructFromLiteral));
+
+    static ScreenOrientationInfo orientationMap[] = {
+        { portraitPrimary, blink::WebScreenOrientationPortraitPrimary },
+        { portraitSecondary, blink::WebScreenOrientationPortraitSecondary },
+        { landscapePrimary, blink::WebScreenOrientationLandscapePrimary },
+        { landscapeSecondary, blink::WebScreenOrientationLandscapeSecondary }
+    };
+    length = WTF_ARRAY_LENGTH(orientationMap);
+    return orientationMap;
+}
+
+static const AtomicString& orientationToString(blink::WebScreenOrientation orientation)
+{
+    unsigned length = 0;
+    ScreenOrientationInfo* orientationMap = orientationsMap(length);
+    for (unsigned i = 0; i < length; ++i) {
+        if (orientationMap[i].orientation == orientation)
+            return orientationMap[i].name;
+    }
+    // We do no handle OrientationInvalid and OrientationAny but this is fine because screen.orientation
+    // should never return these and WebScreenOrientation does not define those values.
+    ASSERT_NOT_REACHED();
+    return nullAtom;
+}
 
 ScreenOrientation::ScreenOrientation(Screen* screen)
     : DOMWindowProperty(screen->frame())
@@ -19,6 +57,12 @@ ScreenOrientation::ScreenOrientation(Screen* screen)
 const char* ScreenOrientation::supplementName()
 {
     return "ScreenOrientation";
+}
+
+Document* ScreenOrientation::document() const
+{
+    ASSERT(m_associatedDOMWindow);
+    return m_associatedDOMWindow->document();
 }
 
 ScreenOrientation* ScreenOrientation::from(Screen* screen)
@@ -36,20 +80,12 @@ ScreenOrientation::~ScreenOrientation()
 {
 }
 
-Screen* ScreenOrientation::screen() const
-{
-    Frame* frame = this->frame();
-    ASSERT(frame);
-    DOMWindow* window = frame->domWindow();
-    ASSERT(window);
-    return window->screen();
-}
-
 const AtomicString& ScreenOrientation::orientation(Screen* screen)
 {
-    // FIXME: Implement.
-    DEFINE_STATIC_LOCAL(const AtomicString, portraitPrimary, ("portrait-primary", AtomicString::ConstructFromLiteral));
-    return portraitPrimary;
+    ScreenOrientation* screenOrientation = ScreenOrientation::from(screen);
+    ScreenOrientationController* controller = ScreenOrientationController::from(screenOrientation->document());
+    ASSERT(controller);
+    return orientationToString(controller->orientation());
 }
 
 bool ScreenOrientation::lockOrientation(Screen* screen, const Vector<String>& orientations)

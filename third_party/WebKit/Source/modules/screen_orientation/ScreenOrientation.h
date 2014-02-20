@@ -14,6 +14,7 @@
 
 namespace WebCore {
 
+class Document;
 class Screen;
 
 class ScreenOrientation FINAL : public Supplement<Screen>, DOMWindowProperty {
@@ -31,7 +32,7 @@ public:
 private:
     explicit ScreenOrientation(Screen*);
     static const char* supplementName();
-    Screen* screen() const;
+    Document* document() const;
 };
 
 } // namespace WebCore

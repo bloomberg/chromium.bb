@@ -76,6 +76,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
+#include "modules/screen_orientation/ScreenOrientationController.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -122,6 +123,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
                 DeviceMotionController::from(document);
             if (RuntimeEnabledFeatures::deviceOrientationEnabled())
                 DeviceOrientationController::from(document);
+            if (RuntimeEnabledFeatures::screenOrientationEnabled())
+                ScreenOrientationController::from(document);
         }
     }
 }
