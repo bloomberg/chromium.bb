@@ -121,6 +121,7 @@
             'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
             'additional_input_paths': [
               '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp',
+              '<(PRODUCT_DIR)/obj/remoting/remoting_resources.actions_rules_copies.stamp',
             ],
           },
           'includes': [ '../build/java_apk.gypi' ],
