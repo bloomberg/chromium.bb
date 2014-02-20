@@ -49,14 +49,20 @@ function updateProgress(progress) {
 
 // Called when a message is received from the plugin.
 function handleMessage(message) {
-  if (message.data.type == 'documentDimensions') {
-    documentDimensions = message.data;
-    viewport.setDocumentDimensions(documentDimensions);
-    viewerToolbar.style.visibility = 'visible';
-    viewerPageIndicator.initialFadeIn();
-    viewerToolbar.initialFadeIn();
-  } else if (message.data.type == 'loadProgress') {
-    updateProgress(message.data['progress']);
+  switch (message.data.type.toString()) {
+    case 'documentDimensions':
+      documentDimensions = message.data;
+      viewport.setDocumentDimensions(documentDimensions);
+      viewerToolbar.style.visibility = 'visible';
+      viewerPageIndicator.initialFadeIn();
+      viewerToolbar.initialFadeIn();
+      break;
+    case 'loadProgress':
+      updateProgress(message.data.progress);
+      break;
+    case 'goToPage':
+      viewport.goToPage(message.data.page);
+      break;
   }
 }
 
