@@ -67,7 +67,7 @@ class TestMCSClient : public MCSClient {
   TestMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory,
                 GCMStore* gcm_store)
-    : MCSClient(clock, connection_factory, gcm_store),
+    : MCSClient("", clock, connection_factory, gcm_store),
       next_id_(0) {
   }
 
@@ -180,7 +180,7 @@ void MCSClientTest::InitializeClient() {
 void MCSClientTest::LoginClient(
     const std::vector<std::string>& acknowledged_ids) {
   scoped_ptr<mcs_proto::LoginRequest> login_request =
-      BuildLoginRequest(kAndroidId, kSecurityToken);
+      BuildLoginRequest(kAndroidId, kSecurityToken, "");
   for (size_t i = 0; i < acknowledged_ids.size(); ++i)
     login_request->add_received_persistent_id(acknowledged_ids[i]);
   GetFakeHandler()->ExpectOutgoingMessage(
@@ -346,7 +346,7 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
   GetFakeHandler()->ExpectOutgoingMessage(
       MCSMessage(
           kLoginRequestTag,
-          BuildLoginRequest(kAndroidId, kSecurityToken).
+          BuildLoginRequest(kAndroidId, kSecurityToken, "").
               PassAs<const google::protobuf::MessageLite>()));
   // The second (re)send.
   MCSMessage message2(BuildDataMessage(

@@ -156,7 +156,8 @@ void GCMClientImpl::Initialize(
         kDefaultBackoffPolicy,
         network_session_,
         net_log_.net_log()));
-    mcs_client_.reset(new MCSClient(clock_.get(),
+    mcs_client_.reset(new MCSClient(chrome_build_proto.chrome_version(),
+                                    clock_.get(),
                                     connection_factory_.get(),
                                     gcm_store_.get()));
   }

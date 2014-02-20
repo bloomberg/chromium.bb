@@ -27,8 +27,7 @@ const int kSizePacketLenMin = 1;
 const int kSizePacketLenMax = 2;
 
 // The current MCS protocol version.
-// TODO(zea): bump to 41 once the server supports it.
-const int kMCSVersion = 38;
+const int kMCSVersion = 41;
 
 }  // namespace
 
@@ -263,7 +262,8 @@ void ConnectionHandlerImpl::OnGotVersion() {
     CodedInputStream coded_input_stream(input_stream_.get());
     coded_input_stream.ReadRaw(&version, 1);
   }
-  if (version < kMCSVersion) {
+  // TODO(zea): remove this when the server is ready.
+  if (version < kMCSVersion && version != 38) {
     LOG(ERROR) << "Invalid GCM version response: " << static_cast<int>(version);
     connection_callback_.Run(net::ERR_FAILED);
     return;

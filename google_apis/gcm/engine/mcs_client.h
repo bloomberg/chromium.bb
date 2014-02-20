@@ -84,7 +84,8 @@ class GCM_EXPORT MCSClient {
            const std::string& message_id,
            MessageSendStatus status)> OnMessageSentCallback;
 
-  MCSClient(base::Clock* clock,
+  MCSClient(const std::string& version_string,
+            base::Clock* clock,
             ConnectionFactory* connection_factory,
             GCMStore* gcm_store);
   virtual ~MCSClient();
@@ -196,6 +197,9 @@ class GCM_EXPORT MCSClient {
   // Pops the next message from the front of the send queue (cleaning up
   // any associated state).
   MCSPacketInternal PopMessageForSend();
+
+  // Local version string. Sent on login.
+  const std::string version_string_;
 
   // Clock for enforcing TTL. Passed in for testing.
   base::Clock* const clock_;

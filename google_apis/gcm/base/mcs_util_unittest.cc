@@ -19,8 +19,8 @@ const uint64 kAuthToken = 12345;
 // Build a login request protobuf.
 TEST(MCSUtilTest, BuildLoginRequest) {
   scoped_ptr<mcs_proto::LoginRequest> login_request =
-      BuildLoginRequest(kAuthId, kAuthToken);
-  ASSERT_EQ("login-1", login_request->id());
+      BuildLoginRequest(kAuthId, kAuthToken, "1.0");
+  ASSERT_EQ("chrome-1.0", login_request->id());
   ASSERT_EQ(base::Uint64ToString(kAuthToken), login_request->auth_token());
   ASSERT_EQ(base::Uint64ToString(kAuthId), login_request->user());
   ASSERT_EQ("android-3d5c23dac2a1fa7c", login_request->device_id());

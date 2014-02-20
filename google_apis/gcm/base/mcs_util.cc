@@ -39,8 +39,7 @@ const char* kProtoNames[] = {
 COMPILE_ASSERT(arraysize(kProtoNames) == kNumProtoTypes,
                ProtoNamesMustIncludeAllTags);
 
-// TODO(zea): replace these with proper values.
-const char kLoginId[] = "login-1";
+const char kLoginId[] = "chrome-";
 const char kLoginDomain[] = "mcs.android.com";
 const char kLoginDeviceIdPrefix[] = "android-";
 const char kLoginSettingDefaultName[] = "new_vc";
@@ -51,8 +50,10 @@ const int kMaxTTLSeconds = 4 * 7 * 24 * 60 * 60;  // 4 weeks.
 
 }  // namespace
 
-scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(uint64 auth_id,
-                                                      uint64 auth_token) {
+scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
+    uint64 auth_id,
+    uint64 auth_token,
+    const std::string& version_string) {
   // Create a hex encoded auth id for the device id field.
   std::string auth_id_hex;
   auth_id_hex = base::StringPrintf("%" PRIx64, auth_id);
@@ -63,12 +64,10 @@ scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(uint64 auth_id,
   scoped_ptr<mcs_proto::LoginRequest> login_request(
       new mcs_proto::LoginRequest());
 
-  // TODO(zea): set better values.
-  login_request->set_account_id(1000000);
   login_request->set_adaptive_heartbeat(false);
   login_request->set_auth_service(mcs_proto::LoginRequest::ANDROID_ID);
   login_request->set_auth_token(auth_token_str);
-  login_request->set_id(kLoginId);
+  login_request->set_id(kLoginId + version_string);
   login_request->set_domain(kLoginDomain);
   login_request->set_device_id(kLoginDeviceIdPrefix + auth_id_hex);
   login_request->set_network_type(1);

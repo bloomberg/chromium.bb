@@ -36,7 +36,7 @@ TEST_F(MCSMessageTest, Invalid) {
 
 TEST_F(MCSMessageTest, InitInferTag) {
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, ""));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(*login_copy);
@@ -54,7 +54,7 @@ TEST_F(MCSMessageTest, InitInferTag) {
 
 TEST_F(MCSMessageTest, InitWithTag) {
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, ""));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(kLoginRequestTag, *login_copy);
@@ -72,7 +72,7 @@ TEST_F(MCSMessageTest, InitWithTag) {
 
 TEST_F(MCSMessageTest, InitPassOwnership) {
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, ""));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(kLoginRequestTag,

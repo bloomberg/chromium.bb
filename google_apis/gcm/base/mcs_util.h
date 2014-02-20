@@ -57,7 +57,8 @@ enum MCSIqStanzaExtension {
 // Builds a LoginRequest with the hardcoded local data.
 GCM_EXPORT scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
     uint64 auth_id,
-    uint64 auth_token);
+    uint64 auth_token,
+    const std::string& version_string);
 
 // Builds a StreamAck IqStanza message.
 GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildStreamAck();

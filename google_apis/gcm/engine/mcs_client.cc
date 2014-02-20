@@ -126,10 +126,12 @@ ReliablePacketInfo::ReliablePacketInfo()
 }
 ReliablePacketInfo::~ReliablePacketInfo() {}
 
-MCSClient::MCSClient(base::Clock* clock,
+MCSClient::MCSClient(const std::string& version_string,
+                     base::Clock* clock,
                      ConnectionFactory* connection_factory,
                      GCMStore* gcm_store)
-    : clock_(clock),
+    : version_string_(version_string),
+      clock_(clock),
       state_(UNINITIALIZED),
       android_id_(0),
       security_token_(0),
@@ -369,7 +371,9 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   acked_server_ids_.clear();
 
   // Then build the request, consuming all pending acknowledgments.
-  request->Swap(BuildLoginRequest(android_id_, security_token_).get());
+  request->Swap(BuildLoginRequest(android_id_,
+                                  security_token_,
+                                  version_string_).get());
   for (PersistentIdList::const_iterator iter =
            restored_unackeds_server_ids_.begin();
        iter != restored_unackeds_server_ids_.end(); ++iter) {

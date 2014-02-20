@@ -83,7 +83,7 @@ class FakeMCSClient : public MCSClient {
 
 FakeMCSClient::FakeMCSClient(base::Clock* clock,
                              ConnectionFactory* connection_factory)
-    : MCSClient(clock, connection_factory, NULL),
+    : MCSClient("", clock, connection_factory, NULL),
       last_android_id_(0u),
       last_security_token_(0u),
       last_message_tag_(kNumProtoTypes) {

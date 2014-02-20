@@ -299,7 +299,8 @@ void MCSProbe::Start() {
       new GCMStoreImpl(true,
                        gcm_store_path_,
                        file_thread_.message_loop_proxy()));
-  mcs_client_.reset(new MCSClient(&clock_,
+  mcs_client_.reset(new MCSClient("probe",
+                                  &clock_,
                                   connection_factory_.get(),
                                   gcm_store_.get()));
   run_loop_.reset(new base::RunLoop());
