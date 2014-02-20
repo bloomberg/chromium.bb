@@ -339,9 +339,6 @@
             'browser/ui/omnibox/omnibox_view_browsertest.cc',
             'browser/extensions/api/tabs/tabs_interactive_test.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
-            # TODO(port): These tests crash in
-            # UIControlsDesktopX11::SendMouseEvents().
-            #'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
           ],
         }],
         ['use_ash==1', {

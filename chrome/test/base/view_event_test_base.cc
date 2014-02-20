@@ -30,6 +30,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/views/corewm/wm_state.h"
 #endif
 
@@ -126,6 +127,7 @@ void ViewEventTestBase::SetUp() {
   shell_delegate->test_session_state_delegate()
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
+  context->GetDispatcher()->host()->Show();
 #endif  // !OS_WIN
   aura::Env::CreateInstance();
 #elif defined(USE_AURA)

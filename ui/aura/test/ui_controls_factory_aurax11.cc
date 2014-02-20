@@ -141,23 +141,32 @@ class UIControlsX11 : public UIControlsAura {
       long screen_x,
       long screen_y,
       const base::Closure& closure) OVERRIDE {
-    gfx::Point root_point(screen_x, screen_y);
+    gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root_window_->window());
     if (screen_position_client) {
       screen_position_client->ConvertPointFromScreen(root_window_->window(),
-                                                     &root_point);
+                                                     &root_location);
     }
+    gfx::Point root_current_location;
+    root_window_->host()->QueryMouseLocation(&root_current_location);
+    root_window_->host()->ConvertPointFromHost(&root_current_location);
 
-    XEvent xevent = {0};
-    XMotionEvent* xmotion = &xevent.xmotion;
-    xmotion->type = MotionNotify;
-    xmotion->x = root_point.x();
-    xmotion->y = root_point.y();
-    xmotion->state = button_down_mask;
-    xmotion->same_screen = True;
-    // RootWindow will take care of other necessary fields.
-    root_window_->host()->PostNativeEvent(&xevent);
+    if (root_location != root_current_location && button_down_mask == 0) {
+      // Move the cursor because EnterNotify/LeaveNotify are generated with the
+      // current mouse position as a result of XGrabPointer()
+      root_window_->window()->MoveCursorTo(root_location);
+    } else {
+      XEvent xevent = {0};
+      XMotionEvent* xmotion = &xevent.xmotion;
+      xmotion->type = MotionNotify;
+      xmotion->x = root_location.x();
+      xmotion->y = root_location.y();
+      xmotion->state = button_down_mask;
+      xmotion->same_screen = True;
+      // RootWindow will take care of other necessary fields.
+      root_window_->host()->PostNativeEvent(&xevent);
+    }
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
