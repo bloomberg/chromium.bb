@@ -5,8 +5,8 @@
 #include <limits.h>
 #include <set>
 
+#include "base/files/file.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 #include "tools/ipc_fuzzer/message_lib/message_file_format.h"
 #include "tools/ipc_fuzzer/message_lib/message_names.h"
@@ -19,7 +19,7 @@ namespace {
 class Writer {
  public:
   Writer(const base::FilePath& path);
-  ~Writer();
+  ~Writer() {}
   bool Write(const MessageVector& messages);
 
  private:
@@ -43,31 +43,20 @@ class Writer {
 
   typedef std::set<uint32> TypesSet;
   base::FilePath path_;
-  base::PlatformFile file_;
+  base::File file_;
   const MessageVector* messages_;
   TypesSet types_;
 
   DISALLOW_COPY_AND_ASSIGN(Writer);
 };
 
-Writer::Writer(const base::FilePath& path)
-    : path_(path),
-      file_(base::kInvalidPlatformFileValue),
-      messages_(NULL) {
-}
-
-Writer::~Writer() {
-  if (file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(file_);
+Writer::Writer(const base::FilePath& path) : path_(path), messages_(NULL) {
 }
 
 bool Writer::OpenFile() {
-  file_ = base::CreatePlatformFile(
-      path_,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      NULL,
-      NULL);
-  if (file_ == base::kInvalidPlatformFileValue) {
+  file_.Initialize(path_,
+                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!file_.IsValid()) {
     LOG(ERROR) << "Failed to create IPC message file: " << path_.value();
     return false;
   }
@@ -78,7 +67,7 @@ bool Writer::WriteBlob(const void *buffer, size_t size) {
   if (size > INT_MAX)
     return false;
   const char* char_buffer = static_cast<const char*>(buffer);
-  int ret = base::WritePlatformFileAtCurrentPos(file_, char_buffer, size);
+  int ret = file_.WriteAtCurrentPos(char_buffer, size);
   if (ret != static_cast<int>(size)) {
     LOG(ERROR) << "Failed to write " << size << " bytes.";
     return false;
