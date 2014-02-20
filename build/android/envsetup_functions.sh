@@ -43,23 +43,16 @@ common_vars_defines() {
 
 
 ################################################################################
-# Prints out help message on usage.
-################################################################################
-print_usage() {
-  echo "usage: ${0##*/} [--help]" >& 2
-  echo "--help                  this help" >& 2
-}
-
-################################################################################
 # Process command line options.
 ################################################################################
 process_options() {
   while [[ -n $1 ]]; do
     case "$1" in
       --target-arch=*)
-        echo "WARNING: --target-arch is ignored and will be an error soon."
+        echo "ERROR: --target-arch is ignored."
         echo "Pass -Dtarget_arch=foo to gyp instead."
         echo "(x86 is spelled ia32 in gyp, mips becomes mipsel, arm stays arm)"
+        return 1
         ;;
       *)
         # Ignore other command line options

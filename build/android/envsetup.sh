@@ -22,7 +22,9 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
 
 export ANDROID_SDK_BUILD=1  # Default to SDK build.
 
-process_options "$@"
+if ! process_options "$@" ; then
+  return 1
+fi
 
 # When building WebView as part of Android we can't use the SDK. Other builds
 # default to using the SDK.
