@@ -68,6 +68,9 @@ class FakeSyncManager : public SyncManager {
   // Posts a method to update the invalidator state on the sync thread.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
 
+  // Returns this class name for logging purposes.
+  virtual std::string GetOwnerName() const OVERRIDE;
+
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();
 

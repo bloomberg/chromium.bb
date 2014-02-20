@@ -71,6 +71,7 @@ class NonBlockingInvalidator::Core
   virtual void OnInvalidatorStateChange(InvalidatorState reason) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
  private:
   friend class
@@ -145,6 +146,10 @@ void NonBlockingInvalidator::Core::OnIncomingInvalidation(
   delegate_observer_.Call(FROM_HERE,
                           &InvalidationHandler::OnIncomingInvalidation,
                           invalidation_map);
+}
+
+std::string NonBlockingInvalidator::Core::GetOwnerName() const {
+  return "Sync";
 }
 
 NonBlockingInvalidator::NonBlockingInvalidator(
@@ -240,6 +245,8 @@ void NonBlockingInvalidator::OnIncomingInvalidation(
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
+
+std::string NonBlockingInvalidator::GetOwnerName() const { return "Sync"; }
 
 NetworkChannelCreator
     NonBlockingInvalidator::MakePushClientChannelCreator(

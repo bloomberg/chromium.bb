@@ -68,6 +68,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
   // Static functions to construct callback that creates network channel for
   // SyncSystemResources. The goal is to pass network channel to invalidator at

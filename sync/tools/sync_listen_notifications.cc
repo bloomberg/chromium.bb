@@ -67,6 +67,10 @@ class NotificationPrinter : public InvalidationHandler {
     }
   }
 
+  virtual std::string GetOwnerName() const OVERRIDE {
+    return "NotificationPrinter";
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
 };

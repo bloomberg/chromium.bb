@@ -252,4 +252,6 @@ void FakeSyncManager::OnInvalidatorStateChange(InvalidatorState state) {
   // Do nothing.
 }
 
+std::string FakeSyncManager::GetOwnerName() const { return "FakeSyncManager"; }
+
 }  // namespace syncer

@@ -1140,6 +1140,8 @@ void SyncManagerImpl::OnIncomingInvalidation(
   }
 }
 
+std::string SyncManagerImpl::GetOwnerName() const { return "SyncManagerImpl"; }
+
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (types.Empty()) {

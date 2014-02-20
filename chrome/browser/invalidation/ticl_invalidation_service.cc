@@ -125,6 +125,9 @@ void TiclInvalidationService::UpdateRegisteredInvalidationIds(
         this,
         invalidator_registrar_->GetAllRegisteredIds());
   }
+
+  // Log this update ids call
+  logger_.OnUpdateIds(invalidator_registrar_->GetSanitizedHandlersIdsMap());
 }
 
 void TiclInvalidationService::UnregisterInvalidationHandler(
@@ -282,6 +285,8 @@ void TiclInvalidationService::OnIncomingInvalidation(
 
   logger_.OnInvalidation(invalidation_map);
 }
+
+std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 void TiclInvalidationService::Shutdown() {
   DCHECK(CalledOnValidThread());

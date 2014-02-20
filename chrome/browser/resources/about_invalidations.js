@@ -1,8 +1,14 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('chrome.invalidations', function() {
+  /**
+   * Local variable where we maintain a count of the invalidations received
+   * and of every ObjectId that has ever been updated (note that this doesn't
+   * log any invalidations ocurred prior to opening the about:invalidation page)
+   */
+  var tableObjects = {};
 
   function quote(str) {
     return '\"' + str + '\"';
@@ -20,6 +26,20 @@ cr.define('chrome.invalidations', function() {
   function appendToLog(logMessage) {
     var invalidationsLog = $('invalidations-log');
     invalidationsLog.value += logMessage + '\n';
+  }
+  /**
+   *  Updates the jstemplate with the latest ObjectIds, ordered by registrar.
+   */
+  function repaintTable() {
+    var keys = [];
+    for (var key in tableObjects)
+      keys.push(key);
+    keys.sort();
+    var sortedInvalidations = [];
+    for (var i = 0; i < keys.length; i++)
+      sortedInvalidations.push(tableObjects[keys[i]]);
+    var wrapped = { objectsidtable: sortedInvalidations };
+    jstProcess(new JsEvalContext(wrapped), $('objectsid-table-div'));
   }
 
   /**
@@ -40,7 +60,7 @@ cr.define('chrome.invalidations', function() {
    * Adds to the log the latest invalidations received
    *
    * @param {Array of Object} allInvalidations The array of ObjectId
-   * that contains the invalidations received by the InvalidatorService
+   *     that contains the invalidations received by the InvalidatorService.
    */
   function logInvalidations(allInvalidations) {
     for (var i = 0; i < allInvalidations.length; i++) {
@@ -55,8 +75,80 @@ cr.define('chrome.invalidations', function() {
           quote(inv.payload);
 
         appendToLog(logMessage);
+        var isInvalidation = true;
+        logToTable(inv, isInvalidation);
       }
     }
+    repaintTable();
+  }
+
+  /**
+   * Marks a change in the table whether a new invalidation has arrived
+   * or a new ObjectId is currently being added or updated.
+   *
+   * @param {object} oId The ObjectId being added or updated.
+   * @param {bool} isInvaldation A flag that says that an invalidation
+   *     for this ObjectId has arrived or we just need to add it to the table
+   *     as it was just updated its state.
+   */
+  function logToTable(oId, isInvalidation) {
+    var registrar = oId.registrar;
+    var name = oId.objectId.name;
+    var source = oId.objectId.source;
+    var key = source + '-' + name;
+    var time = new Date();
+    var version = oId.isUnknownVersion ? '?' :
+      oId.version;
+    var payload = '';
+    if (oId.hasOwnProperty('payload'))
+      payload = oId.payload;
+    if (!(key in tableObjects)) {
+      tableObjects[key] = {
+        name: name,
+        source: source,
+        count: 0,
+        registrar: registrar,
+        time: '',
+        version: '',
+        payload: '',
+        type: 'content'
+      };
+    }
+    // Refresh the type to be a content because it might have been
+    // greyed out.
+    tableObjects[key].type = 'content';
+    if (isInvalidation) {
+      tableObjects[key].count = tableObjects[key].count + 1;
+      tableObjects[key].time = time.toTimeString();
+      tableObjects[key].version = version;
+      tableObjects[key].payload = payload;
+    }
+  }
+
+  /**
+   * Updates the table with the objects ids registered for invalidations
+   *
+   * @param {string} registrar The name of the owner of the InvalidationHandler
+   *     that is registered for invalidations
+   * @param {Array of Object} allIds An array of ObjectsIds that are currently
+   *     registered for invalidations. It is not differential (as in, whatever
+   *     is not registered now but was before, it mean it was taken out the
+   *     registered objects)
+   */
+  function updateIds(registrar, allIds) {
+    // Grey out every datatype assigned to this registrar
+    // (and reenable them later in case they are still registered).
+    for (var key in tableObjects) {
+      if (tableObjects[key]['registrar'] === registrar)
+        tableObjects[key].type = 'greyed';
+    }
+    // Reenable those ObjectsIds still registered with this registrar.
+    for (var i = 0; i < allIds.length; i++) {
+      var oId = { objectId: allIds[i], registrar: registrar };
+      var isInvalidation = false;
+      logToTable(oId, isInvalidation);
+    }
+    repaintTable();
   }
 
   /**
@@ -69,6 +161,7 @@ cr.define('chrome.invalidations', function() {
 
   return {
     updateState: updateState,
+    updateIds: updateIds,
     logInvalidations: logInvalidations,
     onLoadWork: onLoadWork
   };

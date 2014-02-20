@@ -8,11 +8,13 @@ body {
   font-size: 80%;
 }
 
-#invalidations-info p {
+#invalidations-info .lead {
   color: rgb(74, 142, 230);
+  display: block;
   font-size: 100%;
   font-weight: bold;
-  margin-bottom: 0;
+  margin-top: 10px;
+  word-wrap: normal;
 }
 
 #invalidations-info .section {
@@ -20,5 +22,25 @@ body {
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+}
+
+#objectsid-table-container .td {
+  font-size: 50%;
+}
+
+#objectsid-table-container .error {
+ background: rgb(255, 204, 204);
+}
+
+#objectsid-table-container .header {
+ background: rgb(255, 255, 204);
+}
+
+#objectsid-table-container .content {
+ background: rgb(204, 255, 204);
+}
+
+#objectsid-table-container .greyed {
+ background: rgb(204, 204, 204);
 }
 

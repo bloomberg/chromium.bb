@@ -84,6 +84,7 @@ class TiclInvalidationService
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
   // Overrides BrowserContextKeyedService method.
   virtual void Shutdown() OVERRIDE;

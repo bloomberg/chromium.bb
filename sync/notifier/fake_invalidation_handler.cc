@@ -35,4 +35,6 @@ void FakeInvalidationHandler::OnIncomingInvalidation(
   ++invalidation_count_;
 }
 
+std::string FakeInvalidationHandler::GetOwnerName() const { return "Fake"; }
+
 }  // namespace syncer

@@ -23,6 +23,8 @@ class SYNC_EXPORT InvalidationHandler {
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) = 0;
 
+  virtual std::string GetOwnerName() const = 0;
+
  protected:
   virtual ~InvalidationHandler() {}
 };

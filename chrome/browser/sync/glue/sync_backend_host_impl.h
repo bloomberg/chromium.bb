@@ -260,6 +260,7 @@ class SyncBackendHostImpl
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
   content::NotificationRegistrar notification_registrar_;
 

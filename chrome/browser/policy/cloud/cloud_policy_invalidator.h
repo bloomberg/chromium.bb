@@ -72,6 +72,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
   // CloudPolicyCore::Observer:
   virtual void OnCoreConnected(CloudPolicyCore* core) OVERRIDE;

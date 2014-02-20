@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
@@ -17,6 +16,8 @@ class P2PInvalidator;
 class Profile;
 
 namespace invalidation {
+
+class InvalidationLogger;
 
 // This service is a wrapper around P2PInvalidator.  Unlike other
 // InvalidationServices, it can both send and receive invalidations.  It is used

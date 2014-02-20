@@ -83,6 +83,8 @@ void DriveNotificationManager::OnIncomingInvalidation(
   NotifyObserversToUpdate(NOTIFICATION_XMPP);
 }
 
+std::string DriveNotificationManager::GetOwnerName() const { return "Drive"; }
+
 void DriveNotificationManager::AddObserver(
     DriveNotificationObserver* observer) {
   observers_.AddObserver(observer);

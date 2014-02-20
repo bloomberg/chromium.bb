@@ -7,10 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_logger_observer.h"
-
-namespace syncer {
-class ObjectIdInvalidationMap;
-}
+#include "sync/notifier/invalidation_handler.h"
 
 namespace invalidation {
 class InvalidationLoggerObserver;
@@ -43,9 +40,22 @@ void InvalidationLogger::EmitState() {
                     OnStateChange(last_invalidator_state_));
 }
 
-void InvalidationLogger::OnUpdateIds(const base::DictionaryValue& details) {
-  FOR_EACH_OBSERVER(
-      InvalidationLoggerObserver, observer_list_, OnUpdateIds(details));
+void InvalidationLogger::OnUpdateIds(
+    std::map<std::string, syncer::ObjectIdSet> updated_ids) {
+  for (std::map<std::string, syncer::ObjectIdSet>::const_iterator it =
+       updated_ids.begin(); it != updated_ids.end(); ++it) {
+    latest_ids_[it->first] = syncer::ObjectIdSet(it->second);
+  }
+  EmitUpdatedIds();
+}
+
+void InvalidationLogger::EmitUpdatedIds() {
+  for (std::map<std::string, syncer::ObjectIdSet>::const_iterator it =
+       latest_ids_.begin(); it != latest_ids_.end(); ++it) {
+    FOR_EACH_OBSERVER(InvalidationLoggerObserver,
+                      observer_list_,
+                      OnUpdateIds(it->first, it->second));
+  }
 }
 
 void InvalidationLogger::OnDebugMessage(const base::DictionaryValue& details) {
@@ -60,22 +70,23 @@ void InvalidationLogger::OnInvalidation(
 }
 
 void InvalidationLogger::EmitContent() {
-  // Here we add content to send to the observers not via real time push
-  // but on explicit request.
   EmitState();
+  EmitUpdatedIds();
 }
 
-// Obtain a target object to call whenever we have
-// debug messages to display
-void InvalidationLogger::RegisterForDebug(
+void InvalidationLogger::RegisterObserver(
     InvalidationLoggerObserver* debug_observer) {
   observer_list_.AddObserver(debug_observer);
 }
 
-// Removes the target object to call whenever we have
-// debug messages to display
-void InvalidationLogger::UnregisterForDebug(
+void InvalidationLogger::UnregisterObserver(
     InvalidationLoggerObserver* debug_observer) {
   observer_list_.RemoveObserver(debug_observer);
 }
+
+bool InvalidationLogger::IsObserverRegistered(
+    InvalidationLoggerObserver* debug_observer) {
+  return observer_list_.HasObserver(debug_observer);
+}
+
 }  // namespace invalidation

@@ -16,77 +16,81 @@ class InvalidationLoggerTest : public testing::Test {
 
 class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
  public:
-  InvalidationLoggerObserverTest() { resetStates(); }
+  InvalidationLoggerObserverTest() { ResetStates(); }
 
-  void resetStates() {
-    registrationReceived = false;
-    unregistrationReceived = false;
-    stateReceived = false;
-    updateIdReceived = false;
-    debugMessageReceived = false;
-    invalidationReceived = false;
+  void ResetStates() {
+    registration_received = false;
+    unregistration_received = false;
+    state_received = false;
+    update_id_received = false;
+    debug_message_received = false;
+    invalidation_received = false;
+    update_id_replicated = std::map<std::string, syncer::ObjectIdSet>();
   }
 
   virtual void OnRegistration(const base::DictionaryValue& details) OVERRIDE {
-    registrationReceived = true;
+    registration_received = true;
   }
 
   virtual void OnUnregistration(const base::DictionaryValue& details) OVERRIDE {
-    unregistrationReceived = true;
+    unregistration_received = true;
   }
 
   virtual void OnStateChange(const syncer::InvalidatorState& newState)
       OVERRIDE {
-    stateReceived = true;
+    state_received = true;
   }
 
-  virtual void OnUpdateIds(const base::DictionaryValue& details) OVERRIDE {
-    updateIdReceived = true;
+  virtual void OnUpdateIds(const std::string& handler,
+                           const syncer::ObjectIdSet& details) OVERRIDE {
+    update_id_received = true;
+    update_id_replicated[handler] = details;
   }
 
   virtual void OnDebugMessage(const base::DictionaryValue& details) OVERRIDE {
-    debugMessageReceived = true;
+    debug_message_received = true;
   }
 
   virtual void OnInvalidation(
       const syncer::ObjectIdInvalidationMap& newInvalidations) OVERRIDE {
-    invalidationReceived = true;
+    invalidation_received = true;
   }
 
-  bool registrationReceived;
-  bool unregistrationReceived;
-  bool stateReceived;
-  bool updateIdReceived;
-  bool debugMessageReceived;
-  bool invalidationReceived;
+  bool registration_received;
+  bool unregistration_received;
+  bool state_received;
+  bool update_id_received;
+  bool debug_message_received;
+  bool invalidation_received;
+  std::map<std::string, syncer::ObjectIdSet> update_id_replicated;
 };
 
 // Test that the callbacks are actually being called when observers are
 // registered and don't produce any other callback in the meantime.
 TEST_F(InvalidationLoggerTest, TestCallbacks) {
   InvalidationLogger log;
-  InvalidationLoggerObserverTest observerTest;
+  InvalidationLoggerObserverTest observer_test;
 
-  log.RegisterForDebug(&observerTest);
+  log.RegisterObserver(&observer_test);
   log.OnStateChange(syncer::INVALIDATIONS_ENABLED);
-  EXPECT_TRUE(observerTest.stateReceived);
-  EXPECT_FALSE(observerTest.updateIdReceived);
-  EXPECT_FALSE(observerTest.registrationReceived);
-  EXPECT_FALSE(observerTest.invalidationReceived);
-  EXPECT_FALSE(observerTest.unregistrationReceived);
-  EXPECT_FALSE(observerTest.debugMessageReceived);
+  EXPECT_TRUE(observer_test.state_received);
+  EXPECT_FALSE(observer_test.update_id_received);
+  EXPECT_FALSE(observer_test.registration_received);
+  EXPECT_FALSE(observer_test.invalidation_received);
+  EXPECT_FALSE(observer_test.unregistration_received);
+  EXPECT_FALSE(observer_test.debug_message_received);
 
-  observerTest.resetStates();
+  observer_test.ResetStates();
 
   log.OnInvalidation(syncer::ObjectIdInvalidationMap());
-  EXPECT_TRUE(observerTest.invalidationReceived);
-  EXPECT_FALSE(observerTest.stateReceived);
-  EXPECT_FALSE(observerTest.updateIdReceived);
-  EXPECT_FALSE(observerTest.registrationReceived);
-  EXPECT_FALSE(observerTest.unregistrationReceived);
-  EXPECT_FALSE(observerTest.debugMessageReceived);
+  EXPECT_TRUE(observer_test.invalidation_received);
+  EXPECT_FALSE(observer_test.state_received);
+  EXPECT_FALSE(observer_test.update_id_received);
+  EXPECT_FALSE(observer_test.registration_received);
+  EXPECT_FALSE(observer_test.unregistration_received);
+  EXPECT_FALSE(observer_test.debug_message_received);
 
-  log.UnregisterForDebug(&observerTest);
+  log.UnregisterObserver(&observer_test);
 }
 
 // Test that after registering an observer and then unregistering it
@@ -94,41 +98,94 @@ TEST_F(InvalidationLoggerTest, TestCallbacks) {
 // (i.e. the observer is cleanly removed)
 TEST_F(InvalidationLoggerTest, TestReleaseOfObserver) {
   InvalidationLogger log;
-  InvalidationLoggerObserverTest observerTest;
+  InvalidationLoggerObserverTest observer_test;
 
-  log.RegisterForDebug(&observerTest);
-  log.UnregisterForDebug(&observerTest);
+  log.RegisterObserver(&observer_test);
+  log.UnregisterObserver(&observer_test);
 
   log.OnInvalidation(syncer::ObjectIdInvalidationMap());
   log.OnStateChange(syncer::INVALIDATIONS_ENABLED);
   log.OnRegistration(base::DictionaryValue());
   log.OnUnregistration(base::DictionaryValue());
   log.OnDebugMessage(base::DictionaryValue());
-  log.OnUpdateIds(base::DictionaryValue());
-  EXPECT_FALSE(observerTest.registrationReceived);
-  EXPECT_FALSE(observerTest.unregistrationReceived);
-  EXPECT_FALSE(observerTest.updateIdReceived);
-  EXPECT_FALSE(observerTest.invalidationReceived);
-  EXPECT_FALSE(observerTest.stateReceived);
-  EXPECT_FALSE(observerTest.debugMessageReceived);
+  log.OnUpdateIds(std::map<std::string, syncer::ObjectIdSet>());
+  EXPECT_FALSE(observer_test.registration_received);
+  EXPECT_FALSE(observer_test.unregistration_received);
+  EXPECT_FALSE(observer_test.update_id_received);
+  EXPECT_FALSE(observer_test.invalidation_received);
+  EXPECT_FALSE(observer_test.state_received);
+  EXPECT_FALSE(observer_test.debug_message_received);
 }
 
 // Test the EmitContet in InvalidationLogger is actually
-// sending (only) state notifications.
+// sending state and updateIds notifications.
 TEST_F(InvalidationLoggerTest, TestEmitContent) {
   InvalidationLogger log;
-  InvalidationLoggerObserverTest observerTest;
+  InvalidationLoggerObserverTest observer_test;
 
-  log.RegisterForDebug(&observerTest);
-  EXPECT_FALSE(observerTest.stateReceived);
+  log.RegisterObserver(&observer_test);
+  EXPECT_FALSE(observer_test.state_received);
+  EXPECT_FALSE(observer_test.update_id_received);
   log.EmitContent();
+  // Only expect state because no Ids were registered.
+  EXPECT_TRUE(observer_test.state_received);
+  EXPECT_FALSE(observer_test.registration_received);
+  EXPECT_FALSE(observer_test.unregistration_received);
+  EXPECT_FALSE(observer_test.update_id_received);
+  EXPECT_FALSE(observer_test.invalidation_received);
+  EXPECT_FALSE(observer_test.debug_message_received);
 
-  EXPECT_TRUE(observerTest.stateReceived);
-  EXPECT_FALSE(observerTest.registrationReceived);
-  EXPECT_FALSE(observerTest.unregistrationReceived);
-  EXPECT_FALSE(observerTest.updateIdReceived);
-  EXPECT_FALSE(observerTest.invalidationReceived);
-  EXPECT_FALSE(observerTest.debugMessageReceived);
-  log.UnregisterForDebug(&observerTest);
+  observer_test.ResetStates();
+  std::map<std::string, syncer::ObjectIdSet> test_map;
+  test_map["Test"] = syncer::ObjectIdSet();
+  log.OnUpdateIds(test_map);
+  EXPECT_TRUE(observer_test.update_id_received);
+  observer_test.ResetStates();
+
+  log.EmitContent();
+  // Expect now state and ids change.
+  EXPECT_TRUE(observer_test.state_received);
+  EXPECT_TRUE(observer_test.update_id_received);
+  EXPECT_FALSE(observer_test.registration_received);
+  EXPECT_FALSE(observer_test.unregistration_received);
+  EXPECT_FALSE(observer_test.invalidation_received);
+  EXPECT_FALSE(observer_test.debug_message_received);
+  log.UnregisterObserver(&observer_test);
+}
+
+// Test that the updateId notification actually sends
+// what was sent to the Observer.
+// The ObserverTest rebuilds the map that was sent in pieces by the logger.
+TEST_F(InvalidationLoggerTest, TestUpdateIdsMap) {
+  InvalidationLogger log;
+  InvalidationLoggerObserverTest observer_test;
+  std::map<std::string, syncer::ObjectIdSet> test_map;
+  log.RegisterObserver(&observer_test);
+
+  syncer::ObjectIdSet sync_set_A;
+  sync_set_A.insert(ObjectId(1000, "DataType1"));
+  sync_set_A.insert(ObjectId(1000, "DataType2"));
+  syncer::ObjectIdSet sync_set_B;
+  sync_set_B.insert(ObjectId(1020, "DataTypeA"));
+  test_map["TestA"] = sync_set_A;
+  test_map["TestB"] = sync_set_B;
+
+  log.OnUpdateIds(test_map);
+  EXPECT_EQ(test_map, observer_test.update_id_replicated);
+
+  syncer::ObjectIdSet sync_set_B2;
+  sync_set_B2.insert(ObjectId(1020, "DataTypeF"));
+  sync_set_B2.insert(ObjectId(1020, "DataTypeG"));
+  test_map["TestB"] = sync_set_B2;
+
+  log.OnUpdateIds(test_map);
+  EXPECT_EQ(test_map, observer_test.update_id_replicated);
+
+  // The emit content should return the same map too.
+  observer_test.ResetStates();
+  log.EmitContent();
+  EXPECT_EQ(test_map, observer_test.update_id_replicated);
+
+  log.UnregisterObserver(&observer_test);
 }
 }  // namespace invalidation

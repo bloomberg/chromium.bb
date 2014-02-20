@@ -13,17 +13,44 @@
   <h1>Invalidations Debug Information</h1>
   <div id="invalidations-info">
     <div id="states" class="section">
-      <label>
-        <p>Invalidation service state:</p><span id="invalidations-state"></span>
-      </label>
+      <span class='lead'>Invalidation service state:</span>
+      <span id="invalidations-state"></span>
+    </div>
+    <div id="objectsid-table-div" class="section">
+      <span class='lead'>Registered objectsIds for invalidations:</span>
+      <table id="objectsid-table-container">
+      <!-- 'objectsidtable' can't have dashes in the name
+            as jstemplate can't deal with them-->
+        <thead>
+          <tr class="header">
+            <th>Registrar</th>
+            <th>Source</th>
+            <th>Name</th>
+            <th>Count</th>
+            <th>Version</th>
+            <th>Time</th>
+            <th>Last Payload</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr jsselect="objectsidtable" jsvalues="class:$this.type">
+            <td jscontent="registrar" width=5%></td>
+            <td jscontent="source" width=5%></td>
+            <td jscontent="name" width=20%></td>
+            <td jscontent="count" width=5%></td>
+            <td jscontent="version" width=10%></td>
+            <td jscontent="time" width=20%></td>
+            <td jscontent="payload" width=35%></td>
+         </tr>
+       </tbody>
+     </table>
     </div>
     <div class="section">
-      <label>
-        <p>Invalidations Log:</p>
-        <textarea
-            id="invalidations-log" rows="10" cols="120" readonly></textarea>
-      </label>
+      <span class='lead'>Invalidations Log:</span>
+      <textarea
+        id="invalidations-log" rows="10" cols="120"readonly></textarea>
     </div>
   </div>
+  <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>

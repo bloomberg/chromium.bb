@@ -110,6 +110,8 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
   HandleInvalidation(list.back());
 }
 
+std::string CloudPolicyInvalidator::GetOwnerName() const { return "Cloud"; }
+
 void CloudPolicyInvalidator::OnCoreConnected(CloudPolicyCore* core) {}
 
 void CloudPolicyInvalidator::OnRefreshSchedulerStarted(CloudPolicyCore* core) {

@@ -71,6 +71,11 @@ class SYNC_EXPORT InvalidatorRegistrar {
   // updated state.
   InvalidatorState GetInvalidatorState() const;
 
+  // Gets a new map for the name of invalidator handlers and their
+  // objects id. This is used by the InvalidatorLogger to be able
+  // to display every registered handlers and its objectsIds.
+  std::map<std::string, ObjectIdSet> GetSanitizedHandlersIdsMap();
+
   bool IsHandlerRegisteredForTest(InvalidationHandler* handler) const;
 
   // Needed for death tests.

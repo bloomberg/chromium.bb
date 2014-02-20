@@ -123,6 +123,18 @@ InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
   return state_;
 }
 
+std::map<std::string, ObjectIdSet>
+InvalidatorRegistrar::GetSanitizedHandlersIdsMap() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::map<std::string, ObjectIdSet> clean_handlers_to_ids;
+  for (HandlerIdsMap::const_iterator it = handler_to_ids_map_.begin();
+       it != handler_to_ids_map_.end();
+       ++it) {
+    clean_handlers_to_ids[it->first->GetOwnerName()] = ObjectIdSet(it->second);
+  }
+  return clean_handlers_to_ids;
+}
+
 bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());

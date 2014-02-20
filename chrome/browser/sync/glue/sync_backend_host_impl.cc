@@ -662,6 +662,10 @@ void SyncBackendHostImpl::OnIncomingInvalidation(
                  invalidation_map));
 }
 
+std::string SyncBackendHostImpl::GetOwnerName() const {
+  return "SyncBackendHostImpl";
+}
+
 bool SyncBackendHostImpl::CheckPassphraseAgainstCachedPendingKeys(
     const std::string& passphrase) const {
   DCHECK(cached_pending_keys_.has_blob());

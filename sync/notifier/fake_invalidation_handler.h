@@ -27,6 +27,7 @@ class FakeInvalidationHandler : public InvalidationHandler {
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+  virtual std::string GetOwnerName() const OVERRIDE;
 
  private:
   InvalidatorState state_;

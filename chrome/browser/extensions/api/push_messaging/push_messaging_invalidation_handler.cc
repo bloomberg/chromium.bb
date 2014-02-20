@@ -180,6 +180,10 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
   }
 }
 
+std::string PushMessagingInvalidationHandler::GetOwnerName() const {
+  return "PushMessagingApi";
+}
+
 void PushMessagingInvalidationHandler::UpdateRegistrations() {
   syncer::ObjectIdSet ids;
   for (std::set<std::string>::const_iterator it =
