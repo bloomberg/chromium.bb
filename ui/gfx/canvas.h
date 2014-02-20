@@ -144,8 +144,6 @@ class GFX_EXPORT Canvas {
   // |text| with |font_list|.
   static int GetStringWidth(const base::string16& text,
                             const FontList& font_list);
-  // Obsolete version.  Use the above version which takes FontList.
-  static int GetStringWidth(const base::string16& text, const Font& font);
 
   // This is same as GetStringWidth except that fractional width is returned.
   // Use this method for the scenario that multiple string widths need to be

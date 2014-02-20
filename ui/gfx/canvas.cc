@@ -114,13 +114,6 @@ float Canvas::GetStringWidthF(const base::string16& text,
 }
 
 // static
-int Canvas::GetStringWidth(const base::string16& text, const Font& font) {
-  int width = 0, height = 0;
-  SizeStringInt(text, FontList(font), &width, &height, 0, NO_ELLIPSIS);
-  return width;
-}
-
-// static
 int Canvas::DefaultCanvasTextAlignment() {
   return base::i18n::IsRTL() ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
 }
