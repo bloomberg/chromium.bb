@@ -1,0 +1,97 @@
+CASE 1, original layer tree
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 1
+        (GraphicsLayer
+          (children 2
+            (GraphicsLayer
+              (position 100.00 100.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+            )
+            (GraphicsLayer
+              (position -1.00 -1.00)
+              (bounds 280.72 280.72)
+              (drawsContent 1)
+            )
+          )
+        )
+      )
+    )
+  )
+)
+CASE 2, hovering over the outer div
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 1
+        (GraphicsLayer
+          (children 2
+            (GraphicsLayer
+              (position 100.00 100.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+            )
+            (GraphicsLayer
+              (position -1.00 -1.00)
+              (bounds 280.72 280.72)
+              (drawsContent 1)
+              (repaint rects
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 0.00 0.00 280.72 280.72)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+CASE 3, hovering over the inner div
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 1
+        (GraphicsLayer
+          (children 2
+            (GraphicsLayer
+              (position 100.00 100.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+            )
+            (GraphicsLayer
+              (position -1.00 -1.00)
+              (bounds 280.72 280.72)
+              (drawsContent 1)
+              (repaint rects
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 0.00 0.00 141.00 141.00)
+                (rect 31.00 31.00 71.00 71.00)
+                (rect 31.00 31.00 71.00 71.00)
+                (rect 31.00 31.00 71.00 71.00)
+                (rect 0.00 0.00 280.72 280.72)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
