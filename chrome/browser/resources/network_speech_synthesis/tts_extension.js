@@ -149,7 +149,7 @@ TtsExtension.prototype = {
       var url = this.SPEECH_SERVER_URL_;
       chrome.systemPrivate.getApiKey((function(key) {
         url += '&key=' + key;
-        url += '&text=' + escape(utterance);
+        url += '&text=' + encodeURIComponent(utterance);
         url += '&lang=' + lang.toLowerCase();
 
         if (voiceName)
