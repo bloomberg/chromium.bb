@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
@@ -97,8 +98,7 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
  public:
   PrefHashBrowserTest()
       : is_unloaded_profile_seeding_allowed_(
-            GetParam() !=
-            chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways) {}
+            IsUnloadedProfileSeedingAllowed()) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -109,8 +109,9 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    // Force the delayed PrefHashStore update task to happen immediately.
-    chrome_prefs::EnableZeroDelayPrefHashStoreUpdateForTesting();
+    // Force the delayed PrefHashStore update task to happen immediately with
+    // no domain check (bots are on a domain).
+    chrome_prefs::DisableDelaysAndDomainCheckForTesting();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -129,6 +130,22 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
 
  protected:
   const bool is_unloaded_profile_seeding_allowed_;
+
+ private:
+  bool IsUnloadedProfileSeedingAllowed() const {
+    const bool allowed_from_param =
+        GetParam() !=
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways;
+    const bool allowed_from_configuration =
+#if defined(OFFICIAL_BUILD)
+        // SettingsEnforcement can't be forced via --force-fieldtrials in
+        // official builds.
+        true;
+#else
+        false;
+#endif
+    return allowed_from_param || allowed_from_configuration;
+  }
 };
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
@@ -157,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
   // this phase as both profiles should have been loaded normally.
   EXPECT_EQ(
       0, GetTrackedPrefHistogramCount(
-             "Settings.TrackedPreferencesInitializedForUnloadedProfile",
+             "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
              true));
 }
 
@@ -285,12 +302,10 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
   }
 }
 
-// TODO(gab): Also test kSettingsEnforcementGroupEnforceAlways below; for some
-// reason it doesn't pass on the try bots, yet I can't repro the failure
-// locally, it's as if GROUP_NO_ENFORCEMENT is always picked on bots..?
 INSTANTIATE_TEST_CASE_P(
     PrefHashBrowserTestInstance,
     PrefHashBrowserTest,
     testing::Values(
         chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
-        chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload));
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways));

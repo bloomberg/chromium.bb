@@ -69,9 +69,11 @@ using content::BrowserThread;
 
 namespace {
 
-// The delay in seconds before actual work kicks in after calling
-// SchedulePrefHashStoresUpdateCheck can be set to 0 for tests.
-int g_pref_hash_store_update_check_delay_seconds = 55;
+// Whether we are in testing mode; can be enabled via
+// DisableDelaysAndDomainCheckForTesting(). Forces startup checks to occur
+// with no delay and ignores the presence of a domain when determining the
+// active SettingsEnforcement group.
+bool g_disable_delays_and_domain_check_for_testing = false;
 
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
@@ -167,15 +169,17 @@ enum SettingsEnforcementGroup {
 
 SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 # if defined(OS_WIN)
-  static bool first_call = true;
-  static const bool is_enrolled_to_domain = base::win::IsEnrolledToDomain();
-  if (first_call) {
-    UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
-                          is_enrolled_to_domain);
-    first_call = false;
+  if (!g_disable_delays_and_domain_check_for_testing) {
+    static bool first_call = true;
+    static const bool is_enrolled_to_domain = base::win::IsEnrolledToDomain();
+    if (first_call) {
+      UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
+                            is_enrolled_to_domain);
+      first_call = false;
+    }
+    if (is_enrolled_to_domain)
+      return GROUP_NO_ENFORCEMENT;
   }
-  if (is_enrolled_to_domain)
-    return GROUP_NO_ENFORCEMENT;
 #endif
 
   struct {
@@ -527,23 +531,27 @@ void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {
         FROM_HERE,
         base::Bind(&VerifyPreferencesFile,
                    GetPrefFilePathFromProfilePath(profile_path)),
-        base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
+        base::TimeDelta::FromSeconds(
+            g_disable_delays_and_domain_check_for_testing ?
+                0 : kVerifyPrefsFileDelaySeconds));
 #endif
 }
 
-void EnableZeroDelayPrefHashStoreUpdateForTesting() {
-  g_pref_hash_store_update_check_delay_seconds = 0;
+void DisableDelaysAndDomainCheckForTesting() {
+  g_disable_delays_and_domain_check_for_testing = true;
 }
 
 void SchedulePrefHashStoresUpdateCheck(
     const base::FilePath& initial_profile_path) {
+  const int kDefaultPrefHashStoresUpdateCheckDelaySeconds = 55;
   BrowserThread::PostDelayedTask(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&UpdateAllPrefHashStoresIfRequired,
                    initial_profile_path),
         base::TimeDelta::FromSeconds(
-            g_pref_hash_store_update_check_delay_seconds));
+            g_disable_delays_and_domain_check_for_testing ?
+                0 : kDefaultPrefHashStoresUpdateCheckDelaySeconds));
 }
 
 void ResetPrefHashStore(const base::FilePath& profile_path) {

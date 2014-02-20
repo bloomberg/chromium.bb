@@ -76,9 +76,10 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
 // |profile_path|.
 void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
 
-// Call before calling SchedulePrefHashStoresUpdateCheck to cause it to run with
-// zero delay. For testing only.
-void EnableZeroDelayPrefHashStoreUpdateForTesting();
+// Call before startup tasks kick in to disable delays in
+// chrome_prefs::Schedule*() methods and ignore presence of a domain when
+// determining the active SettingsEnforcement group. For testing only.
+void DisableDelaysAndDomainCheckForTesting();
 
 // Shedules an update check for all PrefHashStores, stores whose version doesn't
 // match the latest version will then be updated.
