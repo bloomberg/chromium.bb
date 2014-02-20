@@ -54,23 +54,23 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
               'files': [
-                'resources/layout/desktop.xml',
-                'resources/layout/host.xml',
-                'resources/layout/main.xml',
-                'resources/layout/pin_dialog.xml',
+                'resources/android/layout/desktop.xml',
+                'resources/android/layout/host.xml',
+                'resources/android/layout/main.xml',
+                'resources/android/layout/pin_dialog.xml',
               ],
             },
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/menu',
               'files': [
-                'resources/menu/chromoting_actionbar.xml',
-                'resources/menu/desktop_actionbar.xml',
+                'resources/android/menu/chromoting_actionbar.xml',
+                'resources/android/menu/desktop_actionbar.xml',
               ],
             },
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
               'files': [
-                'resources/strings.xml',
+                'resources/android/values/strings.xml',
               ],
             },
           ],
