@@ -42,26 +42,20 @@ class SyncTest(test_case.HostDrivenTestCase):
       full_names.append('SyncTest.' + test_name)
     return self._RunJavaTestFilters(full_names, self.additional_flags)
 
-  # Disabled for http://crbug.com/329757
-  # @tests_annotations.Feature(['Sync'])
-  # @tests_annotations.EnormousTest
-  @tests_annotations.DisabledTest
+  @tests_annotations.Feature(['Sync'])
+  @tests_annotations.EnormousTest
   def testGetAboutSyncInfoYieldsValidData(self):
     java_tests = ['testGetAboutSyncInfoYieldsValidData']
     return self._RunSyncTests(java_tests)
 
-  # Disabled for http://crbug.com/309997
-  # @tests_annotations.Feature(['Sync'])
-  # @tests_annotations.EnormousTest
-  @tests_annotations.DisabledTest
+  @tests_annotations.Feature(['Sync'])
+  @tests_annotations.EnormousTest
   def testAboutSyncPageDisplaysCurrentSyncStatus(self):
     java_tests = ['testAboutSyncPageDisplaysCurrentSyncStatus']
     return self._RunSyncTests(java_tests)
 
-  # Disabled for http://crbug.com/311091
-  # @tests_annotations.Feature(['Sync'])
-  # @tests_annotations.EnormousTest
-  @tests_annotations.DisabledTest
+  @tests_annotations.Feature(['Sync'])
+  @tests_annotations.EnormousTest
   def testDisableAndEnableSync(self):
     java_tests = ['testDisableAndEnableSync']
     return self._RunSyncTests(java_tests)

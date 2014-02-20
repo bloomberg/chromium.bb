@@ -11,6 +11,13 @@
          needed when building test cases. -->
     <application>
         <uses-library android:name="android.test.runner" />
+        <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="19" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"

@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Utility class for shared sync test functionality.
+ */
 public final class SyncTestUtil {
 
     public static final String DEFAULT_TEST_ACCOUNT = "test@gmail.com";
@@ -44,6 +47,8 @@ public final class SyncTestUtil {
             "oauth2:https://www.googleapis.com/auth/chromesync";
     public static final String LOGIN_OAUTH2_SCOPE =
             "oauth2:https://www.google.com/accounts/OAuthLogin";
+    public static final String USERINFO_SCOPE =
+            "oauth2:https://www.googleapis.com/auth/userinfo.profile";
     private static final String TAG = "SyncTestUtil";
 
     public static final long UI_TIMEOUT_MS = scaleTimeout(20000);
@@ -329,6 +334,12 @@ public final class SyncTestUtil {
         verifySignedInWithAccount(context, account);
     }
 
+    /**
+     * Retrieves the sync internals information which is the basis for chrome://sync-internals and
+     * makes the result available in {@link AboutSyncInfoGetter#getAboutInfo()}.
+     *
+     * This class has to be run on the main thread, as it accesses the ProfileSyncService.
+     */
     public static class AboutSyncInfoGetter implements Runnable {
         private static final String TAG = "AboutSyncInfoGetter";
         final Context mContext;
