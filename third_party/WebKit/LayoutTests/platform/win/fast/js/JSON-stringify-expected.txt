@@ -161,19 +161,19 @@ function (jsonObject){
         var array = [{toString:function(){array[0]='a'; array[1]='c'; array[2]='b'; return 'a'}}];
         return jsonObject.stringify(simpleObject, array);
     }
-FAIL tests[i](nativeJSON) should be {}. Threw exception illegal access
+PASS tests[i](nativeJSON) is tests[i](JSON)
 function (jsonObject){
         var allString = true;
         var array = [{toString:function(){array[0]='a'; array[1]='c'; array[2]='b'; return 'a'}}];
         return jsonObject.stringify(simpleObjectWithProto, array);
     }
-FAIL tests[i](nativeJSON) should be {}. Threw exception illegal access
+PASS tests[i](nativeJSON) is tests[i](JSON)
 function (jsonObject){
         var allString = true;
         var array = [1, new Number(2), NaN, Infinity, -Infinity, new String("str")];
         return jsonObject.stringify({"1":"1","2":"2","NaN":"NaN","Infinity":"Infinity","-Infinity":"-Infinity","str":"str"}, array);
     }
-FAIL tests[i](nativeJSON) should be {"1":"1","2":"2","NaN":"NaN","Infinity":"Infinity","-Infinity":"-Infinity","str":"str"}. Threw exception illegal access
+FAIL tests[i](nativeJSON) should be {"1":"1","2":"2","NaN":"NaN","Infinity":"Infinity","-Infinity":"-Infinity","str":"str"}. Was {"1":"1","NaN":"NaN","Infinity":"Infinity","-Infinity":"-Infinity"}.
 function (jsonObject){
         var allString = true;
         var array = ["1","2","3"];
@@ -386,20 +386,20 @@ function (jsonObject){
         jsonObject.stringify(simpleObject, array);
         return count;
     }
-FAIL tests[i](nativeJSON) should be 0. Threw exception illegal access
+PASS tests[i](nativeJSON) is tests[i](JSON)
 function (jsonObject){
         var allString = true;
         var array = [{toString:function(){array[0]='a'; array[1]='c'; array[2]='b'; return 'a'}}, 'b', 'c'];
         return jsonObject.stringify(simpleObject, array);
     }
-FAIL tests[i](nativeJSON) should be {"b":"2","c":"3"}. Threw exception illegal access
+PASS tests[i](nativeJSON) is tests[i](JSON)
 function (jsonObject){
         var count = 0;
         var array = [{toString:function(){count++; array[0]='a'; array[1]='c'; array[2]='b'; return 'a'}}, 'b', 'c'];
         jsonObject.stringify(simpleObject, array);
         return count;
     }
-FAIL tests[i](nativeJSON) should be 0. Threw exception illegal access
+PASS tests[i](nativeJSON) is tests[i](JSON)
 function (jsonObject){
         return jsonObject.stringify({a:"1", get b() { this.a="foo"; return "getter"; }, c:"3"});
     }
