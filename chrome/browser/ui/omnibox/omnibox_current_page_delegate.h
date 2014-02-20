@@ -54,10 +54,8 @@ class OmniboxCurrentPageDelegate {
                                        const AutocompleteMatch& match,
                                        WindowOpenDisposition disposition) = 0;
 
-  // Notifies the SearchTabHelper, if one exists, of relevant changes to the
-  // omnibox state.
-  virtual void NotifySearchTabHelper(bool user_input_in_progress,
-                                     bool cancelling) = 0;
+  // Called to notify clients that the omnibox input state has changed.
+  virtual void OnInputStateChanged() = 0;
 
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;

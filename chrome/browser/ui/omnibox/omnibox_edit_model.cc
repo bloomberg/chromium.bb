@@ -515,7 +515,8 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
   controller_->Update(NULL);
 
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+  if (user_input_in_progress_ || !in_revert_)
+    delegate_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::Revert() {
@@ -869,7 +870,9 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
 void OmniboxEditModel::AcceptTemporaryTextAsUserText() {
   InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
   has_temporary_text_ = false;
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+
+  if (user_input_in_progress_ || !in_revert_)
+    delegate_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::ClearKeyword(const base::string16& visible_text) {
@@ -927,7 +930,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
                                                 permanent_text_);
   }
 
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+  if (user_input_in_progress_ || !in_revert_)
+    delegate_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {
@@ -948,7 +952,9 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller()->StopZeroSuggest();
-  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
+
+  if (user_input_in_progress_ || !in_revert_)
+    delegate_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::OnKillFocus() {

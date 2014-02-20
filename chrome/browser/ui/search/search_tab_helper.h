@@ -51,9 +51,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Sets up the initial state correctly for a preloaded NTP.
   void InitForPreloadedNTP();
 
-  // Invoked when the OmniboxEditModel changes state in some way that might
+  // Invoked when the omnibox input state is changed in some way that might
   // affect the search mode.
-  void OmniboxEditModelChanged(bool user_input_in_progress, bool cancelling);
+  void OmniboxInputStateChanged();
 
   // Invoked when the active navigation entry is updated in some way that might
   // affect the search mode. This is used by Instant when it "fixes up" the
@@ -200,9 +200,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void RedirectToLocalNTP();
 
   const bool is_search_enabled_;
-
-  // Tracks the last value passed to OmniboxEditModelChanged().
-  bool user_input_in_progress_;
 
   // Model object for UI that cares about search state.
   SearchModel model_;
