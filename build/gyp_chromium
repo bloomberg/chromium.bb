@@ -441,7 +441,10 @@ if __name__ == '__main__':
   # If on windows, and the automatic toolchain has been installed by
   # depot_tools, then use it.
   vs2013_runtime_dll_dirs = None
-  if sys.platform in ('win32', 'cygwin'):
+  # If MSVS_VERSION is explicitly specified to be something other than 2013,
+  # don't use the automatic toolchain, as it currently only supports VS2013.
+  msvs_version = os.environ.get('GYP_MSVS_VERSION', '2013')
+  if sys.platform in ('win32', 'cygwin') and msvs_version.startswith('2013'):
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
     toolchain = os.path.normpath(os.path.join(
