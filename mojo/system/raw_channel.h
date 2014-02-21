@@ -7,13 +7,13 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
-class MessageLoop;
+class MessageLoopForIO;
 }
 
 namespace mojo {
@@ -23,9 +23,8 @@ class MessageInTransit;
 
 // |RawChannel| is an interface to objects that wrap an OS "pipe". It presents
 // the following interface to users:
-//  - Receives and dispatches messages on a thread (running a |MessageLoop|; it
-//    must be a |MessageLoopForIO| in the case of the POSIX libevent
-//    implementation).
+//  - Receives and dispatches messages on an I/O thread (running a
+//    |MessageLoopForIO|.
 //  - Provides a thread-safe way of writing messages (|WriteMessage()|);
 //    writing/queueing messages will not block and is atomic from the point of
 //    view of the caller. If necessary, messages are queued (to be written on
@@ -35,7 +34,8 @@ class MessageInTransit;
 // |Create()| static factory method.
 //
 // With the exception of |WriteMessage()|, this class is thread-unsafe (and in
-// general its methods should only be used on the I/O thread).
+// general its methods should only be used on the I/O thread, i.e., the thread
+// on which |Init()| is called).
 class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
  public:
   virtual ~RawChannel() {}
@@ -70,12 +70,12 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Static factory method. |handle| should be a handle to a
   // (platform-appropriate) bidirectional communication channel (e.g., a socket
   // on POSIX, a named pipe on Windows). Does *not* take ownership of |delegate|
-  // and |message_loop|, which must remain alive while this object does.
+  // and |message_loop_for_io|, which must remain alive while this object does.
   static RawChannel* Create(embedder::ScopedPlatformHandle handle,
                             Delegate* delegate,
-                            base::MessageLoop* message_loop);
+                            base::MessageLoopForIO* message_loop_for_io);
 
-  // This must be called (on the I/O thread) before this object is used. Returns
+  // This must be called (on an I/O thread) before this object is used. Returns
   // true on success. On failure, |Shutdown()| should *not* be called.
   virtual bool Init() = 0;
 
@@ -87,15 +87,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual bool WriteMessage(MessageInTransit* message) = 0;
 
  protected:
-  RawChannel(Delegate* delegate, base::MessageLoop* message_loop)
-      : delegate_(delegate), message_loop_(message_loop) {}
+  RawChannel(Delegate* delegate, base::MessageLoopForIO* message_loop_for_io)
+      : delegate_(delegate), message_loop_for_io_(message_loop_for_io) {}
 
   Delegate* delegate() { return delegate_; }
-  base::MessageLoop* message_loop() { return message_loop_; }
+  base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
 
  private:
   Delegate* const delegate_;
-  base::MessageLoop* const message_loop_;
+  base::MessageLoopForIO* const message_loop_for_io_;
 
   DISALLOW_COPY_AND_ASSIGN(RawChannel);
 };

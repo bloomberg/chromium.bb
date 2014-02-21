@@ -17,7 +17,7 @@ namespace system {
 // static
 RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
                                Delegate* delegate,
-                               base::MessageLoop* message_loop) {
+                               base::MessageLoopForIO* message_loop_for_io) {
   // TODO(vtl)
   NOTIMPLEMENTED();
   return NULL;

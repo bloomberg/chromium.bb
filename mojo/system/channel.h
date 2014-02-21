@@ -22,23 +22,18 @@
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/system_impl_export.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace mojo {
 namespace system {
 
-// This class is mostly thread-safe. It must be created on an "I/O thread" (see
-// raw_channel.h). |Init()| must be called on that same thread before it becomes
-// thread-safe (in particular, before references are given to any other thread)
-// and |Shutdown()| must be called on that same thread before destruction. Its
-// public methods are otherwise thread-safe. It may be destroyed on any thread,
-// in the sense that the last reference to it may be released on any thread,
-// with the proviso that |Shutdown()| must have been called first (so the
-// pattern is that a "main" reference is kept on its creation thread and is
-// released after |Shutdown()| is called, but other threads may have temporarily
-// "dangling" references).
+// This class is mostly thread-safe. It must be created on an I/O thread.
+// |Init()| must be called on that same thread before it becomes thread-safe (in
+// particular, before references are given to any other thread) and |Shutdown()|
+// must be called on that same thread before destruction. Its public methods are
+// otherwise thread-safe. It may be destroyed on any thread, in the sense that
+// the last reference to it may be released on any thread, with the proviso that
+// |Shutdown()| must have been called first (so the pattern is that a "main"
+// reference is kept on its creation thread and is released after |Shutdown()|
+// is called, but other threads may have temporarily "dangling" references).
 //
 // Note that |MessagePipe| calls into |Channel| and the former's |lock_| must be
 // acquired before the latter's. When |Channel| wants to call into a

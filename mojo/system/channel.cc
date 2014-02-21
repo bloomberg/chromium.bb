@@ -44,8 +44,10 @@ bool Channel::Init(embedder::ScopedPlatformHandle handle) {
   // becomes thread-safe.
   DCHECK(!raw_channel_.get());
 
-  raw_channel_.reset(
-      RawChannel::Create(handle.Pass(), this, base::MessageLoop::current()));
+  CHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_IO);
+  raw_channel_.reset(RawChannel::Create(handle.Pass(), this,
+                                        static_cast<base::MessageLoopForIO*>(
+                                            base::MessageLoop::current())));
   if (!raw_channel_->Init()) {
     raw_channel_.reset();
     return false;

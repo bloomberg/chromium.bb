@@ -61,8 +61,8 @@ class TestWithIOThreadBase : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  base::MessageLoop* io_thread_message_loop() {
-    return io_thread_.message_loop();
+  base::MessageLoopForIO* io_thread_message_loop() {
+    return static_cast<base::MessageLoopForIO*>(io_thread_.message_loop());
   }
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner() {

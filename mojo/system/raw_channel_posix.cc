@@ -37,7 +37,7 @@ class RawChannelPosix : public RawChannel,
  public:
   RawChannelPosix(embedder::ScopedPlatformHandle handle,
                   Delegate* delegate,
-                  base::MessageLoop* message_loop);
+                  base::MessageLoopForIO* message_loop_for_io);
   virtual ~RawChannelPosix();
 
   // |RawChannel| implementation:
@@ -68,10 +68,6 @@ class RawChannelPosix : public RawChannel,
   // sets |write_stopped_| to true. Must be called under |write_lock_|.
   void CancelPendingWritesNoLock();
 
-  base::MessageLoopForIO* message_loop_for_io() {
-    return static_cast<base::MessageLoopForIO*>(message_loop());
-  }
-
   embedder::ScopedPlatformHandle fd_;
 
   // Only used on the I/O thread:
@@ -99,14 +95,15 @@ class RawChannelPosix : public RawChannel,
 
 RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle,
                                  Delegate* delegate,
-                                 base::MessageLoop* message_loop)
-    : RawChannel(delegate, message_loop),
+                                 base::MessageLoopForIO* message_loop_for_io)
+    : RawChannel(delegate, message_loop_for_io),
       fd_(handle.Pass()),
       read_buffer_num_valid_bytes_(0),
       write_stopped_(false),
       write_message_offset_(0),
       weak_ptr_factory_(this) {
-  CHECK_EQ(RawChannel::message_loop()->type(), base::MessageLoop::TYPE_IO);
+  CHECK_EQ(RawChannel::message_loop_for_io()->type(),
+           base::MessageLoop::TYPE_IO);
   DCHECK(fd_.is_valid());
 }
 
@@ -125,7 +122,7 @@ RawChannelPosix::~RawChannelPosix() {
 }
 
 bool RawChannelPosix::Init() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   DCHECK(!read_watcher_.get());
   read_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher());
@@ -149,7 +146,7 @@ bool RawChannelPosix::Init() {
 }
 
 void RawChannelPosix::Shutdown() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   base::AutoLock locker(write_lock_);
   if (!write_stopped_)
@@ -185,19 +182,21 @@ bool RawChannelPosix::WriteMessage(MessageInTransit* message) {
   if (!result) {
     // Even if we're on the I/O thread, don't call |OnFatalError()| in the
     // nested context.
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&RawChannelPosix::CallOnFatalError,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        Delegate::FATAL_ERROR_FAILED_WRITE));
+    message_loop_for_io()->PostTask(
+        FROM_HERE,
+        base::Bind(&RawChannelPosix::CallOnFatalError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   Delegate::FATAL_ERROR_FAILED_WRITE));
   } else if (!write_message_queue_.empty()) {
     // Set up to wait for the FD to become writable. If we're not on the I/O
     // thread, we have to post a task to do this.
-    if (base::MessageLoop::current() == message_loop()) {
+    if (base::MessageLoop::current() == message_loop_for_io()) {
       WaitToWrite();
     } else {
-      message_loop()->PostTask(FROM_HERE,
-                               base::Bind(&RawChannelPosix::WaitToWrite,
-                                          weak_ptr_factory_.GetWeakPtr()));
+      message_loop_for_io()->PostTask(
+          FROM_HERE,
+          base::Bind(&RawChannelPosix::WaitToWrite,
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -206,7 +205,7 @@ bool RawChannelPosix::WriteMessage(MessageInTransit* message) {
 
 void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK_EQ(fd, fd_.get().fd);
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   bool did_dispatch_message = false;
   // Tracks the offset of the first undispatched message in |read_buffer_|.
@@ -310,7 +309,7 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
 
 void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK_EQ(fd, fd_.get().fd);
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   bool did_fail = false;
   {
@@ -337,7 +336,7 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 void RawChannelPosix::WaitToWrite() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   DCHECK(write_watcher_.get());
   bool result = message_loop_for_io()->WatchFileDescriptor(
@@ -347,7 +346,7 @@ void RawChannelPosix::WaitToWrite() {
 }
 
 void RawChannelPosix::CallOnFatalError(Delegate::FatalError fatal_error) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
   // TODO(vtl): Add a "write_lock_.AssertNotAcquired()"?
   delegate()->OnFatalError(fatal_error);
 }
@@ -414,8 +413,8 @@ void RawChannelPosix::CancelPendingWritesNoLock() {
 // static
 RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
                                Delegate* delegate,
-                               base::MessageLoop* message_loop) {
-  return new RawChannelPosix(handle.Pass(), delegate, message_loop);
+                               base::MessageLoopForIO* message_loop_for_io) {
+  return new RawChannelPosix(handle.Pass(), delegate, message_loop_for_io);
 }
 
 }  // namespace system
