@@ -94,9 +94,6 @@ WorkerGlobalScope::~WorkerGlobalScope()
 {
     ASSERT(thread()->isCurrentThread());
 
-    // Make sure we have no observers.
-    notifyObserversOfStop();
-
     // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
     thread()->workerReportingProxy().workerGlobalScopeDestroyed();
 
@@ -271,53 +268,6 @@ bool WorkerGlobalScope::isContextThread() const
 bool WorkerGlobalScope::isJSExecutionForbidden() const
 {
     return m_script->isExecutionForbidden();
-}
-
-WorkerGlobalScope::Observer::Observer(WorkerGlobalScope* context)
-    : m_context(context)
-{
-    ASSERT(m_context && m_context->isContextThread());
-    m_context->registerObserver(this);
-}
-
-WorkerGlobalScope::Observer::~Observer()
-{
-    if (!m_context)
-        return;
-    ASSERT(m_context->isContextThread());
-    m_context->unregisterObserver(this);
-}
-
-void WorkerGlobalScope::Observer::stopObserving()
-{
-    if (!m_context)
-        return;
-    ASSERT(m_context->isContextThread());
-    m_context->unregisterObserver(this);
-    m_context = 0;
-}
-
-void WorkerGlobalScope::registerObserver(Observer* observer)
-{
-    ASSERT(observer);
-    m_workerObservers.add(observer);
-}
-
-void WorkerGlobalScope::unregisterObserver(Observer* observer)
-{
-    ASSERT(observer);
-    m_workerObservers.remove(observer);
-}
-
-void WorkerGlobalScope::notifyObserversOfStop()
-{
-    HashSet<Observer*>::iterator iter = m_workerObservers.begin();
-    while (iter != m_workerObservers.end()) {
-        WorkerGlobalScope::Observer* observer = *iter;
-        observer->stopObserving();
-        observer->notifyStop();
-        iter = m_workerObservers.begin();
-    }
 }
 
 bool WorkerGlobalScope::idleNotification()

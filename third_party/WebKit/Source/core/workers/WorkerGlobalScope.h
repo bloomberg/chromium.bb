@@ -115,22 +115,6 @@ namespace WebCore {
 
         bool isClosing() { return m_closing; }
 
-        // An observer interface to be notified when the worker thread is getting stopped.
-        class Observer {
-            WTF_MAKE_NONCOPYABLE(Observer);
-        public:
-            Observer(WorkerGlobalScope*);
-            virtual ~Observer();
-            virtual void notifyStop() = 0;
-            void stopObserving();
-        private:
-            WorkerGlobalScope* m_context;
-        };
-        friend class Observer;
-        void registerObserver(Observer*);
-        void unregisterObserver(Observer*);
-        void notifyObserversOfStop();
-
         bool idleNotification();
 
         double timeOrigin() const { return m_timeOrigin; }
