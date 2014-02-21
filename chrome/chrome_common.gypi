@@ -37,6 +37,7 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
         '<(DEPTH)/components/components.gyp:json_schema',
+        '<(DEPTH)/components/components.gyp:metrics',
         '<(DEPTH)/components/components.gyp:policy_component_common',
         '<(DEPTH)/components/components.gyp:translate_core_common',
         '<(DEPTH)/components/components.gyp:variations',

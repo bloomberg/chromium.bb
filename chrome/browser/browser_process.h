@@ -79,6 +79,10 @@ class PrintJobManager;
 class PrintPreviewDialogController;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 namespace safe_browsing {
 class ClientSideDetectionService;
 }
@@ -101,6 +105,7 @@ class BrowserProcess {
 
   // Services: any of these getters may return NULL
   virtual MetricsService* metrics_service() = 0;
+  virtual rappor::RapporService* rappor_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;

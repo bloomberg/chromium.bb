@@ -23,6 +23,12 @@ per-file json_schema.gypi=kalman@chromium.org
 per-file json_schema.gypi=koz@chromium.org
 per-file json_schema.gypi=mpcomplete@chromium.org
 
+per-file metrics*=asvitkine@chromium.org
+per-file metrics*=mpearson@chromium.org
+per-file metrics*=jar@chromium.org
+per-file metrics*=isherman@chromium.org
+# OWNER-to-be: per-file metrics*=holte@chromium.org
+
 per-file nacl*=bradchen@chromium.org
 per-file nacl*=bradnelson@chromium.org
 per-file nacl*=jvoung@chromium.org
@@ -55,6 +61,9 @@ per-file policy*=bartfab@chromium.org
 per-file policy*=atwilson@chromium.org
 per-file policy*=pneubeck@chromium.org
 per-file policy*=dconnelly@chromium.org
+
+per-file rappor*=asvitkine@chromium.org
+# OWNER-to-be: per-file rappor*=holte@chromium.org
 
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org

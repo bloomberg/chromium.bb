@@ -4,18 +4,13 @@
 
 #include "chrome/common/metrics/metrics_log_base.h"
 
-#include "base/base64.h"
-#include "base/basictypes.h"
-#include "base/md5.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/sys_byteorder.h"
-#include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/common/metrics/proto/histogram_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/proto/user_action_event.pb.h"
+#include "components/metrics/metrics_hashes.h"
 
 using base::Histogram;
 using base::HistogramBase;
@@ -32,14 +27,6 @@ namespace {
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
   return id.size() < 16;
-}
-
-// Converts the 8-byte prefix of an MD5 hash into a uint64 value.
-inline uint64 HashToUInt64(const std::string& hash) {
-  uint64 value;
-  DCHECK_GE(hash.size(), sizeof(value));
-  memcpy(&value, hash.data(), sizeof(value));
-  return base::HostToNet64(value);
 }
 
 SystemProfileProto::Channel AsProtobufChannel(
@@ -83,17 +70,7 @@ MetricsLogBase::~MetricsLogBase() {}
 
 // static
 uint64 MetricsLogBase::Hash(const std::string& value) {
-  // Create an MD5 hash of the given |value|, represented as a byte buffer
-  // encoded as an std::string.
-  base::MD5Context context;
-  base::MD5Init(&context);
-  base::MD5Update(&context, value);
-
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-
-  std::string hash_str(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
-  uint64 hash = HashToUInt64(hash_str);
+  uint64 hash = metrics::HashMetricName(value);
 
   // The following log is VERY helpful when folks add some named histogram into
   // the code, but forgot to update the descriptive list of histograms.  When

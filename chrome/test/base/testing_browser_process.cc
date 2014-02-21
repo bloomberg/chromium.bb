@@ -97,6 +97,10 @@ MetricsService* TestingBrowserProcess::metrics_service() {
   return NULL;
 }
 
+rappor::RapporService* TestingBrowserProcess::rappor_service() {
+  return NULL;
+}
+
 IOThread* TestingBrowserProcess::io_thread() {
   return io_thread_;
 }

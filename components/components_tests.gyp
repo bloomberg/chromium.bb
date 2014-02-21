@@ -37,6 +37,7 @@
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
+            'metrics/metrics_hashes_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/psl_matching_helper_unittest.cc',
@@ -47,6 +48,11 @@
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
+            'rappor/bloom_filter_unittest.cc',
+            'rappor/byte_vector_utils_unittest.cc',
+            'rappor/log_uploader_unittest.cc',
+            'rappor/rappor_metric_unittest.cc',
+            'rappor/rappor_service_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/webdata/token_service_table_unittest.cc',
             'storage_monitor/image_capture_device_manager_unittest.mm',
@@ -132,6 +138,9 @@
             # Dependencies of precache/core
             'components.gyp:password_manager_core_browser',
             'components.gyp:precache_core',
+
+            # Dependencies of rappor
+            'components.gyp:rappor',
 
             # Dependencies of signin
             'components.gyp:signin_core',

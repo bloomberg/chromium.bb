@@ -79,6 +79,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/rappor/rappor_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -419,6 +420,13 @@ MetricsService* BrowserProcessImpl::metrics_service() {
   if (!created_metrics_service_)
     CreateMetricsService();
   return metrics_service_.get();
+}
+
+rappor::RapporService* BrowserProcessImpl::rappor_service() {
+  DCHECK(CalledOnValidThread());
+  if (!rappor_service_.get())
+    rappor_service_.reset(new rappor::RapporService());
+  return rappor_service_.get();
 }
 
 IOThread* BrowserProcessImpl::io_thread() {

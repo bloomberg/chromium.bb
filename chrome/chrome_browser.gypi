@@ -36,6 +36,7 @@
         '../components/components.gyp:password_manager_core_browser',
         '../components/components.gyp:policy_component',
         '../components/components.gyp:precache_core',
+        '../components/components.gyp:rappor',
         '../components/components.gyp:signin_core',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:sync_driver',

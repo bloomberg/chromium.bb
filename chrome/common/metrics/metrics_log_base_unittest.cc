@@ -7,10 +7,8 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/format_macros.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/common/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,24 +52,6 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
       "sample-class");
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
-}
-
-// Make sure our ID hashes are the same as what we see on the server side.
-TEST(MetricsLogBaseTest, Hashes) {
-  static const struct {
-    std::string input;
-    std::string output;
-  } cases[] = {
-    {"Back", "0x0557fa923dcee4d0"},
-    {"Forward", "0x67d2f6740a8eaebf"},
-    {"NewTab", "0x290eb683f96572f1"},
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    uint64 hash = MetricsLogBase::Hash(cases[i].input);
-    std::string hash_hex = base::StringPrintf("0x%016" PRIx64, hash);
-    EXPECT_EQ(cases[i].output, hash_hex);
-  }
 }
 
 TEST(MetricsLogBaseTest, HistogramBucketFields) {

@@ -16556,6 +16556,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Rappor.DiscardReason" enum="RapporDiscardReason">
+  <summary>
+    For each Rappor log that is discarded, the reason that it was discarded.
+  </summary>
+</histogram>
+
+<histogram name="Rappor.UploadResponseCode" enum="HttpResponseCode">
+  <summary>
+    For each upload to the Rappor server, log the response received from the
+    server.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.AcceleratedFixedRootBackground"
     enum="AcceleratedFixedRootBackground">
   <summary>
@@ -31520,6 +31533,12 @@ other types of suffix sets.
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="PEER_GOING_AWAY"/>
   <int value="6" label="CANCELLED"/>
+</enum>
+
+<enum name="RapporDiscardReason" type="int">
+  <int value="0" label="Upload Success"/>
+  <int value="1" label="Upload Rejected"/>
+  <int value="2" label="Queue Overflowed"/>
 </enum>
 
 <enum name="RecentTabsAction" type="int">

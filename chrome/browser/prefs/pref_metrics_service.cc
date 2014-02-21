@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/rappor/rappor_service.h"
 #include "crypto/hmac.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -70,7 +71,8 @@ void PrefMetricsService::RecordLaunchPrefs() {
   // use, due to both false negatives (pages that come from unknown TLD+1 X but
   // consist of a search box that sends to known TLD+1 Y) and false positives
   // (pages that share a TLD+1 with a known engine but aren't actually search
-  // pages, e.g. plus.google.com).
+  // pages, e.g. plus.google.com).  Additionally, record the TLD+1 of non-NTP
+  // homepages through the privacy-preserving Rappor service.
   if (!home_page_is_ntp) {
     GURL homepage_url(prefs_->GetString(prefs::kHomePage));
     if (homepage_url.is_valid()) {
@@ -78,6 +80,13 @@ void PrefMetricsService::RecordLaunchPrefs() {
           "Settings.HomePageEngineType",
           TemplateURLPrepopulateData::GetEngineType(homepage_url),
           SEARCH_ENGINE_MAX);
+      if (g_browser_process->rappor_service()) {
+        g_browser_process->rappor_service()->RecordSample(
+            "Settings.HomePage",
+            rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+            net::registry_controlled_domains::GetDomainAndRegistry(homepage_url,
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+      }
     }
   }
 

@@ -116,6 +116,7 @@
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
+#include "components/rappor/rappor_service.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -1105,6 +1106,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
 #endif
+
+  browser_process_->rappor_service()->Start(
+      browser_process_->local_state(),
+      browser_process_->system_request_context());
 
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.

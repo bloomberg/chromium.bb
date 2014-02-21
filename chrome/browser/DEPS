@@ -20,6 +20,7 @@ include_rules = [
   "+components/password_manager",
   "+components/policy",
   "+components/precache",
+  "+components/rappor",
   "+components/sessions",
   "+components/signin",
   "+components/startup_metric_utils",

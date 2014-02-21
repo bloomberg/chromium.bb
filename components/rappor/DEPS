@@ -1,0 +1,7 @@
+include_rules = [
+  "+components/metrics",
+  "+components/variations",
+  "+crypto",
+  "+net",
+  "+third_party/smhasher",
+]

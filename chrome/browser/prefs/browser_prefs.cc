@@ -93,6 +93,7 @@
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/rappor/rappor_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
@@ -244,6 +245,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
   PromoResourceService::RegisterPrefs(registry);
+  rappor::RapporService::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
