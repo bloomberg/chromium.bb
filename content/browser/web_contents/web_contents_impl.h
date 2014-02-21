@@ -448,8 +448,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      int64 frame_id,
-      int64 parent_frame_id,
+      int parent_routing_id,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
@@ -460,7 +459,6 @@ class CONTENT_EXPORT WebContentsImpl
       OVERRIDE;
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      int64 frame_id,
       const GURL& url,
       bool is_main_frame,
       int error_code,
@@ -683,7 +681,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);
-  void OnDocumentLoadedInFrame(int64 frame_id);
+  void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(int64 frame_id,
                        const GURL& url,
                        bool is_main_frame);

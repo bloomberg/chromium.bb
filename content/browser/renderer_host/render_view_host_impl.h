@@ -510,8 +510,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   //
   // TODO(nasko): Remove those methods once we are done moving navigation
   // into RenderFrameHost.
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         int64 parent_frame_id,
+  void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          bool main_frame,
                                          const GURL& url);
 

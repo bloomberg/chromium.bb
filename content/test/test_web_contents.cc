@@ -215,13 +215,12 @@ void TestWebContents::TestDidFinishLoad(int64 frame_id,
 }
 
 void TestWebContents::TestDidFailLoadWithError(
-    int64 frame_id,
     const GURL& url,
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
   FrameHostMsg_DidFailLoadWithError msg(
-      0, frame_id, url, is_main_frame, error_code, error_description);
+      0, url, is_main_frame, error_code, error_description);
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 

@@ -95,8 +95,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                         int32 min_page_id) OVERRIDE;
 
   void TestDidFinishLoad(int64 frame_id, const GURL& url, bool is_main_frame);
-  void TestDidFailLoadWithError(int64 frame_id,
-                                const GURL& url,
+  void TestDidFailLoadWithError(const GURL& url,
                                 bool is_main_frame,
                                 int error_code,
                                 const base::string16& error_description);

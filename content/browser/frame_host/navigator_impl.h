@@ -25,8 +25,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
 
   // Navigator implementation.
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                                       int64 frame_id,
-                                       int64 parent_frame_id,
+                                       int parent_routing_id,
                                        bool main_frame,
                                        const GURL& url) OVERRIDE;
   virtual void DidFailProvisionalLoadWithError(
@@ -35,7 +34,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       OVERRIDE;
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      int64 frame_id,
       const GURL& url,
       bool is_main_frame,
       int error_code,

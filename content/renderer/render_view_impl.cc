@@ -1641,7 +1641,7 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
   params.url = url;
   params.referrer = referrer;
   params.disposition = NavigationPolicyToDisposition(policy);
-  params.frame_id = frame->identifier();
+  params.frame_id = RenderFrameImpl::FromWebFrame(frame)->GetRoutingID();
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds) {
     DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -1774,7 +1774,8 @@ WebView* RenderViewImpl::createView(
   params.session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
     params.frame_name = frame_name;
-  params.opener_frame_id = creator->identifier();
+  params.opener_frame_id =
+      RenderFrameImpl::FromWebFrame(creator)->GetRoutingID();
   params.opener_url = creator->document().url();
   params.opener_top_level_frame_url = creator->top()->document().url();
   GURL security_url(creator->document().securityOrigin().toString().utf8());
@@ -3144,7 +3145,7 @@ void RenderViewImpl::didFinishLoad(WebFrame* frame) {
     return;
 
   Send(new ViewHostMsg_DidFinishLoad(routing_id_,
-                                     frame->identifier(),
+                                     rf->GetRoutingID(),
                                      ds->request().url(),
                                      !frame->parent()));
 }

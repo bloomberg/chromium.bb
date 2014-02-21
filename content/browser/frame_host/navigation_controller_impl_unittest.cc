@@ -956,7 +956,6 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
   params.error_description = base::string16();
@@ -1034,7 +1033,6 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
   params.error_description = base::string16();
@@ -2416,7 +2414,6 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   TestRenderViewHost* rvh =
       static_cast<TestRenderViewHost*>(our_contents->GetRenderViewHost());
   FrameHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
-  fail_load_params.frame_id = 1;
   fail_load_params.is_main_frame = true;
   fail_load_params.error_code = net::ERR_ABORTED;
   fail_load_params.error_description = base::string16();
@@ -2734,7 +2731,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
 
   // We create pending entries for renderer-initiated navigations so that we
   // can show them in new tabs when it is safe.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), -1, true, url1);
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
   // the virtual URL to differ from the URL.
@@ -2748,7 +2745,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
           is_renderer_initiated());
 
   // If the user clicks another link, we should replace the pending entry.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url2);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), -1, true, url2);
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
 
@@ -2758,18 +2755,18 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
 
   // We should not replace the pending entry for an error URL.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), -1, true, url1);
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
   navigator->DidStartProvisionalLoad(
-      main_test_rfh(), 1, -1, true, GURL(kUnreachableWebDataURL));
+      main_test_rfh(), -1, true, GURL(kUnreachableWebDataURL));
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
 
   // We should remember if the pending entry will replace the current one.
   // http://crbug.com/308444.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), -1, true, url1);
   NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
       set_should_replace_entry(true);
-  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url2);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), -1, true, url2);
   EXPECT_TRUE(
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           should_replace_entry());

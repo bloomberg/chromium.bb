@@ -174,12 +174,11 @@ void RenderFrameHostImpl::OnDetach() {
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
+    int parent_routing_id,
     bool is_main_frame,
     const GURL& url) {
   frame_tree_node_->navigator()->DidStartProvisionalLoad(
-      this, frame_id, parent_frame_id, is_main_frame, url);
+      this, parent_routing_id, is_main_frame, url);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
@@ -188,7 +187,6 @@ void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
 }
 
 void RenderFrameHostImpl::OnDidFailLoadWithError(
-    int64 frame_id,
     const GURL& url,
     bool is_main_frame,
     int error_code,
@@ -197,7 +195,7 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
   GetProcess()->FilterURL(false, &validated_url);
 
   frame_tree_node_->navigator()->DidFailLoadWithError(
-      this, frame_id, validated_url, is_main_frame, error_code,
+      this, validated_url, is_main_frame, error_code,
       error_description);
 }
 

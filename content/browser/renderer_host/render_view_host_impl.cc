@@ -1378,8 +1378,7 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
 }
 
 void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
+    int parent_routing_id,
     bool is_main_frame,
     const GURL& url) {
   NOTREACHED();

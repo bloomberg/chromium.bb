@@ -2159,7 +2159,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // Check that an IPC with about:whatever is correctly normalized.
   other_contents->TestDidFailLoadWithError(
-      1, url_from_ipc, true, 1, base::string16());
+      url_from_ipc, true, 1, base::string16());
   EXPECT_EQ(url_normalized, other_observer.last_url());
 }
 

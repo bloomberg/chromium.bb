@@ -2005,8 +2005,7 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
 
 void WebContentsImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    int64 frame_id,
-    int64 parent_frame_id,
+    int parent_routing_id,
     bool is_main_frame,
     const GURL& validated_url,
     bool is_error_page,
@@ -2016,9 +2015,11 @@ void WebContentsImpl::DidStartProvisionalLoad(
 
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,
-                    is_main_frame, validated_url, is_error_page,
-                    is_iframe_srcdoc, render_frame_host->render_view_host()));
+                    DidStartProvisionalLoadForFrame(
+                        render_frame_host->GetRoutingID(), parent_routing_id,
+                        is_main_frame, validated_url, is_error_page,
+                        is_iframe_srcdoc,
+                        render_frame_host->render_view_host()));
 
   if (is_main_frame) {
     FOR_EACH_OBSERVER(
@@ -2036,7 +2037,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidFailProvisionalLoad(params.frame_id,
+      DidFailProvisionalLoad(render_frame_host->GetRoutingID(),
                              params.frame_unique_name,
                              params.is_main_frame,
                              validated_url,
@@ -2047,13 +2048,13 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
 
 void WebContentsImpl::DidFailLoadWithError(
     RenderFrameHostImpl* render_frame_host,
-    int64 frame_id,
     const GURL& url,
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFailLoad(frame_id, url, is_main_frame,
+                    DidFailLoad(render_frame_host->GetRoutingID(),
+                                url, is_main_frame,
                                 error_code, error_description,
                                 render_frame_host->render_view_host()));
 }
@@ -2231,7 +2232,7 @@ void WebContentsImpl::OnDidRunInsecureContent(
       GetController().GetBrowserContext());
 }
 
-void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
+void WebContentsImpl::OnDocumentLoadedInFrame() {
   CHECK(render_frame_message_source_);
   CHECK(!render_view_message_source_);
   RenderFrameHostImpl* rfh =
@@ -2239,7 +2240,8 @@ void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    DocumentLoadedInFrame(frame_id, rfh->render_view_host()));
+                    DocumentLoadedInFrame(rfh->GetRoutingID(),
+                                          rfh->render_view_host()));
 }
 
 void WebContentsImpl::OnDidFinishLoad(

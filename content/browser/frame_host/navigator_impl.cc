@@ -123,8 +123,7 @@ NavigatorImpl::NavigatorImpl(
 
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    int64 frame_id,
-    int64 parent_frame_id,
+    int parent_routing_id,
     bool is_main_frame,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
@@ -179,7 +178,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
     delegate_->DidStartProvisionalLoad(
-        render_frame_host, frame_id, parent_frame_id, is_main_frame,
+        render_frame_host, parent_routing_id, is_main_frame,
         validated_url, is_error_page, is_iframe_srcdoc);
   }
 }
@@ -194,7 +193,7 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
           << ", is_main_frame: " << params.is_main_frame
           << ", showing_repost_interstitial: " <<
             params.showing_repost_interstitial
-          << ", frame_id: " << params.frame_id;
+          << ", frame_id: " << render_frame_host->GetRoutingID();
   GURL validated_url(params.url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
@@ -247,13 +246,12 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
 
 void NavigatorImpl::DidFailLoadWithError(
     RenderFrameHostImpl* render_frame_host,
-    int64 frame_id,
     const GURL& url,
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
   delegate_->DidFailLoadWithError(
-      render_frame_host, frame_id, url, is_main_frame, error_code,
+      render_frame_host, url, is_main_frame, error_code,
       error_description);
 }
 

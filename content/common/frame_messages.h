@@ -74,8 +74,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
-  // The frame ID for the failure report.
-  IPC_STRUCT_MEMBER(int64, frame_id)
   // The WebFrame's uniqueName().
   IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
   // True if this is the top-most frame.
@@ -311,9 +309,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(FrameHostMsg_CreateChildFrame,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,
-                    int64 /* frame_id */,
-                    int64 /* parent_frame_id */,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoadForFrame,
+                    int32 /* parent_routing_id */,
                     bool /* true if it is the main frame */,
                     GURL /* url */)
 
@@ -334,11 +331,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidCommitProvisionalLoad,
                     FrameHostMsg_DidCommitProvisionalLoad_Params)
 
 // Notifies the browser that a document has been loaded.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishDocumentLoad,
-                    int64 /* frame_id */)
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
 
-IPC_MESSAGE_ROUTED5(FrameHostMsg_DidFailLoadWithError,
-                    int64 /* frame_id */,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_DidFailLoadWithError,
                     GURL /* validated_url */,
                     bool /* is_main_frame */,
                     int /* error_code */,

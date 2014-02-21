@@ -27,8 +27,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   // represented by |render_frame_host|.
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      int64 frame_id,
-      int64 parent_frame_id,
+      int parent_routing_id,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
@@ -42,7 +41,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Document load in |render_frame_host| failed.
   virtual void DidFailLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      int64 frame_id,
       const GURL& url,
       bool is_main_frame,
       int error_code,
@@ -54,6 +52,7 @@ class CONTENT_EXPORT NavigatorDelegate {
       const GURL& validated_target_url) {}
 
   // A navigation was committed in |render_frame_host|.
+  // TODO(creis): Remove |frame_id| in favor of the RFH's routing ID.
   virtual void DidCommitProvisionalLoad(
       int64 frame_id,
       const base::string16& frame_unique_name,

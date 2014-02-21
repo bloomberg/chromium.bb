@@ -123,14 +123,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // IPC Message handlers.
   void OnDetach();
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         int64 parent_frame_id,
+  void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          bool main_frame,
                                          const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(
-      int64 frame_id,
       const GURL& url,
       bool is_main_frame,
       int error_code,
