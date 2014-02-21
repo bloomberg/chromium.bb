@@ -224,6 +224,12 @@ public:
         return *this;
     }
 
+    WebPrivatePtr<T>& operator=(std::nullptr_t&)
+    {
+        reset();
+        return *this;
+    }
+
     template<typename U>
     WebPrivatePtr<T>& operator=(const U& ptr)
     {
