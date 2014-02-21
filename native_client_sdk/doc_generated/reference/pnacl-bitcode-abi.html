@@ -36,18 +36,19 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#intrinsic-global-variables" id="id23">Intrinsic Global Variables</a></li>
-<li><p class="first"><a class="reference internal" href="#instruction-reference" id="id24">Instruction Reference</a></p>
+<li><a class="reference internal" href="#errno-and-errors-in-arithmetic-instructions" id="id24">Errno and errors in arithmetic instructions</a></li>
+<li><p class="first"><a class="reference internal" href="#instruction-reference" id="id25">Instruction Reference</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#list-of-allowed-instructions" id="id25">List of allowed instructions</a></li>
-<li><a class="reference internal" href="#alloca" id="id26"><code>alloca</code></a></li>
+<li><a class="reference internal" href="#list-of-allowed-instructions" id="id26">List of allowed instructions</a></li>
+<li><a class="reference internal" href="#alloca" id="id27"><code>alloca</code></a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#intrinsic-functions" id="id27">Intrinsic Functions</a></p>
+<li><p class="first"><a class="reference internal" href="#intrinsic-functions" id="id28">Intrinsic Functions</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#list-of-allowed-intrinsics" id="id28">List of allowed intrinsics</a></li>
-<li><a class="reference internal" href="#thread-pointer-related-intrinsics" id="id29">Thread pointer related intrinsics</a></li>
-<li><a class="reference internal" href="#setjmp-and-longjmp" id="id30">Setjmp and Longjmp</a></li>
-<li><a class="reference internal" href="#atomic-intrinsics" id="id31">Atomic intrinsics</a></li>
+<li><a class="reference internal" href="#list-of-allowed-intrinsics" id="id29">List of allowed intrinsics</a></li>
+<li><a class="reference internal" href="#thread-pointer-related-intrinsics" id="id30">Thread pointer related intrinsics</a></li>
+<li><a class="reference internal" href="#setjmp-and-longjmp" id="id31">Setjmp and Longjmp</a></li>
+<li><a class="reference internal" href="#atomic-intrinsics" id="id32">Atomic intrinsics</a></li>
 </ul>
 </li>
 </ul>
@@ -223,6 +224,13 @@ distributed pexes.</p>
 <h2 id="intrinsic-global-variables">Intrinsic Global Variables</h2>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#intrinsic-global-variables">LLVM LangRef: Intrinsic Global Variables</a></p>
 <p>PNaCl bitcode does not support intrinsic global variables.</p>
+</section><section id="errno-and-errors-in-arithmetic-instructions">
+<span id="ir-and-errno"></span><h2 id="errno-and-errors-in-arithmetic-instructions"><span id="ir-and-errno"></span>Errno and errors in arithmetic instructions</h2>
+<p>Some arithmetic instructions and intrinsics have the similar semantics to
+libc math functions, but differ in the treatment of <code>errno</code>. While the
+libc functions may set <code>errno</code> for domain errors, the instructions and
+intrinsics do not. This is because the variable <code>errno</code> is not special
+and is not required to be part of the program.</p>
 </section><section id="instruction-reference">
 <h2 id="instruction-reference">Instruction Reference</h2>
 <section id="list-of-allowed-instructions">
@@ -254,7 +262,14 @@ guaranteed to trap in PNaCl bitcode.</p>
 <li><code>fsub</code></li>
 <li><code>fmul</code></li>
 <li><code>fdiv</code></li>
-<li><code>frem</code></li>
+<li><p class="first"><code>frem</code></p>
+<p>The frem instruction has the semantics of the libc fmod function for
+computing the floating point remainder. If the numerator is infinity, or
+denominator is zero, or either are NaN, then the result is NaN.
+Unlike the libc fmod function, this does not set <code>errno</code> when the
+result is NaN (see the <a class="reference internal" href="#ir-and-errno"><em>instructions and errno</em></a>
+section).</p>
+</li>
 <li><p class="first"><code>alloca</code></p>
 <p>See <a class="reference internal" href="#bitcode-allocainst"><em>alloca instructions</em></a>.</p>
 </li>
@@ -325,8 +340,10 @@ C-style GCC builtins).</p>
 </li>
 <li><p class="first"><code>llvm.sqrt</code></p>
 <p>The overloaded <code>llvm.sqrt</code> intrinsic is only supported for float
-and double arguments types. Unlike the standard LLVM intrinsic,
-PNaCl guarantees that llvm.sqrt returns a QNaN for values less than -0.0.</p>
+and double arguments types. This has the same semantics as the libc
+sqrt function, returning NaN for values less than -0.0. However, this
+does not set <code>errno</code> when the result is NaN (see the
+<a class="reference internal" href="#ir-and-errno"><em>instructions and errno</em></a> section).</p>
 </li>
 <li><code>llvm.stacksave</code></li>
 <li><p class="first"><code>llvm.stackrestore</code></p>

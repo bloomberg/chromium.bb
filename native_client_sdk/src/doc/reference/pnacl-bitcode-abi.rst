@@ -265,6 +265,17 @@ Intrinsic Global Variables
 
 PNaCl bitcode does not support intrinsic global variables.
 
+.. _ir_and_errno:
+
+Errno and errors in arithmetic instructions
+===========================================
+
+Some arithmetic instructions and intrinsics have the similar semantics to
+libc math functions, but differ in the treatment of ``errno``. While the
+libc functions may set ``errno`` for domain errors, the instructions and
+intrinsics do not. This is because the variable ``errno`` is not special
+and is not required to be part of the program.
+
 Instruction Reference
 =====================
 
@@ -305,6 +316,14 @@ Only the LLVM instructions listed here are supported by PNaCl bitcode.
 * ``fmul``
 * ``fdiv``
 * ``frem``
+
+  The frem instruction has the semantics of the libc fmod function for
+  computing the floating point remainder. If the numerator is infinity, or
+  denominator is zero, or either are NaN, then the result is NaN.
+  Unlike the libc fmod function, this does not set ``errno`` when the
+  result is NaN (see the :ref:`instructions and errno <ir_and_errno>`
+  section).
+
 * ``alloca``
 
   See :ref:`alloca instructions <bitcode_allocainst>`.
@@ -396,8 +415,10 @@ The only intrinsics supported by PNaCl bitcode are the following.
 * ``llvm.sqrt``
 
   The overloaded ``llvm.sqrt`` intrinsic is only supported for float
-  and double arguments types. Unlike the standard LLVM intrinsic,
-  PNaCl guarantees that llvm.sqrt returns a QNaN for values less than -0.0.
+  and double arguments types. This has the same semantics as the libc
+  sqrt function, returning NaN for values less than -0.0. However, this
+  does not set ``errno`` when the result is NaN (see the
+  :ref:`instructions and errno <ir_and_errno>` section).
 
 * ``llvm.stacksave``
 * ``llvm.stackrestore``
