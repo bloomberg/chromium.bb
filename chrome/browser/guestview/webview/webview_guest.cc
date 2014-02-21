@@ -4,7 +4,6 @@
 
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
-#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -29,7 +28,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/constants.h"
@@ -369,19 +367,7 @@ bool WebViewGuest::HandleKeyboardEvent(
 }
 
 bool WebViewGuest::IsDragAndDropEnabled() {
-#if defined(OS_CHROMEOS)
   return true;
-#else
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
-      channel != chrome::VersionInfo::CHANNEL_BETA) {
-    // Drag and drop is enabled in canary and dev channel.
-    return true;
-  }
-
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserPluginDragDrop);
-#endif
 }
 
 bool WebViewGuest::IsOverridingUserAgent() const {
