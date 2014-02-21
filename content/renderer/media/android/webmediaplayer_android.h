@@ -260,6 +260,7 @@ class WebMediaPlayerAndroid
   void Pause(bool is_media_related_action);
   void DrawRemotePlaybackIcon();
   void ReallocateVideoFrame();
+  void CreateWebLayerIfNeeded();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
   void DoReleaseRemotePlaybackTexture(uint32 sync_point);
