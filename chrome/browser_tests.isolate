@@ -49,6 +49,7 @@
           '../testing/test_env.py',
           '../third_party/accessibility-audit/axs_testing.js',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',

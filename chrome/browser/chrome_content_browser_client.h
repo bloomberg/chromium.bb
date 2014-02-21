@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/content_browser_client.h"
 
 #if defined(OS_ANDROID)
@@ -274,6 +276,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
 
  private:
+#if defined(ENABLE_WEBRTC)
+  // Copies disable WebRTC encryption switch depending on the channel.
+  static void MaybeCopyDisableWebRtcEncryptionSwitch(
+      CommandLine* to_command_line,
+      const CommandLine& from_command_line,
+      VersionInfo::Channel channel);
+#endif
+
 #if defined(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
@@ -282,6 +292,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
   scoped_ptr<extensions::BrowserPermissionsPolicyDelegate>
       permissions_policy_delegate_;
+
+  friend class DisableWebRtcEncryptionFlagTest;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };

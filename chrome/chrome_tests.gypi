@@ -943,6 +943,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+        '../third_party/libjingle/libjingle.gyp:peerconnection_server',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
@@ -1332,6 +1333,7 @@
         'browser/media/chrome_media_stream_infobar_browsertest.cc',
         'browser/media/chrome_webrtc_apprtc_browsertest.cc',
         'browser/media/chrome_webrtc_browsertest.cc',
+        'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
         'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
         'browser/media/chrome_webrtc_typing_detection_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
@@ -1893,6 +1895,7 @@
             'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc',
             'browser/media/chrome_webrtc_browsertest.cc',
+            'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
           ],
         }],
         ['OS=="win"', {

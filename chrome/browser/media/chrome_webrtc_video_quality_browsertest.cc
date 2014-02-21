@@ -177,29 +177,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     return base::KillProcess(pywebsocket_server_, 0, false);
   }
 
-  void EstablishCall(content::WebContents* from_tab,
-                     content::WebContents* to_tab) {
-    EXPECT_EQ("ok-peerconnection-created",
-              ExecuteJavascript("preparePeerConnection()", from_tab));
-    EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", from_tab));
-    EXPECT_EQ("ok-negotiating", ExecuteJavascript("negotiateCall()", from_tab));
-
-    // Ensure the call gets up on both sides.
-    EXPECT_TRUE(PollingWaitUntil(
-        "getPeerConnectionReadyState()", "active", from_tab));
-    EXPECT_TRUE(PollingWaitUntil(
-        "getPeerConnectionReadyState()", "active", to_tab));
-  }
-
-  void HangUp(content::WebContents* from_tab) {
-    EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
-  }
-
-  void WaitUntilHangupVerified(content::WebContents* tab_contents) {
-    EXPECT_TRUE(PollingWaitUntil(
-        "getPeerConnectionReadyState()", "no-peer-connection", tab_contents));
-  }
-
   // Runs the RGBA to I420 converter on the video in |capture_video_filename|,
   // which should contain frames of size |width| x |height|.
   //
