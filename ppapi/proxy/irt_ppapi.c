@@ -8,7 +8,7 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
 #include "ppapi/nacl_irt/irt_ppapi.h"
-#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "ppapi/proxy/plugin_main_irt.h"
 
 struct PP_StartFunctions g_pp_functions;
 
