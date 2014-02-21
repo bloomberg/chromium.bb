@@ -63,7 +63,6 @@ class ModuleSystemTest : public testing::Test {
   AssertNatives* assert_natives_;
   class StringSourceMap;
   scoped_ptr<StringSourceMap> source_map_;
-  scoped_ptr<extensions::ModuleSystem> module_system_;
   bool should_assertions_be_made_;
 
  private:

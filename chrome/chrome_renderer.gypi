@@ -152,6 +152,8 @@
         'renderer/extensions/user_script_scheduler.h',
         'renderer/extensions/user_script_slave.cc',
         'renderer/extensions/user_script_slave.h',
+        'renderer/extensions/utils_native_handler.cc',
+        'renderer/extensions/utils_native_handler.h',
         'renderer/extensions/v8_schema_registry.cc',
         'renderer/extensions/v8_schema_registry.h',
         'renderer/extensions/webstore_bindings.cc',

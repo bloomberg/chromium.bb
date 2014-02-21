@@ -17,6 +17,7 @@
 #include "chrome/renderer/extensions/logging_native_handler.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
+#include "chrome/renderer/extensions/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>
@@ -134,17 +135,24 @@ ModuleSystemTest::ModuleSystemTest()
       should_assertions_be_made_(true) {
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
-  module_system_.reset(new ModuleSystem(context_.get(), source_map_.get()));
-  module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
+
+  {
+    scoped_ptr<ModuleSystem> module_system(
+        new ModuleSystem(context_.get(), source_map_.get()));
+    context_->set_module_system(module_system.Pass());
+  }
+  ModuleSystem* module_system = context_->module_system();
+  module_system->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
       assert_natives_));
-  module_system_->RegisterNativeHandler("logging", scoped_ptr<NativeHandler>(
+  module_system->RegisterNativeHandler("logging", scoped_ptr<NativeHandler>(
       new extensions::LoggingNativeHandler(context_.get())));
-  module_system_->SetExceptionHandlerForTest(
+  module_system->RegisterNativeHandler("utils", scoped_ptr<NativeHandler>(
+      new extensions::UtilsNativeHandler(context_.get())));
+  module_system->SetExceptionHandlerForTest(
       scoped_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 }
 
 ModuleSystemTest::~ModuleSystemTest() {
-  module_system_.reset();
   context_->v8_context()->Exit();
 }
 
@@ -163,7 +171,7 @@ void ModuleSystemTest::RegisterModule(const std::string& name,
 void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
                                              const std::string& code) {
   RegisterModule(name, code);
-  module_system_->OverrideNativeHandlerForTest(name);
+  context_->module_system()->OverrideNativeHandlerForTest(name);
 }
 
 void ModuleSystemTest::RegisterTestFile(const std::string& module_name,

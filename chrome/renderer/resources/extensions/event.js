@@ -506,7 +506,7 @@
     }
   });
 
-  var Event = utils.expose(EventImpl, [
+  var Event = utils.expose('Event', EventImpl, [
     'addListener',
     'removeListener',
     'hasListener',

@@ -65,6 +65,7 @@
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/extensions/utils_native_handler.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
@@ -1163,6 +1164,8 @@ void Dispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
   module_system->RegisterNativeHandler("user_gestures",
       scoped_ptr<NativeHandler>(new UserGesturesNativeHandler(context)));
+  module_system->RegisterNativeHandler("utils",
+      scoped_ptr<NativeHandler>(new UtilsNativeHandler(context)));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =

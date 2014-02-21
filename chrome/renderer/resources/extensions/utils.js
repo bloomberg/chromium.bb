@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var createClassWrapper = requireNative('utils').createClassWrapper;
 var schemaRegistry = requireNative('schema_registry');
 var CHECK = requireNative('logging').CHECK;
 var WARNING = requireNative('logging').WARNING;
@@ -54,13 +55,8 @@ function loadTypeSchema(typeName, defaultSchema) {
 // expose takes a private class implementation |cls| and exposes a subset of its
 // methods |funcs| and properties |props| in a public wrapper class that it
 // returns.
-function expose(cls, funcs, props) {
-  function publicClass() {
-    var privateObj = $Object.create(cls.prototype);
-    $Function.apply(cls, privateObj, arguments);
-    privateObj.wrapper = this;
-    privates(this).impl = privateObj;
-  }
+function expose(name, cls, funcs, props) {
+  var publicClass = createClassWrapper(name, cls);
 
   if (funcs) {
     $Array.forEach(funcs, function(func) {

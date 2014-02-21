@@ -13,17 +13,19 @@ class SafeBuiltinsUnittest : public ModuleSystemTest {
 };
 
 TEST_F(SafeBuiltinsUnittest, TestNotOriginalObject) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      context_->module_system());
   RegisterModule("test",
       "var assert = requireNative('assert');\n"
       "Array.foo = 10;\n"
       "assert.AssertTrue(!$Array.hasOwnProperty('foo'));\n"
   );
-  module_system_->Require("test");
+  context_->module_system()->Require("test");
 }
 
 TEST_F(SafeBuiltinsUnittest, TestSelf) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      context_->module_system());
   RegisterModule("test",
       "var assert = requireNative('assert');\n"
       "Array.foo = 10;\n"
@@ -32,11 +34,12 @@ TEST_F(SafeBuiltinsUnittest, TestSelf) {
       "assert.AssertTrue(arr.length == 1);\n"
       "assert.AssertTrue(arr[0] === undefined);\n"
   );
-  module_system_->Require("test");
+  context_->module_system()->Require("test");
 }
 
 TEST_F(SafeBuiltinsUnittest, TestStaticFunction) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      context_->module_system());
   RegisterModule("test",
       "var assert = requireNative('assert');\n"
       "Object.keys = function() {throw new Error()};\n"
@@ -45,11 +48,12 @@ TEST_F(SafeBuiltinsUnittest, TestStaticFunction) {
       "assert.AssertTrue(keys.length == 1);\n"
       "assert.AssertTrue(keys[0] == 'a');\n"
   );
-  module_system_->Require("test");
+  context_->module_system()->Require("test");
 }
 
 TEST_F(SafeBuiltinsUnittest, TestInstanceMethod) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      context_->module_system());
   RegisterModule("test",
       "var assert = requireNative('assert');\n"
       "Array.prototype.push = function() {throw new Error();}\n"
@@ -58,7 +62,7 @@ TEST_F(SafeBuiltinsUnittest, TestInstanceMethod) {
       "assert.AssertTrue(arr.length == 1);\n"
       "assert.AssertTrue(arr[0] == 1);\n"
   );
-  module_system_->Require("test");
+  context_->module_system()->Require("test");
 }
 
 // NOTE: JSON is already tested in ExtensionApiTest.Messaging, via

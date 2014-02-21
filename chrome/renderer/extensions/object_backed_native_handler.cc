@@ -75,6 +75,10 @@ void ObjectBackedNativeHandler::RouteFunction(
   router_data_.push_back(UnsafePersistent<v8::Object>(&data));
 }
 
+v8::Isolate* ObjectBackedNativeHandler::GetIsolate() const {
+  return context_->isolate();
+}
+
 void ObjectBackedNativeHandler::Invalidate() {
   if (!is_valid())
     return;

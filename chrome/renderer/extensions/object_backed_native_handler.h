@@ -30,6 +30,8 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // RouteFunction().
   virtual v8::Handle<v8::Object> NewInstance() OVERRIDE;
 
+  v8::Isolate* GetIsolate() const;
+
  protected:
   typedef base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&)>
       HandlerFunction;

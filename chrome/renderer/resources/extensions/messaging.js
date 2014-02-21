@@ -361,7 +361,7 @@
     return alignedArgs;
   }
 
-var Port = utils.expose(PortImpl, [
+var Port = utils.expose('Port', PortImpl, [
     'disconnect',
     'postMessage'
   ],

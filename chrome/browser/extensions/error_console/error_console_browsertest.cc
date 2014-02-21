@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
       base::StringPrintf("extensions::%s", kEventBindings);
 
   std::string event_dispatch_to_listener_str =
-      base::StringPrintf("publicClass.%s [as dispatchToListener]",
+      base::StringPrintf("Event.publicClass.%s [as dispatchToListener]",
                          kAnonymousFunction);
 
   CheckRuntimeError(
