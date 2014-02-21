@@ -145,7 +145,6 @@
         'public/tests/system/core_cpp_unittest.cc',
         'public/tests/system/core_unittest.cc',
         'public/tests/system/core_unittest_pure_c.c',
-        'public/tests/system/macros_unittest.cc',
       ],
     },
     {
