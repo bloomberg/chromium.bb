@@ -1049,6 +1049,7 @@
             '../base/base.gyp:base_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
+            '../third_party/mesa/mesa.gyp:osmesa_in_lib_dir',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
             '../ui/android/ui_android.gyp:ui_java',
           ],
@@ -1060,6 +1061,7 @@
             'native_lib_target': 'libcontent_shell_content_view',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
+            'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
           },
           'conditions': [
             ['android_webview_build==0', {

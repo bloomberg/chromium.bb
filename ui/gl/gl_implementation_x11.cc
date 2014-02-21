@@ -13,7 +13,7 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_implementation_linux.h"
+#include "ui/gl/gl_implementation_osmesa.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_switches.h"
 

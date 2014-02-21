@@ -811,4 +811,33 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          # Copies libosmesa.so to the out/$BUILDTYPE/lib/ directory so that
+          # the write_ordered_libraries.py script won't assume it to be a
+          # system library. This will cause the library to be stripped allowing
+          # targets to embed it in the to-be-generated APK.
+          'target_name': 'osmesa_in_lib_dir',
+          'type': 'none',
+          'dependencies': [
+            'osmesa',
+          ],
+          'actions': [
+            {
+              'action_name': 'copy_libosmesa',
+              'inputs': ['<(PRODUCT_DIR)/libosmesa.so'],
+              'outputs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
+              'action': [
+                'cp',
+                '<(PRODUCT_DIR)/libosmesa.so',
+                '<(SHARED_LIB_DIR)/libosmesa.so',
+              ],
+            },
+          ],
+        },
+      ],
+    }],
+  ],
 }

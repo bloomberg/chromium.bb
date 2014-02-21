@@ -13,6 +13,7 @@
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_osmesa.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
 namespace gfx {
@@ -28,24 +29,11 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
-base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
-  std::string error;
-  base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
-  if (!library) {
-    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
-    return NULL;
-  }
-  return library;
-}
-
-base::NativeLibrary LoadLibrary(const char* filename) {
-  return LoadLibrary(base::FilePath(filename));
-}
-
 }  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationEGLGLES2);
+  impls->push_back(kGLImplementationOSMesaGL);
 }
 
 bool InitializeStaticGLBindings(GLImplementation implementation) {
@@ -93,6 +81,9 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
       break;
     }
+    case kGLImplementationOSMesaGL:
+      InitializeStaticGLBindingsOSMesaGL();
+      break;
     case kGLImplementationMockGL: {
       SetGLImplementation(kGLImplementationMockGL);
       InitializeStaticGLBindingsGL();
@@ -112,6 +103,10 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
     case kGLImplementationEGLGLES2:
       InitializeDynamicGLBindingsGL(context);
       InitializeDynamicGLBindingsEGL(context);
+      break;
+    case kGLImplementationOSMesaGL:
+      InitializeDynamicGLBindingsGL(context);
+      InitializeDynamicGLBindingsOSMESA(context);
       break;
     case kGLImplementationMockGL:
       if (!context) {
@@ -133,11 +128,13 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsEGL();
   InitializeDebugGLBindingsGL();
+  InitializeDebugGLBindingsOSMESA();
 }
 
 void ClearGLBindings() {
   ClearGLBindingsEGL();
   ClearGLBindingsGL();
+  ClearGLBindingsOSMESA();
   SetGLImplementation(kGLImplementationNone);
 
   UnloadGLNativeLibraries();
