@@ -35,30 +35,29 @@ class ScopedPtrHashMap {
     data_.swap(other.data_);
   }
 
-  std::pair<iterator, bool> insert(
-      std::pair<Key, const scoped_ptr<Value> > pair) {
-    return data_.insert(
-        std::pair<Key, Value*>(pair.first, pair.second.release()));
-  }
-
   // Replaces value but not key if key is already present.
-  std::pair<iterator, bool> set(Key key, scoped_ptr<Value> data) {
+  iterator set(const Key& key, scoped_ptr<Value> data) {
     iterator it = find(key);
-    if (it != end())
-      erase(it);
-    Value* raw_ptr = data.release();
-    return data_.insert(std::pair<Key, Value*>(key, raw_ptr));
+    if (it != end()) {
+      delete it->second;
+      it->second = data.release();
+      return it;
+    }
+
+    return data_.insert(std::make_pair(key, data.release())).first;
   }
 
   // Does nothing if key is already present
-  std::pair<iterator, bool> add(Key key, scoped_ptr<Value> data) {
-    Value* raw_ptr = data.release();
-    return data_.insert(std::pair<Key, Value*>(key, raw_ptr));
+  std::pair<iterator, bool> add(const Key& key, scoped_ptr<Value> data) {
+    std::pair<iterator, bool> result =
+        data_.insert(std::make_pair(key, data.get()));
+    if (result.second)
+      ignore_result(data.release());
+    return result;
   }
 
   void erase(iterator it) {
-    if (it->second)
-      delete it->second;
+    delete it->second;
     data_.erase(it);
   }
 
@@ -75,10 +74,8 @@ class ScopedPtrHashMap {
     if (it == data_.end())
       return scoped_ptr<Value>();
 
-    Key key = it->first;
     scoped_ptr<Value> ret(it->second);
-    data_.erase(it);
-    data_.insert(std::pair<Key, Value*>(key, static_cast<Value*>(NULL)));
+    it->second = NULL;
     return ret.Pass();
   }
 
@@ -108,12 +105,12 @@ class ScopedPtrHashMap {
     return take_and_erase(it);
   }
 
-  // Returns the first element in the hash_map that matches the given key.
+  // Returns the element in the hash_map that matches the given key.
   // If no such element exists it returns NULL.
   Value* get(const Key& k) const {
     const_iterator it = find(k);
     if (it == end())
-      return 0;
+      return NULL;
     return it->second;
   }
 
