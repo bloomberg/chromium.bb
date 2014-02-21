@@ -49,7 +49,8 @@ cr.define('inline.login', function() {
    */
   function loadAuthExtension(data) {
     authExtHost.load(data.authMode, data, onAuthCompleted);
-    $('contents').classList.toggle('loading', true);
+    $('contents').classList.toggle('loading',
+        data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP);
   }
 
   /**

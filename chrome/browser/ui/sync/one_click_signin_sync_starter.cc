@@ -97,8 +97,11 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
 
   // Cache the parent desktop for the browser, so we can reuse that same
   // desktop for any UI we want to display.
-  if (browser)
+  if (browser) {
     desktop_type_ = browser->host_desktop_type();
+  } else {
+    desktop_type_ = chrome::GetActiveDesktop();
+  }
 
   signin_tracker_.reset(new SigninTracker(profile_, this));
 

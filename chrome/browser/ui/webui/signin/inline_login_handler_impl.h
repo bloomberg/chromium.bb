@@ -36,6 +36,8 @@ class InlineLoginHandlerImpl : public GaiaAuthConsumer,
   // JS callback to switch the UI from a constrainted dialog to a full tab.
   void HandleSwitchToFullTabMessage(const base::ListValue* args);
   void HandleLoginError(const std::string& error_msg);
+
+  Browser* GetDesktopBrowser();
   void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result);
   void CloseTab();
 

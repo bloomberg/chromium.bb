@@ -111,24 +111,28 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
-  DCHECK(email_.empty() && password_.empty() && session_index_.empty());
+  if (!email_.empty() || !password_.empty() || !session_index_.empty()) {
+    LOG(ERROR) << "InlineLoginHandlerImpl::CompleteLogin called more than once";
+    return;
+  };
 
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
 
   const base::DictionaryValue* dict = NULL;
-  base::string16 email;
-  if (!args->GetDictionary(0, &dict) || !dict ||
-      !dict->GetString("email", &email)) {
-    // User cancelled the signin by clicking 'skip for now'.
-    bool skip_for_now = false;
-    DCHECK(dict->GetBoolean("skipForNow", &skip_for_now) && skip_for_now);
+  args->GetDictionary(0, &dict);
 
+  bool skip_for_now = false;
+  dict->GetBoolean("skipForNow", &skip_for_now);
+  if (skip_for_now) {
     signin::SetUserSkippedPromo(Profile::FromWebUI(web_ui()));
     SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
     return;
   }
 
+  base::string16 email;
+  dict->GetString("email", &email);
+  DCHECK(!email.empty());
   email_ = UTF16ToASCII(email);
   base::string16 password;
   dict->GetString("password", &password);
@@ -233,7 +237,7 @@ void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
         // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
         // OneClickSigninSyncStarter will delete itself once the job is done.
         new OneClickSigninSyncStarter(
-            profile, NULL, "" /* session_index, not used */,
+            profile, GetDesktopBrowser(), "" /* session_index, not used */,
             email_, password_, oauth_code,
             start_mode,
             contents,
@@ -257,18 +261,23 @@ void InlineLoginHandlerImpl::OnClientOAuthCodeFailure(
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
 
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
-  if (!browser) {
-    browser = chrome::FindLastActiveWithProfile(
-        Profile::FromWebUI(web_ui()), chrome::GetActiveDesktop());
-  }
+  Browser* browser = GetDesktopBrowser();
   if (browser)
     OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
 
   email_.clear();
   password_.clear();
   session_index_.clear();
+}
+
+ Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  if (!browser) {
+    browser = chrome::FindLastActiveWithProfile(
+        Profile::FromWebUI(web_ui()), chrome::GetActiveDesktop());
+  }
+  return browser;
 }
 
 void InlineLoginHandlerImpl::SyncStarterCallback(
