@@ -21,7 +21,7 @@
 class Profile;
 
 namespace content {
-class NotificationSource;
+class BrowserContext;
 class NotificationSource;
 }
 
@@ -53,7 +53,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
     }
   };
 
-  explicit RulesRegistryService(Profile* profile);
+  explicit RulesRegistryService(content::BrowserContext* context);
   virtual ~RulesRegistryService();
 
   // Unregisters refptrs to concrete RulesRegistries at other objects that were
@@ -64,7 +64,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<RulesRegistryService>* GetFactoryInstance();
 
   // Convenience method to get the RulesRegistryService for a profile.
-  static RulesRegistryService* Get(Profile* profile);
+  static RulesRegistryService* Get(content::BrowserContext* context);
 
   // Registers the default RulesRegistries used in Chromium.
   void EnsureDefaultRulesRegistriesRegistered(const WebViewKey& webview_key);

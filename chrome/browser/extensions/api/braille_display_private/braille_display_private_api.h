@@ -25,7 +25,7 @@ class BrailleDisplayPrivateAPI
       api::braille_display_private::BrailleObserver,
       EventRouter::Observer {
  public:
-  explicit BrailleDisplayPrivateAPI(Profile* profile);
+  explicit BrailleDisplayPrivateAPI(content::BrowserContext* context);
   virtual ~BrailleDisplayPrivateAPI();
 
   // ProfileKeyedService implementation.

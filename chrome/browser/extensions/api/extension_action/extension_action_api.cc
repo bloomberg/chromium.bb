@@ -219,7 +219,7 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
 static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
+ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
 
@@ -259,8 +259,8 @@ ExtensionActionAPI::GetFactoryInstance() {
 }
 
 // static
-ExtensionActionAPI* ExtensionActionAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<ExtensionActionAPI>::GetForProfile(profile);
+ExtensionActionAPI* ExtensionActionAPI::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<ExtensionActionAPI>::GetForProfile(context);
 }
 
 // static
@@ -295,48 +295,57 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
 
 // static
 void ExtensionActionAPI::BrowserActionExecuted(
-    Profile* profile,
+    content::BrowserContext* context,
     const ExtensionAction& browser_action,
     WebContents* web_contents) {
-  ExtensionActionExecuted(profile, browser_action, web_contents);
+  ExtensionActionExecuted(context, browser_action, web_contents);
 }
 
 // static
-void ExtensionActionAPI::PageActionExecuted(Profile* profile,
+void ExtensionActionAPI::PageActionExecuted(content::BrowserContext* context,
                                             const ExtensionAction& page_action,
                                             int tab_id,
                                             const std::string& url,
                                             int button) {
-  DispatchOldPageActionEvent(profile, page_action.extension_id(),
-                             page_action.id(), tab_id, url, button);
+  DispatchOldPageActionEvent(context,
+                             page_action.extension_id(),
+                             page_action.id(),
+                             tab_id,
+                             url,
+                             button);
   WebContents* web_contents = NULL;
   if (!extensions::ExtensionTabUtil::GetTabById(
-          tab_id, profile, profile->IsOffTheRecord(),
-          NULL, NULL, &web_contents, NULL)) {
+           tab_id,
+           Profile::FromBrowserContext(context),
+           context->IsOffTheRecord(),
+           NULL,
+           NULL,
+           &web_contents,
+           NULL)) {
     return;
   }
-  ExtensionActionExecuted(profile, page_action, web_contents);
+  ExtensionActionExecuted(context, page_action, web_contents);
 }
 
 // static
 void ExtensionActionAPI::DispatchEventToExtension(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& extension_id,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (!extensions::ExtensionSystem::Get(profile)->event_router())
+  if (!extensions::ExtensionSystem::Get(context)->event_router())
     return;
 
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->restrict_to_browser_context = profile;
+  event->restrict_to_browser_context = context;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
-  ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  ExtensionSystem::Get(context)->event_router()->DispatchEventToExtension(
+      extension_id, event.Pass());
 }
 
 // static
 void ExtensionActionAPI::DispatchOldPageActionEvent(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& extension_id,
     const std::string& page_action_id,
     int tab_id,
@@ -352,12 +361,12 @@ void ExtensionActionAPI::DispatchOldPageActionEvent(
             new base::FundamentalValue(button));
   args->Append(data);
 
-  DispatchEventToExtension(profile, extension_id, "pageActions", args.Pass());
+  DispatchEventToExtension(context, extension_id, "pageActions", args.Pass());
 }
 
 // static
 void ExtensionActionAPI::ExtensionActionExecuted(
-    Profile* profile,
+    content::BrowserContext* context,
     const ExtensionAction& extension_action,
     WebContents* web_contents) {
   const char* event_name = NULL;
@@ -379,10 +388,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
         extensions::ExtensionTabUtil::CreateTabValue(web_contents);
     args->Append(tab_value);
 
-    DispatchEventToExtension(profile,
-                             extension_action.extension_id(),
-                             event_name,
-                             args.Pass());
+    DispatchEventToExtension(
+        context, extension_action.extension_id(), event_name, args.Pass());
   }
 }
 

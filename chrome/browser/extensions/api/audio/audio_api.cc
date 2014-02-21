@@ -22,9 +22,8 @@ ProfileKeyedAPIFactory<AudioAPI>* AudioAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-AudioAPI::AudioAPI(Profile* profile)
-    : profile_(profile),
-      service_(AudioService::CreateInstance()) {
+AudioAPI::AudioAPI(content::BrowserContext* context)
+    : browser_context_(context), service_(AudioService::CreateInstance()) {
   service_->AddObserver(this);
 }
 
@@ -39,11 +38,12 @@ AudioService* AudioAPI::GetService() const {
 }
 
 void AudioAPI::OnDeviceChanged() {
-  if (profile_ && ExtensionSystem::Get(profile_)->event_router()) {
+  if (browser_context_ &&
+      ExtensionSystem::Get(browser_context_)->event_router()) {
     scoped_ptr<Event> event(new Event(
         audio::OnDeviceChanged::kEventName,
         scoped_ptr<base::ListValue>(new base::ListValue())));
-    ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
+    ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
         event.Pass());
   }
 }

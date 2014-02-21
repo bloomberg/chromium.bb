@@ -39,7 +39,8 @@ const base::TimeDelta kDefaultMinPollPeriod() {
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:
-  explicit DefaultAlarmDelegate(Profile* profile) : profile_(profile) {}
+  explicit DefaultAlarmDelegate(content::BrowserContext* context)
+      : browser_context_(context) {}
   virtual ~DefaultAlarmDelegate() {}
 
   virtual void OnAlarm(const std::string& extension_id,
@@ -48,12 +49,13 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(alarms::OnAlarm::kEventName,
                                       args.Pass()));
-    ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-        extension_id, event.Pass());
+    ExtensionSystem::Get(browser_context_)
+        ->event_router()
+        ->DispatchEventToExtension(extension_id, event.Pass());
   }
 
  private:
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 };
 
 // Creates a TimeDelta from a delay as specified in the API.
@@ -95,10 +97,10 @@ scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
 
 // AlarmManager
 
-AlarmManager::AlarmManager(Profile* profile)
-    : profile_(profile),
+AlarmManager::AlarmManager(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
       clock_(new base::DefaultClock()),
-      delegate_(new DefaultAlarmDelegate(profile)) {
+      delegate_(new DefaultAlarmDelegate(context)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,

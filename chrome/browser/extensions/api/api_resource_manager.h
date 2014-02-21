@@ -74,9 +74,8 @@ class ApiResourceManager : public ProfileKeyedAPI,
                            public base::NonThreadSafe,
                            public content::NotificationObserver {
  public:
-  explicit ApiResourceManager(Profile* profile)
-      : thread_id_(T::kThreadId),
-        data_(new ApiResourceData(thread_id_)) {
+  explicit ApiResourceManager(content::BrowserContext* context)
+      : thread_id_(T::kThreadId), data_(new ApiResourceData(thread_id_)) {
     registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -111,9 +110,9 @@ class ApiResourceManager : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<ApiResourceManager<T> >* GetFactoryInstance();
 
   // Convenience method to get the ApiResourceManager for a profile.
-  static ApiResourceManager<T>* Get(Profile* profile) {
+  static ApiResourceManager<T>* Get(content::BrowserContext* context) {
     return ProfileKeyedAPIFactory<ApiResourceManager<T> >::GetForProfile(
-        profile);
+        context);
   }
 
   // Takes ownership.

@@ -149,15 +149,17 @@ void CommandService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-CommandService::CommandService(Profile* profile)
-    : profile_(profile) {
+CommandService::CommandService(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   ExtensionFunctionRegistry::GetInstance()->
       RegisterFunction<GetAllCommandsFunction>();
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-      content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 CommandService::~CommandService() {
@@ -172,8 +174,8 @@ ProfileKeyedAPIFactory<CommandService>* CommandService::GetFactoryInstance() {
 }
 
 // static
-CommandService* CommandService::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<CommandService>::GetForProfile(profile);
+CommandService* CommandService::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<CommandService>::GetForProfile(context);
 }
 
 // static

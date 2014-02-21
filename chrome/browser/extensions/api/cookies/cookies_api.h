@@ -33,7 +33,7 @@ namespace extensions {
 // extension system.
 class CookiesEventRouter : public content::NotificationObserver {
  public:
-  explicit CookiesEventRouter(Profile* profile);
+  explicit CookiesEventRouter(content::BrowserContext* context);
   virtual ~CookiesEventRouter();
 
  private:
@@ -47,7 +47,7 @@ class CookiesEventRouter : public content::NotificationObserver {
   void CookieChanged(Profile* profile, ChromeCookieDetails* details);
 
   // This method dispatches events to the extension message service.
-  void DispatchEvent(Profile* context,
+  void DispatchEvent(content::BrowserContext* context,
                      const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args,
                      GURL& cookie_domain);
@@ -105,7 +105,7 @@ class CookiesGetFunction : public CookiesFunction {
   void GetCookieCallback(const net::CookieList& cookie_list);
 
   GURL url_;
-  scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_refptr<net::URLRequestContextGetter> store_browser_context_;
   scoped_ptr<extensions::api::cookies::Get::Params> parsed_args_;
 };
 
@@ -128,7 +128,7 @@ class CookiesGetAllFunction : public CookiesFunction {
   void GetAllCookiesCallback(const net::CookieList& cookie_list);
 
   GURL url_;
-  scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_refptr<net::URLRequestContextGetter> store_browser_context_;
   scoped_ptr<extensions::api::cookies::GetAll::Params> parsed_args_;
 };
 
@@ -151,7 +151,7 @@ class CookiesSetFunction : public CookiesFunction {
 
   GURL url_;
   bool success_;
-  scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_refptr<net::URLRequestContextGetter> store_browser_context_;
   scoped_ptr<extensions::api::cookies::Set::Params> parsed_args_;
 };
 
@@ -174,7 +174,7 @@ class CookiesRemoveFunction : public CookiesFunction {
   void RemoveCookieCallback();
 
   GURL url_;
-  scoped_refptr<net::URLRequestContextGetter> store_context_;
+  scoped_refptr<net::URLRequestContextGetter> store_browser_context_;
   scoped_ptr<extensions::api::cookies::Remove::Params> parsed_args_;
 };
 

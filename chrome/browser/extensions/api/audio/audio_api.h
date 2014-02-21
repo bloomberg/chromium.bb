@@ -16,7 +16,7 @@ class AudioService;
 class AudioAPI : public ProfileKeyedAPI,
                  public AudioService::Observer {
  public:
-  explicit AudioAPI(Profile* profile);
+  explicit AudioAPI(content::BrowserContext* context);
   virtual ~AudioAPI();
 
   AudioService* GetService() const;
@@ -35,7 +35,7 @@ class AudioAPI : public ProfileKeyedAPI,
     return "AudioAPI";
   }
 
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   AudioService* service_;
 };
 

@@ -22,6 +22,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 class Accelerator;
 }
@@ -58,14 +62,14 @@ class CommandService : public ProfileKeyedAPI,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Constructs a CommandService object for the given profile.
-  explicit CommandService(Profile* profile);
+  explicit CommandService(content::BrowserContext* context);
   virtual ~CommandService();
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<CommandService>* GetFactoryInstance();
 
   // Convenience method to get the CommandService for a profile.
-  static CommandService* Get(Profile* profile);
+  static CommandService* Get(content::BrowserContext* context);
 
   // Return true if the specified accelerator is one of the following multimedia
   // keys: Next Track key, Previous Track key, Stop Media key, Play/Pause Media

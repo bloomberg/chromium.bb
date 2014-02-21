@@ -16,8 +16,11 @@
 #include "extensions/browser/extension_function.h"
 
 class GURL;
-class Profile;
 class CastChannelAPITest;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -27,9 +30,9 @@ class CastChannelAPI : public ProfileKeyedAPI,
                        public cast_channel::CastSocket::Delegate {
 
  public:
-  explicit CastChannelAPI(Profile* profile);
+  explicit CastChannelAPI(content::BrowserContext* context);
 
-  static CastChannelAPI* Get(Profile* profile);
+  static CastChannelAPI* Get(content::BrowserContext* context);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
@@ -60,7 +63,7 @@ class CastChannelAPI : public ProfileKeyedAPI,
     return "CastChannelAPI";
   }
 
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   scoped_ptr<cast_channel::CastSocket> socket_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);

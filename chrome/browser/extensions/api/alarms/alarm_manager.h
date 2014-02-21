@@ -25,6 +25,10 @@ namespace base {
 class Clock;
 }  // namespace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace extensions {
 
 class ExtensionAlarmsSchedulingTest;
@@ -66,7 +70,7 @@ class AlarmManager
                          const Alarm& alarm) = 0;
   };
 
-  explicit AlarmManager(Profile* profile);
+  explicit AlarmManager(content::BrowserContext* context);
   virtual ~AlarmManager();
 
   // Override the default delegate. Callee assumes onwership. Used for testing.

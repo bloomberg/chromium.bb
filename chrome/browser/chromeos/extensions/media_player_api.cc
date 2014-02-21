@@ -10,20 +10,21 @@
 
 namespace extensions {
 
-MediaPlayerAPI::MediaPlayerAPI(Profile* profile) : profile_(profile) {
-}
+MediaPlayerAPI::MediaPlayerAPI(content::BrowserContext* context)
+    : browser_context_(context) {}
 
 MediaPlayerAPI::~MediaPlayerAPI() {
 }
 
 // static
-MediaPlayerAPI* MediaPlayerAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<MediaPlayerAPI>::GetForProfile(profile);
+MediaPlayerAPI* MediaPlayerAPI::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<MediaPlayerAPI>::GetForProfile(context);
 }
 
 MediaPlayerEventRouter* MediaPlayerAPI::media_player_event_router() {
   if (!media_player_event_router_)
-    media_player_event_router_.reset(new MediaPlayerEventRouter(profile_));
+    media_player_event_router_.reset(
+        new MediaPlayerEventRouter(browser_context_));
   return media_player_event_router_.get();
 }
 

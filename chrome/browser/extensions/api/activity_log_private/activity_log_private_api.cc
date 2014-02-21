@@ -11,9 +11,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -42,16 +42,16 @@ void ProfileKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
   DependsOn(ActivityLogFactory::GetInstance());
 }
 
-ActivityLogAPI::ActivityLogAPI(Profile* profile)
-    : profile_(profile),
-      initialized_(false) {
-  if (!ExtensionSystem::Get(profile_)->event_router()) {  // Check for testing.
+ActivityLogAPI::ActivityLogAPI(content::BrowserContext* context)
+    : browser_context_(context), initialized_(false) {
+  if (!ExtensionSystem::Get(browser_context_)
+           ->event_router()) {  // Check for testing.
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
-  activity_log_ = extensions::ActivityLog::GetInstance(profile_);
+  activity_log_ = extensions::ActivityLog::GetInstance(browser_context_);
   DCHECK(activity_log_);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
       this, activity_log_private::OnExtensionActivity::kEventName);
   activity_log_->AddObserver(this);
   initialized_ = true;
@@ -65,7 +65,8 @@ void ActivityLogAPI::Shutdown() {
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
   activity_log_->RemoveObserver(this);
 }
 
@@ -91,8 +92,9 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   scoped_ptr<Event> event(
       new Event(activity_log_private::OnExtensionActivity::kEventName,
           value.Pass()));
-  event->restrict_to_browser_context = profile_;
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  event->restrict_to_browser_context = browser_context_;
+  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
+      event.Pass());
 }
 
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {

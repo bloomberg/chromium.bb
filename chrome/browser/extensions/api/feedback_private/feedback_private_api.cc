@@ -50,10 +50,8 @@ ProfileKeyedAPIFactory<FeedbackPrivateAPI>*
   return g_factory.Pointer();
 }
 
-FeedbackPrivateAPI::FeedbackPrivateAPI(Profile* profile)
-    : profile_(profile),
-      service_(FeedbackService::CreateInstance()) {
-}
+FeedbackPrivateAPI::FeedbackPrivateAPI(content::BrowserContext* context)
+    : browser_context_(context), service_(FeedbackService::CreateInstance()) {}
 
 FeedbackPrivateAPI::~FeedbackPrivateAPI() {
   delete service_;
@@ -70,7 +68,8 @@ void FeedbackPrivateAPI::RequestFeedback(
     const GURL& page_url) {
   // TODO(rkc): Remove logging once crbug.com/284662 is closed.
   LOG(WARNING) << "FEEDBACK_DEBUG: Feedback requested.";
-  if (profile_ && ExtensionSystem::Get(profile_)->event_router()) {
+  if (browser_context_ &&
+      ExtensionSystem::Get(browser_context_)->event_router()) {
     FeedbackInfo info;
     info.description = description_template;
     info.category_tag = make_scoped_ptr(new std::string(category_tag));
@@ -86,13 +85,13 @@ void FeedbackPrivateAPI::RequestFeedback(
 
     scoped_ptr<Event> event(new Event(
         feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
-    event->restrict_to_browser_context = profile_;
+    event->restrict_to_browser_context = browser_context_;
 
     // TODO(rkc): Remove logging once crbug.com/284662 is closed.
     LOG(WARNING) << "FEEDBACK_DEBUG: Dispatching onFeedbackRequested event.";
-    ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-        kFeedbackExtensionId,
-        event.Pass());
+    ExtensionSystem::Get(browser_context_)
+        ->event_router()
+        ->DispatchEventToExtension(kFeedbackExtensionId, event.Pass());
   }
 }
 

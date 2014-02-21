@@ -25,7 +25,7 @@ class ActivityLogAPI : public ProfileKeyedAPI,
                        public extensions::ActivityLog::Observer,
                        public EventRouter::Observer {
  public:
-  explicit ActivityLogAPI(Profile* profile);
+  explicit ActivityLogAPI(content::BrowserContext* context);
   virtual ~ActivityLogAPI();
 
   // ProfileKeyedAPI implementation.
@@ -49,7 +49,7 @@ class ActivityLogAPI : public ProfileKeyedAPI,
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   ActivityLog* activity_log_;
   bool initialized_;
 

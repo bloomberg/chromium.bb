@@ -61,9 +61,15 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
 template <typename T>
 class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
+  // TODO(yoz): Delete this one.
   static T* GetForProfile(Profile* profile) {
     return static_cast<T*>(
         T::GetFactoryInstance()->GetServiceForBrowserContext(profile, true));
+  }
+
+  static T* GetForProfile(content::BrowserContext* context) {
+    return static_cast<T*>(T::GetFactoryInstance()->GetServiceForBrowserContext(
+        Profile::FromBrowserContext(context), true));
   }
 
   // Declare dependencies on other factories.

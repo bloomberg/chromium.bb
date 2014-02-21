@@ -17,11 +17,13 @@
 #include "extensions/browser/event_router.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-class Profile;
-
 namespace base {
 class FilePath;
 class ListValue;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
@@ -30,7 +32,7 @@ namespace extensions {
 // the extension system.
 class BookmarkEventRouter : public BookmarkModelObserver {
  public:
-  BookmarkEventRouter(Profile* profile, BookmarkModel* model);
+  BookmarkEventRouter(content::BrowserContext* context, BookmarkModel* model);
   virtual ~BookmarkEventRouter();
 
   // BookmarkModelObserver:
@@ -64,7 +66,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
@@ -73,7 +75,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 class BookmarksAPI : public ProfileKeyedAPI,
                      public EventRouter::Observer {
  public:
-  explicit BookmarksAPI(Profile* profile);
+  explicit BookmarksAPI(content::BrowserContext* context);
   virtual ~BookmarksAPI();
 
   // BrowserContextKeyedService implementation.
@@ -89,7 +91,7 @@ class BookmarksAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<BookmarksAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

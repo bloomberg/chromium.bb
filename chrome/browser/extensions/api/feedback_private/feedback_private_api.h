@@ -20,7 +20,7 @@ using extensions::api::feedback_private::SystemInformation;
 
 class FeedbackPrivateAPI : public ProfileKeyedAPI {
  public:
-  explicit FeedbackPrivateAPI(Profile* profile);
+  explicit FeedbackPrivateAPI(content::BrowserContext* context);
   virtual ~FeedbackPrivateAPI();
 
   FeedbackService* GetService() const;
@@ -41,7 +41,7 @@ class FeedbackPrivateAPI : public ProfileKeyedAPI {
 
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   FeedbackService* service_;
 };
 

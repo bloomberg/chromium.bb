@@ -39,6 +39,7 @@
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -59,6 +60,7 @@ namespace bookmarks = api::bookmarks;
 
 using base::TimeDelta;
 using bookmarks::BookmarkTreeNode;
+using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
 
@@ -156,9 +158,9 @@ void BookmarksFunction::BookmarkModelLoaded(BookmarkModel* model,
   Release();  // Balanced in Run().
 }
 
-BookmarkEventRouter::BookmarkEventRouter(Profile* profile, BookmarkModel* model)
-    : profile_(profile),
-      model_(model) {
+BookmarkEventRouter::BookmarkEventRouter(BrowserContext* context,
+                                         BookmarkModel* model)
+    : browser_context_(context), model_(model) {
   model_->AddObserver(this);
 }
 
@@ -171,9 +173,11 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 void BookmarkEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    extensions::ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
-        make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
+  if (extensions::ExtensionSystem::Get(browser_context_)->event_router()) {
+    extensions::ExtensionSystem::Get(browser_context_)
+        ->event_router()
+        ->BroadcastEvent(make_scoped_ptr(
+              new extensions::Event(event_name, event_args.Pass())));
   }
 }
 
@@ -297,28 +301,26 @@ void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   DispatchEvent(bookmarks::OnImportEnded::kEventName, args.Pass());
 }
 
-BookmarksAPI::BookmarksAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnCreated::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnRemoved::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnChanged::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnMoved::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnChildrenReordered::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnImportBegan::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, bookmarks::OnImportEnded::kEventName);
+BookmarksAPI::BookmarksAPI(BrowserContext* context)
+    : browser_context_(context) {
+  EventRouter* event_router =
+      ExtensionSystem::Get(browser_context_)->event_router();
+  event_router->RegisterObserver(this, bookmarks::OnCreated::kEventName);
+  event_router->RegisterObserver(this, bookmarks::OnRemoved::kEventName);
+  event_router->RegisterObserver(this, bookmarks::OnChanged::kEventName);
+  event_router->RegisterObserver(this, bookmarks::OnMoved::kEventName);
+  event_router->RegisterObserver(this,
+                                 bookmarks::OnChildrenReordered::kEventName);
+  event_router->RegisterObserver(this, bookmarks::OnImportBegan::kEventName);
+  event_router->RegisterObserver(this, bookmarks::OnImportEnded::kEventName);
 }
 
 BookmarksAPI::~BookmarksAPI() {
 }
 
 void BookmarksAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<BookmarksAPI> >
@@ -330,9 +332,12 @@ ProfileKeyedAPIFactory<BookmarksAPI>* BookmarksAPI::GetFactoryInstance() {
 }
 
 void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
-  bookmark_event_router_.reset(new BookmarkEventRouter(profile_,
-      BookmarkModelFactory::GetForProfile(profile_)));
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  bookmark_event_router_.reset(new BookmarkEventRouter(
+      browser_context_,
+      BookmarkModelFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_))));
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 bool BookmarksGetFunction::RunImpl() {
@@ -732,7 +737,8 @@ class BookmarkBucketMapper : public BucketMapper {
 // unique bucket.
 class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
-  explicit CreateBookmarkBucketMapper(Profile* profile) : profile_(profile) {}
+  explicit CreateBookmarkBucketMapper(BrowserContext* context)
+      : browser_context_(context) {}
   // TODO(tim): This should share code with BookmarksCreateFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
   virtual void GetBucketsForArgs(const base::ListValue* args,
@@ -746,7 +752,8 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
       if (!json->GetString(keys::kParentIdKey, &parent_id))
         return;
     }
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
+        Profile::FromBrowserContext(browser_context_));
 
     int64 parent_id_int64;
     base::StringToInt64(parent_id, &parent_id_int64);
@@ -767,13 +774,14 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
     buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
   }
  private:
-  Profile* profile_;
+  BrowserContext* browser_context_;
 };
 
 // Mapper for 'bookmarks.remove'.
 class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
-  explicit RemoveBookmarksBucketMapper(Profile* profile) : profile_(profile) {}
+  explicit RemoveBookmarksBucketMapper(BrowserContext* context)
+      : browser_context_(context) {}
   virtual void GetBucketsForArgs(const base::ListValue* args,
                                  BucketList* buckets) OVERRIDE {
     typedef std::list<int64> IdList;
@@ -785,7 +793,8 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     }
 
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
-      BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+      BookmarkModel* model = BookmarkModelFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_));
       const BookmarkNode* node = model->GetNodeByID(*it);
       if (!node || node->is_root())
         return;
@@ -798,7 +807,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     }
   }
  private:
-  Profile* profile_;
+  BrowserContext* browser_context_;
 };
 
 // Mapper for any bookmark function accepting bookmark IDs as parameters, where
@@ -832,16 +841,18 @@ class BookmarksQuotaLimitFactory {
 
   // For bookmarks.create.
   static void BuildForCreate(QuotaLimitHeuristics* heuristics,
-                             Profile* profile) {
-    BuildWithMappers(heuristics, new CreateBookmarkBucketMapper(profile),
-                                 new CreateBookmarkBucketMapper(profile));
+                             BrowserContext* context) {
+    BuildWithMappers(heuristics,
+                     new CreateBookmarkBucketMapper(context),
+                     new CreateBookmarkBucketMapper(context));
   }
 
   // For bookmarks.remove.
   static void BuildForRemove(QuotaLimitHeuristics* heuristics,
-                             Profile* profile) {
-    BuildWithMappers(heuristics, new RemoveBookmarksBucketMapper(profile),
-                                 new RemoveBookmarksBucketMapper(profile));
+                             BrowserContext* context) {
+    BuildWithMappers(heuristics,
+                     new RemoveBookmarksBucketMapper(context),
+                     new RemoveBookmarksBucketMapper(context));
   }
 
  private:

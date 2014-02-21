@@ -19,6 +19,7 @@ class DictionaryValue;
 }
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -28,11 +29,11 @@ class TabHelper;
 
 class ExtensionActionAPI : public ProfileKeyedAPI {
  public:
-  explicit ExtensionActionAPI(Profile* profile);
+  explicit ExtensionActionAPI(content::BrowserContext* context);
   virtual ~ExtensionActionAPI();
 
   // Convenience method to get the instance for a profile.
-  static ExtensionActionAPI* Get(Profile* profile);
+  static ExtensionActionAPI* Get(content::BrowserContext* context);
 
   static bool GetBrowserActionVisibility(const ExtensionPrefs* prefs,
                                          const std::string& extension_id);
@@ -41,14 +42,14 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
                                          bool visible);
 
   // Fires the onClicked event for page_action.
-  static void PageActionExecuted(Profile* profile,
+  static void PageActionExecuted(content::BrowserContext* context,
                                  const ExtensionAction& page_action,
                                  int tab_id,
                                  const std::string& url,
                                  int button);
 
   // Fires the onClicked event for browser_action.
-  static void BrowserActionExecuted(Profile* profile,
+  static void BrowserActionExecuted(content::BrowserContext* context,
                                     const ExtensionAction& browser_action,
                                     content::WebContents* web_contents);
 
@@ -59,7 +60,7 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
   friend class ProfileKeyedAPIFactory<ExtensionActionAPI>;
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
-  static void DispatchEventToExtension(Profile* profile,
+  static void DispatchEventToExtension(content::BrowserContext* context,
                                        const std::string& extension_id,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args);
@@ -67,16 +68,16 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
   // Called to dispatch a deprecated style page action click event that was
   // registered like:
   //   chrome.pageActions["name"].addListener(function(actionId, info){})
-  static void DispatchOldPageActionEvent(Profile* profile,
-    const std::string& extension_id,
-    const std::string& page_action_id,
-    int tab_id,
-    const std::string& url,
-    int button);
+  static void DispatchOldPageActionEvent(content::BrowserContext* context,
+                                         const std::string& extension_id,
+                                         const std::string& page_action_id,
+                                         int tab_id,
+                                         const std::string& url,
+                                         int button);
 
   // Called when either a browser or page action is executed. Figures out which
   // event to send based on what the extension wants.
-  static void ExtensionActionExecuted(Profile* profile,
+  static void ExtensionActionExecuted(content::BrowserContext* context,
                                       const ExtensionAction& extension_action,
                                       content::WebContents* web_contents);
 
