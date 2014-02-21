@@ -622,9 +622,6 @@ void HTMLMediaElement::load()
 
     WTF_LOG(Media, "HTMLMediaElement::load()");
 
-    if (document().settings() && !document().settings()->mediaEnabled())
-        return;
-
     if (UserGestureIndicator::processingUserGesture())
         removeBehaviorsRestrictionsAfterFirstUserGesture();
 

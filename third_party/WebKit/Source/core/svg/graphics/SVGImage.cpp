@@ -391,7 +391,6 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
         m_page = adoptPtr(new Page(pageClients));
-        m_page->settings().setMediaEnabled(false);
         m_page->settings().setScriptEnabled(false);
         m_page->settings().setPluginsEnabled(false);
         m_page->settings().setAcceleratedCompositingEnabled(false);
