@@ -21,4 +21,11 @@
     <item android:id="@+id/actionbar_disconnect"
             android:title="@string/actionbar_disconnect"
             android:showAsAction="withText"/>
+    <!--
+        The Help option must be the final menu item and it must only appear in
+        the action-bar overflow menu.
+    -->
+    <item android:id="@+id/actionbar_help"
+            android:title="@string/actionbar_help"
+            android:showAsAction="never"/>
 </menu>

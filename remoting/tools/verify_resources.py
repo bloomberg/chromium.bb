@@ -40,15 +40,21 @@ prefix /*i18n-content*/
 
 def LoadTagsFromGrd(filename):
   xml = minidom.parse(filename)
-  tags = []
+  android_tags = []
+  other_tags = []
   msgs_and_structs = xml.getElementsByTagName("message")
   msgs_and_structs.extend(xml.getElementsByTagName("structure"))
   for res in msgs_and_structs:
     name = res.getAttribute("name")
     if not name or not name.startswith("IDS_"):
       raise Exception("Tag name doesn't start with IDS_: %s" % name)
-    tags.append(name[4:])
-  return tags
+    name = name[4:]
+    if 'android_java' in res.getAttribute('formatter_data'):
+      android_tags.append(name)
+    else:
+      other_tags.append(name)
+  return android_tags, other_tags
+
 
 def ExtractTagFromLine(file_type, line):
   """Extract a tag from a line of HTML, C++, JS or JSON."""
@@ -132,18 +138,24 @@ def main():
     print 'At least one GRD file needs to be specified.'
     return 1
 
-  resources = []
+  all_resources = []
+  non_android_resources = []
   for f in options.grd:
-    resources.extend(LoadTagsFromGrd(f))
+    android_tags, other_tags = LoadTagsFromGrd(f)
+    all_resources.extend(android_tags + other_tags)
+    non_android_resources.extend(other_tags)
 
   used_tags = set([])
   exit_code = 0
   for f in args:
-    if not VerifyFile(f, resources, used_tags):
+    if not VerifyFile(f, all_resources, used_tags):
       exit_code = 1
 
+  # Determining if a resource is being used in the Android app is tricky
+  # because it requires annotating and parsing Android XML layout files.
+  # For now, exclude Android strings from this check.
   warnings = False
-  for tag in resources:
+  for tag in non_android_resources:
     if tag not in used_tags:
       print ('%s/%s:0: warning: %s is defined but not used') % \
           (os.getcwd(), sys.argv[2], tag)

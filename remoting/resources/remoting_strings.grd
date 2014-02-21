@@ -377,6 +377,12 @@
         </message>
       </if>
 
+      <if expr="is_android">
+        <message desc="Text displayed in the Android action-bar overflow menu for showing the Help and Feedback screen" name="IDS_ACTIONBAR_HELP" formatter_data="android_java">
+          Help &amp; feedback
+        </message>
+      </if>
+
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
       </message>

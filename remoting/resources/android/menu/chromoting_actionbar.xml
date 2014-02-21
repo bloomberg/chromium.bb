@@ -11,4 +11,11 @@
             android:title="@string/actionbar_directoryrefresh"
             android:icon="@android:drawable/ic_popup_sync"
             android:showAsAction="ifRoom"/>
+    <!--
+        The Help option must be the final menu item and it must only appear in
+        the action-bar overflow menu.
+    -->
+    <item android:id="@+id/actionbar_help"
+            android:title="@string/actionbar_help"
+            android:showAsAction="never"/>
 </menu>
