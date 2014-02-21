@@ -316,13 +316,6 @@ TEST(SafeBrowsingUtilTest, ListIdListNameConversion) {
   EXPECT_EQ(list_name, std::string(safe_browsing_util::kBinUrlList));
   EXPECT_EQ(safe_browsing_util::BINURL,
             safe_browsing_util::GetListId(list_name));
-
-
-  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::BINHASH,
-                                              &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing_util::kBinHashList));
-  EXPECT_EQ(safe_browsing_util::BINHASH,
-            safe_browsing_util::GetListId(list_name));
 }
 
 // Since the ids are saved in file, we need to make sure they don't change.
@@ -332,7 +325,6 @@ TEST(SafeBrowsingUtilTest, ListIdVerification) {
   EXPECT_EQ(0, safe_browsing_util::MALWARE % 2);
   EXPECT_EQ(1, safe_browsing_util::PHISH % 2);
   EXPECT_EQ(0, safe_browsing_util::BINURL %2);
-  EXPECT_EQ(1, safe_browsing_util::BINHASH % 2);
 }
 
 TEST(SafeBrowsingUtilTest, StringToSBFullHashAndSBFullHashToString) {

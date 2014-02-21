@@ -56,8 +56,7 @@ void RecordGetHashCheckStatus(
   } else {
     result = SafeBrowsingProtocolManager::GET_HASH_FULL_HASH_MISS;
   }
-  bool is_download = check_type == safe_browsing_util::BINURL ||
-                     check_type == safe_browsing_util::BINHASH;
+  bool is_download = check_type == safe_browsing_util::BINURL;
   SafeBrowsingProtocolManager::RecordGetHashResult(is_download, result);
 }
 
@@ -115,12 +114,6 @@ void SafeBrowsingDatabaseManager::Client::OnSafeBrowsingResult(
     }
   } else if (!check.full_hashes.empty()) {
     switch (check.check_type) {
-      case safe_browsing_util::BINHASH:
-        DCHECK_EQ(1u, check.full_hashes.size());
-        OnCheckDownloadHashResult(
-            safe_browsing_util::SBFullHashToString(check.full_hashes[0]),
-            check.full_hash_results[0]);
-        break;
       case safe_browsing_util::EXTENSIONBLACKLIST: {
         std::set<std::string> unsafe_extension_ids;
         for (size_t i = 0; i < check.full_hashes.size(); ++i) {
@@ -230,32 +223,6 @@ bool SafeBrowsingDatabaseManager::CheckDownloadUrl(
   StartSafeBrowsingCheck(
       check,
       base::Bind(&SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread, this,
-                 check));
-  return false;
-}
-
-bool SafeBrowsingDatabaseManager::CheckDownloadHash(
-    const std::string& full_hash,
-    Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!full_hash.empty());
-  if (!enabled_ || !enable_download_protection_ || full_hash.empty())
-    return true;
-
-  // We need to check the database for url prefix, and later may fetch the url
-  // from the safebrowsing backends. These need to be asynchronous.
-  std::vector<SBFullHash> full_hashes(
-      1, safe_browsing_util::StringToSBFullHash(full_hash));
-  SafeBrowsingCheck* check =
-      new SafeBrowsingCheck(std::vector<GURL>(),
-                            full_hashes,
-                            client,
-                            safe_browsing_util::BINHASH,
-                            std::vector<SBThreatType>(1,
-                                SB_THREAT_TYPE_BINARY_MALWARE_HASH));
-  StartSafeBrowsingCheck(
-      check,
-      base::Bind(&SafeBrowsingDatabaseManager::CheckDownloadHashOnSBThread,this,
                  check));
   return false;
 }
@@ -735,8 +702,7 @@ void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
     check->start = base::TimeTicks::Now();
     // Note: If |this| is deleted or stopped, the protocol_manager will
     // be destroyed as well - hence it's OK to do unretained in this case.
-    bool is_download = check->check_type == safe_browsing_util::BINURL ||
-                       check->check_type == safe_browsing_util::BINHASH;
+    bool is_download = check->check_type == safe_browsing_util::BINURL;
     sb_service_->protocol_manager()->GetFullHash(
         check->prefix_hits,
         base::Bind(&SafeBrowsingDatabaseManager::HandleGetHashResults,
@@ -855,10 +821,6 @@ SBThreatType SafeBrowsingDatabaseManager::GetThreatTypeFromListname(
 
   if (safe_browsing_util::IsBadbinurlList(list_name)) {
     return SB_THREAT_TYPE_BINARY_MALWARE_URL;
-  }
-
-  if (safe_browsing_util::IsBadbinhashList(list_name)) {
-    return SB_THREAT_TYPE_BINARY_MALWARE_HASH;
   }
 
   if (safe_browsing_util::IsExtensionList(list_name)) {
@@ -980,31 +942,6 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
   return is_threat;
 }
 
-void SafeBrowsingDatabaseManager::CheckDownloadHashOnSBThread(
-    SafeBrowsingCheck* check) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
-  DCHECK(enable_download_protection_);
-
-  DCHECK_EQ(1u, check->full_hashes.size());
-  SBFullHash full_hash = check->full_hashes[0];
-
-  if (!database_->ContainsDownloadHashPrefix(full_hash.prefix)) {
-    // Good, we don't have hash for this url prefix.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::CheckDownloadHashDone, this,
-                   check));
-    return;
-  }
-
-  check->need_get_hash = true;
-  check->prefix_hits.push_back(full_hash.prefix);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManager::OnCheckDone, this, check));
-}
-
 void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
     SafeBrowsingCheck* check) {
   DCHECK_EQ(base::MessageLoop::current(),
@@ -1074,12 +1011,6 @@ void SafeBrowsingDatabaseManager::TimeoutCallback(SafeBrowsingCheck* check) {
 }
 
 void SafeBrowsingDatabaseManager::CheckDownloadUrlDone(
-    SafeBrowsingCheck* check) {
-  DCHECK(enable_download_protection_);
-  SafeBrowsingCheckDone(check);
-}
-
-void SafeBrowsingDatabaseManager::CheckDownloadHashDone(
     SafeBrowsingCheck* check) {
   DCHECK(enable_download_protection_);
   SafeBrowsingCheckDone(check);

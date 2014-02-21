@@ -142,9 +142,6 @@ enum SBThreatType {
   // The download URL is malware.
   SB_THREAT_TYPE_BINARY_MALWARE_URL,
 
-  // The hash of the download contents is malware.
-  SB_THREAT_TYPE_BINARY_MALWARE_HASH,
-
   // Url detected by the client-side phishing model.  Note that unlike the
   // above values, this does not correspond to a downloaded list.
   SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
@@ -288,9 +285,8 @@ namespace safe_browsing_util {
 // SafeBrowsing list names.
 extern const char kMalwareList[];
 extern const char kPhishingList[];
-// Binary Download list names.
+// Binary Download list name.
 extern const char kBinUrlList[];
-extern const char kBinHashList[];
 // SafeBrowsing client-side detection whitelist list name.
 extern const char kCsdWhiteList[];
 // SafeBrowsing download whitelist list name.
@@ -303,14 +299,14 @@ extern const char kSideEffectFreeWhitelist[];
 extern const char kIPBlacklist[];
 
 // This array must contain all Safe Browsing lists.
-extern const char* kAllLists[10];
+extern const char* kAllLists[8];
 
 enum ListType {
   INVALID = -1,
   MALWARE = 0,
   PHISH = 1,
   BINURL = 2,
-  BINHASH = 3,
+  // Obsolete BINHASH = 3,
   CSDWHITELIST = 4,
   // SafeBrowsing lists are stored in pairs.  Keep ListType 5
   // available for a potential second list that we would store in the
@@ -360,7 +356,6 @@ int GetUrlHashIndex(const GURL& url,
 bool IsPhishingList(const std::string& list_name);
 bool IsMalwareList(const std::string& list_name);
 bool IsBadbinurlList(const std::string& list_name);
-bool IsBadbinhashList(const std::string& list_name);
 bool IsExtensionList(const std::string& list_name);
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,

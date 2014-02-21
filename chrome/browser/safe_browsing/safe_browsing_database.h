@@ -110,10 +110,6 @@ class SafeBrowsingDatabase {
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) = 0;
 
-  // Returns false if |prefix| is not in Download database.
-  // This function could ONLY be accessed from creation thread.
-  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) = 0;
-
   // Returns false if |url| is not on the client-side phishing detection
   // whitelist.  Otherwise, this function returns true.  Note: the whitelist
   // only contains full-length hashes so we don't return any prefix hit.
@@ -301,7 +297,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                                  base::Time last_update) OVERRIDE;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) OVERRIDE;
-  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) OVERRIDE;
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE;
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) OVERRIDE;
   virtual bool ContainsDownloadWhitelistedString(

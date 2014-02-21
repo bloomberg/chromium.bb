@@ -106,10 +106,6 @@ class SafeBrowsingDatabaseManager
     virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
                                           SBThreatType threat_type) {}
 
-    // Called when the result of checking a download binary hash is known.
-    virtual void OnCheckDownloadHashResult(const std::string& hash,
-                                           SBThreatType threat_type) {}
-
     // Called when the result of checking a set of extensions is known.
     virtual void OnCheckExtensionsResult(
         const std::set<std::string>& threats) {}
@@ -137,10 +133,6 @@ class SafeBrowsingDatabaseManager
   // Result will be passed to callback in |client|.
   virtual bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                                 Client* client);
-
-  // Check if the prefix for |full_hash| is in safebrowsing binhash add lists.
-  // Result will be passed to callback in |client|.
-  virtual bool CheckDownloadHash(const std::string& full_hash, Client* client);
 
   // Check which prefixes in |extension_ids| are in the safebrowsing blacklist.
   // Returns true if not, false if further checks need to be made in which case
@@ -322,9 +314,6 @@ class SafeBrowsingDatabaseManager
   bool HandleOneCheck(SafeBrowsingCheck* check,
                       const std::vector<SBFullHashResult>& full_hashes);
 
-  // Checks the download hash on safe_browsing_thread_.
-  void CheckDownloadHashOnSBThread(SafeBrowsingCheck* check);
-
   // Invoked by CheckDownloadUrl. It checks the download URL on
   // safe_browsing_thread_.
   void CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check);
@@ -335,9 +324,6 @@ class SafeBrowsingDatabaseManager
 
   // Calls the Client's callback on IO thread after CheckDownloadUrl finishes.
   void CheckDownloadUrlDone(SafeBrowsingCheck* check);
-
-  // Calls the Client's callback on IO thread after CheckDownloadHash finishes.
-  void CheckDownloadHashDone(SafeBrowsingCheck* check);
 
   // Checks all extension ID hashes on safe_browsing_thread_.
   void CheckExtensionIDsOnSBThread(SafeBrowsingCheck* check);

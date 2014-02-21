@@ -71,15 +71,6 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                 false, SB_THREAT_TYPE_BINARY_MALWARE_URL).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&evts=binhashhit&"
-            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=0",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                false, SB_THREAT_TYPE_BINARY_MALWARE_HASH).spec());
-
-  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2" + key_param_ + "&evts=phishcsdhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."

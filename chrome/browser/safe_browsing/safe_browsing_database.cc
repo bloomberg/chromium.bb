@@ -264,6 +264,9 @@ void GetChunkRanges(const std::vector<int>& chunks,
 void UpdateChunkRanges(SafeBrowsingStore* store,
                        const std::vector<std::string>& listnames,
                        std::vector<SBListChunkRanges>* lists) {
+  if (!store)
+    return;
+
   DCHECK_GT(listnames.size(), 0U);
   DCHECK_LE(listnames.size(), 2U);
   std::vector<int> add_chunks;
@@ -291,33 +294,20 @@ void UpdateChunkRanges(SafeBrowsingStore* store,
   }
 }
 
-// Helper for deleting chunks left over from obsolete lists.
-void DeleteChunksFromStore(SafeBrowsingStore* store, int listid){
-  std::vector<int> add_chunks;
-  size_t adds_deleted = 0;
-  store->GetAddChunks(&add_chunks);
-  for (std::vector<int>::const_iterator iter = add_chunks.begin();
-       iter != add_chunks.end(); ++iter) {
-    if (GetListIdBit(*iter) == GetListIdBit(listid)) {
-      adds_deleted++;
-      store->DeleteAddChunk(*iter);
-    }
-  }
-  if (adds_deleted > 0)
-    UMA_HISTOGRAM_COUNTS("SB2.DownloadBinhashAddsDeleted", adds_deleted);
+void UpdateChunkRangesForLists(SafeBrowsingStore* store,
+                               const std::string& listname0,
+                               const std::string& listname1,
+                               std::vector<SBListChunkRanges>* lists) {
+  std::vector<std::string> listnames;
+  listnames.push_back(listname0);
+  listnames.push_back(listname1);
+  UpdateChunkRanges(store, listnames, lists);
+}
 
-  std::vector<int> sub_chunks;
-  size_t subs_deleted = 0;
-  store->GetSubChunks(&sub_chunks);
-  for (std::vector<int>::const_iterator iter = sub_chunks.begin();
-       iter != sub_chunks.end(); ++iter) {
-    if (GetListIdBit(*iter) == GetListIdBit(listid)) {
-      subs_deleted++;
-      store->DeleteSubChunk(*iter);
-    }
-  }
-  if (subs_deleted > 0)
-    UMA_HISTOGRAM_COUNTS("SB2.DownloadBinhashSubsDeleted", subs_deleted);
+void UpdateChunkRangesForList(SafeBrowsingStore* store,
+                              const std::string& listname,
+                              std::vector<SBListChunkRanges>* lists) {
+  UpdateChunkRanges(store, std::vector<std::string>(1, listname), lists);
 }
 
 // Order |SBAddFullHash| on the prefix part.  |SBAddPrefixLess()| from
@@ -450,8 +440,7 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   if (list_id == safe_browsing_util::PHISH ||
       list_id == safe_browsing_util::MALWARE) {
     return browse_store_.get();
-  } else if (list_id == safe_browsing_util::BINURL ||
-             list_id == safe_browsing_util::BINHASH) {
+  } else if (list_id == safe_browsing_util::BINURL) {
     return download_store_.get();
   } else if (list_id == safe_browsing_util::CSDWHITELIST) {
     return csd_whitelist_store_.get();
@@ -745,21 +734,6 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
                           safe_browsing_util::BINURL % 2,
                           prefixes,
                           prefix_hits);
-}
-
-bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
-    const SBPrefix& prefix) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
-
-  // Ignore this check when download store is not available.
-  if (!download_store_.get())
-    return false;
-
-  std::vector<SBPrefix> prefix_hits;
-  return MatchAddPrefixes(download_store_.get(),
-                          safe_browsing_util::BINHASH % 2,
-                          std::vector<SBPrefix>(1, prefix),
-                          &prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
@@ -1163,75 +1137,32 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     return false;
   }
 
-  std::vector<std::string> browse_listnames;
-  browse_listnames.push_back(safe_browsing_util::kMalwareList);
-  browse_listnames.push_back(safe_browsing_util::kPhishingList);
-  UpdateChunkRanges(browse_store_.get(), browse_listnames, lists);
+  UpdateChunkRangesForLists(browse_store_.get(),
+                            safe_browsing_util::kMalwareList,
+                            safe_browsing_util::kPhishingList,
+                            lists);
 
-  if (download_store_.get()) {
-    // This store used to contain kBinHashList in addition to
-    // kBinUrlList.  Strip the stale data before generating the chunk
-    // ranges to request.  UpdateChunkRanges() will traverse the chunk
-    // list, so this is very cheap if there are no kBinHashList chunks.
-    const int listid =
-        safe_browsing_util::GetListId(safe_browsing_util::kBinHashList);
-    DeleteChunksFromStore(download_store_.get(), listid);
+  // NOTE(shess): |download_store_| used to contain kBinHashList, which has been
+  // deprecated.  Code to delete the list from the store shows ~15k hits/day as
+  // of Feb 2014, so it has been removed.  Everything _should_ be resilient to
+  // extra data of that sort.
+  UpdateChunkRangesForList(download_store_.get(),
+                           safe_browsing_util::kBinUrlList, lists);
 
-    // The above marks the chunks for deletion, but they are not
-    // actually deleted until the database is rewritten.  The
-    // following code removes the kBinHashList part of the request
-    // before continuing so that UpdateChunkRanges() doesn't break.
-    std::vector<std::string> download_listnames;
-    download_listnames.push_back(safe_browsing_util::kBinUrlList);
-    download_listnames.push_back(safe_browsing_util::kBinHashList);
-    UpdateChunkRanges(download_store_.get(), download_listnames, lists);
-    DCHECK_EQ(lists->back().name,
-              std::string(safe_browsing_util::kBinHashList));
-    lists->pop_back();
+  UpdateChunkRangesForList(csd_whitelist_store_.get(),
+                           safe_browsing_util::kCsdWhiteList, lists);
 
-    // TODO(shess): This problem could also be handled in
-    // BeginUpdate() by detecting the chunks to delete and rewriting
-    // the database before it's used.  When I implemented that, it
-    // felt brittle, it might be easier to just wait for some future
-    // format change.
-  }
+  UpdateChunkRangesForList(download_whitelist_store_.get(),
+                           safe_browsing_util::kDownloadWhiteList, lists);
 
-  if (csd_whitelist_store_.get()) {
-    std::vector<std::string> csd_whitelist_listnames;
-    csd_whitelist_listnames.push_back(safe_browsing_util::kCsdWhiteList);
-    UpdateChunkRanges(csd_whitelist_store_.get(),
-                      csd_whitelist_listnames, lists);
-  }
+  UpdateChunkRangesForList(extension_blacklist_store_.get(),
+                           safe_browsing_util::kExtensionBlacklist, lists);
 
-  if (download_whitelist_store_.get()) {
-    std::vector<std::string> download_whitelist_listnames;
-    download_whitelist_listnames.push_back(
-        safe_browsing_util::kDownloadWhiteList);
-    UpdateChunkRanges(download_whitelist_store_.get(),
-                      download_whitelist_listnames, lists);
-  }
+  UpdateChunkRangesForList(side_effect_free_whitelist_store_.get(),
+                           safe_browsing_util::kSideEffectFreeWhitelist, lists);
 
-  if (extension_blacklist_store_) {
-    UpdateChunkRanges(
-        extension_blacklist_store_.get(),
-        std::vector<std::string>(1, safe_browsing_util::kExtensionBlacklist),
-        lists);
-  }
-
-  if (side_effect_free_whitelist_store_) {
-    UpdateChunkRanges(
-        side_effect_free_whitelist_store_.get(),
-        std::vector<std::string>(
-            1, safe_browsing_util::kSideEffectFreeWhitelist),
-        lists);
-  }
-
-  if (ip_blacklist_store_) {
-    UpdateChunkRanges(
-        ip_blacklist_store_.get(),
-        std::vector<std::string>(1, safe_browsing_util::kIPBlacklist),
-        lists);
-  }
+  UpdateChunkRangesForList(ip_blacklist_store_.get(),
+                           safe_browsing_util::kIPBlacklist, lists);
 
   corruption_detected_ = false;
   change_detected_ = false;

@@ -263,8 +263,7 @@ bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
   SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
       SBEntry::ADD_PREFIX : SBEntry::ADD_FULL_HASH;
 
-  if (list_name == safe_browsing_util::kBinHashList ||
-      list_name == safe_browsing_util::kDownloadWhiteList ||
+  if (list_name == safe_browsing_util::kDownloadWhiteList ||
       list_name == safe_browsing_util::kExtensionBlacklist ||
       list_name == safe_browsing_util::kIPBlacklist) {
     // These lists only contain prefixes, no HOSTKEY and COUNT.
@@ -313,14 +312,13 @@ bool SafeBrowsingProtocolParser::ParseSubChunk(const std::string& list_name,
   SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
       SBEntry::SUB_PREFIX : SBEntry::SUB_FULL_HASH;
 
-  if (list_name == safe_browsing_util::kBinHashList ||
-      list_name == safe_browsing_util::kDownloadWhiteList ||
+  if (list_name == safe_browsing_util::kDownloadWhiteList ||
       list_name == safe_browsing_util::kExtensionBlacklist ||
       list_name == safe_browsing_util::kIPBlacklist) {
     SBChunkHost chunk_host;
-    // Set host to 0 and it won't be used for kBinHashList.
+    // Set host to 0 and it won't be used.
     chunk_host.host = 0;
-    // kBinHashList only contains (add_chunk_number, prefix) pairs, no HOSTKEY
+    // lists only contain (add_chunk_number, prefix) pairs, no HOSTKEY
     // and COUNT. |add_chunk_number| is int32.
     prefix_count = remaining / (sizeof(int32) + hash_len);
     chunk_host.entry = SBEntry::Create(type, prefix_count);

@@ -438,13 +438,6 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   database_->InsertChunks(safe_browsing_util::kBinUrlList, chunks);
 
   chunk.hosts.clear();
-  InsertAddChunkHostPrefixUrl(&chunk, 4, "www.forhash.com/",
-                              "www.forhash.com/download.html");
-  chunks.clear();
-  chunks.push_back(chunk);
-  database_->InsertChunks(safe_browsing_util::kBinHashList, chunks);
-
-  chunk.hosts.clear();
   InsertAddChunkHostFullHashes(&chunk, 5, "www.forwhitelist.com/",
                                "www.forwhitelist.com/a.html");
   chunks.clear();
@@ -488,7 +481,6 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   EXPECT_TRUE(lists[2].name == safe_browsing_util::kBinUrlList);
   EXPECT_EQ(lists[2].adds, "3");
   EXPECT_TRUE(lists[2].subs.empty());
-  // kBinHashList is ignored.  (http://crbug.com/108130)
   EXPECT_TRUE(lists[3].name == safe_browsing_util::kCsdWhiteList);
   EXPECT_EQ(lists[3].adds, "5");
   EXPECT_TRUE(lists[3].subs.empty());

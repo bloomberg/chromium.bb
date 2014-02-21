@@ -169,22 +169,17 @@ namespace safe_browsing_util {
 const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";
 const char kBinUrlList[] = "goog-badbinurl-shavar";
-// We don't use the bad binary digest list anymore.  Use a fake listname to be
-// sure we don't request it accidentally.
-const char kBinHashList[] = "goog-badbin-digestvar-disabled";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 const char kExtensionBlacklist[] = "goog-badcrxids-digestvar";
 const char kSideEffectFreeWhitelist[] = "goog-sideeffectfree-shavar";
 const char kIPBlacklist[] = "goog-badip-digest256";
 
-const char* kAllLists[10] = {
+const char* kAllLists[8] = {
   kMalwareList,
   kPhishingList,
   kBinUrlList,
-  kBinHashList,
   kCsdWhiteList,
-  kDownloadWhiteList,
   kDownloadWhiteList,
   kExtensionBlacklist,
   kSideEffectFreeWhitelist,
@@ -199,8 +194,6 @@ ListType GetListId(const std::string& name) {
     id = PHISH;
   } else if (name == safe_browsing_util::kBinUrlList) {
     id = BINURL;
-  } else if (name == safe_browsing_util::kBinHashList) {
-    id = BINHASH;
   } else if (name == safe_browsing_util::kCsdWhiteList) {
     id = CSDWHITELIST;
   } else if (name == safe_browsing_util::kDownloadWhiteList) {
@@ -227,9 +220,6 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case BINURL:
       *list = safe_browsing_util::kBinUrlList;
-      break;
-    case BINHASH:
-      *list = safe_browsing_util::kBinHashList;
       break;
     case CSDWHITELIST:
       *list = safe_browsing_util::kCsdWhiteList;
@@ -509,10 +499,6 @@ bool IsMalwareList(const std::string& list_name) {
 
 bool IsBadbinurlList(const std::string& list_name) {
   return list_name.compare(kBinUrlList) == 0;
-}
-
-bool IsBadbinhashList(const std::string& list_name) {
-  return list_name.compare(kBinHashList) == 0;
 }
 
 bool IsExtensionList(const std::string& list_name) {

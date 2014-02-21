@@ -180,13 +180,13 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBigChunk) {
   EXPECT_EQ(host1.entry->prefix_count(), 5);
 }
 
-// Test to make sure we could deal with truncated bin hash chunk.
-TEST(SafeBrowsingProtocolParsingTest, TestTruncatedBinHashChunk) {
+// Test to make sure we could deal with truncated goog-*-digestvar chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestTruncatedHashChunk) {
   // This chunk delares there are 4 prefixes but actually only contains 2.
   const char add_chunk[] = "a:1:4:16\n11112222";
   SafeBrowsingProtocolParser parser;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(safe_browsing_util::kBinHashList,
+  bool result = parser.ParseChunk(safe_browsing_util::kExtensionBlacklist,
                                   add_chunk,
                                   static_cast<int>(sizeof(add_chunk)),
                                   &chunks);
@@ -641,7 +641,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBinHashChunks) {
   SafeBrowsingProtocolParser parser;
   SBChunkList chunks;
   bool result = parser.ParseChunk(
-      safe_browsing_util::kBinHashList,
+      safe_browsing_util::kExtensionBlacklist,
       add_chunk.data(),
       static_cast<int>(add_chunk.length()),
       &chunks);
@@ -677,7 +677,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBigBinHashChunk) {
   SafeBrowsingProtocolParser parser;
   SBChunkList chunks;
   bool result = parser.ParseChunk(
-      safe_browsing_util::kBinHashList,
+      safe_browsing_util::kExtensionBlacklist,
       add_chunk.data(),
       static_cast<int>(add_chunk.length()),
       &chunks);
@@ -700,7 +700,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubBinHashChunk) {
   SafeBrowsingProtocolParser parser;
   SBChunkList chunks;
   bool result = parser.ParseChunk(
-      safe_browsing_util::kBinHashList,
+      safe_browsing_util::kExtensionBlacklist,
       sub_chunk.data(),
       static_cast<int>(sub_chunk.length()),
       &chunks);
@@ -803,8 +803,6 @@ TEST(SafeBrowsingProtocolParsingTest, TestAllLists) {
   add_testdata[safe_browsing_util::kSideEffectFreeWhitelist] = std::string(
       "a:1818:4:9\n\x85\xd0\xfe""i\x01""}\x98\xb1\xe5", 20);
   // goog-*-digestvar lists have no host-key data.
-  add_testdata[safe_browsing_util::kBinHashList] = std::string(
-      "a:5:4:4\nBBBB", 12);
   add_testdata[safe_browsing_util::kExtensionBlacklist] = std::string(
       "a:81:4:8\nhleedfcc", 17);
   // goog-*-sha256 lists have host-keys but they only contains
@@ -833,8 +831,6 @@ TEST(SafeBrowsingProtocolParsingTest, TestAllLists) {
   sub_testdata[safe_browsing_util::kSideEffectFreeWhitelist] = std::string(
       "s:4:4:9\nHOST\x00""####", 17);
   // goog-*-digestvar lists have no host-key data.
-  sub_testdata[safe_browsing_util::kBinHashList] = std::string(
-      "s:5:4:8\n####BBBB", 16);
   sub_testdata[safe_browsing_util::kExtensionBlacklist] = std::string(
       "s:3:4:8\n\x00\x00\x00""%pgkc", 16);
   // goog-*-sha256 lists have host-keys but they only contains
