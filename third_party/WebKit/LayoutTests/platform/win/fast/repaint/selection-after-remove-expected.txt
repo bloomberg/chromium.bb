@@ -2,14 +2,14 @@ This tests to see if selection gaps are invalidated properly when content inside
 
 hello world
 (repaint rects
-  (rect 39 79 142 99)
-  (rect 67 158 39 20)
   (rect 39 79 32 19)
+  (rect 67 158 39 20)
+  (rect 39 79 142 99)
   (rect 38 78 152 102)
   (rect 38 100 152 80)
   (rect 38 99 152 1)
   (rect 38 79 152 99)
-  (rect 71 79 35 19)
   (rect 39 79 32 19)
+  (rect 71 79 35 19)
 )
 

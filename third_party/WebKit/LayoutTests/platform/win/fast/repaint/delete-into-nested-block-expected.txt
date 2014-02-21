@@ -3,8 +3,8 @@ Deleting into a nested block (was Radar 4056100)
 The bug's symptom was that the visual result were two instances of the word "three", because the original was not erased. Resize cleared it up.
 three
 (repaint rects
-  (rect 8 147 23 20)
   (rect 8 127 22 20)
+  (rect 8 147 23 20)
   (rect 3 122 794 30)
   (rect 3 142 794 30)
   (rect 3 142 794 30)
