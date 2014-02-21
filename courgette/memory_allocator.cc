@@ -11,54 +11,25 @@
 
 #if defined(OS_WIN)
 
-namespace courgette {
+namespace {
 
-// TempFile
-
-TempFile::TempFile() : file_(base::kInvalidPlatformFileValue) {
-}
-
-TempFile::~TempFile() {
-  Close();
-}
-
-void TempFile::Close() {
-  if (valid()) {
-    base::ClosePlatformFile(file_);
-    file_ = base::kInvalidPlatformFileValue;
-  }
-}
-
-bool TempFile::Create() {
-  DCHECK(file_ == base::kInvalidPlatformFileValue);
+// The file is created in the %TEMP% folder.
+// NOTE: Since the file will be used as backing for a memory allocation,
+// it will never be so big that size_t cannot represent its size.
+base::File CreateTempFile() {
   base::FilePath path;
   if (!base::CreateTemporaryFile(&path))
-    return false;
+    return base::File();
 
-  bool created = false;
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  int flags = base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_DELETE_ON_CLOSE |
-              base::PLATFORM_FILE_TEMPORARY;
-  file_ = base::CreatePlatformFile(path, flags, &created, &error_code);
-  if (file_ == base::kInvalidPlatformFileValue)
-    return false;
-
-  return true;
+  int flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
+              base::File::FLAG_WRITE | base::File::FLAG_DELETE_ON_CLOSE |
+              base::File::FLAG_TEMPORARY;
+  return base::File(path, flags);
 }
 
-bool TempFile::valid() const {
-  return file_ != base::kInvalidPlatformFileValue;
-}
+}  // namespace
 
-base::PlatformFile TempFile::handle() const {
-  return file_;
-}
-
-bool TempFile::SetSize(size_t size) {
-  return base::TruncatePlatformFile(file_, size);
-}
+namespace courgette {
 
 // FileMapping
 
@@ -116,13 +87,16 @@ TempMapping::~TempMapping() {
 }
 
 bool TempMapping::Initialize(size_t size) {
+  file_ = CreateTempFile();
+  if (!file_.IsValid())
+    return false;
+
   // TODO(tommi): The assumption here is that the alignment of pointers (this)
   // is as strict or stricter than the alignment of the element type.  This is
   // not always true, e.g. __m128 has 16-byte alignment.
   size += sizeof(this);
-  if (!file_.Create() ||
-      !file_.SetSize(size) ||
-      !mapping_.Create(file_.handle(), size)) {
+  if (!file_.SetLength(size) ||
+      !mapping_.Create(file_.GetPlatformFile(), size)) {
     file_.Close();
     return false;
   }

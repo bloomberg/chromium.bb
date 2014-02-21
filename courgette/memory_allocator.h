@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 
 #ifndef NDEBUG
 
@@ -56,30 +56,6 @@ typedef bool CheckBool;
 namespace courgette {
 
 #if defined(OS_WIN)
-
-// Manages a temporary file.  The file is created in the %TEMP% folder and
-// is deleted when the file handle is closed.
-// NOTE: Since the file will be used as backing for a memory allocation,
-// it will never be so big that size_t cannot represent its size.
-class TempFile {
- public:
-  TempFile();
-  ~TempFile();
-
-  bool Create();
-  void Close();
-  bool SetSize(size_t size);
-
-  // Returns true iff the temp file is currently open.
-  bool valid() const;
-
-  // Returns the handle of the temporary file or INVALID_HANDLE_VALUE if
-  // a temp file has not been created.
-  base::PlatformFile handle() const;
-
- protected:
-  base::PlatformFile file_;
-};
 
 // Manages a read/write virtual mapping of a physical file.
 class FileMapping {
@@ -130,7 +106,7 @@ class TempMapping {
   static TempMapping* GetMappingFromPtr(void* mem);
 
  protected:
-  TempFile file_;
+  base::File file_;
   FileMapping mapping_;
 };
 
