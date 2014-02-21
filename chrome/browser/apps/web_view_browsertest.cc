@@ -637,8 +637,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
 #if !defined(OS_CHROMEOS)
 // This test ensures <webview> doesn't crash in SW rendering when autosize is
 // turned on.
-// Flaky on Windows http://crbug.com/299507
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(USE_AURA)
 #define MAYBE_AutoSizeSW DISABLED_AutoSizeSW
 #else
 #define MAYBE_AutoSizeSW AutoSizeSW
@@ -1886,9 +1885,12 @@ IN_PROC_BROWSER_TEST_P(WebViewCaptureTest,
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
 
+// Threaded compositing is always enabled on Aura.
+#if !defined(USE_AURA)
 INSTANTIATE_TEST_CASE_P(WithoutThreadedCompositor,
     WebViewCaptureTest,
     ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
+#endif
 
 // http://crbug.com/171744
 #if !defined(OS_MACOSX)

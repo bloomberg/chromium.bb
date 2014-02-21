@@ -283,8 +283,11 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter()->last_ack_state());
 }
 
+// Threaded compositing is always enabled on Aura.
+#if !defined(USE_AURA)
 INSTANTIATE_TEST_CASE_P(WithoutInputHandlerProxy, TouchInputBrowserTest,
     ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
+#endif
 
 #if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(WithInputHandlerProxy, TouchInputBrowserTest,
