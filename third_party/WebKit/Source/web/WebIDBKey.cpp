@@ -187,7 +187,7 @@ void WebIDBKey::assignInvalid()
 
 void WebIDBKey::assignNull()
 {
-    m_private.reset();
+    m_private = nullptr;
 }
 
 void WebIDBKey::reset()
