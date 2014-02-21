@@ -266,8 +266,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_EQ(1, uma_log.system_profile().stability().crash_count());
 }
 
-// Crashes on at least Mac and Linux.  http://crbug.com/320433
-TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
+TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   MetricsService service;
 
   // Add two synthetic trials and confirm that they show up in the list.
