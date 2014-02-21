@@ -1,7 +1,10 @@
 function runRepaintTest()
 {
     if (window.testRunner && window.internals) {
-        window.testRunner.dumpAsText();
+        if (window.enablePixelTesting)
+            window.testRunner.dumpAsTextWithPixelResults();
+        else
+            window.testRunner.dumpAsText();
 
         if (document.body)
             document.body.offsetTop;
@@ -21,7 +24,10 @@ function runRepaintTest()
 
         var pre = document.createElement('pre');
         document.body.appendChild(pre);
-        pre.innerHTML = repaintRects;
+        pre.textContent += repaintRects;
+
+        if (window.afterTest)
+            window.afterTest();
     } else {
         setTimeout(repaintTest, 100);
     }

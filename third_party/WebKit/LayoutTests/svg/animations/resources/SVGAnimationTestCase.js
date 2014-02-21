@@ -1,5 +1,4 @@
 // Inspired by Layoutests/animations/animation-test-helpers.js
-// Modified to work with SVG and together with LayoutTests/svg/dynamic-updates/resources/SVGTestCase.js
 
 function isCloseEnough(actual, desired, tolerance) {
     var diff = Math.abs(actual - desired);
