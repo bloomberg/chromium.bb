@@ -9756,15 +9756,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   int source_width, source_height, dest_width, dest_height;
 
-  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    gfx::GLImage* image =
-        source_texture->GetLevelImage(source_texture->target(), 0);
-    if (!image) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glCopyTextureChromium", "No external image");
-      return;
-    }
+  gfx::GLImage* image =
+      source_texture->GetLevelImage(source_texture->target(), 0);
+  if (image) {
     gfx::Size size = image->GetSize();
     source_width = size.width();
     source_height = size.height();
