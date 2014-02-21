@@ -607,7 +607,8 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
     if (!RuntimeEnabledFeatures::subpixelFontScalingEnabled())
         m_totalWidth = roundf(m_totalWidth);
 
-    if (glyphBuffer && !fillGlyphBuffer(glyphBuffer))
+    if (m_harfBuzzRuns.last()->hasGlyphToCharacterIndexes()
+        && glyphBuffer && !fillGlyphBuffer(glyphBuffer))
         return false;
 
     return true;
