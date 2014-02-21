@@ -151,7 +151,6 @@ extern const char kEnableOverlayFullscreenVideoSubtitle[];
 CONTENT_EXPORT extern const char kEnableOverlayScrollbar[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];
-CONTENT_EXPORT extern const char kEnablePixelOutputInTests[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnablePruneGpuCommandBuffers[];

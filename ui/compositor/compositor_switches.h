@@ -10,6 +10,7 @@
 namespace switches {
 
 COMPOSITOR_EXPORT extern const char kDisableTestCompositor[];
+COMPOSITOR_EXPORT extern const char kEnablePixelOutputInTests[];
 COMPOSITOR_EXPORT extern const char kUIDisableThreadedCompositing[];
 COMPOSITOR_EXPORT extern const char kUIShowPaintRects[];
 

@@ -502,9 +502,6 @@ const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
-// Show pixel output for tests.
-const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
-
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
