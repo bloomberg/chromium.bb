@@ -11,15 +11,13 @@
       function onDurationChange()
       {
         consoleWrite("onDurationChange : video.duration is " + video.duration.toFixed(3));
+        if (video.readyState <= video.HAVE_NOTHING) {
+          consoleWrite("FAIL: 'durationchange' event fired when HTMLMediaElement.readyState is <= HAVE_NOTHING");
+          return;
+        }
 
         // Confirm that value of media-source duration matches value of
         // parent HTML Media Element's duration.
-        // Do this only if the video tag ready state is greater
-        // than HAVE_NOTHING.
-        // Without metadata, parent media element won't have a duration value defined.
-        if (video.readyState <= video.HAVE_NOTHING)
-          return;
-
         // Don't use "testExpected()" so we won't log the actual duration as the floating point result may differ with different engines.
         reportExpected(mediaSource.duration == video.duration, "mediaSource.duration", "==", "video.duration", mediaSource.duration);
       }
@@ -32,6 +30,7 @@
           mediaSource.duration = testDurationValue;
           if (expectedError) {
             consoleWrite("FAIL: Media Source set duration. Expected an exception");
+            return;
           }
         } catch (e) {
           if (!expectedError || !(e.code == expectedError)) {
