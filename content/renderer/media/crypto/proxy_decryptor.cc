@@ -30,7 +30,7 @@ const uint32 kInvalidSessionId = 0;
 // Special system code to signal a closed persistent session in a SessionError()
 // call. This is needed because there is no SessionClosed() call in the prefixed
 // EME API.
-const int kSessionClosedSystemCode = 7 * 1024 * 1024 + 7;
+const int kSessionClosedSystemCode = 29127;
 
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
