@@ -67,10 +67,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
 
   // This is used internally by |WriteMessage()| and by |Channel| to enqueue
   // messages (typically to a |LocalMessagePipeEndpoint|). Unlike
-  // |WriteMessage()|, |port| is the *destination* port. Takes ownership of
-  // |message|. |dispatchers| should be non-null only if it's nonempty.
+  // |WriteMessage()|, |port| is the *destination* port. |dispatchers| should be
+  // non-null only if it's nonempty.
   MojoResult EnqueueMessage(unsigned port,
-                            MessageInTransit* message,
+                            scoped_ptr<MessageInTransit> message,
                             std::vector<DispatcherTransport>* transports);
 
   // These are used by |Channel|.
@@ -85,7 +85,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
 
   // Used by |EnqueueMessage()| to handle control messages that are actually
   // meant for us.
-  MojoResult HandleControlMessage(unsigned port, MessageInTransit* message);
+  MojoResult HandleControlMessage(unsigned port,
+                                  scoped_ptr<MessageInTransit> message);
 
   base::Lock lock_;  // Protects the following members.
   scoped_ptr<MessagePipeEndpoint> endpoints_[2];

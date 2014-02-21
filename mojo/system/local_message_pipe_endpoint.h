@@ -28,7 +28,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   virtual void Close() OVERRIDE;
   virtual void OnPeerClose() OVERRIDE;
   virtual MojoResult EnqueueMessage(
-      MessageInTransit* message,
+      scoped_ptr<MessageInTransit> message,
       std::vector<DispatcherTransport>* transports) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
@@ -55,12 +55,11 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
     MessageQueueEntry(const MessageQueueEntry& other);
     ~MessageQueueEntry();
 
-    // Initialize, taking ownership of |message| and creating equivalent
-    // "duplicate" dispatchers. |transports| should be non-null only if
-    // nonempty.
+    // Initialize, creating equivalent "duplicate" dispatchers. |transports|
+    // should be non-null only if nonempty.
     // TODO(vtl): This would simply be a constructor, but we don't have C++11's
     // emplace operations yet, and I don't want to copy |dispatchers_|.
-    void Init(MessageInTransit* message,
+    void Init(scoped_ptr<MessageInTransit> message,
               std::vector<DispatcherTransport>* transports);
 
     MessageInTransit* message() {

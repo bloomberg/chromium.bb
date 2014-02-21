@@ -38,14 +38,7 @@ void ProxyMessagePipeEndpoint::Close() {
   channel_ = NULL;
   local_id_ = MessageInTransit::kInvalidEndpointId;
   remote_id_ = MessageInTransit::kInvalidEndpointId;
-
-  for (std::deque<MessageInTransit*>::iterator it =
-           paused_message_queue_.begin();
-       it != paused_message_queue_.end();
-       ++it) {
-    delete *it;
-  }
-  paused_message_queue_.clear();
+  STLDeleteElements(&paused_message_queue_);
 }
 
 void ProxyMessagePipeEndpoint::OnPeerClose() {
@@ -53,21 +46,22 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_peer_open_);
 
   is_peer_open_ = false;
-  MessageInTransit* message = new MessageInTransit(
-      MessageInTransit::OWNED_BUFFER, MessageInTransit::kTypeMessagePipe,
-      MessageInTransit::kSubtypeMessagePipePeerClosed, 0, 0, NULL);
-  EnqueueMessageInternal(message);
+  EnqueueMessageInternal(make_scoped_ptr(
+      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
+                           MessageInTransit::kTypeMessagePipe,
+                           MessageInTransit::kSubtypeMessagePipePeerClosed,
+                           0, 0, NULL)));
 }
 
 MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
-    MessageInTransit* message,
+    scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(!transports || !transports->empty());
 
   if (transports)
-    AttachAndCloseDispatchers(message, transports);
+    AttachAndCloseDispatchers(message.get(), transports);
 
-  EnqueueMessageInternal(message);
+  EnqueueMessageInternal(message.Pass());
   return MOJO_RESULT_OK;
 }
 
@@ -99,7 +93,7 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   for (std::deque<MessageInTransit*>::iterator it =
            paused_message_queue_.begin(); it != paused_message_queue_.end();
        ++it)
-    EnqueueMessageInternal(*it);
+    EnqueueMessageInternal(make_scoped_ptr(*it));
   paused_message_queue_.clear();
 }
 
@@ -120,7 +114,7 @@ void ProxyMessagePipeEndpoint::AttachAndCloseDispatchers(
 // -- it may have been written to and closed immediately, before we were ready.
 // This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessageInternal(
-    MessageInTransit* message) {
+    scoped_ptr<MessageInTransit> message) {
   DCHECK(is_open_);
 
   if (is_running()) {
@@ -129,11 +123,10 @@ void ProxyMessagePipeEndpoint::EnqueueMessageInternal(
     // If it fails at this point, the message gets dropped. (This is no
     // different from any other in-transit errors.)
     // Note: |WriteMessage()| will destroy the message even on failure.
-    // TODO(vtl): Convert |message| (and so on "upstream") to a |scoped_ptr|.
-    if (!channel_->WriteMessage(make_scoped_ptr(message)))
+    if (!channel_->WriteMessage(message.Pass()))
       LOG(WARNING) << "Failed to write message to channel";
   } else {
-    paused_message_queue_.push_back(message);
+    paused_message_queue_.push_back(message.release());
   }
 }
 

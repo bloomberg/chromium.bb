@@ -41,14 +41,14 @@ LocalMessagePipeEndpoint::MessageQueueEntry::~MessageQueueEntry() {
 }
 
 void LocalMessagePipeEndpoint::MessageQueueEntry::Init(
-    MessageInTransit* message,
+    scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
-  DCHECK(message);
+  DCHECK(message.get());
   DCHECK(!transports || !transports->empty());
   DCHECK(!message_);
   DCHECK(dispatchers_.empty());
 
-  message_ = message;
+  message_ = message.release();
   if (transports) {
     dispatchers_.reserve(transports->size());
     for (size_t i = 0; i < transports->size(); i++) {
@@ -104,7 +104,7 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
 }
 
 MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
-    MessageInTransit* message,
+    scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
@@ -114,7 +114,7 @@ MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
   // TODO(vtl): Use |emplace_back()| (and a suitable constructor, instead of
   // |Init()|) when that becomes available.
   message_queue_.push_back(MessageQueueEntry());
-  message_queue_.back().Init(message, transports);
+  message_queue_.back().Init(message.Pass(), transports);
   if (was_empty) {
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());

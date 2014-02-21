@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/public/system/core.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
@@ -40,7 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // Implements |MessagePipe::EnqueueMessage()| (see its description for
   // details).
   virtual MojoResult EnqueueMessage(
-      MessageInTransit* message,
+      scoped_ptr<MessageInTransit> message,
       std::vector<DispatcherTransport>* transports) = 0;
 
   // Implementations must override these if they represent a local endpoint,

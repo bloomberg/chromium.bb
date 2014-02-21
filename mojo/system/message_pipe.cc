@@ -67,10 +67,11 @@ MojoResult MessagePipe::WriteMessage(
       transports ? static_cast<uint32_t>(transports->size()) : 0;
   return EnqueueMessage(
       GetPeerPort(port),
-      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
-                           MessageInTransit::kTypeMessagePipeEndpoint,
-                           MessageInTransit::kSubtypeMessagePipeEndpointData,
-                           num_bytes, num_handles, bytes),
+      make_scoped_ptr(new MessageInTransit(
+          MessageInTransit::OWNED_BUFFER,
+          MessageInTransit::kTypeMessagePipeEndpoint,
+          MessageInTransit::kSubtypeMessagePipeEndpointData,
+          num_bytes, num_handles, bytes)),
       transports);
 }
 
@@ -113,17 +114,17 @@ void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
 
 MojoResult MessagePipe::EnqueueMessage(
     unsigned port,
-    MessageInTransit* message,
+    scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(message);
+  DCHECK(message.get());
   DCHECK((!transports && message->num_handles() == 0) ||
          (transports && transports->size() > 0 &&
               message->num_handles() == transports->size()));
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
     DCHECK(!transports);
-    return HandleControlMessage(port, message);
+    return HandleControlMessage(port, message.Pass());
   }
 
   DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
@@ -132,10 +133,8 @@ MojoResult MessagePipe::EnqueueMessage(
   DCHECK(endpoints_[GetPeerPort(port)].get());
 
   // The destination port need not be open, unlike the source port.
-  if (!endpoints_[port].get()) {
-    delete message;
+  if (!endpoints_[port].get())
     return MOJO_RESULT_FAILED_PRECONDITION;
-  }
 
   if (transports) {
     // You're not allowed to send either handle to a message pipe over the
@@ -160,7 +159,7 @@ MojoResult MessagePipe::EnqueueMessage(
     }
   }
 
-  return endpoints_[port]->EnqueueMessage(message, transports);
+  return endpoints_[port]->EnqueueMessage(message.Pass(), transports);
 }
 
 void MessagePipe::Attach(unsigned port,
@@ -193,13 +192,13 @@ MessagePipe::~MessagePipe() {
   DCHECK(!endpoints_[1].get());
 }
 
-MojoResult MessagePipe::HandleControlMessage(unsigned port,
-                                             MessageInTransit* message) {
+MojoResult MessagePipe::HandleControlMessage(
+    unsigned port,
+    scoped_ptr<MessageInTransit> message) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(message);
+  DCHECK(message.get());
   DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipe);
 
-  MojoResult rv = MOJO_RESULT_OK;
   switch (message->subtype()) {
     case MessageInTransit::kSubtypeMessagePipePeerClosed: {
       unsigned source_port = GetPeerPort(port);
@@ -212,17 +211,13 @@ MojoResult MessagePipe::HandleControlMessage(unsigned port,
         endpoints_[port]->OnPeerClose();
 
       endpoints_[source_port].reset();
-      break;
+      return MOJO_RESULT_OK;
     }
-    default:
-      LOG(WARNING) << "Unrecognized MessagePipe control message subtype "
-                   << message->subtype();
-      rv = MOJO_RESULT_UNKNOWN;
-      break;
   }
 
-  delete message;
-  return rv;
+  LOG(WARNING) << "Unrecognized MessagePipe control message subtype "
+               << message->subtype();
+  return MOJO_RESULT_UNKNOWN;
 }
 
 }  // namespace system
