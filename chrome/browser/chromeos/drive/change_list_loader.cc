@@ -39,6 +39,9 @@ class ChangeListLoader::FeedFetcher {
 
 namespace {
 
+// Minimum changestamp gap required to start loading directory.
+const int kMinimumChangestampGap = 50;
+
 // Fetches all the (currently available) resource entries from the server.
 class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
@@ -675,7 +678,7 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 
   int64 remote_changestamp = about_resource->largest_change_id();
   int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
-  if (directory_fetch_info.empty()) {
+  if (directory_fetch_info.empty() || is_initial_load) {
     if (local_changestamp >= remote_changestamp) {
       if (local_changestamp > remote_changestamp) {
         LOG(WARNING) << "Local resource metadata is fresher than server, "
@@ -685,15 +688,15 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 
       // No changes detected, tell the client that the loading was successful.
       OnChangeListLoadComplete(FILE_ERROR_OK);
-      return;
+    } else {
+      // Start loading the change list.
+      LoadChangeListFromServer(start_changestamp);
     }
+  }
 
-    // If the caller is not interested in a particular directory, just start
-    // loading the change list.
-    LoadChangeListFromServer(start_changestamp);
-  } else {
+  if (!directory_fetch_info.empty()) {
     // If the caller is interested in a particular directory, start loading the
-    // directory first.
+    // directory.
     int64 directory_changestamp = std::max(directory_fetch_info.changestamp(),
                                            local_changestamp);
 
@@ -706,41 +709,19 @@ void ChangeListLoader::LoadAfterGetAboutResource(
                  directory_fetch_info.ToString().c_str(),
                  base::Int64ToString(remote_changestamp).c_str());
 
-    // If the directory's changestamp is up-to-date, just schedule to run the
+    // If the directory's changestamp is new enough, just schedule to run the
     // callback, as there is no need to fetch the directory.
-    if (directory_changestamp >= remote_changestamp) {
-      LoadAfterLoadDirectory(directory_fetch_info, is_initial_load,
-                             start_changestamp, FILE_ERROR_OK);
-      return;
+    if (directory_changestamp + kMinimumChangestampGap > remote_changestamp) {
+      OnDirectoryLoadComplete(directory_fetch_info, FILE_ERROR_OK);
+    } else {
+      // Start fetching the directory content, and mark it with the changestamp
+      // |remote_changestamp|.
+      DirectoryFetchInfo new_directory_fetch_info(
+          directory_fetch_info.local_id(), directory_fetch_info.resource_id(),
+          remote_changestamp);
+      LoadDirectoryFromServer(new_directory_fetch_info);
     }
-
-    // Start fetching the directory content, and mark it with the changestamp
-    // |remote_changestamp|.
-    DirectoryFetchInfo new_directory_fetch_info(
-        directory_fetch_info.local_id(), directory_fetch_info.resource_id(),
-        remote_changestamp);
-    LoadDirectoryFromServer(
-        new_directory_fetch_info,
-        base::Bind(&ChangeListLoader::LoadAfterLoadDirectory,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   directory_fetch_info,
-                   is_initial_load,
-                   start_changestamp));
   }
-}
-
-void ChangeListLoader::LoadAfterLoadDirectory(
-    const DirectoryFetchInfo& directory_fetch_info,
-    bool is_initial_load,
-    int64 start_changestamp,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  OnDirectoryLoadComplete(directory_fetch_info, error);
-
-  // Continue to load change list if this is the first load.
-  if (is_initial_load)
-    LoadChangeListFromServer(start_changestamp);
 }
 
 void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
@@ -892,10 +873,8 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
 }
 
 void ChangeListLoader::LoadDirectoryFromServer(
-    const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback) {
+    const DirectoryFetchInfo& directory_fetch_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
   DCHECK(about_resource_loader_->cached_about_resource());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
@@ -914,7 +893,6 @@ void ChangeListLoader::LoadDirectoryFromServer(
         base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    directory_fetch_info,
-                   callback,
                    base::Owned(changed_directory_path)));
     return;
   }
@@ -929,18 +907,15 @@ void ChangeListLoader::LoadDirectoryFromServer(
       base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback,
                  fetcher));
 }
 
 void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback,
     FeedFetcher* fetcher,
     FileError error,
     ScopedVector<ChangeList> change_lists) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
 
   // Delete the fetcher.
@@ -951,7 +926,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
     LOG(ERROR) << "Failed to load directory: "
                << directory_fetch_info.local_id()
                << ": " << FileErrorToString(error);
-    callback.Run(error);
+    OnDirectoryLoadComplete(directory_fetch_info, error);
     return;
   }
 
@@ -969,20 +944,18 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
       base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback,
                  base::Owned(directory_path))));
 }
 
 void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
     const DirectoryFetchInfo& directory_fetch_info,
-    const FileOperationCallback& callback,
     const base::FilePath* directory_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
 
   DVLOG(1) << "Directory loaded: " << directory_fetch_info.ToString();
-  callback.Run(error);
+  OnDirectoryLoadComplete(directory_fetch_info, error);
+
   // Also notify the observers.
   if (error == FILE_ERROR_OK && !directory_path->empty()) {
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,

@@ -199,10 +199,6 @@ class ChangeListLoader {
       int64 local_changestamp,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
-  void LoadAfterLoadDirectory(const DirectoryFetchInfo& directory_fetch_info,
-                              bool is_initial_load,
-                              int64 start_changestamp,
-                              FileError error);
 
   // Part of Load().
   // This function should be called when the change list load is complete.
@@ -241,13 +237,11 @@ class ChangeListLoader {
   // ================= Implementation for directory loading =================
   // Loads the directory contents from server, and updates the local metadata.
   // Runs |callback| when it is finished.
-  void LoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
-                               const FileOperationCallback& callback);
+  void LoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info);
 
   // Part of LoadDirectoryFromServer() for a normal directory.
   void LoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
       FeedFetcher* fetcher,
       FileError error,
       ScopedVector<ChangeList> change_lists);
@@ -255,7 +249,6 @@ class ChangeListLoader {
   // Part of LoadDirectoryFromServer().
   void LoadDirectoryFromServerAfterRefresh(
       const DirectoryFetchInfo& directory_fetch_info,
-      const FileOperationCallback& callback,
       const base::FilePath* directory_path,
       FileError error);
 
