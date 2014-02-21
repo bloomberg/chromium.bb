@@ -118,9 +118,9 @@ shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
 
 // Pass invalid algorithmIdentifiers to digest()
 data = new Uint8Array([0]);
-shouldThrow("crypto.subtle.digest({name: 'sha'}, data)");
+shouldRejectPromiseWithNull("crypto.subtle.digest({name: 'sha'}, data)");
 shouldThrow("crypto.subtle.digest(null, data)");
-shouldThrow("crypto.subtle.digest({}, data)");
+shouldRejectPromiseWithNull("crypto.subtle.digest({}, data)");
 
 completeTestWhenAllTasksDone();
 

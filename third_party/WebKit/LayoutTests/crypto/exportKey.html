@@ -17,9 +17,9 @@ addTask(importTestKeys().then(function(result) {
     keys = result;
 
     // Invalid export formats.
-    shouldThrow("crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt)");
-    shouldThrow("crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt)");
-    shouldThrow("crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt)");
+    shouldRejectPromiseWithNull("crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt)");
+    shouldRejectPromiseWithNull("crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt)");
+    shouldRejectPromiseWithNull("crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt)");
 
     // Invalid keys
     shouldThrow("crypto.subtle.exportKey('raw', null)");

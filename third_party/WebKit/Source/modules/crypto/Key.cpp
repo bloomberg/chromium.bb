@@ -34,7 +34,9 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Algorithm.h"
+#include "platform/CryptoResult.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore {
 
@@ -177,15 +179,15 @@ Vector<String> Key::usages() const
     return result;
 }
 
-bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, String& errorDetails) const
+bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, CryptoResult* result) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
-        errorDetails = "key.usages does not permit this operation";
+        result->completeWithError("key.usages does not permit this operation");
         return false;
     }
 
     if (m_key.algorithm().id() != algorithm.id()) {
-        errorDetails = "key.algorithm does not match that of operation";
+        result->completeWithError("key.algorithm does not match that of operation");
         return false;
     }
 
@@ -198,7 +200,7 @@ bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, Algo
         blink::WebCryptoAlgorithmId keyHash;
         blink::WebCryptoAlgorithmId algorithmHash;
         if (!getHmacHashId(m_key.algorithm(), keyHash) || !getHmacHashId(algorithm, algorithmHash) || keyHash != algorithmHash) {
-            errorDetails = "key.algorithm does not match that of operation (HMAC's hash differs)";
+            result->completeWithError("key.algorithm does not match that of operation (HMAC's hash differs)");
             return false;
         }
     }
@@ -206,7 +208,7 @@ bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, Algo
     return true;
 }
 
-bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& format, ExceptionState& exceptionState)
+bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& format, CryptoResult* result)
 {
     // There are few enough values that testing serially is fast enough.
     if (formatString == "raw") {
@@ -226,17 +228,17 @@ bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& for
         return true;
     }
 
-    exceptionState.throwTypeError("Invalid keyFormat argument");
+    result->completeWithError("Invalid keyFormat argument");
     return false;
 }
 
-bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageMask& mask, ExceptionState& exceptionState)
+bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageMask& mask, CryptoResult* result)
 {
     mask = 0;
     for (size_t i = 0; i < usages.size(); ++i) {
         blink::WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
         if (!usage) {
-            exceptionState.throwTypeError("Invalid keyUsages argument");
+            result->completeWithError("Invalid keyUsages argument");
             return false;
         }
         mask |= usage;

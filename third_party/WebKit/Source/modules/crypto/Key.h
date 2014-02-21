@@ -43,7 +43,7 @@
 namespace WebCore {
 
 class Algorithm;
-class ExceptionState;
+class CryptoResult;
 
 class Key : public RefCountedWillBeGarbageCollectedFinalized<Key>,  public ScriptWrappable {
     DECLARE_GC_INFO;
@@ -63,11 +63,12 @@ public:
     const blink::WebCryptoKey& key() const { return m_key; }
 
     // If the key cannot be used with the indicated algorithm, returns false
-    // and fills the provided String with error details.
-    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, AlgorithmOperation, String&) const;
+    // and completes the CryptoResult with an error.
+    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, AlgorithmOperation, CryptoResult*) const;
 
-    static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, ExceptionState&);
-    static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, ExceptionState&);
+    // On failure, these return false and complete the CryptoResult with an error.
+    static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, CryptoResult*);
+    static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, CryptoResult*);
 
     void trace(Visitor*);
 

@@ -1,15 +1,18 @@
+CONSOLE ERROR: Invalid keyFormat argument
+CONSOLE ERROR: Invalid keyFormat argument
+CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: key is not extractable
 Tests cypto.subtle.exportKey.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
-PASS crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
-PASS crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
 PASS crypto.subtle.exportKey('raw', null) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid key argument.
 PASS crypto.subtle.exportKey('raw', 3) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid key argument.
 PASS keys.aesCbcJustDecrypt.extractable is false
+PASS: 'crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt)' rejected with null
+PASS: 'crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt)' rejected with null
+PASS: 'crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt)' rejected with null
 PASS: 'crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)' rejected with null
 PASS successfullyParsed is true
 

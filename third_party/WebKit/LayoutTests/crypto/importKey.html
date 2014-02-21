@@ -91,14 +91,14 @@ Promise.resolve(null).then(function() {
     keyUsages = [];
 
     // Invalid format.
-    shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)");
 
     // Invalid key usage.
-    shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
+    shouldRejectPromiseWithNull("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])");
 
     // If both the format and key usage are bogus, should complain about the
     // format first.
-    shouldThrow("crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN'])");
+    shouldRejectPromiseWithNull("crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN'])");
 
     // Undefined key usage.
     // FIXME: http://crbug.com/262383
@@ -112,7 +112,7 @@ Promise.resolve(null).then(function() {
     shouldRejectPromiseWithNull("crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages)");
 
     // SHA-1 doesn't support the importKey operation.
-    shouldThrow("crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages)");
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

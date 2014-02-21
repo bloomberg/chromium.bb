@@ -39,8 +39,8 @@ namespace blink { class WebCryptoAlgorithm; }
 
 namespace WebCore {
 
+class CryptoResult;
 class Dictionary;
-class ExceptionState;
 
 enum AlgorithmOperation {
     Encrypt,
@@ -64,13 +64,11 @@ enum AlgorithmOperation {
 //
 // On success returns true and sets the WebCryptoAlgorithm.
 //
-// On failure parseAlgorithm returns false. errorDetails will be filled
-// with a (non-localized) debug string. Additionally the ExceptionState *may*
-// be set (the web crypto spec only defines a handeful of errors as resulting
-// in exceptions).
+// On failure parseAlgorithm returns false and completes the CryptoResult
+// with a (non-localized) debug string.
 //
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool parseAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, String& errorDetails, ExceptionState&) WARN_UNUSED_RETURN;
+bool parseAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, CryptoResult*) WARN_UNUSED_RETURN;
 
 // Returns a null-terminated C-string literal. Caller can assume the pointer
 // will be valid for the program's entire runtime.

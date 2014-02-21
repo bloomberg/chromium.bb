@@ -1,5 +1,9 @@
 CONSOLE ERROR: The key's algorithm must be specified when importing raw-formatted key.
+CONSOLE ERROR: Invalid keyFormat argument
+CONSOLE ERROR: Invalid keyUsages argument
+CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary
+CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 Tests cypto.subtle.importKey.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -19,13 +23,13 @@ PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
 rejected with null
 rejected with null
-PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyFormat argument.
-PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyUsages argument.
-PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyFormat argument.
 PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
 PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
-PASS crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages) threw exception NotSupportedError: Failed to execute 'importKey' on 'SubtleCrypto': Algorithm: SHA-1: Unsupported operation.
+PASS: 'crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)' rejected with null
+PASS: 'crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])' rejected with null
+PASS: 'crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN'])' rejected with null
 PASS: 'crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages)' rejected with null
+PASS: 'crypto.subtle.importKey(keyFormat, data, {name: 'sha-1'}, extractable, keyUsages)' rejected with null
 PASS successfullyParsed is true
 
 TEST COMPLETE

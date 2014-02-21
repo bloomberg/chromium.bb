@@ -1,3 +1,5 @@
+CONSOLE ERROR: Algorithm: Unrecognized algorithm name
+CONSOLE ERROR: Algorithm: name: Missing or not a string
 Tests cypto.subtle.digest.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -6,9 +8,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS crypto.subtle.digest({name: 'sha-1'}) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': 2 arguments required, but only 1 present..
 PASS crypto.subtle.digest({name: 'sha-1'}, null) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Invalid dataBuffer argument.
 PASS crypto.subtle.digest({name: 'sha-1'}, 10) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Invalid dataBuffer argument.
-PASS crypto.subtle.digest({name: 'sha'}, data) threw exception NotSupportedError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: Unrecognized algorithm name.
 PASS crypto.subtle.digest(null, data) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: Not an object.
-PASS crypto.subtle.digest({}, data) threw exception NotSupportedError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: name: Missing or not a string.
+PASS: 'crypto.subtle.digest({name: 'sha'}, data)' rejected with null
+PASS: 'crypto.subtle.digest({}, data)' rejected with null
 PASS: SHA-1 of [] should be [da39a3ee5e6b4b0d3255bfef95601890afd80709] and was
 PASS: SHA-224 of [] should be [d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f] and was
 PASS: SHA-256 of [] should be [e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855] and was

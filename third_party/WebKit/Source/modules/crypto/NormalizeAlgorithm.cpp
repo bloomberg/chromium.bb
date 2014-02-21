@@ -32,11 +32,10 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
+#include "platform/CryptoResult.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebString.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/HashMap.h"
@@ -377,7 +376,7 @@ bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorith
     return true;
 }
 
-bool parseAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, ErrorContext, String&, ExceptionState&);
+bool parseAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, ErrorContext, String&);
 
 bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorContext context, String& errorDetails)
 {
@@ -388,8 +387,7 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
     }
 
     context.add("hash");
-    IgnorableExceptionState exceptionState;
-    return parseAlgorithm(rawHash, Digest, hash, context, errorDetails, exceptionState);
+    return parseAlgorithm(rawHash, Digest, hash, context, errorDetails);
 }
 
 bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
@@ -491,27 +489,24 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     return false;
 }
 
-bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ErrorContext context, String& errorDetails, ExceptionState& exceptionState)
+bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ErrorContext context, String& errorDetails)
 {
     context.add("Algorithm");
 
     if (!raw.isObject()) {
         errorDetails = context.toString("Not an object");
-        exceptionState.throwTypeError(errorDetails);
         return false;
     }
 
     String algorithmName;
     if (!raw.get("name", algorithmName)) {
         errorDetails = context.toString("name", "Missing or not a string");
-        exceptionState.throwDOMException(NotSupportedError, errorDetails);
         return false;
     }
 
     const AlgorithmInfo* info = AlgorithmRegistry::instance().lookupAlgorithmByName(algorithmName);
     if (!info) {
         errorDetails = context.toString("Unrecognized algorithm name");
-        exceptionState.throwDOMException(NotSupportedError, errorDetails);
         return false;
     }
 
@@ -519,7 +514,6 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
 
     if (info->paramsForOperation[op] == UnsupportedOp) {
         errorDetails = context.toString("Unsupported operation");
-        exceptionState.throwDOMException(NotSupportedError, errorDetails);
         return false;
     }
 
@@ -534,9 +528,14 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
 
 } // namespace
 
-bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, String& errorDetails, ExceptionState& exceptionState)
+bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, CryptoResult* result)
 {
-    return parseAlgorithm(raw, op, algorithm, ErrorContext(), errorDetails, exceptionState);
+    String errorDetails;
+    if (!parseAlgorithm(raw, op, algorithm, ErrorContext(), errorDetails)) {
+        result->completeWithError(errorDetails);
+        return false;
+    }
+    return true;
 }
 
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)

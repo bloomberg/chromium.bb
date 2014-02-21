@@ -1,29 +1,33 @@
+CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: key is not extractable
 CONSOLE ERROR: key.usages does not permit this operation
+CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 CONSOLE ERROR: key.algorithm does not match that of operation
+CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: key.usages does not permit this operation
+CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 CONSOLE ERROR: key.algorithm does not match that of operation
 Tests cypto.subtle.sign and crypto.subtle.verify
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm) threw exception TypeError: Failed to execute 'wrapKey' on 'SubtleCrypto': Invalid keyFormat argument.
 PASS crypto.subtle.wrapKey('raw', 1, wrappingKey, wrapAlgorithm) threw exception TypeError: Failed to execute 'wrapKey' on 'SubtleCrypto': Invalid key argument.
 PASS crypto.subtle.wrapKey('raw', key, '', wrapAlgorithm) threw exception TypeError: Failed to execute 'wrapKey' on 'SubtleCrypto': Invalid wrappingKey argument.
 PASS crypto.subtle.wrapKey('raw', key, wrappingKey, undefined) threw exception TypeError: Failed to execute 'wrapKey' on 'SubtleCrypto': Algorithm: Not an object.
-PASS crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'}) threw exception NotSupportedError: Failed to execute 'wrapKey' on 'SubtleCrypto': Algorithm: SHA-1: Unsupported operation.
-PASS crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Invalid keyFormat argument.
 PASS crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Invalid wrappedKey argument.
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Invalid unwrappingKey argument.
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9) threw exception TypeError: The 7th argument is neither an array, nor does it have indexed properties..
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Algorithm: Not an object.
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': parameter 5 ('unwrappedKeyAlgorithm') is not an object..
-PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception NotSupportedError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Algorithm: SHA-1: Unsupported operation.
+PASS: 'crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm)' rejected with null
 PASS: 'crypto.subtle.wrapKey('raw', keys.aesCbcJustDecrypt, wrappingKey, wrapAlgorithm)' rejected with null
 PASS: 'crypto.subtle.wrapKey('raw', key, keys.aesCbcJustDecrypt, wrapAlgorithm)' rejected with null
+PASS: 'crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'})' rejected with null
 PASS: 'crypto.subtle.wrapKey('raw', key, wrappingKey, aesCtrAlgorithm)' rejected with null
+PASS: 'crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)' rejected with null
 PASS: 'crypto.subtle.unwrapKey('raw', wrappedKey, keys.aesCbcJustDecrypt, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)' rejected with null
+PASS: 'crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages)' rejected with null
 PASS: 'crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, aesCtrAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)' rejected with null
 PASS successfullyParsed is true
 

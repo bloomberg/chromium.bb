@@ -19,7 +19,7 @@ keyUsages = ['encrypt', 'decrypt'];
 aesCbc = { name: 'aes-cbc', length: 1024 };
 shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, -1)");
 shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, null)");
-shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, ['boo'])");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey(aesCbc, extractable, ['boo'])");
 
 // ---------------------------------------------------
 // AES-CBC normalization failures (AesKeyGenParams)

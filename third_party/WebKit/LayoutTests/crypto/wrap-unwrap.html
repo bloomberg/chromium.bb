@@ -29,7 +29,7 @@ importTestKeys().then(function(result) {
     // --------------------------------
 
     // Invalid format.
-    shouldThrow("crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm)");
+    shouldRejectPromiseWithNull("crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm)");
 
     // Invalid key
     shouldThrow("crypto.subtle.wrapKey('raw', 1, wrappingKey, wrapAlgorithm)");
@@ -47,7 +47,7 @@ importTestKeys().then(function(result) {
     shouldRejectPromiseWithNull("crypto.subtle.wrapKey('raw', key, keys.aesCbcJustDecrypt, wrapAlgorithm)");
 
     // SHA-1 isn't a valid wrapKey algorithm.
-    shouldThrow("crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'})");
+    shouldRejectPromiseWithNull("crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'})");
 
     // Wrap algorithm doesn't match the wrapping key's algorithm (AES-CBC key
     // with AES-CTR wrap algorithm)
@@ -66,7 +66,7 @@ importTestKeys().then(function(result) {
     keyUsages = ['encrypt'];
 
     // Invalid format
-    shouldThrow("crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
     // Invalid wrappedKey
     shouldThrow("crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
@@ -87,7 +87,7 @@ importTestKeys().then(function(result) {
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages)");
 
     // SHA-1 isn't a valid unwrapKey algorithm.
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
     // Mismatch between the unwrappingKey's algorithm and unwrapAlgorithm.
     shouldRejectPromiseWithNull("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, aesCtrAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");

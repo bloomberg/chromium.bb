@@ -1,3 +1,5 @@
+CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
+CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: Unsupported operation
 CONSOLE ERROR: key.algorithm does not match that of operation (HMAC's hash differs)
 CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary
 CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: Not an object
@@ -55,8 +57,8 @@ PASS verifyResult is false
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
-PASS crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data) threw exception NotSupportedError: Failed to execute 'sign' on 'SubtleCrypto': Algorithm: SHA-1: Unsupported operation.
-PASS crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, keys.hmacSha1, data) threw exception NotSupportedError: Failed to execute 'sign' on 'SubtleCrypto': Algorithm: RSAES-PKCS1-v1_5: Unsupported operation.
+PASS: 'crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data)' rejected with null
+PASS: 'crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, keys.hmacSha1, data)' rejected with null
 PASS: 'crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data)' rejected with null
 PASS: 'crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data)' rejected with null
 PASS: 'crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data)' rejected with null
