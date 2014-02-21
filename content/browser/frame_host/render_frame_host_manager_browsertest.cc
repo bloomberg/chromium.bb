@@ -1363,7 +1363,13 @@ class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
 
 // Test that we still swap processes for BrowsingInstance changes even in
 // --process-per-tab mode.  See http://crbug.com/343017.
-IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, BackFromWebUI) {
+// Disabled on Android: http://crbug.com/345873.
+#if defined(OS_ANDROID)
+#define MAYBE_BackFromWebUI DISABLED_BackFromWebUI
+#else
+#define MAYBE_BackFromWebUI BackFromWebUI
+#endif
+IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, MAYBE_BackFromWebUI) {
   ASSERT_TRUE(test_server()->Start());
   GURL original_url(test_server()->GetURL("files/title2.html"));
   NavigateToURL(shell(), original_url);
