@@ -2928,8 +2928,9 @@ class SignerResultsStage(ArchivingStage):
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
 
-  # If the signing takes longer than 30 minutes (30 * 60 seconds), abort.
-  SIGNING_TIMEOUT = 1800
+  # Abort, if the signing takes longer than 2 hours.
+  #   2 hours * 60 minutes * 60 seconds
+  SIGNING_TIMEOUT = 7200
 
   def __init__(self, *args, **kwargs):
     super(SignerResultsStage, self).__init__(*args, **kwargs)
