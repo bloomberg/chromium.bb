@@ -11,6 +11,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
@@ -178,6 +179,11 @@ ChannelState WebSocketEventHandler::OnStartOpeningHandshake(
   net::HttpRequestHeaders::Iterator it(request->headers);
   while (it.GetNext())
     request_to_pass.headers.push_back(std::make_pair(it.name(), it.value()));
+  request_to_pass.headers_text =
+      base::StringPrintf("GET %s HTTP/1.1\r\n",
+                         request_to_pass.url.spec().c_str()) +
+      request->headers.ToString();
+
   request_to_pass.request_time = request->request_time;
   return StateCast(dispatcher_->SendStartOpeningHandshake(routing_id_,
                                                           request_to_pass));
@@ -195,6 +201,9 @@ ChannelState WebSocketEventHandler::OnFinishOpeningHandshake(
   std::string name, value;
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value))
     response_to_pass.headers.push_back(std::make_pair(name, value));
+  response_to_pass.headers_text =
+      net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+          response->headers->raw_headers());
   response_to_pass.response_time = response->response_time;
   return StateCast(dispatcher_->SendFinishOpeningHandshake(routing_id_,
                                                            response_to_pass));

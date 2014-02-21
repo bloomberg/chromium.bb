@@ -32,6 +32,8 @@ struct WebSocketHandshakeRequest {
   GURL url;
   // Additional HTTP request headers
   std::vector<std::pair<std::string, std::string> > headers;
+  // HTTP request headers raw string
+  std::string headers_text;
   // The time that this request is sent
   base::Time request_time;
 };
@@ -50,6 +52,8 @@ struct WebSocketHandshakeResponse {
   std::string status_text;
   // Additional HTTP response headers
   std::vector<std::pair<std::string, std::string> > headers;
+  // HTTP response headers raw string
+  std::string headers_text;
   // The time that this response arrives
   base::Time response_time;
 };

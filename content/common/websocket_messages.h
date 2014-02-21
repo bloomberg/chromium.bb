@@ -32,6 +32,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::WebSocketMessageType,
 IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeRequest)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(headers_text)
   IPC_STRUCT_TRAITS_MEMBER(request_time)
 IPC_STRUCT_TRAITS_END()
 
@@ -40,6 +41,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeResponse)
   IPC_STRUCT_TRAITS_MEMBER(status_code)
   IPC_STRUCT_TRAITS_MEMBER(status_text)
   IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(headers_text)
   IPC_STRUCT_TRAITS_MEMBER(response_time)
 IPC_STRUCT_TRAITS_END()
 

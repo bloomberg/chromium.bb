@@ -106,6 +106,7 @@ void WebSocketBridge::DidStartOpeningHandshake(
     request_to_pass.addHeaderField(WebString::fromLatin1(header.first),
                                    WebString::fromLatin1(header.second));
   }
+  request_to_pass.setHeadersText(WebString::fromLatin1(request.headers_text));
   client_->didStartOpeningHandshake(this, request_to_pass);
 }
 
@@ -122,6 +123,7 @@ void WebSocketBridge::DidFinishOpeningHandshake(
     response_to_pass.addHeaderField(WebString::fromLatin1(header.first),
                                     WebString::fromLatin1(header.second));
   }
+  response_to_pass.setHeadersText(WebString::fromLatin1(response.headers_text));
   client_->didFinishOpeningHandshake(this, response_to_pass);
 }
 
