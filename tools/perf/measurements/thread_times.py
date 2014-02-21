@@ -25,11 +25,11 @@ class ThreadTimes(page_measurement.PageMeasurement):
 
   def WillRunActions(self, page, tab):
     self._metric = timeline.ThreadTimesTimelineMetric()
-    self._metric.Start(page, tab)
     if self.options.report_silk_results:
       self._metric.results_to_report = timeline.ReportSilkResults
     if self.options.report_silk_details:
       self._metric.details_to_report = timeline.ReportSilkDetails
+    self._metric.Start(page, tab)
 
   def DidRunAction(self, page, tab, action):
     self._metric.AddActionToIncludeInMetric(action)

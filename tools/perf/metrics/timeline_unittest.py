@@ -109,7 +109,6 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
 
     # Test that all result thread categories exist
     for name in timeline.TimelineThreadCategories.values():
-      results.GetPageSpecificValueNamed(timeline.ThreadTimeResultName(name))
       results.GetPageSpecificValueNamed(timeline.ThreadCpuTimeResultName(name))
 
   def testBasic(self):
@@ -143,7 +142,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
 
     # Test a couple specific results.
     assert_results = {
-      timeline.ThreadTimeResultName('renderer_main') : 10,
+      timeline.ThreadCpuTimeResultName('renderer_main') : 9.75,
       timeline.ThreadDetailResultName('renderer_main','cat1') : 9.5,
       timeline.ThreadDetailResultName('renderer_main','cat2') : 0.5,
       timeline.ThreadDetailResultName('renderer_main','idle') : 0
@@ -180,7 +179,6 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
 
     # Test a couple specific results.
     assert_results = {
-      timeline.ThreadTimeResultName('renderer_main') : 19,
       timeline.ThreadCpuTimeResultName('renderer_main') : 9.0,
     }
     for name, value in assert_results.iteritems():

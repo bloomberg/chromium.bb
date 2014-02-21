@@ -11,6 +11,16 @@ from telemetry.page import page_measurement
 TRACING_MODE = 'tracing-mode'
 TIMELINE_MODE = 'timeline-mode'
 
+# All tracing categories not disabled-by-default
+DEFAULT_TRACE_CATEGORIES = None
+
+# Categories for absolute minimum overhead tracing. This contains no
+# sub-traces of thread tasks, so it's only useful for capturing the
+# cpu-time spent on threads (as well as needed benchmark traces)
+MINIMAL_TRACE_CATEGORIES = ("toplevel,"
+                            "benchmark,"
+                            "webkit.console,"
+                            "trace_event_overhead")
 
 class MissingFramesError(page_measurement.MeasurementFailure):
   def __init__(self):
@@ -24,6 +34,7 @@ class TimelineMetric(Metric):
     """
     super(TimelineMetric, self).__init__()
     assert mode in (TRACING_MODE, TIMELINE_MODE)
+    self.trace_categories = DEFAULT_TRACE_CATEGORIES
     self._mode = mode
     self._model = None
     self._renderer_process = None
@@ -39,7 +50,7 @@ class TimelineMetric(Metric):
     if self._mode == TRACING_MODE:
       if not tab.browser.supports_tracing:
         raise Exception('Not supported')
-      tab.browser.StartTracing()
+      tab.browser.StartTracing(self.trace_categories)
     else:
       assert self._mode == TIMELINE_MODE
       tab.StartTimelineRecording()
@@ -204,7 +215,8 @@ def ThreadCpuTimeResultName(thread_category):
   return "thread_" + thread_category + "_cpu_time_per_frame"
 
 def ThreadDetailResultName(thread_category, detail):
-  return "thread_" + thread_category + "|" + detail
+  detail_sanitized = detail.replace('.','_')
+  return "thread_" + thread_category + "|" + detail_sanitized
 
 
 class ResultsForThread(object):
@@ -252,12 +264,8 @@ class ResultsForThread(object):
     self.toplevel_slices.extend(self.SlicesInActions(thread.toplevel_slices))
 
   def AddResults(self, num_frames, results):
-    clock_report_name = ThreadTimeResultName(self.name)
-    cpu_report_name  = ThreadCpuTimeResultName(self.name)
-    clock_per_frame = (float(self.clock_time) / num_frames) if num_frames else 0
-    cpu_per_frame   = (float(self.cpu_time) / num_frames) if num_frames else 0
-    results.Add(clock_report_name, 'ms', clock_per_frame)
-    results.Add(cpu_report_name, 'ms', cpu_per_frame)
+    cpu_per_frame = (float(self.cpu_time) / num_frames) if num_frames else 0
+    results.Add(ThreadCpuTimeResultName(self.name), 'ms', cpu_per_frame)
 
   def AddDetailedResults(self, num_frames, results):
     slices_by_category = collections.defaultdict(list)
@@ -281,8 +289,16 @@ class ResultsForThread(object):
 class ThreadTimesTimelineMetric(TimelineMetric):
   def __init__(self):
     super(ThreadTimesTimelineMetric, self).__init__(TRACING_MODE)
+    # Minimal traces, for minimum noise in CPU-time measurements.
+    self.trace_categories = MINIMAL_TRACE_CATEGORIES
     self.results_to_report = AllThreads
     self.details_to_report = NoThreads
+
+  def Start(self, page, tab):
+    # We need the other traces in order to have any details to report.
+    if not self.details_to_report == NoThreads:
+      self.trace_categories = DEFAULT_TRACE_CATEGORIES
+    super(ThreadTimesTimelineMetric, self).Start(page, tab)
 
   def CountSlices(self, slices, substring):
     count = 0
