@@ -203,8 +203,10 @@ void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
       }
     }
   }
-  if (data_consumed && !request->status().is_io_pending())
+  if (data_consumed && !request->status().is_io_pending()) {
+    DCHECK_EQ(UPDATE_OK, result_);
     OnResponseCompleted();
+  }
 }
 
 void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
@@ -310,6 +312,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
     return false;
   }
   ++retry_503_attempts_;
+  result_ = UPDATE_OK;
   request_ = job_->service_->request_context()->CreateRequest(
       url_, net::DEFAULT_PRIORITY, this);
   Start();
