@@ -210,3 +210,5 @@ race:webrtc::GainControlImpl::set_stream_analog_level
 # http://crbug.com/345251
 race:cc::s_next_layer_id
 
+# http://crbug.com/345618
+race:WebCore::AudioDestinationNode::render
