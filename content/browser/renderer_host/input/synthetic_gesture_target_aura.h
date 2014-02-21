@@ -10,9 +10,8 @@
 #include "content/common/input/synthetic_gesture_params.h"
 
 namespace aura {
-class RootWindow;
-typedef RootWindow WindowEventDispatcher;
 class Window;
+class WindowEventDispatcher;
 
 namespace client {
 class ScreenPositionClient;

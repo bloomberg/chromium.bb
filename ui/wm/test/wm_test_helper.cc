@@ -16,30 +16,30 @@ namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
-  root_window_.reset(new aura::RootWindow(
-      aura::RootWindow::CreateParams(
+  dispatcher_.reset(new aura::WindowEventDispatcher(
+      aura::WindowEventDispatcher::CreateParams(
           gfx::Rect(default_window_size))));
-  root_window_->host()->InitHost();
-  aura::client::SetWindowTreeClient(root_window_->window(), this);
+  dispatcher_->host()->InitHost();
+  aura::client::SetWindowTreeClient(dispatcher_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(root_window_->window(), focus_client_.get());
+  aura::client::SetFocusClient(dispatcher_->window(), focus_client_.get());
 
   root_window_event_filter_ = new views::corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
-  root_window_->window()->SetEventFilter(root_window_event_filter_);
+  dispatcher_->window()->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-      root_window_->host()->GetAcceleratedWidget()));
+      dispatcher_->host()->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(
-      root_window_->window());
+      dispatcher_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());
 
   activation_client_.reset(
-      new aura::client::DefaultActivationClient(root_window_->window()));
+      new aura::client::DefaultActivationClient(dispatcher_->window()));
 
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(root_window_->window()));
+      new aura::client::DefaultCaptureClient(dispatcher_->window()));
 }
 
 WMTestHelper::~WMTestHelper() {
@@ -49,7 +49,7 @@ WMTestHelper::~WMTestHelper() {
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* context,
                                              aura::Window* window,
                                              const gfx::Rect& bounds) {
-  return root_window_->window();
+  return dispatcher_->window();
 }
 
 }  // namespace wm

@@ -34,8 +34,8 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     AuraTestBase::SetUp();
     capture_controller_.reset(new corewm::ScopedCaptureClient(root_window()));
 
-    second_root_.reset(new aura::RootWindow(
-        aura::RootWindow::CreateParams(gfx::Rect(0, 0, 800, 600))));
+    second_root_.reset(new aura::WindowEventDispatcher(
+        aura::WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 800, 600))));
     second_root_->host()->InitHost();
     second_root_->window()->Show();
     second_root_->host()->SetBounds(gfx::Rect(800, 600));
@@ -82,7 +82,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
   }
 
   scoped_ptr<corewm::ScopedCaptureClient> capture_controller_;
-  scoped_ptr<aura::RootWindow> second_root_;
+  scoped_ptr<aura::WindowEventDispatcher> second_root_;
   scoped_ptr<corewm::ScopedCaptureClient> second_capture_controller_;
 #if !defined(OS_CHROMEOS)
   scoped_ptr<aura::client::ScreenPositionClient> desktop_position_client_;
@@ -96,22 +96,22 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 // Makes sure that internal details that are set on mouse down (such as
 // mouse_pressed_handler()) are cleared when another root window takes capture.
 TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
-  // Create a window inside the RootWindow.
+  // Create a window inside the WindowEventDispatcher.
   scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
 
-  // Make a synthesized mouse down event. Ensure that the RootWindow will
-  // dispatch further mouse events to |w1|.
+  // Make a synthesized mouse down event. Ensure that the WindowEventDispatcher
+  // will dispatch further mouse events to |w1|.
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
                                      gfx::Point(5, 5), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
   EXPECT_EQ(w1.get(), dispatcher()->mouse_pressed_handler());
 
-  // Build a window in the second RootWindow.
+  // Build a window in the second WindowEventDispatcher.
   scoped_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_root_->window(), NULL));
 
   // The act of having the second window take capture should clear out mouse
-  // pressed handler in the first RootWindow.
+  // pressed handler in the first WindowEventDispatcher.
   w2->SetCapture();
   EXPECT_EQ(NULL, dispatcher()->mouse_pressed_handler());
 }
@@ -120,15 +120,15 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
 // other. This is needed has to be handled explicitly on Linux, and is a sanity
 // check on Windows.
 TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
-  // Create a window inside the RootWindow.
+  // Create a window inside the WindowEventDispatcher.
   scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
   w1->SetCapture();
   // Both capture clients should return the same capture window.
   EXPECT_EQ(w1.get(), GetCaptureWindow());
   EXPECT_EQ(w1.get(), GetSecondCaptureWindow());
 
-  // Build a window in the second RootWindow and give it capture. Both capture
-  // clients should return the same capture window.
+  // Build a window in the second WindowEventDispatcher and give it capture.
+  // Both capture clients should return the same capture window.
   scoped_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_root_->window(), NULL));
   w2->SetCapture();
@@ -136,9 +136,10 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
 }
 
-// Verifies the touch target for the RootWindow gets reset on releasing capture.
+// Verifies the touch target for the WindowEventDispatcher gets reset on
+// releasing capture.
 TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
-  // Create a window inside the RootWindow.
+  // Create a window inside the WindowEventDispatcher.
   scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
   aura::test::EventGenerator event_generator1(root_window());
   event_generator1.PressTouch();
@@ -147,8 +148,8 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   EXPECT_EQ(w1.get(), GetCaptureWindow());
   EXPECT_EQ(w1.get(), GetSecondCaptureWindow());
 
-  // Build a window in the second RootWindow and give it capture. Both capture
-  // clients should return the same capture window.
+  // Build a window in the second WindowEventDispatcher and give it capture.
+  // Both capture clients should return the same capture window.
   scoped_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_root_->window(), NULL));
   w2->SetCapture();
@@ -156,8 +157,8 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
 
   // Release capture on the window. Releasing capture should reset the touch
-  // target of the first RootWindow (as it no longer contains the capture
-  // target).
+  // target of the first WindowEventDispatcher (as it no longer contains the
+  // capture target).
   w2->ReleaseCapture();
   EXPECT_EQ(static_cast<aura::Window*>(NULL), GetCaptureWindow());
   EXPECT_EQ(static_cast<aura::Window*>(NULL), GetSecondCaptureWindow());

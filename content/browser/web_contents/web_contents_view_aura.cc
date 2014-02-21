@@ -617,8 +617,9 @@ class WebContentsViewAura::WindowObserver
   }
 
   // Overridden RootWindowObserver:
-  virtual void OnWindowTreeHostMoved(const aura::RootWindow* root,
-                                     const gfx::Point& new_origin) OVERRIDE {
+  virtual void OnWindowTreeHostMoved(
+      const aura::WindowEventDispatcher* dispatcher,
+      const gfx::Point& new_origin) OVERRIDE {
     TRACE_EVENT1("ui",
                  "WebContentsViewAura::WindowObserver::OnWindowTreeHostMoved",
                  "new_origin", new_origin.ToString());

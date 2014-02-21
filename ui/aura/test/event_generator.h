@@ -28,8 +28,8 @@ class TouchEvent;
 }
 
 namespace aura {
-class RootWindow;
 class Window;
+class WindowEventDispatcher;
 
 namespace client {
 class ScreenPositionClient;
@@ -47,32 +47,28 @@ class EventGeneratorDelegate {
   virtual ~EventGeneratorDelegate() {}
 
   // Returns a root window for given point.
-  virtual RootWindow* GetRootWindowAt(const gfx::Point& point) const = 0;
+  virtual WindowEventDispatcher* GetDispatcherAt(
+      const gfx::Point& point) const = 0;
 
   // Returns the screen position client that determines the
   // coordinates used in EventGenerator. EventGenerator uses
-  // RootWindow's coordinate if this retruns NULL.
+  // root Window's coordinate if this returns NULL.
   virtual client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const = 0;
 };
 
 // EventGenerator is a tool that generates and dispatch events.
-// Unlike |ui_controls| package in ui/base/test, this does not
-// generate platform native events. Insetad, it directly posts event
-// to |aura::RootWindow| synchronously.
-
-// Advantage of using this class, compared to |ui_controls| is that
-// you can write the tests that involves events in synchronus
-// way. There is no need to wait for native
+// Unlike |ui_controls| package in ui/base/test, this does not generate platform
+// native events. Instead, it sends events to |aura::WindowEventDispatcher|
+// synchronously.
 //
-// On the other hand, this class is not suited for the following
-// cases:
+// This class is not suited for the following cases:
 //
 // 1) If your test depends on native events (ui::Event::native_event()).
 //   This return is empty/NULL event with EventGenerator.
 // 2) If your test involves nested message loop, such as
 //    menu or drag & drop. Because this class directly
-//    post an event to RootWindow, this event will not be
+//    post an event to WindowEventDispatcher, this event will not be
 //    handled in the nested message loop.
 // 3) Similarly, |base::MessagePumpObserver| will not be invoked.
 // 4) Any other code that requires native events, such as
@@ -311,18 +307,18 @@ class EventGenerator {
   // TODO(yusukes): Support native_event() on all platforms.
   void ReleaseKey(ui::KeyboardCode key_code, int flags);
 
-  // Dispatch the event to the RootWindow.
+  // Dispatch the event to the WindowEventDispatcher.
   void Dispatch(ui::Event* event);
 
-  void set_current_root_window(RootWindow* root_window) {
-    current_root_window_ = root_window;
+  void set_current_dispatcher(WindowEventDispatcher* dispatcher) {
+    current_dispatcher_ = dispatcher;
   }
 
  private:
-  // Dispatch a key event to the RootWindow.
+  // Dispatch a key event to the WindowEventDispatcher.
   void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
 
-  void UpdateCurrentRootWindow(const gfx::Point& point);
+  void UpdateCurrentDispatcher(const gfx::Point& point);
   void PressButton(int flag);
   void ReleaseButton(int flag);
 
@@ -341,7 +337,7 @@ class EventGenerator {
 
   scoped_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;
-  RootWindow* current_root_window_;
+  WindowEventDispatcher* current_dispatcher_;
   int flags_;
   bool grab_;
   std::list<ui::Event*> pending_events_;

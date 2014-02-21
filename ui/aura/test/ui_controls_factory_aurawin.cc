@@ -84,7 +84,7 @@ class UIControlsWin : public UIControlsAura {
 
 }  // namespace
 
-UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window) {
+UIControlsAura* CreateUIControlsAura(WindowEventDispatcher* dispatcher) {
   return new UIControlsWin();
 }
 

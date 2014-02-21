@@ -285,22 +285,22 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return NULL;
   }
 
-  void SetKeycodeAndSendThenMask(aura::RootWindow* root_window,
+  void SetKeycodeAndSendThenMask(aura::WindowEventDispatcher* dispatcher,
                                  XEvent* xevent,
                                  KeySym keysym,
                                  unsigned int mask) {
     xevent->xkey.keycode = XKeysymToKeycode(x_display_, keysym);
-    root_window->host()->PostNativeEvent(xevent);
+    dispatcher->host()->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
   }
 
-  void UnmaskAndSetKeycodeThenSend(aura::RootWindow* root_window,
+  void UnmaskAndSetKeycodeThenSend(aura::WindowEventDispatcher* dispatcher,
                                    XEvent* xevent,
                                    unsigned int mask,
                                    KeySym keysym) {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode = XKeysymToKeycode(x_display_, keysym);
-    root_window->host()->PostNativeEvent(xevent);
+    dispatcher->host()->PostNativeEvent(xevent);
   }
 
   // Our X11 state.

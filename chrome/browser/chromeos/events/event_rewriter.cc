@@ -196,7 +196,8 @@ void EventRewriter::RewriteForTesting(XEvent* event) {
   Rewrite(event);
 }
 
-void EventRewriter::OnKeyboardMappingChanged(const aura::RootWindow* root) {
+void EventRewriter::OnKeyboardMappingChanged(
+    const aura::WindowEventDispatcher* dispatcher) {
   RefreshKeycodes();
 }
 

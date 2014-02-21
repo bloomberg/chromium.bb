@@ -70,7 +70,8 @@ class EventRewriter : public aura::RootWindowObserver,
   friend class EventRewriterTest;
 
   // aura::RootWindowObserver overrides:
-  virtual void OnKeyboardMappingChanged(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnKeyboardMappingChanged(
+      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
 
   // base::MessagePumpObserver overrides:
   virtual base::EventStatus WillProcessEvent(

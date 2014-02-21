@@ -26,10 +26,9 @@ class Compositor;
 }
 
 namespace aura {
-
-class RootWindow;
-class WindowTreeHostDelegate;
 class RootWindowTransformer;
+class WindowEventDispatcher;
+class WindowTreeHostDelegate;
 
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
@@ -103,7 +102,7 @@ class AURA_EXPORT WindowTreeHost {
 
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
 
-  virtual RootWindow* GetRootWindow() = 0;
+  WindowEventDispatcher* GetDispatcher();
 
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;

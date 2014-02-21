@@ -5,11 +5,6 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
-// X macro fail.
-#if defined(RootWindow)
-#undef RootWindow
-#endif
-
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -85,7 +80,7 @@ bool Matcher(const base::NativeEvent& event) {
 
 class UIControlsX11 : public UIControlsAura {
  public:
-  UIControlsX11(aura::RootWindow* root_window) : root_window_(root_window) {
+  UIControlsX11(WindowEventDispatcher* dispatcher) : dispatcher_(dispatcher) {
   }
 
   virtual bool SendKeyPress(gfx::NativeWindow window,
@@ -118,11 +113,11 @@ class UIControlsX11 : public UIControlsAura {
     xevent.xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(),
                          ui::XKeysymForWindowsKeyCode(key, shift));
-    root_window_->host()->PostNativeEvent(&xevent);
+    dispatcher_->host()->PostNativeEvent(&xevent);
 
     // Send key release events.
     xevent.xkey.type = KeyRelease;
-    root_window_->host()->PostNativeEvent(&xevent);
+    dispatcher_->host()->PostNativeEvent(&xevent);
     if (alt)
       UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
     if (shift)
@@ -143,19 +138,19 @@ class UIControlsX11 : public UIControlsAura {
       const base::Closure& closure) OVERRIDE {
     gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root_window_->window());
+        aura::client::GetScreenPositionClient(dispatcher_->window());
     if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(root_window_->window(),
+      screen_position_client->ConvertPointFromScreen(dispatcher_->window(),
                                                      &root_location);
     }
     gfx::Point root_current_location;
-    root_window_->host()->QueryMouseLocation(&root_current_location);
-    root_window_->host()->ConvertPointFromHost(&root_current_location);
+    dispatcher_->host()->QueryMouseLocation(&root_current_location);
+    dispatcher_->host()->ConvertPointFromHost(&root_current_location);
 
     if (root_location != root_current_location && button_down_mask == 0) {
       // Move the cursor because EnterNotify/LeaveNotify are generated with the
       // current mouse position as a result of XGrabPointer()
-      root_window_->window()->MoveCursorTo(root_location);
+      dispatcher_->window()->MoveCursorTo(root_location);
     } else {
       XEvent xevent = {0};
       XMotionEvent* xmotion = &xevent.xmotion;
@@ -164,8 +159,8 @@ class UIControlsX11 : public UIControlsAura {
       xmotion->y = root_location.y();
       xmotion->state = button_down_mask;
       xmotion->same_screen = True;
-      // RootWindow will take care of other necessary fields.
-      root_window_->host()->PostNativeEvent(&xevent);
+      // WindowEventDispatcher will take care of other necessary fields.
+      dispatcher_->host()->PostNativeEvent(&xevent);
     }
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
@@ -181,9 +176,9 @@ class UIControlsX11 : public UIControlsAura {
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(root_window_->window());
+          aura::client::GetScreenPositionClient(dispatcher_->window());
     if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(root_window_->window(),
+      screen_position_client->ConvertPointFromScreen(dispatcher_->window(),
                                                      &mouse_loc);
     }
     xbutton->x = mouse_loc.x();
@@ -203,15 +198,15 @@ class UIControlsX11 : public UIControlsAura {
         xbutton->state = Button3Mask;
         break;
     }
-    // RootWindow will take care of other necessary fields.
+    // WindowEventDispatcher will take care of other necessary fields.
     if (state & DOWN) {
       xevent.xbutton.type = ButtonPress;
-      root_window_->host()->PostNativeEvent(&xevent);
+      dispatcher_->host()->PostNativeEvent(&xevent);
       button_down_mask |= xbutton->state;
     }
     if (state & UP) {
       xevent.xbutton.type = ButtonRelease;
-      root_window_->host()->PostNativeEvent(&xevent);
+      dispatcher_->host()->PostNativeEvent(&xevent);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
     RunClosureAfterAllPendingUIEvents(closure);
@@ -233,7 +228,7 @@ class UIControlsX11 : public UIControlsAura {
       marker_event->xclient.format = 8;
     }
     marker_event->xclient.message_type = MarkerEventAtom();
-    root_window_->host()->PostNativeEvent(marker_event);
+    dispatcher_->host()->PostNativeEvent(marker_event);
     new EventWaiter(closure, &Matcher);
   }
  private:
@@ -242,7 +237,7 @@ class UIControlsX11 : public UIControlsAura {
                                  unsigned int mask) {
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), keysym);
-    root_window_->host()->PostNativeEvent(xevent);
+    dispatcher_->host()->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
   }
 
@@ -252,18 +247,18 @@ class UIControlsX11 : public UIControlsAura {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), keysym);
-    root_window_->host()->PostNativeEvent(xevent);
+    dispatcher_->host()->PostNativeEvent(xevent);
   }
 
-  aura::RootWindow* root_window_;
+  WindowEventDispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(UIControlsX11);
 };
 
 }  // namespace
 
-UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window) {
-  return new UIControlsX11(root_window);
+UIControlsAura* CreateUIControlsAura(WindowEventDispatcher* dispatcher) {
+  return new UIControlsX11(dispatcher);
 }
 
 }  // namespace test

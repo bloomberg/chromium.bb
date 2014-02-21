@@ -207,12 +207,12 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
   // Getting screen bounds here safely is hard.
   //
   // You'd think we'd be able to just call window->GetBoundsInScreen(), but we
-  // can't because |window| (and the associated RootWindow*) can be partially
-  // initialized at this point; RootWindow initializations call through into
-  // GetDisplayNearestWindow(). But the X11 resources are created before we
-  // create the aura::RootWindow. So we ask what the DRWHX11 believes the
-  // window bounds are instead of going through the aura::Window's screen
-  // bounds.
+  // can't because |window| (and the associated WindowEventDispatcher*) can be
+  // partially initialized at this point; WindowEventDispatcher initializations
+  // call through into GetDisplayNearestWindow(). But the X11 resources are
+  // created before we create the aura::WindowEventDispatcher. So we ask what
+  // the DRWHX11 believes the window bounds are instead of going through the
+  // aura::Window's screen bounds.
   aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
   if (dispatcher) {
     DesktopWindowTreeHostX11* rwh = DesktopWindowTreeHostX11::GetHostForXID(

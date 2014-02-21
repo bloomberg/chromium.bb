@@ -220,7 +220,7 @@ class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
   virtual ~ScreenEventGeneratorDelegate() {}
 
   // EventGeneratorDelegate overrides:
-  virtual aura::RootWindow* GetRootWindowAt(
+  virtual aura::WindowEventDispatcher* GetDispatcherAt(
       const gfx::Point& point) const OVERRIDE {
     return root_window_->GetDispatcher();
   }

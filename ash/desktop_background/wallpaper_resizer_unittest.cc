@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
-using aura::RootWindow;
 using aura::Window;
 
 namespace {

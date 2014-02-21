@@ -46,8 +46,8 @@ class AuraTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  Window* root_window() { return root_window_->window(); }
-  RootWindow* dispatcher() { return root_window_.get(); }
+  Window* root_window() { return dispatcher_->window(); }
+  WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
 
   TestScreen* test_screen() { return test_screen_.get(); }
 
@@ -55,8 +55,8 @@ class AuraTestHelper {
   base::MessageLoopForUI* message_loop_;
   bool setup_called_;
   bool teardown_called_;
-  bool owns_root_window_;
-  scoped_ptr<RootWindow> root_window_;
+  bool owns_dispatcher_;
+  scoped_ptr<WindowEventDispatcher> dispatcher_;
   scoped_ptr<TestWindowTreeClient> stacking_client_;
   scoped_ptr<client::DefaultActivationClient> activation_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;

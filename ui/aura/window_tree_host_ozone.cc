@@ -42,10 +42,6 @@ uint32_t WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
   return POST_DISPATCH_NONE;
 }
 
-RootWindow* WindowTreeHostOzone::GetRootWindow() {
-  return delegate_->AsRootWindow();
-}
-
 gfx::AcceleratedWidget WindowTreeHostOzone::GetAcceleratedWidget() {
   return widget_;
 }

@@ -28,7 +28,6 @@ class WindowTreeHostOzone : public WindowTreeHost,
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // WindowTreeHost Overrides.
-  virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

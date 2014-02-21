@@ -325,8 +325,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
-  virtual void OnWindowTreeHostMoved(const aura::RootWindow* root,
-                                     const gfx::Point& new_origin) OVERRIDE;
+  virtual void OnWindowTreeHostMoved(
+      const aura::WindowEventDispatcher* dispatcher,
+      const gfx::Point& new_origin) OVERRIDE;
 
   // SoftwareFrameManagerClient implementation:
   virtual void SoftwareFrameWasFreed(
@@ -467,10 +468,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Add on compositing commit callback.
   void AddOnCommitCallbackAndDisableLocks(const base::Closure& callback);
 
-  // Called after |window_| is parented to a RootWindow.
+  // Called after |window_| is parented to a WindowEventDispatcher.
   void AddedToRootWindow();
 
-  // Called prior to removing |window_| from a RootWindow.
+  // Called prior to removing |window_| from a WindowEventDispatcher.
   void RemovingFromRootWindow();
 
   // Called after commit for the last reference to the texture going away

@@ -8,11 +8,13 @@
 #include "ui/base/test/ui_controls_aura.h"
 
 namespace aura {
-class RootWindow;
+class WindowEventDispatcher;
 
 namespace test {
 
-ui_controls::UIControlsAura* CreateUIControlsAura(RootWindow* root_window);
+// TODO(beng): Should be changed to take a WindowTreeHost.
+ui_controls::UIControlsAura* CreateUIControlsAura(
+    WindowEventDispatcher* dispatcher);
 
 }  // namespace test
 }  // namespace aura

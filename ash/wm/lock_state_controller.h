@@ -199,7 +199,7 @@ class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
 
   // RootWindowObserver override:
   virtual void OnWindowTreeHostCloseRequested(
-     const aura::RootWindow* root) OVERRIDE;
+     const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

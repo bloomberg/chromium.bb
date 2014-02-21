@@ -142,7 +142,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       return false;
 
     // Check if this window is in our process.
-    if (!aura::RootWindow::GetForAcceleratedWidget(window))
+    if (!aura::WindowEventDispatcher::GetForAcceleratedWidget(window))
       return false;
 
     if (!ui::IsWindowVisible(window))

@@ -56,10 +56,6 @@ WindowTreeHostMojo::~WindowTreeHostMojo() {}
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, aura::WindowTreeHost implementation:
 
-aura::RootWindow* WindowTreeHostMojo::GetRootWindow() {
-  return delegate_->AsRootWindow();
-}
-
 gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
   NOTIMPLEMENTED() << "GetAcceleratedWidget";
   return gfx::kNullAcceleratedWidget;

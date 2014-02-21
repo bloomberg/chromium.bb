@@ -11,20 +11,21 @@
 
 namespace content {
 
-CompositorResizeLock::CompositorResizeLock(aura::RootWindow* root_window,
-                                           const gfx::Size new_size,
-                                           bool defer_compositor_lock,
-                                           const base::TimeDelta& timeout)
+CompositorResizeLock::CompositorResizeLock(
+    aura::WindowEventDispatcher* dispatcher,
+    const gfx::Size new_size,
+    bool defer_compositor_lock,
+    const base::TimeDelta& timeout)
     : ResizeLock(new_size, defer_compositor_lock),
-      root_window_(root_window),
+      dispatcher_(dispatcher),
       weak_ptr_factory_(this),
       cancelled_(false) {
-  DCHECK(root_window_);
+  DCHECK(dispatcher_);
 
   TRACE_EVENT_ASYNC_BEGIN2("ui", "CompositorResizeLock", this,
                            "width", expected_size().width(),
                            "height", expected_size().height());
-  root_window_->HoldPointerMoves();
+  dispatcher_->HoldPointerMoves();
 
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
@@ -51,7 +52,7 @@ void CompositorResizeLock::UnlockCompositor() {
 
 void CompositorResizeLock::LockCompositor() {
   ResizeLock::LockCompositor();
-  compositor_lock_ = root_window_->host()->compositor()->GetCompositorLock();
+  compositor_lock_ = dispatcher_->host()->compositor()->GetCompositorLock();
 }
 
 void CompositorResizeLock::CancelLock() {
@@ -59,7 +60,7 @@ void CompositorResizeLock::CancelLock() {
     return;
   cancelled_ = true;
   UnlockCompositor();
-  root_window_->ReleasePointerMoves();
+  dispatcher_->ReleasePointerMoves();
 }
 
 }  // namespace content

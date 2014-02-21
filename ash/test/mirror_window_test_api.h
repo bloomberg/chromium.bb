@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
-class RootWindow;
 class RootWindowTransformer;
 class Window;
+class WindowEventDispatcher;
 }
 
 namespace gfx {
@@ -26,7 +26,7 @@ class MirrorWindowTestApi {
   MirrorWindowTestApi() {}
   ~MirrorWindowTestApi() {}
 
-  const aura::RootWindow* GetRootWindow() const;
+  const aura::WindowEventDispatcher* GetDispatcher() const;
 
   int GetCurrentCursorType() const;
   const gfx::Point& GetCursorHotPoint() const;

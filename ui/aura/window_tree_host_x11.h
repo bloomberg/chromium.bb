@@ -45,7 +45,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // WindowTreeHost Overrides.
-  virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -69,7 +68,8 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   // EnvObserver overrides.
   virtual void OnWindowInitialized(Window* window) OVERRIDE;
-  virtual void OnRootWindowInitialized(RootWindow* root_window) OVERRIDE;
+  virtual void OnRootWindowInitialized(
+      WindowEventDispatcher* dispatcher) OVERRIDE;
 
   // ui::EventSource overrides.
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;

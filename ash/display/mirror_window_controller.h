@@ -16,9 +16,9 @@
 #include "ui/gfx/size.h"
 
 namespace aura {
-class RootWindow;
 class RootWindowTransformer;
 class Window;
+class WindowEventDispatcher;
 }
 
 namespace ui {
@@ -53,10 +53,11 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   void Close();
 
   // aura::RootWindowObserver overrides:
-  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnWindowTreeHostResized(
+      const aura::WindowEventDispatcher* root) OVERRIDE;
 
   // Returns the mirror root window.
-  aura::RootWindow* root_window() const { return root_window_.get(); }
+  aura::WindowEventDispatcher* dispatcher() const { return dispatcher_.get(); }
 
  private:
   friend class test::MirrorWindowTestApi;
@@ -65,7 +66,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   // configuration.
   scoped_ptr<aura::RootWindowTransformer> CreateRootWindowTransformer() const;
 
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
   gfx::Size mirror_window_host_size_;
   scoped_refptr<ui::Reflector> reflector_;
 

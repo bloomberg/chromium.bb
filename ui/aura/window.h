@@ -44,12 +44,9 @@ class Texture;
 namespace aura {
 
 class LayoutManager;
-class RootWindow;
 class WindowDelegate;
+class WindowEventDispatcher;
 class WindowObserver;
-
-// TODO(beng): remove once RootWindow is renamed.
-typedef RootWindow WindowEventDispatcher;
 
 // Defined in window_property.h (which we do not include)
 template<typename T>
@@ -347,7 +344,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
-  friend class RootWindow;
+  friend class WindowEventDispatcher;
   friend class WindowTargeter;
 
   // Called by the public {Set,Get,Clear}Property functions.

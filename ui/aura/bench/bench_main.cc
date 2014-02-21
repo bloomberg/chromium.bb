@@ -300,20 +300,20 @@ int main(int argc, char** argv) {
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::CreateFullscreen());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
-  scoped_ptr<aura::RootWindow> root_window(
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher(
       test_screen->CreateRootWindowForPrimaryDisplay());
   aura::client::SetCaptureClient(
-      root_window->window(),
-      new aura::client::DefaultCaptureClient(root_window->window()));
+      dispatcher->window(),
+      new aura::client::DefaultCaptureClient(dispatcher->window()));
 
   scoped_ptr<aura::client::FocusClient> focus_client(
       new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(root_window->window(), focus_client.get());
+  aura::client::SetFocusClient(dispatcher->window(), focus_client.get());
 
   // add layers
   ColoredLayer background(SK_ColorRED);
-  background.SetBounds(root_window->window()->bounds());
-  root_window->window()->layer()->Add(&background);
+  background.SetBounds(dispatcher->window()->bounds());
+  dispatcher->window()->layer()->Add(&background);
 
   ColoredLayer window(SK_ColorBLUE);
   window.SetBounds(gfx::Rect(background.bounds().size()));
@@ -338,22 +338,22 @@ int main(int argc, char** argv) {
 
   if (command_line->HasSwitch("bench-software-scroll")) {
     bench.reset(new SoftwareScrollBench(&page_background,
-                                        root_window->host()->compositor(),
+                                        dispatcher->host()->compositor(),
                                         frames));
   } else {
     bench.reset(new WebGLBench(&page_background,
-                               root_window->host()->compositor(),
+                               dispatcher->host()->compositor(),
                                frames));
   }
 
 #ifndef NDEBUG
-  ui::PrintLayerHierarchy(root_window->window()->layer(), gfx::Point(100, 100));
+  ui::PrintLayerHierarchy(dispatcher->window()->layer(), gfx::Point(100, 100));
 #endif
 
-  root_window->host()->Show();
+  dispatcher->host()->Show();
   base::MessageLoopForUI::current()->Run();
   focus_client.reset();
-  root_window.reset();
+  dispatcher.reset();
 
   return 0;
 }

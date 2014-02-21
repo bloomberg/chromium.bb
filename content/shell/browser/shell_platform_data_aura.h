@@ -8,13 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
+class WindowEventDispatcher;
 namespace client {
 class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 class WindowTreeClient;
 }
-class RootWindow;
 }
 
 namespace gfx {
@@ -35,10 +35,10 @@ class ShellPlatformDataAura {
   void ShowWindow();
   void ResizeWindow(const gfx::Size& size);
 
-  aura::RootWindow* window() { return root_window_.get(); }
+  aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

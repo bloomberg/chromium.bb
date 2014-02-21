@@ -43,7 +43,7 @@ bool BrowserDesktopWindowTreeHostX11::UsesNativeSystemMenu() const {
 void BrowserDesktopWindowTreeHostX11::Init(
     aura::Window* content_window,
     const views::Widget::InitParams& params,
-    aura::RootWindow::CreateParams* rw_create_params) {
+    aura::WindowEventDispatcher::CreateParams* rw_create_params) {
   views::DesktopWindowTreeHostX11::Init(content_window, params,
                                         rw_create_params);
 

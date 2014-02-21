@@ -61,10 +61,10 @@ const char* kAtomsToCache[] = {
 namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
-    aura::RootWindow* root_window,
+    aura::WindowEventDispatcher* dispatcher,
     DesktopWindowTreeHost* window_tree_host)
     : xdisplay_(gfx::GetXDisplay()),
-      xwindow_(root_window->host()->GetAcceleratedWidget()),
+      xwindow_(dispatcher->host()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),

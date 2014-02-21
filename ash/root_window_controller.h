@@ -78,19 +78,21 @@ class BootSplashScreen;
 // indirectly owned and deleted by |DisplayController|.
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
-// |GetRootWindowController(aura::RootWindow*)| function.
+// |GetRootWindowController(aura::WindowEventDispatcher*)| function.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
 
   // Creates and Initialize the RootWindowController for primary display.
-  static void CreateForPrimaryDisplay(aura::RootWindow* root_window);
+  static void CreateForPrimaryDisplay(aura::WindowEventDispatcher* dispatcher);
 
   // Creates and Initialize the RootWindowController for secondary displays.
-  static void CreateForSecondaryDisplay(aura::RootWindow* root_window);
+  static void CreateForSecondaryDisplay(
+      aura::WindowEventDispatcher* dispatcher);
 
   // Creates and Initialize the RootWindowController for virtual
   // keyboard displays.
-  static void CreateForVirtualKeyboardDisplay(aura::RootWindow* root_window);
+  static void CreateForVirtualKeyboardDisplay(
+      aura::WindowEventDispatcher* dispatcher);
 
   // Returns a RootWindowController that has a shelf for given
   // |window|. This returns the RootWindowController for the |window|'s
@@ -110,7 +112,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   virtual ~RootWindowController();
 
   aura::Window* root_window() { return dispatcher()->window(); }
-  aura::WindowEventDispatcher* dispatcher() { return root_window_.get(); }
+  aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 
@@ -233,7 +235,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void DeactivateKeyboard(keyboard::KeyboardController* keyboard_controller);
 
  private:
-  explicit RootWindowController(aura::RootWindow* root_window);
+  explicit RootWindowController(aura::WindowEventDispatcher* dispatcher);
   enum RootWindowType {
     PRIMARY,
     SECONDARY,
@@ -265,7 +267,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
   virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
   RootWindowLayoutManager* root_window_layout_;
 
   scoped_ptr<StackingController> stacking_controller_;

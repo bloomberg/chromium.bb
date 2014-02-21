@@ -53,13 +53,15 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Return the NativeTheme to use for |window|. WARNING: |window| may be NULL.
   static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
-  // Sets up resources needed before the RootWindow has been created.
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params,
-                    aura::RootWindow::CreateParams* rw_create_params) = 0;
+  // Sets up resources needed before the WindowEventDispatcher has been created.
+  virtual void Init(
+      aura::Window* content_window,
+      const Widget::InitParams& params,
+      aura::WindowEventDispatcher::CreateParams* rw_create_params) = 0;
 
-  // Invoked once the RootWindow has been created. Caller owns the RootWindow.
-  virtual void OnRootWindowCreated(aura::RootWindow* root,
+  // Invoked once the WindowEventDispatcher has been created. Caller owns the
+  // WindowEventDispatcher.
+  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
                                    const Widget::InitParams& params) = 0;
 
   // Creates and returns the Tooltip implementation to use. Return value is

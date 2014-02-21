@@ -221,14 +221,14 @@ class LauncherImpl : public Application,
 
   // Overridden from Launcher:
   virtual void Show() OVERRIDE {
-    if (!root_window_.get()) {
+    if (!dispatcher_.get()) {
       pending_show_ = true;
       return;
     }
-    root_window_->host()->Show();
+    dispatcher_->host()->Show();
   }
   virtual void Hide() OVERRIDE {
-    root_window_->host()->Hide();
+    dispatcher_->host()->Hide();
   }
 
   // Overridden from URLReceiver:
@@ -238,25 +238,25 @@ class LauncherImpl : public Application,
   }
 
   void HostContextCreated() {
-    aura::RootWindow::CreateParams params(gfx::Rect(450, 60));
+    aura::WindowEventDispatcher::CreateParams params(gfx::Rect(450, 60));
     params.host = window_tree_host_.get();
-    root_window_.reset(new aura::RootWindow(params));
-    window_tree_host_->set_delegate(root_window_.get());
-    root_window_->host()->InitHost();
-    root_window_->window()->SetBounds(gfx::Rect(450, 60));
+    dispatcher_.reset(new aura::WindowEventDispatcher(params));
+    window_tree_host_->set_delegate(dispatcher_.get());
+    dispatcher_->host()->InitHost();
+    dispatcher_->window()->SetBounds(gfx::Rect(450, 60));
 
     focus_client_.reset(new aura::test::TestFocusClient());
-    aura::client::SetFocusClient(root_window_->window(), focus_client_.get());
+    aura::client::SetFocusClient(dispatcher_->window(), focus_client_.get());
     activation_client_.reset(
-        new aura::client::DefaultActivationClient(root_window_->window()));
+        new aura::client::DefaultActivationClient(dispatcher_->window()));
     capture_client_.reset(
-        new aura::client::DefaultCaptureClient(root_window_->window()));
-    ime_filter_.reset(new MinimalInputEventFilter(root_window_->window()));
+        new aura::client::DefaultCaptureClient(dispatcher_->window()));
+    ime_filter_.reset(new MinimalInputEventFilter(dispatcher_->window()));
 
     window_tree_client_.reset(
-        new LauncherWindowTreeClient(root_window_->window()));
+        new LauncherWindowTreeClient(dispatcher_->window()));
 
-    launcher_controller_.InitInWindow(root_window_->window());
+    launcher_controller_.InitInWindow(dispatcher_->window());
 
     if (pending_show_) {
       pending_show_ = false;
@@ -275,7 +275,7 @@ class LauncherImpl : public Application,
 
   RemotePtr<LauncherClient> launcher_client_;
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
 
   bool pending_show_;
 };

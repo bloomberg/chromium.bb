@@ -216,7 +216,6 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
 
   // WindowTreeHost overrides:
-  virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

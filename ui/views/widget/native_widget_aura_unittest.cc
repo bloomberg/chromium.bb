@@ -45,14 +45,17 @@ class NativeWidgetAuraTest : public ViewsTestBase {
 
  protected:
   aura::Window* root_window() { return GetContext(); }
-  aura::RootWindow* dispatcher() { return root_window()->GetDispatcher(); }
+  aura::WindowEventDispatcher* dispatcher() {
+    return root_window()->GetDispatcher();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };
 
 TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
-  // Make a parent window larger than the host represented by rootwindow.
+  // Make a parent window larger than the host represented by
+  // WindowEventDispatcher.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 1024, 800));
@@ -68,7 +71,8 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
 }
 
 TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
-  // Make a parent window smaller than the host represented by rootwindow.
+  // Make a parent window smaller than the host represented by
+  // WindowEventDispatcher.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
@@ -85,8 +89,8 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
 
 // Verifies CenterWindow() constrains to parent size.
 TEST_F(NativeWidgetAuraTest, CenterWindowSmallParentNotAtOrigin) {
-  // Make a parent window smaller than the host represented by rootwindow and
-  // offset it slightly from the origin.
+  // Make a parent window smaller than the host represented by
+  // WindowEventDispatcher and offset it slightly from the origin.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(20, 40, 480, 320));

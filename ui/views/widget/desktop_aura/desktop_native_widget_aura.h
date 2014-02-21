@@ -70,9 +70,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // this is the signal that we should start our shutdown.
   virtual void OnHostClosed();
 
-  // Called from ~DesktopWindowTreeHost. This takes the RootWindow as by the
-  // time we get here |root_window_| is NULL.
-  virtual void OnDesktopWindowTreeHostDestroyed(aura::RootWindow* root);
+  // Called from ~DesktopWindowTreeHost. This takes the WindowEventDispatcher
+  // as by the time we get here |dispatcher_| is NULL.
+  virtual void OnDesktopWindowTreeHostDestroyed(
+      aura::WindowEventDispatcher* dispatcher);
 
   corewm::InputMethodEventFilter* input_method_event_filter() {
     return input_method_event_filter_.get();
@@ -80,8 +81,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   corewm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_;
   }
-  aura::RootWindow* root_window() {
-    return root_window_.get();
+  aura::WindowEventDispatcher* dispatcher() {
+    return dispatcher_.get();
   }
 
   // Overridden from NativeWidget:
@@ -227,10 +228,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Overridden from aura::RootWindowObserver:
   virtual void OnWindowTreeHostCloseRequested(
-      const aura::RootWindow* root) OVERRIDE;
-  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
-  virtual void OnWindowTreeHostMoved(const aura::RootWindow* root,
-                                     const gfx::Point& new_origin) OVERRIDE;
+      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
+  virtual void OnWindowTreeHostResized(
+      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
+  virtual void OnWindowTreeHostMoved(
+      const aura::WindowEventDispatcher* dispatcher,
+      const gfx::Point& new_origin) OVERRIDE;
 
  private:
   friend class FocusManagerEventHandler;
@@ -247,9 +250,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   scoped_ptr<DesktopCaptureClient> capture_client_;
 
-  // The NativeWidget owns the RootWindow. Required because the RootWindow owns
-  // its WindowTreeHost, so DesktopWindowTreeHost can't own it.
-  scoped_ptr<aura::RootWindow> root_window_;
+  // The NativeWidget owns the WindowEventDispatcher. Required because the
+  // WindowEventDispatcher owns its WindowTreeHost, so DesktopWindowTreeHost
+  // can't own it.
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
 
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.

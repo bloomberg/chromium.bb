@@ -96,9 +96,9 @@ bool IsFocusedWindow(aura::Window* window) {
 
 }  // namespace
 
-typedef test::AuraTestBase RootWindowTest;
+typedef test::AuraTestBase WindowEventDispatcherTest;
 
-TEST_F(RootWindowTest, OnHostMouseEvent) {
+TEST_F(WindowEventDispatcherTest, OnHostMouseEvent) {
   // Create two non-overlapping windows so we don't have to worry about which
   // is on top.
   scoped_ptr<NonClientDelegate> delegate1(new NonClientDelegate());
@@ -133,7 +133,7 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   EXPECT_TRUE(delegate1->mouse_event_flags() & ui::EF_IS_NON_CLIENT);
 }
 
-TEST_F(RootWindowTest, RepostEvent) {
+TEST_F(WindowEventDispatcherTest, RepostEvent) {
   // Test RepostEvent in RootWindow. It only works for Mouse Press.
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
   gfx::Point point(10, 10);
@@ -147,7 +147,7 @@ TEST_F(RootWindowTest, RepostEvent) {
 
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
-TEST_F(RootWindowTest, MouseButtonState) {
+TEST_F(WindowEventDispatcherTest, MouseButtonState) {
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
   gfx::Point location;
@@ -204,7 +204,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
 
-TEST_F(RootWindowTest, TranslatedEvent) {
+TEST_F(WindowEventDispatcherTest, TranslatedEvent) {
   scoped_ptr<Window> w1(test::CreateTestWindowWithDelegate(NULL, 1,
       gfx::Rect(50, 50, 100, 100), root_window()));
 
@@ -284,7 +284,7 @@ class TestEventClient : public client::EventClient {
 
 }  // namespace
 
-TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
+TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
   TestEventClient client(root_window());
   test::TestWindowDelegate d;
 
@@ -340,7 +340,7 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
   w3->parent()->RemoveChild(w3.get());
 }
 
-TEST_F(RootWindowTest, IgnoreUnknownKeys) {
+TEST_F(WindowEventDispatcherTest, IgnoreUnknownKeys) {
   test::TestEventHandler* filter = new ConsumeKeyHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -355,7 +355,7 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   EXPECT_EQ(1, filter->num_key_events());
 }
 
-TEST_F(RootWindowTest, NoDelegateWindowReceivesKeyEvents) {
+TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
   w1->Show();
   w1->Focus();
@@ -372,7 +372,7 @@ TEST_F(RootWindowTest, NoDelegateWindowReceivesKeyEvents) {
 
 // Tests that touch-events that are beyond the bounds of the root-window do get
 // propagated to the event filters correctly with the root as the target.
-TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
+TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
   test::TestEventHandler* filter = new test::TestEventHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -391,7 +391,7 @@ TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
 }
 
 // Tests that scroll events are dispatched correctly.
-TEST_F(RootWindowTest, ScrollEventDispatch) {
+TEST_F(WindowEventDispatcherTest, ScrollEventDispatch) {
   base::TimeDelta now = ui::EventTimeForNow();
   test::TestEventHandler* filter = new test::TestEventHandler;
   root_window()->SetEventFilter(filter);
@@ -579,7 +579,7 @@ std::string EventTypesToString(const EventFilterRecorder::Events& events) {
 
 // Verifies a repost mouse event targets the window with capture (if there is
 // one).
-TEST_F(RootWindowTest, RepostTargetsCaptureWindow) {
+TEST_F(WindowEventDispatcherTest, RepostTargetsCaptureWindow) {
   // Set capture on |window| generate a mouse event (that is reposted) and not
   // over |window| and verify |window| gets it (|window| gets it because it has
   // capture).
@@ -599,7 +599,7 @@ TEST_F(RootWindowTest, RepostTargetsCaptureWindow) {
               std::string::npos) << EventTypesToString(recorder->events());
 }
 
-TEST_F(RootWindowTest, MouseMovesHeld) {
+TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -691,7 +691,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   filter->Reset();
 }
 
-TEST_F(RootWindowTest, TouchMovesHeld) {
+TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -775,7 +775,7 @@ class HoldPointerOnScrollHandler : public test::TestEventHandler {
 
 // Tests that touch-move events don't contribute to an in-progress scroll
 // gesture if touch-move events are being held by the dispatcher.
-TEST_F(RootWindowTest, TouchMovesHeldOnScroll) {
+TEST_F(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);
   test::TestWindowDelegate delegate;
@@ -806,7 +806,7 @@ TEST_F(RootWindowTest, TouchMovesHeldOnScroll) {
 
 // Tests that synthetic mouse events are ignored when mouse
 // events are disabled.
-TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
+TEST_F(WindowEventDispatcherTest, DispatchSyntheticMouseEvents) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -840,7 +840,7 @@ TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
 
 // Tests that a mouse exit is dispatched to the last known cursor location
 // when the cursor becomes invisible.
-TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
+TEST_F(WindowEventDispatcherTest, DispatchMouseExitWhenCursorHidden) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -936,7 +936,7 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(DeletingWindowDelegate);
 };
 
-TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
+TEST_F(WindowEventDispatcherTest, DeleteWindowDuringDispatch) {
   // Verifies that we can delete a window during each phase of event handling.
   // Deleting the window should not cause a crash, only prevent further
   // processing from occurring.
@@ -1006,7 +1006,8 @@ class DetachesParentOnTapDelegate : public test::TestWindowDelegate {
 
 // Tests that the gesture recognizer is reset for all child windows when a
 // window hides. No expectations, just checks that the test does not crash.
-TEST_F(RootWindowTest, GestureRecognizerResetsTargetWhenParentHides) {
+TEST_F(WindowEventDispatcherTest,
+       GestureRecognizerResetsTargetWhenParentHides) {
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
   DetachesParentOnTapDelegate delegate;
   scoped_ptr<Window> parent(CreateNormalWindow(22, w1.get(), NULL));
@@ -1057,7 +1058,7 @@ class NestedGestureDelegate : public test::TestWindowDelegate {
 }  // namespace
 
 // Tests that gesture end is delivered after nested gesture processing.
-TEST_F(RootWindowTest, GestureEndDeliveredAfterNestedGestures) {
+TEST_F(WindowEventDispatcherTest, GestureEndDeliveredAfterNestedGestures) {
   NestedGestureDelegate d1(NULL, gfx::Point());
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &d1));
   w1->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1077,7 +1078,7 @@ TEST_F(RootWindowTest, GestureEndDeliveredAfterNestedGestures) {
 }
 
 // Tests whether we can repost the Tap down gesture event.
-TEST_F(RootWindowTest, RepostTapdownGestureTest) {
+TEST_F(WindowEventDispatcherTest, RepostTapdownGestureTest) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -1159,7 +1160,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
 // Tests whether events which are generated after the reposted gesture event
 // are received after that. In this case the scroll sequence events should
 // be received after the reposted gesture event.
-TEST_F(RootWindowTest, GestureRepostEventOrder) {
+TEST_F(WindowEventDispatcherTest, GestureRepostEventOrder) {
   // Expected events at the end for the repost_target window defined below.
   const char kExpectedTargetEvents[] =
     // TODO)(rbyers): Gesture event reposting is disabled - crbug.com/279039.
@@ -1241,7 +1242,7 @@ class OnMouseExitDeletingEventFilter : public EventFilterRecorder {
 // Tests that RootWindow drops mouse-moved event that is supposed to be sent to
 // a child, but the child is destroyed because of the synthesized mouse-exit
 // event generated on the previous mouse_moved_handler_.
-TEST_F(RootWindowTest, DeleteWindowDuringMouseMovedDispatch) {
+TEST_F(WindowEventDispatcherTest, DeleteWindowDuringMouseMovedDispatch) {
   // Create window 1 and set its event filter. Window 1 will take ownership of
   // the event filter.
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
@@ -1314,17 +1315,18 @@ class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
 #endif
 
 // Verifies GetRootWindow() from ~Window returns a valid root.
-TEST_F(RootWindowTest, MAYBE_ValidRootDuringDestruction) {
+TEST_F(WindowEventDispatcherTest, MAYBE_ValidRootDuringDestruction) {
   bool got_destroying = false;
   bool has_valid_root = false;
   ValidRootDuringDestructionWindowObserver observer(&got_destroying,
                                                     &has_valid_root);
   {
-    scoped_ptr<RootWindow> root_window(
-        new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100))));
-    root_window->host()->InitHost();
-    // Owned by RootWindow.
-    Window* w1 = CreateNormalWindow(1, root_window->window(), NULL);
+    scoped_ptr<WindowEventDispatcher> dispatcher(
+        new WindowEventDispatcher(
+            WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 100, 100))));
+    dispatcher->host()->InitHost();
+    // Owned by WindowEventDispatcher.
+    Window* w1 = CreateNormalWindow(1, dispatcher->window(), NULL);
     w1->AddObserver(&observer);
   }
   EXPECT_TRUE(got_destroying);
@@ -1368,7 +1370,7 @@ class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
 // tracks the number of events with ui::EF_SHIFT_DOWN set (all reposted events
 // have EF_SHIFT_DOWN). When the first event is seen RepostEvent() is used to
 // schedule another reposted event.
-TEST_F(RootWindowTest, DontResetHeldEvent) {
+TEST_F(WindowEventDispatcherTest, DontResetHeldEvent) {
   DontResetHeldEventWindowDelegate delegate(root_window());
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &delegate));
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
@@ -1390,15 +1392,17 @@ TEST_F(RootWindowTest, DontResetHeldEvent) {
 
 namespace {
 
-// See description above DeleteRootFromHeldMouseEvent for details.
-class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
+// See description above DeleteDispatcherFromHeldMouseEvent for details.
+class DeleteDispatcherFromHeldMouseEventDelegate
+    : public test::TestWindowDelegate {
  public:
-  explicit DeleteRootFromHeldMouseEventDelegate(aura::RootWindow* root)
-      : root_(root),
+  explicit DeleteDispatcherFromHeldMouseEventDelegate(
+      WindowEventDispatcher* dispatcher)
+      : dispatcher_(dispatcher),
         got_mouse_event_(false),
         got_destroy_(false) {
   }
-  virtual ~DeleteRootFromHeldMouseEventDelegate() {}
+  virtual ~DeleteDispatcherFromHeldMouseEventDelegate() {}
 
   bool got_mouse_event() const { return got_mouse_event_; }
   bool got_destroy() const { return got_destroy_; }
@@ -1407,7 +1411,7 @@ class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if ((event->flags() & ui::EF_SHIFT_DOWN) != 0) {
       got_mouse_event_ = true;
-      delete root_;
+      delete dispatcher_;
     }
   }
   virtual void OnWindowDestroyed() OVERRIDE {
@@ -1415,44 +1419,44 @@ class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
   }
 
  private:
-  RootWindow* root_;
+  WindowEventDispatcher* dispatcher_;
   bool got_mouse_event_;
   bool got_destroy_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteRootFromHeldMouseEventDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DeleteDispatcherFromHeldMouseEventDelegate);
 };
 
 }  // namespace
 
 #if defined(USE_OZONE)
 // Creating multiple WindowTreeHostOzone instances is broken.
-#define MAYBE_DeleteRootFromHeldMouseEvent DISABLED_DeleteRootFromHeldMouseEvent
+#define MAYBE_DeleteDispatcherFromHeldMouseEvent DISABLED_DeleteDispatcherFromHeldMouseEvent
 #else
-#define MAYBE_DeleteRootFromHeldMouseEvent DeleteRootFromHeldMouseEvent
+#define MAYBE_DeleteDispatcherFromHeldMouseEvent DeleteDispatcherFromHeldMouseEvent
 #endif
 
 // Verifies if a RootWindow is deleted from dispatching a held mouse event we
 // don't crash.
-TEST_F(RootWindowTest, MAYBE_DeleteRootFromHeldMouseEvent) {
+TEST_F(WindowEventDispatcherTest, MAYBE_DeleteDispatcherFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
-  RootWindow* r2 =
-      new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100)));
-  r2->host()->InitHost();
-  DeleteRootFromHeldMouseEventDelegate delegate(r2);
-  // Owned by |r2|.
-  Window* w1 = CreateNormalWindow(1, r2->window(), &delegate);
+  WindowEventDispatcher* d2 = new WindowEventDispatcher(
+      WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 100, 100)));
+  d2->host()->InitHost();
+  DeleteDispatcherFromHeldMouseEventDelegate delegate(d2);
+  // Owned by |d2|.
+  Window* w1 = CreateNormalWindow(1, d2->window(), &delegate);
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
                          ui::EF_SHIFT_DOWN, 0);
-  r2->RepostEvent(pressed);
+  d2->RepostEvent(pressed);
   // RunAllPendingInMessageLoop() to make sure the |pressed| is run.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(delegate.got_mouse_event());
   EXPECT_TRUE(delegate.got_destroy());
 }
 
-TEST_F(RootWindowTest, WindowHideCancelsActiveTouches) {
+TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveTouches) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -1473,7 +1477,7 @@ TEST_F(RootWindowTest, WindowHideCancelsActiveTouches) {
             EventTypesToString(filter->events()));
 }
 
-TEST_F(RootWindowTest, WindowHideCancelsActiveGestures) {
+TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveGestures) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -1507,7 +1511,7 @@ TEST_F(RootWindowTest, WindowHideCancelsActiveGestures) {
 // Places two windows side by side. Presses down on one window, and starts a
 // scroll. Sets capture on the other window and ensures that the "ending" events
 // aren't sent to the window which gained capture.
-TEST_F(RootWindowTest, EndingEventDoesntRetarget) {
+TEST_F(WindowEventDispatcherTest, EndingEventDoesntRetarget) {
   scoped_ptr<Window> window1(CreateNormalWindow(1, root_window(), NULL));
   window1->SetBounds(gfx::Rect(0, 0, 40, 40));
 
@@ -1576,7 +1580,7 @@ class CaptureWindowTracker : public test::TestWindowDelegate {
 }
 
 // Verifies handling loss of capture by the capture window being hidden.
-TEST_F(RootWindowTest, CaptureWindowHidden) {
+TEST_F(WindowEventDispatcherTest, CaptureWindowHidden) {
   CaptureWindowTracker capture_window_tracker;
   capture_window_tracker.CreateCaptureWindow(root_window());
   capture_window_tracker.capture_window()->Hide();
@@ -1584,7 +1588,7 @@ TEST_F(RootWindowTest, CaptureWindowHidden) {
 }
 
 // Verifies handling loss of capture by the capture window being destroyed.
-TEST_F(RootWindowTest, CaptureWindowDestroyed) {
+TEST_F(WindowEventDispatcherTest, CaptureWindowDestroyed) {
   CaptureWindowTracker capture_window_tracker;
   capture_window_tracker.CreateCaptureWindow(root_window());
   capture_window_tracker.reset();
@@ -1607,10 +1611,11 @@ class ExitMessageLoopOnMousePress : public test::TestEventHandler {
   DISALLOW_COPY_AND_ASSIGN(ExitMessageLoopOnMousePress);
 };
 
-class RootWindowTestWithMessageLoop : public RootWindowTest {
+class WindowEventDispatcherTestWithMessageLoop
+    : public WindowEventDispatcherTest {
  public:
-  RootWindowTestWithMessageLoop() {}
-  virtual ~RootWindowTestWithMessageLoop() {}
+  WindowEventDispatcherTestWithMessageLoop() {}
+  virtual ~WindowEventDispatcherTestWithMessageLoop() {}
 
   void RunTest() {
     // Reset any event the window may have received when bringing up the window
@@ -1623,7 +1628,7 @@ class RootWindowTestWithMessageLoop : public RootWindowTest {
     ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
                          gfx::Point(10, 10), ui::EF_NONE, ui::EF_NONE);
     message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&RootWindow::RepostEvent,
+                             base::Bind(&WindowEventDispatcher::RepostEvent,
                                         base::Unretained(dispatcher()),
                                         mouse));
     message_loop()->PostTask(FROM_HERE,
@@ -1644,46 +1649,47 @@ class RootWindowTestWithMessageLoop : public RootWindowTest {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    RootWindowTest::SetUp();
+    WindowEventDispatcherTest::SetUp();
     window_.reset(CreateNormalWindow(1, root_window(), NULL));
     window_->AddPreTargetHandler(&handler_);
   }
 
   virtual void TearDown() OVERRIDE {
     window_.reset();
-    RootWindowTest::TearDown();
+    WindowEventDispatcherTest::TearDown();
   }
 
  private:
   scoped_ptr<Window> window_;
   ExitMessageLoopOnMousePress handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowTestWithMessageLoop);
+  DISALLOW_COPY_AND_ASSIGN(WindowEventDispatcherTestWithMessageLoop);
 };
 
-TEST_F(RootWindowTestWithMessageLoop, EventRepostedInNonNestedLoop) {
+TEST_F(WindowEventDispatcherTestWithMessageLoop, EventRepostedInNonNestedLoop) {
   CHECK(!message_loop()->is_running());
   // Perform the test in a callback, so that it runs after the message-loop
   // starts.
-  message_loop()->PostTask(FROM_HERE,
-                           base::Bind(&RootWindowTestWithMessageLoop::RunTest,
-                                      base::Unretained(this)));
+  message_loop()->PostTask(
+      FROM_HERE, base::Bind(
+          &WindowEventDispatcherTestWithMessageLoop::RunTest,
+          base::Unretained(this)));
   message_loop()->Run();
 }
 
-class RootWindowTestInHighDPI : public RootWindowTest {
+class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {
  public:
-  RootWindowTestInHighDPI() {}
-  virtual ~RootWindowTestInHighDPI() {}
+  WindowEventDispatcherTestInHighDPI() {}
+  virtual ~WindowEventDispatcherTestInHighDPI() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    RootWindowTest::SetUp();
+    WindowEventDispatcherTest::SetUp();
     test_screen()->SetDeviceScaleFactor(2.f);
   }
 };
 
-TEST_F(RootWindowTestInHighDPI, EventLocationTransform) {
+TEST_F(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> child(test::CreateTestWindowWithDelegate(&delegate,
       1234, gfx::Rect(20, 20, 100, 100), root_window()));
@@ -1719,7 +1725,7 @@ TEST_F(RootWindowTestInHighDPI, EventLocationTransform) {
   root_window()->RemovePreTargetHandler(&handler_root);
 }
 
-TEST_F(RootWindowTestInHighDPI, TouchMovesHeldOnScroll) {
+TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);
   test::TestWindowDelegate delegate;
@@ -1767,7 +1773,7 @@ class SelfDestructDelegate : public test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(SelfDestructDelegate);
 };
 
-TEST_F(RootWindowTest, SynthesizedLocatedEvent) {
+TEST_F(WindowEventDispatcherTest, SynthesizedLocatedEvent) {
   test::EventGenerator generator(root_window());
   generator.MoveMouseTo(10, 10);
   EXPECT_EQ("10,10",

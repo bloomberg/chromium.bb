@@ -9,28 +9,31 @@
 
 namespace gfx {
 class Point;
-class Size;
 }
 
 namespace aura {
-class RootWindow;
 class Window;
+class WindowEventDispatcher;
 
+// TODO(beng): Rename to WindowTreeHostObserver
 class AURA_EXPORT RootWindowObserver {
  public:
   // Invoked after the RootWindow's host has been resized.
-  virtual void OnWindowTreeHostResized(const RootWindow* root) {}
+  virtual void OnWindowTreeHostResized(
+      const WindowEventDispatcher* dispatcher) {}
 
   // Invoked after the RootWindow's host has been moved on screen.
-  virtual void OnWindowTreeHostMoved(const RootWindow* root,
+  virtual void OnWindowTreeHostMoved(const WindowEventDispatcher* dispatcher,
                                      const gfx::Point& new_origin) {}
 
   // Invoked when the native windowing system sends us a request to close our
   // window.
-  virtual void OnWindowTreeHostCloseRequested(const RootWindow* root) {}
+  virtual void OnWindowTreeHostCloseRequested(
+      const WindowEventDispatcher* dispatcher) {}
 
   // Invoked when the keyboard mapping has changed.
-  virtual void OnKeyboardMappingChanged(const RootWindow* root) {}
+  virtual void OnKeyboardMappingChanged(
+      const WindowEventDispatcher* dispatcher) {}
 
  protected:
   virtual ~RootWindowObserver() {}

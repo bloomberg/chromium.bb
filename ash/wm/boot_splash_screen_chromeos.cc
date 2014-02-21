@@ -20,8 +20,8 @@ namespace internal {
 class BootSplashScreen::CopyHostContentLayerDelegate
     : public ui::LayerDelegate {
  public:
-  explicit CopyHostContentLayerDelegate(aura::RootWindow* root_window)
-      : root_window_(root_window) {
+  explicit CopyHostContentLayerDelegate(aura::WindowTreeHost* host)
+      : host_(host) {
   }
 
   virtual ~CopyHostContentLayerDelegate() {}
@@ -35,8 +35,8 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
     // to create a zero-copy texture (when possible):
     // https://codereview.chromium.org/10543125
-    ui::CopyAreaToCanvas(root_window_->host()->GetAcceleratedWidget(),
-        root_window_->host()->GetBounds(), gfx::Point(), canvas);
+    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(),
+        host_->GetBounds(), gfx::Point(), canvas);
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
@@ -46,18 +46,18 @@ class BootSplashScreen::CopyHostContentLayerDelegate
   }
 
  private:
-  aura::RootWindow* root_window_;  // not owned
+  aura::WindowTreeHost* host_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(CopyHostContentLayerDelegate);
 };
 
-BootSplashScreen::BootSplashScreen(aura::RootWindow* root_window)
-    : layer_delegate_(new CopyHostContentLayerDelegate(root_window)),
+BootSplashScreen::BootSplashScreen(aura::WindowEventDispatcher* dispatcher)
+    : layer_delegate_(new CopyHostContentLayerDelegate(dispatcher->host())),
       layer_(new ui::Layer(ui::LAYER_TEXTURED)) {
   layer_->set_delegate(layer_delegate_.get());
 
-  ui::Layer* root_layer = root_window->window()->layer();
-  layer_->SetBounds(gfx::Rect(root_layer->bounds().size()));
+  ui::Layer* root_layer = dispatcher->window()->layer();
+  layer_->SetBounds(gfx::Rect(dispatcher->window()->bounds().size()));
   root_layer->Add(layer_.get());
   root_layer->StackAtTop(layer_.get());
 }

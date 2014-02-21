@@ -7,9 +7,6 @@
 
 #include <X11/Xlib.h>
 
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
@@ -21,7 +18,7 @@
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 namespace aura {
-class RootWindow;
+class WindowEventDispatcher;
 }
 
 namespace gfx {
@@ -58,7 +55,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
 
   // We need to keep track of this so we can actually move it when reacting to
   // mouse events.
-  aura::RootWindow* root_window_;
+  aura::WindowEventDispatcher* dispatcher_;
 
   // Our cursor offset from the top left window origin when the drag
   // started. Used to calculate the window's new bounds relative to the current

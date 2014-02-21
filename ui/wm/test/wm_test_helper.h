@@ -10,8 +10,8 @@
 #include "ui/aura/client/window_tree_client.h"
 
 namespace aura {
-class RootWindow;
 class Window;
+class WindowEventDispatcher;
 namespace client {
 class DefaultActivationClient;
 class DefaultCaptureClient;
@@ -41,7 +41,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
   explicit WMTestHelper(const gfx::Size& default_window_size);
   virtual ~WMTestHelper();
 
-  aura::RootWindow* root_window() { return root_window_.get(); }
+  aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
 
   // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
@@ -49,9 +49,9 @@ class WMTestHelper : public aura::client::WindowTreeClient {
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
 
-  // Owned by RootWindow
+  // Owned by the root Window.
   views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

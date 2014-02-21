@@ -44,11 +44,10 @@ const float kScrollScaleChangeFactor = 0.05f;
 // |kPanningMergin| from the edge, the view-port moves.
 const int kPanningMergin = 100;
 
-void MoveCursorTo(aura::RootWindow* root_window,
-                  const gfx::Point& root_location) {
+void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
-  root_window->host()->GetRootTransform().TransformPoint(&host_location_3f);
-  root_window->host()->MoveCursorToHostLocation(
+  host->GetRootTransform().TransformPoint(&host_location_3f);
+  host->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
 
@@ -362,7 +361,7 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
     if (ret) {
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0)
-        MoveCursorTo(root_window_->GetDispatcher(), mouse);
+        MoveCursorTo(root_window_->GetDispatcher()->host(), mouse);
     }
   }
 }
@@ -419,7 +418,8 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
     return;
 
   if (move_cursor_after_animation_) {
-    MoveCursorTo(root_window_->GetDispatcher(), position_after_animation_);
+    MoveCursorTo(root_window_->GetDispatcher()->host(),
+                 position_after_animation_);
     move_cursor_after_animation_ = false;
 
     aura::client::CursorClient* cursor_client =

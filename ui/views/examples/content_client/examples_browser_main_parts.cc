@@ -60,9 +60,9 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
-  wm_test_helper_->root_window()->host()->Show();
+  wm_test_helper_->dispatcher()->host()->Show();
   // Ensure Aura knows where to open new windows.
-  window_context = wm_test_helper_->root_window()->window();
+  window_context = wm_test_helper_->dispatcher()->window();
 #elif defined(USE_AURA)
   aura::Env::CreateInstance();
   gfx::Screen::SetScreenInstance(

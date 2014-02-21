@@ -41,34 +41,36 @@ void VirtualKeyboardWindowController::UpdateWindow(
   static int virtual_keyboard_root_window_count = 0;
   if (!root_window_controller_.get()) {
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-    aura::RootWindow::CreateParams params(bounds_in_native);
+    aura::WindowEventDispatcher::CreateParams params(bounds_in_native);
     params.host = Shell::GetInstance()->window_tree_host_factory()->
         CreateWindowTreeHost(bounds_in_native);
-    aura::RootWindow* root_window = new aura::RootWindow(params);
+    aura::WindowEventDispatcher* dispatcher =
+        new aura::WindowEventDispatcher(params);
 
-    root_window->window()->SetName(
+    dispatcher->window()->SetName(
         base::StringPrintf("VirtualKeyboardRootWindow-%d",
                            virtual_keyboard_root_window_count++));
 
     // No need to remove RootWindowObserver because
     // the DisplayController object outlives RootWindow objects.
-    root_window->AddRootWindowObserver(
+    dispatcher->AddRootWindowObserver(
         Shell::GetInstance()->display_controller());
-    InitRootWindowSettings(root_window->window())->display_id =
+    InitRootWindowSettings(dispatcher->window())->display_id =
         display_info.id();
-    root_window->host()->InitHost();
-    RootWindowController::CreateForVirtualKeyboardDisplay(root_window);
+    dispatcher->host()->InitHost();
+    RootWindowController::CreateForVirtualKeyboardDisplay(dispatcher);
     root_window_controller_.reset(GetRootWindowController(
-        root_window->window()));
+        dispatcher->window()));
     root_window_controller_->dispatcher()->host()->Show();
     root_window_controller_->ActivateKeyboard(
         Shell::GetInstance()->keyboard_controller());
     FlipDisplay();
   } else {
-    aura::RootWindow* root_window = root_window_controller_->dispatcher();
-    GetRootWindowSettings(root_window->window())->display_id =
+    aura::WindowEventDispatcher* dispatcher =
+        root_window_controller_->dispatcher();
+    GetRootWindowSettings(dispatcher->window())->display_id =
         display_info.id();
-    root_window->host()->SetBounds(display_info.bounds_in_native());
+    dispatcher->host()->SetBounds(display_info.bounds_in_native());
   }
 }
 
@@ -91,11 +93,12 @@ void VirtualKeyboardWindowController::FlipDisplay() {
   display_manager->SetDisplayRotation(
       display_manager->non_desktop_display().id(), gfx::Display::ROTATE_180);
 
-  aura::RootWindow* root_window = root_window_controller_->dispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window_controller_->dispatcher();
   scoped_ptr<aura::RootWindowTransformer> transformer(
-      internal::CreateRootWindowTransformerForDisplay(root_window->window(),
+      internal::CreateRootWindowTransformerForDisplay(dispatcher->window(),
           display_manager->non_desktop_display()));
-  root_window->host()->SetRootWindowTransformer(transformer.Pass());
+  dispatcher->host()->SetRootWindowTransformer(transformer.Pass());
 }
 
 }  // namespace internal

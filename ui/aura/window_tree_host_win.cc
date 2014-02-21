@@ -56,10 +56,6 @@ WindowTreeHostWin::~WindowTreeHostWin() {
   DestroyWindow(hwnd());
 }
 
-RootWindow* WindowTreeHostWin::GetRootWindow() {
-  return delegate_->AsRootWindow();
-}
-
 gfx::AcceleratedWidget WindowTreeHostWin::GetAcceleratedWidget() {
   return hwnd();
 }
@@ -138,8 +134,8 @@ void WindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   // the window size may not have changed.
   float current_scale = compositor()->device_scale_factor();
   float new_scale = gfx::Screen::GetScreenFor(
-      delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
-          delegate_->AsRootWindow()->window()).device_scale_factor();
+      delegate_->AsDispatcher()->window())->GetDisplayNearestWindow(
+          delegate_->AsDispatcher()->window()).device_scale_factor();
   if (current_scale != new_scale)
     NotifyHostResized(bounds.size());
 }
@@ -174,7 +170,7 @@ void WindowTreeHostWin::ReleaseCapture() {
 
 bool WindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
-      client::GetCursorClient(GetRootWindow()->window());
+      client::GetCursorClient(GetDispatcher()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;

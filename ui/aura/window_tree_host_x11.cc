@@ -362,7 +362,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
 
   switch (xev->type) {
     case EnterNotify: {
-      aura::Window* root_window = GetRootWindow()->window();
+      aura::Window* root_window = GetDispatcher()->window();
       client::CursorClient* cursor_client =
           client::GetCursorClient(root_window);
       if (cursor_client) {
@@ -402,7 +402,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         client::UserActionClient* gesture_client =
-            client::GetUserActionClient(delegate_->AsRootWindow()->window());
+            client::GetUserActionClient(delegate_->AsDispatcher()->window());
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -468,7 +468,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
       if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
-        delegate_->AsRootWindow()->OnWindowTreeHostCloseRequested();
+        delegate_->AsDispatcher()->OnWindowTreeHostCloseRequested();
       } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
@@ -486,7 +486,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         case MappingModifier:
         case MappingKeyboard:
           XRefreshKeyboardMapping(&xev->xmapping);
-          delegate_->AsRootWindow()->OnKeyboardMappingChanged();
+          delegate_->AsDispatcher()->OnKeyboardMappingChanged();
           break;
         case MappingPointer:
           ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
@@ -521,10 +521,6 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     }
   }
   return POST_DISPATCH_NONE;
-}
-
-RootWindow* WindowTreeHostX11::GetRootWindow() {
-  return delegate_->AsRootWindow();
 }
 
 gfx::AcceleratedWidget WindowTreeHostX11::GetAcceleratedWidget() {
@@ -574,8 +570,8 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();
   float new_scale = gfx::Screen::GetScreenFor(
-      delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
-          delegate_->AsRootWindow()->window()).device_scale_factor();
+      delegate_->AsDispatcher()->window())->GetDisplayNearestWindow(
+          delegate_->AsDispatcher()->window()).device_scale_factor();
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
@@ -607,8 +603,8 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   if (size_changed || current_scale != new_scale) {
     NotifyHostResized(bounds.size());
   } else {
-    delegate_->AsRootWindow()->window()->SchedulePaintInRect(
-        delegate_->AsRootWindow()->window()->bounds());
+    delegate_->AsDispatcher()->window()->SchedulePaintInRect(
+        delegate_->AsDispatcher()->window()->bounds());
   }
 }
 
@@ -638,7 +634,7 @@ void WindowTreeHostX11::ReleaseCapture() {
 
 bool WindowTreeHostX11::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
-      client::GetCursorClient(GetRootWindow()->window());
+      client::GetCursorClient(GetDispatcher()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
@@ -731,7 +727,7 @@ void WindowTreeHostX11::PostNativeEvent(
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      delegate_->AsRootWindow()->host()->ConvertPointToNativeScreen(&point);
+      delegate_->AsDispatcher()->host()->ConvertPointToNativeScreen(&point);
       xevent.xmotion.x_root = point.x();
       xevent.xmotion.y_root = point.y();
     }
@@ -769,14 +765,16 @@ void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 void WindowTreeHostX11::OnWindowInitialized(Window* window) {
 }
 
-void WindowTreeHostX11::OnRootWindowInitialized(RootWindow* root_window) {
+void WindowTreeHostX11::OnRootWindowInitialized(
+    WindowEventDispatcher* dispatcher) {
   // UpdateIsInternalDisplay relies on:
-  // 1. delegate_ pointing to RootWindow - available after SetDelegate.
-  // 2. RootWindow's kDisplayIdKey property set - available by the time
-  //    RootWindow::Init is called.
+  // 1. delegate_ pointing to WindowEventDispatcher - available after
+  //    SetDelegate.
+  // 2. WED's kDisplayIdKey property set - available by the time
+  //    WED::Init is called.
   //    (set in DisplayManager::CreateRootWindowForDisplay)
-  // Ready when NotifyRootWindowInitialized is called from RootWindow::Init.
-  if (!delegate_ || root_window != GetRootWindow())
+  // Ready when NotifyRootWindowInitialized is called from WED::Init.
+  if (!delegate_ || dispatcher != GetDispatcher())
     return;
   UpdateIsInternalDisplay();
 
@@ -876,7 +874,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
           if (type == ui::ET_MOUSE_RELEASED)
             break;
           client::UserActionClient* gesture_client =
-              client::GetUserActionClient(delegate_->AsRootWindow()->window());
+              client::GetUserActionClient(delegate_->AsDispatcher()->window());
           if (gesture_client) {
             bool reverse_direction =
                 ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
@@ -931,7 +929,7 @@ void WindowTreeHostX11::SetCursorInternal(gfx::NativeCursor cursor) {
 
 void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
     ui::MouseEvent* event) {
-  Window* root_window = GetRootWindow()->window();
+  Window* root_window = GetDispatcher()->window();
   client::ScreenPositionClient* screen_position_client =
       client::GetScreenPositionClient(root_window);
   gfx::Rect local(bounds_.size());
@@ -952,7 +950,7 @@ void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
 }
 
 void WindowTreeHostX11::UpdateIsInternalDisplay() {
-  Window* root_window = GetRootWindow()->window();
+  Window* root_window = GetDispatcher()->window();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
   gfx::Display display = screen->GetDisplayNearestWindow(root_window);
   is_internal_display_ = display.IsInternal();

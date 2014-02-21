@@ -513,7 +513,7 @@ void Shell::PlatformSetContents() {
   if (headless_) {
     CHECK(platform_);
     aura::Window* content = web_contents_->GetView()->GetNativeView();
-    aura::Window* parent = platform_->window()->window();
+    aura::Window* parent = platform_->dispatcher()->window();
     if (!parent->Contains(content)) {
       parent->AddChild(content);
       content->Show();

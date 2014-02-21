@@ -45,10 +45,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
  protected:
   // Overridden from DesktopWindowTreeHost:
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params,
-                    aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
-  virtual void OnRootWindowCreated(aura::RootWindow* root,
+  virtual void Init(
+      aura::Window* content_window,
+      const Widget::InitParams& params,
+      aura::WindowEventDispatcher::CreateParams* rw_create_params) OVERRIDE;
+  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
                                    const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual scoped_ptr<aura::client::DragDropClient>
@@ -108,7 +109,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual bool IsAnimatingClosed() const OVERRIDE;
 
   // Overridden from aura::WindowTreeHost:
-  virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -228,8 +228,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Returns true if a modal window is active in the current root window chain.
   bool IsModalWindowActive() const;
 
-  // We are owned by the RootWindow, but we have to have a back pointer to it.
-  aura::RootWindow* root_window_;
+  // We are owned by the WindowEventDispatcher, but we have to have a back
+  // pointer to it.
+  aura::WindowEventDispatcher* dispatcher_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<aura::client::FocusClient> focus_client_;

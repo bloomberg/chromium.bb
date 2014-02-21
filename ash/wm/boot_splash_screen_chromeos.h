@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 
 namespace aura {
-class RootWindow;
+class WindowEventDispatcher;
 }
 
 namespace ui {
@@ -30,7 +30,7 @@ namespace internal {
 // animate the transition between the splash screen and the login screen.
 class BootSplashScreen {
  public:
-  explicit BootSplashScreen(aura::RootWindow* root_window);
+  explicit BootSplashScreen(aura::WindowEventDispatcher* dispatcher);
   ~BootSplashScreen();
 
   // Begins animating |layer_|'s opacity to 0 over |duration|.

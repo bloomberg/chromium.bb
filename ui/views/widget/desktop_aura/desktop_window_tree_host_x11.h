@@ -8,9 +8,6 @@
 #include <X11/extensions/shape.h>
 #include <X11/Xlib.h>
 
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -71,10 +68,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
 
  protected:
   // Overridden from DesktopWindowTreeHost:
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params,
-                    aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
-  virtual void OnRootWindowCreated(aura::RootWindow* root,
+  virtual void Init(
+      aura::Window* content_window,
+      const Widget::InitParams& params,
+      aura::WindowEventDispatcher::CreateParams* rw_create_params) OVERRIDE;
+  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
                                    const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual scoped_ptr<aura::client::DragDropClient>
@@ -134,7 +132,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
   virtual bool IsAnimatingClosed() const OVERRIDE;
 
   // Overridden from aura::WindowTreeHost:
-  virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -164,9 +161,9 @@ private:
   // initialization related to talking to the X11 server.
   void InitX11Window(const Widget::InitParams& params);
 
-  // Creates an aura::RootWindow to contain the |content_window|, along with
-  // all aura client objects that direct behavior.
-  aura::RootWindow* InitRootWindow(const Widget::InitParams& params);
+  // Creates an aura::WindowEventDispatcher to contain the |content_window|,
+  // along with all aura client objects that direct behavior.
+  aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to
@@ -255,8 +252,9 @@ private:
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_;
 
-  // We are owned by the RootWindow, but we have to have a back pointer to it.
-  aura::RootWindow* root_window_;
+  // We are owned by the WindowEventDispatcher, but we have to have a back
+  // pointer to it.
+  aura::WindowEventDispatcher* dispatcher_;
 
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
 

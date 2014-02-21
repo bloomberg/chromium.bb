@@ -23,7 +23,7 @@
 
 namespace aura {
 class Display;
-class RootWindow;
+class WindowEventDispatcher;
 }
 
 namespace base {
@@ -150,7 +150,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
   // RootWindowObserver overrides:
-  virtual void OnWindowTreeHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnWindowTreeHostResized(
+      const aura::WindowEventDispatcher* root) OVERRIDE;
 
   // aura::DisplayManager::Delegate overrides:
   virtual void CreateOrUpdateNonDesktopDisplay(
@@ -167,7 +168,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
-  aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
+  aura::WindowEventDispatcher* AddRootWindowForDisplay(
+      const gfx::Display& display);
 
   void OnFadeOutForSwapDisplayFinished();
 

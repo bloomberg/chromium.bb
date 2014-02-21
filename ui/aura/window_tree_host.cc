@@ -81,7 +81,7 @@ void WindowTreeHost::InitHost() {
   window()->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
-  Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsRootWindow());
+  Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsDispatcher());
   window()->Show();
 }
 
@@ -98,7 +98,7 @@ aura::Window* WindowTreeHost::window() {
 }
 
 const aura::Window* WindowTreeHost::window() const {
-  return delegate_->AsRootWindow()->window();
+  return delegate_->AsDispatcher()->window();
 }
 
 void WindowTreeHost::SetRootWindowTransformer(
@@ -174,8 +174,8 @@ void WindowTreeHost::OnCursorVisibilityChanged(bool show) {
   // visible because that can only happen in response to a mouse event, which
   // will trigger its own mouse enter.
   if (!show) {
-    delegate_->AsRootWindow()->DispatchMouseExitAtPoint(
-        delegate_->AsRootWindow()->GetLastMouseLocationInRoot());
+    delegate_->AsDispatcher()->DispatchMouseExitAtPoint(
+        delegate_->AsDispatcher()->GetLastMouseLocationInRoot());
   }
 
   OnCursorVisibilityChangedNative(show);
@@ -191,6 +191,10 @@ void WindowTreeHost::MoveCursorToHostLocation(const gfx::Point& host_location) {
   gfx::Point root_location(host_location);
   ConvertPointFromHost(&root_location);
   MoveCursorToInternal(root_location, host_location);
+}
+
+WindowEventDispatcher* WindowTreeHost::GetDispatcher() {
+  return delegate_->AsDispatcher();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

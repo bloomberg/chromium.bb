@@ -354,9 +354,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
 class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
  public:
-  explicit QueueTouchEventDelegate(RootWindow* root_window)
+  explicit QueueTouchEventDelegate(WindowEventDispatcher* dispatcher)
       : window_(NULL),
-        root_window_(root_window),
+        dispatcher_(dispatcher),
         queue_events_(true) {
   }
   virtual ~QueueTouchEventDelegate() {
@@ -387,14 +387,14 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
  private:
   void ReceivedAckImpl(bool prevent_defaulted) {
     scoped_ptr<ui::TouchEvent> event(queue_.front());
-    root_window_->ProcessedTouchEvent(event.get(), window_,
+    dispatcher_->ProcessedTouchEvent(event.get(), window_,
         prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
     queue_.pop();
   }
 
   std::queue<ui::TouchEvent*> queue_;
   Window* window_;
-  RootWindow* root_window_;
+  WindowEventDispatcher* dispatcher_;
   bool queue_events_;
 
   DISALLOW_COPY_AND_ASSIGN(QueueTouchEventDelegate);
@@ -577,7 +577,7 @@ class TimedEvents {
     return base::TimeDelta::FromMilliseconds(simulated_now_ + time_in_millis);
   }
 
-  void SendScrollEvents(RootWindow* root_window,
+  void SendScrollEvents(WindowEventDispatcher* dispatcher,
                         float x_start,
                         float y_start,
                         int dx,
@@ -595,13 +595,13 @@ class TimedEvents {
       ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
                           touch_id,
                           base::TimeDelta::FromMilliseconds(simulated_now_));
-      ui::EventDispatchDetails details = root_window->OnEventFromSource(&move);
+      ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move);
       ASSERT_FALSE(details.dispatcher_destroyed);
       simulated_now_ += time_step;
     }
   }
 
-  void SendScrollEvent(RootWindow* root_window,
+  void SendScrollEvent(WindowEventDispatcher* dispatcher,
                        float x,
                        float y,
                        int touch_id,
@@ -610,7 +610,7 @@ class TimedEvents {
     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
                         touch_id,
                         base::TimeDelta::FromMilliseconds(simulated_now_));
-    ui::EventDispatchDetails details = root_window->OnEventFromSource(&move);
+    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     simulated_now_++;
   }

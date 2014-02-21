@@ -72,13 +72,14 @@ TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
   generator1.MoveMouseToCenterOf(w1->GetNativeView());
   generator1.PressLeftButton();
   EXPECT_FALSE(w1->HasCapture());
-  aura::RootWindow* w1_root = w1->GetNativeView()->GetDispatcher();
-  EXPECT_TRUE(w1_root->mouse_pressed_handler() != NULL);
-  EXPECT_TRUE(w1_root->mouse_moved_handler() != NULL);
+  aura::WindowEventDispatcher* w1_dispatcher =
+      w1->GetNativeView()->GetDispatcher();
+  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() != NULL);
+  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() != NULL);
   w2->SetCapture(w2->GetRootView());
   EXPECT_TRUE(w2->HasCapture());
-  EXPECT_TRUE(w1_root->mouse_pressed_handler() == NULL);
-  EXPECT_TRUE(w1_root->mouse_moved_handler() == NULL);
+  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() == NULL);
+  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() == NULL);
   w2->ReleaseCapture();
 }
 

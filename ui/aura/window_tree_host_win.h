@@ -20,7 +20,6 @@ class WindowTreeHostWin : public WindowTreeHost,
   WindowTreeHostWin(const gfx::Rect& bounds);
   virtual ~WindowTreeHostWin();
   // WindowTreeHost:
-  virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

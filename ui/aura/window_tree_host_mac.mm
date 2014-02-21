@@ -23,10 +23,6 @@ WindowTreeHostMac::WindowTreeHostMac(const gfx::Rect& bounds) {
 WindowTreeHostMac::~WindowTreeHostMac() {
 }
 
-RootWindow* WindowTreeHostMac::GetRootWindow() {
-  return delegate_->AsRootWindow();
-}
-
 gfx::AcceleratedWidget WindowTreeHostMac::GetAcceleratedWidget() {
   return [window_ contentView];
 }

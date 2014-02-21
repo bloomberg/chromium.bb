@@ -27,13 +27,14 @@ gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(int type) {
   return cursor;
 }
 
-void DesktopNativeCursorManager::AddRootWindow(aura::RootWindow* root_window) {
-  root_windows_.insert(root_window);
+void DesktopNativeCursorManager::AddRootWindow(
+    aura::WindowEventDispatcher* dispatcher) {
+  dispatchers_.insert(dispatcher);
 }
 
 void DesktopNativeCursorManager::RemoveRootWindow(
-    aura::RootWindow* root_window) {
-  root_windows_.erase(root_window);
+    aura::WindowEventDispatcher* dispatcher) {
+  dispatchers_.erase(dispatcher);
 }
 
 void DesktopNativeCursorManager::SetDisplay(
@@ -56,8 +57,8 @@ void DesktopNativeCursorManager::SetCursor(
   delegate->CommitCursor(new_cursor);
 
   if (delegate->IsCursorVisible()) {
-    for (RootWindows::const_iterator i = root_windows_.begin();
-         i != root_windows_.end();
+    for (Dispatchers::const_iterator i = dispatchers_.begin();
+         i != dispatchers_.end();
          ++i) {
       (*i)->host()->SetCursor(new_cursor);
     }
@@ -74,15 +75,15 @@ void DesktopNativeCursorManager::SetVisibility(
   } else {
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
-    for (RootWindows::const_iterator i = root_windows_.begin();
-         i != root_windows_.end();
+    for (Dispatchers::const_iterator i = dispatchers_.begin();
+         i != dispatchers_.end();
          ++i) {
       (*i)->host()->SetCursor(invisible_cursor);
     }
   }
 
-  for (RootWindows::const_iterator i = root_windows_.begin();
-       i != root_windows_.end();
+  for (Dispatchers::const_iterator i = dispatchers_.begin();
+       i != dispatchers_.end();
        ++i) {
     (*i)->host()->OnCursorVisibilityChanged(visible);
   }
@@ -110,8 +111,8 @@ void DesktopNativeCursorManager::SetMouseEventsEnabled(
 
   SetVisibility(delegate->IsCursorVisible(), delegate);
 
-  for (RootWindows::const_iterator i = root_windows_.begin();
-       i != root_windows_.end();
+  for (Dispatchers::const_iterator i = dispatchers_.begin();
+       i != dispatchers_.end();
        ++i) {
     (*i)->OnMouseEventsEnableStateChanged(enabled);
   }

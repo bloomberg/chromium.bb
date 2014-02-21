@@ -289,9 +289,9 @@ void GetPrimaryAndSeconary(aura::Window** primary,
   *secondary = root_windows[0] == *primary ? root_windows[1] : root_windows[0];
 }
 
-std::string GetXWindowName(aura::RootWindow* window) {
+std::string GetXWindowName(aura::WindowTreeHost* host) {
   char* name = NULL;
-  XFetchName(gfx::GetXDisplay(), window->host()->GetAcceleratedWidget(), &name);
+  XFetchName(gfx::GetXDisplay(), host->GetAcceleratedWidget(), &name);
   std::string ret(name);
   XFree(name);
   return ret;
@@ -1311,26 +1311,26 @@ TEST_F(DisplayControllerTest, DockToSingle) {
 #if defined(USE_X11)
 TEST_F(DisplayControllerTest, XWidowNameForRootWindow) {
   EXPECT_EQ("aura_root_0", GetXWindowName(
-      Shell::GetPrimaryRootWindow()->GetDispatcher()));
+      Shell::GetPrimaryRootWindow()->GetDispatcher()->host()));
 
   // Multiple display.
   UpdateDisplay("200x200,300x300");
   aura::Window* primary, *secondary;
   GetPrimaryAndSeconary(&primary, &secondary);
-  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetDispatcher()));
-  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetDispatcher()));
+  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetDispatcher()->host()));
+  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetDispatcher()->host()));
 
   // Swap primary.
   primary = secondary = NULL;
   Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
   GetPrimaryAndSeconary(&primary, &secondary);
-  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetDispatcher()));
-  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetDispatcher()));
+  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetDispatcher()->host()));
+  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetDispatcher()->host()));
 
   // Switching back to single display.
   UpdateDisplay("300x400");
   EXPECT_EQ("aura_root_0", GetXWindowName(
-      Shell::GetPrimaryRootWindow()->GetDispatcher()));
+      Shell::GetPrimaryRootWindow()->GetDispatcher()->host()));
 }
 #endif
 
