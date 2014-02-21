@@ -42,6 +42,12 @@
   white-space: nowrap;
 }
 
+.destination-list-item-name .search-hint {
+  -webkit-margin-start: 1em;
+  color: #999;
+  font-size: 75%;
+}
+
 .destination-list-item .offline-status {
   -webkit-margin-start: 1em;
   flex: 0 0 auto;
@@ -53,4 +59,8 @@
 .register-promo {
   -webkit-margin-start: 1em;
   flex: 0 0 auto;
+}
+
+.destination-list-item-query-highlight {
+  background-color: rgba(255, 240, 120, 0.9);
 }

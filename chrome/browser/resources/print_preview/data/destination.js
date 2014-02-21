@@ -20,7 +20,8 @@ cr.define('print_preview', function() {
    *          isOwned: ?boolean,
    *          lastAccessTime: ?number,
    *          isTosAccepted: ?boolean,
-   *          cloudID: ?string}=} opt_params Optional parameters for the
+   *          cloudID: ?string,
+   *          description: ?string}=} opt_params Optional parameters for the
    *     destination.
    * @constructor
    */
@@ -52,7 +53,7 @@ cr.define('print_preview', function() {
      * @type {string}
      * @private
      */
-    this.displayName_ = displayName;
+    this.displayName_ = displayName || '';
 
     /**
      * Whether the destination has been used recently.
@@ -90,6 +91,13 @@ cr.define('print_preview', function() {
     this.location_ = null;
 
     /**
+     * Printer description.
+     * @type {?string}
+     * @private
+     */
+    this.description_ = (opt_params && opt_params.description) || '';
+
+    /**
      * Connection status of the destination.
      * @type {!print_preview.Destination.ConnectionStatus}
      * @private
@@ -115,7 +123,7 @@ cr.define('print_preview', function() {
     this.isTosAccepted_ = (opt_params && opt_params.isTosAccepted) || false;
 
     /**
-     * Cloud ID for privet printers
+     * Cloud ID for Privet printers.
      * @type {?string}
      * @private
      */
@@ -124,10 +132,13 @@ cr.define('print_preview', function() {
 
   /**
    * Prefix of the location destination tag.
-   * @type {string}
+   * @type {!Array.<string>}
    * @const
    */
-  Destination.LOCATION_TAG_PREFIX = '__cp__printer-location=';
+  Destination.LOCATION_TAG_PREFIXES = [
+    '__cp__location=',
+    '__cp__printer-location='
+  ];
 
   /**
    * Enumeration of Google-promoted destination IDs.
@@ -253,15 +264,24 @@ cr.define('print_preview', function() {
     get location() {
       if (this.location_ == null) {
         this.location_ = '';
-        for (var tag, i = 0; tag = this.tags_[i]; i++) {
-          if (tag.indexOf(Destination.LOCATION_TAG_PREFIX) == 0) {
-            this.location_ = tag.substring(
-                Destination.LOCATION_TAG_PREFIX.length) || '';
-            break;
-          }
-        }
+        this.tags_.some(function(tag) {
+          return Destination.LOCATION_TAG_PREFIXES.some(function(prefix) {
+            if (tag.indexOf(prefix) == 0) {
+              this.location_ = tag.substring(prefix.length) || '';
+              return true;
+            }
+          }, this);
+        }, this);
       }
       return this.location_;
+    },
+
+    /**
+     * @return {string} The description of the destination, or an empty string,
+     *     if it was not provided.
+     */
+    get description() {
+      return this.description_;
     },
 
     /** @return {!Array.<string>} Tags associated with the destination. */
@@ -377,14 +397,24 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @return {!Array.<string>} Properties (besides display name) to match
+     * search queries against.
+     */
+    get extraPropertiesToMatch() {
+      return [this.location, this.description_];
+    },
+
+    /**
      * Matches a query against the destination.
-     * @param {string} query Query to match against the destination.
+     * @param {!RegExp} query Query to match against the destination.
      * @return {boolean} {@code true} if the query matches this destination,
      *     {@code false} otherwise.
      */
     matches: function(query) {
-      return this.displayName_.toLowerCase().indexOf(
-          query.toLowerCase().trim()) != -1;
+      return this.displayName_.match(query) ||
+          this.extraPropertiesToMatch.some(function(property) {
+            return property.match(query);
+          });
     }
   };
 

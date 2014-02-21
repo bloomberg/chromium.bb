@@ -11,10 +11,11 @@ cr.define('print_preview', function() {
    *     events to.
    * @param {!print_preview.Destination} destination Destination data object to
    *     render.
+   * @param {RegExp} query Active filter query.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function DestinationListItem(eventTarget, destination) {
+  function DestinationListItem(eventTarget, destination, query) {
     print_preview.Component.call(this);
 
     /**
@@ -30,6 +31,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destination_ = destination;
+
+    /**
+     * Active filter query text.
+     * @type {RegExp}
+     * @private
+     */
+    this.query_ = query;
 
     /**
      * FedEx terms-of-service widget or {@code null} if this list item does not
@@ -76,8 +84,29 @@ cr.define('print_preview', function() {
 
       var nameEl = this.getElement().getElementsByClassName(
           DestinationListItem.Classes_.NAME)[0];
-      nameEl.textContent = this.destination_.displayName;
-      nameEl.title = this.destination_.displayName;
+      var textContent = this.destination_.displayName;
+      if (this.query_) {
+        // When search query is specified, make it obvious why the particular
+        // printer made it to the list. Display name is always visible, even if
+        // it does not match the search query.
+        this.addTextWithHighlight_(nameEl, textContent);
+        // Show the first matching property.
+        this.destination_.extraPropertiesToMatch.some(function(property) {
+          if (property.match(this.query_)) {
+            var hintSpan = document.createElement('span');
+            hintSpan.className = 'search-hint';
+            nameEl.appendChild(hintSpan);
+            this.addTextWithHighlight_(hintSpan, property);
+            // Add the same property to the element title.
+            textContent += ' (' + property + ')';
+            return true;
+          }
+        }, this);
+      } else {
+        // Show just the display name and nothing else to lessen visual clutter.
+        nameEl.textContent = textContent;
+      }
+      nameEl.title = textContent;
 
       this.initializeOfflineStatusElement_();
       this.initializeRegistrationPromoElement_();
@@ -115,6 +144,27 @@ cr.define('print_preview', function() {
 
         var registerPromoEl = this.getChildElement('.register-promo');
         setIsVisible(registerPromoEl, true);
+      }
+    },
+
+    /**
+     * Adds text to parent element wrapping search query matches in highlighted
+     * spans.
+     * @param {!Element} parent Element to build the text in.
+     * @param {string} text The text string to highlight segments in.
+     * @private
+     */
+    addTextWithHighlight_: function(parent, text) {
+      var sections = text.split(this.query_);
+      for (var i = 0; i < sections.length; ++i) {
+        if (i % 2 == 0) {
+          parent.appendChild(document.createTextNode(sections[i]));
+        } else {
+          var span = document.createElement('span');
+          span.className = 'destination-list-item-query-highlight';
+          span.textContent = sections[i];
+          parent.appendChild(span);
+        }
       }
     },
 
