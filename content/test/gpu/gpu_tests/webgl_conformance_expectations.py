@@ -66,8 +66,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/glsl/functions/glsl-function-reflect.html',
         ['lion', 'intel'])
-    self.Skip('conformance/limits/gl-max-texture-dimensions.html',
-        ['lion', 'intel'])
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
         ['lion', 'intel'])
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
