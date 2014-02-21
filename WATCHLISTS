@@ -374,11 +374,16 @@
                   '|chrome/browser/metrics/'\
                   '|chrome/common/metrics/'\
                   '|chrome/browser/chromeos/external_metrics'\
-                  '|chrome/browser/extensions/api/metrics/metrics'\
+                  '|chrome/browser/extensions/api/metrics_private/'\
                   '|chrome/browser/ui/webui/metrics_handler'\
                   '|content/browser/user_metrics.cc'\
                   '|content/public/browser/user_metrics.h'\
-                  '|tools/metrics/'
+                  # Exclude XML files; in particular, histograms.xml.
+                  '|tools/metrics/[^.]*([.](?!xml$).*)?$',
+    },
+    'metrics_xml_files': {
+      # Subscribe to this to watch for changes to histograms.xml.
+      'filepath': 'tools/metrics/.*\.xml$'
     },
     'mojo': {
       'filepath': 'mojo',
@@ -774,6 +779,7 @@
     'metrics': ['jar@chromium.org',
                 'isherman@chromium.org',
                 'asvitkine+watch@chromium.org'],
+    'metrics_xml_files': ['jar@chromium.org', 'asvitkine+watch@chromium.org'],
     'mojo': ['aa@chromium.org',
              'abarth@chromium.org',
              'ben+mojo@chromium.org',
