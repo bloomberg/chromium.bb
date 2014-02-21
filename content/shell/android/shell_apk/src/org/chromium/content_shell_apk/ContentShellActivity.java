@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.Toast;
 
 import org.chromium.base.BaseSwitches;
@@ -18,11 +17,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell.Shell;
@@ -116,30 +112,6 @@ public class ContentShellActivity extends Activity {
             shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
         }
         mShellManager.launchShell(shellUrl);
-        getActiveContentView().setContentViewClient(new ContentViewClient() {
-            @Override
-            public ContentVideoViewClient getContentVideoViewClient() {
-                return new ActivityContentVideoViewClient(ContentShellActivity.this) {
-                    @Override
-                    public void onShowCustomView(View view) {
-                        super.onShowCustomView(view);
-                        if (CommandLine.getInstance().hasSwitch(
-                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
-                            mShellManager.setOverlayVideoMode(true);
-                        }
-                    }
-
-                    @Override
-                    public void onDestroyContentVideoView() {
-                        super.onDestroyContentVideoView();
-                        if (CommandLine.getInstance().hasSwitch(
-                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
-                          mShellManager.setOverlayVideoMode(false);
-                        }
-                    }
-                };
-            }
-        });
     }
 
     private void initializationFailed() {

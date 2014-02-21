@@ -4,16 +4,23 @@
 
 package org.chromium.content_shell;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ActivityContentVideoViewClient;
+import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewRenderView;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -31,13 +38,38 @@ public class ShellManager extends FrameLayout {
 
     // The target for all content rendering.
     private ContentViewRenderView mContentViewRenderView;
+    private ContentViewClient mContentViewClient;
 
     /**
      * Constructor for inflating via XML.
      */
-    public ShellManager(Context context, AttributeSet attrs) {
+    public ShellManager(final Context context, AttributeSet attrs) {
         super(context, attrs);
         nativeInit(this);
+        mContentViewClient = new ContentViewClient() {
+            @Override
+            public ContentVideoViewClient getContentVideoViewClient() {
+                return new ActivityContentVideoViewClient((Activity) context) {
+                    @Override
+                    public void onShowCustomView(View view) {
+                        super.onShowCustomView(view);
+                        if (CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                            setOverlayVideoMode(true);
+                        }
+                    }
+
+                    @Override
+                    public void onDestroyContentVideoView() {
+                        super.onDestroyContentVideoView();
+                        if (CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                            setOverlayVideoMode(false);
+                        }
+                    }
+                };
+            }
+        };
     }
 
     /**
@@ -105,7 +137,7 @@ public class ShellManager extends FrameLayout {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
-        shellView.initialize(nativeShellPtr, mWindow);
+        shellView.initialize(nativeShellPtr, mWindow, mContentViewClient);
 
         // TODO(tedchoc): Allow switching back to these inactive shells.
         if (mActiveShell != null) removeShell(mActiveShell);

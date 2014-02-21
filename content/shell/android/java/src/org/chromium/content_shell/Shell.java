@@ -22,6 +22,7 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
@@ -43,6 +44,7 @@ public class Shell extends LinearLayout {
 
     // TODO(jrg): a mContentView.destroy() call is needed, both upstream and downstream.
     private ContentView mContentView;
+    private ContentViewClient mContentViewClient;
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
@@ -85,10 +87,13 @@ public class Shell extends LinearLayout {
      *
      * @param nativeShell The pointer to the native Shell object.
      * @param window The owning window for this shell.
+     * @param client The {@link ContentViewClient} to be bound to any current or new
+     *               {@link ContentViewCore}s associated with this shell.
      */
-    public void initialize(long nativeShell, WindowAndroid window) {
+    public void initialize(long nativeShell, WindowAndroid window, ContentViewClient client) {
         mNativeShell = nativeShell;
         mWindow = window;
+        mContentViewClient = client;
     }
 
     /**
@@ -246,6 +251,7 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(long nativeTabContents) {
         mContentView = ContentView.newInstance(getContext(), nativeTabContents, mWindow);
+        mContentView.setContentViewClient(mContentViewClient);
         if (mContentView.getUrl() != null) mUrlTextView.setText(mContentView.getUrl());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(
