@@ -235,36 +235,6 @@ const char* SharedBuffer::data() const
     return this->buffer().data();
 }
 
-void SharedBuffer::moveTo(Vector<char>& result)
-{
-    ASSERT(result.isEmpty());
-    if (m_purgeableBuffer) {
-        result.reserveCapacity(m_purgeableBuffer->size());
-        result.append(m_purgeableBuffer->data(), m_purgeableBuffer->size());
-        clear();
-        return;
-    }
-
-    unsigned bufferSize = m_buffer.size();
-    if (m_size == bufferSize) {
-        m_buffer.swap(result);
-        clear();
-        return;
-    }
-
-    result.reserveCapacity(m_size);
-
-    const char* segment = 0;
-    unsigned position = 0;
-    while (unsigned segmentSize = getSomeData(segment, position)) {
-        result.append(segment, segmentSize);
-        position += segmentSize;
-    }
-    ASSERT(result.size() == m_size);
-    clear();
-    return;
-}
-
 void SharedBuffer::append(SharedBuffer* data)
 {
     const char* segment;

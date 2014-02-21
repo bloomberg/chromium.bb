@@ -58,48 +58,6 @@ TEST(SharedBufferTest, getAsArrayBuffer)
     EXPECT_EQ(0, memcmp(expectedConcatenation, arrayBuffer->data(), strlen(expectedConcatenation)));
 }
 
-TEST(SharedBufferTest, moveToAvoidsMemcpy)
-{
-    char testData[] = "Hello";
-
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData, strlen(testData));
-
-    const char* originalData = sharedBuffer->data();
-    const size_t originalSize = sharedBuffer->size();
-
-    Vector<char> result;
-    sharedBuffer->moveTo(result);
-
-    EXPECT_TRUE(sharedBuffer->isEmpty());
-    EXPECT_EQ(originalData, result.data());
-    EXPECT_EQ(originalSize, result.size());
-}
-
-TEST(SharedBufferTest, moveToHandlesSegments)
-{
-    Vector<char> vector0(0x4000);
-    for (size_t i = 0; i < vector0.size(); ++i)
-        vector0[i] = 'a';
-    Vector<char> vector1(0x4000);
-    for (size_t i = 0; i < vector1.size(); ++i)
-        vector1[i] = 'b';
-    Vector<char> vector2(0x4000);
-    for (size_t i = 0; i < vector2.size(); ++i)
-        vector2[i] = 'c';
-
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::adoptVector(vector0);
-    sharedBuffer->append(vector1);
-    sharedBuffer->append(vector2);
-
-    const size_t originalSize = sharedBuffer->size();
-
-    Vector<char> result;
-    sharedBuffer->moveTo(result);
-
-    EXPECT_TRUE(sharedBuffer->isEmpty());
-    EXPECT_EQ(originalSize, result.size());
-}
-
 TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
 {
     Vector<char> vector0(0x4000);

@@ -528,21 +528,35 @@ static int matchFunc(const char*)
 class OffsetBuffer {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    OffsetBuffer(const Vector<char>& b) : m_buffer(b), m_currentOffset(0) { }
+    OffsetBuffer(PassRefPtr<SharedBuffer> buffer) : m_buffer(buffer), m_currentOffset(0) { }
 
     int readOutBytes(char* outputBuffer, unsigned askedToRead)
     {
-        unsigned bytesLeft = m_buffer.size() - m_currentOffset;
+        if (!m_buffer)
+            return 0;
+
+        unsigned bytesCopied = 0;
+        ASSERT(m_currentOffset <= m_buffer->size());
+        unsigned bytesLeft = m_buffer->size() - m_currentOffset;
         unsigned lenToCopy = min(askedToRead, bytesLeft);
-        if (lenToCopy) {
-            memcpy(outputBuffer, m_buffer.data() + m_currentOffset, lenToCopy);
-            m_currentOffset += lenToCopy;
+
+        while (bytesCopied < lenToCopy) {
+            const char* data;
+            unsigned segmentSize = m_buffer->getSomeData(data, m_currentOffset);
+            if (!segmentSize)
+                break;
+
+            segmentSize = min(segmentSize, lenToCopy - bytesCopied);
+            memcpy(outputBuffer + bytesCopied, data + m_currentOffset, segmentSize);
+            bytesCopied += segmentSize;
+            m_currentOffset += segmentSize;
         }
-        return lenToCopy;
+
+        return bytesCopied;
     }
 
 private:
-    Vector<char> m_buffer;
+    RefPtr<SharedBuffer> m_buffer;
     unsigned m_currentOffset;
 };
 
@@ -642,7 +656,7 @@ static void* openFunc(const char* uri)
         return &globalDescriptor;
 
     KURL finalURL;
-    Vector<char> data;
+    RefPtr<SharedBuffer> data;
 
     {
         ResourceFetcher* fetcher = XMLDocumentParserScope::currentFetcher;
@@ -653,7 +667,7 @@ static void* openFunc(const char* uri)
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
             ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
             if (resource && !resource->errorOccurred()) {
-                resource->resourceBuffer()->moveTo(data);
+                data = resource->resourceBuffer();
                 finalURL = resource->response().url();
             }
         }
