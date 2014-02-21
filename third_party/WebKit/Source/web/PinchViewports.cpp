@@ -110,12 +110,13 @@ void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
 //  +- *pageScaleLayer
 //  |   +- *innerViewportScrollLayer
 //  |       +-- overflowControlsHostLayer (root layer)
-//  |           +-- outerViewportContainerLayer (fixed pos container) [frame container layer in RenderLayerCompositor]
-//  |           |   +-- outerViewportScrollLayer [frame scroll layer in RenderLayerCompositor]
-//  |           |       +-- content layers ...
-//  |           +-- horizontal ScrollbarLayer (non-overlay)
-//  |           +-- verticalScrollbarLayer (non-overlay)
-//  |           +-- scroll corner (non-overlay)
+//  |           +-- rootTransformLayer (optional)
+//  |               +-- outerViewportContainerLayer (fixed pos container) [frame container layer in RenderLayerCompositor]
+//  |               |   +-- outerViewportScrollLayer [frame scroll layer in RenderLayerCompositor]
+//  |               |       +-- content layers ...
+//  |               +-- horizontal ScrollbarLayer (non-overlay)
+//  |               +-- verticalScrollbarLayer (non-overlay)
+//  |               +-- scroll corner (non-overlay)
 //  +- *horizontalScrollbarLayer (overlay)
 //  +- *verticalScrollbarLayer (overlay)
 //

@@ -1143,6 +1143,9 @@ crbug.com/344774 svg/dynamic-updates/SVGTextElement-svgdom-y-prop.html [ Failure
 crbug.com/344774 svg/dynamic-updates/SVGUseElement-dom-requiredFeatures.html [ Failure NeedsRebaseline ]
 crbug.com/344774 svg/dynamic-updates/SVGUseElement-svgdom-requiredFeatures.html [ Failure NeedsRebaseline ]
 
+Bug(vollick) [ Linux Win Android ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Skip ]

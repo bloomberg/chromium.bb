@@ -155,7 +155,7 @@ public:
 
     virtual void setCursor(const Cursor&) OVERRIDE { }
 
-    virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) OVERRIDE { }
+    virtual void attachRootGraphicsLayer(GraphicsLayer*) OVERRIDE { }
 
     virtual void needTouchEvents(bool) OVERRIDE { }
     virtual void setTouchAction(TouchAction touchAction) OVERRIDE { };

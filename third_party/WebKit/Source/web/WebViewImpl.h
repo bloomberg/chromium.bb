@@ -746,6 +746,7 @@ private:
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
     WebCore::GraphicsLayer* m_rootGraphicsLayer;
+    WebCore::GraphicsLayer* m_rootTransformLayer;
     OwnPtr<WebCore::GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewCommitsDeferred;

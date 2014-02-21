@@ -352,6 +352,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(0)
     , m_rootLayer(0)
     , m_rootGraphicsLayer(0)
+    , m_rootTransformLayer(0)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewCommitsDeferred(false)
@@ -3593,9 +3594,15 @@ void WebViewImpl::removePageOverlay(WebPageOverlay* overlay)
 
 void WebViewImpl::setOverlayLayer(WebCore::GraphicsLayer* layer)
 {
-    if (m_rootGraphicsLayer) {
-        if (layer->parent() != m_rootGraphicsLayer)
-            m_rootGraphicsLayer->addChild(layer);
+    if (!m_rootGraphicsLayer)
+        return;
+
+    if (!m_rootTransformLayer)
+        m_rootTransformLayer = m_page->mainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
+
+    if (m_rootTransformLayer) {
+        if (layer->parent() != m_rootTransformLayer)
+            m_rootTransformLayer->addChild(layer);
     }
 }
 
@@ -3659,13 +3666,16 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         if (layer) {
             m_rootGraphicsLayer = m_pinchViewports->rootGraphicsLayer();
             m_rootLayer = m_pinchViewports->rootGraphicsLayer()->platformLayer();
+            m_rootTransformLayer = 0;
         } else {
             m_rootGraphicsLayer = 0;
             m_rootLayer = 0;
+            m_rootTransformLayer = 0;
         }
     } else {
         m_rootGraphicsLayer = layer;
         m_rootLayer = layer ? layer->platformLayer() : 0;
+        m_rootTransformLayer = 0;
     }
 
     setIsAcceleratedCompositingActive(layer);
@@ -3903,11 +3913,19 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor()
 
 void WebViewImpl::updateRootLayerTransform()
 {
-    if (m_rootGraphicsLayer) {
+    // If we don't have a root graphics layer, we won't bother trying to find
+    // or update the transform layer.
+    if (!m_rootGraphicsLayer)
+        return;
+
+    if (!m_rootTransformLayer)
+        m_rootTransformLayer = m_page->mainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
+
+    if (m_rootTransformLayer) {
         WebCore::TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
-        m_rootGraphicsLayer->setTransform(transform);
+        m_rootTransformLayer->setTransform(transform);
     }
 }
 

@@ -706,9 +706,9 @@ GraphicsLayerFactory* ChromeClientImpl::graphicsLayerFactory() const
     return m_webView->graphicsLayerFactory();
 }
 
-void ChromeClientImpl::attachRootGraphicsLayer(Frame* frame, GraphicsLayer* graphicsLayer)
+void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer)
 {
-    m_webView->setRootGraphicsLayer(graphicsLayer);
+    m_webView->setRootGraphicsLayer(rootLayer);
 }
 
 ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() const

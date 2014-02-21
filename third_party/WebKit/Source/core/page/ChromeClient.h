@@ -191,7 +191,7 @@ public:
     virtual GraphicsLayerFactory* graphicsLayerFactory() const { return 0; }
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
-    virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) = 0;
+    virtual void attachRootGraphicsLayer(GraphicsLayer*) = 0;
 
     enum CompositingTrigger {
         ThreeDTransformTrigger = 1 << 0,

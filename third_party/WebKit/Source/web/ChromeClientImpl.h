@@ -145,7 +145,7 @@ public:
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() const OVERRIDE;
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
-    virtual void attachRootGraphicsLayer(WebCore::Frame*, WebCore::GraphicsLayer*) OVERRIDE;
+    virtual void attachRootGraphicsLayer(WebCore::GraphicsLayer*) OVERRIDE;
 
     virtual CompositingTriggerFlags allowedCompositingTriggers() const OVERRIDE;
 

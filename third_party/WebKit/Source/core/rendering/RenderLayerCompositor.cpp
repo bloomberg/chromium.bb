@@ -1650,6 +1650,20 @@ GraphicsLayer* RenderLayerCompositor::containerLayer() const
     return m_containerLayer.get();
 }
 
+GraphicsLayer* RenderLayerCompositor::ensureRootTransformLayer()
+{
+    ASSERT(rootGraphicsLayer());
+
+    if (!m_rootTransformLayer.get()) {
+        m_rootTransformLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_overflowControlsHostLayer->addChild(m_rootTransformLayer.get());
+        m_rootTransformLayer->addChild(m_containerLayer.get());
+        updateOverflowControlsLayers();
+    }
+
+    return m_rootTransformLayer.get();
+}
+
 void RenderLayerCompositor::setIsInWindow(bool isInWindow)
 {
     if (!inCompositingMode())
@@ -2326,11 +2340,12 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
         }
     }
 #endif
+    GraphicsLayer* controlsParent = m_rootTransformLayer.get() ? m_rootTransformLayer.get() : m_overflowControlsHostLayer.get();
 
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {
             m_layerForHorizontalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-            m_overflowControlsHostLayer->addChild(m_layerForHorizontalScrollbar.get());
+            controlsParent->addChild(m_layerForHorizontalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), HorizontalScrollbar);
@@ -2346,7 +2361,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresVerticalScrollbarLayer()) {
         if (!m_layerForVerticalScrollbar) {
             m_layerForVerticalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-            m_overflowControlsHostLayer->addChild(m_layerForVerticalScrollbar.get());
+            controlsParent->addChild(m_layerForVerticalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), VerticalScrollbar);
@@ -2362,7 +2377,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresScrollCornerLayer()) {
         if (!m_layerForScrollCorner) {
             m_layerForScrollCorner = GraphicsLayer::create(graphicsLayerFactory(), this);
-            m_overflowControlsHostLayer->addChild(m_layerForScrollCorner.get());
+            controlsParent->addChild(m_layerForScrollCorner.get());
         }
     } else if (m_layerForScrollCorner) {
         m_layerForScrollCorner->removeFromParent();
@@ -2468,6 +2483,7 @@ void RenderLayerCompositor::destroyRootLayer()
     }
     ASSERT(!m_scrollLayer);
     m_rootContentLayer = nullptr;
+    m_rootTransformLayer = nullptr;
 }
 
 void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
@@ -2484,7 +2500,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             Page* page = frame.page();
             if (!page)
                 return;
-            page->chrome().client().attachRootGraphicsLayer(&frame, rootGraphicsLayer());
+            page->chrome().client().attachRootGraphicsLayer(rootGraphicsLayer());
             break;
         }
         case RootLayerAttachedViaEnclosingFrame: {
@@ -2526,7 +2542,7 @@ void RenderLayerCompositor::detachRootLayer()
         Page* page = frame.page();
         if (!page)
             return;
-        page->chrome().client().attachRootGraphicsLayer(&frame, 0);
+        page->chrome().client().attachRootGraphicsLayer(0);
     }
     break;
     case RootLayerUnattached:
@@ -2712,6 +2728,8 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
     String name;
     if (graphicsLayer == m_rootContentLayer.get()) {
         name = "Content Root Layer";
+    } else if (graphicsLayer == m_rootTransformLayer.get()) {
+        name = "Root Transform Layer";
 #if USE(RUBBER_BANDING)
     } else if (graphicsLayer == m_layerForOverhangShadow.get()) {
         name = "Overhang Areas Shadow";
