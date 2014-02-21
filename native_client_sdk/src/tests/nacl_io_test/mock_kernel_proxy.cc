@@ -7,8 +7,4 @@
 
 MockKernelProxy::MockKernelProxy() {}
 
-MockKernelProxy::~MockKernelProxy() {
-  // Uninitialize the kernel proxy so wrapped functions passthrough to their
-  // unwrapped versions.
-  ki_uninit();
-}
+MockKernelProxy::~MockKernelProxy() {}

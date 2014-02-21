@@ -55,7 +55,8 @@ class KernelProxyTest : public ::testing::Test {
   KernelProxyTest() {}
 
   void SetUp() {
-    ki_init(&kp_);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
     // Unmount the passthrough FS and mount a memfs.
     EXPECT_EQ(0, kp_.umount("/"));
     EXPECT_EQ(0, kp_.mount("", "/", "memfs", 0, NULL));
@@ -559,7 +560,10 @@ class KernelProxyMountTest : public ::testing::Test {
  public:
   KernelProxyMountTest() {}
 
-  void SetUp() { ki_init(&kp_); }
+  void SetUp() {
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
+  }
 
   void TearDown() { ki_uninit(); }
 
@@ -653,7 +657,10 @@ class KernelProxyMMapTest : public ::testing::Test {
  public:
   KernelProxyMMapTest() {}
 
-  void SetUp() { ki_init(&kp_); }
+  void SetUp() {
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
+  }
 
   void TearDown() { ki_uninit(); }
 
@@ -728,7 +735,8 @@ class KernelProxyErrorTest : public ::testing::Test {
   KernelProxyErrorTest() {}
 
   void SetUp() {
-    ki_init(&kp_);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
     // Unmount the passthrough FS and mount a testfs.
     EXPECT_EQ(0, kp_.umount("/"));
     EXPECT_EQ(0, kp_.mount("", "/", "testfs", 0, NULL));

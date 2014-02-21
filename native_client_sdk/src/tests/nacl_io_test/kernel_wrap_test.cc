@@ -118,10 +118,16 @@ class KernelWrapTest : public ::testing::Test {
         .WillOnce(Return(0))
         .WillOnce(Return(0));
 
-    ki_init(&mock);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&mock));
   }
 
-  virtual void TearDown() { ki_uninit(); }
+  void TearDown() {
+    // Uninitialize the kernel proxy so wrapped functions passthrough to their
+    // unwrapped versions.
+    ki_uninit();
+  }
+
 
   MockKernelProxy mock;
 };

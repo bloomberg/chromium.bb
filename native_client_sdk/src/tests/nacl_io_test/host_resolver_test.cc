@@ -21,7 +21,8 @@ class HostResolverTest : public ::testing::Test {
   HostResolverTest() {}
 
   void SetUp() {
-    ki_init(NULL);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(NULL));
   }
 
   void TearDown() {
@@ -45,7 +46,8 @@ class FakeHostResolverTest : public ::testing::Test {
     fake_resolver_->fake_hostname = FAKE_HOSTNAME;
     AddFakeAddress(AF_INET);
 
-    ki_init_interface(NULL, pepper_);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init_interface(NULL, pepper_));
   }
 
   void AddFakeAddress(int family) {

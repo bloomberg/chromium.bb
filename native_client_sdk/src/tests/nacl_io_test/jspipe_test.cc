@@ -28,7 +28,8 @@ namespace {
 class JSPipeTest : public ::testing::Test {
  public:
   void SetUp() {
-    ki_init(&kp_);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
     ASSERT_EQ(0, fs_.Access(Path("/jspipe1"), R_OK | W_OK));
     ASSERT_EQ(EACCES, fs_.Access(Path("/jspipe1"), X_OK));
     ASSERT_EQ(0, fs_.Open(Path("/jspipe1"), O_RDWR, &pipe_dev_));

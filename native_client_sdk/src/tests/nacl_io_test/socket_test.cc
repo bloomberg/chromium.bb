@@ -32,7 +32,8 @@ class SocketTest : public ::testing::Test {
   SocketTest() {}
 
   void SetUp() {
-    ki_init(&kp_);
+    ASSERT_EQ(0, ki_push_state_for_testing());
+    ASSERT_EQ(0, ki_init(&kp_));
   }
 
   void TearDown() {

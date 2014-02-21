@@ -317,7 +317,8 @@ class KernelProxyFuseTest : public ::testing::Test {
 };
 
 void KernelProxyFuseTest::SetUp() {
-  ki_init(&kp_);
+  ASSERT_EQ(0, ki_push_state_for_testing());
+  ASSERT_EQ(0, ki_init(&kp_));
 
   // Register a fuse filesystem.
   ki_register_fs_type("flatfs", &g_fuse_operations);
