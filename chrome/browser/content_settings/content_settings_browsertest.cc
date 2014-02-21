@@ -474,11 +474,8 @@ class PepperContentSettingsTest : public ContentSettingsTest {
 #if defined(ENABLE_PEPPER_CDMS)
     // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
-    const std::wstring external_clear_key_mime_type =
-        base::ASCIIToWide(kExternalClearKeyMimeType);
     const char kLibraryName[] = "clearkeycdmadapter.dll";
 #else  // !defined(OS_WIN)
-    const char* external_clear_key_mime_type = kExternalClearKeyMimeType;
 #if defined(OS_MACOSX)
     const char kLibraryName[] = "clearkeycdmadapter.plugin";
 #elif defined(OS_POSIX)
@@ -487,16 +484,18 @@ class PepperContentSettingsTest : public ContentSettingsTest {
 #endif  // defined(OS_WIN)
 
     // Append the switch to register the External Clear Key CDM.
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    base::FilePath plugin_lib = plugin_dir.AppendASCII(kLibraryName);
-    EXPECT_TRUE(base::PathExists(plugin_lib));
-    base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL(
-        "#Clear Key CDM#Clear Key CDM 0.1.0.0#0.1.0.0;"));
-    pepper_plugin.append(external_clear_key_mime_type);
+    base::FilePath::StringType pepper_plugins = BuildPepperPluginRegistration(
+        kLibraryName, "Clear Key CDM", kExternalClearKeyMimeType);
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+    // The CDM must be registered when it is a component.
+    pepper_plugins.append(",");
+    pepper_plugins.append(
+        BuildPepperPluginRegistration(kWidevineCdmAdapterFileName,
+                                      kWidevineCdmDisplayName,
+                                      kWidevineCdmPluginMimeType));
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugin);
+                                     pepper_plugins);
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
@@ -580,6 +579,37 @@ class PepperContentSettingsTest : public ContentSettingsTest {
         << html_file;
     EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS))
         << html_file;
+  }
+
+ private:
+  // Builds the string to pass to kRegisterPepperPlugins for a single
+  // plugin using the provided parameters and a dummy version.
+  // Multiple results may be passed to kRegisterPepperPlugins, separated by ",".
+  base::FilePath::StringType BuildPepperPluginRegistration(
+      const char* library_name,
+      const char* display_name,
+      const char* mime_type) {
+    base::FilePath plugin_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
+
+    base::FilePath plugin_lib = plugin_dir.AppendASCII(library_name);
+    EXPECT_TRUE(base::PathExists(plugin_lib));
+
+    base::FilePath::StringType pepper_plugin = plugin_lib.value();
+    pepper_plugin.append(FILE_PATH_LITERAL("#"));
+#if defined(OS_WIN)
+    pepper_plugin.append(base::ASCIIToWide(display_name));
+#else
+    pepper_plugin.append(display_name);
+#endif
+    pepper_plugin.append(FILE_PATH_LITERAL("#A CDM#0.1.0.0;"));
+#if defined(OS_WIN)
+    pepper_plugin.append(base::ASCIIToWide(mime_type));
+#else
+    pepper_plugin.append(mime_type);
+#endif
+
+    return pepper_plugin;
   }
 };
 
