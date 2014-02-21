@@ -57,16 +57,18 @@ WebSocketDeflateStream::~WebSocketDeflateStream() {}
 
 int WebSocketDeflateStream::ReadFrames(ScopedVector<WebSocketFrame>* frames,
                                        const CompletionCallback& callback) {
-  CompletionCallback callback_to_pass =
+  int result = stream_->ReadFrames(
+      frames,
       base::Bind(&WebSocketDeflateStream::OnReadComplete,
                  base::Unretained(this),
                  base::Unretained(frames),
-                 callback);
-  int result = stream_->ReadFrames(frames, callback_to_pass);
+                 callback));
   if (result < 0)
     return result;
   DCHECK_EQ(OK, result);
-  return InflateAndReadIfNecessary(frames, callback_to_pass);
+  DCHECK(!frames->empty());
+
+  return InflateAndReadIfNecessary(frames, callback);
 }
 
 int WebSocketDeflateStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
@@ -99,12 +101,7 @@ void WebSocketDeflateStream::OnReadComplete(
     return;
   }
 
-  int r = InflateAndReadIfNecessary(
-      frames,
-      base::Bind(&WebSocketDeflateStream::OnReadComplete,
-                 base::Unretained(this),
-                 base::Unretained(frames),
-                 callback));
+  int r = InflateAndReadIfNecessary(frames, callback);
   if (r != ERR_IO_PENDING)
     callback.Run(r);
 }
@@ -373,11 +370,18 @@ int WebSocketDeflateStream::InflateAndReadIfNecessary(
   int result = Inflate(frames);
   while (result == ERR_IO_PENDING) {
     DCHECK(frames->empty());
-    result = stream_->ReadFrames(frames, callback);
+
+    result = stream_->ReadFrames(
+        frames,
+        base::Bind(&WebSocketDeflateStream::OnReadComplete,
+                   base::Unretained(this),
+                   base::Unretained(frames),
+                   callback));
     if (result < 0)
       break;
     DCHECK_EQ(OK, result);
     DCHECK(!frames->empty());
+
     result = Inflate(frames);
   }
   if (result < 0)

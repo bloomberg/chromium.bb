@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
     NOT_WRITING,
   };
 
+  // Handles asynchronous completion of ReadFrames() call on |stream_|.
   void OnReadComplete(ScopedVector<WebSocketFrame>* frames,
                       const CompletionCallback& callback,
                       int result);
