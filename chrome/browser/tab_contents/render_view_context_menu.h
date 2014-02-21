@@ -7,10 +7,8 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -269,7 +267,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   ui::SimpleMenuModel speech_input_submenu_model_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
-  ScopedVector<ui::SimpleMenuModel> extension_menu_models_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
 
   // An observer that handles spelling-menu items.
