@@ -404,17 +404,19 @@ class LayerWithDelegateTest : public testing::Test {
     bool enable_pixel_output = false;
     InitializeContextFactoryForTests(enable_pixel_output);
     Compositor::Initialize();
-    compositor_.reset(new Compositor(gfx::kNullAcceleratedWidget));
-    compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
+
+    const gfx::Rect host_bounds(1000, 1000);
+    compositor_host_.reset(TestCompositorHost::Create(host_bounds));
+    compositor_host_->Show();
   }
 
   virtual void TearDown() OVERRIDE {
-    compositor_.reset();
+    compositor_host_.reset();
     TerminateContextFactoryForTests();
     Compositor::Terminate();
   }
 
-  Compositor* compositor() { return compositor_.get(); }
+  Compositor* compositor() { return compositor_host_->GetCompositor(); }
 
   virtual Layer* CreateLayer(LayerType type) {
     return new Layer(type);
@@ -458,7 +460,7 @@ class LayerWithDelegateTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<Compositor> compositor_;
+  scoped_ptr<TestCompositorHost> compositor_host_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };
