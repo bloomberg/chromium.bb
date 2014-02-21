@@ -81,7 +81,8 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
     static_cast<unsigned short>(t5r2 ? 2 : 5),  // max touch cnt
     t5r2 ? 1u : 0u,  // supports_t5r2
     0,   // support_semi_mt
-    1  // is_button_pad
+    1,  // is_button_pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
@@ -176,7 +177,8 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
     5,  // max touch cnt
     0,  // supports_t5r2
     0,   // support_semi_mt
-    1  // is_button_pad
+    1,  // is_button_pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
@@ -332,7 +334,8 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    1  // is button pad
+    1,  // is button pad,
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 

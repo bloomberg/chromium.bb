@@ -166,6 +166,8 @@ bool ActivityReplay::ParseHardwareProperties(DictionaryValue* obj,
            props.support_semi_mt, bool, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropIsButtonPad, bool, GetBoolean,
            props.is_button_pad, bool, true);
+  PARSE_HP(obj, ActivityLog::kKeyHardwarePropHasWheel, bool, GetBoolean,
+           props.has_wheel, bool, true);
   *out_props = props;
   return true;
 }

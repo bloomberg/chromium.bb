@@ -87,7 +87,7 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    0, 0, 0  //t5r2, semi, button pad
+    0, 0, 0, 0  //t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 

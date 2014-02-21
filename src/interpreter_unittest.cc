@@ -89,7 +89,7 @@ TEST(InterpreterTest, SimpleTest) {
     1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  //t5r2, semi, button pad
+    1, 0, 0, 0  //t5r2, semi, button pad
   };
 
   TestInterpreterWrapper wrapper(base_interpreter, &hwprops);

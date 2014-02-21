@@ -59,7 +59,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    1  // is button pad
+    1,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&pci, &hwprops);
 
@@ -136,7 +137,8 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    1  // is button pad
+    1,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&pci, &hwprops);
 
@@ -194,7 +196,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    1  // is button pad
+    1,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(pci.get(), &hwprops);
 
@@ -317,7 +320,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    true  // is button pad
+    true,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&pci, &hwprops);
 
@@ -405,7 +409,8 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    1  // is button pad
+    1,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&pci, &hwprops);
 

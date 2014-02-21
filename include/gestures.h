@@ -54,6 +54,7 @@ struct HardwareProperties {
   unsigned supports_t5r2:1;
   unsigned support_semi_mt:1;
   unsigned is_button_pad:1;
+  unsigned has_wheel:1;
 #ifdef __cplusplus
   std::string String() const;
 #endif  // __cplusplus

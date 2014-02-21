@@ -141,6 +141,8 @@ ActivityLog::Entry* ActivityLog::PushBack() {
            new FundamentalValue(hwprops_.support_semi_mt != 0));
   ret->Set(kKeyHardwarePropIsButtonPad,
            new FundamentalValue(hwprops_.is_button_pad != 0));
+  ret->Set(kKeyHardwarePropHasWheel,
+           new FundamentalValue(hwprops_.has_wheel != 0));
   return ret;
 }
 
@@ -516,6 +518,7 @@ const char ActivityLog::kKeyHardwarePropMaxTouchCount[] = "maxTouchCount";
 const char ActivityLog::kKeyHardwarePropSupportsT5R2[] = "supportsT5R2";
 const char ActivityLog::kKeyHardwarePropSemiMt[] = "semiMt";
 const char ActivityLog::kKeyHardwarePropIsButtonPad[] = "isButtonPad";
+const char ActivityLog::kKeyHardwarePropHasWheel[] = "hasWheel";
 
 const char ActivityLog::kKeyProperties[] = "properties";
 

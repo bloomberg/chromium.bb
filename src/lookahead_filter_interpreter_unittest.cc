@@ -100,7 +100,7 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -238,7 +238,7 @@ TEST(LookaheadFilterInterpreterTest, VariableDelayTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     5, 5,  // max fingers, max_touch,
-    0, 0, 0  // t5r2, semi, button pad
+    0, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(&interpreter, &initial_hwprops);
 
@@ -313,7 +313,7 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     5, 5,  // max fingers, max_touch
-    0, 0, 0  // t5r2, semi, button pad
+    0, 0, 0, 0  // t5r2, semi, button pad
   };
 
   FingerState fs[] = {
@@ -366,7 +366,7 @@ TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -417,7 +417,7 @@ TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(&interpreter, &initial_hwprops);
 
@@ -510,7 +510,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -589,7 +589,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -661,7 +661,7 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -735,7 +735,7 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 0, 0  // t5r2, semi, button pad
+    1, 0, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -836,7 +836,8 @@ TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
     5,  // max touch
     1,  // t5r2
     0,  // semi-mt
-    1   // is button pad
+    1,   // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -930,7 +931,8 @@ TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    0  // is button pad
+    0,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &initial_hwprops);
 
@@ -1137,7 +1139,8 @@ TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
     5,  // max touch
     0,  // t5r2
     0,  // semi-mt
-    0  // is button pad
+    0,  // is button pad
+    0  // has_wheel
   };
   TestInterpreterWrapper wrapper(&interpreter, &initial_hwprops);
 
@@ -1191,7 +1194,7 @@ TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest) {
     -1,  // orientation minimum
     2,   // orientation maximum
     2, 5,  // max fingers, max_touch
-    1, 1, 0  // t5r2, semi, button pad
+    1, 1, 0, 0  // t5r2, semi, button pad
   };
   TestInterpreterWrapper wrapper(interpreter.get(), &hwprops);
 

@@ -251,7 +251,7 @@ TEST(GesturesTest, HardwarePropertiesToStringTest) {
     2,   // orientation maximum
     12,  // max fingers
     11,  // max touches
-    0, 1, 1  // t5r2, semi-mt, is_button_pad
+    0, 1, 1, 0  // t5r2, semi-mt, is_button_pad, has_wheel
   };
   string str = hp.String();
   LOG(INFO) << "str:" << str;

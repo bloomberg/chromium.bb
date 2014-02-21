@@ -34,6 +34,7 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
 
   void InterpretMouseMotionEvent(const HardwareState& prev_state,
                                  const HardwareState& hwstate);
+  bool EmulateScrollWheel(const HardwareState& hwstate);
  private:
   struct WheelRecord {
     WheelRecord(float v, stime_t t): value(v), timestamp(t) {}
@@ -55,6 +56,13 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
   // Records last scroll wheel event.
   WheelRecord last_wheel_, last_hwheel_;
 
+  // Accumulators to measure scroll distance while doing scroll wheel emulation
+  double wheel_emulation_accu_x_;
+  double wheel_emulation_accu_y_;
+
+  // True while wheel emulation is locked in.
+  bool wheel_emulation_active_;
+
   // We use normal CDF to simulate scroll wheel acceleration curve. Use the
   // following method to generate the coefficients of a degree-4 polynomial
   // regression for a specific normal cdf in matlab.
@@ -74,6 +82,15 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
 
   // when x is 177, the polynomial curve gives 450, the max pixels to scroll.
   DoubleProperty scroll_max_allowed_input_speed_;
+
+  // Force scroll wheel emulation for any devices
+  BoolProperty force_scroll_wheel_emulation_;
+
+  // Multiplication factor to translate cursor motion into scrolling
+  DoubleProperty scroll_wheel_emulation_speed_;
+
+  // Movement distance after which to start scroll wheel emulation [in mm]
+  DoubleProperty scroll_wheel_emulation_thresh_;
 };
 
 }  // namespace gestures

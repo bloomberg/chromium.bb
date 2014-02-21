@@ -179,6 +179,7 @@ class ActivityLog {
   static const char kKeyHardwarePropSupportsT5R2[];
   static const char kKeyHardwarePropSemiMt[];
   static const char kKeyHardwarePropIsButtonPad[];
+  static const char kKeyHardwarePropHasWheel[];
 
   static const char kKeyProperties[];
 
