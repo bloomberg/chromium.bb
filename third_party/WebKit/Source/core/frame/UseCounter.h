@@ -168,7 +168,6 @@ public:
         DocumentXMLStandalone = 116, // Removed from DOM4.
         DocumentXMLVersion = 117, // Removed from DOM4.
         NodeIsSameNode = 118, // Removed from DOM4.
-        NodeIsSupported = 119, // Removed from DOM4.
         NodeNamespaceURI = 120, // Removed from DOM4.
         NodeLocalName = 122, // Removed from DOM4.
         NavigatorProductSub = 123,
