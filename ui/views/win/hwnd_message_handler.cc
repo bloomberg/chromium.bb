@@ -768,6 +768,7 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 void HWNDMessageHandler::FrameTypeChanged() {
   // Called when the frame type could possibly be changing (theme change or
   // DWM composition change).
+  UpdateDwmNcRenderingPolicy();
 
   // Don't redraw the window here, because we need to hide and show the window
   // which will also trigger a redraw.
@@ -786,8 +787,9 @@ void HWNDMessageHandler::FrameTypeChanged() {
     UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
-
-    UpdateWindow(hwnd());
+    // Invalidate the window to force a paint. There may be child windows which
+    // could resize in this context. Don't paint right away.
+    ::InvalidateRect(hwnd(), NULL, FALSE);
   }
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
@@ -1135,8 +1137,11 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
 void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
-  DWMNCRENDERINGPOLICY policy = custom_window_region_ ? DWMNCRP_DISABLED
-                                                      : DWMNCRP_USEWINDOWSTYLE;
+
+  DWMNCRENDERINGPOLICY policy =
+      custom_window_region_ || delegate_->IsUsingCustomFrame() ?
+          DWMNCRP_DISABLED : DWMNCRP_ENABLED;
+
   DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
                         &policy, sizeof(DWMNCRENDERINGPOLICY));
 }
