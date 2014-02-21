@@ -90,7 +90,8 @@ public:
     AffineTransform& scale(double);
     AffineTransform& scale(double sx, double sy);
     AffineTransform& scaleNonUniform(double sx, double sy);
-    AffineTransform& rotate(double d);
+    AffineTransform& rotate(double a);
+    AffineTransform& rotateRadians(double a);
     AffineTransform& rotateFromVector(double x, double y);
     AffineTransform& translate(double tx, double ty);
     AffineTransform& shear(double sx, double sy);
