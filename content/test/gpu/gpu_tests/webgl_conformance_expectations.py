@@ -71,6 +71,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
         ['lion', 'intel'])
+    self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
+        ['lion', 'intel'], bug=345575)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
         ['lion'], bug=322795)
     self.Skip('conformance/ogles/GL/dot/dot_001_to_006.html',
