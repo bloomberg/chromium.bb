@@ -274,10 +274,10 @@ inline Position positionAfterNode(Node* anchorNode)
 
 inline int lastOffsetInNode(Node* node)
 {
-    return node->offsetInCharacters() ? node->maxCharacterOffset() : static_cast<int>(node->childNodeCount());
+    return node->offsetInCharacters() ? node->maxCharacterOffset() : static_cast<int>(node->countChildren());
 }
 
-// firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to childNodeCount()
+// firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to countChildren()
 inline Position firstPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())

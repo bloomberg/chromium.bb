@@ -1719,7 +1719,7 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
 
         Node* shadowTreeRoot = searchRange->shadowRoot();
         if (searchRange->collapsed(exceptionState) && shadowTreeRoot)
-            searchRange->setEnd(shadowTreeRoot, shadowTreeRoot->childNodeCount(), exceptionState);
+            searchRange->setEnd(shadowTreeRoot, shadowTreeRoot->countChildren(), exceptionState);
 
         m_resumeScopingFromRange = resultRange;
         timedOut = (currentTime() - startTime) >= maxScopingDuration;

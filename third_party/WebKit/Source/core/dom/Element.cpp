@@ -1805,7 +1805,7 @@ void Element::checkForEmptyStyleChange(RenderStyle* style)
     if (!style && !styleAffectedByEmpty())
         return;
 
-    if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildNodes())))
+    if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildren())))
         setNeedsStyleRecalc(SubtreeStyleChange);
 }
 

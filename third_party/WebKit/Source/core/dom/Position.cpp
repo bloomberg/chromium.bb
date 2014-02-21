@@ -214,7 +214,7 @@ Position Position::parentAnchoredEquivalent() const
         return Position(m_anchorNode.get(), 0, PositionIsOffsetInAnchor);
     }
     if (!m_anchorNode->offsetInCharacters()
-        && (m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->childNodeCount())
+        && (m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
         && (editingIgnoresContent(m_anchorNode.get()) || isRenderedTableElement(m_anchorNode.get()))
         && containerNode()) {
         return positionInParentAfterNode(m_anchorNode.get());
@@ -234,7 +234,7 @@ Node* Position::computeNodeBeforePosition() const
     case PositionIsAfterChildren:
         return m_anchorNode->lastChild();
     case PositionIsOffsetInAnchor:
-        return m_anchorNode->childNode(m_offset - 1); // -1 converts to childNode((unsigned)-1) and returns null.
+        return m_anchorNode->traverseToChildAt(m_offset - 1); // -1 converts to traverseToChildAt((unsigned)-1) and returns null.
     case PositionIsBeforeAnchor:
         return m_anchorNode->previousSibling();
     case PositionIsAfterAnchor:
@@ -255,7 +255,7 @@ Node* Position::computeNodeAfterPosition() const
     case PositionIsAfterChildren:
         return 0;
     case PositionIsOffsetInAnchor:
-        return m_anchorNode->childNode(m_offset);
+        return m_anchorNode->traverseToChildAt(m_offset);
     case PositionIsBeforeAnchor:
         return m_anchorNode.get();
     case PositionIsAfterAnchor:
@@ -303,7 +303,7 @@ Position Position::previous(PositionMoveType moveType) const
     ASSERT(offset >= 0);
 
     if (offset > 0) {
-        if (Node* child = node->childNode(offset - 1))
+        if (Node* child = node->traverseToChildAt(offset - 1))
             return lastPositionInOrAfterNode(child);
 
         // There are two reasons child might be 0:
@@ -338,10 +338,10 @@ Position Position::next(PositionMoveType moveType) const
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
     ASSERT(offset >= 0);
 
-    if (Node* child = node->childNode(offset))
+    if (Node* child = node->traverseToChildAt(offset))
         return firstPositionInOrBeforeNode(child);
 
-    if (!node->hasChildNodes() && offset < lastOffsetForEditing(node)) {
+    if (!node->hasChildren() && offset < lastOffsetForEditing(node)) {
         // There are two reasons child might be 0:
         //   1) The node is node like a text node that is not an element, and therefore has no children.
         //      Going forward one character at a time is correct.

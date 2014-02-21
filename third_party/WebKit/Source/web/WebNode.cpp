@@ -127,7 +127,7 @@ WebNode WebNode::nextSibling() const
 
 bool WebNode::hasChildNodes() const
 {
-    return m_private->hasChildNodes();
+    return m_private->hasChildren();
 }
 
 WebNodeList WebNode::childNodes()

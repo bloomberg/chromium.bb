@@ -506,7 +506,7 @@ bool MarkupAccumulator::shouldSelfClose(const Node& node)
 {
     if (node.document().isHTMLDocument())
         return false;
-    if (node.hasChildNodes())
+    if (node.hasChildren())
         return false;
     if (node.isHTMLElement() && !elementCannotHaveEndTag(node))
         return false;
@@ -527,7 +527,7 @@ bool MarkupAccumulator::elementCannotHaveEndTag(const Node& node)
 
 void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Node& node)
 {
-    if (!node.isElementNode() || shouldSelfClose(node) || (!node.hasChildNodes() && elementCannotHaveEndTag(node)))
+    if (!node.isElementNode() || shouldSelfClose(node) || (!node.hasChildren() && elementCannotHaveEndTag(node)))
         return;
 
     result.appendLiteral("</");

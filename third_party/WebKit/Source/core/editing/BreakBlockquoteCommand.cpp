@@ -116,7 +116,7 @@ void BreakBlockquoteCommand::doApply()
         } else if (pos.deprecatedEditingOffset() > 0)
             splitTextNode(textNode, pos.deprecatedEditingOffset());
     } else if (pos.deprecatedEditingOffset() > 0) {
-        Node* childAtOffset = startNode->childNode(pos.deprecatedEditingOffset());
+        Node* childAtOffset = startNode->traverseToChildAt(pos.deprecatedEditingOffset());
         startNode = childAtOffset ? childAtOffset : NodeTraversal::next(*startNode);
         ASSERT(startNode);
     }
@@ -174,7 +174,7 @@ void BreakBlockquoteCommand::doApply()
 
         // If the startNode's original parent is now empty, remove it
         Node* originalParent = ancestors.first().get();
-        if (!originalParent->hasChildNodes())
+        if (!originalParent->hasChildren())
             removeNode(originalParent);
     }
 

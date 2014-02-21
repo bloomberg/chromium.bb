@@ -121,7 +121,7 @@ static bool isEmptyOrUnstyledAppleStyleSpan(const Node* node)
     if (elem->getAttribute(classAttr) != "Apple-style-span")
         return false;
 
-    if (!node->hasChildNodes())
+    if (!node->hasChildren())
         return true;
 
     const StylePropertySet* inlineStyleDecl = elem->inlineStyle();

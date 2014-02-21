@@ -501,7 +501,7 @@ void HTMLTextFormControlElement::setInnerTextValue(const String& value)
         return;
 
     bool textIsChanged = value != innerTextValue();
-    if (textIsChanged || !innerTextElement()->hasChildNodes()) {
+    if (textIsChanged || !innerTextElement()->hasChildren()) {
         if (textIsChanged && renderer()) {
             if (AXObjectCache* cache = document().existingAXObjectCache())
                 cache->postNotification(this, AXObjectCache::AXValueChanged, false);

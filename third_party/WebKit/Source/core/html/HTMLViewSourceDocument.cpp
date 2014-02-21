@@ -216,7 +216,7 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className)
 
 void HTMLViewSourceDocument::finishLine()
 {
-    if (!m_current->hasChildNodes()) {
+    if (!m_current->hasChildren()) {
         RefPtr<HTMLBRElement> br = HTMLBRElement::create(*this);
         m_current->parserAppendChild(br);
     }

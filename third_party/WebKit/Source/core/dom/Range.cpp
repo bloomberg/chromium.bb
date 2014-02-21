@@ -658,7 +658,7 @@ static inline unsigned lengthOfContentsInNode(Node* node)
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
-        return toContainerNode(node)->childNodeCount();
+        return toContainerNode(node)->countChildren();
     case Node::DOCUMENT_TYPE_NODE:
         return 0;
     }
@@ -1043,7 +1043,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& exceptionSta
         }
 
         container = m_start.container();
-        container->insertBefore(newNode.release(), container->childNode(m_start.offset()), exceptionState);
+        container->insertBefore(newNode.release(), container->traverseToChildAt(m_start.offset()), exceptionState);
         if (exceptionState.hadException())
             return;
 
@@ -1151,7 +1151,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
         case Node::ELEMENT_NODE: {
             if (!offset)
                 return 0;
-            Node* childBefore = n->childNode(offset - 1);
+            Node* childBefore = n->traverseToChildAt(offset - 1);
             if (!childBefore)
                 exceptionState.throwDOMException(IndexSizeError, "There is no child at offset " + String::number(offset) + ".");
             return childBefore;
@@ -1472,7 +1472,7 @@ Node* Range::firstNode() const
         return 0;
     if (m_start.container()->offsetInCharacters())
         return m_start.container();
-    if (Node* child = m_start.container()->childNode(m_start.offset()))
+    if (Node* child = m_start.container()->traverseToChildAt(m_start.offset()))
         return child;
     if (!m_start.offset())
         return m_start.container();
@@ -1490,7 +1490,7 @@ Node* Range::pastLastNode() const
         return 0;
     if (m_end.container()->offsetInCharacters())
         return NodeTraversal::nextSkippingChildren(*m_end.container());
-    if (Node* child = m_end.container()->childNode(m_end.offset()))
+    if (Node* child = m_end.container()->traverseToChildAt(m_end.offset()))
         return child;
     return NodeTraversal::nextSkippingChildren(*m_end.container());
 }
@@ -1619,7 +1619,7 @@ int Range::maxStartOffset() const
     if (!m_start.container())
         return 0;
     if (!m_start.container()->offsetInCharacters())
-        return m_start.container()->childNodeCount();
+        return m_start.container()->countChildren();
     return m_start.container()->maxCharacterOffset();
 }
 
@@ -1628,7 +1628,7 @@ int Range::maxEndOffset() const
     if (!m_end.container())
         return 0;
     if (!m_end.container()->offsetInCharacters())
-        return m_end.container()->childNodeCount();
+        return m_end.container()->countChildren();
     return m_end.container()->maxCharacterOffset();
 }
 

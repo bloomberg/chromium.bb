@@ -779,7 +779,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
         // If cue has an empty text track cue region identifier or there is no
         // WebVTT region whose region identifier is identical to cue's text
         // track cue region identifier, run the following substeps:
-        if (displayBox->hasChildNodes() && !container.contains(displayBox.get())) {
+        if (displayBox->hasChildren() && !container.contains(displayBox.get())) {
             // Note: the display tree of a cue is removed when the active flag of the cue is unset.
             container.appendChild(displayBox);
         }

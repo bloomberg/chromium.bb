@@ -54,7 +54,7 @@
     [Custom, CustomElementCallbacks, PerWorldBindings, RaisesException] Node removeChild(Node oldChild);
     [Custom, CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node appendChild(Node newChild);
 
-    boolean            hasChildNodes();
+    [ImplementedAs=hasChildren] boolean hasChildNodes();
     [CustomElementCallbacks, PerWorldBindings]
     Node               cloneNode(optional boolean deep);
     [CustomElementCallbacks] void normalize();

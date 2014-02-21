@@ -771,7 +771,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         if (isBlock(node.get()))
             continue;
 
-        if (node->childNodeCount()) {
+        if (node->hasChildren()) {
             if (node->contains(pastEndNode.get()) || containsNonEditableRegion(*node) || !node->parentNode()->rendererIsEditable())
                 continue;
             if (editingIgnoresContent(node.get())) {
@@ -829,7 +829,7 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
     ASSERT(style && runStart);
 
     for (Node* node = runStart; node && node != pastEndNode; node = NodeTraversal::next(*node)) {
-        if (node->hasChildNodes())
+        if (node->hasChildren())
             continue;
         // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
         if (!style->styleIsPresentInComputedStyleOfNode(node))
@@ -995,7 +995,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 
     // Since addInlineStyleIfNeeded can't add styles to block-flow render objects, add style attribute instead.
     // FIXME: applyInlineStyleToRange should be used here instead.
-    if ((node->renderer()->isRenderBlockFlow() || node->hasChildNodes()) && node->isHTMLElement()) {
+    if ((node->renderer()->isRenderBlockFlow() || node->hasChildren()) && node->isHTMLElement()) {
         setNodeAttribute(toHTMLElement(node), styleAttr, AtomicString(newInlineStyle->style()->asText()));
         return;
     }
@@ -1411,7 +1411,7 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtr<Node> passedStart, Pas
         bool styleContainerIsNotSpan = !styleContainer || !styleContainer->hasTagName(spanTag);
         if (container->isHTMLElement()) {
             HTMLElement* containerElement = toHTMLElement(container);
-            if (containerElement->hasTagName(spanTag) || (styleContainerIsNotSpan && containerElement->hasChildNodes()))
+            if (containerElement->hasTagName(spanTag) || (styleContainerIsNotSpan && containerElement->hasChildren()))
                 styleContainer = toHTMLElement(container);
         }
         if (!container->firstChild())

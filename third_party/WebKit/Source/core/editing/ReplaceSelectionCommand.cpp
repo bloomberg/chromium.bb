@@ -295,7 +295,7 @@ void ReplacementFragment::removeInterchangeNodes(Node* container)
         }
         node = node->firstChild();
     }
-    if (!container->hasChildNodes())
+    if (!container->hasChildren())
         return;
     // Interchange newlines at the "end" of the incoming fragment must be
     // either the last node in the fragment or the last leaf in the fragment.
@@ -1417,7 +1417,7 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtr<HTMLElement> prpList
 {
     RefPtr<HTMLElement> listElement = prpListElement;
 
-    while (listElement->hasChildNodes() && isListElement(listElement->firstChild()) && listElement->hasOneChild())
+    while (listElement->hasChildren() && isListElement(listElement->firstChild()) && listElement->hasOneChild())
         listElement = toHTMLElement(listElement->firstChild());
 
     bool isStart = isStartOfParagraph(insertPos);

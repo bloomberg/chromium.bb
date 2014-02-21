@@ -96,7 +96,7 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
         if (next == 0)
             tail = 0;
 
-        if (n->hasChildNodes())
+        if (n->hasChildren())
             Private::addChildNodesToDeletionQueue<GenericNode, GenericNodeContainer>(head, tail, static_cast<GenericNodeContainer&>(*n));
 
         delete n;

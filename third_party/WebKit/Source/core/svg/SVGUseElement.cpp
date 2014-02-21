@@ -959,7 +959,7 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
             if (use->resourceIsStillLoading())
                 return true;
         }
-        if (instance->hasChildNodes())
+        if (instance->hasChildren())
             instanceTreeIsLoading(instance);
     }
     return false;

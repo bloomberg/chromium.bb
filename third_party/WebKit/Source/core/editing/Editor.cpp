@@ -1160,7 +1160,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
     RefPtr<Node> shadowTreeRoot = referenceRange && referenceRange->startContainer() ? referenceRange->startContainer()->nonBoundaryShadowTreeRootNode() : 0;
     if (shadowTreeRoot) {
         if (forward)
-            searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->childNodeCount());
+            searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->countChildren());
         else
             searchRange->setStart(shadowTreeRoot.get(), 0);
     }
@@ -1178,7 +1178,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
 
         if (shadowTreeRoot) {
             if (forward)
-                searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->childNodeCount());
+                searchRange->setEnd(shadowTreeRoot.get(), shadowTreeRoot->countChildren());
             else
                 searchRange->setStart(shadowTreeRoot.get(), 0);
         }

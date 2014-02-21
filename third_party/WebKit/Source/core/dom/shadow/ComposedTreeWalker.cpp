@@ -72,7 +72,7 @@ Node* ComposedTreeWalker::traverseNode(const Node* node, TraversalDirection dire
     const InsertionPoint* insertionPoint = toInsertionPoint(node);
     if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint->first() : insertionPoint->last(), insertionPoint, direction))
         return found;
-    ASSERT(node->hasTagName(HTMLNames::shadowTag) || (node->hasTagName(HTMLNames::contentTag) && !node->hasChildNodes()));
+    ASSERT(node->hasTagName(HTMLNames::shadowTag) || (node->hasTagName(HTMLNames::contentTag) && !node->hasChildren()));
     return 0;
 }
 

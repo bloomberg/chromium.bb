@@ -716,7 +716,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
     }
 
     // 11. Return output.
-    if (hasChildNodes())
+    if (hasChildren())
         show();
     else
         hide();

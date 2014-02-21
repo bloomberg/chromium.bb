@@ -31,7 +31,7 @@ class HTMLHRElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLHRElement> create(Document&);
 
-    virtual bool canContainRangeEndPoint() const OVERRIDE { return hasChildNodes(); }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return hasChildren(); }
 
 private:
     explicit HTMLHRElement(Document&);

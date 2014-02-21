@@ -343,7 +343,7 @@ HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext()
 HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext(DocumentFragment* fragment, Element* contextElement)
     : m_fragment(fragment)
 {
-    ASSERT(!fragment->hasChildNodes());
+    ASSERT(!fragment->hasChildren());
     m_contextElementStackItem = HTMLStackItem::create(contextElement, HTMLStackItem::ItemForContextElement);
 }
 

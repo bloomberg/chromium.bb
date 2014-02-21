@@ -65,7 +65,7 @@ using namespace HTMLNames;
 // purposes of editing.
 bool isAtomicNode(const Node *node)
 {
-    return node && (!node->hasChildNodes() || editingIgnoresContent(node));
+    return node && (!node->hasChildren() || editingIgnoresContent(node));
 }
 
 // Compare two positions, taking into account the possibility that one or both
@@ -348,8 +348,8 @@ int lastOffsetForEditing(const Node* node)
     if (node->offsetInCharacters())
         return node->maxCharacterOffset();
 
-    if (node->hasChildNodes())
-        return node->childNodeCount();
+    if (node->hasChildren())
+        return node->countChildren();
 
     // NOTE: This should preempt the childNodeCount for, e.g., select nodes
     if (editingIgnoresContent(node))
@@ -503,7 +503,7 @@ Node* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 VisiblePosition visiblePositionBeforeNode(Node* node)
 {
     ASSERT(node);
-    if (node->hasChildNodes())
+    if (node->hasChildren())
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());
@@ -514,7 +514,7 @@ VisiblePosition visiblePositionBeforeNode(Node* node)
 VisiblePosition visiblePositionAfterNode(Node* node)
 {
     ASSERT(node);
-    if (node->hasChildNodes())
+    if (node->hasChildren())
         return VisiblePosition(lastPositionInOrAfterNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());

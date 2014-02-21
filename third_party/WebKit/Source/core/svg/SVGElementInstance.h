@@ -164,7 +164,7 @@ private:
     template<class GenericNode, class GenericNodeContainer>
     friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
 
-    bool hasChildNodes() const { return m_firstChild; }
+    bool hasChildren() const { return m_firstChild; }
 
     void setFirstChild(SVGElementInstance* child) { m_firstChild = child; }
     void setLastChild(SVGElementInstance* child) { m_lastChild = child; }

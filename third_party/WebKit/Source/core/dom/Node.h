@@ -195,7 +195,7 @@ public:
     void removeChild(Node* child, ExceptionState&);
     void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
-    bool hasChildNodes() const { return firstChild(); }
+    bool hasChildren() const { return firstChild(); }
     virtual PassRefPtr<Node> cloneNode(bool deep = false) = 0;
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
@@ -475,8 +475,8 @@ public:
 
     bool isDocumentTypeNode() const { return nodeType() == DOCUMENT_TYPE_NODE; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
-    unsigned childNodeCount() const;
-    Node* childNode(unsigned index) const;
+    unsigned countChildren() const;
+    Node* traverseToChildAt(unsigned index) const;
 
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;

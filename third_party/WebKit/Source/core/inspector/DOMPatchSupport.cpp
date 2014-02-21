@@ -376,7 +376,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     for (size_t i = 0; i < newMap.size(); ++i) {
         if (newMap[i].first || merges.contains(newList[i].get()))
             continue;
-        if (!insertBeforeAndMarkAsUsed(parentNode, newList[i].get(), parentNode->childNode(i), exceptionState))
+        if (!insertBeforeAndMarkAsUsed(parentNode, newList[i].get(), parentNode->traverseToChildAt(i), exceptionState))
             return false;
     }
 
@@ -385,7 +385,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
         if (!oldMap[i].first)
             continue;
         RefPtr<Node> node = oldMap[i].first->m_node;
-        Node* anchorNode = parentNode->childNode(oldMap[i].second);
+        Node* anchorNode = parentNode->traverseToChildAt(oldMap[i].second);
         if (node.get() == anchorNode)
             continue;
         if (node->hasTagName(bodyTag) || node->hasTagName(headTag))

@@ -111,7 +111,7 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRect)
     Vector<Node*> hitNodes;
     collectOverlappingChildNodes(bestNode, resizedCropRect, hitNodes);
 
-    if (hitNodes.isEmpty() || hitNodes.size() == bestNode->childNodeCount()) {
+    if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
         hitNodes.clear();
         hitNodes.append(bestNode);
     }

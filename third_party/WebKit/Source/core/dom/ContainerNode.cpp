@@ -537,7 +537,7 @@ void ContainerNode::removeChildren()
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         {
             NoEventDispatchAssertion assertNoEventDispatch;
-            removedChildren.reserveInitialCapacity(childNodeCount());
+            removedChildren.reserveInitialCapacity(countChildren());
             while (m_firstChild) {
                 removedChildren.append(m_firstChild);
                 removeBetween(0, m_firstChild->nextSibling(), *m_firstChild);
@@ -888,7 +888,7 @@ PassRefPtr<HTMLCollection> ContainerNode::children()
     return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(this, NodeChildren);
 }
 
-unsigned ContainerNode::childNodeCount() const
+unsigned ContainerNode::countChildren() const
 {
     unsigned count = 0;
     Node *n;
@@ -897,7 +897,7 @@ unsigned ContainerNode::childNodeCount() const
     return count;
 }
 
-Node *ContainerNode::childNode(unsigned index) const
+Node* ContainerNode::traverseToChildAt(unsigned index) const
 {
     unsigned i;
     Node *n = firstChild();

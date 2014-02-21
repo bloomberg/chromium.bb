@@ -369,7 +369,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 appendStartTag(*n);
 
             // If node has no children, close the tag now.
-            if (!n->hasChildNodes()) {
+            if (!n->hasChildren()) {
                 if (shouldEmit)
                     appendEndTag(*n);
                 lastClosed = n;

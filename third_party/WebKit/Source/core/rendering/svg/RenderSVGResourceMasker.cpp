@@ -67,7 +67,7 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
     clearInvalidationMask();
 
     FloatRect repaintRect = object->repaintRectInLocalCoordinates();
-    if (repaintRect.isEmpty() || !element()->hasChildNodes())
+    if (repaintRect.isEmpty() || !element()->hasChildren())
         return false;
 
     // Content layer start.

@@ -497,7 +497,7 @@ bool TextAutosizer::isAutosizingContainer(const RenderObject* renderer)
     // - Must not be normal list items, as items in the same list should look
     //   consistent, unless they are floating or position:absolute/fixed.
     Node* node = renderer->generatingNode();
-    if ((node && !node->hasChildNodes())
+    if ((node && !node->hasChildren())
         || !renderer->isRenderBlock()
         || (renderer->isInline() && !renderer->style()->isDisplayReplacedType()))
         return false;

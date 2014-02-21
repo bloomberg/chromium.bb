@@ -883,7 +883,7 @@ void Node::clearNodeLists()
 bool Node::isDescendantOf(const Node *other) const
 {
     // Return true if other is an ancestor of this, otherwise false
-    if (!other || !other->hasChildNodes() || inDocument() != other->inDocument())
+    if (!other || !other->hasChildren() || inDocument() != other->inDocument())
         return false;
     if (other->treeScope() != treeScope())
         return false;
@@ -917,7 +917,7 @@ bool Node::containsIncludingShadowDOM(const Node* node) const
     if (inDocument() != node->inDocument())
         return false;
 
-    bool hasChildren = isContainerNode() && toContainerNode(this)->hasChildNodes();
+    bool hasChildren = isContainerNode() && toContainerNode(this)->hasChildren();
     bool hasShadow = isElementNode() && toElement(this)->shadow();
     if (!hasChildren && !hasShadow)
         return false;

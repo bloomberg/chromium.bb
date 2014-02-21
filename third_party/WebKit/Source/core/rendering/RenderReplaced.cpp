@@ -601,7 +601,7 @@ bool RenderReplaced::isSelected() const
     if (s == SelectionStart)
         return selectionStart == 0;
 
-    int end = node()->hasChildNodes() ? node()->childNodeCount() : 1;
+    int end = node()->hasChildren() ? node()->countChildren() : 1;
     if (s == SelectionEnd)
         return selectionEnd == end;
     if (s == SelectionBoth)

@@ -284,7 +284,7 @@ void TextFieldInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
     ShadowRoot* shadowRoot = element().userAgentShadowRoot();
-    ASSERT(!shadowRoot->hasChildNodes());
+    ASSERT(!shadowRoot->hasChildren());
 
     Document& document = element().document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
