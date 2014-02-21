@@ -58,8 +58,33 @@ class DriverInfo {
 
 typedef internal::PrinterInfo<PRINTER_INFO_2, 2> PrinterInfo2;
 typedef internal::PrinterInfo<PRINTER_INFO_5, 5> PrinterInfo5;
+typedef internal::PrinterInfo<PRINTER_INFO_8, 8> PrinterInfo8;
+typedef internal::PrinterInfo<PRINTER_INFO_9, 9> PrinterInfo9;
 
 typedef internal::DriverInfo<DRIVER_INFO_6, 6> DriverInfo6;
+
+// Retrieves DEVMODE from PRINTER_INFO_* structures.
+// Requests in following order:
+//    9 (user-default),
+//    8 (admin-default),
+//    2 (printer-default).
+class PRINTING_EXPORT UserDefaultDevMode {
+ public:
+  UserDefaultDevMode();
+  ~UserDefaultDevMode();
+
+  bool Init(HANDLE printer);
+
+  const DEVMODE* get() const {
+    return dev_mode_;
+  }
+
+ private:
+  PrinterInfo2 info_2_;
+  PrinterInfo8 info_8_;
+  PrinterInfo9 info_9_;
+  const DEVMODE* dev_mode_;
+};
 
 }  // namespace printing
 

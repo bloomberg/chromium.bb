@@ -46,11 +46,10 @@ class ScopedPrinterHandle
     : public base::win::GenericScopedHandle<PrinterHandleTraits,
                                             base::win::VerifierTraits> {
  public:
-  bool OpenPrinter(const base::string16& printer) {
+  bool OpenPrinter(const wchar_t* printer) {
     HANDLE temp_handle;
     // ::OpenPrinter may return error but assign some value into handle.
-    if (::OpenPrinter(const_cast<wchar_t*>(printer.c_str()), &temp_handle,
-                      NULL)) {
+    if (::OpenPrinter(const_cast<LPTSTR>(printer), &temp_handle, NULL)) {
       Set(temp_handle);
     }
     return IsValid();

@@ -44,4 +44,23 @@ uint8* GetPrinterInfo(HANDLE printer, int level) {
 
 }  // namespace internal
 
+UserDefaultDevMode::UserDefaultDevMode() : dev_mode_(NULL) {
+}
+
+bool UserDefaultDevMode::Init(HANDLE printer) {
+  if (info_9_.Init(printer))
+    dev_mode_ = info_9_.get()->pDevMode;
+
+  if (!dev_mode_ && info_8_.Init(printer))
+    dev_mode_ = info_8_.get()->pDevMode;
+
+  if (!dev_mode_ && info_2_.Init(printer))
+    dev_mode_ = info_2_.get()->pDevMode;
+
+  return dev_mode_ != NULL;
+}
+
+UserDefaultDevMode::~UserDefaultDevMode() {
+}
+
 }  // namespace printing

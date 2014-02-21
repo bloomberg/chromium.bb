@@ -269,7 +269,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   (void)::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
                        NULL, 2, NULL, 0, &bytes_needed, &count_returned);
   if (bytes_needed) {
-    DCHECK_GE(bytes_needed, count_returned * sizeof(PRINTER_INFO_2));
+    DCHECK(bytes_needed >= count_returned * sizeof(PRINTER_INFO_2));
     scoped_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
     BOOL ret = ::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
                               NULL, 2, printer_info_buffer.get(),
@@ -277,21 +277,17 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
                               &count_returned);
     if (ret && count_returned) {  // have printers
       // Open the first successfully found printer.
-      const PRINTER_INFO_2* info_2 =
-          reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
-      const PRINTER_INFO_2* info_2_end = info_2 + count_returned;
-      for (; info_2 < info_2_end; ++info_2) {
-        ScopedPrinterHandle printer;
-        if (!printer.OpenPrinter(info_2->pPrinterName))
+      for (DWORD count = 0; count < count_returned; ++count) {
+        PRINTER_INFO_2* info_2 = reinterpret_cast<PRINTER_INFO_2*>(
+            printer_info_buffer.get() + count * sizeof(PRINTER_INFO_2));
+        std::wstring printer_name = info_2->pPrinterName;
+        if (info_2->pDevMode == NULL || printer_name.length() == 0)
           continue;
-        scoped_ptr<DEVMODE[]> dev_mode = CreateDevMode(printer, NULL);
-        if (!dev_mode || !AllocateContext(info_2->pPrinterName, dev_mode.get(),
-                                          &context_)) {
-          continue;
-        }
-        if (InitializeSettings(*dev_mode.get(), info_2->pPrinterName, NULL, 0,
-                               false)) {
-          return OK;
+        if (!AllocateContext(printer_name, info_2->pDevMode, &context_))
+          break;
+        if (InitializeSettings(*info_2->pDevMode, printer_name,
+                               NULL, 0, false)) {
+          break;
         }
         ReleaseContext();
       }
@@ -340,13 +336,15 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   DCHECK(!external_preview) << "Not implemented";
 
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(settings_.device_name()))
+  LPWSTR device_name_wide =
+      const_cast<wchar_t*>(settings_.device_name().c_str());
+  if (!printer.OpenPrinter(device_name_wide))
     return OnError();
 
   // Make printer changes local to Chrome.
   // See MSDN documentation regarding DocumentProperties.
   scoped_ptr<DEVMODE[]> scoped_dev_mode =
-      CreateDevModeWithColor(printer, settings_.device_name(),
+      CreateDevModeWithColor(printer, device_name_wide,
                              settings_.color() != GRAY);
   if (!scoped_dev_mode)
     return OnError();
@@ -406,7 +404,7 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
 
   // TODO(maruel): settings_.ToDEVMODE()
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(settings_.device_name())) {
+  if (!printer.OpenPrinter(settings_.device_name().c_str())) {
     return FAILED;
   }
 
@@ -590,14 +588,15 @@ bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
                                             const std::wstring& device_name) {
   DCHECK(!in_print_job_);
 
-  scoped_ptr<DEVMODE[]> dev_mode = CreateDevMode(printer, NULL);
+  UserDefaultDevMode user_settings;
 
-  if (!dev_mode || !AllocateContext(device_name, dev_mode.get(), &context_)) {
+  if (!user_settings.Init(printer) ||
+      !AllocateContext(device_name, user_settings.get(), &context_)) {
     ResetSettings();
     return false;
   }
 
-  return InitializeSettings(*dev_mode.get(), device_name, NULL, 0, false);
+  return InitializeSettings(*user_settings.get(), device_name, NULL, 0, false);
 }
 
 // static

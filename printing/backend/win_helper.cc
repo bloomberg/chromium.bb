@@ -395,7 +395,7 @@ scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
   }
 
   printing::ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(printer_name))
+  if (!printer.OpenPrinter(printer_name.c_str()))
     return scoped_dev_mode.Pass();
 
   base::win::ScopedComPtr<IStream> pt_stream;

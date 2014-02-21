@@ -23,7 +23,7 @@ scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
     return scoped_ptr<DEVMODE[]>();
 
   printing::ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(printer_name))
+  if (!printer.OpenPrinter(printer_name.c_str()))
     return scoped_ptr<DEVMODE[]>();
 
   scoped_ptr<DEVMODE[]> scoped_dev_mode;
