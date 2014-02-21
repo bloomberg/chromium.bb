@@ -219,14 +219,6 @@ void HTMLSelectElement::remove(int optionIndex)
     listItems()[listIndex]->remove(IGNORE_EXCEPTION);
 }
 
-void HTMLSelectElement::remove(HTMLOptionElement* option)
-{
-    if (option->ownerSelectElement() != this)
-        return;
-
-    option->remove(IGNORE_EXCEPTION);
-}
-
 String HTMLSelectElement::value() const
 {
     const Vector<HTMLElement*>& items = listItems();

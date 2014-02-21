@@ -64,7 +64,6 @@ public:
 
     using Node::remove;
     void remove(int index);
-    void remove(HTMLOptionElement*);
 
     String value() const;
     void setValue(const String&);

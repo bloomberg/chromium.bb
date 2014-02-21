@@ -39,7 +39,6 @@ interface HTMLSelectElement : HTMLElement {
     [RaisesException] void add([Default=Undefined] optional HTMLElement element,
                                [Default=Undefined] optional HTMLElement before);
     void remove(long index);
-    void remove(HTMLOptionElement option);  // non-standard
     [RaisesException] void remove();
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;
