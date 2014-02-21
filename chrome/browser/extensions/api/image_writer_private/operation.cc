@@ -33,10 +33,6 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
 #else
       device_path_(device_path),
 #endif
-#if defined(OS_LINUX) && !defined(CHROMEOS)
-      image_file_(base::kInvalidPlatformFileValue),
-      device_file_(base::kInvalidPlatformFileValue),
-#endif
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0) {
 }
@@ -62,6 +58,13 @@ int Operation::GetProgress() {
 image_writer_api::Stage Operation::GetStage() {
   return stage_;
 }
+
+#if !defined(OS_CHROMEOS)
+void Operation::SetUtilityClientForTesting(
+    scoped_refptr<ImageWriterUtilityClient> client) {
+  image_writer_client_ = client;
+}
+#endif
 
 void Operation::Start() {
 #if defined(OS_CHROMEOS)
@@ -117,7 +120,7 @@ void Operation::Unzip(const base::Closure& continuation) {
 
   zip_reader_.ExtractCurrentEntryToFilePathAsync(
       image_path_,
-      base::Bind(&Operation::OnUnzipSuccess, this, continuation),
+      base::Bind(&Operation::CompleteAndContinue, this, continuation),
       base::Bind(&Operation::OnUnzipFailure, this),
       base::Bind(&Operation::OnUnzipProgress,
                  this,
@@ -181,14 +184,13 @@ void Operation::SetProgress(int progress) {
 
   progress_ = progress;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OperationManager::OnProgress,
-                 manager_,
-                 extension_id_,
-                 stage_,
-                 progress_));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&OperationManager::OnProgress,
+                                     manager_,
+                                     extension_id_,
+                                     stage_,
+                                     progress_));
 }
 
 void Operation::SetStage(image_writer_api::Stage stage) {
@@ -229,6 +231,43 @@ void Operation::AddCleanUpFunction(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   cleanup_functions_.push_back(callback);
 }
+
+void Operation::CompleteAndContinue(const base::Closure& continuation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  SetProgress(kProgressComplete);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
+}
+
+#if !defined(OS_CHROMEOS)
+void Operation::StartUtilityClient() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!image_writer_client_) {
+    image_writer_client_ = new ImageWriterUtilityClient();
+    AddCleanUpFunction(base::Bind(&Operation::StopUtilityClient, this));
+  }
+}
+
+void Operation::StopUtilityClient() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ImageWriterUtilityClient::Shutdown, image_writer_client_));
+}
+
+void Operation::WriteImageProgress(int64 total_bytes, int64 curr_bytes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (IsCancelled()) {
+    return;
+  }
+
+  int progress = kProgressComplete * curr_bytes / total_bytes;
+
+  if (progress > GetProgress()) {
+    SetProgress(progress);
+  }
+}
+#endif
 
 void Operation::GetMD5SumOfFile(
     const base::FilePath& file_path,
@@ -326,12 +365,6 @@ void Operation::MD5Chunk(
   base::ClosePlatformFile(file);
 }
 
-void Operation::OnUnzipSuccess(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  SetProgress(kProgressComplete);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
-}
-
 void Operation::OnUnzipFailure() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Error(error::kUnzipGenericError);
@@ -340,7 +373,7 @@ void Operation::OnUnzipFailure() {
 void Operation::OnUnzipProgress(int64 total_bytes, int64 progress_bytes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  int progress_percent = 100 * progress_bytes / total_bytes;
+  int progress_percent = kProgressComplete * progress_bytes / total_bytes;
   SetProgress(progress_percent);
 }
 

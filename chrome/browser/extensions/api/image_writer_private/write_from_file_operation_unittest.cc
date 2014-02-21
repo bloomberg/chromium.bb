@@ -40,7 +40,7 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Runs the entire WriteFromFile operation.
 TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   MockOperationManager manager;
 
@@ -49,6 +49,10 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
                                  kDummyExtensionId,
                                  test_image_path_,
                                  test_device_path_.AsUTF8Unsafe());
+#if !defined(OS_CHROMEOS)
+  scoped_refptr<FakeImageWriterClient> client = FakeImageWriterClient::Create();
+  op->SetUtilityClientForTesting(client);
+#endif
 
   EXPECT_CALL(manager,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
@@ -59,6 +63,9 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   EXPECT_CALL(manager,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 100))
       .Times(AtLeast(1));
+
+#if !defined(OS_CHROMEOS)
+  // Chrome OS doesn't verify.
   EXPECT_CALL(
       manager,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
@@ -71,16 +78,27 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
       manager,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
       .Times(AtLeast(1));
+#endif
+
   EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(1);
   EXPECT_CALL(manager, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
   op->Start();
 
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(base::ContentsEqual(test_image_path_, test_device_path_));
-}
+#if !defined(OS_CHROMEOS)
+  client->Progress(0);
+  client->Progress(50);
+  client->Progress(100);
+  client->Success();
+  base::RunLoop().RunUntilIdle();
+  client->Progress(0);
+  client->Progress(50);
+  client->Progress(100);
+  client->Success();
+  base::RunLoop().RunUntilIdle();
 #endif
+}
 
 }  // namespace image_writer
 }  // namespace extensions

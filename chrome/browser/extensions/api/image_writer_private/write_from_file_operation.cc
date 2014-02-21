@@ -30,12 +30,18 @@ void WriteFromFileOperation::StartImpl() {
     return;
   }
 
-  Unzip(base::Bind(
-      &WriteFromFileOperation::Write,
-      this,
-      base::Bind(&WriteFromFileOperation::VerifyWrite,
-                 this,
-                 base::Bind(&WriteFromFileOperation::Finish, this))));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &WriteFromFileOperation::Unzip,
+          this,
+          base::Bind(
+              &WriteFromFileOperation::Write,
+              this,
+              base::Bind(&WriteFromFileOperation::VerifyWrite,
+                         this,
+                         base::Bind(&WriteFromFileOperation::Finish, this)))));
 }
 
 }  // namespace image_writer
