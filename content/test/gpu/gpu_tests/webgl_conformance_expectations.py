@@ -24,17 +24,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # self.Fail('gl-enable-vertex-attrib.html',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    # Fails everywhere.
-    self.Skip('conformance/glsl/misc/large-loop-compile.html',
-        bug=322764)
-    self.Skip('conformance/textures/texture-size-limit.html',
-        bug=322789)
-    # Skip slow tests.
-    self.Skip('conformance/context/context-creation-and-destruction.html',
-        bug=322689)
-    self.Skip('conformance/rendering/multisample-corruption.html',
-        bug=322689)
-
     # Win7/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
@@ -42,10 +31,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/textures/copy-tex-image-and-sub-image-2d.html',
         ['win7', 'intel'])
-
-    # Mac failures.
-    self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
-        ['mac'], bug=322795)
 
     # Mac/Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
