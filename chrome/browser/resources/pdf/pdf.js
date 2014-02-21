@@ -27,6 +27,9 @@ var viewerPageIndicator;
 // The progress bar element.
 var viewerProgressBar;
 
+// The element indicating there was an error loading the document.
+var viewerErrorScreen;
+
 // The viewport object.
 var viewport;
 
@@ -42,6 +45,7 @@ function updateProgress(progress) {
   viewerProgressBar.progress = progress;
   if (progress == -1) {
     // Document load failed.
+    viewerErrorScreen.style.visibility = 'visible';
     sizer.style.display = 'none';
     viewerToolbar.style.visibility = 'hidden';
   }
@@ -102,6 +106,8 @@ function load() {
   viewerToolbar = $('toolbar');
   viewerPageIndicator = $('page-indicator');
   viewerProgressBar = $('progress-bar');
+  viewerErrorScreen = $('error-screen');
+  viewerErrorScreen.text = 'Failed to load PDF document';
 
   // Create the viewport.
   viewport = new Viewport(window,

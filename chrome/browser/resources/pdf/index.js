@@ -516,3 +516,6 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
       this.progressChanged();
     }
   });
+;
+
+  Polymer('viewer-error-screen', {});
