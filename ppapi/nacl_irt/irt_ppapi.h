@@ -33,18 +33,10 @@ struct PP_ThreadFunctions {
   int (*thread_join)(uintptr_t tid);
 };
 
-/*
- * TODO(mseaborn): Make this unconditional after the definition of the
- * struct has been removed from the NaCl side's irt.h.
- */
-#if !defined(NACL_IRT_PPAPIHOOK_v0_1)
-
 #define NACL_IRT_PPAPIHOOK_v0_1 "nacl-irt-ppapihook-0.1"
 struct nacl_irt_ppapihook {
   int (*ppapi_start)(const struct PP_StartFunctions*);
   void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions*);
 };
-
-#endif
 
 #endif

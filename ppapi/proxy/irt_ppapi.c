@@ -33,11 +33,7 @@ const void* PPP_GetInterface(const char* interface_name) {
   return g_pp_functions.PPP_GetInterface(interface_name);
 }
 
-/*
- * TODO(mseaborn): This can be made static when the NaCl side no
- * longer refers to it.
- */
-const struct nacl_irt_ppapihook nacl_irt_ppapihook = {
+static const struct nacl_irt_ppapihook nacl_irt_ppapihook = {
   irt_ppapi_start,
   PpapiPluginRegisterThreadCreator,
 };
