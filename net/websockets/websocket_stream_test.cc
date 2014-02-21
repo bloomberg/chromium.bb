@@ -703,7 +703,7 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
                                  kMalformedResponse);
   RunUntilIdle();
   EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
+  EXPECT_EQ("Error during WebSocket handshake: Invalid status line",
             failure_message());
 }
 

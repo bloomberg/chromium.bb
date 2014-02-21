@@ -565,9 +565,18 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
       // Other status codes are potentially risky (see the warnings in the
       // WHATWG WebSocket API spec) and so are dropped by default.
       default:
-        failure_message_ = base::StringPrintf(
-            "Error during WebSocket handshake: Unexpected response code: %d",
-            headers->response_code());
+        // A WebSocket server cannot be using HTTP/0.9, so if we see version
+        // 0.9, it means the response was garbage.
+        // Reporting "Unexpected response code: 200" in this case is not
+        // helpful, so use a different error message.
+        if (headers->GetHttpVersion() == HttpVersion(0, 9)) {
+          failure_message_ =
+              "Error during WebSocket handshake: Invalid status line";
+        } else {
+          failure_message_ = base::StringPrintf(
+              "Error during WebSocket handshake: Unexpected response code: %d",
+              headers->response_code());
+        }
         OnFinishOpeningHandshake();
         return ERR_INVALID_RESPONSE;
     }
