@@ -94,6 +94,15 @@ class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
                                  "active", to_tab));
   }
 
+  void HangUp(content::WebContents* from_tab) {
+    EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
+  }
+
+  void WaitUntilHangupVerified(content::WebContents* tab_contents) {
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "no-peer-connection", tab_contents));
+  }
+
   PeerConnectionServerRunner peerconnection_server_;
 };
 

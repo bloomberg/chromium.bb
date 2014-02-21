@@ -63,6 +63,34 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
+  void EstablishCall(content::WebContents* from_tab,
+                     content::WebContents* to_tab) {
+    ConnectToPeerConnectionServer("peer 1", from_tab);
+    ConnectToPeerConnectionServer("peer 2", to_tab);
+
+    EXPECT_EQ("ok-peerconnection-created",
+              ExecuteJavascript("preparePeerConnection()", from_tab));
+    EXPECT_EQ("ok-added",
+              ExecuteJavascript("addLocalStream()", from_tab));
+    EXPECT_EQ("ok-negotiating",
+              ExecuteJavascript("negotiateCall()", from_tab));
+
+    // Ensure the call gets up on both sides.
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", from_tab));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", to_tab));
+  }
+
+  void HangUp(content::WebContents* from_tab) {
+    EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
+  }
+
+  void WaitUntilHangupVerified(content::WebContents* tab_contents) {
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "no-peer-connection", tab_contents));
+  }
+
   void PrintProcessMetrics(base::ProcessMetrics* process_metrics,
                            const std::string& suffix) {
     perf_test::PrintResult("cpu", "", "cpu" + suffix,
@@ -113,6 +141,11 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     return NULL;
   }
 
+  content::WebContents* OpenTestPageAndGetUserMediaInNewTab() {
+    return OpenPageAndGetUserMediaInNewTab(
+        embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  }
+
   PeerConnectionServerRunner peerconnection_server_;
 };
 
@@ -121,10 +154,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
 
@@ -148,8 +179,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   base::FilePath results_file;
   ASSERT_TRUE(base::CreateTemporaryFile(&results_file));
 
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
 
 #if defined(OS_MACOSX)
   // Don't measure renderer CPU on mac: requires a mach broker we don't have
@@ -172,8 +202,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   browser_process_metrics->GetCPUUsage();
 #endif
 
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
 
@@ -200,10 +229,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 80000.";
 
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
+  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
 
   EstablishCall(left_tab, right_tab);
 

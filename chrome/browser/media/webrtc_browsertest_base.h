@@ -48,11 +48,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // and returns the new tab.
   content::WebContents* OpenPageAndGetUserMediaInNewTab(const GURL& url) const;
 
-  // Convenience method which gets the URL for |test_page| and calls
-  // OpenPageAndGetUserMediaInNewTab().
-  content::WebContents* OpenTestPageAndGetUserMediaInNewTab(
-    const std::string& test_page) const;
-
   // Opens the page at |url| where getUserMedia has been invoked through other
   // means and accepts the user media request.
   content::WebContents* OpenPageAndAcceptUserMedia(const GURL& url) const;
@@ -61,13 +56,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
                                      content::WebContents* tab_contents) const;
   std::string ExecuteJavascript(const std::string& javascript,
                                 content::WebContents* tab_contents) const;
-
-  void EstablishCall(content::WebContents* from_tab,
-                     content::WebContents* to_tab) const;
-
-  void HangUp(content::WebContents* from_tab) const;
-
-  void WaitUntilHangupVerified(content::WebContents* tab_contents) const;
 
   // Call this to enable monitoring of javascript errors for this test method.
   // This will only work if the tests are run sequentially by the test runner

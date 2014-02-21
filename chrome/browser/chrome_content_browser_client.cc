@@ -88,6 +88,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
@@ -1497,9 +1498,21 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
 #if defined(ENABLE_WEBRTC)
-    MaybeCopyDisableWebRtcEncryptionSwitch(command_line,
-                                           browser_command_line,
-                                           VersionInfo::GetChannel());
+#if defined(OS_ANDROID)
+  const VersionInfo::Channel kMaxDisableEncryptionChannel =
+      VersionInfo::CHANNEL_BETA;
+#else
+  const VersionInfo::Channel kMaxDisableEncryptionChannel =
+      VersionInfo::CHANNEL_DEV;
+#endif
+    if (VersionInfo::GetChannel() <= kMaxDisableEncryptionChannel) {
+      static const char* const kWebRtcDevSwitchNames[] = {
+        switches::kDisableWebRtcEncryption,
+      };
+      command_line->CopySwitchesFrom(browser_command_line,
+                                     kWebRtcDevSwitchNames,
+                                     arraysize(kWebRtcDevSwitchNames));
+    }
 #endif
 
     content::RenderProcessHost* process =
@@ -2711,27 +2724,5 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
 #endif
 }
 
-#if defined(ENABLE_WEBRTC)
-void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
-    CommandLine* to_command_line,
-    const CommandLine& from_command_line,
-    VersionInfo::Channel channel) {
-#if defined(OS_ANDROID)
-  const VersionInfo::Channel kMaxDisableEncryptionChannel =
-      VersionInfo::CHANNEL_BETA;
-#else
-  const VersionInfo::Channel kMaxDisableEncryptionChannel =
-      VersionInfo::CHANNEL_DEV;
-#endif
-  if (channel <= kMaxDisableEncryptionChannel) {
-    static const char* const kWebRtcDevSwitchNames[] = {
-      switches::kDisableWebRtcEncryption,
-    };
-    to_command_line->CopySwitchesFrom(from_command_line,
-                                      kWebRtcDevSwitchNames,
-                                      arraysize(kWebRtcDevSwitchNames));
-  }
-}
-#endif  // defined(ENABLE_WEBRTC)
 
 }  // namespace chrome
