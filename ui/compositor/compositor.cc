@@ -80,6 +80,7 @@ ContextFactory* ContextFactory::GetInstance() {
 
 // static
 void ContextFactory::SetInstance(ContextFactory* instance) {
+  DCHECK_NE(!!g_context_factory, !!instance);
   g_context_factory = instance;
 }
 
