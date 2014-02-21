@@ -9,6 +9,7 @@ include_rules = [
   "+ui/compositor",
   "+ui/events",
   "+ui/gfx",
+  "+ui/gl/gl_surface.h",  # To initialize GL for tests.
   "+ui/native_theme",
   "+ui/ozone",
   "+ui/wm/public",
