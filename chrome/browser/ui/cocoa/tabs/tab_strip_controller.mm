@@ -44,6 +44,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/cocoa/sprite_view.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -1607,10 +1608,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         [[tabController mediaIndicatorView]
           updateIndicator:TAB_MEDIA_STATE_NONE];
       } else {
-        NSRect frame =
-            NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
-        iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
-                                                          image:throbberImage];
+        iconView =
+            [[[SpriteView alloc] initWithImage:throbberImage] autorelease];
       }
     }
 

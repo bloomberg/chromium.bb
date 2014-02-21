@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
-#include "grit/ui_resources.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,9 +19,12 @@ class ThrobberViewTest : public CocoaTest {
  public:
   ThrobberViewTest() {
     NSRect frame = NSMakeRect(10, 10, 16, 16);
-    NSImage* image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-        IDR_THROBBER).ToNSImage();
-    view_ = [ThrobberView filmstripThrobberViewWithFrame:frame image:image];
+    NSImage* image = ResourceBundle::GetSharedInstance()
+                         .GetNativeImageNamed(IDR_SAD_FAVICON)
+                         .ToNSImage();
+    view_ = [ThrobberView toastThrobberViewWithFrame:frame
+                                         beforeImage:image
+                                          afterImage:image];
     [[test_window() contentView] addSubview:view_];
   }
 

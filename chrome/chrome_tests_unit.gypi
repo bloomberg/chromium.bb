@@ -1602,6 +1602,7 @@
         'browser/ui/cocoa/profile_menu_controller_unittest.mm',
         'browser/ui/cocoa/run_loop_testing_unittest.mm',
         'browser/ui/cocoa/screen_capture_notification_ui_cocoa_unittest.mm',
+        'browser/ui/cocoa/sprite_view_unittest.mm',
         'browser/ui/cocoa/status_bubble_mac_unittest.mm',
         'browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm',
         'browser/ui/cocoa/styled_text_field_cell_unittest.mm',

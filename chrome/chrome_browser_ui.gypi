@@ -997,6 +997,8 @@
         'browser/ui/cocoa/speech_recognition_bubble_cocoa.mm',
         'browser/ui/cocoa/speech_recognition_window_controller.h',
         'browser/ui/cocoa/speech_recognition_window_controller.mm',
+        'browser/ui/cocoa/sprite_view.h',
+        'browser/ui/cocoa/sprite_view.mm',
         'browser/ui/cocoa/ssl_client_certificate_selector_cocoa.h',
         'browser/ui/cocoa/ssl_client_certificate_selector_cocoa.mm',
         'browser/ui/cocoa/status_bubble_mac.h',

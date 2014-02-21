@@ -23,7 +23,7 @@
 #import "chrome/browser/ui/cocoa/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/cocoa/sprite_view.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
@@ -287,20 +287,19 @@ const double kWidthOfMouseResizeArea = 15.0;
 
 - (void)updateIcon {
   NSView* icon = nil;
-  NSRect iconFrame = [[titlebar_view_ icon] frame];
   if (throbberShouldSpin_) {
     // If the throbber is spinning now, no need to replace it.
-    if ([[titlebar_view_ icon] isKindOfClass:[ThrobberView class]])
+    if ([[titlebar_view_ icon] isKindOfClass:[SpriteView class]])
       return;
 
     NSImage* iconImage =
         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_THROBBER).ToNSImage();
-    icon = [ThrobberView filmstripThrobberViewWithFrame:iconFrame
-                                                  image:iconImage];
+    icon = [[[SpriteView alloc] initWithImage:iconImage] autorelease];
   } else {
     const gfx::Image& page_icon = windowShim_->panel()->GetCurrentPageIcon();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    NSRect iconFrame = [[titlebar_view_ icon] frame];
     NSImage* iconImage = page_icon.IsEmpty() ?
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage() :
         page_icon.ToNSImage();
