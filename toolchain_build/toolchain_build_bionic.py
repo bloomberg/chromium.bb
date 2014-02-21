@@ -27,8 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '171e152bc66aec14029e90edc69d94af4f289bab'
-
+BIONIC_VERSION = '1a26187c4121548a46c55dfd13eaf1dfd2f5afa5'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -209,6 +208,15 @@ def ConfigureAndBuildBionic():
     workpath = ReplaceArch(workpath, arch)
     ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath)
     ConfigureAndBuild(arch, 'bionic/libm', workpath, inspath)
+
+
+def ConfigureAndBuildLinker():
+  for arch in ARCHES:
+    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
+    inspath = ReplaceArch(inspath, arch)
+
+    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
+    workpath = ReplaceArch(workpath, arch)
     ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
 
 
@@ -533,13 +541,23 @@ def main(argv):
   if options.sync or options.buildbot:
     FetchBionicSources()
 
+  # Copy headers, create libc.a
   CreateBasicToolchain()
+
+  # Create libgcc.a libgcc_s
   if not options.empty and not options.skip_gcc:
     FetchAndBuildGCC()
     ConfigureAndBuildGCC(options.clobber)
+
+  # Copy headers, create libc.so, libm.a
+  ConfigureAndBuildBionic()
+
+  # Create libc++.a, libc++.so
+  if not options.empty and not options.skip_gcc:
     ConfigureAndBuildCXX(options.clobber)
 
-  ConfigureAndBuildBionic()
+  # Build the dynamic linker
+  ConfigureAndBuildLinker()
 
   # Can not test on buildot until sel_ldr, irt, etc.. are built
   if not options.buildbot:
