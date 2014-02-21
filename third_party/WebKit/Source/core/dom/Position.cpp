@@ -547,6 +547,11 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
     if (node->hasTagName(tableTag))
         return false;
 
+    // A Marquee elements are moving so we should assume their ends are always
+    // visibily distinct.
+    if (node->hasTagName(marqueeTag))
+        return true;
+
     // There is a VisiblePosition inside an empty inline-block container.
     return node->renderer()->isReplaced() && canHaveChildrenForEditing(node) && toRenderBox(node->renderer())->height() != 0 && !node->firstChild();
 }
