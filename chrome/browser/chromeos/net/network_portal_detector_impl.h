@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -258,6 +259,9 @@ class NetworkPortalDetectorImpl
 
   // True if |request_timeout_for_testing_| is initialized.
   bool request_timeout_for_testing_initialized_;
+
+  // UI notification controller about captive portal state.
+  NetworkPortalNotificationController notification_controller_;
 
   content::NotificationRegistrar registrar_;
 

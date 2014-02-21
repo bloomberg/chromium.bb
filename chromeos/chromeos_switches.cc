@@ -63,6 +63,10 @@ const char kDisableQuickofficeComponentApp[] =
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
+// Disables notifications about captive portals in session.
+const char kDisableNetworkPortalNotification[] =
+    "disable-network-portal-notification";
+
 // Disables fetching online CrOS EULA page, only static version is shown.
 const char kDisableOnlineEULA[] = "disable-cros-online-eula";
 
@@ -84,6 +88,10 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
+
+// Enables notifications about captive portals in session.
+const char kEnableNetworkPortalNotification[] =
+    "enable-network-portal-notification";
 
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";

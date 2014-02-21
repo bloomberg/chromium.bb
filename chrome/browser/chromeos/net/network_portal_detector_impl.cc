@@ -488,6 +488,7 @@ void NetworkPortalDetectorImpl::NotifyPortalDetectionCompleted(
     const CaptivePortalState& state) {
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnPortalDetectionCompleted(network, state));
+  notification_controller_.OnPortalDetectionCompleted(network, state);
 }
 
 base::TimeTicks NetworkPortalDetectorImpl::GetCurrentTimeTicks() const {

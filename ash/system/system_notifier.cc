@@ -29,6 +29,7 @@ const char* kAshSystemNotifiers[] = {
   kNotifierMultiProfileFirstRun,
   kNotifierNetwork,
   kNotifierNetworkError,
+  kNotifierNetworkPortalDetector,
   kNotifierScreenshot,
   kNotifierScreenCapture,
   kNotifierScreenShare,
@@ -59,6 +60,7 @@ const char kNotifierLocallyManagedUser[] = "ash.locally-managed-user";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetwork[] = "ash.network";
 const char kNotifierNetworkError[] = "ash.network.error";
+const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 const char kNotifierScreenshot[] = "ash.screenshot";
 const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";

@@ -1012,6 +1012,15 @@ const Experiment kExperiments[] = {
         ash::switches::kAshEnableImmersiveFullscreenForAllWindows,
         ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly)
   },
+  {
+    "network-portal-notification",
+    IDS_FLAGS_NETWORK_PORTAL_NOTIFICATION_NAME,
+    IDS_FLAGS_NETWORK_PORTAL_NOTIFICATION_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(
+        chromeos::switches::kEnableNetworkPortalNotification,
+        chromeos::switches::kDisableNetworkPortalNotification)
+  },
 #endif
   {
     "enable-download-resumption",
