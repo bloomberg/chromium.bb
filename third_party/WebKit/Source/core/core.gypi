@@ -3239,6 +3239,7 @@
             'animation/PlayerTest.cpp',
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
+            'css/AffectedByFocusTest.cpp',
             'css/CSSCalculationValueTest.cpp',
             'css/CSSFontFaceTest.cpp',
             'css/CSSTestHelper.cpp',

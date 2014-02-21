@@ -808,10 +808,12 @@ void ContainerNode::focusStateChanged()
     // renderer we can just ignore the state change.
     if (!renderer())
         return;
-    // FIXME: This could probably setNeedsStyleRecalc(LocalStyleChange) in the affectedByFocus case
-    // and only setNeedsStyleRecalc(SubtreeStyleChange) in the childrenAffectedByFocus case.
-    if (renderStyle()->affectedByFocus() || (isElementNode() && toElement(this)->childrenAffectedByFocus()))
+
+    if (isElementNode() && toElement(this)->childrenAffectedByFocus())
         setNeedsStyleRecalc(SubtreeStyleChange);
+    else if (renderStyle()->affectedByFocus())
+        setNeedsStyleRecalc(LocalStyleChange);
+
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), FocusState);
 }
@@ -824,9 +826,15 @@ void ContainerNode::setFocus(bool received)
     Node::setFocus(received);
 
     focusStateChanged();
+
+    if (renderer() || received)
+        return;
+
     // If :focus sets display: none, we lose focus but still need to recalc our style.
-    if (!renderer() && !received)
+    if (isElementNode() && toElement(this)->childrenAffectedByFocus())
         setNeedsStyleRecalc(SubtreeStyleChange);
+    else
+        setNeedsStyleRecalc(LocalStyleChange);
 }
 
 void ContainerNode::setActive(bool down)
