@@ -167,20 +167,17 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]
-
-    def Difference(hist1, hist2):
-      return (abs(a - b) for a, b in zip(hist1, hist2))
-
-    full_difference = list(Difference(start_histogram, final_histogram))
-    total = float(sum(full_difference))
+    total_distance = start_histogram.Distance(final_histogram)
 
     def FrameProgress(histogram):
-      difference = Difference(start_histogram, histogram)
-      # Each color bucket is capped at the full difference, so that progress
-      # does not exceed 100%.
-      return sum(min(a, b) for a, b in zip(difference, full_difference))
+      if total_distance == 0:
+        if histogram.Distance(final_histogram) == 0:
+          return 1.0
+        else:
+          return 0.0
+      return 1 - histogram.Distance(final_histogram) / total_distance
 
-    self._time_completeness_list = [(time, FrameProgress(hist) / total)
+    self._time_completeness_list = [(time, FrameProgress(hist))
                                     for time, hist in histograms]
 
   def GetTimeCompletenessList(self, tab):

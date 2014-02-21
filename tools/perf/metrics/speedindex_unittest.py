@@ -9,6 +9,7 @@ import json
 import os
 import unittest
 
+from telemetry.core import bitmap
 from telemetry.core.timeline import model
 from metrics import speedindex
 
@@ -33,8 +34,8 @@ class FakeTimelineModel(object):
 
 class FakeBitmap(object):
 
-  def __init__(self, histogram):
-    self._histogram = histogram
+  def __init__(self, r, g, b):
+    self._histogram = bitmap.ColorHistogram(r, g, b, bitmap.WHITE)
 
   # pylint: disable=W0613
   def ColorHistogram(self, ignore_color=None, tolerance=None):
@@ -80,7 +81,7 @@ class IncludedPaintEventsTest(unittest.TestCase):
     # In the sample data, there's one event that occurs before the layout event,
     # and one paint event that's not a leaf paint event.
     events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
-    self.assertEquals(len(events), 5)
+    self.assertEqual(len(events), 5)
 
 
 class SpeedIndexImplTest(unittest.TestCase):
@@ -89,30 +90,62 @@ class SpeedIndexImplTest(unittest.TestCase):
     paint_events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
     viewport = 1000, 1000
     time_area_dict = impl._TimeAreaDict(paint_events, viewport)
-    self.assertEquals(len(time_area_dict), 4)
+    self.assertEqual(len(time_area_dict), 4)
     # The event that ends at time 100 is a fullscreen; it's discounted by half.
-    self.assertEquals(time_area_dict[100], 500000)
-    self.assertEquals(time_area_dict[300], 100000)
-    self.assertEquals(time_area_dict[400], 200000)
-    self.assertEquals(time_area_dict[800], 200000)
+    self.assertEqual(time_area_dict[100], 500000)
+    self.assertEqual(time_area_dict[300], 100000)
+    self.assertEqual(time_area_dict[400], 200000)
+    self.assertEqual(time_area_dict[800], 200000)
 
   def testVideoCompleteness(self):
     frames = [
-      (0.0, FakeBitmap([100, 0, 0])),
-      (0.1, FakeBitmap([50, 25, 25])),
-      (0.2, FakeBitmap([60, 0, 40])),
-      (0.3, FakeBitmap([0, 10, 90]))
+        (0.0, FakeBitmap([ 0, 0, 0,10], [ 0, 0, 0,10], [ 0, 0, 0,10])),
+        (0.1, FakeBitmap([10, 0, 0, 0], [10, 0, 0, 0], [10, 0, 0, 0])),
+        (0.2, FakeBitmap([ 0, 0, 2, 8], [ 0, 0, 4, 6], [ 0, 0, 1, 9])),
+        (0.3, FakeBitmap([ 0, 3, 2, 5], [ 2, 1, 0, 7], [ 0, 3, 0, 7])),
+        (0.4, FakeBitmap([ 0, 0, 1, 0], [ 0, 0, 1, 0], [ 0, 0, 1, 0])),
+        (0.5, FakeBitmap([ 0, 4, 6, 0], [ 0, 4, 6, 0], [ 0, 4, 6, 0])),
+    ]
+    max_distance = 42.
+
+    tab = FakeTab(frames)
+    impl = speedindex.VideoSpeedIndexImpl()
+    impl.Start(tab)
+    impl.Stop(tab)
+    time_completeness = impl.GetTimeCompletenessList(tab)
+    self.assertEqual(len(time_completeness), 6)
+    self.assertEqual(time_completeness[0], (0.0, 0))
+    self.assertTimeCompleteness(
+        time_completeness[1], 0.1, 1 - (16 + 16 + 16) / max_distance)
+    self.assertTimeCompleteness(
+        time_completeness[2], 0.2, 1 - (12 + 10 + 13) / max_distance)
+    self.assertTimeCompleteness(
+        time_completeness[3], 0.3, 1 - (6 + 10 + 8) / max_distance)
+    self.assertTimeCompleteness(
+        time_completeness[4], 0.4, 1 - (4 + 4 + 4) / max_distance)
+    self.assertEqual(time_completeness[5], (0.5, 1))
+
+  def testBlankPage(self):
+    frames = [
+        (0.0, FakeBitmap([0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1])),
+        (0.1, FakeBitmap([0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1])),
+        (0.2, FakeBitmap([1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 1])),
+        (0.3, FakeBitmap([0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1])),
     ]
     tab = FakeTab(frames)
     impl = speedindex.VideoSpeedIndexImpl()
     impl.Start(tab)
     impl.Stop(tab)
     time_completeness = impl.GetTimeCompletenessList(tab)
-    self.assertEquals(len(time_completeness), 4)
-    self.assertEquals(time_completeness[0], (0.0, 0.0))
-    self.assertEquals(time_completeness[1], (0.1, 0.425))
-    self.assertEquals(time_completeness[2], (0.2, 0.4))
-    self.assertEquals(time_completeness[3], (0.3, 1.0))
+    self.assertEqual(len(time_completeness), 4)
+    self.assertEqual(time_completeness[0], (0.0, 1.0))
+    self.assertEqual(time_completeness[1], (0.1, 1.0))
+    self.assertEqual(time_completeness[2], (0.2, 0.0))
+    self.assertEqual(time_completeness[3], (0.3, 1.0))
+
+  def assertTimeCompleteness(self, time_completeness, time, completeness):
+    self.assertEqual(time_completeness[0], time)
+    self.assertAlmostEqual(time_completeness[1], completeness)
 
 
 class SpeedIndexTest(unittest.TestCase):
