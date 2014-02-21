@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -24,18 +23,12 @@ FakeSigninManagerBase::~FakeSigninManagerBase() {
 
 // static
 BrowserContextKeyedService* FakeSigninManagerBase::Build(
-    content::BrowserContext* context) {
-  SigninManagerBase* manager;
-  Profile* profile = static_cast<Profile*>(context);
+    content::BrowserContext* profile) {
 #if defined(OS_CHROMEOS)
-  manager = new FakeSigninManagerBase();
+  return new FakeSigninManagerBase();
 #else
-  manager = new FakeSigninManager(profile);
+  return new FakeSigninManager(static_cast<Profile*>(profile));
 #endif
-  manager->Initialize(profile, NULL);
-  SigninManagerFactory::GetInstance()
-      ->NotifyObserversOfSigninManagerCreationForTesting(manager);
-  return manager;
 }
 
 #if !defined (OS_CHROMEOS)
@@ -54,7 +47,6 @@ void FakeSigninManager::StartSignInWithCredentials(
     const std::string& password,
     const OAuthTokenFetchedCallback& oauth_fetched_callback) {
   set_auth_in_progress(username);
-  set_password(password);
   if (!oauth_fetched_callback.is_null())
     oauth_fetched_callback.Run("fake_oauth_token");
 }
@@ -62,24 +54,13 @@ void FakeSigninManager::StartSignInWithCredentials(
 void FakeSigninManager::CompletePendingSignin() {
   SetAuthenticatedUsername(GetUsernameForAuthInProgress());
   set_auth_in_progress(std::string());
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    GoogleSigninSucceeded(authenticated_username_, password_));
-}
-
-void FakeSigninManager::SignIn(const std::string& username,
-                               const std::string& password) {
-  StartSignInWithCredentials(
-      std::string(), username, password, OAuthTokenFetchedCallback());
-  CompletePendingSignin();
 }
 
 void FakeSigninManager::SignOut() {
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());
-  set_password(std::string());
-  const std::string username = authenticated_username_;
+  const std::string& username = authenticated_username_;
   authenticated_username_.clear();
 
   // TODO(blundell): Eliminate this notification send once crbug.com/333997 is

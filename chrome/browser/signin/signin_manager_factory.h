@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "base/observer_list.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class SigninManager;
@@ -19,18 +18,6 @@ class Profile;
 // the associated SigninManager.
 class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  class Observer {
-   public:
-    // Called when a SigninManager(Base) instance is created.
-    virtual void SigninManagerCreated(SigninManagerBase* manager) {}
-
-    // Called when a SigninManager(Base) instance is being shut down. Observers
-    // of |manager| should remove themselves at this point.
-    virtual void SigninManagerShutdown(SigninManagerBase* manager) {}
-
-   protected:
-    virtual ~Observer() {}
-  };
 
 #if defined(OS_CHROMEOS)
   // Returns the instance of SigninManager associated with this profile
@@ -60,30 +47,15 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   // Registers the browser-global prefs used by SigninManager.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Methods to register or remove observers of SigninManager creation/shutdown.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Notifies observers of |manager|'s creation. Should be called only by test
-  // SigninManager subclasses whose construction does not occur in
-  // |BuildServiceInstanceFor()|.
-  void NotifyObserversOfSigninManagerCreationForTesting(
-      SigninManagerBase* manager);
-
  private:
   friend struct DefaultSingletonTraits<SigninManagerFactory>;
 
   SigninManagerFactory();
   virtual ~SigninManagerFactory();
 
-  // List of observers. Makes sure list is empty on destruction.
-  mutable ObserverList<Observer, true> observer_list_;
-
   // BrowserContextKeyedServiceFactory:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual void BrowserContextShutdown(content::BrowserContext* context)
-      OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FACTORY_H_

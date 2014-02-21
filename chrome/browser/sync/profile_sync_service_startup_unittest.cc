@@ -158,9 +158,9 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         SigninManagerFactory::GetForProfile(profile);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    "test_user@gmail.com");
-    signin->SetAuthenticatedUsername("test_user@gmail.com");
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    signin->Initialize(profile, NULL);
     EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
     return new ProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
@@ -174,6 +174,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+  SigninManagerFactory::GetForProfile(
+      profile_.get())->Initialize(profile_.get(), NULL);
   CreateSyncService();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -221,6 +223,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+  SigninManagerFactory::GetForProfile(
+      profile_.get())->Initialize(profile_.get(), NULL);
   CreateSyncService();
 
   // Should not actually start, rather just clean things up and wait
@@ -262,7 +266,8 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(
+      profile_.get())->Initialize(profile_.get(), NULL);
   CreateSyncService();
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
 
@@ -336,8 +341,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   // Pre load the tokens
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
@@ -369,8 +374,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Pre load the tokens
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
@@ -398,8 +403,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Pre load the tokens
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
@@ -420,6 +425,8 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Service should not be started by Initialize() since it's managed.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
 
   // Disable sync through policy.
@@ -434,8 +441,8 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
 TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
@@ -465,8 +472,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
@@ -501,8 +508,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   // Pre load the tokens
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
-  SigninManagerFactory::GetForProfile(profile_.get())
-      ->SetAuthenticatedUsername("test_user@gmail.com");
+  SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
+      profile_.get(), NULL);
   CreateSyncService();
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
   mock_sbh->set_fail_initial_download(true);

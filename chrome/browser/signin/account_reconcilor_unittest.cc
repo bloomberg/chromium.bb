@@ -113,6 +113,7 @@ void AccountReconcilorTest::SetUp() {
   signin_manager_ =
       static_cast<FakeSigninManagerForTesting*>(
           SigninManagerFactory::GetForProfile(profile()));
+  signin_manager_->Initialize(profile(), NULL);
 
   token_service_ =
       static_cast<FakeProfileOAuth2TokenService*>(

@@ -318,7 +318,11 @@ class SyncSetupHandlerTest : public testing::Test {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
-    ASSERT_TRUE(mock_signin_->IsInitialized());
+    if (!mock_signin_->IsInitialized()) {
+      profile_->GetPrefs()->SetString(
+          prefs::kGoogleServicesUsername, kTestUser);
+      mock_signin_->Initialize(profile_.get(), NULL);
+    }
     EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
@@ -390,9 +394,6 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
-  // Ensure that the user is not signed in before calling |HandleStartSignin()|.
-  SigninManager* manager = static_cast<SigninManager*>(mock_signin_);
-  manager->SignOut();
   handler_->HandleStartSignin(NULL);
 
   // Sync setup hands off control to the gaia login tab.
@@ -435,6 +436,7 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -463,6 +465,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -518,6 +521,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -546,6 +550,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
+  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -576,6 +581,12 @@ TEST_F(SyncSetupHandlerTest,
 class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {
  public:
   SyncSetupHandlerNonCrosTest() {}
+  virtual void SetUp() OVERRIDE {
+    SyncSetupHandlerTest::SetUp();
+    mock_signin_ = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), FakeSigninManagerBase::Build));
+  }
 };
 
 TEST_F(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {

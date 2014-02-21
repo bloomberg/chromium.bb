@@ -33,11 +33,11 @@ class SigninGlobalErrorTest : public testing::Test {
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
     profile_ = builder.Build();
-    SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManagerBase* manager = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetForProfile(profile_.get()));
     profile_->GetPrefs()->SetString(
         prefs::kGoogleServicesUsername, kTestAccountId);
-    SigninManagerFactory::GetForProfile(profile_.get())
-        ->SetAuthenticatedUsername(kTestAccountId);
+    manager->Initialize(profile_.get(), NULL);
     global_error_ = SigninGlobalError::GetForProfile(profile_.get());
   }
 

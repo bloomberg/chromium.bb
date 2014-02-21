@@ -65,6 +65,7 @@ class SigninTrackerTest : public testing::Test {
     mock_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
+    mock_signin_manager_->Initialize(profile_.get(), NULL);
 
     tracker_.reset(new SigninTracker(profile_.get(), &observer_));
   }

@@ -2307,7 +2307,6 @@
             'browser/safe_browsing/download_protection_service_unittest.cc',
             'browser/shell_integration_linux_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
-            'browser/signin/signin_names_io_thread_unittest.cc',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',

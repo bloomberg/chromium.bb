@@ -91,19 +91,6 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 }
 
-void SigninManagerFactory::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void SigninManagerFactory::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
-    SigninManagerBase* manager) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(manager));
-}
-
 BrowserContextKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
@@ -116,15 +103,5 @@ BrowserContextKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
           new ChromeSigninManagerDelegate(profile)));
 #endif
   service->Initialize(profile, g_browser_process->local_state());
-  FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));
   return service;
-}
-
-void SigninManagerFactory::BrowserContextShutdown(
-    content::BrowserContext* context) {
-  SigninManagerBase* manager = static_cast<SigninManagerBase*>(
-      GetServiceForBrowserContext(context, false));
-  if (manager)
-    FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerShutdown(manager));
-  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }
