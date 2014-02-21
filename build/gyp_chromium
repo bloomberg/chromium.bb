@@ -500,6 +500,7 @@ if __name__ == '__main__':
       [sys.executable, os.path.join(script_dir, 'landmines.py')])
 
   if vs2013_runtime_dll_dirs:
-    CopyVsRuntimeDlls(GetOutputDirectory(), vs2013_runtime_dll_dirs)
+    CopyVsRuntimeDlls(os.path.join(chrome_src, GetOutputDirectory()),
+                      vs2013_runtime_dll_dirs)
 
   sys.exit(gyp_rc)
