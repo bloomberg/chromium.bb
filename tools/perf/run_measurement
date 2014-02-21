@@ -18,6 +18,7 @@ CHECKOUT_BASE_PATH = os.path.join(SCRIPT_PATH, os.pardir, os.pardir, os.pardir)
 # Directory in which to save bootstrap files.
 BOOTSTRAP_BASE_PATH = os.path.join(SCRIPT_PATH, 'support', 'bootstrap_files')
 
+CROS_DIR = os.path.join('src', 'tools', 'cros')
 PERF_DIR = os.path.join('src', 'tools', 'perf')
 TELEMETRY_DIR = os.path.join('src', 'tools', 'telemetry')
 TELEMETRY_TOOLS_DIR = os.path.join('src', 'tools', 'telemetry_tools')
@@ -61,12 +62,12 @@ def _Bootstrap(bootstrap_deps_url):
   bootstrap.DownloadDeps(BOOTSTRAP_BASE_PATH, bootstrap_deps_url)
 
 
-def ListBootstrapDeps(base_path):
+def ListBootstrapDeps(base_path, subdir):
   """List the deps required for telemetry."""
   sys.path.append(os.path.join(base_path, TELEMETRY_TOOLS_DIR))
   import telemetry_bootstrap
 
-  deps_file = os.path.join(base_path, PERF_DIR, DEPS_FILE)
+  deps_file = os.path.join(base_path, subdir, DEPS_FILE)
   return telemetry_bootstrap.ListAllDepsPaths(deps_file)
 
 
@@ -78,8 +79,12 @@ def Main():
   new_perf_path = os.path.join(new_base_path, PERF_DIR)
   new_telemetry_path = os.path.join(new_base_path, TELEMETRY_DIR)
 
+  if '--print-bootstrap-deps-cros' in sys.argv:
+    print ListBootstrapDeps(new_base_path, CROS_DIR)
+    return 0
+
   if '--print-bootstrap-deps' in sys.argv:
-    print ListBootstrapDeps(new_base_path)
+    print ListBootstrapDeps(new_base_path, PERF_DIR)
     return 0
 
   sys.path.append(new_perf_path)
