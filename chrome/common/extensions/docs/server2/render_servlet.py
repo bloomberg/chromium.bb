@@ -70,26 +70,40 @@ class RenderServlet(Servlet):
       logging.warning('No 404.html found in %s' % path)
       return Response.NotFound('Not Found', headers=_MakeHeaders('text/plain'))
 
-  def _GetSuccessResponse(self, path, server_instance):
+  def _GetSuccessResponse(self, request_path, server_instance):
     '''Returns the Response from trying to render |path| with
     |server_instance|.  If |path| isn't found then a FileNotFoundError will be
     raised, such that the only responses that will be returned from this method
     are Ok and Redirect.
     '''
     content_provider, serve_from, path = (
-        server_instance.content_providers.GetByServeFrom(path))
+        server_instance.content_providers.GetByServeFrom(request_path))
     assert content_provider, 'No ContentProvider found for %s' % path
 
     redirect = Redirector(
         server_instance.compiled_fs_factory,
         content_provider.file_system).Redirect(self._request.host, path)
     if redirect is not None:
+      # Absolute redirects stay absolute, relative redirects are relative to
+      # |serve_from|; all redirects eventually need to be *served* as absolute.
+      if not redirect.startswith('/'):
+        redirect = '/' + posixpath.join(serve_from, redirect)
       return Response.Redirect(redirect, permanent=False)
 
     canonical_path = content_provider.GetCanonicalPath(path)
     if canonical_path != path:
       redirect_path = posixpath.join(serve_from, canonical_path)
       return Response.Redirect('/' + redirect_path, permanent=False)
+
+    if request_path.endswith('/'):
+      # Directory request hasn't been redirected by now. Default behaviour is
+      # to redirect as though it were a file.
+      return Response.Redirect('/' + request_path.rstrip('/'),
+                               permanent=False)
+
+    if not path:
+      # Empty-path request hasn't been redirected by now. It doesn't exist.
+      raise FileNotFoundError('Empty path')
 
     content_and_type = content_provider.GetContentAndType(path).Get()
     if not content_and_type.content:

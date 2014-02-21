@@ -23,7 +23,8 @@ file_system = TestFileSystem({
   'apps': {
     'redirects.json': json.dumps({
       '': '../index.html',
-      'index.html': 'about_apps.html'
+      'index.html': 'about_apps.html',
+      'foo.html': '/bar.html',
     })
   },
   'extensions': {
@@ -55,22 +56,24 @@ class RedirectorTest(unittest.TestCase):
 
   def testAbsoluteRedirection(self):
     self.assertEqual(
-        '/apps/about_apps.html',
-        self._redirector.Redirect(HOST, 'apps/index.html'))
-    self.assertEqual(
         '/index.html', self._redirector.Redirect(HOST, ''))
     self.assertEqual(
-        '/index.html', self._redirector.Redirect(HOST, 'home'))
+        '/bar.html', self._redirector.Redirect(HOST, 'apps/foo.html'))
 
   def testRelativeRedirection(self):
     self.assertEqual(
-        '/extensions/manifest.html',
+        'apps/about_apps.html',
+        self._redirector.Redirect(HOST, 'apps/index.html'))
+    self.assertEqual(
+        'extensions/manifest.html',
         self._redirector.Redirect(HOST, 'extensions/manifest/'))
     self.assertEqual(
-        '/extensions/manifest.html',
+        'extensions/manifest.html',
         self._redirector.Redirect(HOST, 'extensions/manifest'))
     self.assertEqual(
-        '/index.html', self._redirector.Redirect(HOST, 'apps/'))
+        'index.html', self._redirector.Redirect(HOST, 'apps/'))
+    self.assertEqual(
+        'index.html', self._redirector.Redirect(HOST, 'home'))
 
   def testNotFound(self):
     self.assertEqual(

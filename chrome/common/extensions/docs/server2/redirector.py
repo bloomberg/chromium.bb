@@ -42,7 +42,7 @@ class Redirector(object):
         urlsplit(redirect).scheme in ('http', 'https')):
       return redirect
 
-    return posixpath.normpath(posixpath.join('/', dirname, redirect))
+    return posixpath.normpath(posixpath.join(dirname, redirect))
 
   def _RedirectOldHosts(self, host, path):
     ''' Redirect paths from the old code.google.com to the new

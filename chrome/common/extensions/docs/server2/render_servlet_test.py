@@ -105,6 +105,11 @@ class RenderServletTest(unittest.TestCase):
     self.assertEqual(('/apps/tags/webview', False),
                      response.GetRedirect())
 
+  def testDirectories(self):
+    # Directories should be redirected to a URL that doesn't end in a '/'
+    # whether or not that exists.
+    self.assertEqual(('/dir', False), self._Render('dir/').GetRedirect())
+
 
 if __name__ == '__main__':
   unittest.main()

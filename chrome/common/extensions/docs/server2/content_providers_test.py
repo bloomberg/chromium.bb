@@ -145,6 +145,11 @@ class ContentProvidersTest(unittest.TestCase):
     self.assertEqual('apples-dir', serve_from)
     self.assertEqual('', path)
     provider, serve_from, path = self._content_providers.GetByServeFrom(
+        'apples-dir/')
+    self.assertEqual('apples', provider.name)
+    self.assertEqual('apples-dir', serve_from)
+    self.assertEqual('', path)
+    provider, serve_from, path = self._content_providers.GetByServeFrom(
         'apples-dir/are/forever')
     self.assertEqual('apples', provider.name)
     self.assertEqual('apples-dir', serve_from)
