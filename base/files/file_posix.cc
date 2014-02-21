@@ -217,10 +217,10 @@ PlatformFile File::TakePlatformFile() {
 }
 
 void File::Close() {
-  base::ThreadRestrictions::AssertIOAllowed();
   if (!IsValid())
     return;
 
+  base::ThreadRestrictions::AssertIOAllowed();
   if (!IGNORE_EINTR(close(file_)))
     file_ = kInvalidPlatformFileValue;
 }

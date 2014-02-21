@@ -171,7 +171,11 @@ class BASE_EXPORT File {
   // FLAG_CREATE_ALWAYS), and false otherwise.
   bool created() const { return created_; }
 
-  // Returns the OS result of opening this file.
+  // Returns the OS result of opening this file. Note that the way to verify
+  // the success of the operation is to use IsValid(), not this method:
+  //   File file(name, flags);
+  //   if (!file.IsValid())
+  //     return;
   Error error_details() const { return error_details_; }
 
   PlatformFile GetPlatformFile() const { return file_; }

@@ -104,8 +104,10 @@ PlatformFile File::TakePlatformFile() {
 }
 
 void File::Close() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  file_.Close();
+  if (file_.IsValid()) {
+    base::ThreadRestrictions::AssertIOAllowed();
+    file_.Close();
+  }
 }
 
 int64 File::Seek(Whence whence, int64 offset) {
