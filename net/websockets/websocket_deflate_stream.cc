@@ -99,7 +99,12 @@ void WebSocketDeflateStream::OnReadComplete(
     return;
   }
 
-  int r = InflateAndReadIfNecessary(frames, callback);
+  int r = InflateAndReadIfNecessary(
+      frames,
+      base::Bind(&WebSocketDeflateStream::OnReadComplete,
+                 base::Unretained(this),
+                 base::Unretained(frames),
+                 callback));
   if (r != ERR_IO_PENDING)
     callback.Run(r);
 }
@@ -277,6 +282,11 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
   for (size_t i = 0; i < frames_passed.size(); ++i) {
     scoped_ptr<WebSocketFrame> frame(frames_passed[i]);
     frames_passed[i] = NULL;
+    DVLOG(3) << "Input frame: opcode=" << frame->header.opcode
+             << " final=" << frame->header.final
+             << " reserved1=" << frame->header.reserved1
+             << " payload_length=" << frame->header.payload_length;
+
     if (!WebSocketFrameHeader::IsKnownDataOpCode(frame->header.opcode)) {
       frames_to_output.push_back(frame.release());
       continue;
@@ -340,7 +350,10 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
         inflated->header.reserved1 = false;
         inflated->data = data;
         inflated->header.payload_length = data->size();
-
+        DVLOG(3) << "Inflated frame: opcode=" << inflated->header.opcode
+                 << " final=" << inflated->header.final
+                 << " reserved1=" << inflated->header.reserved1
+                 << " payload_length=" << inflated->header.payload_length;
         frames_to_output.push_back(inflated.release());
         current_reading_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
         if (is_final)

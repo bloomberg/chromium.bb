@@ -912,6 +912,43 @@ TEST_F(WebSocketDeflateStreamTest,
   EXPECT_EQ("compressed", ToString(frames[1]));
 }
 
+// This is a regression test for crbug.com/343506.
+TEST_F(WebSocketDeflateStreamTest, ReadEmptyAsyncFrame) {
+  ScopedVector<ReadFramesStub> stub_vector;
+  stub_vector.push_back(new ReadFramesStub(ERR_IO_PENDING));
+  stub_vector.push_back(new ReadFramesStub(ERR_IO_PENDING));
+  MockCallback mock_callback;
+  CompletionCallback callback =
+      base::Bind(&MockCallback::Call, base::Unretained(&mock_callback));
+  ScopedVector<WebSocketFrame> frames;
+
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_stream_, ReadFrames(&frames, _))
+        .WillOnce(Invoke(stub_vector[0], &ReadFramesStub::Call));
+
+    EXPECT_CALL(*mock_stream_, ReadFrames(&frames, _))
+        .WillOnce(Invoke(stub_vector[1], &ReadFramesStub::Call));
+
+    EXPECT_CALL(mock_callback, Call(OK));
+  }
+
+  ASSERT_EQ(ERR_IO_PENDING, deflate_stream_->ReadFrames(&frames, callback));
+  AppendTo(stub_vector[0]->frames_passed(),
+           WebSocketFrameHeader::kOpCodeText,
+           kReserved1,
+           std::string());
+  stub_vector[0]->callback().Run(OK);
+  AppendTo(stub_vector[1]->frames_passed(),
+           WebSocketFrameHeader::kOpCodeContinuation,
+           kFinal,
+           std::string("\x02\x00"));
+  stub_vector[1]->callback().Run(OK);
+  ASSERT_EQ(1u, frames.size());
+  EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames[0]->header.opcode);
+  EXPECT_EQ("", ToString(frames[0]));
+}
+
 TEST_F(WebSocketDeflateStreamTest, WriteEmpty) {
   ScopedVector<WebSocketFrame> frames;
   CompletionCallback callback;
