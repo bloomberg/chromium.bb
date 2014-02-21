@@ -58,7 +58,7 @@ class FolderHeaderView : public views::View,
 
   // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemTitleChanged() OVERRIDE;
+  virtual void ItemNameChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;

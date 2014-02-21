@@ -22,10 +22,10 @@ class AppListModelPicklerUnitTest : public testing::Test {
     for (size_t i = 0; i < m1->item_list()->item_count(); i++) {
       ASSERT_EQ(m1->item_list()->item_at(i)->id(),
                 m2->item_list()->item_at(i)->id());
-      ASSERT_EQ(m1->item_list()->item_at(i)->title(),
-                m2->item_list()->item_at(i)->title());
-      ASSERT_EQ(m1->item_list()->item_at(i)->full_name(),
-                m2->item_list()->item_at(i)->full_name());
+      ASSERT_EQ(m1->item_list()->item_at(i)->name(),
+                m2->item_list()->item_at(i)->name());
+      ASSERT_EQ(m1->item_list()->item_at(i)->short_name(),
+                m2->item_list()->item_at(i)->short_name());
       CompareImages(m1->item_list()->item_at(i)->icon(),
                     m2->item_list()->item_at(i)->icon());
     }
@@ -78,7 +78,7 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
   scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetTitleAndFullName("ht", "hello, there");
+  app1->SetNameAndShortName("hello, there", "ht");
   model.AddItem(app1.Pass());
 
   DoConsistencyChecks(&model);
@@ -87,11 +87,11 @@ TEST_F(AppListModelPicklerUnitTest, OneItem) {
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
   scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetTitleAndFullName("ht", "hello, there");
+  app1->SetNameAndShortName("hello, there", "ht");
   model.AddItem(app1.Pass());
 
   scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
-  app2->SetTitleAndFullName("ht2", "hello, there 2");
+  app2->SetNameAndShortName("hello, there 2", "ht2");
   model.AddItem(app2.Pass());
 
   DoConsistencyChecks(&model);
@@ -100,12 +100,12 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
   scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetTitleAndFullName("ht", "hello, there");
+  app1->SetName("hello, there");
   app1->SetIcon(MakeImage(), true);
   model.AddItem(app1.Pass());
 
   scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
-  app2->SetTitleAndFullName("ht2", "hello, there 2");
+  app2->SetName("hello, there 2");
   model.AddItem(app2.Pass());
 
   DoConsistencyChecks(&model);
@@ -114,7 +114,7 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
   scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetTitleAndFullName("ht", "hello, there");
+  app1->SetName("hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
   model.AddItem(app1.Pass());
 

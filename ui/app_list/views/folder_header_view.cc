@@ -113,7 +113,7 @@ void FolderHeaderView::Update() {
 
   folder_name_view_->SetVisible(folder_name_visible_);
   if (folder_name_visible_)
-    folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->title()));
+    folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->name()));
 }
 
 gfx::Size FolderHeaderView::GetPreferredSize() {
@@ -161,7 +161,7 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
   folder_item_->RemoveObserver(this);
   std::string name = base::UTF16ToUTF8(folder_name_view_->text());
-  folder_item_->SetTitleAndFullName(name, name);
+  folder_item_->SetName(name);
   folder_item_->AddObserver(this);
 }
 
@@ -173,7 +173,7 @@ void FolderHeaderView::ButtonPressed(views::Button* sender,
 void FolderHeaderView::ItemIconChanged() {
 }
 
-void FolderHeaderView::ItemTitleChanged() {
+void FolderHeaderView::ItemNameChanged() {
   Update();
 }
 
@@ -187,4 +187,3 @@ void FolderHeaderView::ItemPercentDownloadedChanged() {
 }
 
 }  // namespace app_list
-

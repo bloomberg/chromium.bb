@@ -73,7 +73,7 @@ class ItemModelObserverBridge : public app_list::AppListItemObserver {
   NSMenu* GetContextMenu();
 
   virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemTitleChanged() OVERRIDE;
+  virtual void ItemNameChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
@@ -114,7 +114,7 @@ void ItemModelObserverBridge::ItemIconChanged() {
   [parent_ updateButtonImage];
 }
 
-void ItemModelObserverBridge::ItemTitleChanged() {
+void ItemModelObserverBridge::ItemNameChanged() {
   [parent_ updateButtonTitle];
 }
 
@@ -277,22 +277,22 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor) :
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor)
   };
-  NSString* buttonTitle = base::SysUTF8ToNSString([self model]->title());
+  NSString* buttonTitle =
+      base::SysUTF8ToNSString([self model]->GetDisplayName());
   base::scoped_nsobject<NSAttributedString> attributedTitle(
       [[NSAttributedString alloc] initWithString:buttonTitle
                                       attributes:titleAttributes]);
   [[self button] setAttributedTitle:attributedTitle];
 
-  // If the app does not specify a distinct short name manifest property, check
-  // whether the title would be truncted in the NSButton. If it would be
-  // truncated, add a tooltip showing the full name.
+  // If the display name would be truncated in the NSButton, or if the display
+  // name differs from the full name, add a tooltip showing the full name.
   NSRect titleRect =
       [[[self button] cell] titleRectForBounds:[[self button] bounds]];
-  if ([self model]->title() == [self model]->full_name() &&
+  if ([self model]->name() == [self model]->GetDisplayName() &&
       [attributedTitle size].width < NSWidth(titleRect)) {
     [[self view] removeAllToolTips];
   } else {
-    [[self view] setToolTip:base::SysUTF8ToNSString([self model]->full_name())];
+    [[self view] setToolTip:base::SysUTF8ToNSString([self model]->name())];
   }
 }
 

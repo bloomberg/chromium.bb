@@ -151,13 +151,13 @@ scoped_ptr<AppListItem> UnpickleAppListItem(PickleIterator* it) {
   if (!it->ReadString(&id))
     return scoped_ptr<AppListItem>();
   scoped_ptr<AppListItem> result(new AppListItem(id));
-  std::string title;
-  if (!it->ReadString(&title))
+  std::string name;
+  if (!it->ReadString(&name))
     return scoped_ptr<AppListItem>();
-  std::string full_name;
-  if (!it->ReadString(&full_name))
+  std::string short_name;
+  if (!it->ReadString(&short_name))
     return scoped_ptr<AppListItem>();
-  result->SetTitleAndFullName(title, full_name);
+  result->SetNameAndShortName(name, short_name);
   bool has_shadow = false;
   if (!it->ReadBool(&has_shadow))
     return scoped_ptr<AppListItem>();
@@ -171,9 +171,9 @@ scoped_ptr<AppListItem> UnpickleAppListItem(PickleIterator* it) {
 bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
   if (!pickle->WriteString(item->id()))
     return false;
-  if (!pickle->WriteString(item->title()))
+  if (!pickle->WriteString(item->name()))
     return false;
-  if (!pickle->WriteString(item->full_name()))
+  if (!pickle->WriteString(item->short_name()))
     return false;
   if (!pickle->WriteBool(item->has_shadow()))
     return false;
@@ -183,7 +183,7 @@ bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
 }
 
 void CopyOverItem(AppListItem* src_item, AppListItem* dest_item) {
-  dest_item->SetTitleAndFullName(src_item->title(), src_item->full_name());
+  dest_item->SetNameAndShortName(src_item->name(), src_item->short_name());
   dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
   // Do not set folder_id, pass that to AppListModel::AddItemToFolder() instead.
 }

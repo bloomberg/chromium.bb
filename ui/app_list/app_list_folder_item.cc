@@ -201,7 +201,7 @@ void AppListFolderItem::ItemIconChanged() {
   UpdateIcon();
 }
 
-void AppListFolderItem::ItemTitleChanged() {
+void AppListFolderItem::ItemNameChanged() {
 }
 
 void AppListFolderItem::ItemHighlightedChanged() {

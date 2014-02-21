@@ -433,7 +433,8 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   // should always be the full name of the app.
   std::string expected_text("xyz");
   std::string expected_tooltip("tooltip");
-  model_->CreateAndAddItem(expected_text, expected_tooltip);
+  AppListItem* item = model_->CreateAndAddItem("Item with short name");
+  item->SetNameAndShortName(expected_tooltip, expected_text);
 
   base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
@@ -449,7 +450,8 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   // If the app's full name and short name are the same, use the default tooltip
   // behavior of the label (only show a tooltip if the title is truncated).
   std::string title("a");
-  model_->CreateAndAddItem(title, title);
+  AppListItem* item = model_->CreateAndAddItem(title);
+  item->SetNameAndShortName(title, "");
 
   base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);

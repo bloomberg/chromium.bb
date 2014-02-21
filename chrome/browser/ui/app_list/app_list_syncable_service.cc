@@ -58,8 +58,8 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
     sync_item->parent_id = app_item->folder_id();
     changed = true;
   }
-  if (sync_item->item_name != app_item->title()) {
-    sync_item->item_name = app_item->title();
+  if (sync_item->item_name != app_item->name()) {
+    sync_item->item_name = app_item->name();
     changed = true;
   }
   if (!sync_item->item_ordinal.IsValid() ||

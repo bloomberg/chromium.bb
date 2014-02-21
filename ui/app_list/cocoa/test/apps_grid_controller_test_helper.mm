@@ -62,7 +62,7 @@ std::string AppsGridControllerTestHelper::GetViewContent() const {
           [page_view itemAtIndex:i]);
       if (i != 0)
         s += ',';
-      s += [item model]->title();
+      s += [item model]->id();
     }
     s += '|';
   }
@@ -79,7 +79,7 @@ size_t AppsGridControllerTestHelper::GetPageIndexForItem(int item_id) const {
     for (NSUInteger i = 0; i < [[page_view content] count]; ++i) {
       AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
           [page_view itemAtIndex:i]);
-      if ([item model]->title() == search) {
+      if ([item model]->id() == search) {
         if (found_at_page_index != NSNotFound)
           return NSNotFound;  // Duplicate.
         found_at_page_index = page_index;

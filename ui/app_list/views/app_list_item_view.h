@@ -94,7 +94,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemTitleChanged() OVERRIDE;
+  virtual void ItemNameChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
   virtual void ItemIsInstallingChanged() OVERRIDE;
   virtual void ItemPercentDownloadedChanged() OVERRIDE;
@@ -103,7 +103,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual const char* GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,

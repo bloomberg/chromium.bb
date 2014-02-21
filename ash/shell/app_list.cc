@@ -53,7 +53,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         type_(type) {
     std::string title(GetTitle(type));
     SetIcon(GetIcon(type), false);
-    SetTitleAndFullName(title, title);
+    SetName(title);
   }
 
   static gfx::ImageSkia GetIcon(Type type) {

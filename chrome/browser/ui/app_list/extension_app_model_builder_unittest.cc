@@ -38,7 +38,7 @@ std::string GetModelContent(app_list::AppListModel* model) {
   for (size_t i = 0; i < model->item_list()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += model->item_list()->item_at(i)->title();
+    content += model->item_list()->item_at(i)->name();
   }
   return content;
 }

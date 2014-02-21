@@ -132,8 +132,9 @@ ExtensionAppItem::ExtensionAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     // An existing synced position exists, use that.
     set_position(sync_item->item_ordinal);
-    if (title().empty())
-      SetTitleAndFullName(sync_item->item_name, sync_item->item_name);
+    // Only set the name from the sync item if it is empty.
+    if (name().empty())
+      SetName(sync_item->item_name);
     return;
   }
   GetAppSorting(profile_)->EnsureValidOrdinals(extension_id_,
@@ -169,11 +170,11 @@ void ExtensionAppItem::Reload() {
   bool is_installing = !extension;
   SetIsInstalling(is_installing);
   if (is_installing) {
-    SetTitleAndFullName(extension_name_, extension_name_);
+    SetName(extension_name_);
     UpdateIcon();
     return;
   }
-  SetTitleAndFullName(extension->short_name(), extension->name());
+  SetNameAndShortName(extension->name(), extension->short_name());
   LoadImage(extension);
 }
 

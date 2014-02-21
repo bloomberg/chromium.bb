@@ -85,7 +85,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   AddChildView(progress_bar_);
 
   ItemIconChanged();
-  ItemTitleChanged();
+  ItemNameChanged();
   ItemIsInstallingChanged();
   item_->AddObserver(this);
 
@@ -133,8 +133,9 @@ void AppListItemView::UpdateIcon() {
 }
 
 void AppListItemView::UpdateTooltip() {
-  title_->SetTooltipText(item_->title() == item_->full_name() ? base::string16()
-                         : base::UTF8ToUTF16(item_->full_name()));
+  std::string display_name = item_->GetDisplayName();
+  title_->SetTooltipText(display_name == item_->name() ? base::string16()
+                         : base::UTF8ToUTF16(item_->name()));
 }
 
 void AppListItemView::SetUIState(UIState state) {
@@ -225,10 +226,12 @@ void AppListItemView::ItemIconChanged() {
   UpdateIcon();
 }
 
-void AppListItemView::ItemTitleChanged() {
-  title_->SetText(base::UTF8ToUTF16(item_->title()));
+void AppListItemView::ItemNameChanged() {
+  title_->SetText(base::UTF8ToUTF16(item_->GetDisplayName()));
   title_->Invalidate();
   UpdateTooltip();
+  // Use full name for accessibility.
+  SetAccessibleName(base::UTF8ToUTF16(item_->name()));
   Layout();
 }
 
@@ -310,11 +313,6 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     paint.setColor(kFolderBubbleColor);
     canvas->DrawCircle(center, kFolderPreviewRadius, paint);
   }
-}
-
-void AppListItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = base::UTF8ToUTF16(item_->title());
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,

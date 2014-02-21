@@ -14,8 +14,8 @@ class APP_LIST_EXPORT AppListItemObserver {
   // Invoked after item's icon is changed.
   virtual void ItemIconChanged() = 0;
 
-  // Invoked after item's title is changed.
-  virtual void ItemTitleChanged() = 0;
+  // Invoked after item's name is changed.
+  virtual void ItemNameChanged() = 0;
 
   // Invoked after item's highlighted state is changed.
   virtual void ItemHighlightedChanged() = 0;

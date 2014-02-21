@@ -166,7 +166,7 @@ TEST_F(AppListModelTest, SetItemPosition) {
   ASSERT_TRUE(item0);
   AppListItem* item1 = model_.item_list()->item_at(1);
   ASSERT_TRUE(item1);
-  AppListItem* item2 = model_.CreateItem("Added Item 2", "Added Item 2");
+  AppListItem* item2 = model_.CreateItem("Added Item 2");
   model_.AddItem(item2);
   EXPECT_EQ("Item 0,Item 1,Added Item 1,Added Item 2", GetModelContents());
   model_.SetItemPosition(
@@ -250,7 +250,7 @@ TEST_F(AppListModelFolderTest, FolderItem) {
   model_.AddItem(folder);
   for (int i = 0; static_cast<size_t>(i) < num_folder_apps; ++i) {
     std::string name = model_.GetItemName(i);
-    model_.AddItemToFolder(model_.CreateItem(name, name), folder->id());
+    model_.AddItemToFolder(model_.CreateItem(name), folder->id());
   }
   ASSERT_EQ(num_folder_apps, folder->item_list()->item_count());
   // Check that items 0 and 3 are observed.
