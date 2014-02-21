@@ -181,12 +181,6 @@ def classify_files(root_dir, tracked, untracked):
              probably be tracked.
   - untracked: list of files names that must not be tracked.
   """
-  # These directories are not guaranteed to be always present on every builder.
-  CHROMIUM_OPTIONAL_DIRECTORIES = (
-    'test/data/plugin',
-    'third_party/WebKit/LayoutTests',
-  )
-
   new_tracked = []
   new_untracked = list(untracked)
 
@@ -197,8 +191,6 @@ def classify_files(root_dir, tracked, untracked):
     if filepath.endswith('/'):
       return False
     if ' ' in filepath:
-      return False
-    if any(i in filepath for i in CHROMIUM_OPTIONAL_DIRECTORIES):
       return False
     # Look if any element in the path is a symlink.
     split = filepath.split('/')
@@ -224,19 +216,12 @@ def classify_files(root_dir, tracked, untracked):
 
 def chromium_fix(f, variables):
   """Fixes an isolate dependency with Chromium-specific fixes."""
-  # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
-  # separator.
-  LOG_FILE = re.compile(r'^\<\(PRODUCT_DIR\)\/[^\/]+\.log$')
-  # Ignored items.
-  IGNORED_ITEMS = (
-      # http://crbug.com/160539, on Windows, it's in chrome/.
-      'Media Cache/',
-      'chrome/Media Cache/',
-      # 'First Run' is not created by the compile, but by the test itself.
-      '<(PRODUCT_DIR)/First Run')
-
   # Blacklist logs and other unimportant files.
-  if LOG_FILE.match(f) or f in IGNORED_ITEMS:
+  # - 'First Run' is not created by the compile but by the test itself.
+  # - Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
+  #   separator at this point.
+  if (re.match(r'^\<\(PRODUCT_DIR\)\/[^\/]+\.log$', f) or
+      f == '<(PRODUCT_DIR)/First Run'):
     logging.debug('Ignoring %s', f)
     return None
 
