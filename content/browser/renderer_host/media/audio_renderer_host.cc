@@ -111,8 +111,7 @@ AudioRendererHost::AudioRendererHost(
     AudioMirroringManager* mirroring_manager,
     MediaInternals* media_internals,
     MediaStreamManager* media_stream_manager)
-    : BrowserMessageFilter(AudioMsgStart),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       audio_manager_(audio_manager),
       mirroring_manager_(mirroring_manager),
       audio_log_(media_internals->CreateAudioLog(

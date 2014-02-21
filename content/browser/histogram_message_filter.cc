@@ -14,8 +14,7 @@
 
 namespace content {
 
-HistogramMessageFilter::HistogramMessageFilter()
-    : BrowserMessageFilter(ChildProcessMsgStart) {}
+HistogramMessageFilter::HistogramMessageFilter() {}
 
 bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message,
                                               bool* message_was_ok) {

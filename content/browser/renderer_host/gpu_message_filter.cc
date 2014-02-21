@@ -54,8 +54,7 @@ struct GpuMessageFilter::FrameSubscription {
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
-    : BrowserMessageFilter(GpuMsgStart),
-      gpu_process_id_(0),
+    : gpu_process_id_(0),
       render_process_id_(render_process_id),
       share_contexts_(false),
       render_widget_helper_(render_widget_helper),

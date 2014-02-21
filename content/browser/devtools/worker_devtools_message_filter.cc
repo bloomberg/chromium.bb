@@ -12,8 +12,7 @@ namespace content {
 
 WorkerDevToolsMessageFilter::WorkerDevToolsMessageFilter(
     int worker_process_host_id)
-    : BrowserMessageFilter(DevToolsMsgStart),
-      worker_process_host_id_(worker_process_host_id),
+    : worker_process_host_id_(worker_process_host_id),
       current_routing_id_(0) {
 }
 

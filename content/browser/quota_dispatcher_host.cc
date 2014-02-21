@@ -221,8 +221,7 @@ QuotaDispatcherHost::QuotaDispatcherHost(
     int process_id,
     QuotaManager* quota_manager,
     QuotaPermissionContext* permission_context)
-    : BrowserMessageFilter(QuotaMsgStart),
-      process_id_(process_id),
+    : process_id_(process_id),
       quota_manager_(quota_manager),
       permission_context_(permission_context),
       weak_factory_(this) {

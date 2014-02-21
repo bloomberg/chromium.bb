@@ -32,8 +32,7 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     int render_process_id,
     const GetRequestContextCallback& request_context_callback,
     ResourceContext* resource_context)
-    : BrowserMessageFilter(SocketStreamMsgStart),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       request_context_callback_(request_context_callback),
       resource_context_(resource_context),
       weak_ptr_factory_(this),

@@ -16,14 +16,12 @@ namespace content {
 
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(
     net::URLRequestContextGetter* getter)
-    : BrowserMessageFilter(ViewMsgStart),
-      context_getter_(getter),
+    : context_getter_(getter),
       proxy_service_(NULL) {
 }
 
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
-    : BrowserMessageFilter(ViewMsgStart),
-      proxy_service_(proxy_service) {
+    : proxy_service_(proxy_service) {
 }
 
 bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message,

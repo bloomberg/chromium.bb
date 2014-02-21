@@ -15,8 +15,7 @@
 using content::BrowserThread;
 
 TtsMessageFilter::TtsMessageFilter(int render_process_id, Profile* profile)
-    : BrowserMessageFilter(TtsMsgStart),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       profile_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TtsController::GetInstance()->AddVoicesChangedDelegate(this);

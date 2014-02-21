@@ -11,8 +11,7 @@
 namespace content {
 
 FileUtilitiesMessageFilter::FileUtilitiesMessageFilter(int process_id)
-    : BrowserMessageFilter(FileUtilitiesMsgStart),
-      process_id_(process_id) {
+    : process_id_(process_id) {
 }
 
 FileUtilitiesMessageFilter::~FileUtilitiesMessageFilter() {

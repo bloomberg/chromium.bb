@@ -11,8 +11,7 @@ namespace content {
 
 MessagePortMessageFilter::MessagePortMessageFilter(
     const NextRoutingIDCallback& callback)
-    : BrowserMessageFilter(MessagePortMsgStart),
-      next_routing_id_(callback) {
+    : next_routing_id_(callback) {
 }
 
 MessagePortMessageFilter::~MessagePortMessageFilter() {

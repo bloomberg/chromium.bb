@@ -82,8 +82,7 @@ namespace content {
 class InputEventMessageFilter : public BrowserMessageFilter {
  public:
   InputEventMessageFilter()
-      : BrowserMessageFilter(InputMsgStart),
-        type_(WebInputEvent::Undefined),
+      : type_(WebInputEvent::Undefined),
         state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
 
   void WaitForAck(WebInputEvent::Type type) {

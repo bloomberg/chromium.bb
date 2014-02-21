@@ -29,9 +29,7 @@ class CONTENT_EXPORT BrowserMessageFilter
           BrowserMessageFilter, BrowserMessageFilterTraits>,
       public IPC::Sender {
  public:
-  explicit BrowserMessageFilter(uint32 message_class_to_filter);
-  BrowserMessageFilter(const uint32* message_classes_to_filter,
-                       size_t num_message_classes_to_filter);
+  BrowserMessageFilter();
 
   // These match the corresponding IPC::ChannelProxy::MessageFilter methods and
   // are always called on the IO thread.
@@ -93,10 +91,6 @@ class CONTENT_EXPORT BrowserMessageFilter
   // Can be called on any thread.
   virtual void BadMessageReceived();
 
-  const std::vector<uint32>& message_classes_to_filter() const {
-    return message_classes_to_filter_;
-  }
-
  protected:
   virtual ~BrowserMessageFilter();
 
@@ -122,8 +116,6 @@ class CONTENT_EXPORT BrowserMessageFilter
 
   IPC::Channel* channel_;
   base::ProcessId peer_pid_;
-
-  std::vector<uint32> message_classes_to_filter_;
 
 #if defined(OS_WIN)
   base::Lock peer_handle_lock_;

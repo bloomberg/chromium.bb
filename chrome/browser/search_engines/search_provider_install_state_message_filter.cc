@@ -20,8 +20,7 @@ SearchProviderInstallStateMessageFilter::
 SearchProviderInstallStateMessageFilter(
     int render_process_id,
     Profile* profile)
-    : BrowserMessageFilter(ChromeMsgStart),
-      provider_data_(profile,
+    : provider_data_(profile,
                      content::RenderProcessHost::FromID(render_process_id)),
       is_off_the_record_(profile->IsOffTheRecord()),
       weak_factory_(this) {

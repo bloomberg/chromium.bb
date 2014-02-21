@@ -76,14 +76,6 @@ class BrowserMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
     return true;
   }
 
-  virtual bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const OVERRIDE {
-    supported_message_classes->assign(
-        filter_->message_classes_to_filter().begin(),
-        filter_->message_classes_to_filter().end());
-    return true;
-  }
-
   // Dispatches a message to the derived class.
   bool DispatchMessage(const IPC::Message& message) {
     bool message_was_ok = true;
@@ -104,28 +96,12 @@ class BrowserMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(Internal);
 };
 
-BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
-    : internal_(NULL),
-      channel_(NULL),
+BrowserMessageFilter::BrowserMessageFilter()
+    : internal_(NULL), channel_(NULL),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
-      peer_pid_(base::kNullProcessId),
-      message_classes_to_filter_(1, message_class_to_filter) {}
-
-BrowserMessageFilter::BrowserMessageFilter(
-    const uint32* message_classes_to_filter,
-    size_t num_message_classes_to_filter)
-    : internal_(NULL),
-      channel_(NULL),
-#if defined(OS_WIN)
-      peer_handle_(base::kNullProcessHandle),
-#endif
-      peer_pid_(base::kNullProcessId),
-      message_classes_to_filter_(
-          message_classes_to_filter,
-          message_classes_to_filter + num_message_classes_to_filter) {
-  DCHECK(num_message_classes_to_filter);
+      peer_pid_(base::kNullProcessId) {
 }
 
 base::ProcessHandle BrowserMessageFilter::PeerHandle() {

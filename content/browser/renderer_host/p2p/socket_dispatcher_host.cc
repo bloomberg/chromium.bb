@@ -96,8 +96,7 @@ class P2PSocketDispatcherHost::DnsRequest {
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(
     content::ResourceContext* resource_context,
     net::URLRequestContextGetter* url_context)
-    : BrowserMessageFilter(P2PMsgStart),
-      resource_context_(resource_context),
+    : resource_context_(resource_context),
       url_context_(url_context),
       monitoring_networks_(false) {
 }

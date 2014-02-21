@@ -41,8 +41,7 @@ const int kDelayDeleteRetryMs = 100;
 
 DatabaseMessageFilter::DatabaseMessageFilter(
     webkit_database::DatabaseTracker* db_tracker)
-    : BrowserMessageFilter(DatabaseMsgStart),
-      db_tracker_(db_tracker),
+    : db_tracker_(db_tracker),
       observer_added_(false) {
   DCHECK(db_tracker_.get());
 }

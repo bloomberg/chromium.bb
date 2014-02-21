@@ -68,8 +68,7 @@ private:
 };
 
 AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
-    : BrowserMessageFilter(AndroidWebViewMsgStart),
-      process_id_(process_id) {
+    : process_id_(process_id) {
 }
 
 AwContentsMessageFilter::~AwContentsMessageFilter() {

@@ -23,8 +23,7 @@ SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
     bool is_guest,
     int render_process_id,
     net::URLRequestContextGetter* context_getter)
-    : BrowserMessageFilter(SpeechRecognitionMsgStart),
-      is_guest_(is_guest),
+    : is_guest_(is_guest),
       render_process_id_(render_process_id),
       context_getter_(context_getter),
       weak_factory_(this) {

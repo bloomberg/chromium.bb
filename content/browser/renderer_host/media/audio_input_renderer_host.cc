@@ -54,8 +54,7 @@ AudioInputRendererHost::AudioInputRendererHost(
     MediaStreamManager* media_stream_manager,
     AudioMirroringManager* audio_mirroring_manager,
     media::UserInputMonitor* user_input_monitor)
-    : BrowserMessageFilter(AudioMsgStart),
-      audio_manager_(audio_manager),
+    : audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       audio_mirroring_manager_(audio_mirroring_manager),
       user_input_monitor_(user_input_monitor),

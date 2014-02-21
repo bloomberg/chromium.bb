@@ -26,8 +26,7 @@ ShellMessageFilter::ShellMessageFilter(
     webkit_database::DatabaseTracker* database_tracker,
     quota::QuotaManager* quota_manager,
     net::URLRequestContextGetter* request_context_getter)
-    : BrowserMessageFilter(ShellMsgStart),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       database_tracker_(database_tracker),
       quota_manager_(quota_manager),
       request_context_getter_(request_context_getter) {

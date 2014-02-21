@@ -12,8 +12,7 @@
 
 namespace content {
 
-MemoryBenchmarkMessageFilter::MemoryBenchmarkMessageFilter()
-    : BrowserMessageFilter(MemoryBenchmarkMsgStart) {
+MemoryBenchmarkMessageFilter::MemoryBenchmarkMessageFilter() {
 }
 
 bool MemoryBenchmarkMessageFilter::OnMessageReceived(

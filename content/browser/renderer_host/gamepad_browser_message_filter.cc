@@ -10,8 +10,7 @@
 namespace content {
 
 GamepadBrowserMessageFilter::GamepadBrowserMessageFilter()
-    : BrowserMessageFilter(GamepadMsgStart),
-      is_started_(false) {
+    : is_started_(false) {
 }
 
 GamepadBrowserMessageFilter::~GamepadBrowserMessageFilter() {

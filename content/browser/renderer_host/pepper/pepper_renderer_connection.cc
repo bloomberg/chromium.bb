@@ -26,11 +26,6 @@ namespace content {
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {
-  PpapiMsgStart,
-  ViewMsgStart,
-};
-
 // Responsible for creating the pending resource hosts, holding their IDs until
 // all of them have been created for a single message, and sending the reply to
 // say that the hosts have been created.
@@ -92,9 +87,7 @@ PendingHostCreator::~PendingHostCreator() {
 }  // namespace
 
 PepperRendererConnection::PepperRendererConnection(int render_process_id)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
-      render_process_id_(render_process_id) {
+    : render_process_id_(render_process_id) {
   // Only give the renderer permission for stable APIs.
   in_process_host_.reset(new BrowserPpapiHostImpl(this,
                                                   ppapi::PpapiPermissions(),

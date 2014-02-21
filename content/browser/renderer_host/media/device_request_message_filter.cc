@@ -23,8 +23,7 @@ namespace content {
 DeviceRequestMessageFilter::DeviceRequestMessageFilter(
     ResourceContext* resource_context,
     MediaStreamManager* media_stream_manager)
-    : BrowserMessageFilter(MediaStreamMsgStart),
-      resource_context_(resource_context),
+    : resource_context_(resource_context),
       media_stream_manager_(media_stream_manager) {
   DCHECK(resource_context);
   DCHECK(media_stream_manager);

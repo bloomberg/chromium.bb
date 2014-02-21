@@ -12,21 +12,13 @@
 #include "content/common/worker_messages.h"
 
 namespace content {
-namespace {
-const uint32 kFilteredMessageClasses[] = {
-  ViewMsgStart,
-  WorkerMsgStart,
-};
-}  // namespace
 
 SharedWorkerMessageFilter::SharedWorkerMessageFilter(
     int render_process_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
     MessagePortMessageFilter* message_port_message_filter)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
-      render_process_id_(render_process_id),
+    : render_process_id_(render_process_id),
       resource_context_(resource_context),
       partition_(partition),
       message_port_message_filter_(message_port_message_filter) {

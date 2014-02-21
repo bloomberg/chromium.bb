@@ -8,8 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 
 PrincipalsMessageFilter::PrincipalsMessageFilter(int render_process_id)
-    : BrowserMessageFilter(ChromeMsgStart),
-      render_process_id_(render_process_id) {}
+    : render_process_id_(render_process_id) {}
 
 PrincipalsMessageFilter::~PrincipalsMessageFilter(){}
 

@@ -45,8 +45,7 @@ static android::SupportedCodecs GetSupportedCodecs(
   return supported_codecs;
 }
 
-EncryptedMediaMessageFilterAndroid::EncryptedMediaMessageFilterAndroid()
-    : BrowserMessageFilter(EncryptedMediaMsgStart) {}
+EncryptedMediaMessageFilterAndroid::EncryptedMediaMessageFilterAndroid() {}
 
 EncryptedMediaMessageFilterAndroid::~EncryptedMediaMessageFilterAndroid() {}
 

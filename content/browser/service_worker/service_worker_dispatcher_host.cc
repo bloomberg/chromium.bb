@@ -24,20 +24,13 @@ const char kDisabledErrorMessage[] =
 const char kDomainMismatchErrorMessage[] =
     "Scope and scripts do not have the same origin";
 
-const uint32 kFilteredMessageClasses[] = {
-  ServiceWorkerMsgStart,
-  EmbeddedWorkerMsgStart,
-};
-
 }  // namespace
 
 namespace content {
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
-      render_process_id_(render_process_id) {
+    : render_process_id_(render_process_id) {
 }
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {

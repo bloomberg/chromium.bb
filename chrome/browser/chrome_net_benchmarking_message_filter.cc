@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
@@ -36,8 +35,7 @@ void ClearCacheCallback(ChromeNetBenchmarkingMessageFilter* filter,
 ChromeNetBenchmarkingMessageFilter::ChromeNetBenchmarkingMessageFilter(
     Profile* profile,
     net::URLRequestContextGetter* request_context)
-    : BrowserMessageFilter(ChromeBenchmarkingMsgStart),
-      profile_(profile),
+    : profile_(profile),
       request_context_(request_context) {
 }
 
