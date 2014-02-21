@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.0",
+  "version": "4.1",
   "entries": [
     {
       "id": 1,
@@ -365,13 +365,9 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 29,
       "cr_bugs": [278606],
-      "description": "Testing fences is broken on QualComm",
+      "description": "Testing fences is broken on Qualcomm.",
       "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
+        "type": "android"
       },
       "gl_vendor": {
         "op": "beginwith",
