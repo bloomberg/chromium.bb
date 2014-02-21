@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "mojo/system/constants.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
 // This class is used to represent data in transit. It is thread-unsafe.
-// Note: This class is POD.
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
@@ -39,19 +39,35 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
 
-  // Creates a |MessageInTransit| of the given |type| and |subtype|, with
-  // message data given by |bytes|/|num_bytes|.
-  // TODO(vtl): Add ability to tack on handle information.
-  static MessageInTransit* Create(Type type,
-                                  Subtype subtype,
-                                  const void* bytes,
-                                  uint32_t num_bytes,
-                                  uint32_t num_handles);
+  enum OwnedBuffer { OWNED_BUFFER };
+  // Constructor for a |MessageInTransit| that owns its buffer. |bytes| is
+  // optional; if null, the message data will be zero-initialized.
+  MessageInTransit(OwnedBuffer,
+                   Type type,
+                   Subtype subtype,
+                   uint32_t num_bytes,
+                   uint32_t num_handles,
+                   const void* bytes);
+  // "Copy" constructor. The input |MessageInTransit| may own its buffer or not.
+  // The constructed |MessageInTransit| will own its buffer.
+  MessageInTransit(OwnedBuffer,
+                   const MessageInTransit& other);
 
-  MessageInTransit* Clone() const;
-
-  // Destroys a |MessageInTransit| created using |Create()| or |Clone()|.
-  void Destroy();
+  enum UnownedBuffer { UNOWNED_BUFFER };
+  // Constructor for a |MessageInTransit| that is a "view" into another buffer.
+  // |buffer| should point to a fully-serialized |MessageInTransit|, and should
+  // be aligned on a |kMessageAlignment|-byte boundary. |message_size| should be
+  // the value provided by |GetNextMessageSize()|, and |buffer| should have at
+  // least that many bytes available. |buffer| should live (without change to
+  // the first |message_size| bytes) at least as long the new |MessageInTransit|
+  // does.
+  //
+  // Note: You probably don't want to heap-allocate this kind of
+  // |MessageInTransit| (and, e.g., put it into a |scoped_ptr|); you definitely
+  // don't want to pass it as a parameter in a |scoped_ptr|. Whenever you use
+  // this, you can probably create it directly on the stack.
+  MessageInTransit(UnownedBuffer, size_t message_size, void* buffer);
+  ~MessageInTransit();
 
   // Gets the size of the next message from |buffer|, which has |buffer_size|
   // bytes currently available, returning true and setting |*next_message_size|
@@ -64,42 +80,21 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                                  size_t buffer_size,
                                  size_t* next_message_size);
 
-  // Creates a read-only |MessageInTransit| from |buffer|, which must have
-  // enough data (as indicated by |GetNextMessageSize()|). |buffer| has the same
-  // alignment requirements as in |GetNextMessageSize()|.
-  //
-  // The returned message should not be destroyed using |Destroy()|, and the
-  // underlying buffer must remain alive and unmodified as long as the returned
-  // message is in use.
-  // TODO(vtl): Change these odd semantics (once I make |MessageInTransit|s have
-  // pointers to the buffers, instead of being POD).
-  static const MessageInTransit* CreateReadOnlyFromBuffer(const void* buffer);
-
   // Gets the "main" buffer for a |MessageInTransit|. A |MessageInTransit| can
   // be serialized by writing the main buffer. The returned pointer will be
   // aligned to a multiple of |kMessageAlignment| bytes, and the size of the
   // buffer (see below) will also be a multiple of |kMessageAlignment|.
+  //
+  // The main buffer always consists of the header (of type |Header|, which is
+  // an internal detail), followed by the message data, accessed by |bytes()|
+  // (of size |num_bytes()|, and also |kMessageAlignment|-aligned), and then any
+  // necessary padding to make |main_buffer_size()| a multiple of
+  // |kMessageAlignment|.
   // TODO(vtl): Add a "secondary" buffer, so that this makes more sense.
-  const void* main_buffer() const {
-    return static_cast<const void*>(this);
-  }
+  const void* main_buffer() const { return main_buffer_; }
 
   // Gets the size of the main buffer (in number of bytes).
-  size_t main_buffer_size() const {
-    return RoundUpMessageAlignment(sizeof(*this) + header()->data_size);
-  }
-
-  // Gets the size of the data (in number of bytes). This is the full size of
-  // the data that follows the header, and may include data other than the
-  // message data. (See also |num_bytes()|.)
-  uint32_t data_size() const {
-    return header()->data_size;
-  }
-
-  // Gets the data (of size |data_size()| bytes).
-  const void* data() const {
-    return reinterpret_cast<const char*>(this) + sizeof(*this);
-  }
+  size_t main_buffer_size() const { return main_buffer_size_; }
 
   // Gets the size of the message data.
   uint32_t num_bytes() const {
@@ -108,8 +103,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // Gets the message data (of size |num_bytes()| bytes).
   const void* bytes() const {
-    return reinterpret_cast<const char*>(this) + sizeof(*this);
+    return static_cast<const char*>(main_buffer_) + sizeof(Header);
   }
+  void* bytes() { return static_cast<char*>(main_buffer_) + sizeof(Header); }
 
   uint32_t num_handles() const {
     return header()->num_handles;
@@ -134,15 +130,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
  private:
   // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
-  // size.
+  // size. Must be POD.
   struct Header {
-    Header(uint32_t data_size, Type type, Subtype subtype, EndpointId source_id,
-           EndpointId destination_id, uint32_t num_bytes, uint32_t num_handles)
-        : data_size(data_size), type(type), subtype(subtype),
-          source_id(source_id), destination_id(destination_id),
-          num_bytes(num_bytes), num_handles(num_handles), reserved0(0),
-          reserved1(0) {}
-
     // Total size of data following the "header".
     uint32_t data_size;
     Type type;
@@ -157,29 +146,27 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     uint32_t reserved0;
     uint32_t reserved1;
   };
+  // The size of |Header| must be appropriate to maintain alignment of the
+  // following data.
+  COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
+                 sizeof_MessageInTransit_Header_not_a_multiple_of_alignment);
+  // Avoid dangerous situations, but making sure that the size of the "header" +
+  // the size of the data fits into a 31-bit number.
+  COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
+                     0x7fffffffULL,
+                 kMaxMessageNumBytes_too_big);
 
-  MessageInTransit(uint32_t data_size,
-                   Type type,
-                   Subtype subtype,
-                   uint32_t num_bytes,
-                   uint32_t num_handles);
+  const Header* header() const {
+    return static_cast<const Header*>(main_buffer_);
+  }
+  Header* header() { return static_cast<Header*>(main_buffer_); }
 
-  const Header* header() const { return &header_; }
-  Header* header() { return &header_; }
-
-  Header header_;
-
-  // Intentionally unimplemented (and private): Use |Destroy()| instead (which
-  // simply frees the memory).
-  ~MessageInTransit();
+  bool owns_main_buffer_;
+  size_t main_buffer_size_;
+  void* main_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };
-
-// The size of |MessageInTransit| must be appropriate to maintain alignment of
-// the following data.
-COMPILE_ASSERT(sizeof(MessageInTransit) % MessageInTransit::kMessageAlignment ==
-                   0, MessageInTransit_has_wrong_size);
 
 }  // namespace system
 }  // namespace mojo

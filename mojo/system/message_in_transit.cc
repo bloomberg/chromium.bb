@@ -11,20 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
-#include "mojo/system/constants.h"
 
 namespace mojo {
 namespace system {
-
-// Avoid dangerous situations, but making sure that the size of the "header" +
-// the size of the data fits into a 31-bit number.
-COMPILE_ASSERT(static_cast<uint64_t>(sizeof(MessageInTransit)) +
-                   kMaxMessageNumBytes <= 0x7fffffff,
-               kMaxMessageNumBytes_too_big);
-
-COMPILE_ASSERT(
-    sizeof(MessageInTransit) % MessageInTransit::kMessageAlignment == 0,
-    sizeof_MessageInTransit_not_a_multiple_of_alignment);
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeMessagePipeEndpoint;
@@ -40,41 +29,75 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
-// static
-MessageInTransit* MessageInTransit::Create(Type type,
-                                           Subtype subtype,
-                                           const void* bytes,
-                                           uint32_t num_bytes,
-                                           uint32_t num_handles) {
+MessageInTransit::MessageInTransit(OwnedBuffer,
+                                   Type type,
+                                   Subtype subtype,
+                                   uint32_t num_bytes,
+                                   uint32_t num_handles,
+                                   const void* bytes)
+    : owns_main_buffer_(true),
+      main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
+      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)) {
   DCHECK_LE(num_bytes, kMaxMessageNumBytes);
   DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
-  const size_t data_size = num_bytes;
-  const size_t size_with_header = sizeof(MessageInTransit) + data_size;
-  const size_t buffer_size = RoundUpMessageAlignment(size_with_header);
+  header()->data_size = num_bytes;
+  header()->type = type;
+  header()->subtype = subtype;
+  header()->source_id = kInvalidEndpointId;
+  header()->destination_id = kInvalidEndpointId;
+  header()->num_bytes = num_bytes;
+  header()->num_handles = num_handles;
+  header()->reserved0 = 0;
+  header()->reserved1 = 0;
 
-  char* buffer = static_cast<char*>(base::AlignedAlloc(buffer_size,
-                                                       kMessageAlignment));
-  // The buffer consists of the header (a |MessageInTransit|, constructed using
-  // a placement new), followed by the data, followed by padding (of zeros).
-  MessageInTransit* rv = new (buffer) MessageInTransit(
-      static_cast<uint32_t>(data_size), type, subtype, num_bytes, num_handles);
-  memcpy(buffer + sizeof(MessageInTransit), bytes, num_bytes);
-  memset(buffer + size_with_header, 0, buffer_size - size_with_header);
-  return rv;
+  if (bytes) {
+    memcpy(MessageInTransit::bytes(), bytes, num_bytes);
+    memset(static_cast<char*>(MessageInTransit::bytes()) + num_bytes, 0,
+           main_buffer_size_ - sizeof(Header) - num_bytes);
+  } else {
+    memset(MessageInTransit::bytes(), 0, main_buffer_size_ - sizeof(Header));
+  }
 }
 
-MessageInTransit* MessageInTransit::Clone() const {
-  size_t buffer_size = main_buffer_size();
-  char* buffer = static_cast<char*>(base::AlignedAlloc(buffer_size,
-                                                       kMessageAlignment));
-  memcpy(buffer, main_buffer(), buffer_size);
-  return reinterpret_cast<MessageInTransit*>(buffer);
+MessageInTransit::MessageInTransit(OwnedBuffer,
+                                   const MessageInTransit& other)
+    : owns_main_buffer_(true),
+      main_buffer_size_(other.main_buffer_size()),
+      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)) {
+  DCHECK_GE(main_buffer_size_, sizeof(Header));
+  DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
+
+  memcpy(main_buffer_, other.main_buffer_, main_buffer_size_);
+
+  // TODO(vtl): This will change.
+  DCHECK_EQ(main_buffer_size_,
+            RoundUpMessageAlignment(sizeof(Header) + num_bytes()));
 }
 
-void MessageInTransit::Destroy() {
-  // No need to call the destructor, since we're POD.
-  base::AlignedFree(this);
+MessageInTransit::MessageInTransit(UnownedBuffer,
+                                   size_t message_size,
+                                   void* buffer)
+    : owns_main_buffer_(false),
+      main_buffer_size_(message_size),
+      main_buffer_(buffer) {
+  DCHECK_GE(main_buffer_size_, sizeof(Header));
+  DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
+  DCHECK(main_buffer_);
+  DCHECK_EQ(reinterpret_cast<uintptr_t>(main_buffer_) % kMessageAlignment, 0u);
+  // TODO(vtl): This will change.
+  DCHECK_EQ(main_buffer_size_,
+            RoundUpMessageAlignment(sizeof(Header) + num_bytes()));
+}
+
+MessageInTransit::~MessageInTransit() {
+  if (owns_main_buffer_) {
+    base::AlignedFree(main_buffer_);
+#ifndef NDEBUG
+    main_buffer_size_ = 0;
+    main_buffer_ = NULL;
+#endif
+  }
 }
 
 // static
@@ -91,27 +114,8 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
 
   const Header* header = static_cast<const Header*>(buffer);
   *next_message_size =
-      RoundUpMessageAlignment(sizeof(MessageInTransit) + header->data_size);
+      RoundUpMessageAlignment(sizeof(Header) + header->data_size);
   return true;
-}
-
-// static
-const MessageInTransit* MessageInTransit::CreateReadOnlyFromBuffer(
-    const void* buffer) {
-  DCHECK(buffer);
-  DCHECK_EQ(reinterpret_cast<uintptr_t>(buffer) %
-                MessageInTransit::kMessageAlignment, 0u);
-  return static_cast<const MessageInTransit*>(buffer);
-}
-
-MessageInTransit::MessageInTransit(uint32_t data_size,
-                                   Type type,
-                                   Subtype subtype,
-                                   uint32_t num_bytes,
-                                   uint32_t num_handles)
-    : header_(data_size, type, subtype, kInvalidEndpointId, kInvalidEndpointId,
-              num_bytes, num_handles) {
-  DCHECK_GE(header()->data_size, header()->num_bytes);
 }
 
 }  // namespace system

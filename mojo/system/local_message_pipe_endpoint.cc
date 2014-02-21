@@ -27,7 +27,7 @@ LocalMessagePipeEndpoint::MessageQueueEntry::MessageQueueEntry(
 
 LocalMessagePipeEndpoint::MessageQueueEntry::~MessageQueueEntry() {
   if (message_)
-    message_->Destroy();
+    delete message_;
   // Close all the dispatchers.
   for (size_t i = 0; i < dispatchers_.size(); i++) {
     if (!dispatchers_[i].get())

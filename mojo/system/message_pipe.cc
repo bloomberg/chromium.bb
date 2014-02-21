@@ -67,10 +67,10 @@ MojoResult MessagePipe::WriteMessage(
       transports ? static_cast<uint32_t>(transports->size()) : 0;
   return EnqueueMessage(
       GetPeerPort(port),
-      MessageInTransit::Create(
-          MessageInTransit::kTypeMessagePipeEndpoint,
-          MessageInTransit::kSubtypeMessagePipeEndpointData,
-          bytes, num_bytes, num_handles),
+      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
+                           MessageInTransit::kTypeMessagePipeEndpoint,
+                           MessageInTransit::kSubtypeMessagePipeEndpointData,
+                           num_bytes, num_handles, bytes),
       transports);
 }
 
@@ -133,7 +133,7 @@ MojoResult MessagePipe::EnqueueMessage(
 
   // The destination port need not be open, unlike the source port.
   if (!endpoints_[port].get()) {
-    message->Destroy();
+    delete message;
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
@@ -221,7 +221,7 @@ MojoResult MessagePipe::HandleControlMessage(unsigned port,
       break;
   }
 
-  message->Destroy();
+  delete message;
   return rv;
 }
 

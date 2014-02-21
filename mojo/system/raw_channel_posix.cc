@@ -165,7 +165,7 @@ void RawChannelPosix::Shutdown() {
 bool RawChannelPosix::WriteMessage(MessageInTransit* message) {
   base::AutoLock locker(write_lock_);
   if (write_stopped_) {
-    message->Destroy();
+    delete message;
     return false;
   }
 
@@ -262,13 +262,12 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
                &read_buffer_[read_buffer_start], read_buffer_num_valid_bytes_,
                &message_size) &&
            read_buffer_num_valid_bytes_ >= message_size) {
-      const MessageInTransit* message =
-          MessageInTransit::CreateReadOnlyFromBuffer(
-              &read_buffer_[read_buffer_start]);
-      DCHECK_EQ(message->main_buffer_size(), message_size);
+      MessageInTransit message(MessageInTransit::UNOWNED_BUFFER, message_size,
+                               &read_buffer_[read_buffer_start]);
+      DCHECK_EQ(message.main_buffer_size(), message_size);
 
       // Dispatch the message.
-      delegate()->OnReadMessage(*message);
+      delegate()->OnReadMessage(message);
       if (!read_watcher_.get()) {
         // |Shutdown()| was called in |OnReadMessage()|.
         // TODO(vtl): Add test for this case.
@@ -386,7 +385,7 @@ bool RawChannelPosix::WriteFrontMessageNoLock() {
     DCHECK_EQ(static_cast<size_t>(bytes_written), bytes_to_write);
     write_message_queue_.pop_front();
     write_message_offset_ = 0;
-    message->Destroy();
+    delete message;
   }
 
   return true;
@@ -400,7 +399,7 @@ void RawChannelPosix::CancelPendingWritesNoLock() {
   for (std::deque<MessageInTransit*>::iterator it =
            write_message_queue_.begin(); it != write_message_queue_.end();
        ++it) {
-    (*it)->Destroy();
+    delete *it;
   }
   write_message_queue_.clear();
 }

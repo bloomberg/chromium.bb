@@ -43,10 +43,10 @@ MessageInTransit* MakeTestMessage(uint32_t num_bytes) {
   std::vector<unsigned char> bytes(num_bytes, 0);
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
-  return MessageInTransit::Create(
-      MessageInTransit::kTypeMessagePipeEndpoint,
-      MessageInTransit::kSubtypeMessagePipeEndpointData,
-      bytes.data(), num_bytes, 0);
+  return new MessageInTransit(MessageInTransit::OWNED_BUFFER,
+                              MessageInTransit::kTypeMessagePipeEndpoint,
+                              MessageInTransit::kSubtypeMessagePipeEndpointData,
+                              num_bytes, 0, bytes.data());
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
@@ -69,7 +69,7 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
   ssize_t write_size = HANDLE_EINTR(
      write(handle.fd, message->main_buffer(), message->main_buffer_size()));
   bool result = write_size == static_cast<ssize_t>(message->main_buffer_size());
-  message->Destroy();
+  delete message;
   return result;
 }
 
@@ -150,26 +150,26 @@ class TestMessageReaderAndChecker {
                                                &message_size)) {
         // If we've read the whole message....
         if (bytes_.size() >= message_size) {
-          const MessageInTransit* message =
-              MessageInTransit::CreateReadOnlyFromBuffer(bytes_.data());
-          CHECK_EQ(message->main_buffer_size(), message_size);
+          bool rv = true;
+          MessageInTransit message(MessageInTransit::UNOWNED_BUFFER,
+                                   message_size, bytes_.data());
+          CHECK_EQ(message.main_buffer_size(), message_size);
 
-          if (message->data_size() != expected_size) {
+          if (message.num_bytes() != expected_size) {
             LOG(ERROR) << "Wrong size: " << message_size << " instead of "
                        << expected_size << " bytes.";
-            return false;
-          }
-
-          if (!CheckMessageData(message->data(), message->data_size())) {
-            LOG(ERROR) << "Incorrect message data.";
-            return false;
+            rv = false;
+          } else if (!CheckMessageData(message.bytes(),
+                                       message.num_bytes())) {
+            LOG(ERROR) << "Incorrect message bytes.";
+            rv = false;
           }
 
           // Erase message data.
           bytes_.erase(bytes_.begin(),
                        bytes_.begin() +
-                           message->main_buffer_size());
-          return true;
+                           message.main_buffer_size());
+          return rv;
         }
       }
 
@@ -248,9 +248,9 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
         should_signal = true;
     }
 
-    EXPECT_EQ(expected_size, message.data_size()) << position;
-    if (message.data_size() == expected_size) {
-      EXPECT_TRUE(CheckMessageData(message.data(), message.data_size()))
+    EXPECT_EQ(expected_size, message.num_bytes()) << position;
+    if (message.num_bytes() == expected_size) {
+      EXPECT_TRUE(CheckMessageData(message.bytes(), message.num_bytes()))
           << position;
     }
 
@@ -365,7 +365,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
     EXPECT_LT(count_, expected_count_);
     count_++;
 
-    EXPECT_TRUE(CheckMessageData(message.data(), message.data_size()));
+    EXPECT_TRUE(CheckMessageData(message.bytes(), message.num_bytes()));
 
     if (count_ >= expected_count_)
       done_event_.Signal();

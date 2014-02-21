@@ -43,7 +43,7 @@ void ProxyMessagePipeEndpoint::Close() {
            paused_message_queue_.begin();
        it != paused_message_queue_.end();
        ++it) {
-    (*it)->Destroy();
+    delete *it;
   }
   paused_message_queue_.clear();
 }
@@ -53,10 +53,9 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_peer_open_);
 
   is_peer_open_ = false;
-  MessageInTransit* message =
-      MessageInTransit::Create(MessageInTransit::kTypeMessagePipe,
-                               MessageInTransit::kSubtypeMessagePipePeerClosed,
-                               NULL, 0, 0);
+  MessageInTransit* message = new MessageInTransit(
+      MessageInTransit::OWNED_BUFFER, MessageInTransit::kTypeMessagePipe,
+      MessageInTransit::kSubtypeMessagePipePeerClosed, 0, 0, NULL);
   EnqueueMessageInternal(message);
 }
 
