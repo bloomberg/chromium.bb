@@ -14,7 +14,7 @@ namespace mojo {
 namespace embedder {
 
 class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedPlatformHandle, RValue);
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedPlatformHandle, RValue)
 
  public:
   ScopedPlatformHandle() {}

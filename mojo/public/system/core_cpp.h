@@ -28,7 +28,7 @@ inline MojoTimeTicks GetTimeTicksNow() {
 // like the C++11 |unique_ptr|.
 template <class HandleType>
 class ScopedHandleBase {
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(ScopedHandleBase, RValue);
+  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(ScopedHandleBase, RValue)
 
  public:
   ScopedHandleBase() {}

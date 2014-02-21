@@ -71,7 +71,7 @@ namespace mojo {
 template <typename S>
 class RemotePtr {
   struct State;
-  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(RemotePtr, RValue);
+  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(RemotePtr, RValue)
 
  public:
   RemotePtr() : state_(NULL) {}
