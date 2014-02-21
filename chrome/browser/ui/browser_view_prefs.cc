@@ -8,6 +8,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/base/x/x11_util.h"
+#endif
+
 namespace {
 
 // How long do we wait before we consider a window hung (in ms).
@@ -29,9 +33,10 @@ void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
 
 void RegisterBrowserViewProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(mgiuca): Decide on this default depending on the window manager. See
-  // BrowserWindowGtk::GetCustomFramePrefDefault.
-  bool custom_frame_default = true;
+  bool custom_frame_default = false;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  custom_frame_default = ui::GetCustomFramePrefDefault();
+#endif
 
   registry->RegisterBooleanPref(
       prefs::kUseCustomChromeFrame,

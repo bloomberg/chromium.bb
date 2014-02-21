@@ -1011,6 +1011,26 @@ XID GetHighestAncestorWindow(XID window, XID root) {
   }
 }
 
+bool GetCustomFramePrefDefault() {
+  // Ideally, we'd use the custom frame by default and just fall back on using
+  // system decorations for the few (?) tiling window managers where the custom
+  // frame doesn't make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.) or
+  // other WMs where it has issues (e.g. Fluxbox -- see issue 19130).  The EWMH
+  // _NET_SUPPORTING_WM property makes it easy to look up a name for the current
+  // WM, but at least some of the WMs in the latter group don't set it.
+  // Instead, we default to using system decorations for all WMs and
+  // special-case the ones where the custom frame should be used.
+  ui::WindowManagerName wm_type = GuessWindowManager();
+  return (wm_type == WM_BLACKBOX ||
+          wm_type == WM_COMPIZ ||
+          wm_type == WM_ENLIGHTENMENT ||
+          wm_type == WM_METACITY ||
+          wm_type == WM_MUFFIN ||
+          wm_type == WM_MUTTER ||
+          wm_type == WM_OPENBOX ||
+          wm_type == WM_XFWM4);
+}
+
 bool GetWindowDesktop(XID window, int* desktop) {
   return GetIntProperty(window, "_NET_WM_DESKTOP", desktop);
 }

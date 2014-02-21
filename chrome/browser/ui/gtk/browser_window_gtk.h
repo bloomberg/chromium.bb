@@ -472,10 +472,6 @@ class BrowserWindowGtk
   // Called when the preference changes.
   void OnUseCustomChromeFrameChanged();
 
-  // Determine whether we use should default to native decorations or the custom
-  // frame based on the currently-running window manager.
-  static bool GetCustomFramePrefDefault();
-
   // Handler for |devtools_floating_container_|'s "set-floating-position"
   // signal.
   static void OnDevToolsContainerSetFloatingPosition(
