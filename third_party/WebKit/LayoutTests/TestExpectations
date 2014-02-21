@@ -785,6 +785,8 @@ crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure ]
 crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]
 
+crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
+
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
 crbug.com/344774 svg/dynamic-updates/SVG-dynamic-css-transform.html [ ImageOnlyFailure NeedsRebaseline ]
