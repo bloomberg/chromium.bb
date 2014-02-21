@@ -5,8 +5,8 @@
 #ifndef DEVICE_HID_HID_CONNECTION_LINUX_H_
 #define DEVICE_HID_HID_CONNECTION_LINUX_H_
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/tuple.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
@@ -49,7 +49,7 @@ class HidConnectionLinux : public HidConnection,
   void ProcessReadQueue();
   void Disconnect();
 
-  base::PlatformFile device_file_;
+  base::File device_file_;
   base::MessagePumpLibevent::FileDescriptorWatcher device_file_watcher_;
 
   typedef std::pair<scoped_refptr<net::IOBuffer>, size_t> PendingReport;

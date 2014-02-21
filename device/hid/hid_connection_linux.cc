@@ -37,33 +37,26 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
     return;
   }
 
-  base::PlatformFileError error;
+  int flags = base::File::FLAG_OPEN |
+              base::File::FLAG_READ |
+              base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_READ |
+              base::File::FLAG_EXCLUSIVE_WRITE;
 
-  int flags = base::PLATFORM_FILE_OPEN |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_EXCLUSIVE_READ |
-              base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-
-  base::PlatformFile device_file = base::CreatePlatformFile(
-      base::FilePath(dev_node),
-      flags,
-      NULL,
-      &error);
-  if (error || device_file <= 0) {
-    LOG(ERROR) << error;
-    if (device_file)
-      base::ClosePlatformFile(device_file);
+  base::File device_file(base::FilePath(dev_node), flags);
+  if (!device_file.IsValid()) {
+    LOG(ERROR) << device_file.error_details();
     return;
   }
-  if (fcntl(device_file, F_SETFL, fcntl(device_file, F_GETFL) | O_NONBLOCK)) {
+  if (fcntl(device_file.GetPlatformFile(), F_SETFL,
+            fcntl(device_file.GetPlatformFile(), F_GETFL) | O_NONBLOCK)) {
     PLOG(ERROR) << "Failed to set non-blocking flag to device file.";
     return;
   }
-  device_file_ = device_file;
+  device_file_ = device_file.Pass();
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-      device_file_,
+      device_file_.GetPlatformFile(),
       true,
       base::MessageLoopForIO::WATCH_READ_WRITE,
       &device_file_watcher_,
@@ -82,11 +75,11 @@ HidConnectionLinux::~HidConnectionLinux() {
 
 void HidConnectionLinux::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(fd, device_file_);
+  DCHECK_EQ(fd, device_file_.GetPlatformFile());
   DCHECK(initialized_);
 
   uint8 buffer[1024] = {0};
-  int bytes = read(device_file_, buffer, 1024);
+  int bytes = read(device_file_.GetPlatformFile(), buffer, 1024);
   if (bytes < 0) {
     if (errno == EAGAIN) {
       return;
@@ -110,7 +103,7 @@ void HidConnectionLinux::Disconnect() {
 
   initialized_ = false;
   device_file_watcher_.StopWatchingFileDescriptor();
-  close(device_file_);
+  device_file_.Close();
   while (!read_queue_.empty()) {
     PendingRequest callback = read_queue_.front();
     read_queue_.pop();
@@ -145,7 +138,7 @@ void HidConnectionLinux::Write(scoped_refptr<net::IOBuffer> buffer,
     callback.Run(false, 0);
     return;
   } else {
-    int bytes = write(device_file_, buffer->data(), size);
+    int bytes = write(device_file_.GetPlatformFile(), buffer->data(), size);
     if (bytes < 0) {
       Disconnect();
       callback.Run(false, 0);
