@@ -91,7 +91,11 @@ def FindPageSetDependencies(base_dir):
     util.GetBaseDir = lambda: base_dir
     # TODO: Loading the page set will automatically download its Cloud Storage
     # deps. This is really expensive, and we don't want to do this by default.
-    page_set = test_obj.CreatePageSet(options)
+    try:
+      page_set = test_obj.CreatePageSet(options)
+    except NotImplementedError:
+      # The test is an abstract class with no page set, so skip it.
+      pass
 
     # Add all of its serving_dirs as dependencies.
     for serving_dir in page_set.serving_dirs:
