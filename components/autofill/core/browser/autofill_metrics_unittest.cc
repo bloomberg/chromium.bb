@@ -97,7 +97,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   using PersonalDataManager::set_database;
-  using PersonalDataManager::set_pref_service;
+  using PersonalDataManager::SetPrefService;
 
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
@@ -290,7 +290,7 @@ void AutofillMetricsTest::SetUp() {
 
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->set_database(manager_delegate->GetDatabase());
-  personal_data_->set_pref_service(profile()->GetPrefs());
+  personal_data_->SetPrefService(profile()->GetPrefs());
   autofill_driver_.reset(new TestAutofillDriver());
   autofill_manager_.reset(new TestAutofillManager(
       autofill_driver_.get(), manager_delegate, personal_data_.get()));

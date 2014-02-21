@@ -62,6 +62,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -805,7 +806,8 @@ GURL AutofillDialogControllerImpl::SignInUrl() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
-  return !IsPayingWithWallet() &&
+  return IsAutofillEnabled() &&
+      !IsPayingWithWallet() &&
       !profile_->IsOffTheRecord() &&
       IsManuallyEditingAnySection() &&
       !ShouldShowSpinner();
@@ -1984,8 +1986,9 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
         field_contents, g_browser_process->GetApplicationLocale()));
   }
 
-  // The rest of this method applies only to textfields. If a combobox, bail.
-  if (ComboboxModelForAutofillType(type))
+  // The rest of this method applies only to textfields while Autofill is
+  // enabled. If a combobox or Autofill is disabled, bail.
+  if (ComboboxModelForAutofillType(type) || !IsAutofillEnabled())
     return;
 
   // If the field is edited down to empty, don't show a popup.
@@ -2389,6 +2392,7 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
   if (model->GetItemKeyAt(index) == kManageItemsKey) {
     GURL url;
     if (!IsPayingWithWallet()) {
+      DCHECK(IsAutofillEnabled());
       GURL settings_url(chrome::kChromeUISettingsURL);
       url = settings_url.Resolve(chrome::kAutofillSubPage);
     } else {
@@ -2917,50 +2921,56 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         suggested_cc_billing_.SetCheckedItem(kAddNewItemKey);
     }
   } else {
-    PersonalDataManager* manager = GetManager();
-    const std::vector<CreditCard*>& cards = manager->GetCreditCards();
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    for (size_t i = 0; i < cards.size(); ++i) {
-      if (!i18ninput::CardHasCompleteAndVerifiedData(*cards[i]))
-        continue;
+    if (IsAutofillEnabled()) {
+      PersonalDataManager* manager = GetManager();
+      const std::vector<CreditCard*>& cards = manager->GetCreditCards();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      for (size_t i = 0; i < cards.size(); ++i) {
+        if (!i18ninput::CardHasCompleteAndVerifiedData(*cards[i]))
+          continue;
 
-      suggested_cc_.AddKeyedItemWithIcon(
-          cards[i]->guid(),
-          cards[i]->Label(),
-          rb.GetImageNamed(CreditCard::IconResourceId(cards[i]->type())));
-    }
-
-    const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
-    std::vector<base::string16> labels;
-    AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
-    DCHECK_EQ(labels.size(), profiles.size());
-    for (size_t i = 0; i < profiles.size(); ++i) {
-      const AutofillProfile& profile = *profiles[i];
-      if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
-          !i18ninput::CountryIsFullySupported(
-              UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))) ||
-          (!i18ninput::Enabled() && HasInvalidAddress(*profiles[i]))) {
-        continue;
+        suggested_cc_.AddKeyedItemWithIcon(
+            cards[i]->guid(),
+            cards[i]->Label(),
+            rb.GetImageNamed(CreditCard::IconResourceId(cards[i]->type())));
       }
 
-      // Don't add variants for addresses: name is part of credit card and we'll
-      // just ignore email and phone number variants.
-      suggested_shipping_.AddKeyedItem(profile.guid(), labels[i]);
-      if (!profile.GetRawInfo(EMAIL_ADDRESS).empty() &&
-          !profile.IsPresentButInvalid(EMAIL_ADDRESS)) {
-        suggested_billing_.AddKeyedItem(profile.guid(), labels[i]);
+      const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
+      std::vector<base::string16> labels;
+      AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
+      DCHECK_EQ(labels.size(), profiles.size());
+      for (size_t i = 0; i < profiles.size(); ++i) {
+        const AutofillProfile& profile = *profiles[i];
+        if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
+            !i18ninput::CountryIsFullySupported(
+                UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))) ||
+            (!i18ninput::Enabled() && HasInvalidAddress(*profiles[i]))) {
+          continue;
+        }
+
+        // Don't add variants for addresses: name is part of credit card and
+        // we'll just ignore email and phone number variants.
+        suggested_shipping_.AddKeyedItem(profile.guid(), labels[i]);
+        if (!profile.GetRawInfo(EMAIL_ADDRESS).empty() &&
+            !profile.IsPresentButInvalid(EMAIL_ADDRESS)) {
+          suggested_billing_.AddKeyedItem(profile.guid(), labels[i]);
+        }
       }
     }
 
     suggested_cc_.AddKeyedItem(
         kAddNewItemKey,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD));
+        l10n_util::GetStringUTF16(IsAutofillEnabled() ?
+            IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD :
+            IDS_AUTOFILL_DIALOG_ENTER_CREDIT_CARD));
     suggested_cc_.AddKeyedItem(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_CREDIT_CARD));
     suggested_billing_.AddKeyedItem(
         kAddNewItemKey,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS));
+        l10n_util::GetStringUTF16(IsAutofillEnabled() ?
+            IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS :
+            IDS_AUTOFILL_DIALOG_ENTER_BILLING_DETAILS));
     suggested_billing_.AddKeyedItem(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_BILLING_ADDRESS));
@@ -2968,11 +2978,17 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
   suggested_shipping_.AddKeyedItem(
       kAddNewItemKey,
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
+      l10n_util::GetStringUTF16(IsPayingWithWallet() || IsAutofillEnabled() ?
+          IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS :
+          IDS_AUTOFILL_DIALOG_USE_DIFFERENT_SHIPPING_ADDRESS));
+
   if (!IsPayingWithWallet()) {
-    suggested_shipping_.AddKeyedItem(
-        kManageItemsKey,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
+    if (IsAutofillEnabled()) {
+      suggested_shipping_.AddKeyedItem(
+          kManageItemsKey,
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
+    }
   } else if (!wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
     suggested_shipping_.AddKeyedItemWithMinorText(
         kManageItemsKey,
@@ -2980,7 +2996,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         base::UTF8ToUTF16(wallet::GetManageAddressesUrl(0U).host()));
   }
 
-  if (!IsPayingWithWallet()) {
+  if (!IsPayingWithWallet() && IsAutofillEnabled()) {
     for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
       DialogSection section = static_cast<DialogSection>(i);
       if (!SectionIsActive(section))
@@ -3266,6 +3282,10 @@ bool AutofillDialogControllerImpl::IsASuggestionItemKey(
       key != kAddNewItemKey &&
       key != kManageItemsKey &&
       key != kSameAsBillingKey;
+}
+
+bool AutofillDialogControllerImpl::IsAutofillEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
@@ -3591,7 +3611,7 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
           ::prefs::kAutofillDialogWalletShippingSameAsBilling,
           suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey);
     }
-  } else {
+  } else if (ShouldOfferToSaveInChrome()) {
     for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
       DialogSection section = static_cast<DialogSection>(i);
       if (!SectionIsActive(section))
@@ -3635,7 +3655,7 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
 void AutofillDialogControllerImpl::PersistAutofillChoice(
     DialogSection section,
     const std::string& guid) {
-  DCHECK(!IsPayingWithWallet());
+  DCHECK(!IsPayingWithWallet() && ShouldOfferToSaveInChrome());
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(kGuidPrefKey, guid);
 
@@ -3648,7 +3668,7 @@ void AutofillDialogControllerImpl::PersistAutofillChoice(
 void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
     DialogSection section,
     std::string* guid) {
-  DCHECK(!IsPayingWithWallet());
+  DCHECK(!IsPayingWithWallet() && IsAutofillEnabled());
   // The default choice is the first thing in the menu that is a suggestion
   // item.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
@@ -3662,7 +3682,7 @@ void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
 
 bool AutofillDialogControllerImpl::GetAutofillChoice(DialogSection section,
                                                      std::string* guid) {
-  DCHECK(!IsPayingWithWallet());
+  DCHECK(!IsPayingWithWallet() && IsAutofillEnabled());
   const base::DictionaryValue* choices = profile()->GetPrefs()->GetDictionary(
       ::prefs::kAutofillDialogAutofillDefault);
   if (!choices)

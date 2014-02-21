@@ -131,7 +131,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         message_loop_runner_(runner),
         use_validation_(false),
         weak_ptr_factory_(this),
-        sign_in_user_index_(0U) {}
+        sign_in_user_index_(0U) {
+    test_manager_.Init(
+        NULL,
+        Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
+        false);
+  }
 
   virtual ~TestAutofillDialogController() {}
 

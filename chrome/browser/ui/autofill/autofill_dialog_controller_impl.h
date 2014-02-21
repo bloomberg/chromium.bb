@@ -517,6 +517,9 @@ class AutofillDialogControllerImpl
   // menu item.
   bool IsASuggestionItemKey(const std::string& key) const;
 
+  // Returns whether Autofill is enabled for |profile_|.
+  bool IsAutofillEnabled() const;
+
   // Whether the billing section should be used to fill in the shipping details.
   bool ShouldUseBillingForShipping();
 

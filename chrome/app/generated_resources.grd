@@ -10792,6 +10792,15 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING" desc="Menu Item label that asks whether the billing info should also be used for shipping info.">
           Use billing address for shipping
         </message>
+        <message name="IDS_AUTOFILL_DIALOG_ENTER_CREDIT_CARD" desc="Menu item label that allows a user to manually enter credit card information.">
+          Enter credit card...
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_ENTER_BILLING_DETAILS" desc="Menu item label that allows a user to manually enter credit card information.">
+          Enter billing details...
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_USE_DIFFERENT_SHIPPING_ADDRESS" desc="Menu Item label that allows a user to manually input a shipping address that differs from their billing address.">
+          Use different shipping address
+        </message>
 
         <!-- Autofill dialog: legal documents -->
         <message name="IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE" desc="Text at the bottom of the autofill dialog which stands alone to inform the user that they'll be sharing their location with Google Wallet if they choose to proceed.">

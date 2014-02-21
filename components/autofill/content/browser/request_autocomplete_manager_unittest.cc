@@ -153,12 +153,12 @@ TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteCancel) {
 }
 
 TEST_F(RequestAutocompleteManagerTest,
-       OnRequestAutocompleteWithAutocompleteDisabled) {
+       OnRequestAutocompleteWithAutofillDisabled) {
   blink::WebFormElement::AutocompleteResult result;
   driver_->mock_autofill_manager()->set_autofill_enabled(false);
   request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
-  EXPECT_EQ(result, blink::WebFormElement::AutocompleteResultErrorDisabled);
+  EXPECT_EQ(result, blink::WebFormElement::AutocompleteResultSuccess);
 }
 
 }  // namespace autofill

@@ -30,13 +30,6 @@ void RequestAutocompleteManager::OnRequestAutocomplete(
   if (!IsValidFormData(form))
     return;
 
-  if (!autofill_driver_->autofill_manager()->IsAutofillEnabled()) {
-    ReturnAutocompleteResult(
-        blink::WebFormElement::AutocompleteResultErrorDisabled,
-        FormData());
-    return;
-  }
-
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&RequestAutocompleteManager::ReturnAutocompleteData,
                  weak_ptr_factory_.GetWeakPtr());

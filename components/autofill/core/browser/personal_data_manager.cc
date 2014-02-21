@@ -146,6 +146,7 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pending_creditcards_query_(0),
       app_locale_(app_locale),
       metric_logger_(new AutofillMetrics),
+      pref_service_(NULL),
       is_off_the_record_(false),
       has_logged_profile_count_(false) {}
 
@@ -153,7 +154,7 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
                                bool is_off_the_record) {
   database_ = database;
-  pref_service_ = pref_service;
+  SetPrefService(pref_service);
   is_off_the_record_ = is_off_the_record;
 
   if (!is_off_the_record_)
@@ -205,8 +206,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                      OnPersonalDataChanged());
+    NotifyPersonalDataChanged();
   }
 }
 
@@ -679,11 +679,23 @@ void PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
+  DCHECK(pref_service_);
   return pref_service_->GetBoolean(prefs::kAutofillEnabled);
 }
 
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
   return base::CountryCodeForCurrentTimezone();
+}
+
+void PersonalDataManager::SetPrefService(PrefService* pref_service) {
+  enabled_pref_.reset(new BooleanPrefMember);
+  pref_service_ = pref_service;
+  // |pref_service_| can be NULL in tests.
+  if (pref_service_) {
+    enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
+        base::Bind(&PersonalDataManager::EnabledPrefChanged,
+                   base::Unretained(this)));
+  }
 }
 
 // static
@@ -983,6 +995,10 @@ std::string PersonalDataManager::SaveImportedProfile(
   return guid;
 }
 
+void PersonalDataManager::NotifyPersonalDataChanged() {
+  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
+                    OnPersonalDataChanged());
+}
 
 std::string PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_card) {
@@ -1024,6 +1040,9 @@ void PersonalDataManager::LogProfileCount() const {
 }
 
 std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
+  if (!IsAutofillEnabled())
+    return std::string();
+
   // Count up country codes from existing profiles.
   std::map<std::string, int> votes;
   // TODO(estade): can we make this GetProfiles() instead? It seems to cause
@@ -1050,6 +1069,11 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   }
 
   return std::string();
+}
+
+void PersonalDataManager::EnabledPrefChanged() {
+  default_country_code_.clear();
+  NotifyPersonalDataChanged();
 }
 
 }  // namespace autofill

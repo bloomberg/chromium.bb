@@ -15,14 +15,12 @@ TestPersonalDataManager::~TestPersonalDataManager() {}
 
 void TestPersonalDataManager::AddTestingProfile(AutofillProfile* profile) {
   profiles_.push_back(profile);
-  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                    OnPersonalDataChanged());
+  NotifyPersonalDataChanged();
 }
 
 void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
   credit_cards_.push_back(credit_card);
-  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                    OnPersonalDataChanged());
+  NotifyPersonalDataChanged();
 }
 
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()

@@ -331,8 +331,10 @@ class TestAutofillDialogController
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsManuallyEditingSection;
+  using AutofillDialogControllerImpl::IsPayingWithWallet;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
   using AutofillDialogControllerImpl::NOT_CHECKED;
+  using AutofillDialogControllerImpl::popup_input_type;
   using AutofillDialogControllerImpl::SignedInState;
 
  protected:
@@ -2139,7 +2141,7 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   SwitchToAutofill();
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(4);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -2154,8 +2156,53 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
   EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
 
+  profile()->GetPrefs()->SetBoolean(prefs::kAutofillEnabled, false);
+  EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+
+  profile()->GetPrefs()->SetBoolean(prefs::kAutofillEnabled, true);
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
+  EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
+
   profile()->ForceIncognito(true);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+}
+
+TEST_F(AutofillDialogControllerTest, DisabledAutofill) {
+  SwitchToAutofill();
+  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kAutofillEnabled));
+
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+
+  // Verify suggestions menus should be showing when Autofill is enabled.
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC));
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_BILLING));
+  EXPECT_EQ(
+      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged());
+  profile()->GetPrefs()->SetBoolean(prefs::kAutofillEnabled, false);
+
+  // Verify billing and credit card suggestions menus are hidden when Autofill
+  // is disabled.
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
+  // And that the shipping suggestions menu has less selections.
+  EXPECT_EQ(
+      2, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+
+  // Additionally, editing fields should not show Autofill popups.
+  ASSERT_NO_FATAL_FAILURE(controller()->UserEditedOrActivatedInput(
+      SECTION_BILLING,
+      NAME_BILLING_FULL,
+      gfx::NativeView(),
+      gfx::Rect(),
+      verified_profile.GetRawInfo(NAME_FULL).substr(0, 1),
+      true));
+  EXPECT_EQ(UNKNOWN_TYPE, controller()->popup_input_type());
 }
 
 // Tests that user is prompted when using instrument with minimal address.

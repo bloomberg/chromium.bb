@@ -75,7 +75,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   using PersonalDataManager::set_database;
-  using PersonalDataManager::set_pref_service;
+  using PersonalDataManager::SetPrefService;
 
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
   static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
@@ -620,7 +620,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill::TabAutofillManagerDelegate* manager_delegate =
         autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
     personal_data_.set_database(manager_delegate->GetDatabase());
-    personal_data_.set_pref_service(profile()->GetPrefs());
+    personal_data_.SetPrefService(profile()->GetPrefs());
     autofill_driver_.reset(new MockAutofillDriver());
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), manager_delegate, &personal_data_));
@@ -639,11 +639,13 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     // be destroyed at the destruction of the WebContents.
     autofill_manager_.reset();
     autofill_driver_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
 
     // Remove the AutofillWebDataService so TestPersonalDataManager does not
     // need to care about removing self as an observer in destruction.
     personal_data_.set_database(scoped_refptr<AutofillWebDataService>(NULL));
+    personal_data_.SetPrefService(NULL);
+
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void GetAutofillSuggestions(int query_id,

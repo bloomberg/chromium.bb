@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
@@ -2499,6 +2501,20 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
   base::MessageLoop::current()->Run();
   // The value is cached and doesn't change even after adding an address.
   EXPECT_EQ(default_country,
+            personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
+
+  // Disabling Autofill blows away this cache and shouldn't account for Autofill
+  // profiles.
+  profile_->GetPrefs()->SetBoolean(prefs::kAutofillEnabled, false);
+  EXPECT_EQ(default_country,
+            personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  // Enabling Autofill blows away the cached value and should reflect the new
+  // value (accounting for profiles).
+  profile_->GetPrefs()->SetBoolean(prefs::kAutofillEnabled, true);
+  EXPECT_EQ(base::UTF16ToUTF8(moose.GetRawInfo(ADDRESS_HOME_COUNTRY)),
             personal_data_->GetDefaultCountryCodeForNewAddress());
 }
 
