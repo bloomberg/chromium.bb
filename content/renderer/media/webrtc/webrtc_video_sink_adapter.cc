@@ -64,7 +64,7 @@ void WebRtcVideoSinkAdapter::RenderFrame(const cricket::VideoFrame* frame) {
     DCHECK_EQ(frame->GetPixelHeight(), 1u);
 
     int y_rows = frame->GetHeight();
-    int uv_rows = frame->GetHeight() / 2;  // YV12 format.
+    int uv_rows = frame->GetChromaHeight();
     CopyYPlane(
         frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame.get());
     CopyUPlane(
