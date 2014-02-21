@@ -886,6 +886,38 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
+TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test player pauses if an empty surface is passed.
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob(true);
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  // Send the first input chunk.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+
+  // While the decoder is decoding, pass an empty surface.
+  gfx::ScopedJavaSurface empty_surface;
+  player_.SetVideoSurface(empty_surface.Pass());
+
+  // Let the player starve. However, it should not issue any new data request in
+  // this case.
+  TriggerPlayerStarvation();
+  // Wait for the decoder job to finish decoding and be reset.
+  while (GetMediaDecoderJob(false))
+    message_loop_.RunUntilIdle();
+
+  // No further seek or data requests should have been received since the
+  // surface is empty.
+  EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  // Playback resumes once a non-empty surface is passed.
+  CreateNextTextureAndSetVideoSurface();
+  EXPECT_EQ(1, demuxer_->num_browser_seek_requests());
+}
+
 TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
