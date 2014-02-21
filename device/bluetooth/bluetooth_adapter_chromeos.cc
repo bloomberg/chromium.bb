@@ -586,7 +586,6 @@ BluetoothAdapterChromeOS::PairingContext::~PairingContext() {
   DCHECK(passkey_callback_.is_null());
   DCHECK(confirmation_callback_.is_null());
 
-  pairing_delegate_->DismissDisplayOrConfirm();
   pairing_delegate_ = NULL;
 }
 

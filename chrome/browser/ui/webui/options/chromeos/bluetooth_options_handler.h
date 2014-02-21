@@ -125,13 +125,6 @@ class BluetoothOptionsHandler
   virtual void ConfirmPasskey(
       device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
-  // device::BluetoothDevice::PairingDelegate override.
-  //
-  // This method will be called when any previous DisplayPinCode(),
-  // DisplayPasskey() or ConfirmPasskey() request should be concluded
-  // and removed from the user.
-  virtual void DismissDisplayOrConfirm() OVERRIDE;
-
   // Displays a Bluetooth error.
   // |error| maps to a localized resource for the error message.
   // |address| is the address of the Bluetooth device.  May be an empty

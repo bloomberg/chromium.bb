@@ -140,7 +140,6 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         display_passkey_count_(0),
         keys_entered_count_(0),
         confirm_passkey_count_(0),
-        dismiss_count_(0),
         last_passkey_(9999999U),
         last_entered_(999U) {}
   virtual ~TestPairingDelegate() {}
@@ -188,12 +187,6 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
     QuitMessageLoop();
   }
 
-  virtual void DismissDisplayOrConfirm() OVERRIDE {
-    ++call_count_;
-    ++dismiss_count_;
-    QuitMessageLoop();
-  }
-
   int call_count_;
   int request_pincode_count_;
   int request_passkey_count_;
@@ -201,7 +194,6 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   int display_passkey_count_;
   int keys_entered_count_;
   int confirm_passkey_count_;
-  int dismiss_count_;
   uint32 last_passkey_;
   uint32 last_entered_;
   std::string last_pincode_;
@@ -1300,10 +1292,6 @@ TEST_F(BluetoothChromeOSTest, PairAppleMouse) {
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
   EXPECT_TRUE(device->IsConnectable());
 
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
-
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1363,9 +1351,6 @@ TEST_F(BluetoothChromeOSTest, PairAppleKeyboard) {
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
   EXPECT_TRUE(device->IsConnectable());
 
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
-
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1418,9 +1403,9 @@ TEST_F(BluetoothChromeOSTest, PairMotorolaKeyboard) {
 
   message_loop.Run();
 
-  // 8 KeysEntered notifications (0 to 7, inclusive). Two aditional calls for
-  // DisplayPasskey() and DismissDisplayOrConfirm().
-  EXPECT_EQ(10, pairing_delegate.call_count_);
+  // 8 KeysEntered notifications (0 to 7, inclusive) and one aditional call for
+  // DisplayPasskey().
+  EXPECT_EQ(9, pairing_delegate.call_count_);
   EXPECT_EQ(8, pairing_delegate.keys_entered_count_);
   EXPECT_EQ(7U, pairing_delegate.last_entered_);
 
@@ -1445,9 +1430,6 @@ TEST_F(BluetoothChromeOSTest, PairMotorolaKeyboard) {
 
   // Fake MotorolaKeyboard is not connectable.
   EXPECT_FALSE(device->IsConnectable());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
@@ -1508,10 +1490,6 @@ TEST_F(BluetoothChromeOSTest, PairSonyHeadphones) {
   // Non HID devices are always connectable.
   EXPECT_TRUE(device->IsConnectable());
 
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
-
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1567,10 +1545,6 @@ TEST_F(BluetoothChromeOSTest, PairPhone) {
 
   // Non HID devices are always connectable.
   EXPECT_TRUE(device->IsConnectable());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
@@ -1629,10 +1603,6 @@ TEST_F(BluetoothChromeOSTest, PairWeirdDevice) {
   // Non HID devices are always connectable.
   EXPECT_TRUE(device->IsConnectable());
 
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
-
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1677,10 +1647,6 @@ TEST_F(BluetoothChromeOSTest, PairUnpairableDeviceFails) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingFails) {
@@ -1721,10 +1687,6 @@ TEST_F(BluetoothChromeOSTest, PairingFails) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingFailsAtConnection) {
@@ -1770,10 +1732,6 @@ TEST_F(BluetoothChromeOSTest, PairingFailsAtConnection) {
   EXPECT_FALSE(device->IsConnecting());
 
   EXPECT_TRUE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
   // Make sure the trusted property has been set to true still (since pairing
   // worked).
@@ -1825,10 +1783,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPinCode) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingCancelledAtPinCode) {
@@ -1872,10 +1826,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPinCode) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingRejectedAtPasskey) {
@@ -1919,10 +1869,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPasskey) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingCancelledAtPasskey) {
@@ -1966,10 +1912,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPasskey) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingRejectedAtConfirmation) {
@@ -2013,10 +1955,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtConfirmation) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingCancelledAtConfirmation) {
@@ -2060,10 +1998,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtConfirmation) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(2, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
@@ -2106,10 +2040,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
-
-  // Pairing dialog should be dismissed
-  EXPECT_EQ(1, pairing_delegate.call_count_);
-  EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 }
 
 }  // namespace chromeos

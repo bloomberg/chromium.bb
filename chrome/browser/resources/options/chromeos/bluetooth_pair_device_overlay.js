@@ -86,7 +86,7 @@ cr.define('options', function() {
       $('bluetooth-pair-device-reject-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
                     [self.device_.address, 'reject']);
-        dialog.device_.pairing = PAIRING.DISMISSED;
+        self.device_.pairing = PAIRING.DISMISSED;
         OptionsPage.closeOverlay();
       };
       $('bluetooth-pair-device-connect-button').onclick = function() {
@@ -105,8 +105,8 @@ cr.define('options', function() {
       $('bluetooth-pair-device-accept-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
                     [self.device_.address, 'accept']);
-        dialog.device_.pairing = PAIRING.DISMISSED;
-        OptionsPage.closeOverlay();
+        // Prevent sending a 'accept' command twice.
+        $('bluetooth-pair-device-accept-button').disabled = true;
       };
       $('bluetooth-pair-device-dismiss-button').onclick = function() {
         OptionsPage.closeOverlay();
@@ -190,6 +190,7 @@ cr.define('options', function() {
           this.displayElements_(['bluetooth-pairing-passkey-display',
                                  'bluetooth-pair-device-accept-button',
                                  'bluetooth-pair-device-reject-button']);
+          $('bluetooth-pair-device-accept-button').disabled = false;
         } else {
           // Remote entering a passkey.
           this.displayElements_(['bluetooth-pairing-passkey-display',

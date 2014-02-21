@@ -102,9 +102,7 @@ class BluetoothDevice {
 
     // This method will be called when the Bluetooth daemon requires that the
     // user enter the PIN code |pincode| into the device |device| so that it
-    // may be authenticated. The DismissDisplayOrConfirm() method
-    // will be called to dismiss the display once pairing is complete or
-    // cancelled.
+    // may be authenticated.
     //
     // This is used for Bluetooth 2.0 and earlier keyboard devices, the
     // |pincode| will always be a six-digit numeric in the range 000000-999999
@@ -114,8 +112,7 @@ class BluetoothDevice {
 
     // This method will be called when the Bluetooth daemon requires that the
     // user enter the Passkey |passkey| into the device |device| so that it
-    // may be authenticated. The DismissDisplayOrConfirm() method will be
-    // called to dismiss the display once pairing is complete or cancelled.
+    // may be authenticated.
     //
     // This is used for Bluetooth 2.1 and later devices that support input
     // but not display, such as keyboards. The Passkey is a numeric in the
@@ -129,8 +126,7 @@ class BluetoothDevice {
     // using a PIN code or a Passkey.
     //
     // This method will be called only after DisplayPinCode() or
-    // DisplayPasskey() is called and before the corresponding
-    // DismissDisplayOrConfirm() is called, but is not warranted to be called
+    // DisplayPasskey() method is called, but is not warranted to be called
     // on every pairing process that requires a PIN code or a Passkey because
     // some device may not support this feature.
     //
@@ -154,11 +150,6 @@ class BluetoothDevice {
     // digits.
     virtual void ConfirmPasskey(BluetoothDevice* device,
                                 uint32 passkey) = 0;
-
-    // This method will be called when any previous DisplayPinCode(),
-    // DisplayPasskey() or ConfirmPasskey() request should be concluded
-    // and removed from the user.
-    virtual void DismissDisplayOrConfirm() = 0;
   };
 
   // Returns true if uuid is in a a valid canonical format

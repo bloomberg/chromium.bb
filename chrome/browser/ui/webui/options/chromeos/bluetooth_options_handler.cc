@@ -313,6 +313,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
     VLOG(1) << "Cancel pairing: " << address;
     device->CancelPairing();
   } else if (command == kAcceptCommand) {
+    DeviceConnecting(device);
     // Confirm displayed Passkey.
     VLOG(1) << "Confirm pairing: " << address;
     device->ConfirmPairing();
@@ -511,21 +512,6 @@ void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
   params.SetString("pairing", kConfirmPasskey);
   params.SetInteger("passkey", passkey);
   SendDeviceNotification(device, &params);
-}
-
-void BluetoothOptionsHandler::DismissDisplayOrConfirm() {
-  DCHECK(adapter_.get());
-
-  // We can receive this delegate call when we haven't been asked to display or
-  // confirm anything; we can determine that by checking whether we've saved
-  // pairing information for the device. This is also a handy way to get the
-  // BluetoothDevice object we need.
-  if (!pairing_device_address_.empty()) {
-    device::BluetoothDevice* device =
-        adapter_->GetDevice(pairing_device_address_);
-    DCHECK(device);
-    DeviceConnecting(device);
-  }
 }
 
 void BluetoothOptionsHandler::ReportError(
