@@ -53,7 +53,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mountainlion', ('intel', 0x116)], bug=322795)
 
-    # Mac / Intel failures on 10.7
+    # Mac 10.7 / Intel failures
     self.Skip('conformance/glsl/functions/glsl-function-asin.html',
         ['lion', 'intel'])
     self.Skip('conformance/glsl/functions/glsl-function-dot.html',
@@ -86,22 +86,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
-
-    # Mac / ATI failures
-    self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/rendering/gl-clear.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgb565.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba4444.html',
-        ['mac', 'amd'], bug=308328)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
-        ['mac', 'amd'], bug=308328)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
