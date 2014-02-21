@@ -499,13 +499,18 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // return the IAccessible for the window.
     parent_obj =
          manager()->ToBrowserAccessibilityManagerWin()->parent_iaccessible();
-
     // |parent| can only be NULL if the manager was created before the parent
     // IAccessible was known and it wasn't subsequently set before a client
-    // requested it. Crash hard if this happens so that we get crash reports.
-    CHECK(parent_obj);
+    // requested it. This has been fixed. |parent| may also be NULL during
+    // destruction. Possible cases where this could occur include tabs being
+    // dragged to a new window, etc.
+    if (!parent_obj) {
+      DVLOG(1) <<  "In Function: "
+               << __FUNCTION__
+               << ". Parent IAccessible interface is NULL. Returning failure";
+      return E_FAIL;
+    }
   }
-
   parent_obj->AddRef();
   *disp_parent = parent_obj;
   return S_OK;
