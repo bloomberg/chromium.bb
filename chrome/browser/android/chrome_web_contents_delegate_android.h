@@ -72,7 +72,11 @@ class ChromeWebContentsDelegateAndroid
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
-
+  virtual void WebContentsCreated(content::WebContents* source_contents,
+                                  int64 source_frame_id,
+                                  const base::string16& frame_name,
+                                  const GURL& target_url,
+                                  content::WebContents* new_contents) OVERRIDE;
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,
