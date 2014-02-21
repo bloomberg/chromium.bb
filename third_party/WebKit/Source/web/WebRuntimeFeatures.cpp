@@ -49,6 +49,11 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
+{
+    RuntimeEnabledFeatures::setBleedingEdgeFastPathsEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);

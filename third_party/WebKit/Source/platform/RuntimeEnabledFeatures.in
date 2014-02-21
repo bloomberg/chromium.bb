@@ -18,6 +18,12 @@
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 BeforeLoad status=test
+
+// Enable bleeding-edge code to make Blink draw content faster.
+// The changes enabled behind this flag are very likely to break lots of content.
+// ** DO NOT use this flag unless you know what you are doing. **
+BleedingEdgeFastPaths
+
 ClientHintsDpr status=experimental
 Crypto status=experimental
 CSSAnimationUnprefixed status=experimental
