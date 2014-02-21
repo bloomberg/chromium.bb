@@ -14,8 +14,8 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)

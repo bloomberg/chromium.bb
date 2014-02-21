@@ -12,8 +12,8 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/corewm/window_util.h"
 

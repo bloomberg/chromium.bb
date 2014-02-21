@@ -32,8 +32,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace {

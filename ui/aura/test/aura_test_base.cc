@@ -5,10 +5,10 @@
 #include "ui/aura/test/aura_test_base.h"
 
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event_dispatcher.h"

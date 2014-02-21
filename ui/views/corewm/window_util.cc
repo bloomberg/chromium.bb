@@ -5,8 +5,8 @@
 #include "ui/views/corewm/window_util.h"
 
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/corewm/transient_window_manager.h"
 #include "ui/views/view.h"

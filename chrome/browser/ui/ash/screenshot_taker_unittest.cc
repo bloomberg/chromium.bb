@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/message_center/message_center_switches.h"
 
 #if defined(OS_CHROMEOS)

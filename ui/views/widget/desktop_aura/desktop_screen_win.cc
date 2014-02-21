@@ -5,8 +5,8 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_win.h"
 
 #include "base/logging.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/display.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"

@@ -21,8 +21,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 #if defined(OS_CHROMEOS)

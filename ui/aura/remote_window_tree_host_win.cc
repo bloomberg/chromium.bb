@@ -13,7 +13,7 @@
 #include "ipc/ipc_sender.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/composition_text.h"

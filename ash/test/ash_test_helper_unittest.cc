@@ -5,7 +5,7 @@
 #include "ash/test/ash_test_helper.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
 // Tests for AshTestHelper. Who will watch the watchers? And who will test

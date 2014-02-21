@@ -9,7 +9,7 @@
 #include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"

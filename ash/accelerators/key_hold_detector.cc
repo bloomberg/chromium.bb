@@ -11,7 +11,7 @@
 
 #include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_dispatcher.h"
 

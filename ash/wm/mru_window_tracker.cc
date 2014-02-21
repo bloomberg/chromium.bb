@@ -15,7 +15,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 

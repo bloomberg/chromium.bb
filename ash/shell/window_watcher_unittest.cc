@@ -9,7 +9,7 @@
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace ash {
 

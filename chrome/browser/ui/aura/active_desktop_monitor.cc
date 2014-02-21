@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 #if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"

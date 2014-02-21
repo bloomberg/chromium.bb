@@ -22,7 +22,7 @@
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #endif

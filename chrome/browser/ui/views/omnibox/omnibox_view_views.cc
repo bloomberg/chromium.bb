@@ -57,7 +57,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #endif
 

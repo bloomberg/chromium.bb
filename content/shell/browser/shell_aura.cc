@@ -8,9 +8,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace content {
 

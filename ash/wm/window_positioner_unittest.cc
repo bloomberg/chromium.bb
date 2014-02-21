@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

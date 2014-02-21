@@ -4,8 +4,8 @@
 
 #include "ui/views/win/hwnd_util.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

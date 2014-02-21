@@ -33,8 +33,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/remote_window_tree_host_win.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace {

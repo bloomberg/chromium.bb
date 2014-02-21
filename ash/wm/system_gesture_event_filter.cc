@@ -17,7 +17,7 @@
 #include "ash/wm/gestures/system_pinch_handler.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/message_center/message_center.h"

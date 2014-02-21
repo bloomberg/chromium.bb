@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_switches.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 //#include "base/compiler_specific.h"
 //#include "base/logging.h"

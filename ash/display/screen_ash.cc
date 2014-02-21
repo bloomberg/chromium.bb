@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

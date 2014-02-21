@@ -18,8 +18,8 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
 
 BrowserStatusMonitor::LocalWebContentsObserver::LocalWebContentsObserver(

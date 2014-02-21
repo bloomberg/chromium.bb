@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 

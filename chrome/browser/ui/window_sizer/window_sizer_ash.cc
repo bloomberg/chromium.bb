@@ -9,8 +9,8 @@
 #include "ash/wm/window_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
 
 void WindowSizer::GetTabbedBrowserBoundsAsh(

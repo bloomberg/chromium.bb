@@ -5,7 +5,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 
 #include "ash/shell.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 
 namespace ash {

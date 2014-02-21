@@ -15,7 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/message_box_view.h"

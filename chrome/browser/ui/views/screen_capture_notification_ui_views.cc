@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

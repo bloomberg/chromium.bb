@@ -8,8 +8,8 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/corewm/window_util.h"
 
 using aura::Window;

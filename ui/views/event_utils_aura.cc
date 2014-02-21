@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_delegate.h"

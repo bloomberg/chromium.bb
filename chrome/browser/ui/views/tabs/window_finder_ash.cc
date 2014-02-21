@@ -6,8 +6,8 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace {
 

@@ -9,8 +9,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "base/run_loop.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(USE_X11)

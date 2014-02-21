@@ -32,8 +32,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #endif
 

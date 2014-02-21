@@ -14,7 +14,7 @@
 #include "ash/wm/window_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"

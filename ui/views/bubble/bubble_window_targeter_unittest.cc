@@ -4,8 +4,8 @@
 
 #include "ui/views/bubble/bubble_window_targeter.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/test/views_test_base.h"

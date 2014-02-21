@@ -4,8 +4,8 @@
 
 #include "ui/views/corewm/capture_controller.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace views {
 namespace corewm {

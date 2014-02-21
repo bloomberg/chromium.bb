@@ -16,8 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/root_window_transformer.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {

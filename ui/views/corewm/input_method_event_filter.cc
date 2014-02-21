@@ -5,7 +5,7 @@
 #include "ui/views/corewm/input_method_event_filter.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/events/event.h"

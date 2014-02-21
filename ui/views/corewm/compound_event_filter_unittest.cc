@@ -7,12 +7,12 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 

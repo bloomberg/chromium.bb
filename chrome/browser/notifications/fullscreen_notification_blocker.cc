@@ -14,8 +14,8 @@
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/wm/window_state.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace {

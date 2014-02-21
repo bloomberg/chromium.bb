@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
 #include "chrome/browser/ui/views/apps/native_app_window_views.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/wm/public/easy_resize_window_targeter.h"
 

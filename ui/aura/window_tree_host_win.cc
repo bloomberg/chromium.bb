@@ -10,7 +10,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/events/event.h"

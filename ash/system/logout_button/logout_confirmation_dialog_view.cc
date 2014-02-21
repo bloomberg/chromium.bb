@@ -10,7 +10,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/location.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/ui_base_types.h"

@@ -13,8 +13,8 @@
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 
 class SkBitmap;

@@ -52,8 +52,8 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 using content::WebContents;

@@ -9,7 +9,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"

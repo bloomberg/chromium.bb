@@ -31,7 +31,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"

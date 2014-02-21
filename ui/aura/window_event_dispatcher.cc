@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 #include <vector>
 

@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"

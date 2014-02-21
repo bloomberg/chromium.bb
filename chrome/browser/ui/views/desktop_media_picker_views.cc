@@ -26,7 +26,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 using content::DesktopMediaID;

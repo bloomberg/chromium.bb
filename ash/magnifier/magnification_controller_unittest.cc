@@ -10,8 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 

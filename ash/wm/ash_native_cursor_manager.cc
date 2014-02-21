@@ -10,7 +10,7 @@
 #include "ash/wm/image_cursors.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace ash {

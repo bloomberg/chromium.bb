@@ -9,7 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 
 #if !defined(OS_CHROMEOS)

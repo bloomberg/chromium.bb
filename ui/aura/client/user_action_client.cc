@@ -4,7 +4,7 @@
 
 #include "ui/aura/client/user_action_client.h"
 
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 
 namespace aura {

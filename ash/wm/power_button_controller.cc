@@ -11,7 +11,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/corewm/compound_event_filter.h"
 
 namespace ash {

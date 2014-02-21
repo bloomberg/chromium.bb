@@ -4,8 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace views {
 

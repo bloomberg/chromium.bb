@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"

@@ -8,8 +8,8 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
 

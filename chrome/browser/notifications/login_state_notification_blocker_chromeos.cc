@@ -10,8 +10,8 @@
 #include "ash/wm/window_properties.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/message_center/message_center.h"
 
 LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(

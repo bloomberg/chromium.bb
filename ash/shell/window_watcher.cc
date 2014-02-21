@@ -13,8 +13,8 @@
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
 
 namespace ash {

@@ -15,7 +15,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 using content::RenderViewHostTester;

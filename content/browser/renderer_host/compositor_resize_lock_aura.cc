@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {

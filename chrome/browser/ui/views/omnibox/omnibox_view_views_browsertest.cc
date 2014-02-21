@@ -19,9 +19,9 @@
 #include "ui/base/test/ui_controls.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_delegate.h"
 #endif // defined(USE_AURA)
 

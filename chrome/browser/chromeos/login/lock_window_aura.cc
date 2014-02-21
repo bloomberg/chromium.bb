@@ -8,8 +8,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace chromeos {
 

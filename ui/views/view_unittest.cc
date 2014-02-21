@@ -38,7 +38,7 @@
 #include "ui/views/test/test_views_delegate.h"
 #endif
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
 

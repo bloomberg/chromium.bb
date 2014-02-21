@@ -48,8 +48,8 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
 

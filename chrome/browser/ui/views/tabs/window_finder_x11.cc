@@ -6,8 +6,8 @@
 
 #include "base/debug/trace_event.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 

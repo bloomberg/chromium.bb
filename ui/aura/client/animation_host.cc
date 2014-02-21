@@ -8,7 +8,7 @@
 #include "ui/aura/aura_export.h"
 
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::AnimationHost*)

@@ -4,7 +4,7 @@
 
 #include "ash/root_window_settings.h"
 
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/display.h"
 

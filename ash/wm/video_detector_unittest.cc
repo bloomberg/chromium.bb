@@ -12,9 +12,9 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/rect.h"
 #include "ui/wm/public/window_types.h"
 

@@ -20,9 +20,9 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 

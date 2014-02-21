@@ -6,7 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"

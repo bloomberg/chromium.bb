@@ -57,7 +57,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/compositor/debug_utils.h"

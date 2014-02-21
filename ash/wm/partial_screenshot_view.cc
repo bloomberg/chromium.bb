@@ -12,7 +12,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"

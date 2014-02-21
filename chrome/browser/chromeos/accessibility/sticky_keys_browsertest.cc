@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 

@@ -4,9 +4,9 @@
 
 #include "ui/views/corewm/window_util.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"

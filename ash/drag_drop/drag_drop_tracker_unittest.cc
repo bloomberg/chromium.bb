@@ -8,9 +8,9 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace ash {
 namespace test {

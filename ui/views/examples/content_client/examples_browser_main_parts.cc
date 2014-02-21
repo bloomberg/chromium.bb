@@ -27,9 +27,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/test/wm_test_helper.h"
 #endif
 

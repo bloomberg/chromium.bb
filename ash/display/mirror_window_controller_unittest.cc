@@ -12,11 +12,11 @@
 #include "ash/test/mirror_window_test_api.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 
 namespace ash {

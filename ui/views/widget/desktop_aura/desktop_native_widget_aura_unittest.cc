@@ -5,9 +5,9 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 

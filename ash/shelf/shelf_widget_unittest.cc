@@ -15,7 +15,7 @@
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"

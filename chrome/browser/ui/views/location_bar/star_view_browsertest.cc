@@ -21,8 +21,8 @@
 
 #if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace {

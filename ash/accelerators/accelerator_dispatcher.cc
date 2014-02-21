@@ -16,7 +16,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

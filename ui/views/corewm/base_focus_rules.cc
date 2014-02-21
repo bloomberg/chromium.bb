@@ -6,8 +6,8 @@
 
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/corewm/window_util.h"
 

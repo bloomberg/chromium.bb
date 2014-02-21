@@ -29,8 +29,8 @@
 #include "net/base/net_util.h"
 
 #if defined(OS_WIN)
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace content {

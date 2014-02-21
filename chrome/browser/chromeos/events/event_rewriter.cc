@@ -31,7 +31,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"

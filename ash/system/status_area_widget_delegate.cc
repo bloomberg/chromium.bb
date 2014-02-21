@@ -11,7 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"

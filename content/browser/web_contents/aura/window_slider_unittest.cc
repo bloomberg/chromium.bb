@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 
 namespace content {

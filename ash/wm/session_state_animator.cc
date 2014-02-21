@@ -8,7 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

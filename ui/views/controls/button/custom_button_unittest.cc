@@ -17,9 +17,9 @@
 #include "ui/views/test/views_test_base.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace views {

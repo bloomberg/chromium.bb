@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace chrome {
 

@@ -8,7 +8,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"

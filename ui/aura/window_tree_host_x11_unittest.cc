@@ -5,8 +5,8 @@
 
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_delegate.h"
 #include "ui/aura/window_tree_host_x11.h"
 #include "ui/events/event_processor.h"

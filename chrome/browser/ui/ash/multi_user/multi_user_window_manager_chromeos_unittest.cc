@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/corewm/window_util.h"
 

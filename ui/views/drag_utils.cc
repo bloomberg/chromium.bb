@@ -9,8 +9,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"

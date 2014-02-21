@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"

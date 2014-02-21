@@ -9,8 +9,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_screenshot_delegate.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace ash {
 

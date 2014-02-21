@@ -11,8 +11,8 @@
 #include "ui/gfx/text_elider.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 using content::JavaScriptDialogManager;

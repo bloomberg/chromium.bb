@@ -4,8 +4,8 @@
 
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"

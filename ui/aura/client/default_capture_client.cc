@@ -4,8 +4,8 @@
 
 #include "ui/aura/client/default_capture_client.h"
 
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 
 namespace aura {
 namespace client {

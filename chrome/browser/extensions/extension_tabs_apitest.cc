@@ -15,8 +15,8 @@
 #include "net/dns/mock_host_resolver.h"
 
 #if defined(OS_WIN)
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 // Window resizes are not completed by the time the callback happens,

@@ -14,7 +14,7 @@
 #include "grit/keyboard_resources.h"
 #include "grit/keyboard_resources_map.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_switches.h"
