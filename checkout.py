@@ -553,8 +553,9 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
 class GitCheckout(CheckoutBase):
   """Manages a git checkout."""
   def __init__(self, root_dir, project_name, remote_branch, git_url,
-      commit_user, post_processors=None):
+      commit_user, post_processors=None, base_ref=None):
     super(GitCheckout, self).__init__(root_dir, project_name, post_processors)
+    self.base_ref = base_ref
     self.git_url = git_url
     self.commit_user = commit_user
     self.remote_branch = remote_branch
@@ -710,9 +711,13 @@ class GitCheckout(CheckoutBase):
     if verbose:
       cmd.append('--verbose')
     self._check_call_git(cmd)
+    if self.base_ref:
+      base_ref = self.base_ref
+    else:
+      base_ref = '%s/%s' % (self.remote,
+                            self.remote_branch or self.master_branch)
     found_files = self._check_output_git(
-        ['diff', '%s/%s' % (self.remote,
-                            self.remote_branch or self.master_branch),
+        ['diff', base_ref,
          '--name-only']).splitlines(False)
     assert sorted(patches.filenames) == sorted(found_files), (
         sorted(patches.filenames), sorted(found_files))

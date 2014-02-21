@@ -72,7 +72,17 @@ def main():
   parser.add_option('--revision-mapping', default='{}',
                     help='When running gclient, annotate the got_revisions '
                          'using the revision-mapping.')
+  parser.add_option('-f', '--force', action='store_true',
+                    help='Really run apply_issue, even if .update.flag '
+                         'is detected.')
+  parser.add_option('-b', '--base_ref', help='Base git ref to patch on top of, '
+                    'used for verification.')
   options, args = parser.parse_args()
+  if (os.path.isfile(os.path.join(os.getcwd(), 'update.flag'))
+      and not options.force):
+    print 'update.flag file found: bot_update has run and checkout is already '
+    print 'in a consistent state. No actions will be performed in this step.'
+    return 0
   logging.basicConfig(
       format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
       level=[logging.WARNING, logging.INFO, logging.DEBUG][
@@ -151,7 +161,8 @@ def main():
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
-    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None)
+    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None,
+                                   base_ref=options.base_ref)
   elif scm_type == None:
     scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
