@@ -97,13 +97,11 @@ void ShellMainDelegate::InitializeResourceBundle() {
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
-  // The dev tool needs shell_devtools_discovery_page.html from
-  // content_shell.pak file.
-  base::FilePath pak_file, pak_dir;
+  base::FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-  pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_file, ui::SCALE_FACTOR_NONE);
+      pak_dir.Append(FILE_PATH_LITERAL("app_shell.pak")),
+      ui::SCALE_FACTOR_NONE);
 }
 
 }  // namespace apps

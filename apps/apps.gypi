@@ -100,6 +100,35 @@
     ['chromeos==1 or (OS=="linux" and use_aura==1) or (OS=="win" and use_aura==1)', {
       'targets': [
         {
+          'target_name': 'app_shell_pak',
+          'type': 'none',
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:generate_content_shell_resources',
+          ],
+          'variables': {
+            'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+          },
+          'actions': [
+            {
+              'action_name': 'repack_app_shell_pack',
+              'variables': {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
+                ],
+              },
+              'inputs': [
+                '<(repack_path)',
+                '<@(pak_inputs)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/app_shell.pak',
+              ],
+              'action': ['python', '<(repack_path)', '<@(_outputs)',
+                         '<@(pak_inputs)'],
+            },
+          ],
+        },
+        {
           'target_name': 'app_shell',
           'type': 'executable',
           'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -107,6 +136,7 @@
             'chromium_code': 1,
           },
           'dependencies': [
+            'app_shell_pak',
             'apps',
             'chrome_resources.gyp:packed_resources',
             # For resources.pak for features JSON files.
