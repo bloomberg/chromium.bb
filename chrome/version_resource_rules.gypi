@@ -9,11 +9,11 @@
 # the required variables:
 #
 #  'includes': [
-#    '<(DEPTH)/chrome/version.gypi',
+#    '<(DEPTH)/build/util/version.gypi',
 #  ],
 #
 # Then include this rule file in a productname_resources target:
-# 
+#
 #    {
 #      'target_name': 'chrome_version_resources',
 #      ...

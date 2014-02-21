@@ -656,7 +656,7 @@ def Localize(source, locales, options):
   # Load the localized messages.
   message_map = MessageMap(languages, options.locale_dir)
 
-  # Add OFFICIAL_BUILD variable the same way chrome/tools/build/version.py
+  # Add OFFICIAL_BUILD variable the same way build/util/version.py
   # does.
   if os.environ.get('CHROME_BUILD_TYPE') == '_official':
     context['official_build'] = '1'

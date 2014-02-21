@@ -8,8 +8,8 @@
         'chromium_code': 1,
       },
       'includes': [
+        '../../build/util/version.gypi',
         '../../build/win_precompile.gypi',
-        '../../chrome/version.gypi',
       ],
       'target_defaults': {
         # This and the force include below is a workaround for intsafe.h in

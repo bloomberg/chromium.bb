@@ -39,7 +39,7 @@
 
 {
   'includes': [
-    '../chrome/version.gypi',
+    '../build/util/version.gypi',
   ],
   'rules': [
     {

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'variables': {
-    'version_py': '<(DEPTH)/chrome/tools/build/version.py',
+    'version_py': '<(DEPTH)/build/util/version.py',
     'version_path': '<(DEPTH)/chrome/VERSION',
     'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
@@ -14,7 +14,7 @@
     '../../build/win_precompile.gypi',
   ],
   'conditions': [
-    # This target won't build in fastbuild, since there are no PDBs. 
+    # This target won't build in fastbuild, since there are no PDBs.
     ['OS=="win" and fastbuild==0', {
       'conditions': [
         ['chrome_multiple_dll==0', {

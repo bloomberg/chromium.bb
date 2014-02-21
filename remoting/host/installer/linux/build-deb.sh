@@ -20,7 +20,7 @@ get_version_full() {
   src_root=${src_root:-./../../../..}
   remoting_version_path=$src_root/remoting/VERSION
   chrome_version_path=$src_root/chrome/VERSION
-  version_helper=$src_root/chrome/tools/build/version.py
+  version_helper=$src_root/build/util/version.py
 
   # TODO(lambroslambrou): Refactor to share the logic with remoting.gyp.
   version_major=$($version_helper -f $chrome_version_path \

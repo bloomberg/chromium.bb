@@ -6,14 +6,14 @@
     'chromium_code': 1,
 
     'variables': {
-      'version_py_path': '../tools/build/version.py',
+      'version_py_path': '<(DEPTH)/build/util/version.py',
       'version_path': 'VERSION',
     },
     'version_py_path': '<(version_py_path) -f',
     'version_path': '<(version_path)',
   },
   'includes': [
-    '../chrome/version.gypi',
+    '../build/util/version.gypi',
   ],
   'targets': [
     {
@@ -32,7 +32,7 @@
       ],
       'variables': {
         'output_dir': 'cloud_print',
-        'template_input_path': '../chrome/app/chrome_version.rc.version', 
+        'template_input_path': '../chrome/app/chrome_version.rc.version',
         'extra_variable_files_arguments': [ '-f', 'BRANDING' ],
         'extra_variable_files': [ 'BRANDING' ], # NOTE: matches that above
       },

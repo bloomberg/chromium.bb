@@ -309,7 +309,7 @@
               'rule_name': 'setup_version',
               'extension': 'version',
               'variables': {
-                'version_py_path': '../chrome/tools/build/version.py',
+                'version_py_path': '<(DEPTH)/build/util/version.py',
                 'template_input_path': 'installer/setup/setup_exe_version.rc.version',
               },
               'inputs': [

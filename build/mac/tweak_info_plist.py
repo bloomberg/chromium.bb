@@ -76,7 +76,7 @@ def _AddVersionKeys(plist, version=None):
 
   else:
     # Pull in the Chrome version number.
-    VERSION_TOOL = os.path.join(TOP, 'chrome/tools/build/version.py')
+    VERSION_TOOL = os.path.join(TOP, 'build/util/version.py')
     VERSION_FILE = os.path.join(TOP, 'chrome/VERSION')
 
     (stdout, retval1) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
@@ -114,7 +114,7 @@ def _DoSCMKeys(plist, add_keys):
   scm_revision = None
   if add_keys:
     # Pull in the Chrome revision number.
-    VERSION_TOOL = os.path.join(TOP, 'chrome/tools/build/version.py')
+    VERSION_TOOL = os.path.join(TOP, 'build/util/version.py')
     LASTCHANGE_FILE = os.path.join(TOP, 'build/util/LASTCHANGE')
     (stdout, retval) = _GetOutput([VERSION_TOOL, '-f', LASTCHANGE_FILE, '-t',
                                   '@LASTCHANGE@'])

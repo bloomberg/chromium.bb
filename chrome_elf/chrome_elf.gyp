@@ -6,8 +6,8 @@
     'chromium_code': 1,
   },
   'includes': [
+    '../build/util/version.gypi',
     '../build/win_precompile.gypi',
-    '../chrome/version.gypi',
     'blacklist.gypi',
   ],
   'targets': [

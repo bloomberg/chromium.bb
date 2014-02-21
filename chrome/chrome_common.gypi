@@ -583,9 +583,8 @@
             {
               'action_name': 'posix_version',
               'variables': {
-                'lastchange_path':
-                  '<(DEPTH)/build/util/LASTCHANGE',
-                'version_py_path': 'tools/build/version.py',
+                'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+                'version_py_path': '<(DEPTH)/build/util/version.py',
                 'version_path': 'VERSION',
                 'template_input_path': 'common/chrome_version_info_posix.h.version',
               },

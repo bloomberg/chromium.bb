@@ -8,7 +8,7 @@
   },
 
   'includes': [
-    'version.gypi',
+    '../build/util/version.gypi',
   ],
 
   'target_defaults': {

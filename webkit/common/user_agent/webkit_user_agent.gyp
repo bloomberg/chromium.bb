@@ -67,7 +67,7 @@
                          '<@(_outputs)',
                        ],
               'variables': {
-                'script': '<(DEPTH)/chrome/tools/build/version.py',
+                'script': '<(DEPTH)/build/util/version.py',
                 'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
                 'template': '<(DEPTH)/webkit/build/webkit_version.h.in',
               },

@@ -10,7 +10,7 @@
 #   version_path: string: path to file containing version data (e.g.
 #                 chrome/VERSION).
 #   version_py_path: string: path to file containing version script (e.g.
-#                    chrome/tools/build/version.py).
+#                    build/util/version.py).
 
 {
   'variables': {

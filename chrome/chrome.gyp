@@ -90,12 +90,12 @@
     # by Native Client only.
     # NOTE: Most new includes should go in the OS!="ios" condition below.
     '../build/chrome_settings.gypi',
+    '../build/util/version.gypi',
     '../build/win_precompile.gypi',
     'chrome_browser.gypi',
     'chrome_browser_ui.gypi',
     'chrome_common.gypi',
     'chrome_installer_util.gypi',
-    'version.gypi',
     '../components/nacl/nacl_defines.gypi',
   ],
   'conditions': [

@@ -10,7 +10,7 @@
     # Note that we check both the |chrome_version_path| file and the
     # |remoting_version_path| so that we can override the Chrome version
     # numbers if needed.
-    'version_py_path': '../chrome/tools/build/version.py',
+    'version_py_path': '../build/util/version.py',
     'remoting_version_path': '../remoting/VERSION',
     'chrome_version_path': '../chrome/VERSION',
     'version_major':
